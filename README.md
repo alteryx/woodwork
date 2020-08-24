@@ -2,57 +2,46 @@
 
 DataTable are common data objects to use with Featuretools, EvalML, and general ML. A DataTable object contains the physical, logical, and semantic data types present in the data. In addition, it stores metadata about the data.
 
-
 ## Installation
+
 Clone repo
 
 ```bash
-git clone https://github.com/FeatureLabs/data_tables.git
+git clone https://github.com/FeatureLabs/data_tables.git && cd data_tables
 ```
 
-Install with pip
+Install with pip in editable mode
 
 ```
-cd data_tables
-python -m pip install data_tables/
-```
-
-or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/featuretools):
-
-```
-conda install -c conda-forge featuretools
-```
-
-### Add-ons
-
-You can install add-ons individually or all at once by running
-
-```
-python -m pip install featuretools[complete]
-```
-
-**Update checker** - Receive automatic notifications of new Featuretools releases
-
-```
-python -m pip install featuretools[update_checker]
-```
-
-**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
-
-```
-python -m pip install featuretools[tsfresh]
+python -m pip install -e .
 ```
 
 ## Example
-Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
+
+Below is an example of using DataTables.
 
 ```python
->> import featuretools as ft
->> es = ft.demo.load_mock_customer(return_entityset=True)
->> es.plot()
+from data_tables import DataTable
+from data_tables.logical_types import Datetime, Categorical, NaturalLanauge
+
+import pandas as pd
+
+df = pd.read_csv(...)
+
+dt = DataTable(df,
+               name='retail', # default to df.name
+               index=None,
+               time_index=None)
+
+dt.set_types({
+    "datetime": Datetime,
+    "comments": NaturalLanauge,
+    "store_id": Categorical
+})
 ```
 
 ## Built at Alteryx Innovation Labs
+
 <a href="https://www.alteryx.com/innovation-labs">
     <img src="https://evalml-web-images.s3.amazonaws.com/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
 </a>
