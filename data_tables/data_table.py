@@ -1,4 +1,4 @@
-from .data_column import DataColumn
+from data_tables.data_column import DataColumn
 
 
 class DataTable(object):
