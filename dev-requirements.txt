@@ -1,0 +1,5 @@
+-r test-requirements.txt
+codecov==2.1.9
+flake8==3.8.3
+autopep8==1.5.4
+isort==5.4.2
