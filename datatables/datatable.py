@@ -1,11 +1,12 @@
+from .data_column import DataColumn
 
 
 class DataTable(object):
     def __init__(self, dataframe, name,
-                 index: None,
-                 time_index: None,
-                 semantic_types: dict=None,
-                 logical_types: dict=None,
+                 index=None,
+                 time_index=None,
+                 semantic_types=None,
+                 logical_types=None,
                  copy_dataframe=False):
 
         # Check unique colum names
@@ -27,6 +28,7 @@ class DataTable(object):
     def __repr__(self):
         # print out data column names, pandas dtypes, Logical Types & Semantic Tags
         # similar to df.types
+        pass
 
     def create_columns(self, dataframe, user_logical_types):
         data_columns = {}
@@ -36,26 +38,30 @@ class DataTable(object):
                 logical_type = infer_logical_type(self.dataframe[col])
             else:
                 logical_type = user_logical_types[col]
-            data_columns[dc.name] = DataColumn(self.dataframe[col],
-                                               logical_type)
+            dc = DataColumn(self.dataframe[col], logical_type)
+            data_columns[dc.name] = dc
         return data_columns
 
     def set_logical_types(self, logical_types):
         # logical_types: (dict -> LogicalType/str)
         # change the data column logical types
         # implementation detail --> create new data column, do not update
+        pass
 
     def add_semantic_types(self, semantic_types):
         # semantic_types: (dict -> SemanticTag/str)
         # will not overwrite, will append to set
+        pass
 
     def remove_semantic_types(self, semantic_types):
         # semantic_types: (dict -> SemanticTag/str)
         # remove tag from a data column
+        pass
 
     def set_semantic_types(self, semantic_types):
         # semantic_types: (dict -> SemanticTag/str)
         # overwrite the tags
+        pass
 
     @property
     def df(self):
@@ -67,4 +73,12 @@ class DataTable(object):
 
 def infer_logical_type(series):
     # copy some of the logical from featuretools.infer_variable_types
-    return InferredLogicalType
+    return
+
+
+def check_unique_column_names(datatable):
+    pass
+
+
+def check_index(datatable):
+    pass
