@@ -8,12 +8,12 @@ with open(path.join(dirname, 'README.md')) as f:
 
 
 setup(
-    name='datatables',
+    name='data_tables',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     version='0.0.1',
     description='a two-dimensional data object with labeled axes and typing information',
-    url='https://github.com/FeatureLabs/datatables/',
+    url='https://github.com/FeatureLabs/data_tables/',
     classifiers=[
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',

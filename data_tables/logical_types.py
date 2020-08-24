@@ -1,4 +1,4 @@
-from datatables.utils import camel_to_snake
+from data_tables.utils import camel_to_snake
 
 
 class ClassNameDescriptor(object):

@@ -1,4 +1,4 @@
-from datatables import __version__
+from data_tables import __version__
 
 
 def test_version():
