@@ -1,5 +1,5 @@
 [run]
-source = datatables
+source = data_tables
 
 [report]
 exclude_lines =
