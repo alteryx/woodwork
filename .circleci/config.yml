@@ -1,0 +1,121 @@
+version: 2.1
+
+executors:
+  python:
+    parameters:
+      image_tag:
+        type: string
+    docker:
+      - image: circleci/python:<< parameters.image_tag >>
+
+commands:
+  package_datatables:
+    steps:
+      - run: |
+          python setup.py sdist
+          DT_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/datatables-${DT_VERSION}.tar.gz"
+          mv "datatables-${DT_VERSION}" unpacked_sdist
+
+jobs:
+  install_dt:
+    working_directory: ~/datatables
+    parameters:
+      image_tag:
+        type: string
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/datatables
+      - package_datatables
+      - run : |
+          virtualenv venv
+          source venv/bin/activate
+          python -m pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e unpacked_sdist/
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - persist_to_workspace:
+          root: ~/datatables
+          paths:
+            - venv
+            - unpacked_sdist
+
+  unit_tests:
+    working_directory: ~/datatables
+    parameters:
+      image_tag:
+        type: string
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/datatables
+      - when:
+          condition:
+            equal: [ "3.6", << parameters.image_tag >> ]
+          steps:
+            - run: |
+                source venv/bin/activate
+                python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+                coverage erase
+                cd unpacked_sdist/
+                coverage erase
+                pytest datatables/ -n 2 --cov=datatables --cov-config=../.coveragerc
+                cd ../
+                cp unpacked_sdist/.coverage .coverage
+                codecov --required
+      - unless:
+          condition:
+            equal: [ "3.6", << parameters.image_tag >> ]
+          steps:
+            - run: |
+                source venv/bin/activate
+                cd unpacked_sdist
+                pytest datatables/ -n 2
+
+  lint_test:
+    working_directory: ~/datatables
+    parameters:
+      image_tag:
+        type: string
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/datatables
+      - run: |
+          source venv/bin/activate
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
+      - run: source venv/bin/activate && make lint
+
+workflows:
+  version: 2
+  test_all_python_versions:
+    jobs:
+      - install_dt:
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> install datatables
+      - unit_tests:
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> unit tests
+          requires:
+            - << matrix.image_tag >> install datatables
+      - lint_test:
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> lint test
+          requires:
+            - << matrix.image_tag >> install datatables
