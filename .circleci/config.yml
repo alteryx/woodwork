@@ -69,7 +69,6 @@ jobs:
                 pytest datatables/ -n 2 --cov=datatables --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
-                codecov --required
       - unless:
           condition:
             equal: [ "3.6", << parameters.image_tag >> ]
