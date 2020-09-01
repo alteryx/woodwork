@@ -1,3 +1,5 @@
+import pandas as pd
+
 from data_tables.data_column import DataColumn
 
 
@@ -22,6 +24,7 @@ class DataTable(object):
                 for any columns not present in the dictionary.
             copy_dataframe (bool, optional):
         """
+        _validate_params(dataframe, name)
         self.dataframe = dataframe
 
         # Check unique colum names
@@ -32,9 +35,9 @@ class DataTable(object):
 
         # infer logical types and create columns
         self.columns = self.create_columns(self.dataframe, logical_types)
-        self.name = name  # optional
-        self.index = index  # optional, name of the data column
-        self.time_index = time_index  # optional, name of the data column
+        self.name = name
+        self.index = index
+        self.time_index = time_index
 
     def __repr__(self):
         # print out data column names, pandas dtypes, Logical Types & Semantic Tags
@@ -80,6 +83,12 @@ class DataTable(object):
 
     def to_pandas_dataframe(self):
         return self.dataframe.copy()
+
+
+def _validate_params(dataframe, name):
+    assert isinstance(dataframe, pd.DataFrame), 'Dataframe must be a pandas.DataFrame'
+    if name:
+        assert isinstance(name, str), 'DataTable name must be a string'
 
 
 def infer_logical_type(series):

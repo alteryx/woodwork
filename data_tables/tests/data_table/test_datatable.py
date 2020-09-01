@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from data_tables import DataTable
 
@@ -25,3 +26,15 @@ def test_datatable_init_with_name_and_index_vals(sample_df):
     assert dt.name == 'datatable'
     assert dt.index == 'id'
     assert dt.time_index == 'signup_date'
+
+
+def test_raises_error_with_invalid_dataframe_type():
+    error_message = 'Dataframe must be a pandas.DataFrame'
+    with pytest.raises(AssertionError, match=error_message):
+        DataTable(pd.Series())
+
+
+def test_raises_error_with_invalid_name_type(sample_df):
+    error_message = 'DataTable name must be a string'
+    with pytest.raises(AssertionError, match=error_message):
+        DataTable(sample_df, name=1)
