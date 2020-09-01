@@ -7,12 +7,13 @@ DataTable are common data objects to use with Featuretools, EvalML, and general 
 Clone repo
 
 ```bash
-git clone https://github.com/FeatureLabs/data_tables.git && cd data_tables
+git clone https://github.com/FeatureLabs/data_tables.git
+cd data_tables
 ```
 
 Install with pip in editable mode
 
-```
+```bash
 python -m pip install -e .
 ```
 
@@ -22,7 +23,7 @@ Below is an example of using DataTables.
 
 ```python
 from data_tables import DataTable
-from data_tables.logical_types import Datetime, Categorical, NaturalLanauge
+from data_tables.logical_types import Datetime, Categorical, NaturalLanguage
 
 import pandas as pd
 
@@ -35,7 +36,7 @@ dt = DataTable(df,
 
 dt.set_types({
     "datetime": Datetime,
-    "comments": NaturalLanauge,
+    "comments": NaturalLanguage,
     "store_id": Categorical
 })
 ```
