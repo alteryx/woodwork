@@ -17,7 +17,7 @@ class DataTable(object):
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
             semantic_types ():
-            logical_types (dict[str -> LogicalType], optional): Dictionary mapping columns names in
+            logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
             copy_dataframe (bool, optional):
