@@ -20,7 +20,7 @@ def test_data_column_init(sample_series):
 
 
 def test_data_column_init_with_logical_type(sample_series):
-    data_col = DataColumn(sample_series, NaturalLanguage, None)
+    data_col = DataColumn(sample_series, NaturalLanguage)
     assert data_col.logical_type == NaturalLanguage
 
 
