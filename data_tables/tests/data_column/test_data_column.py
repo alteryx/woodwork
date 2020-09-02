@@ -16,7 +16,7 @@ def test_data_column_init(sample_series):
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
-    assert len(data_col.tags) == 0
+    assert data_col.tags == set()
 
 
 def test_data_column_init_with_logical_type(sample_series):
