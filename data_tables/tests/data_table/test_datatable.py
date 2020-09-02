@@ -5,6 +5,7 @@ from data_tables import DataTable
 from data_tables.data_table import (
     _check_index,
     _check_time_index,
+    _check_unique_column_names,
     _validate_params
 )
 
@@ -23,8 +24,11 @@ def test_datatable_init(sample_df):
 
 
 def test_datatable_copy_param(sample_df):
-    dt = DataTable(sample_df, copy_dataframe=True)
-    assert sample_df is not dt.df
+    dt_with_copy = DataTable(sample_df, copy_dataframe=True)
+    assert sample_df is not dt_with_copy.df
+
+    dt_no_copy = DataTable(sample_df)
+    assert sample_df is dt_no_copy.df
 
 
 def test_datatable_init_with_name_and_index_vals(sample_df):
@@ -73,3 +77,10 @@ def test_check_time_index_errors(sample_df):
     error_message = 'Specified time index column `foo` not found in dataframe'
     with pytest.raises(LookupError, match=error_message):
         _check_time_index(dataframe=sample_df, time_index='foo')
+
+
+def test_check_unique_column_names(sample_df):
+    duplicate_cols_df = sample_df.copy()
+    duplicate_cols_df.insert(0, 'age', [18, 21, 65], allow_duplicates=True)
+    with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
+        _check_unique_column_names(duplicate_cols_df)
