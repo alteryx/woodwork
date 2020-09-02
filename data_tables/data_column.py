@@ -34,7 +34,7 @@ class DataColumn(object):
 
 
 def infer_logical_type(series):
-    """Infer variable type for a dataframe column
+    """Infer logical type for a dataframe column
     Args:
         series (pd.Series): Input Series
     """
