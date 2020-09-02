@@ -109,6 +109,8 @@ def _check_index(dataframe, index):
         raise TypeError('Index column name must be a string')
     if index not in dataframe.columns:
         raise LookupError(f'Specified index column `{index}` not found in dataframe')
+    if not dataframe[index].is_unique:
+        raise IndexError('Index column must be unique')
 
 
 def _check_time_index(dataframe, time_index):

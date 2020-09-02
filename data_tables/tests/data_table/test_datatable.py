@@ -67,6 +67,10 @@ def test_check_index_errors(sample_df):
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
+    error_message = 'Index column must be unique'
+    with pytest.raises(LookupError, match=error_message):
+        _check_index(sample_df, index='age')
+
 
 def test_check_time_index_errors(sample_df):
     error_message = 'Time index column name must be a string'
