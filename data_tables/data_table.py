@@ -1,6 +1,7 @@
 import pandas as pd
 
 from data_tables.data_column import DataColumn
+from data_tables.logical_types import LogicalType
 
 
 class DataTable(object):
@@ -59,10 +60,16 @@ class DataTable(object):
         return data_columns
 
     def set_logical_types(self, logical_types):
+        _check_set_types(logical_types)
+        new_data_columns = {}
+        for col, logical_type in logical_types.items():
+            dc = DataColumn(self.dataframe[col], logical_type, set())
+            new_data_columns[dc.name] = dc
+        self.columns.update(new_data_columns)
         # logical_types: (dict -> LogicalType/str)
         # change the data column logical types
         # implementation detail --> create new data column, do not update
-        pass
+        return
 
     def add_semantic_types(self, semantic_types):
         # semantic_types: (dict -> SemanticTag/str)
@@ -119,6 +126,19 @@ def _check_time_index(dataframe, time_index):
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
+
+
+def _check_set_types(logical_types):
+    if not isinstance(logical_types, dict):
+        raise TypeError('Logical Types must be a dictionary')
+    logical_types = LogicalType.__subclasses__()
+    for l_type in logical_types:
+        assert l_type in logical_types
+
+
+def _handle_set_logical_types(dataframe, new_logical_types, old_logical_types):
+    # for col in new_logical_types.items()
+    pass
 
 
 def infer_logical_type(series):

@@ -2,6 +2,12 @@ import pandas as pd
 import pytest
 
 from data_tables import DataTable
+from data_tables.logical_types import (
+    EmailAddress,
+    FullName,
+    Integer,
+    PhoneNumber
+)
 from data_tables.data_table import (
     _check_index,
     _check_time_index,
@@ -88,3 +94,17 @@ def test_check_unique_column_names(sample_df):
     duplicate_cols_df.insert(0, 'age', [18, 21, 65], allow_duplicates=True)
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
+
+
+def test_set_types(sample_df):
+    dt = DataTable(sample_df)
+    dt.set_logical_types({
+        "full_name": FullName,
+        "email": EmailAddress,
+        "phone_number": PhoneNumber,
+        "age": Integer,
+    })
+    assert dt.columns["full_name"].logical_type == FullName
+    assert dt.columns["email"].logical_type == EmailAddress
+    assert dt.columns["phone_number"].logical_type == PhoneNumber
+    assert dt.columns["age"].logical_type == Integer
