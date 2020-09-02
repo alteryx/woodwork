@@ -23,7 +23,8 @@ class DataTable(object):
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
             copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
-                prior to creating the DataTable. Otherwise, use a reference to the input dataframe.
+                prior to creating the DataTable. Defaults to False, which results in using a
+                reference to the input dataframe.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index)
