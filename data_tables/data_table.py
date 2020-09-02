@@ -100,7 +100,7 @@ def _validate_params(dataframe, name, index, time_index):
 
 
 def _check_unique_column_names(dataframe):
-    if len(dataframe.columns) != len(set(dataframe.columns)):
+    if not dataframe.columns.is_unique:
         raise IndexError('Dataframe cannot contain duplicate columns names')
 
 
