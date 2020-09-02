@@ -2,6 +2,11 @@ import pandas as pd
 import pytest
 
 from data_tables import DataTable
+from data_tables.data_table import (
+    _check_index,
+    _check_time_index,
+    _validate_params
+)
 
 
 def test_datatable_init(sample_df):
@@ -13,8 +18,13 @@ def test_datatable_init(sample_df):
     assert dt.time_index is None
     assert isinstance(df, pd.DataFrame)
     assert set(dt.columns.keys()) == set(sample_df.columns)
-    assert df is not sample_df
+    assert df is sample_df
     pd.testing.assert_frame_equal(df, sample_df)
+
+
+def test_datatable_copy_param(sample_df):
+    dt = DataTable(sample_df, copy_dataframe=True)
+    assert sample_df is not dt.df
 
 
 def test_datatable_init_with_name_and_index_vals(sample_df):
@@ -28,13 +38,38 @@ def test_datatable_init_with_name_and_index_vals(sample_df):
     assert dt.time_index == 'signup_date'
 
 
-def test_raises_error_with_invalid_dataframe_type():
+def test_validate_params_errors(sample_df):
     error_message = 'Dataframe must be a pandas.DataFrame'
-    with pytest.raises(AssertionError, match=error_message):
-        DataTable(pd.Series())
+    with pytest.raises(TypeError, match=error_message):
+        _validate_params(dataframe=pd.Series(),
+                         name=None,
+                         index=None,
+                         time_index=None)
 
-
-def test_raises_error_with_invalid_name_type(sample_df):
     error_message = 'DataTable name must be a string'
-    with pytest.raises(AssertionError, match=error_message):
-        DataTable(sample_df, name=1)
+    with pytest.raises(TypeError, match=error_message):
+        _validate_params(dataframe=sample_df,
+                         name=1,
+                         index=None,
+                         time_index=None)
+
+
+def test_check_index_errors(sample_df):
+    error_message = 'Index column name must be a string'
+    with pytest.raises(TypeError, match=error_message):
+        _check_index(dataframe=sample_df, index=1)
+
+    error_message = 'Specified index column `foo` not found in dataframe'
+    with pytest.raises(LookupError, match=error_message):
+        _check_index(dataframe=sample_df, index='foo')
+
+
+def test_check_time_index_errors(sample_df):
+    error_message = 'Time index column name must be a string'
+    with pytest.raises(TypeError, match=error_message):
+        _check_time_index(dataframe=sample_df,
+                          time_index=1)
+
+    error_message = 'Specified time index column `foo` not found in dataframe'
+    with pytest.raises(LookupError, match=error_message):
+        _check_time_index(dataframe=sample_df, time_index='foo')

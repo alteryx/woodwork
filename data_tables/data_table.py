@@ -22,29 +22,30 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
-            copy_dataframe (bool, optional):
+            copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
+                prior to creating the DataTable. Otherwise, use a reference to the input dataframe.
         """
-        _validate_params(dataframe, name)
-        self.dataframe = dataframe
+        # Check that inputs are valid
+        _validate_params(dataframe, name, index, time_index)
 
-        # Check unique colum names
-        check_unique_column_names(dataframe)
-        # Check index column is unique
-        if index:
-            check_index(dataframe, index)
+        if copy_dataframe:
+            self.dataframe = dataframe.copy()
+        else:
+            self.dataframe = dataframe
 
-        # infer logical types and create columns
-        self.columns = self.create_columns(self.dataframe, logical_types)
         self.name = name
         self.index = index
         self.time_index = time_index
+
+        # Infer logical types and create columns
+        self.columns = self._create_columns(self.dataframe, logical_types)
 
     def __repr__(self):
         # print out data column names, pandas dtypes, Logical Types & Semantic Tags
         # similar to df.types
         pass
 
-    def create_columns(self, dataframe, user_logical_types):
+    def _create_columns(self, dataframe, user_logical_types):
         data_columns = {}
         for col in self.dataframe.columns:
             if user_logical_types and col in user_logical_types:
@@ -79,26 +80,43 @@ class DataTable(object):
 
     @property
     def df(self):
-        return self.dataframe.copy()
+        return self.dataframe
 
     def to_pandas_dataframe(self):
-        return self.dataframe.copy()
+        return self.dataframe
 
 
-def _validate_params(dataframe, name):
-    assert isinstance(dataframe, pd.DataFrame), 'Dataframe must be a pandas.DataFrame'
-    if name:
-        assert isinstance(name, str), 'DataTable name must be a string'
+def _validate_params(dataframe, name, index, time_index):
+    """Check that values supplied during DataTable initialization are valid"""
+    if not isinstance(dataframe, pd.DataFrame):
+        raise TypeError('Dataframe must be a pandas.DataFrame')
+    _check_unique_column_names(dataframe)
+    if name and not isinstance(name, str):
+        raise TypeError('DataTable name must be a string')
+    if index:
+        _check_index(dataframe, index)
+    if time_index:
+        _check_time_index(dataframe, index)
+
+
+def _check_unique_column_names(dataframe):
+    pass
+
+
+def _check_index(dataframe, index):
+    if not isinstance(index, str):
+        raise TypeError('Index column name must be a string')
+    if index not in dataframe.columns:
+        raise LookupError(f'Specified index column `{index}` not found in dataframe')
+
+
+def _check_time_index(dataframe, time_index):
+    if not isinstance(time_index, str):
+        raise TypeError('Time index column name must be a string')
+    if time_index not in dataframe.columns:
+        raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
 
 
 def infer_logical_type(series):
     # copy some of the logical from featuretools.infer_variable_types
     return
-
-
-def check_unique_column_names(datatable):
-    pass
-
-
-def check_index(datatable, index):
-    pass
