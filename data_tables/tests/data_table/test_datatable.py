@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -11,7 +12,11 @@ from data_tables.data_table import (
     _check_unique_column_names,
     _validate_params
 )
-from data_tables.logical_types import Double, NaturalLanguage
+from data_tables.logical_types import (
+    Double,
+    LogicalType,
+    NaturalLanguage
+)
 
 
 def test_datatable_init(sample_df):
@@ -122,3 +127,27 @@ def test_check_logical_types_errors(sample_df):
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
+
+
+def test_datatable_repr(sample_df):
+    dt = DataTable(sample_df)
+    print("\n")
+    print(dt.types)
+    returned_types = dt.types
+    assert isinstance(returned_types, pd.DataFrame)
+    assert 'Physical Type' in returned_types.columns
+    assert 'Logical Type' in returned_types.columns
+    assert 'Semantic Tag(s)' in returned_types.columns
+    assert returned_types.shape[1] == 3
+    assert len(returned_types.index) == len(sample_df.columns)
+    for d_type in returned_types['Physical Type']:
+        assert isinstance(d_type, np.dtype)
+    expected_logical_types = [dc.logical_type for dc in dt.columns.values()]
+    for l_type in returned_types['Logical Type']:
+        assert issubclass(l_type, LogicalType)
+        assert l_type in LogicalType.__subclasses__()
+        assert l_type in expected_logical_types
+    for tag in returned_types['Semantic Tag(s)']:
+        assert isinstance(tag, set)
+        # TODO: Add a tag to DataTable, and check the tag shows up
+        # Waiting on init with semantic tags / set_semantic_tags

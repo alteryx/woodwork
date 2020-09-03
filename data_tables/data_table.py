@@ -41,10 +41,21 @@ class DataTable(object):
         # Infer logical types and create columns
         self.columns = self._create_columns(self.dataframe, logical_types)
 
-    def __repr__(self):
-        # print out data column names, pandas dtypes, Logical Types & Semantic Tags
-        # similar to df.types
-        pass
+    @property
+    def types(self):
+        typing_info = {}
+        for dc in self.columns.values():
+            typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.tags]
+        df = pd.DataFrame.from_dict(typing_info,
+                                    orient='index',
+                                    columns=['Physical Type', 'Logical Type', 'Semantic Tag(s)'],
+                                    dtype="object")
+        df.index.name = 'Data Column'
+        return df
+
+    @property
+    def shape(self):
+        return len(self.dataframe.index), len(self.columns)
 
     def _create_columns(self, dataframe, user_logical_types):
         data_columns = {}
@@ -56,6 +67,12 @@ class DataTable(object):
             dc = DataColumn(self.dataframe[col], logical_type, set())
             data_columns[dc.name] = dc
         return data_columns
+
+    def logical_types(self):
+        return {dc.name: dc.logical_type for dc in self.columns.values()}
+
+    def physical_types(self):
+        return {dc.name: dc.dtype for dc in self.columns.values()}
 
     def set_logical_types(self, logical_types):
         # logical_types: (dict -> LogicalType/str)

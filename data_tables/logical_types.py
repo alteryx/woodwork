@@ -9,12 +9,16 @@ class ClassNameDescriptor(object):
         return camel_to_snake(class_.__name__)
 
 
-class LogicalType(object):
+class LogicalType():
     type_string = ClassNameDescriptor()
+
+    def __repr__(self):
+        return u"{}".format('etest')
 
 
 class Boolean(LogicalType):
-    pass
+    def __repr__(self):
+        return "test"
 
 
 class Categorical(LogicalType):
