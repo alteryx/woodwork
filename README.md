@@ -1,6 +1,6 @@
 # DataTables
 
-[![Coverage Status](https://codecov.io/gh/FeatureLabs/datatables/branch/master/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/datatables)
+[![codecov](https://codecov.io/gh/FeatureLabs/datatables/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/datatables)
 
 DataTable are common data objects to use with Featuretools, EvalML, and general ML. A DataTable object contains the physical, logical, and semantic data types present in the data. In addition, it stores metadata about the data.
 
