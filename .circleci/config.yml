@@ -39,7 +39,7 @@ jobs:
           python -m pip install -e unpacked_sdist/
           python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
-          root: ~/data_tables
+          root: ~/datatables
           paths:
             - venv
             - unpacked_sdist
