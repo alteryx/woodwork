@@ -18,4 +18,4 @@ def sample_df():
 
 @pytest.fixture(scope='session')
 def sample_series():
-    return pd.Series(['a', 'b', 'c'], name='sample_series')
+    return pd.Series(['a', 'b', 'c'], name='sample_series').astype('object')

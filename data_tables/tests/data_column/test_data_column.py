@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from data_tables.data_column import DataColumn, infer_logical_type
@@ -6,6 +7,7 @@ from data_tables.logical_types import (
     Categorical,
     Datetime,
     Double,
+    Integer,
     NaturalLanguage,
     Timedelta
 )
@@ -24,37 +26,85 @@ def test_data_column_init_with_logical_type(sample_series):
     assert data_col.logical_type == NaturalLanguage
 
 
-def test_infer_variable_types():
-    df = pd.DataFrame({'id': [0, 1, 2],
-                       'category': ['a', 'b', 'a'],
-                       'ints': ['1', '2', '1'],
-                       'boolean': [True, False, True],
-                       'date_as_string': ['3/11/2000', '3/12/2000', '3/13/2000'],
-                       'date_as_datetime': ['3/11/2000', '3/12/2000', '3/13/2000'],
-                       'integers': [1, 2, 1],
-                       'integers_category': [1, 2, 1],
-                       'integers_object_dtype': [1, 2, 1],
-                       'natural_language': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
-                       'timedelta': pd.to_timedelta(range(3), unit='s')})
+def test_integer_inference():
+    series_list = [
+        pd.Series([1, 2, 1]),
+        pd.Series([-1, 2, 1]),
+    ]
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
+              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Integer
 
-    df['date_as_datetime'] = pd.to_datetime(df['date_as_datetime'])
-    df['integers_category'] = df['integers_category'].astype('category')
-    df['integers_object_dtype'] = df['integers_object_dtype'].astype('object')
 
-    correct_logical_types = {
-        'id': Double,
-        'category': Categorical,
-        'ints': Categorical,
-        'boolean': Boolean,
-        'date_as_string': Datetime,
-        'date_as_datetime': Datetime,
-        'integers': Double,
-        'integers_category': Categorical,
-        'integers_object_dtype': Categorical,
-        'natural_language': NaturalLanguage,
-        'timedelta': Timedelta
-    }
+def test_double_inference():
+    series_list = [
+        pd.Series([-1, 2.0, 1]),
+        pd.Series([1, np.nan, 1])
+    ]
+    dtypes = ['float', 'float32', 'float64', 'float_']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Double
 
-    for col in df.columns:
-        inferred_type = infer_logical_type(df[col])
-        assert inferred_type == correct_logical_types[col]
+
+def test_boolean_inference():
+    series_list = [
+        pd.Series([True, False, True]),
+        pd.Series([True, False, np.nan]),
+    ]
+    dtypes = ['bool']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Boolean
+
+
+def test_datetime_inference():
+    series_list = [
+        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000']),
+        pd.Series(['3/11/2000', '3/12/2000', np.nan]),
+    ]
+    dtypes = ['object', 'string', 'datetime64[ns]']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Datetime
+
+
+def test_categorical_inference():
+    series_list = [
+        pd.Series(['a', 'b', 'a']),
+        pd.Series(['1', '2', '1']),
+        pd.Series([1, 2, 1])
+    ]
+    dtypes = ['object', 'string', 'category']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+
+
+def test_timedelta_inference():
+    series_list = [
+        pd.Series(pd.to_timedelta(range(3), unit='s')),
+    ]
+    dtypes = ['timedelta64[ns]']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Timedelta
+
+
+def test_natural_language_inference():
+    series_list = [
+        pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown']),
+    ]
+    dtypes = ['object', 'string']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == NaturalLanguage
