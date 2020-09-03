@@ -19,7 +19,7 @@ commands:
 
 jobs:
   install_dt:
-    working_directory: ~/data_tables
+    working_directory: ~/datatables
     parameters:
       image_tag:
         type: string
@@ -29,7 +29,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/data_tables
+          at: ~/datatables
       - pkg_data_tables
       - run : |
           virtualenv venv
@@ -45,7 +45,7 @@ jobs:
             - unpacked_sdist
 
   unit_tests:
-    working_directory: ~/data_tables
+    working_directory: ~/datatables
     parameters:
       image_tag:
         type: string
@@ -55,7 +55,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/data_tables
+          at: ~/datatables
       - when:
           condition:
             equal: [ "3.6", << parameters.image_tag >> ]
@@ -80,7 +80,7 @@ jobs:
                 pytest data_tables/ -n 2
 
   lint_test:
-    working_directory: ~/data_tables
+    working_directory: ~/datatables
     parameters:
       image_tag:
         type: string
@@ -90,7 +90,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/data_tables
+          at: ~/datatables
       - run: |
           source venv/bin/activate
           python -m pip install -r unpacked_sdist/dev-requirements.txt
