@@ -19,7 +19,7 @@ commands:
 
 jobs:
   install_dt:
-    working_directory: ~/data_tables
+    working_directory: ~/datatables
     parameters:
       image_tag:
         type: string
@@ -29,7 +29,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/data_tables
+          at: ~/datatables
       - pkg_data_tables
       - run : |
           virtualenv venv
@@ -39,13 +39,13 @@ jobs:
           python -m pip install -e unpacked_sdist/
           python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
-          root: ~/data_tables
+          root: ~/datatables
           paths:
             - venv
             - unpacked_sdist
 
   unit_tests:
-    working_directory: ~/data_tables
+    working_directory: ~/datatables
     parameters:
       image_tag:
         type: string
@@ -55,7 +55,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/data_tables
+          at: ~/datatables
       - when:
           condition:
             equal: [ "3.6", << parameters.image_tag >> ]
@@ -69,6 +69,7 @@ jobs:
                 pytest data_tables/ -n 2 --cov=data_tables --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
+                codecov --required
       - unless:
           condition:
             equal: [ "3.6", << parameters.image_tag >> ]
@@ -79,7 +80,7 @@ jobs:
                 pytest data_tables/ -n 2
 
   lint_test:
-    working_directory: ~/data_tables
+    working_directory: ~/datatables
     parameters:
       image_tag:
         type: string
@@ -89,7 +90,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/data_tables
+          at: ~/datatables
       - run: |
           source venv/bin/activate
           python -m pip install -r unpacked_sdist/dev-requirements.txt

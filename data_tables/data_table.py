@@ -52,8 +52,7 @@ class DataTable(object):
             if user_logical_types and col in user_logical_types:
                 logical_type = user_logical_types[col]
             else:
-                # if user not specifying Logical Type
-                logical_type = infer_logical_type(self.dataframe[col])
+                logical_type = None
             dc = DataColumn(self.dataframe[col], logical_type, set())
             data_columns[dc.name] = dc
         return data_columns
@@ -130,8 +129,3 @@ def _check_logical_types(dataframe, logical_types):
     if cols_not_found:
         raise LookupError('logical_types contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
-
-
-def infer_logical_type(series):
-    # copy some of the logical from featuretools.infer_variable_types
-    return
