@@ -9,6 +9,7 @@ from data_tables.logical_types import (
     Datetime,
     Double,
     Integer,
+    LogicalType,
     NaturalLanguage,
     Timedelta
 )
@@ -28,6 +29,8 @@ class DataColumn(object):
         self.series = series
         self.name = series.name
         if logical_type:
+            if logical_type not in LogicalType.__subclasses__():
+                raise TypeError(f"Invalid logical type specified for '{series.name}'")
             self.logical_type = logical_type
         else:
             self.logical_type = infer_logical_type(self.series)
