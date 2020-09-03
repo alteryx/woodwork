@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from data_tables.data_column import DataColumn, infer_logical_type
 from data_tables.logical_types import (
@@ -24,6 +25,12 @@ def test_data_column_init(sample_series):
 def test_data_column_init_with_logical_type(sample_series):
     data_col = DataColumn(sample_series, NaturalLanguage)
     assert data_col.logical_type == NaturalLanguage
+
+
+def test_invalid_logical_type(sample_series):
+    error_message = "Invalid logical type specified for 'sample_series'"
+    with pytest.raises(TypeError, match=error_message):
+        DataColumn(sample_series, int)
 
 
 def test_integer_inference():
