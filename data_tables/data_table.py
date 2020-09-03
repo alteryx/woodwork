@@ -27,7 +27,7 @@ class DataTable(object):
                 reference to the input dataframe.
         """
         # Check that inputs are valid
-        _validate_params(dataframe, name, index, time_index)
+        _validate_params(dataframe, name, index, time_index, logical_types)
 
         if copy_dataframe:
             self.dataframe = dataframe.copy()
@@ -52,8 +52,7 @@ class DataTable(object):
             if user_logical_types and col in user_logical_types:
                 logical_type = user_logical_types[col]
             else:
-                # if user not specifying Logical Type
-                logical_type = infer_logical_type(self.dataframe[col])
+                logical_type = None
             dc = DataColumn(self.dataframe[col], logical_type, set())
             data_columns[dc.name] = dc
         return data_columns
@@ -87,7 +86,7 @@ class DataTable(object):
         return self.dataframe
 
 
-def _validate_params(dataframe, name, index, time_index):
+def _validate_params(dataframe, name, index, time_index, logical_types):
     """Check that values supplied during DataTable initialization are valid"""
     if not isinstance(dataframe, pd.DataFrame):
         raise TypeError('Dataframe must be a pandas.DataFrame')
@@ -98,6 +97,8 @@ def _validate_params(dataframe, name, index, time_index):
         _check_index(dataframe, index)
     if time_index:
         _check_time_index(dataframe, index)
+    if logical_types:
+        _check_logical_types(dataframe, logical_types)
 
 
 def _check_unique_column_names(dataframe):
@@ -121,6 +122,10 @@ def _check_time_index(dataframe, time_index):
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
 
 
-def infer_logical_type(series):
-    # copy some of the logical from featuretools.infer_variable_types
-    return
+def _check_logical_types(dataframe, logical_types):
+    if not isinstance(logical_types, dict):
+        raise TypeError('logical_types must be a dictionary')
+    cols_not_found = set(logical_types.keys()).difference(set(dataframe.columns))
+    if cols_not_found:
+        raise LookupError('logical_types contains columns that are not present in '
+                          f'dataframe: {sorted(list(cols_not_found))}')

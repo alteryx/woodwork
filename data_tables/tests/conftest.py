@@ -12,4 +12,10 @@ def sample_df():
         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
         'age': [33, 25, 33],
         'signup_date': [pd.to_datetime('2020-09-01')] * 3,
+        'is_registered': [True, False, True],
     })
+
+
+@pytest.fixture(scope='session')
+def sample_series():
+    return pd.Series(['a', 'b', 'c'], name='sample_series').astype('object')
