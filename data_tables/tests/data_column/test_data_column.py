@@ -79,6 +79,7 @@ def test_categorical_inference():
     series_list = [
         pd.Series(['a', 'b', 'a']),
         pd.Series(['1', '2', '1']),
+        pd.Series(['a', 'b', np.nan]),
         pd.Series([1, 2, 1])
     ]
     dtypes = ['object', 'string', 'category']
@@ -91,6 +92,7 @@ def test_categorical_inference():
 def test_timedelta_inference():
     series_list = [
         pd.Series(pd.to_timedelta(range(3), unit='s')),
+        pd.Series([pd.to_timedelta(1, unit='s'), np.nan])
     ]
     dtypes = ['timedelta64[ns]']
     for series in series_list:
