@@ -1,7 +1,4 @@
-from data_tables.logical_types import (
-    Boolean,
-    Categorical
-)
+from data_tables.logical_types import Boolean, Categorical
 
 
 def test_logical_eq():
