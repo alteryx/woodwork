@@ -12,11 +12,7 @@ from data_tables.data_table import (
     _check_unique_column_names,
     _validate_params
 )
-from data_tables.logical_types import (
-    Double,
-    LogicalType,
-    NaturalLanguage
-)
+from data_tables.logical_types import Double, LogicalType, NaturalLanguage
 
 
 def test_datatable_init(sample_df):
