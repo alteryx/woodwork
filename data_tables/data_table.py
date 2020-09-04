@@ -39,11 +39,9 @@ class DataTable(object):
         self.time_index = time_index
 
         # Infer logical types and create columns
-        self.columns = {}
-        new_columns = self._create_columns(self.dataframe.columns,
-                                           logical_types,
-                                           semantic_types)
-        self._update_columns(new_columns)
+        self.columns = self._create_columns(self.dataframe.columns,
+                                            logical_types,
+                                            semantic_types)
 
     def __repr__(self):
         # print out data column names, pandas dtypes, Logical Types & Semantic Tags
@@ -71,11 +69,8 @@ class DataTable(object):
     def _update_columns(self, new_columns):
         """Update the DataTable columns based on items contained in the
             provided new_columns dictionary"""
-        if not self.columns:
-            self.columns = new_columns
-        else:
-            for name, column in new_columns.items():
-                self.columns[name] = column
+        for name, column in new_columns.items():
+            self.columns[name] = column
 
     def set_logical_types(self, logical_types):
         """Update the logical type for any columns names in the provided logical_types
