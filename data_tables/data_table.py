@@ -68,9 +68,11 @@ class DataTable(object):
             data_columns[dc.name] = dc
         return data_columns
 
+    @property
     def logical_types(self):
         return {dc.name: dc.logical_type for dc in self.columns.values()}
 
+    @property
     def physical_types(self):
         return {dc.name: dc.dtype for dc in self.columns.values()}
 

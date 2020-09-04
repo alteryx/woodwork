@@ -12,7 +12,11 @@ from data_tables.data_table import (
     _check_unique_column_names,
     _validate_params
 )
-from data_tables.logical_types import Double, LogicalType, NaturalLanguage
+from data_tables.logical_types import (
+    Double,
+    LogicalType,
+    NaturalLanguage
+)
 
 
 def test_datatable_init(sample_df):
@@ -144,3 +148,27 @@ def test_datatable_types(sample_df):
         assert isinstance(tag, set)
         # TODO: Add a tag to DataTable, and check the tag shows up
         # Waiting on init with semantic tags / set_semantic_tags
+
+
+def test_datatable_shape(sample_df):
+    dt = DataTable(sample_df)
+    assert isinstance(dt.shape, tuple)
+    assert dt.shape == sample_df.shape
+
+
+def test_datatable_logical_types(sample_df):
+    dt = DataTable(sample_df)
+    assert isinstance(dt.logical_types, dict)
+    for k, v in dt.logical_types.items():
+        assert isinstance(k, str)
+        assert k in sample_df.columns
+        assert v in LogicalType.__subclasses()
+
+
+def test_datatable_physical_types(sample_df):
+    dt = DataTable(sample_df)
+    assert isinstance(dt.physical_types, dict)
+    for k, v in dt.physical_types.items():
+        assert isinstance(k, str)
+        assert k in sample_df.columns
+        assert isinstance(v, np.dtype)
