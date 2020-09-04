@@ -158,7 +158,7 @@ def test_datatable_logical_types(sample_df):
     for k, v in dt.logical_types.items():
         assert isinstance(k, str)
         assert k in sample_df.columns
-        assert v in LogicalType.__subclasses()
+        assert v in LogicalType.__subclasses__()
 
 
 def test_datatable_physical_types(sample_df):
