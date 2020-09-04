@@ -13,12 +13,14 @@ class LogicalType():
     type_string = ClassNameDescriptor()
 
     def __repr__(self):
-        return u"{}".format('etest')
+        return u"%s" % (self.__class__.__name__)
+
+    def __eq__(self, other, deep=False):
+        return isinstance(other, self.__class__)
 
 
 class Boolean(LogicalType):
-    def __repr__(self):
-        return "test"
+    pass
 
 
 class Categorical(LogicalType):

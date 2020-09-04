@@ -129,10 +129,8 @@ def test_check_logical_types_errors(sample_df):
         _check_logical_types(sample_df, bad_logical_types_keys)
 
 
-def test_datatable_repr(sample_df):
+def test_datatable_types(sample_df):
     dt = DataTable(sample_df)
-    print("\n")
-    print(dt.types)
     returned_types = dt.types
     assert isinstance(returned_types, pd.DataFrame)
     assert 'Physical Type' in returned_types.columns
@@ -142,10 +140,9 @@ def test_datatable_repr(sample_df):
     assert len(returned_types.index) == len(sample_df.columns)
     for d_type in returned_types['Physical Type']:
         assert isinstance(d_type, np.dtype)
-    expected_logical_types = [dc.logical_type for dc in dt.columns.values()]
+    expected_logical_types = [dc.logical_type() for dc in dt.columns.values()]
     for l_type in returned_types['Logical Type']:
-        assert issubclass(l_type, LogicalType)
-        assert l_type in LogicalType.__subclasses__()
+        assert isinstance(l_type, LogicalType)
         assert l_type in expected_logical_types
     for tag in returned_types['Semantic Tag(s)']:
         assert isinstance(tag, set)
