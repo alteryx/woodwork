@@ -56,7 +56,7 @@ class DataColumn(object):
         msg = u"<DataColumn: {} ".format(self.name)
         msg += u"(Physical Type = {}) ".format(self.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
-        msg += u"(Semantic Tags = {})>".format(self.tags)
+        msg += u"(Semantic Tags = {})>".format(self.semantic_types)
         return msg
 
 

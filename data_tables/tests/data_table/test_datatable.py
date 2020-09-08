@@ -82,7 +82,7 @@ def test_datatable_init_with_semantic_types(sample_df):
     assert isinstance(id_semantic_types, dict)
     assert len(id_semantic_types) == 1
     assert 'index' in id_semantic_types.keys()
-    assert id_semantic_types['index'] == dict()
+    assert id_semantic_types['index'] == {}
 
 
 def test_validate_params_errors(sample_df):
@@ -178,7 +178,7 @@ def test_datatable_types(sample_df):
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
-        assert isinstance(tag, set)
+        assert isinstance(tag, dict)
         # TODO: Add a tag to DataTable, and check the tag shows up
         # Waiting on init with semantic tags / set_semantic_tags
 
@@ -257,7 +257,7 @@ def test_set_logical_types(sample_df):
     assert dt.columns['full_name'].semantic_types == semantic_types['full_name']
     assert dt.columns['email'].semantic_types == semantic_types['email']
     assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
-    assert dt.columns['age'].semantic_types == dict()
+    assert dt.columns['age'].semantic_types == {}
     assert dt.columns['signup_date'].semantic_types == semantic_types['signup_date']
 
 
