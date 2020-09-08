@@ -43,7 +43,7 @@ class DataColumn(object):
 
         if semantic_types:
             if not isinstance(semantic_types, dict):
-                raise TypeError("semantic_type must be a dictionary")
+                raise TypeError("semantic_types must be a dictionary")
             if not all([isinstance(key, str) for key in semantic_types.keys()]):
                 raise TypeError("Semantic types must be specified as strings")
             if not all([isinstance(value, dict) for value in semantic_types.values()]):
