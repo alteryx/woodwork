@@ -8,4 +8,6 @@ def test_logical_eq():
 
 def test_logical_repr():
     assert isinstance(Boolean().__repr__(), str)
+    assert Boolean().__repr__() == 'Boolean'
     assert isinstance(Categorical().__repr__(), str)
+    assert Categorical().__repr__() == 'Categorical'

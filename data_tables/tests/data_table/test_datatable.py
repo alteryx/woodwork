@@ -137,34 +137,30 @@ def test_datatable_types(sample_df):
     for d_type in returned_types['Physical Type']:
         assert isinstance(d_type, np.dtype)
     expected_logical_types = [dc.logical_type() for dc in dt.columns.values()]
-    for l_type in returned_types['Logical Type']:
-        assert isinstance(l_type, LogicalType)
-        assert l_type in expected_logical_types
+    assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    assert all(expected_logical_types == returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
         assert isinstance(tag, set)
         # TODO: Add a tag to DataTable, and check the tag shows up
         # Waiting on init with semantic tags / set_semantic_tags
 
 
-def test_datatable_shape(sample_df):
+def test_datatable_physical_types(sample_df):
     dt = DataTable(sample_df)
-    assert isinstance(dt.shape, tuple)
-    assert dt.shape == sample_df.shape
+    assert isinstance(dt.physical_types, dict)
+    assert set(dt.physical_types.keys()) == set(sample_df.columns)
+    for k, v in dt.physical_types.items():
+        assert isinstance(k, str)
+        assert isinstance(v, np.dtype)
+        assert v == sample_df[k].dtype
 
 
 def test_datatable_logical_types(sample_df):
     dt = DataTable(sample_df)
     assert isinstance(dt.logical_types, dict)
+    assert set(dt.logical_types.keys()) == set(sample_df.columns)
     for k, v in dt.logical_types.items():
         assert isinstance(k, str)
         assert k in sample_df.columns
         assert v in LogicalType.__subclasses__()
-
-
-def test_datatable_physical_types(sample_df):
-    dt = DataTable(sample_df)
-    assert isinstance(dt.physical_types, dict)
-    for k, v in dt.physical_types.items():
-        assert isinstance(k, str)
-        assert k in sample_df.columns
-        assert isinstance(v, np.dtype)
+        assert v == dt.columns[k].logical_type

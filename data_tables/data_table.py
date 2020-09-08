@@ -53,10 +53,6 @@ class DataTable(object):
         df.index.name = 'Data Column'
         return df
 
-    @property
-    def shape(self):
-        return len(self.dataframe.index), len(self.columns)
-
     def _create_columns(self, dataframe, user_logical_types):
         data_columns = {}
         for col in self.dataframe.columns:

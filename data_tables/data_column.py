@@ -38,9 +38,9 @@ class DataColumn(object):
         self.tags = tags
 
     def __repr__(self):
-        msg = u"<DataColumn: {})".format(self.name)
-        msg += u"(Physical Type = {}".format(self.dtype)
-        msg += u"(Logical Type = {}".format(self.logical_type)
+        msg = u"<DataColumn: {} ".format(self.name)
+        msg += u"(Physical Type = {}) ".format(self.dtype)
+        msg += u"(Logical Type = {}) ".format(self.logical_type())
         msg += u"(Semantic Tags = {})>".format(self.tags)
         return msg
 
