@@ -28,7 +28,8 @@ class DataColumn(object):
                 type tags to assign to the column. Semantic types should be specified as a dictionary
                 of dictionaries, where the keys of the outer dictionary represent the semantic type tags,
                 and the value is another dictionary of any additional data to store with the semantic type.
-                If the additional data is not required, an empty dictionary should be passed.
+                If the additional data is not required, an empty dictionary should be passed. Defaults to
+                an empty dictionary, if not specified.
         """
         self.series = series
         self.name = series.name

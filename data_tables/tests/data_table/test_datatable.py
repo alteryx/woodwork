@@ -167,7 +167,12 @@ def test_check_semantic_types_errors(sample_df):
 
 
 def test_set_logical_types(sample_df):
-    dt = DataTable(sample_df)
+    semantic_types = {
+        'full_name': {'tag1': {}},
+        'email': {'tag2': {'option1': 'value1'}},
+        'phone_number': {'tag3': {}},
+    }
+    dt = DataTable(sample_df, semantic_types=semantic_types)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
@@ -189,6 +194,12 @@ def test_set_logical_types(sample_df):
     # Verify new column object was created
     new_name_column = dt.columns['full_name']
     assert new_name_column != original_name_column
+
+    # Verify semantic types were not changed
+    assert dt.columns['full_name'].semantic_types == semantic_types['full_name']
+    assert dt.columns['email'].semantic_types == semantic_types['email']
+    assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
+    assert dt.columns['age'].semantic_types == dict()
 
 
 def test_set_logical_types_invalid_data(sample_df):
