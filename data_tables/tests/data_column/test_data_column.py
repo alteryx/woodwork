@@ -19,7 +19,7 @@ def test_data_column_init(sample_series):
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
-    assert data_col.semantic_types == dict()
+    assert data_col.semantic_types == {}
 
 
 def test_data_column_init_with_logical_type(sample_series):
@@ -140,3 +140,8 @@ def test_natural_language_inference():
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == NaturalLanguage
+
+
+def test_data_column_repr(sample_series):
+    data_col = DataColumn(sample_series)
+    assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = {})>"

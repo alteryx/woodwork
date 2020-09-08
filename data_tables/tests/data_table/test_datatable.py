@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -13,11 +14,13 @@ from data_tables.data_table import (
     _validate_params
 )
 from data_tables.logical_types import (
+    Boolean,
     Datetime,
     Double,
     EmailAddress,
     FullName,
     Integer,
+    LogicalType,
     NaturalLanguage,
     PhoneNumber
 )
@@ -79,7 +82,7 @@ def test_datatable_init_with_semantic_types(sample_df):
     assert isinstance(id_semantic_types, dict)
     assert len(id_semantic_types) == 1
     assert 'index' in id_semantic_types.keys()
-    assert id_semantic_types['index'] == dict()
+    assert id_semantic_types['index'] == {}
 
 
 def test_validate_params_errors(sample_df):
@@ -150,6 +153,57 @@ def test_check_logical_types_errors(sample_df):
         _check_logical_types(sample_df, bad_logical_types_keys)
 
 
+def test_datatable_types(sample_df):
+    dt = DataTable(sample_df)
+    returned_types = dt.types
+    assert isinstance(returned_types, pd.DataFrame)
+    assert 'Physical Type' in returned_types.columns
+    assert 'Logical Type' in returned_types.columns
+    assert 'Semantic Tag(s)' in returned_types.columns
+    assert returned_types.shape[1] == 3
+    assert len(returned_types.index) == len(sample_df.columns)
+    for d_type in returned_types['Physical Type']:
+        assert isinstance(d_type, np.dtype)
+    assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(returned_types['Logical Type'])
+    for tag in returned_types['Semantic Tag(s)']:
+        assert isinstance(tag, dict)
+        # TODO: Add a tag to DataTable, and check the tag shows up
+        # Waiting on init with semantic tags / set_semantic_tags
+
+
+def test_datatable_physical_types(sample_df):
+    dt = DataTable(sample_df)
+    assert isinstance(dt.physical_types, dict)
+    assert set(dt.physical_types.keys()) == set(sample_df.columns)
+    for k, v in dt.physical_types.items():
+        assert isinstance(k, str)
+        assert isinstance(v, np.dtype)
+        assert v == sample_df[k].dtype
+
+
+def test_datatable_logical_types(sample_df):
+    dt = DataTable(sample_df)
+    assert isinstance(dt.logical_types, dict)
+    assert set(dt.logical_types.keys()) == set(sample_df.columns)
+    for k, v in dt.logical_types.items():
+        assert isinstance(k, str)
+        assert k in sample_df.columns
+        assert v in LogicalType.__subclasses__()
+        assert v == dt.columns[k].logical_type
+
+
 def test_check_semantic_types_errors(sample_df):
     error_message = 'semantic_types must be a dictionary'
     with pytest.raises(TypeError, match=error_message):
@@ -203,7 +257,7 @@ def test_set_logical_types(sample_df):
     assert dt.columns['full_name'].semantic_types == semantic_types['full_name']
     assert dt.columns['email'].semantic_types == semantic_types['email']
     assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
-    assert dt.columns['age'].semantic_types == dict()
+    assert dt.columns['age'].semantic_types == {}
     assert dt.columns['signup_date'].semantic_types == semantic_types['signup_date']
 
 

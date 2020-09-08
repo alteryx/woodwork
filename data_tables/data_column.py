@@ -52,6 +52,13 @@ class DataColumn(object):
             semantic_types = {}
         self.semantic_types = semantic_types
 
+    def __repr__(self):
+        msg = u"<DataColumn: {} ".format(self.name)
+        msg += u"(Physical Type = {}) ".format(self.dtype)
+        msg += u"(Logical Type = {}) ".format(self.logical_type)
+        msg += u"(Semantic Tags = {})>".format(self.semantic_types)
+        return msg
+
 
 def infer_logical_type(series):
     """Infer logical type for a dataframe column
