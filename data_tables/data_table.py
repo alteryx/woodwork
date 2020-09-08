@@ -45,7 +45,7 @@ class DataTable(object):
     def types(self):
         typing_info = {}
         for dc in self.columns.values():
-            typing_info[dc.name] = [dc.dtype, dc.logical_type(), dc.tags]
+            typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
                                     columns=['Physical Type', 'Logical Type', 'Semantic Tag(s)'],

@@ -9,11 +9,14 @@ class ClassNameDescriptor(object):
         return camel_to_snake(class_.__name__)
 
 
-class LogicalType(object):
-    type_string = ClassNameDescriptor()
+class LogicalTypeMetaClass(type):
 
-    def __repr__(self):
-        return u"%s" % (self.__class__.__name__)
+    def __repr__(cls):
+        return cls.__name__
+
+
+class LogicalType(object, metaclass=LogicalTypeMetaClass):
+    type_string = ClassNameDescriptor()
 
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__)

@@ -145,13 +145,13 @@ def test_datatable_types(sample_df):
         assert isinstance(d_type, np.dtype)
     assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
-        'id': Integer(),
-        'full_name': NaturalLanguage(),
-        'email': NaturalLanguage(),
-        'phone_number': NaturalLanguage(),
-        'age': Integer(),
-        'signup_date': Datetime(),
-        'is_registered': Boolean()
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
