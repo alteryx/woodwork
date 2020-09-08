@@ -78,8 +78,7 @@ def test_datatable_init_with_semantic_types(sample_df):
     assert isinstance(id_semantic_types, dict)
     assert len(id_semantic_types) == 1
     assert 'index' in id_semantic_types.keys()
-    assert isinstance(id_semantic_types['index'], dict)
-    assert len(id_semantic_types['index']) == 0
+    assert id_semantic_types['index'] == dict()
 
 
 def test_validate_params_errors(sample_df):
