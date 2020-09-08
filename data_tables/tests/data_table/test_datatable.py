@@ -12,7 +12,14 @@ from data_tables.data_table import (
     _check_unique_column_names,
     _validate_params
 )
-from data_tables.logical_types import Double, NaturalLanguage
+from data_tables.logical_types import (
+    Double,
+    EmailAddress,
+    FullName,
+    Integer,
+    NaturalLanguage,
+    PhoneNumber
+)
 
 
 def test_datatable_init(sample_df):
@@ -157,3 +164,39 @@ def test_check_semantic_types_errors(sample_df):
     error_message = re.escape("semantic_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_semantic_types(sample_df, bad_semantic_types_keys)
+
+
+def test_set_logical_types(sample_df):
+    dt = DataTable(sample_df)
+    assert dt.columns['full_name'].logical_type == NaturalLanguage
+    assert dt.columns['email'].logical_type == NaturalLanguage
+    assert dt.columns['phone_number'].logical_type == NaturalLanguage
+    assert dt.columns['age'].logical_type == Integer
+    original_name_column = dt.columns['full_name']
+
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+    })
+
+    assert dt.columns['full_name'].logical_type == FullName
+    assert dt.columns['email'].logical_type == EmailAddress
+    assert dt.columns['phone_number'].logical_type == PhoneNumber
+    assert dt.columns['age'].logical_type == Double
+
+    # Verify new column object was created
+    new_name_column = dt.columns['full_name']
+    assert new_name_column != original_name_column
+
+
+def test_set_logical_types_invalid_data(sample_df):
+    dt = DataTable(sample_df)
+    error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday']")
+    with pytest.raises(LookupError, match=error_message):
+        dt.set_logical_types({'birthday': Double})
+
+    error_message = "Invalid logical type specified for 'age'"
+    with pytest.raises(TypeError, match=error_message):
+        dt.set_logical_types({'age': int})
