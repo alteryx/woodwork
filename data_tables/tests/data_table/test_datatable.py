@@ -16,9 +16,12 @@ from data_tables.logical_types import (
     Boolean,
     Datetime,
     Double,
+    EmailAddress,
+    FullName,
     Integer,
     LogicalType,
-    NaturalLanguage
+    NaturalLanguage,
+    PhoneNumber
 )
 
 
@@ -181,3 +184,39 @@ def test_datatable_logical_types(sample_df):
         assert k in sample_df.columns
         assert v in LogicalType.__subclasses__()
         assert v == dt.columns[k].logical_type
+
+
+def test_set_logical_types(sample_df):
+    dt = DataTable(sample_df)
+    assert dt.columns['full_name'].logical_type == NaturalLanguage
+    assert dt.columns['email'].logical_type == NaturalLanguage
+    assert dt.columns['phone_number'].logical_type == NaturalLanguage
+    assert dt.columns['age'].logical_type == Integer
+    original_name_column = dt.columns['full_name']
+
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+    })
+
+    assert dt.columns['full_name'].logical_type == FullName
+    assert dt.columns['email'].logical_type == EmailAddress
+    assert dt.columns['phone_number'].logical_type == PhoneNumber
+    assert dt.columns['age'].logical_type == Double
+
+    # Verify new column object was created
+    new_name_column = dt.columns['full_name']
+    assert new_name_column != original_name_column
+
+
+def test_set_logical_types_invalid_data(sample_df):
+    dt = DataTable(sample_df)
+    error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday']")
+    with pytest.raises(LookupError, match=error_message):
+        dt.set_logical_types({'birthday': Double})
+
+    error_message = "Invalid logical type specified for 'age'"
+    with pytest.raises(TypeError, match=error_message):
+        dt.set_logical_types({'age': int})
