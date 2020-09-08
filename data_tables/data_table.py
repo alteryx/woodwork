@@ -39,29 +39,52 @@ class DataTable(object):
         self.time_index = time_index
 
         # Infer logical types and create columns
-        self.columns = self._create_columns(self.dataframe, logical_types)
+        self.columns = self._create_columns(self.dataframe.columns,
+                                            logical_types,
+                                            semantic_types)
 
     def __repr__(self):
         # print out data column names, pandas dtypes, Logical Types & Semantic Tags
         # similar to df.types
         pass
 
-    def _create_columns(self, dataframe, user_logical_types):
+    def _create_columns(self, column_names, logical_types, semantic_types):
+        """Create a dictionary with column names as keys and new DataColumn objects
+            as values, while assigning any values that are passed for logical types or
+            semantic types to the new column."""
         data_columns = {}
-        for col in self.dataframe.columns:
-            if user_logical_types and col in user_logical_types:
-                logical_type = user_logical_types[col]
+        for name in column_names:
+            if logical_types and name in logical_types:
+                logical_type = logical_types[name]
             else:
                 logical_type = None
-            dc = DataColumn(self.dataframe[col], logical_type, set())
+            if semantic_types and name in semantic_types:
+                semantic_type = semantic_types[name]
+            else:
+                semantic_type = set()
+            dc = DataColumn(self.dataframe[name], logical_type, semantic_type)
             data_columns[dc.name] = dc
         return data_columns
 
+    def _update_columns(self, new_columns):
+        """Update the DataTable columns based on items contained in the
+            provided new_columns dictionary"""
+        for name, column in new_columns.items():
+            self.columns[name] = column
+
     def set_logical_types(self, logical_types):
-        # logical_types: (dict -> LogicalType/str)
-        # change the data column logical types
-        # implementation detail --> create new data column, do not update
-        pass
+        """Update the logical type for any columns names in the provided logical_types
+            dictionary, retaining any semantic types for the column. Replaces the existing
+            column with a new column object."""
+        _check_logical_types(self.dataframe, logical_types)
+        # Get any existing semantic tags to retain on new columns
+        semantic_types = {}
+        for name in logical_types.keys():
+            semantic_types[name] = self.columns[name].tags
+        cols_to_update = self._create_columns(logical_types.keys(),
+                                              logical_types,
+                                              semantic_types)
+        self._update_columns(cols_to_update)
 
     def add_semantic_types(self, semantic_types):
         # semantic_types: (dict -> SemanticTag/str)
