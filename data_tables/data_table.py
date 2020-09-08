@@ -66,7 +66,7 @@ class DataTable(object):
             if semantic_types and name in semantic_types:
                 semantic_type = semantic_types[name]
             else:
-                semantic_type = dict()
+                semantic_type = {}
             dc = DataColumn(self.dataframe[name], logical_type, semantic_type)
             data_columns[dc.name] = dc
         return data_columns

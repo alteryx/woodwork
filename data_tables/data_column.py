@@ -16,7 +16,7 @@ from data_tables.logical_types import (
 
 
 class DataColumn(object):
-    def __init__(self, series, logical_type=None, semantic_types=dict()):
+    def __init__(self, series, logical_type=None, semantic_types=None):
         """Create DataColumn
 
         Args:
@@ -48,6 +48,8 @@ class DataColumn(object):
                 raise TypeError("Semantic types must be specified as strings")
             if not all([isinstance(value, dict) for value in semantic_types.values()]):
                 raise TypeError("Additional semantic type data must be specified in a dictionary")
+        elif semantic_types is None:
+            semantic_types = {}
         self.semantic_types = semantic_types
 
 
