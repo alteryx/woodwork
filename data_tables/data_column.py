@@ -16,7 +16,7 @@ from data_tables.logical_types import (
 
 
 class DataColumn(object):
-    def __init__(self, series, logical_type=None, tags=set()):
+    def __init__(self, series, logical_type=None, semantic_types=None):
         """Create DataColumn
 
         Args:
@@ -24,7 +24,12 @@ class DataColumn(object):
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
-            tags (set(str), optional): A set of semantic type tags to assign to the column.
+            semantic_types (dict[str -> dict[str -> str/list]]), optional): A dictionary of semantic
+                type tags to assign to the column. Semantic types should be specified as a dictionary
+                of dictionaries, where the keys of the outer dictionary represent the semantic type tags,
+                and the value is another dictionary of any additional data to store with the semantic type.
+                If the additional data is not required, an empty dictionary should be passed. Defaults to
+                an empty dictionary, if not specified.
         """
         self.series = series
         self.name = series.name
@@ -35,7 +40,17 @@ class DataColumn(object):
         else:
             self.logical_type = infer_logical_type(self.series)
         self.dtype = series.dtype
-        self.tags = tags
+
+        if semantic_types:
+            if not isinstance(semantic_types, dict):
+                raise TypeError("semantic_types must be a dictionary")
+            if not all([isinstance(key, str) for key in semantic_types.keys()]):
+                raise TypeError("Semantic types must be specified as strings")
+            if not all([isinstance(value, dict) for value in semantic_types.values()]):
+                raise TypeError("Additional semantic type data must be specified in a dictionary")
+        elif semantic_types is None:
+            semantic_types = {}
+        self.semantic_types = semantic_types
 
 
 def infer_logical_type(series):

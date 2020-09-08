@@ -18,7 +18,12 @@ class DataTable(object):
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
-            semantic_types ():
+            semantic_types (dict[str -> dict[str -> dict[str -> str/list]]], optional): Nested
+                dictionary mapping column names in the dataframe to the semantic types for
+                the column. The keys of the outer dictionary should correspond to column names in
+                the underlying dataframe. The values of the outer dictionary represent the semantic
+                type values for the column. Semantic types will be set to an empty dictionary for
+                any column not included in the dictionary.
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
@@ -27,7 +32,7 @@ class DataTable(object):
                 reference to the input dataframe.
         """
         # Check that inputs are valid
-        _validate_params(dataframe, name, index, time_index, logical_types)
+        _validate_params(dataframe, name, index, time_index, logical_types, semantic_types)
 
         if copy_dataframe:
             self.dataframe = dataframe.copy()
@@ -61,7 +66,7 @@ class DataTable(object):
             if semantic_types and name in semantic_types:
                 semantic_type = semantic_types[name]
             else:
-                semantic_type = set()
+                semantic_type = {}
             dc = DataColumn(self.dataframe[name], logical_type, semantic_type)
             data_columns[dc.name] = dc
         return data_columns
@@ -80,7 +85,7 @@ class DataTable(object):
         # Get any existing semantic tags to retain on new columns
         semantic_types = {}
         for name in logical_types.keys():
-            semantic_types[name] = self.columns[name].tags
+            semantic_types[name] = self.columns[name].semantic_types
         cols_to_update = self._create_columns(logical_types.keys(),
                                               logical_types,
                                               semantic_types)
@@ -109,7 +114,7 @@ class DataTable(object):
         return self.dataframe
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types):
+def _validate_params(dataframe, name, index, time_index, logical_types, semantic_types):
     """Check that values supplied during DataTable initialization are valid"""
     if not isinstance(dataframe, pd.DataFrame):
         raise TypeError('Dataframe must be a pandas.DataFrame')
@@ -122,6 +127,8 @@ def _validate_params(dataframe, name, index, time_index, logical_types):
         _check_time_index(dataframe, index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
+    if semantic_types:
+        _check_semantic_types(dataframe, semantic_types)
 
 
 def _check_unique_column_names(dataframe):
@@ -151,4 +158,13 @@ def _check_logical_types(dataframe, logical_types):
     cols_not_found = set(logical_types.keys()).difference(set(dataframe.columns))
     if cols_not_found:
         raise LookupError('logical_types contains columns that are not present in '
+                          f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_semantic_types(dataframe, semantic_types):
+    if not isinstance(semantic_types, dict):
+        raise TypeError('semantic_types must be a dictionary')
+    cols_not_found = set(semantic_types.keys()).difference(set(dataframe.columns))
+    if cols_not_found:
+        raise LookupError('semantic_types contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')

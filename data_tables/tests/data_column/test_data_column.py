@@ -19,7 +19,7 @@ def test_data_column_init(sample_series):
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
-    assert data_col.tags == set()
+    assert data_col.semantic_types == dict()
 
 
 def test_data_column_init_with_logical_type(sample_series):
@@ -27,10 +27,33 @@ def test_data_column_init_with_logical_type(sample_series):
     assert data_col.logical_type == NaturalLanguage
 
 
+def test_data_column_init_with_semantic_types(sample_series):
+    semantic_types = {
+        'index': {},
+        'tag2': {'key': 'value'},
+    }
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == semantic_types
+
+
 def test_invalid_logical_type(sample_series):
     error_message = "Invalid logical type specified for 'sample_series'"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, int)
+
+
+def test_semantic_type_errors(sample_series):
+    error_message = "semantic_types must be a dictionary"
+    with pytest.raises(TypeError, match=error_message):
+        DataColumn(sample_series, semantic_types=int)
+
+    error_message = "Semantic types must be specified as strings"
+    with pytest.raises(TypeError, match=error_message):
+        DataColumn(sample_series, semantic_types={1: {}})
+
+    error_message = "Additional semantic type data must be specified in a dictionary"
+    with pytest.raises(TypeError, match=error_message):
+        DataColumn(sample_series, semantic_types={'index': 1})
 
 
 def test_integer_inference():
