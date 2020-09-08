@@ -12,7 +12,14 @@ from data_tables.data_table import (
     _check_unique_column_names,
     _validate_params
 )
-from data_tables.logical_types import Double, LogicalType, NaturalLanguage
+from data_tables.logical_types import (
+    Boolean,
+    Datetime,
+    Double,
+    Integer,
+    LogicalType,
+    NaturalLanguage
+)
 
 
 def test_datatable_init(sample_df):
@@ -136,9 +143,19 @@ def test_datatable_types(sample_df):
     assert len(returned_types.index) == len(sample_df.columns)
     for d_type in returned_types['Physical Type']:
         assert isinstance(d_type, np.dtype)
-    expected_logical_types = [dc.logical_type() for dc in dt.columns.values()]
     assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
-    assert all(expected_logical_types == returned_types['Logical Type'])
+    correct_logical_types = {
+        'id': Integer(),
+        'full_name': NaturalLanguage(),
+        'email': NaturalLanguage(),
+        'phone_number': NaturalLanguage(),
+        'age': Integer(),
+        'signup_date': Datetime(),
+        'is_registered': Boolean()
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
         assert isinstance(tag, set)
         # TODO: Add a tag to DataTable, and check the tag shows up

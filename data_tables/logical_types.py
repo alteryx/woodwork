@@ -9,7 +9,7 @@ class ClassNameDescriptor(object):
         return camel_to_snake(class_.__name__)
 
 
-class LogicalType():
+class LogicalType(object):
     type_string = ClassNameDescriptor()
 
     def __repr__(self):
