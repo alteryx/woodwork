@@ -7,6 +7,7 @@ from data_tables import DataTable
 from data_tables.data_table import (
     _check_index,
     _check_logical_types,
+    _check_semantic_types,
     _check_time_index,
     _check_unique_column_names,
     _validate_params
@@ -58,6 +59,22 @@ def test_datatable_init_with_logical_types(sample_df):
     assert dt.columns['age'].logical_type == Double
 
 
+def test_datatable_init_with_semantic_types(sample_df):
+    semantic_types = {
+        'id': {'index': {}},
+    }
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   semantic_types=semantic_types)
+
+    id_semantic_types = dt.columns['id'].semantic_types
+    assert isinstance(id_semantic_types, dict)
+    assert len(id_semantic_types) == 1
+    assert 'index' in id_semantic_types.keys()
+    assert isinstance(id_semantic_types['index'], dict)
+    assert len(id_semantic_types['index']) == 0
+
+
 def test_validate_params_errors(sample_df):
     error_message = 'Dataframe must be a pandas.DataFrame'
     with pytest.raises(TypeError, match=error_message):
@@ -65,7 +82,8 @@ def test_validate_params_errors(sample_df):
                          name=None,
                          index=None,
                          time_index=None,
-                         logical_types=None)
+                         logical_types=None,
+                         semantic_types=None)
 
     error_message = 'DataTable name must be a string'
     with pytest.raises(TypeError, match=error_message):
@@ -73,7 +91,8 @@ def test_validate_params_errors(sample_df):
                          name=1,
                          index=None,
                          time_index=None,
-                         logical_types=None)
+                         logical_types=None,
+                         semantic_types=None)
 
 
 def test_check_index_errors(sample_df):
@@ -122,3 +141,19 @@ def test_check_logical_types_errors(sample_df):
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
+
+
+def test_check_semantic_types_errors(sample_df):
+    error_message = 'semantic_types must be a dictionary'
+    with pytest.raises(TypeError, match=error_message):
+        _check_semantic_types(sample_df, semantic_types='type')
+
+    bad_semantic_types_keys = {
+        'full_name': None,
+        'age': None,
+        'birthday': None,
+        'occupation': None,
+    }
+    error_message = re.escape("semantic_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_semantic_types(sample_df, bad_semantic_types_keys)
