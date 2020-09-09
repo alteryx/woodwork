@@ -50,6 +50,10 @@ def test_data_column_with_alternate_semantic_types_input(sample_series):
     data_col = DataColumn(sample_series, semantic_types=semantic_types)
     assert data_col.semantic_types == {'index': {}}
 
+    semantic_types = {'tag': {'tag_additional': 'value'}}
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == {'tag': {'tag_additional': 'value'}}
+
 
 def test_invalid_logical_type(sample_series):
     error_message = "Invalid logical type specified for 'sample_series'"
