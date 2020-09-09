@@ -25,12 +25,19 @@ class DataColumn(object):
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
-            semantic_types (dict[str -> dict[str -> str/list]]), optional): A dictionary of semantic
-                type tags to assign to the column. Semantic types should be specified as a dictionary
-                of dictionaries, where the keys of the outer dictionary represent the semantic type tags,
-                and the value is another dictionary of any additional data to store with the semantic type.
-                If the additional data is not required, an empty dictionary should be passed. Defaults to
-                an empty dictionary, if not specified.
+            semantic_types (str/list/dict, optional): A dictionary of semantic type tags to
+                assign to the column. Defaults to an empty dictionary, if not specified.
+                There are several options for specifying the semantic types:
+                    (str) If no aditional data is needed and only one semantic type is being set,
+                    a single string can be passed.
+
+                    (list) If muliple types are being set and none require additional data, a list
+                    of strings can be passed.
+
+                    (dict) For semantic types that require additional data, a dictionary should be
+                    passed. In this dictionary, the keys should be strings correponding to the type
+                    name and the values should be a dictionary containing any additional data, or
+                    `None` if no additional data is being set for a particular semantic type.
         """
         self.series = series
         self.name = series.name
@@ -42,16 +49,7 @@ class DataColumn(object):
             self.logical_type = infer_logical_type(self.series)
         self.dtype = series.dtype
 
-        if semantic_types:
-            if not isinstance(semantic_types, dict):
-                raise TypeError("semantic_types must be a dictionary")
-            if not all([isinstance(key, str) for key in semantic_types.keys()]):
-                raise TypeError("Semantic types must be specified as strings")
-            if not all([isinstance(value, dict) for value in semantic_types.values()]):
-                raise TypeError("Additional semantic type data must be specified in a dictionary")
-        elif semantic_types is None:
-            semantic_types = {}
-        self.semantic_types = semantic_types
+        self.semantic_types = _parse_semantic_types(semantic_types)
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -59,6 +57,35 @@ class DataColumn(object):
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_types)
         return msg
+
+
+def _parse_semantic_types(semantic_types):
+    if not semantic_types:
+        return {}
+
+    if not type(semantic_types) in [dict, list, str]:
+        raise TypeError("semantic_types must be a string, list or dictionary")
+    if isinstance(semantic_types, list):
+        keys = semantic_types
+        values = []
+    elif isinstance(semantic_types, dict):
+        keys = semantic_types.keys()
+        values = [value or {} for value in semantic_types.values()]
+    else:
+        keys = []
+        values = []
+    if not all([isinstance(key, str) for key in keys]):
+        raise TypeError("Semantic types must be specified as strings")
+    if not all([isinstance(value, dict) for value in values]):
+        raise TypeError("Additional semantic type data must be specified in a dictionary")
+
+    if isinstance(semantic_types, str):
+        return {semantic_types: {}}
+
+    if isinstance(semantic_types, list):
+        return {key: {} for key in semantic_types}
+
+    return {key: value or {} for key, value in zip(keys, values)}
 
 
 def infer_logical_type(series):

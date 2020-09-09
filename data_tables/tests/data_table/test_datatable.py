@@ -72,7 +72,7 @@ def test_datatable_init_with_logical_types(sample_df):
 
 def test_datatable_init_with_semantic_types(sample_df):
     semantic_types = {
-        'id': {'index': {}},
+        'id': 'index',
     }
     dt = DataTable(sample_df,
                    name='datatable',
@@ -270,3 +270,26 @@ def test_set_logical_types_invalid_data(sample_df):
     error_message = "Invalid logical type specified for 'age'"
     with pytest.raises(TypeError, match=error_message):
         dt.set_logical_types({'age': int})
+
+
+def test_semantic_types_during_init(sample_df):
+    semantic_types = {
+        'full_name': 'tag1',
+        'email': {'tag2': {'option1': 'value1'}},
+        'phone_number': {'tag3': None},
+        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
+        'age': ['numeric', 'age']
+    }
+    expected_types = {
+        'full_name': {'tag1': {}},
+        'email': {'tag2': {'option1': 'value1'}},
+        'phone_number': {'tag3': {}},
+        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
+        'age': {'numeric': {}, 'age': {}}
+    }
+    dt = DataTable(sample_df, semantic_types=semantic_types)
+    assert dt.columns['full_name'].semantic_types == expected_types['full_name']
+    assert dt.columns['email'].semantic_types == expected_types['email']
+    assert dt.columns['phone_number'].semantic_types == expected_types['phone_number']
+    assert dt.columns['signup_date'].semantic_types == expected_types['signup_date']
+    assert dt.columns['age'].semantic_types == expected_types['age']
