@@ -98,6 +98,10 @@ class DataTable(object):
     def physical_types(self):
         return {dc.name: dc.dtype for dc in self.columns.values()}
 
+    @property
+    def semantic_types(self):
+        return {dc.name: dc.semantic_types for dc in self.columns.values()}
+
     def _update_columns(self, new_columns):
         """Update the DataTable columns based on items contained in the
             provided new_columns dictionary"""
@@ -129,9 +133,11 @@ class DataTable(object):
         pass
 
     def set_semantic_types(self, semantic_types):
-        # semantic_types: (dict -> SemanticTag/str)
-        # overwrite the tags
-        pass
+        """Update the semantic types for any column names in the provided semantic_types
+            dictionary. Replaces the existing semantic types with the new values."""
+        _check_semantic_types(self.dataframe, semantic_types)
+        for name in semantic_types.keys():
+            self.columns[name].set_semantic_types(semantic_types[name])
 
     @property
     def df(self):

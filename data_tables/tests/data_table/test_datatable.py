@@ -226,6 +226,24 @@ def test_datatable_logical_types(sample_df):
         assert v == dt.columns[k].logical_type
 
 
+def test_datatable_semantic_types(sample_df):
+    semantic_types = {
+        'full_name': 'tag1',
+        'email': {'tag2': {'option1': 'value1'}},
+        'phone_number': {'tag3': None},
+        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
+        'age': ['numeric', 'age']
+    }
+    dt = DataTable(sample_df, semantic_types=semantic_types)
+    assert isinstance(dt.semantic_types, dict)
+    assert set(dt.semantic_types.keys()) == set(sample_df.columns)
+    for k, v in dt.semantic_types.items():
+        assert isinstance(k, str)
+        assert k in sample_df.columns
+        assert isinstance(v, dict)
+        assert v == dt.columns[k].semantic_types
+
+
 def test_check_semantic_types_errors(sample_df):
     error_message = 'semantic_types must be a dictionary'
     with pytest.raises(TypeError, match=error_message):
@@ -315,3 +333,25 @@ def test_semantic_types_during_init(sample_df):
     assert dt.columns['phone_number'].semantic_types == expected_types['phone_number']
     assert dt.columns['signup_date'].semantic_types == expected_types['signup_date']
     assert dt.columns['age'].semantic_types == expected_types['age']
+
+
+def test_set_semantic_types(sample_df):
+    semantic_types = {
+        'full_name': 'tag1',
+        'age': ['numeric', 'age']
+    }
+    expected_types = {
+        'full_name': {'tag1': {}},
+        'age': {'numeric': {}, 'age': {}}
+    }
+    dt = DataTable(sample_df, semantic_types=semantic_types)
+    assert dt.columns['full_name'].semantic_types == expected_types['full_name']
+    assert dt.columns['age'].semantic_types == expected_types['age']
+
+    new_types = {
+        'full_name': {'new_tag': {'additional': 'value'}},
+        'age': 'numeric',
+    }
+    dt.set_semantic_types(new_types)
+    assert dt.columns['full_name'].semantic_types == new_types['full_name']
+    assert dt.columns['age'].semantic_types == {'numeric': {}}
