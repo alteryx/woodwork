@@ -65,27 +65,23 @@ def _parse_semantic_types(semantic_types):
 
     if type(semantic_types) not in [dict, list, str]:
         raise TypeError("semantic_types must be a string, list or dictionary")
-    if isinstance(semantic_types, list):
-        keys = semantic_types
-        values = []
-    elif isinstance(semantic_types, dict):
-        keys = semantic_types.keys()
-        values = [value or {} for value in semantic_types.values()]
-    else:
-        keys = []
-        values = []
-    if not all([isinstance(key, str) for key in keys]):
-        raise TypeError("Semantic types must be specified as strings")
-    if not all([isinstance(value, dict) for value in values]):
-        raise TypeError("Additional semantic type data must be specified in a dictionary")
 
     if isinstance(semantic_types, str):
         return {semantic_types: {}}
 
     if isinstance(semantic_types, list):
-        return {key: {} for key in semantic_types}
+        keys = semantic_types
+        values = [{} for _ in semantic_types]
+    else:
+        keys = semantic_types.keys()
+        values = [value or {} for value in semantic_types.values()]
 
-    return {key: value or {} for key, value in zip(keys, values)}
+    if not all([isinstance(key, str) for key in keys]):
+        raise TypeError("Semantic types must be specified as strings")
+    if not all([isinstance(value, dict) for value in values]):
+        raise TypeError("Additional semantic type data must be specified in a dictionary")
+
+    return {key: value for key, value in zip(keys, values)}
 
 
 def infer_logical_type(series):
