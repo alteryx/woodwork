@@ -30,7 +30,7 @@ class DataTable(object):
                     can be used as the value.
 
                     (dict) For columns that require additional data, a dictionary should be passed as
-                    the value. In this dictionary, the keys should be strings correponding to the type name
+                    the value. In this dictionary, the keys should be strings corresponding to the type name
                     and the values should be a dictionary containing any additional data, or `None` if no
                     additional data is being set for a particular semantic type.
 
