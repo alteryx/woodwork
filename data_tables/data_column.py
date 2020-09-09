@@ -64,6 +64,10 @@ class DataColumn(object):
         msg += u"(Semantic Tags = {})>".format(self.semantic_types)
         return msg
 
+    def set_semantic_types(self, semantic_types):
+        """Replace semantic types with passed values"""
+        self.semantic_types = _parse_semantic_types(semantic_types)
+
 
 def _parse_semantic_types(semantic_types):
     if not semantic_types:

@@ -187,3 +187,17 @@ def test_natural_language_inference():
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series)
     assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = {})>"
+
+
+def test_set_semantic_types(sample_series):
+    semantic_types = {
+        'index': {},
+        'tag2': {'key': 'value'},
+    }
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == semantic_types
+
+    new_types = {'new_type': {'additional': 'value'}}
+    data_col.set_semantic_types(new_types)
+
+    assert data_col.semantic_types == new_types
