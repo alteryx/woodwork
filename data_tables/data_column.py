@@ -11,7 +11,8 @@ from data_tables.logical_types import (
     Integer,
     LogicalType,
     NaturalLanguage,
-    Timedelta
+    Timedelta,
+    WholeNumber
 )
 
 
@@ -84,14 +85,17 @@ def infer_logical_type(series):
             except AttributeError:
                 pass
 
-    elif series.dtype == 'bool':
+    elif pdtypes.is_bool_dtype(series.dtype):
         inferred_type = Boolean
 
     elif pdtypes.is_categorical_dtype(series.dtype):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        inferred_type = Integer
+        if any(series < 0):
+            inferred_type = Integer
+        else:
+            inferred_type = WholeNumber
 
     elif pdtypes.is_float_dtype(series.dtype):
         inferred_type = Double

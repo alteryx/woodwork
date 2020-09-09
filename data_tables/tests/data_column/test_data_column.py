@@ -10,7 +10,8 @@ from data_tables.logical_types import (
     Double,
     Integer,
     NaturalLanguage,
-    Timedelta
+    Timedelta,
+    WholeNumber
 )
 
 
@@ -58,15 +59,27 @@ def test_semantic_type_errors(sample_series):
 
 def test_integer_inference():
     series_list = [
-        pd.Series([1, 2, 1]),
         pd.Series([-1, 2, 1]),
+        pd.Series([-1, 0, 5]),
+    ]
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Integer
+
+
+def test_whole_number_inference():
+    series_list = [
+        pd.Series([0, 1, 5]),
+        pd.Series([2, 3, 5]),
     ]
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
               'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Integer
+            assert inferred_type == WholeNumber
 
 
 def test_double_inference():

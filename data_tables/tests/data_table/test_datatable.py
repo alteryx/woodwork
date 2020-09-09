@@ -19,10 +19,10 @@ from data_tables.logical_types import (
     Double,
     EmailAddress,
     FullName,
-    Integer,
     LogicalType,
     NaturalLanguage,
-    PhoneNumber
+    PhoneNumber,
+    WholeNumber
 )
 
 
@@ -166,11 +166,11 @@ def test_datatable_types(sample_df):
         assert isinstance(d_type, np.dtype)
     assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
-        'id': Integer,
+        'id': WholeNumber,
         'full_name': NaturalLanguage,
         'email': NaturalLanguage,
         'phone_number': NaturalLanguage,
-        'age': Integer,
+        'age': WholeNumber,
         'signup_date': Datetime,
         'is_registered': Boolean
     }
@@ -231,7 +231,7 @@ def test_set_logical_types(sample_df):
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
-    assert dt.columns['age'].logical_type == Integer
+    assert dt.columns['age'].logical_type == WholeNumber
     assert dt.columns['signup_date'].logical_type == Datetime
     original_name_column = dt.columns['full_name']
 

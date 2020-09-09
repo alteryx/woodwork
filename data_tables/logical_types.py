@@ -62,6 +62,7 @@ class FullName(LogicalType):
 
 
 class IPAddress(LogicalType):
+    """Represents Logical Types that contain positive, and negative numbers, including zero (0)."""
     pass
 
 
@@ -96,6 +97,7 @@ class URL(LogicalType):
 
 
 class WholeNumber(LogicalType):
+    """Represents Logical Types that contain natural numbers, including zero (0)."""
     pass
 
 
