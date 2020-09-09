@@ -27,6 +27,12 @@ def test_data_column_init_with_logical_type(sample_series):
     data_col = DataColumn(sample_series, NaturalLanguage)
     assert data_col.logical_type == NaturalLanguage
 
+    data_col = DataColumn(sample_series, "natural_language")
+    assert data_col.logical_type == NaturalLanguage
+
+    data_col = DataColumn(sample_series, "NaturalLanguage")
+    assert data_col.logical_type == NaturalLanguage
+
 
 def test_data_column_init_with_semantic_types(sample_series):
     semantic_types = {
@@ -59,6 +65,9 @@ def test_invalid_logical_type(sample_series):
     error_message = "Invalid logical type specified for 'sample_series'"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, int)
+
+    with pytest.raises(TypeError, match=error_message):
+        DataColumn(sample_series, 'naturallanguage')
 
 
 def test_semantic_type_errors(sample_series):
