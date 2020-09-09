@@ -63,7 +63,7 @@ def _parse_semantic_types(semantic_types):
     if not semantic_types:
         return {}
 
-    if not type(semantic_types) in [dict, list, str]:
+    if type(semantic_types) not in [dict, list, str]:
         raise TypeError("semantic_types must be a string, list or dictionary")
     if isinstance(semantic_types, list):
         keys = semantic_types
