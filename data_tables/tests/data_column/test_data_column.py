@@ -37,6 +37,24 @@ def test_data_column_init_with_semantic_types(sample_series):
     assert data_col.semantic_types == semantic_types
 
 
+def test_data_column_with_alternate_semantic_types_input(sample_series):
+    semantic_types = 'index'
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == {'index': {}}
+
+    semantic_types = ['index', 'numeric']
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == {'index': {}, 'numeric': {}}
+
+    semantic_types = {'index': None}
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == {'index': {}}
+
+    semantic_types = {'tag': {'tag_additional': 'value'}}
+    data_col = DataColumn(sample_series, semantic_types=semantic_types)
+    assert data_col.semantic_types == {'tag': {'tag_additional': 'value'}}
+
+
 def test_invalid_logical_type(sample_series):
     error_message = "Invalid logical type specified for 'sample_series'"
     with pytest.raises(TypeError, match=error_message):
@@ -44,13 +62,15 @@ def test_invalid_logical_type(sample_series):
 
 
 def test_semantic_type_errors(sample_series):
-    error_message = "semantic_types must be a dictionary"
+    error_message = "semantic_types must be a string, list or dictionary"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_types=int)
 
     error_message = "Semantic types must be specified as strings"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_types={1: {}})
+    with pytest.raises(TypeError, match=error_message):
+        DataColumn(sample_series, semantic_types=['index', 1])
 
     error_message = "Additional semantic type data must be specified in a dictionary"
     with pytest.raises(TypeError, match=error_message):

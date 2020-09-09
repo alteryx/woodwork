@@ -18,12 +18,24 @@ class DataTable(object):
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
-            semantic_types (dict[str -> dict[str -> dict[str -> str/list]]], optional): Nested
-                dictionary mapping column names in the dataframe to the semantic types for
-                the column. The keys of the outer dictionary should correspond to column names in
-                the underlying dataframe. The values of the outer dictionary represent the semantic
-                type values for the column. Semantic types will be set to an empty dictionary for
-                any column not included in the dictionary.
+            semantic_types (dict, optional): Dictionary mapping column names in the dataframe to the
+                semantic types for the column. The keys in the dictionary should be strings
+                that correspond to columns in the underlying dataframe.
+
+                There are several options for specifying the dictionary values:
+                    (str) If no aditional data is needed and only one semantic type is being set, a single
+                    string can be used as a value.
+
+                    (list) If muliple types are being set and none require additional data, a list of strings
+                    can be used as the value.
+
+                    (dict) For columns that require additional data, a dictionary should be passed as
+                    the value. In this dictionary, the keys should be strings corresponding to the type name
+                    and the values should be a dictionary containing any additional data, or `None` if no
+                    additional data is being set for a particular semantic type.
+
+                Semantic types will be set to an empty dictionary for any column not included in the
+                dictionary.
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
