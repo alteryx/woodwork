@@ -68,7 +68,6 @@ def infer_logical_type(series):
     """
     inferred_type = NaturalLanguage
 
-
     if pdtypes.is_string_dtype(series.dtype):
         if col_is_datetime(series):
             inferred_type = Datetime
@@ -93,11 +92,9 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype) and any(series < 0):
-        print(any(series < 0))
         inferred_type = Integer
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        print(any(series < 0))
         inferred_type = WholeNumber
 
     elif pdtypes.is_float_dtype(series.dtype):
