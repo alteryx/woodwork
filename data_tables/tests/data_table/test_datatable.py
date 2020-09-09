@@ -70,6 +70,28 @@ def test_datatable_init_with_logical_types(sample_df):
     assert dt.columns['age'].logical_type == Double
 
 
+def test_datatable_init_with_string_logical_types(sample_df):
+    logical_types = {
+        'full_name': 'natural_language',
+        'age': 'whole_number'
+    }
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types=logical_types)
+    assert dt.columns['full_name'].logical_type == NaturalLanguage
+    assert dt.columns['age'].logical_type == WholeNumber
+
+    logical_types = {
+        'full_name': 'NaturalLanguage',
+        'age': 'WholeNumber'
+    }
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types=logical_types)
+    assert dt.columns['full_name'].logical_type == NaturalLanguage
+    assert dt.columns['age'].logical_type == WholeNumber
+
+
 def test_datatable_init_with_semantic_types(sample_df):
     semantic_types = {
         'id': 'index',

@@ -103,3 +103,14 @@ class WholeNumber(LogicalType):
 
 class ZIPCode(LogicalType):
     pass
+
+
+def get_logical_types():
+    '''Returns a dictionary of logical type name strings and logical type classes'''
+    # Get snake case strings
+    logical_types = {logical_type.type_string: logical_type for logical_type in LogicalType.__subclasses__()}
+    # Add class name strings
+    class_name_dict = {logical_type.__name__: logical_type for logical_type in LogicalType.__subclasses__()}
+    logical_types.update(class_name_dict)
+
+    return logical_types
