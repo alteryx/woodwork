@@ -494,3 +494,23 @@ def test_sets_float64_dtype_on_init():
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_datetime64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
+    ]
+
+    logical_type = Datetime
+    for series in series_list:
+        ltypes = {
+            column_name: logical_type,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
