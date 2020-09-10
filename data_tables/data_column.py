@@ -53,7 +53,6 @@ class DataColumn(object):
                 raise TypeError(f"Invalid logical type specified for '{series.name}'")
         else:
             self.logical_type = infer_logical_type(self.series)
-        self.dtype = series.dtype
 
         self.semantic_types = _parse_semantic_types(semantic_types)
 
@@ -63,6 +62,10 @@ class DataColumn(object):
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_types)
         return msg
+
+    @property
+    def dtype(self):
+        return self.series.dtype
 
     def set_semantic_types(self, semantic_types):
         """Replace semantic types with passed values"""
