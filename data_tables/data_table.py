@@ -128,6 +128,7 @@ class DataTable(object):
                                               logical_types,
                                               semantic_types)
         self._update_columns(cols_to_update)
+        self._update_dtypes()
 
     def _update_dtypes(self):
         """Update the dtypes of the underlying dataframe to match the dtypes corresponding
