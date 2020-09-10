@@ -357,7 +357,7 @@ def test_set_semantic_types(sample_df):
     assert dt.columns['age'].semantic_types == {'numeric': {}}
 
 
-def test_fill_none(none_df):
+def test_replace_none_with_nan(none_df):
     dt = DataTable(none_df, replace_none=True)
     assert np.isnan(dt.df['all_none'].loc[0])
     assert np.isnan(dt.df['all_none'].loc[1])
