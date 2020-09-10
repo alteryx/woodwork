@@ -24,7 +24,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
 
 class Boolean(LogicalType):
-    pandas_dtype = bool
+    pandas_dtype = 'boolean'
 
 
 class Categorical(LogicalType):
