@@ -41,21 +41,9 @@ class DataColumn(object):
                     `None` if no additional data is being set for a particular semantic type.
         """
         self.series = series
-        self.name = series.name
-
-        logical_types_dict = get_logical_types()
-        if logical_type:
-            if logical_type in LogicalType.__subclasses__():
-                self.logical_type = logical_type
-            elif isinstance(logical_type, str) and logical_type in logical_types_dict:
-                self.logical_type = logical_types_dict[logical_type]
-            else:
-                raise TypeError(f"Invalid logical type specified for '{series.name}'")
-        else:
-            self.logical_type = infer_logical_type(self.series)
         self.dtype = series.dtype
-
-        self.semantic_types = _parse_semantic_types(semantic_types)
+        self.set_logical_type(logical_type)
+        self.set_semantic_types(semantic_types)
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -64,9 +52,33 @@ class DataColumn(object):
         msg += u"(Semantic Tags = {})>".format(self.semantic_types)
         return msg
 
+    def set_logical_type(self, logical_type):
+        logical_types_dict = get_logical_types()
+        if logical_type:
+            if logical_type in LogicalType.__subclasses__():
+                self._logical_type = logical_type
+            elif isinstance(logical_type, str) and logical_type in logical_types_dict:
+                self._logical_type = logical_types_dict[logical_type]
+            else:
+                raise TypeError(f"Invalid logical type specified for '{self.series.name}'")
+        else:
+            self._logical_type = infer_logical_type(self.series)
+
     def set_semantic_types(self, semantic_types):
         """Replace semantic types with passed values"""
-        self.semantic_types = _parse_semantic_types(semantic_types)
+        self._semantic_types = _parse_semantic_types(semantic_types)
+
+    @property
+    def logical_type(self):
+        return self._logical_type
+
+    @property
+    def semantic_types(self):
+        return self._semantic_types
+
+    @property
+    def name(self):
+        return self.series.name
 
 
 def _parse_semantic_types(semantic_types):
