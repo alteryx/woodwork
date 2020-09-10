@@ -288,14 +288,12 @@ def test_set_logical_types(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
     })
 
     assert dt.columns['full_name'].logical_type == FullName
     assert dt.columns['email'].logical_type == EmailAddress
     assert dt.columns['phone_number'].logical_type == PhoneNumber
     assert dt.columns['age'].logical_type == Double
-    assert dt.columns['signup_date'].logical_type == Double
 
     # Verify new column object was created
     new_name_column = dt.columns['full_name']
@@ -306,7 +304,6 @@ def test_set_logical_types(sample_df):
     assert dt.columns['email'].semantic_types == semantic_types['email']
     assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
     assert dt.columns['age'].semantic_types == {}
-    assert dt.columns['signup_date'].semantic_types == semantic_types['signup_date']
 
 
 def test_set_logical_types_invalid_data(sample_df):
