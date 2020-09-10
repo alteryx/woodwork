@@ -355,3 +355,11 @@ def test_set_semantic_types(sample_df):
     dt.set_semantic_types(new_types)
     assert dt.columns['full_name'].semantic_types == new_types['full_name']
     assert dt.columns['age'].semantic_types == {'numeric': {}}
+
+
+def test_replace_none_with_nan(none_df):
+    dt = DataTable(none_df, replace_none=True)
+    assert np.isnan(dt.df['all_none'].loc[0])
+    assert np.isnan(dt.df['all_none'].loc[1])
+    assert np.isnan(dt.df['all_none'].loc[2])
+    assert np.isnan(dt.df['some_none'].loc[1])

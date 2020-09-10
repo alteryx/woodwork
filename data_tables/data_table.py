@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from data_tables.data_column import DataColumn
@@ -10,7 +11,8 @@ class DataTable(object):
                  time_index=None,
                  semantic_types=None,
                  logical_types=None,
-                 copy_dataframe=False):
+                 copy_dataframe=False,
+                 replace_none=True):
         """ Create DataTable
 
         Args:
@@ -42,6 +44,8 @@ class DataTable(object):
             copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
                 prior to creating the DataTable. Defaults to False, which results in using a
                 reference to the input dataframe.
+            replace_none (bool, optional): If True, will replace any `None` values in the supplied
+                dataframe with `np.nan`. Defaults to True.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_types)
@@ -50,6 +54,9 @@ class DataTable(object):
             self.dataframe = dataframe.copy()
         else:
             self.dataframe = dataframe
+
+        if replace_none:
+            self.dataframe.fillna(np.nan, inplace=True)
 
         self.name = name
         self.index = index

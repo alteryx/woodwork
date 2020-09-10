@@ -19,3 +19,12 @@ def sample_df():
 @pytest.fixture(scope='session')
 def sample_series():
     return pd.Series(['a', 'b', 'c'], name='sample_series').astype('object')
+
+
+@pytest.fixture(scope='session')
+def none_df():
+    return pd.DataFrame({
+        'id': range(3),
+        'all_none': [None, None, None],
+        'some_none': ['john.smith@example.com', None, 'team@featuretools.com'],
+    })
