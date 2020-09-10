@@ -17,16 +17,19 @@ class LogicalTypeMetaClass(type):
 
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     type_string = ClassNameDescriptor()
+    dtype = 'string'
 
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__)
 
 
 class Boolean(LogicalType):
-    pass
+    pandas_dtype = bool
 
 
 class Categorical(LogicalType):
+    pandas_dtype = 'category'
+
     def __init__(self, encoding=None):
         # encoding dict(str -> int)
         # user can specify the encoding to use downstream
@@ -34,75 +37,76 @@ class Categorical(LogicalType):
 
 
 class CountryCode(LogicalType):
-    pass
+    pandas_dtype = 'category'
 
 
 class Datetime(LogicalType):
-    pass
+    pandas_dtype = 'datetime64[ns]'
 
 
 class Double(LogicalType):
-    pass
+    pandas_dtype = 'float64'
 
 
 class Integer(LogicalType):
-    pass
+    pandas_dtype = 'Int64'
 
 
 class EmailAddress(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class Filepath(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class FullName(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class IPAddress(LogicalType):
-    """Represents Logical Types that contain positive, and negative numbers, including zero (0)."""
-    pass
+    pandas_dtype = 'string'
 
 
 class LatLong(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class NaturalLanguage(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class Ordinal(LogicalType):
+    pandas_dtype = 'category'
+
     def __init__(self, ranking=None):
         # ranking can be used specify the ordering (lowest to highest)
         pass
 
 
 class PhoneNumber(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class SubRegionCode(LogicalType):
-    pass
+    pandas_dtype = 'category'
 
 
 class Timedelta(LogicalType):
-    pass
+    pandas_dtype = 'timedelta64[ns]'
 
 
 class URL(LogicalType):
-    pass
+    pandas_dtype = 'string'
 
 
 class WholeNumber(LogicalType):
     """Represents Logical Types that contain natural numbers, including zero (0)."""
-    pass
+    pandas_dtype = 'Int64'
 
 
 class ZIPCode(LogicalType):
-    pass
+    pandas_dtype = 'category'
 
 
 def get_logical_types():
