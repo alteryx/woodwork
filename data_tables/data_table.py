@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from data_tables.data_column import DataColumn
+from data_tables.logical_types import LogicalType, str_to_logical_type
 
 
 class DataTable(object):
@@ -152,6 +153,40 @@ class DataTable(object):
 
     def to_pandas_dataframe(self):
         return self.dataframe
+
+    def select_ltypes(self, include):
+        """Include columns in the DataTable whose logical types are specified here. Will remove any
+            columns whose logical type is not specified from the DataTable.
+
+        Args:
+            --> should the lists be able to have both strings and class, or just one or the other?
+            -->should this be from the current datatable or from the original data frame?
+            include (str or LogicalType or list[str or LogicalType]): Logical types to include in
+                the DataTable
+        """
+        if not isinstance(include, list):
+            include = [include]
+
+        def set_logical_type(ltype):
+            if ltype in LogicalType.__subclasses__():
+                return ltype
+            elif isinstance(ltype, str):
+                return str_to_logical_type(ltype)
+            else:
+                raise TypeError(f"Invalid logical type specified: {ltype}")
+
+        include = {set_logical_type(ltype) for ltype in include}
+
+        cols_to_include = []
+        for col_name, col in self.columns.items():
+            if col.logical_type in include:
+                cols_to_include.append(col_name)
+
+        # --> does the underlyin dataframe ever get changed?
+        self.columns = {col_name: self.columns[col_name]for col_name in cols_to_include}
+
+        # --> are we allowed to get rid of index and time_index??
+        # --> Any error if no columns are removed or if given empty list?
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_types):
