@@ -34,7 +34,7 @@ Below is an example of using a DataTable to automatically infer the Logical Type
 
     import data_tables as dt
 
-    data = dt.demos.load_retail(nrows=100)
+    data = dt.demo.load_retail(nrows=100)
 
     dt = dt.DataTable(data, name="retail")
     dt.types
