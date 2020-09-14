@@ -66,8 +66,9 @@ def test_invalid_logical_type(sample_series):
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, int)
 
-    with pytest.raises(TypeError, match=error_message):
-        DataColumn(sample_series, 'naturallanguage')
+    error_message = "String naturalllanguage is not a valid logical type"
+    with pytest.raises(ValueError, match=error_message):
+        DataColumn(sample_series, 'naturalllanguage')
 
 
 def test_semantic_type_errors(sample_series):
