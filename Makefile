@@ -27,3 +27,11 @@ installdeps:
 	pip install --upgrade pip
 	pip install -e .
 	pip install -r dev-requirements.txt
+
+.PHONY: installdeps-test
+installdeps-test:
+	pip install -r test-requirements.txt
+
+.PHONY: installdeps-dev
+installdeps-dev:
+	pip install -r dev-requirements.txt
