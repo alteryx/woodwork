@@ -128,7 +128,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'EvalMLdoc'
+htmlhelp_basename = 'DataTablesdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -155,7 +155,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'EvalML.tex', 'EvalML Documentation',
+    (master_doc, 'DataTables.tex', 'DataTables Documentation',
      author, 'manual'),
 ]
 
@@ -165,7 +165,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'evalml', 'EvalML Documentation',
+    (master_doc, 'datatables', 'DataTables Documentation',
      [author], 1)
 ]
 
@@ -176,8 +176,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'EvalML', 'EvalML Documentation',
-     author, 'EvalML', 'One line description of project.',
+    (master_doc, 'DataTables', 'DataTables Documentation',
+     author, 'DataTables', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -202,10 +202,10 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
-# If evalml is open-sourced: replace github specific style.css
+# If datatables is open-sourced: replace github specific style.css
 extlinks = {
-    'issue': ('https://github.com/Featurelabs/evalml/issues/%s', '#'),
-    'pr': ('https://github.com/Featurelabs/evalml/pull/%s', '#'),
+    'issue': ('https://github.com/Featurelabs/datatables/issues/%s', '#'),
+    'pr': ('https://github.com/Featurelabs/datatables/pull/%s', '#'),
     'user': ('https://github.com/%s', '@')
 }
 
@@ -227,7 +227,7 @@ class AccessorLevelDocumenter(Documenter):
     and sphinx-doc (https://github.com/sphinx-doc/sphinx/blob/8c7faed6fcbc6b7d40f497698cb80fc10aee1ab3/sphinx/ext/autodoc/__init__.py#L846)
     """
     def resolve_name(self, modname, parents, path, base):
-        modname = 'evalml'
+        modname = 'data_tables'
         mod_cls = path.rstrip('.')
         mod_cls = mod_cls.split('.')
         return modname, mod_cls + [base]
