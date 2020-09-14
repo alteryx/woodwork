@@ -1,3 +1,8 @@
+docs/source/generated/
+docs/source/automated_feature_engineering/graphs
+*.dirlock
+*.~lock*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
