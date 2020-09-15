@@ -365,7 +365,7 @@ def test_replace_none_with_nan(none_df):
     assert np.isnan(dt.df['some_none'].loc[1])
 
 
-def test_select_ltypes(sample_df):
+def test_invalid_select_ltypes(sample_df):
     dt = DataTable(sample_df)
     dt.set_logical_types({
         'full_name': FullName,
@@ -384,15 +384,18 @@ def test_select_ltypes(sample_df):
         dt.select_ltypes('test')
 
     all_types = LogicalType.__subclasses__()
-    dt.select_ltypes(all_types)
-    assert len(dt.columns) == len(dt.df.columns)
+    dt_all_types = dt.select_ltypes(all_types)
+    assert len(dt_all_types.columns) == len(dt.columns)
+    assert len(dt_all_types.df.columns) == len(dt.df.columns)
 
-    dt.select_ltypes([])
-    assert not dt.columns
+    dt_empty = dt.select_ltypes([])
+    assert not dt_empty.columns
+    assert len(dt_empty.df.columns) == 0
 
     # Now that there are no columns, repeat the check with all ltypes
-    dt.select_ltypes(all_types)
-    assert not dt.columns
+    dt_from_empty = dt_empty.select_ltypes(all_types)
+    assert not dt_from_empty.columns
+    assert len(dt_from_empty.df.columns) == 0
 
 
 def test_select_ltypes_strings(sample_df):
@@ -404,26 +407,14 @@ def test_select_ltypes_strings(sample_df):
         'age': Double,
         'signup_date': Double,
     })
-    new_types = {
-        'full_name': {'new_tag': {'additional': 'value'}},
-        'age': 'numeric',
-    }
-    dt.set_semantic_types(new_types)
 
-    original_col = dt.columns['full_name']
+    dt_list = dt.select_ltypes(['FullName', 'email_address', 'double', 'Boolean'])
+    assert len(dt_list.columns) == 5
+    assert 'phone_number' not in dt_list.columns
+    assert 'id' not in dt_list.columns
 
-    dt.select_ltypes(['FullName', 'email_address', 'double'])
-    assert len(dt.columns) == 4
-    assert 'phone_number' not in dt.columns
-
-    dt.select_ltypes('full_name')
-    assert len(dt.columns) == 1
-    col = dt.columns['full_name']
-
-    assert col.logical_type == original_col.logical_type
-    assert col.series.equals(original_col.series)
-    assert col.dtype == original_col.dtype
-    assert col.semantic_types.keys() == original_col.semantic_types.keys()
+    dt_single = dt.select_ltypes('full_name')
+    assert len(dt_single.columns) == 1
 
 
 def test_select_ltypes_objects(sample_df):
@@ -435,29 +426,17 @@ def test_select_ltypes_objects(sample_df):
         'age': Double,
         'signup_date': Double,
     })
-    new_types = {
-        'full_name': {'new_tag': {'additional': 'value'}},
-        'age': 'numeric',
-    }
-    dt.set_semantic_types(new_types)
 
-    original_col = dt.columns['full_name']
+    dt_list = dt.select_ltypes([FullName, EmailAddress, Double, Boolean])
+    assert len(dt_list.columns) == 5
+    assert 'phone_number' not in dt_list.columns
+    assert 'id' not in dt_list.columns
 
-    dt.select_ltypes([FullName, EmailAddress, Double])
-    assert len(dt.columns) == 4
-    assert 'phone_number' not in dt.columns
-
-    dt.select_ltypes(FullName)
-    assert len(dt.columns) == 1
-    col = dt.columns['full_name']
-
-    assert col.logical_type == original_col.logical_type
-    assert col.series.equals(original_col.series)
-    assert col.dtype == original_col.dtype
-    assert col.semantic_types.keys() == original_col.semantic_types.keys()
+    dt_single = dt.select_ltypes(FullName)
+    assert len(dt_single.columns) == 1
 
 
-def test_select_ltypes_combined(sample_df):
+def test_select_ltypes_mixed(sample_df):
     dt = DataTable(sample_df)
     dt.set_logical_types({
         'full_name': FullName,
@@ -467,10 +446,45 @@ def test_select_ltypes_combined(sample_df):
         'signup_date': Double,
     })
 
-    dt.select_ltypes(['FullName', 'email_address', Double])
-    assert len(dt.columns) == 4
-    assert 'phone_number' not in dt.columns
+    dt_mixed = dt.select_ltypes(['FullName', 'email_address', Double])
+    assert len(dt_mixed.columns) == 4
+    assert 'phone_number' not in dt_mixed.columns
 
     # Selecting for an ltype that isn't present should result in an empty DataTable
-    dt.select_ltypes(PhoneNumber)
-    assert not dt.columns
+    dt_not_present = dt.select_ltypes('url')
+    assert not dt_not_present.columns
+
+# --> test that name, index, and time index are the same
+# test that logical types and semantic types are the same
+
+
+def test_select_ltypes_table(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+        'signup_date': Double,
+    })
+    dt.set_semantic_types({
+        'full_name': {'new_tag': {'additional': 'value'}},
+        'age': 'numeric',
+    })
+
+    dt_no_indices = dt.select_ltypes('phone_number')
+    assert dt_no_indices.index is None
+    assert dt_no_indices.time_index is None
+
+    dt_with_indices = dt.select_ltypes(['Double', 'WholeNumber'])
+    assert dt_with_indices.index == 'id'
+    assert dt_with_indices.time_index == 'signup_date'
+
+    dt_values = dt.select_ltypes(['FullName'])
+    assert dt_values.name == dt.name
+    original_col = dt_values.columns['full_name']
+    col = dt.columns['full_name']
+    assert col.logical_type == original_col.logical_type
+    assert col.series.equals(original_col.series)
+    assert col.dtype == original_col.dtype
+    assert col.semantic_types.keys() == original_col.semantic_types.keys()
