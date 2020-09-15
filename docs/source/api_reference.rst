@@ -2,13 +2,12 @@
 API Reference
 =============
 
-.. currentmodule:: data_tables.logical_types
-
 Logical Types
 =============
 
+.. currentmodule:: data_tables.logical_types
 .. autosummary::
-    :toctree: generated
+    :toctree: generated/
 
     Boolean
     Categorical
