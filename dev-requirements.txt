@@ -9,3 +9,4 @@ Sphinx==3.2.1
 nbconvert==6.0.2
 ipython==7.16.0; python_version=='3.6'
 ipython==7.18.1; python_version>'3.6'
+pygments>=2.4.1
