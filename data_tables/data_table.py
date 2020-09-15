@@ -61,8 +61,8 @@ class DataTable(object):
 
         self.name = name
         self.index = index
-
         self.time_index = time_index
+
         # Infer logical types and create columns
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
@@ -179,11 +179,10 @@ class DataTable(object):
             else:
                 raise TypeError(f"Invalid logical type specified: {ltype}")
 
-        cols_to_include = []
-        for col_name, col in self.columns.items():
-            if col.logical_type in ltypes_to_include:
-                cols_to_include.append(col_name)
+        cols_to_include = [col_name for col_name, col in self.columns.items()
+                           if col.logical_type in ltypes_to_include]
 
+        # Retain types, indices, and name of original DataTable
         new_semantic_types = {col_name: semantic_type for col_name, semantic_type
                               in self.semantic_types.items() if col_name in cols_to_include}
         new_logical_types = {col_name: logical_type for col_name, logical_type
@@ -191,6 +190,8 @@ class DataTable(object):
         new_index = self.index if self.index in cols_to_include else None
         new_time_index = self.time_index if self.time_index in cols_to_include else None
 
+        # TODO: when dt[[col]] syntax is implemented
+        # (https://github.com/FeatureLabs/datatables/issues/98), use that here
         return DataTable(self.dataframe[cols_to_include],
                          name=self.name,
                          index=new_index,

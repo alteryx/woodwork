@@ -408,13 +408,13 @@ def test_select_ltypes_strings(sample_df):
         'signup_date': Double,
     })
 
-    dt_list = dt.select_ltypes(['FullName', 'email_address', 'double', 'Boolean'])
-    assert len(dt_list.columns) == 5
-    assert 'phone_number' not in dt_list.columns
-    assert 'id' not in dt_list.columns
+    dt_multiple_ltypes = dt.select_ltypes(['FullName', 'email_address', 'double', 'Boolean'])
+    assert len(dt_multiple_ltypes.columns) == 5
+    assert 'phone_number' not in dt_multiple_ltypes.columns
+    assert 'id' not in dt_multiple_ltypes.columns
 
-    dt_single = dt.select_ltypes('full_name')
-    assert len(dt_single.columns) == 1
+    dt_single_ltype = dt.select_ltypes('full_name')
+    assert len(dt_single_ltype.columns) == 1
 
 
 def test_select_ltypes_objects(sample_df):
@@ -427,13 +427,13 @@ def test_select_ltypes_objects(sample_df):
         'signup_date': Double,
     })
 
-    dt_list = dt.select_ltypes([FullName, EmailAddress, Double, Boolean])
-    assert len(dt_list.columns) == 5
-    assert 'phone_number' not in dt_list.columns
-    assert 'id' not in dt_list.columns
+    dt_multiple_ltypes = dt.select_ltypes([FullName, EmailAddress, Double, Boolean])
+    assert len(dt_multiple_ltypes.columns) == 5
+    assert 'phone_number' not in dt_multiple_ltypes.columns
+    assert 'id' not in dt_multiple_ltypes.columns
 
-    dt_single = dt.select_ltypes(FullName)
-    assert len(dt_single.columns) == 1
+    dt_single_ltype = dt.select_ltypes(FullName)
+    assert len(dt_single_ltype.columns) == 1
 
 
 def test_select_ltypes_mixed(sample_df):
@@ -446,16 +446,13 @@ def test_select_ltypes_mixed(sample_df):
         'signup_date': Double,
     })
 
-    dt_mixed = dt.select_ltypes(['FullName', 'email_address', Double])
-    assert len(dt_mixed.columns) == 4
-    assert 'phone_number' not in dt_mixed.columns
+    dt_mixed_ltypes = dt.select_ltypes(['FullName', 'email_address', Double])
+    assert len(dt_mixed_ltypes.columns) == 4
+    assert 'phone_number' not in dt_mixed_ltypes.columns
 
     # Selecting for an ltype that isn't present should result in an empty DataTable
     dt_not_present = dt.select_ltypes('url')
     assert not dt_not_present.columns
-
-# --> test that name, index, and time index are the same
-# test that logical types and semantic types are the same
 
 
 def test_select_ltypes_table(sample_df):
