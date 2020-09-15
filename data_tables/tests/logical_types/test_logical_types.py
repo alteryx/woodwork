@@ -1,8 +1,10 @@
 from data_tables.logical_types import (
     Boolean,
     Categorical,
+    FullName,
     LogicalType,
-    get_logical_types
+    get_logical_types,
+    str_to_logical_type
 )
 
 
@@ -28,3 +30,15 @@ def test_get_logical_types():
         assert logical_types[logical_type.type_string] == logical_type
 
     assert len(logical_types) == 2 * len(all_types)
+
+
+def test_str_to_logical_type():
+    all_types = LogicalType.__subclasses__()
+
+    for logical_type in all_types:
+        assert str_to_logical_type(logical_type.__name__) == logical_type
+        assert str_to_logical_type(logical_type.type_string) == logical_type
+
+    assert str_to_logical_type('bOoLeAn') == Boolean
+    assert str_to_logical_type('full_NAME') == FullName
+    assert str_to_logical_type('FullnamE') == FullName

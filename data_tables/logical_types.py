@@ -118,3 +118,13 @@ def get_logical_types():
     logical_types.update(class_name_dict)
 
     return logical_types
+
+
+def str_to_logical_type(logical_str):
+    logical_str = logical_str.lower()
+    logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types().items()}
+
+    if logical_str in logical_types_dict:
+        return logical_types_dict[logical_str]
+    else:
+        raise ValueError('String %s is not a valid logical type' % logical_str)
