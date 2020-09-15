@@ -16,6 +16,13 @@ commands:
           DT_VERSION=$(python setup.py --version)
           tar -zxvf "dist/data_tables-${DT_VERSION}.tar.gz"
           mv "data_tables-${DT_VERSION}" unpacked_sdist
+  install_dependencies_dev:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps
+            make installdeps-dev
 
 jobs:
   install_dt:
@@ -96,8 +103,26 @@ jobs:
           python -m pip install -r unpacked_sdist/dev-requirements.txt
       - run: source venv/bin/activate && make lint
 
+  build_docs:
+    working_directory: ~/datatables
+    executor:
+      name: python
+      image_tag: "3.7"
+    steps:
+      - checkout
+      - install_dependencies_dev
+      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
+      - run: |
+          source test_python/bin/activate
+          make -C docs/ html
+      - run: ls docs/build/html
+
 workflows:
   version: 2
+  build_docs:
+    jobs:
+      - build_docs:
+          name: "build docs"
   test_all_python_versions:
     jobs:
       - install_dt:

@@ -3,3 +3,9 @@ codecov==2.1.9
 flake8==3.8.3
 autopep8==1.5.4
 isort==5.4.2
+nbsphinx==0.7.1
+pydata-sphinx-theme==0.4.0
+Sphinx==3.2.1
+nbconvert==6.0.2
+ipython==7.16.0; python_version=='3.6'
+ipython==7.18.1; python_version>'3.6'
