@@ -20,23 +20,16 @@ class DataTable(object):
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
-            semantic_types (dict, optional): Dictionary mapping column names in the dataframe to the
-                semantic types for the column. The keys in the dictionary should be strings
+            semantic_tags (dict, optional): Dictionary mapping column names in the dataframe to the
+                semantic tags for the column. The keys in the dictionary should be strings
                 that correspond to columns in the underlying dataframe.
 
-                There are several options for specifying the dictionary values:
-                    (str) If no aditional data is needed and only one semantic type is being set, a single
-                    string can be used as a value.
+                There are two options for specifying the dictionary values:
+                    (str) If only one semantic tag is being set, a single string can be used as a value.
 
-                    (list) If muliple types are being set and none require additional data, a list of strings
-                    can be used as the value.
+                    (list[str]) If muliple tags are being set, a list of strings can be used as the value.
 
-                    (dict) For columns that require additional data, a dictionary should be passed as
-                    the value. In this dictionary, the keys should be strings corresponding to the type name
-                    and the values should be a dictionary containing any additional data, or `None` if no
-                    additional data is being set for a particular semantic type.
-
-                Semantic types will be set to an empty dictionary for any column not included in the
+                Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
@@ -83,7 +76,7 @@ class DataTable(object):
     def _create_columns(self, column_names, logical_types, semantic_types):
         """Create a dictionary with column names as keys and new DataColumn objects
             as values, while assigning any values that are passed for logical types or
-            semantic types to the new column."""
+            semantic tags to the new column."""
         data_columns = {}
         for name in column_names:
             if logical_types and name in logical_types:
@@ -118,7 +111,7 @@ class DataTable(object):
 
     def set_logical_types(self, logical_types):
         """Update the logical type for any columns names in the provided logical_types
-            dictionary, retaining any semantic types for the column. Replaces the existing
+            dictionary, retaining any semantic tags for the column. Replaces the existing
             column with a new column object."""
         _check_logical_types(self.dataframe, logical_types)
         # Get any existing semantic tags to retain on new columns
@@ -158,8 +151,8 @@ class DataTable(object):
         pass
 
     def set_semantic_types(self, semantic_types):
-        """Update the semantic types for any column names in the provided semantic_types
-            dictionary. Replaces the existing semantic types with the new values."""
+        """Update the semantic tags for any column names in the provided semantic_types
+            dictionary. Replaces the existing semantic tags with the new values."""
         _check_semantic_types(self.dataframe, semantic_types)
         for name in semantic_types.keys():
             self.columns[name].set_semantic_types(semantic_types[name])

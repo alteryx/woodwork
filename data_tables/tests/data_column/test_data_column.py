@@ -76,13 +76,13 @@ def test_semantic_type_errors(sample_series):
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_types=int)
 
-    error_message = "Semantic types must be specified as strings"
+    error_message = "Semantic tags must be specified as strings"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_types={1: {}})
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_types=['index', 1])
 
-    error_message = "Additional semantic type data must be specified in a dictionary"
+    error_message = "Additional semantic tag data must be specified in a dictionary"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_types={'index': 1})
 

@@ -26,19 +26,12 @@ class DataColumn(object):
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
-            semantic_types (str/list/dict, optional): Semantic type tags to assign to the column.
-                Defaults to an empty dictionary, if not specified. There are several options for
-                specifying the semantic types:
-                    (str) If no aditional data is needed and only one semantic type is being set,
-                    a single string can be passed.
+            semantic_tags (str or list, optional): Semantic tags to assign to the column.
+                Defaults to an empty set if not specified. There are two options for
+                specifying the semantic tags:
+                    (str) If only one semantic tag is being set, a single string can be passed.
 
-                    (list) If muliple types are being set and none require additional data, a list
-                    of strings can be passed.
-
-                    (dict) For semantic types that require additional data, a dictionary should be
-                    passed. In this dictionary, the keys should be strings corresponding to the type
-                    name and the values should be a dictionary containing any additional data, or
-                    `None` if no additional data is being set for a particular semantic type.
+                    (list) If muliple types are being set, a list of strings can be passed.
         """
         self.series = series
         self.set_logical_type(logical_type)
@@ -63,7 +56,7 @@ class DataColumn(object):
             self._logical_type = infer_logical_type(self.series)
 
     def set_semantic_types(self, semantic_types):
-        """Replace semantic types with passed values"""
+        """Replace semantic tags with passed values"""
         self._semantic_types = _parse_semantic_types(semantic_types)
 
     @property
@@ -101,9 +94,9 @@ def _parse_semantic_types(semantic_types):
         values = [value or {} for value in semantic_types.values()]
 
     if not all([isinstance(key, str) for key in keys]):
-        raise TypeError("Semantic types must be specified as strings")
+        raise TypeError("Semantic tags must be specified as strings")
     if not all([isinstance(value, dict) for value in values]):
-        raise TypeError("Additional semantic type data must be specified in a dictionary")
+        raise TypeError("Additional semantic tag data must be specified in a dictionary")
 
     return {key: value for key, value in zip(keys, values)}
 

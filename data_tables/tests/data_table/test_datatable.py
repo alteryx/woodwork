@@ -298,7 +298,7 @@ def test_set_logical_types(sample_df):
     new_name_column = dt.columns['full_name']
     assert new_name_column != original_name_column
 
-    # Verify semantic types were not changed
+    # Verify semantic tags were not changed
     assert dt.columns['full_name'].semantic_types == semantic_types['full_name']
     assert dt.columns['email'].semantic_types == semantic_types['email']
     assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
