@@ -271,7 +271,7 @@ def test_set_logical_types(sample_df):
         'full_name': 'tag1',
         'email': ['tag2'],
         'phone_number': ['tag3', 'tag2'],
-        'signup_date': ['secondary_time_index'],
+        'signup_date': {'secondary_time_index'},
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags)
     assert dt.columns['full_name'].logical_type == NaturalLanguage

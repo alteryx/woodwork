@@ -48,9 +48,9 @@ def test_data_column_with_alternate_semantic_tags_input(sample_series):
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
     assert data_col.semantic_tags == {'index'}
 
-    semantic_tags = ['index', 'numeric']
+    semantic_tags = {'index', 'numeric'}
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
-    assert data_col.semantic_tags == set(semantic_tags)
+    assert data_col.semantic_tags == semantic_tags
 
 
 def test_invalid_logical_type(sample_series):
@@ -181,12 +181,10 @@ def test_data_column_repr(sample_series):
 
 
 def test_set_semantic_tags(sample_series):
-    semantic_tags = ['index', 'tag2']
-
+    semantic_tags = {'index', 'tag2'}
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
-    assert data_col.semantic_tags == set(semantic_tags)
+    assert data_col.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
     data_col.set_semantic_tags(new_tags)
-
     assert data_col.semantic_tags == set(new_tags)
