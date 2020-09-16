@@ -20,45 +20,37 @@ def test_data_column_init(sample_series):
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
-    assert data_col.semantic_types == {}
+    assert data_col.semantic_tags == set()
 
 
 def test_data_column_init_with_logical_type(sample_series):
     data_col = DataColumn(sample_series, NaturalLanguage)
     assert data_col.logical_type == NaturalLanguage
+    assert data_col.semantic_tags == set()
 
     data_col = DataColumn(sample_series, "natural_language")
     assert data_col.logical_type == NaturalLanguage
+    assert data_col.semantic_tags == set()
 
     data_col = DataColumn(sample_series, "NaturalLanguage")
     assert data_col.logical_type == NaturalLanguage
+    assert data_col.semantic_tags == set()
 
 
-def test_data_column_init_with_semantic_types(sample_series):
-    semantic_types = {
-        'index': {},
-        'tag2': {'key': 'value'},
-    }
-    data_col = DataColumn(sample_series, semantic_types=semantic_types)
-    assert data_col.semantic_types == semantic_types
+def test_data_column_init_with_semantic_tags(sample_series):
+    semantic_tags = ['index', 'tag2']
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    assert data_col.semantic_tags == set(semantic_tags)
 
 
-def test_data_column_with_alternate_semantic_types_input(sample_series):
-    semantic_types = 'index'
-    data_col = DataColumn(sample_series, semantic_types=semantic_types)
-    assert data_col.semantic_types == {'index': {}}
+def test_data_column_with_alternate_semantic_tags_input(sample_series):
+    semantic_tags = 'index'
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    assert data_col.semantic_tags == {'index'}
 
-    semantic_types = ['index', 'numeric']
-    data_col = DataColumn(sample_series, semantic_types=semantic_types)
-    assert data_col.semantic_types == {'index': {}, 'numeric': {}}
-
-    semantic_types = {'index': None}
-    data_col = DataColumn(sample_series, semantic_types=semantic_types)
-    assert data_col.semantic_types == {'index': {}}
-
-    semantic_types = {'tag': {'tag_additional': 'value'}}
-    data_col = DataColumn(sample_series, semantic_types=semantic_types)
-    assert data_col.semantic_types == {'tag': {'tag_additional': 'value'}}
+    semantic_tags = {'index', 'numeric'}
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    assert data_col.semantic_tags == semantic_tags
 
 
 def test_invalid_logical_type(sample_series):
@@ -71,20 +63,18 @@ def test_invalid_logical_type(sample_series):
         DataColumn(sample_series, 'naturalllanguage')
 
 
-def test_semantic_type_errors(sample_series):
-    error_message = "semantic_types must be a string, list or dictionary"
+def test_semantic_tag_errors(sample_series):
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        DataColumn(sample_series, semantic_types=int)
+        DataColumn(sample_series, semantic_tags=int)
 
-    error_message = "Semantic types must be specified as strings"
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        DataColumn(sample_series, semantic_types={1: {}})
-    with pytest.raises(TypeError, match=error_message):
-        DataColumn(sample_series, semantic_types=['index', 1])
+        DataColumn(sample_series, semantic_tags={'index': {}, 'time_index': {}})
 
-    error_message = "Additional semantic type data must be specified in a dictionary"
+    error_message = "Semantic tags must be specified as strings"
     with pytest.raises(TypeError, match=error_message):
-        DataColumn(sample_series, semantic_types={'index': 1})
+        DataColumn(sample_series, semantic_tags=['index', 1])
 
 
 def test_integer_inference():
@@ -187,18 +177,14 @@ def test_natural_language_inference():
 
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series)
-    assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = {})>"
+    assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = set())>"
 
 
-def test_set_semantic_types(sample_series):
-    semantic_types = {
-        'index': {},
-        'tag2': {'key': 'value'},
-    }
-    data_col = DataColumn(sample_series, semantic_types=semantic_types)
-    assert data_col.semantic_types == semantic_types
+def test_set_semantic_tags(sample_series):
+    semantic_tags = {'index', 'tag2'}
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    assert data_col.semantic_tags == semantic_tags
 
-    new_types = {'new_type': {'additional': 'value'}}
-    data_col.set_semantic_types(new_types)
-
-    assert data_col.semantic_types == new_types
+    new_tags = ['new_tag']
+    data_col.set_semantic_tags(new_tags)
+    assert data_col.semantic_tags == set(new_tags)
