@@ -64,13 +64,13 @@ def test_invalid_logical_type(sample_series):
 
 
 def test_semantic_tag_errors(sample_series):
-    error_message = "semantic_tags must be a string or list"
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_tags=int)
 
-    error_message = "semantic_tags must be a string or list"
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        DataColumn(sample_series, semantic_tags={'index', 'time_index'})
+        DataColumn(sample_series, semantic_tags={'index': {}, 'time_index': {}})
 
     error_message = "Semantic tags must be specified as strings"
     with pytest.raises(TypeError, match=error_message):

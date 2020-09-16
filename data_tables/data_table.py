@@ -27,7 +27,7 @@ class DataTable(object):
                 There are two options for specifying the dictionary values:
                     (str) If only one semantic tag is being set, a single string can be used as a value.
 
-                    (list[str]) If muliple tags are being set, a list of strings can be used as the value.
+                    (list[str] or set[str]) If muliple tags are being set, a list or set of strings can be used as the value.
 
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.

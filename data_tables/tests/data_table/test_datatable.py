@@ -298,10 +298,10 @@ def test_set_logical_types(sample_df):
     assert new_name_column != original_name_column
 
     # Verify semantic tags were not changed
-    assert dt.columns['full_name'].semantic_tags == semantic_tags['full_name']
-    assert dt.columns['email'].semantic_tags == semantic_tags['email']
-    assert dt.columns['phone_number'].semantic_tags == semantic_tags['phone_number']
-    assert dt.columns['age'].semantic_tags == {}
+    assert dt.columns['full_name'].semantic_tags == {semantic_tags['full_name']}
+    assert dt.columns['email'].semantic_tags == set(semantic_tags['email'])
+    assert dt.columns['phone_number'].semantic_tags == set(semantic_tags['phone_number'])
+    assert dt.columns['age'].semantic_tags == set()
 
 
 def test_set_logical_types_invalid_data(sample_df):

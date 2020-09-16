@@ -30,8 +30,7 @@ class DataColumn(object):
                 Defaults to an empty set if not specified. There are two options for
                 specifying the semantic tags:
                     (str) If only one semantic tag is being set, a single string can be passed.
---> not sure if this should be just a list or maybe list/set???
-                    (list) If muliple tags are being set, a list of strings can be passed.
+                    (list or set) If muliple tags are being set, a list or set of strings can be passed.
         """
         self.series = series
         self.set_logical_type(logical_type)
@@ -80,16 +79,19 @@ def _parse_semantic_tags(semantic_tags):
     if not semantic_tags:
         return set()
 
-    if type(semantic_tags) not in [list, str]:
-        raise TypeError("semantic_tags must be a string or list")
+    if type(semantic_tags) not in [list, set, str]:
+        raise TypeError("semantic_tags must be a string, set or list")
 
     if isinstance(semantic_tags, str):
         return {semantic_tags}
 
+    if isinstance(semantic_tags, list):
+        semantic_tags = set(semantic_tags)
+
     if not all([isinstance(tag, str) for tag in semantic_tags]):
         raise TypeError("Semantic tags must be specified as strings")
 
-    return set(semantic_tags)
+    return semantic_tags
 
 
 def infer_logical_type(series):
