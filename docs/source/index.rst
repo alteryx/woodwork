@@ -40,9 +40,9 @@ Below is an example of using a DataTable to automatically infer the Logical Type
     dt.types
 
 
-API Reference
--------------
 .. toctree::
    :maxdepth: 1
 
-   api_reference
+    install
+    start
+    api_reference
