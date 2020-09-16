@@ -129,15 +129,23 @@ class DataTable(object):
                                               logical_types,
                                               semantic_types)
         self._update_columns(cols_to_update)
-        self._update_dtypes()
+        self._update_dtypes(cols_to_update)
 
-    def _update_dtypes(self):
+    def _update_dtypes(self, cols_to_update=None):
         """Update the dtypes of the underlying dataframe to match the dtypes corresponding
-            to the LogicalType for the column"""
-        for name, column in self.columns.items():
+            to the LogicalType for the column."""
+        if not cols_to_update:
+            cols_to_update = self.columns
+        for name, column in cols_to_update.items():
             if column.logical_type.pandas_dtype != str(self.dataframe[name].dtype):
                 # Update the underlying dataframe
-                self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
+                try:
+                    self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
+                except TypeError:
+                    error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
+                        f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                        f'logical type {column.logical_type}.'
+                    raise TypeError(error_msg)
                 # Update the column object since .astype returns a new series object
                 column.series = self.dataframe[name]
 
