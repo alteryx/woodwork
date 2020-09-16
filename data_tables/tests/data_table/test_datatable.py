@@ -208,8 +208,6 @@ def test_datatable_types(sample_df):
     assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
         assert isinstance(tag, set)
-        # TODO: Add a tag to DataTable, and check the tag shows up
-        # Waiting on init with semantic tags / set_semantic_tags
 
 
 def test_datatable_physical_types(sample_df):
