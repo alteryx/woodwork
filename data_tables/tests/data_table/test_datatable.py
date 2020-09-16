@@ -275,7 +275,6 @@ def test_set_logical_types(sample_df):
         'signup_date': {'secondary_time_index': {'columns': ['expired']}},
     }
     dt = DataTable(sample_df, semantic_types=semantic_types)
-
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
