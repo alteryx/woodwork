@@ -44,9 +44,6 @@ Run::
 
 Test
 ~~~~
-.. note::
-
-    In order to the run the <TBD> tests you will need to have graphviz installed as described above.
 
 Run <TBD> tests::
 

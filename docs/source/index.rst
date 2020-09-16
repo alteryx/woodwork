@@ -39,10 +39,12 @@ Below is an example of using a DataTable to automatically infer the Logical Type
     dt = dt.DataTable(data, name="retail")
     dt.types
 
+Table of contents
+-----------------
 
 .. toctree::
    :maxdepth: 1
 
-    install
-    start
-    api_reference
+   install
+   start
+   api_reference
