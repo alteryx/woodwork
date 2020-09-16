@@ -18,7 +18,7 @@ from data_tables.logical_types import (
 
 
 class DataColumn(object):
-    def __init__(self, series, logical_type=None, semantic_types=None):
+    def __init__(self, series, logical_type=None, semantic_tags=None):
         """Create DataColumn
 
         Args:
@@ -31,17 +31,17 @@ class DataColumn(object):
                 specifying the semantic tags:
                     (str) If only one semantic tag is being set, a single string can be passed.
 
-                    (list) If muliple types are being set, a list of strings can be passed.
+                    (list) If muliple tags are being set, a list of strings can be passed.
         """
         self.series = series
         self.set_logical_type(logical_type)
-        self.set_semantic_types(semantic_types)
+        self.set_semantic_tags(semantic_tags)
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
         msg += u"(Physical Type = {}) ".format(self.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
-        msg += u"(Semantic Tags = {})>".format(self.semantic_types)
+        msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
 
     def set_logical_type(self, logical_type):
@@ -55,17 +55,17 @@ class DataColumn(object):
         else:
             self._logical_type = infer_logical_type(self.series)
 
-    def set_semantic_types(self, semantic_types):
+    def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
-        self._semantic_types = _parse_semantic_types(semantic_types)
+        self._semantic_tags = _parse_semantic_tags(semantic_tags)
 
     @property
     def logical_type(self):
         return self._logical_type
 
     @property
-    def semantic_types(self):
-        return self._semantic_types
+    def semantic_tags(self):
+        return self._semantic_tags
 
     @property
     def name(self):
@@ -76,22 +76,22 @@ class DataColumn(object):
         return self.series.dtype
 
 
-def _parse_semantic_types(semantic_types):
-    if not semantic_types:
+def _parse_semantic_tags(semantic_tags):
+    if not semantic_tags:
         return {}
 
-    if type(semantic_types) not in [dict, list, str]:
-        raise TypeError("semantic_types must be a string, list or dictionary")
+    if type(semantic_tags) not in [dict, list, str]:
+        raise TypeError("semantic_tags must be a string, list or dictionary")
 
-    if isinstance(semantic_types, str):
-        return {semantic_types: {}}
+    if isinstance(semantic_tags, str):
+        return {semantic_tags: {}}
 
-    if isinstance(semantic_types, list):
-        keys = semantic_types
-        values = [{} for _ in semantic_types]
+    if isinstance(semantic_tags, list):
+        keys = semantic_tags
+        values = [{} for _ in semantic_tags]
     else:
-        keys = semantic_types.keys()
-        values = [value or {} for value in semantic_types.values()]
+        keys = semantic_tags.keys()
+        values = [value or {} for value in semantic_tags.values()]
 
     if not all([isinstance(key, str) for key in keys]):
         raise TypeError("Semantic tags must be specified as strings")

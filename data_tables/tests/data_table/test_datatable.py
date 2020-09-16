@@ -8,7 +8,7 @@ from data_tables import DataTable
 from data_tables.data_table import (
     _check_index,
     _check_logical_types,
-    _check_semantic_types,
+    _check_semantic_tags,
     _check_time_index,
     _check_unique_column_names,
     _validate_params
@@ -102,19 +102,19 @@ def test_datatable_init_with_string_logical_types(sample_df):
     assert dt.columns['age'].logical_type == WholeNumber
 
 
-def test_datatable_init_with_semantic_types(sample_df):
-    semantic_types = {
+def test_datatable_init_with_semantic_tags(sample_df):
+    semantic_tags = {
         'id': 'index',
     }
     dt = DataTable(sample_df,
                    name='datatable',
-                   semantic_types=semantic_types)
+                   semantic_tags=semantic_tags)
 
-    id_semantic_types = dt.columns['id'].semantic_types
-    assert isinstance(id_semantic_types, dict)
-    assert len(id_semantic_types) == 1
-    assert 'index' in id_semantic_types.keys()
-    assert id_semantic_types['index'] == {}
+    id_semantic_tags = dt.columns['id'].semantic_tags
+    assert isinstance(id_semantic_tags, dict)
+    assert len(id_semantic_tags) == 1
+    assert 'index' in id_semantic_tags.keys()
+    assert id_semantic_tags['index'] == {}
 
 
 def test_validate_params_errors(sample_df):
@@ -125,7 +125,7 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         semantic_types=None)
+                         semantic_tags=None)
 
     error_message = 'DataTable name must be a string'
     with pytest.raises(TypeError, match=error_message):
@@ -134,7 +134,7 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         semantic_types=None)
+                         semantic_tags=None)
 
 
 def test_check_index_errors(sample_df):
@@ -187,6 +187,7 @@ def test_check_logical_types_errors(sample_df):
 
 def test_datatable_types(sample_df):
     dt = DataTable(sample_df)
+    # --> might want to change wording here
     returned_types = dt.types
     assert isinstance(returned_types, pd.DataFrame)
     assert 'Physical Type' in returned_types.columns
@@ -233,48 +234,48 @@ def test_datatable_logical_types(sample_df):
         assert v == dt.columns[k].logical_type
 
 
-def test_datatable_semantic_types(sample_df):
-    semantic_types = {
+def test_datatable_semantic_tags(sample_df):
+    semantic_tags = {
         'full_name': 'tag1',
         'email': {'tag2': {'option1': 'value1'}},
         'phone_number': {'tag3': None},
         'signup_date': {'secondary_time_index': {'columns': ['expired']}},
         'age': ['numeric', 'age']
     }
-    dt = DataTable(sample_df, semantic_types=semantic_types)
-    assert isinstance(dt.semantic_types, dict)
-    assert set(dt.semantic_types.keys()) == set(sample_df.columns)
-    for k, v in dt.semantic_types.items():
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
+    assert isinstance(dt.semantic_tags, dict)
+    assert set(dt.semantic_tags.keys()) == set(sample_df.columns)
+    for k, v in dt.semantic_tags.items():
         assert isinstance(k, str)
         assert k in sample_df.columns
         assert isinstance(v, dict)
-        assert v == dt.columns[k].semantic_types
+        assert v == dt.columns[k].semantic_tags
 
 
-def test_check_semantic_types_errors(sample_df):
-    error_message = 'semantic_types must be a dictionary'
+def test_check_semantic_tags_errors(sample_df):
+    error_message = 'semantic_tags must be a dictionary'
     with pytest.raises(TypeError, match=error_message):
-        _check_semantic_types(sample_df, semantic_types='type')
+        _check_semantic_tags(sample_df, semantic_tags='type')
 
-    bad_semantic_types_keys = {
+    bad_semantic_tags_keys = {
         'full_name': None,
         'age': None,
         'birthday': None,
         'occupation': None,
     }
-    error_message = re.escape("semantic_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
+    error_message = re.escape("semantic_tags contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
-        _check_semantic_types(sample_df, bad_semantic_types_keys)
+        _check_semantic_tags(sample_df, bad_semantic_tags_keys)
 
 
 def test_set_logical_types(sample_df):
-    semantic_types = {
+    semantic_tags = {
         'full_name': {'tag1': {}},
         'email': {'tag2': {'option1': 'value1'}},
         'phone_number': {'tag3': {}},
         'signup_date': {'secondary_time_index': {'columns': ['expired']}},
     }
-    dt = DataTable(sample_df, semantic_types=semantic_types)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
@@ -299,10 +300,10 @@ def test_set_logical_types(sample_df):
     assert new_name_column != original_name_column
 
     # Verify semantic tags were not changed
-    assert dt.columns['full_name'].semantic_types == semantic_types['full_name']
-    assert dt.columns['email'].semantic_types == semantic_types['email']
-    assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
-    assert dt.columns['age'].semantic_types == {}
+    assert dt.columns['full_name'].semantic_tags == semantic_tags['full_name']
+    assert dt.columns['email'].semantic_tags == semantic_tags['email']
+    assert dt.columns['phone_number'].semantic_tags == semantic_tags['phone_number']
+    assert dt.columns['age'].semantic_tags == {}
 
 
 def test_set_logical_types_invalid_data(sample_df):
@@ -316,8 +317,8 @@ def test_set_logical_types_invalid_data(sample_df):
         dt.set_logical_types({'age': int})
 
 
-def test_semantic_types_during_init(sample_df):
-    semantic_types = {
+def test_semantic_tags_during_init(sample_df):
+    semantic_tags = {
         'full_name': 'tag1',
         'email': {'tag2': {'option1': 'value1'}},
         'phone_number': {'tag3': None},
@@ -331,16 +332,16 @@ def test_semantic_types_during_init(sample_df):
         'signup_date': {'secondary_time_index': {'columns': ['expired']}},
         'age': {'numeric': {}, 'age': {}}
     }
-    dt = DataTable(sample_df, semantic_types=semantic_types)
-    assert dt.columns['full_name'].semantic_types == expected_types['full_name']
-    assert dt.columns['email'].semantic_types == expected_types['email']
-    assert dt.columns['phone_number'].semantic_types == expected_types['phone_number']
-    assert dt.columns['signup_date'].semantic_types == expected_types['signup_date']
-    assert dt.columns['age'].semantic_types == expected_types['age']
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
+    assert dt.columns['full_name'].semantic_tags == expected_types['full_name']
+    assert dt.columns['email'].semantic_tags == expected_types['email']
+    assert dt.columns['phone_number'].semantic_tags == expected_types['phone_number']
+    assert dt.columns['signup_date'].semantic_tags == expected_types['signup_date']
+    assert dt.columns['age'].semantic_tags == expected_types['age']
 
 
-def test_set_semantic_types(sample_df):
-    semantic_types = {
+def test_set_semantic_tags(sample_df):
+    semantic_tags = {
         'full_name': 'tag1',
         'age': ['numeric', 'age']
     }
@@ -348,17 +349,17 @@ def test_set_semantic_types(sample_df):
         'full_name': {'tag1': {}},
         'age': {'numeric': {}, 'age': {}}
     }
-    dt = DataTable(sample_df, semantic_types=semantic_types)
-    assert dt.columns['full_name'].semantic_types == expected_types['full_name']
-    assert dt.columns['age'].semantic_types == expected_types['age']
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
+    assert dt.columns['full_name'].semantic_tags == expected_types['full_name']
+    assert dt.columns['age'].semantic_tags == expected_types['age']
 
-    new_types = {
+    new_tags = {
         'full_name': {'new_tag': {'additional': 'value'}},
         'age': 'numeric',
     }
-    dt.set_semantic_types(new_types)
-    assert dt.columns['full_name'].semantic_types == new_types['full_name']
-    assert dt.columns['age'].semantic_types == {'numeric': {}}
+    dt.set_semantic_tags(new_tags)
+    assert dt.columns['full_name'].semantic_tags == new_tags['full_name']
+    assert dt.columns['age'].semantic_tags == {'numeric': {}}
 
 
 def test_replace_none_with_pdna(none_df):
@@ -763,7 +764,7 @@ def test_select_ltypes_table(sample_df):
         'age': Double,
         'signup_date': Datetime,
     })
-    dt.set_semantic_types({
+    dt.set_semantic_tags({
         'full_name': {'new_tag': {'additional': 'value'}},
         'age': 'numeric',
     })
@@ -783,4 +784,4 @@ def test_select_ltypes_table(sample_df):
     assert col.logical_type == original_col.logical_type
     assert col.series.equals(original_col.series)
     assert col.dtype == original_col.dtype
-    assert col.semantic_types.keys() == original_col.semantic_types.keys()
+    assert col.semantic_tags.keys() == original_col.semantic_tags.keys()
