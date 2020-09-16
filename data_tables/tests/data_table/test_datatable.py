@@ -21,7 +21,7 @@ from data_tables.logical_types import (
     Datetime,
     Double,
     EmailAddress,
-    FilePath,
+    Filepath,
     FullName,
     Integer,
     IPAddress,
@@ -436,7 +436,7 @@ def test_sets_string_dtype_on_init():
     ]
 
     logical_types = [
-        FilePath,
+        Filepath,
         FullName,
         IPAddress,
         LatLong,
@@ -462,7 +462,7 @@ def test_sets_string_dtype_on_update():
     series = pd.Series(['a', 'b', 'c'], name=column_name)
     series = series.astype('object')
     logical_types = [
-        FilePath,
+        Filepath,
         FullName,
         IPAddress,
         LatLong,

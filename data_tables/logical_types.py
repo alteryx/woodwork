@@ -56,7 +56,7 @@ class EmailAddress(LogicalType):
     pandas_dtype = 'string'
 
 
-class FilePath(LogicalType):
+class Filepath(LogicalType):
     pandas_dtype = 'string'
 
 
