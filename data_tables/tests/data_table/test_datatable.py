@@ -186,7 +186,6 @@ def test_check_logical_types_errors(sample_df):
 
 def test_datatable_types(sample_df):
     dt = DataTable(sample_df)
-    # --> might want to change wording here
     returned_types = dt.types
     assert isinstance(returned_types, pd.DataFrame)
     assert 'Physical Type' in returned_types.columns
@@ -211,7 +210,6 @@ def test_datatable_types(sample_df):
         assert isinstance(tag, set)
         # TODO: Add a tag to DataTable, and check the tag shows up
         # Waiting on init with semantic tags / set_semantic_tags
-        # --> should this get added now? Not sure how it's relevant at this exact location
 
 
 def test_datatable_physical_types(sample_df):

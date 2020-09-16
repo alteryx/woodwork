@@ -26,7 +26,7 @@ class DataColumn(object):
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
-            semantic_tags (str or list, optional): Semantic tags to assign to the column.
+            semantic_tags (str or list or set, optional): Semantic tags to assign to the column.
                 Defaults to an empty set if not specified. There are two options for
                 specifying the semantic tags:
                     (str) If only one semantic tag is being set, a single string can be passed.

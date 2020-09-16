@@ -65,7 +65,6 @@ class DataTable(object):
     def types(self):
         typing_info = {}
         for dc in self.columns.values():
-            # --> if tags dont fit here maybe need to split somehow or change wording here
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
@@ -194,7 +193,6 @@ class DataTable(object):
                            if col.logical_type in ltypes_to_include]
 
         # Retain types, indices, and name of original DataTable
-        # --> something about semantic tags being able to refer to a single column's set of semantic tags but also an entire dt's set of tags seems off and confusing to me
         new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
                              in self.semantic_tags.items() if col_name in cols_to_include}
         new_logical_types = {col_name: logical_type for col_name, logical_type
