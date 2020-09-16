@@ -14,15 +14,25 @@ from data_tables.data_table import (
     _validate_params
 )
 from data_tables.logical_types import (
+    URL,
     Boolean,
+    Categorical,
+    CountryCode,
     Datetime,
     Double,
     EmailAddress,
+    Filepath,
     FullName,
+    Integer,
+    IPAddress,
+    LatLong,
     LogicalType,
     NaturalLanguage,
+    Ordinal,
     PhoneNumber,
-    WholeNumber
+    SubRegionCode,
+    WholeNumber,
+    ZIPCode
 )
 
 
@@ -184,8 +194,6 @@ def test_datatable_types(sample_df):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
-    for d_type in returned_types['Physical Type']:
-        assert isinstance(d_type, np.dtype)
     assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
         'id': WholeNumber,
@@ -211,7 +219,6 @@ def test_datatable_physical_types(sample_df):
     assert set(dt.physical_types.keys()) == set(sample_df.columns)
     for k, v in dt.physical_types.items():
         assert isinstance(k, str)
-        assert isinstance(v, np.dtype)
         assert v == sample_df[k].dtype
 
 
@@ -280,14 +287,12 @@ def test_set_logical_types(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
     })
 
     assert dt.columns['full_name'].logical_type == FullName
     assert dt.columns['email'].logical_type == EmailAddress
     assert dt.columns['phone_number'].logical_type == PhoneNumber
     assert dt.columns['age'].logical_type == Double
-    assert dt.columns['signup_date'].logical_type == Double
 
     # Verify new column object was created
     new_name_column = dt.columns['full_name']
@@ -298,7 +303,6 @@ def test_set_logical_types(sample_df):
     assert dt.columns['email'].semantic_types == semantic_types['email']
     assert dt.columns['phone_number'].semantic_types == semantic_types['phone_number']
     assert dt.columns['age'].semantic_types == {}
-    assert dt.columns['signup_date'].semantic_types == semantic_types['signup_date']
 
 
 def test_set_logical_types_invalid_data(sample_df):
@@ -357,12 +361,307 @@ def test_set_semantic_types(sample_df):
     assert dt.columns['age'].semantic_types == {'numeric': {}}
 
 
-def test_replace_none_with_nan(none_df):
-    dt = DataTable(none_df, replace_none=True)
-    assert np.isnan(dt.df['all_none'].loc[0])
-    assert np.isnan(dt.df['all_none'].loc[1])
-    assert np.isnan(dt.df['all_none'].loc[2])
-    assert np.isnan(dt.df['some_none'].loc[1])
+def test_replace_none_with_pdna(none_df):
+    logical_types = {
+        'all_none': NaturalLanguage,
+        'some_none': NaturalLanguage,
+    }
+    dt = DataTable(none_df, logical_types=logical_types, replace_none=True)
+    assert dt.df['all_none'].loc[0] is pd.NA
+    assert dt.df['all_none'].loc[1] is pd.NA
+    assert dt.df['all_none'].loc[2] is pd.NA
+    assert dt.df['some_none'].loc[1] is pd.NA
+
+
+def test_sets_category_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['a', 'b', 'c'], name=column_name),
+        pd.Series(['a', None, 'c'], name=column_name),
+        pd.Series(['a', np.nan, 'c'], name=column_name),
+        pd.Series(['a', pd.NA, 'c'], name=column_name),
+        pd.Series(['a', pd.NaT, 'c'], name=column_name),
+    ]
+
+    logical_types = [
+        Categorical,
+        CountryCode,
+        Ordinal,
+        SubRegionCode,
+        ZIPCode,
+    ]
+
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+            assert dt.columns[column_name].logical_type == logical_type
+            assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+            assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_category_dtype_on_update():
+    column_name = 'test_series'
+    series = pd.Series(['a', 'b', 'c'], name=column_name)
+    series = series.astype('object')
+    logical_types = [
+        Categorical,
+        CountryCode,
+        Ordinal,
+        SubRegionCode,
+        ZIPCode,
+    ]
+
+    for logical_type in logical_types:
+        ltypes = {
+            column_name: NaturalLanguage,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+        dt.set_logical_types({column_name: logical_type})
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_string_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['a', 'b', 'c'], name=column_name),
+        pd.Series(['a', None, 'c'], name=column_name),
+        pd.Series(['a', np.nan, 'c'], name=column_name),
+        pd.Series(['a', pd.NA, 'c'], name=column_name),
+    ]
+
+    logical_types = [
+        Filepath,
+        FullName,
+        IPAddress,
+        LatLong,
+        NaturalLanguage,
+        PhoneNumber,
+        URL,
+    ]
+
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+            assert dt.columns[column_name].logical_type == logical_type
+            assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+            assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_string_dtype_on_update():
+    column_name = 'test_series'
+    series = pd.Series(['a', 'b', 'c'], name=column_name)
+    series = series.astype('object')
+    logical_types = [
+        Filepath,
+        FullName,
+        IPAddress,
+        LatLong,
+        NaturalLanguage,
+        PhoneNumber,
+        URL,
+    ]
+
+    for logical_type in logical_types:
+        ltypes = {
+            column_name: Categorical,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+        dt.set_logical_types({column_name: logical_type})
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_boolean_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([True, False, True], name=column_name),
+        pd.Series([True, None, True], name=column_name),
+        pd.Series([True, np.nan, True], name=column_name),
+        pd.Series([True, pd.NA, True], name=column_name),
+    ]
+
+    logical_type = Boolean
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_boolean_dtype_on_update():
+    column_name = 'test_series'
+    series = pd.Series([0, 1, 0], name=column_name)
+    series = series.astype('object')
+    ltypes = {
+        column_name: WholeNumber,
+    }
+    dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+    dt.set_logical_types({column_name: Boolean})
+    assert dt.columns[column_name].logical_type == Boolean
+    assert dt.columns[column_name].dtype == Boolean.pandas_dtype
+    assert dt.dataframe[column_name].dtype == Boolean.pandas_dtype
+
+
+def test_sets_int64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([1, 2, 3], name=column_name),
+        pd.Series([1, None, 3], name=column_name),
+        pd.Series([1, np.nan, 3], name=column_name),
+        pd.Series([1, pd.NA, 3], name=column_name),
+    ]
+
+    logical_types = [Integer, WholeNumber]
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_int64_dtype_on_update():
+    column_name = 'test_series'
+    series = pd.Series([1.0, 2.0, 1.0], name=column_name)
+    series = series.astype('object')
+    logical_types = [
+        Integer,
+        WholeNumber,
+    ]
+
+    for logical_type in logical_types:
+        ltypes = {
+            column_name: Double,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+        dt.set_logical_types({column_name: logical_type})
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_float64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([1.1, 2, 3], name=column_name),
+        pd.Series([1.1, None, 3], name=column_name),
+        pd.Series([1.1, np.nan, 3], name=column_name),
+    ]
+
+    logical_type = Double
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_float64_dtype_on_update():
+    column_name = 'test_series'
+    series = pd.Series([0, 1, 0], name=column_name)
+    series = series.astype('object')
+    ltypes = {
+        column_name: WholeNumber,
+    }
+    dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+    dt.set_logical_types({column_name: Double})
+    assert dt.columns[column_name].logical_type == Double
+    assert dt.columns[column_name].dtype == Double.pandas_dtype
+    assert dt.dataframe[column_name].dtype == Double.pandas_dtype
+
+
+def test_sets_datetime64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name),
+    ]
+
+    logical_type = Datetime
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        assert dt.columns[column_name].logical_type == logical_type
+        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
+        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_datetime_dtype_on_update():
+    column_name = 'test_series'
+    series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
+    series = series.astype('object')
+    ltypes = {
+        column_name: NaturalLanguage,
+    }
+    dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+    dt.set_logical_types({column_name: Datetime})
+    assert dt.columns[column_name].logical_type == Datetime
+    assert dt.columns[column_name].dtype == Datetime.pandas_dtype
+    assert dt.dataframe[column_name].dtype == Datetime.pandas_dtype
+
+
+def test_invalid_dtype_casting():
+    column_name = 'test_series'
+
+    # Cannot cast a column with pd.NA to Double
+    series = pd.Series([1.1, pd.NA, 3], name=column_name)
+    ltypes = {
+        column_name: Double,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'float64. Please confirm the underlying data is consistent with logical type Double.'
+    with pytest.raises(TypeError, match=err_msg):
+        DataTable(pd.DataFrame(series), logical_types=ltypes)
+
+    # Cannot cast Datetime to Double
+    series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
+    ltypes = {
+        column_name: Datetime,
+    }
+    dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+    err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
+        'float64. Please confirm the underlying data is consistent with logical type Double.'
+    with pytest.raises(TypeError, match=re.escape(err_msg)):
+        dt.set_logical_types({column_name: Double})
+
+    # Cannot cast invalid strings to whole numbers
+    series = pd.Series(['1', 'two', '3'], name=column_name)
+    ltypes = {
+        column_name: WholeNumber,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'Int64. Please confirm the underlying data is consistent with logical type WholeNumber.'
+    with pytest.raises(TypeError, match=err_msg):
+        DataTable(pd.DataFrame(series), logical_types=ltypes)
 
 
 def test_invalid_select_ltypes(sample_df):
@@ -372,7 +671,7 @@ def test_invalid_select_ltypes(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
+        'signup_date': Datetime,
     })
 
     error_message = "Invalid logical type specified: 1"
@@ -405,10 +704,10 @@ def test_select_ltypes_strings(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
+        'signup_date': Datetime,
     })
 
-    dt_multiple_ltypes = dt.select_ltypes(['FullName', 'email_address', 'double', 'Boolean'])
+    dt_multiple_ltypes = dt.select_ltypes(['FullName', 'email_address', 'double', 'Boolean', 'datetime'])
     assert len(dt_multiple_ltypes.columns) == 5
     assert 'phone_number' not in dt_multiple_ltypes.columns
     assert 'id' not in dt_multiple_ltypes.columns
@@ -424,10 +723,10 @@ def test_select_ltypes_objects(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
+        'signup_date': Datetime,
     })
 
-    dt_multiple_ltypes = dt.select_ltypes([FullName, EmailAddress, Double, Boolean])
+    dt_multiple_ltypes = dt.select_ltypes([FullName, EmailAddress, Double, Boolean, Datetime])
     assert len(dt_multiple_ltypes.columns) == 5
     assert 'phone_number' not in dt_multiple_ltypes.columns
     assert 'id' not in dt_multiple_ltypes.columns
@@ -443,11 +742,11 @@ def test_select_ltypes_mixed(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
+        'signup_date': Datetime,
     })
 
     dt_mixed_ltypes = dt.select_ltypes(['FullName', 'email_address', Double])
-    assert len(dt_mixed_ltypes.columns) == 4
+    assert len(dt_mixed_ltypes.columns) == 3
     assert 'phone_number' not in dt_mixed_ltypes.columns
 
     # Selecting for an ltype that isn't present should result in an empty DataTable
@@ -462,7 +761,7 @@ def test_select_ltypes_table(sample_df):
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
-        'signup_date': Double,
+        'signup_date': Datetime,
     })
     dt.set_semantic_types({
         'full_name': {'new_tag': {'additional': 'value'}},
@@ -473,7 +772,7 @@ def test_select_ltypes_table(sample_df):
     assert dt_no_indices.index is None
     assert dt_no_indices.time_index is None
 
-    dt_with_indices = dt.select_ltypes(['Double', 'WholeNumber'])
+    dt_with_indices = dt.select_ltypes(['Datetime', 'WholeNumber'])
     assert dt_with_indices.index == 'id'
     assert dt_with_indices.time_index == 'signup_date'
 

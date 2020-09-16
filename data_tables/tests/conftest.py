@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def sample_df():
     return pd.DataFrame({
         'id': range(3),
@@ -16,12 +16,12 @@ def sample_df():
     })
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def sample_series():
     return pd.Series(['a', 'b', 'c'], name='sample_series').astype('object')
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def none_df():
     return pd.DataFrame({
         'id': range(3),

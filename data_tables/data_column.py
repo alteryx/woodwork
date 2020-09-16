@@ -41,7 +41,6 @@ class DataColumn(object):
                     `None` if no additional data is being set for a particular semantic type.
         """
         self.series = series
-        self.dtype = series.dtype
         self.set_logical_type(logical_type)
         self.set_semantic_types(semantic_types)
 
@@ -78,6 +77,10 @@ class DataColumn(object):
     @property
     def name(self):
         return self.series.name
+
+    @property
+    def dtype(self):
+        return self.series.dtype
 
 
 def _parse_semantic_types(semantic_types):

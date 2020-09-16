@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from data_tables.data_column import DataColumn
@@ -46,7 +45,7 @@ class DataTable(object):
                 prior to creating the DataTable. Defaults to False, which results in using a
                 reference to the input dataframe.
             replace_none (bool, optional): If True, will replace any `None` values in the supplied
-                dataframe with `np.nan`. Defaults to True.
+                dataframe with `pd.NA`. Defaults to True.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_types)
@@ -57,7 +56,7 @@ class DataTable(object):
             self.dataframe = dataframe
 
         if replace_none:
-            self.dataframe.fillna(np.nan, inplace=True)
+            self.dataframe.fillna(pd.NA, inplace=True)
 
         self.name = name
         self.index = index
@@ -67,6 +66,7 @@ class DataTable(object):
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
                                             semantic_types)
+        self._update_dtypes(self.columns)
 
     @property
     def types(self):
@@ -129,6 +129,23 @@ class DataTable(object):
                                               logical_types,
                                               semantic_types)
         self._update_columns(cols_to_update)
+        self._update_dtypes(cols_to_update)
+
+    def _update_dtypes(self, cols_to_update):
+        """Update the dtypes of the underlying dataframe to match the dtypes corresponding
+            to the LogicalType for the column."""
+        for name, column in cols_to_update.items():
+            if column.logical_type.pandas_dtype != str(self.dataframe[name].dtype):
+                # Update the underlying dataframe
+                try:
+                    self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
+                except TypeError:
+                    error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
+                        f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                        f'logical type {column.logical_type}.'
+                    raise TypeError(error_msg)
+                # Update the column object since .astype returns a new series object
+                column.series = self.dataframe[name]
 
     def add_semantic_types(self, semantic_types):
         # semantic_types: (dict -> SemanticTag/str)
