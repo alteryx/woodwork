@@ -86,6 +86,8 @@ class DataTable(object):
                 logical_type = None
             if semantic_tags and name in semantic_tags:
                 semantic_tag = semantic_tags[name]
+            else:
+                semantic_tag = []
             dc = DataColumn(self.dataframe[name], logical_type, semantic_tag)
             data_columns[dc.name] = dc
         return data_columns
