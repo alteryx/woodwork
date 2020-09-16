@@ -66,7 +66,7 @@ class DataTable(object):
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
                                             semantic_types)
-        self._update_dtypes()
+        self._update_dtypes(self.columns)
 
     @property
     def types(self):
@@ -131,11 +131,9 @@ class DataTable(object):
         self._update_columns(cols_to_update)
         self._update_dtypes(cols_to_update)
 
-    def _update_dtypes(self, cols_to_update=None):
+    def _update_dtypes(self, cols_to_update):
         """Update the dtypes of the underlying dataframe to match the dtypes corresponding
             to the LogicalType for the column."""
-        if not cols_to_update:
-            cols_to_update = self.columns
         for name, column in cols_to_update.items():
             if column.logical_type.pandas_dtype != str(self.dataframe[name].dtype):
                 # Update the underlying dataframe
