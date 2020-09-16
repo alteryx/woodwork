@@ -87,7 +87,7 @@ class DataTable(object):
             if semantic_tags and name in semantic_tags:
                 semantic_tag = semantic_tags[name]
             else:
-                semantic_tag = {}
+                semantic_tag = []  # --> here's where it might make sense to have the input be a set or list
             dc = DataColumn(self.dataframe[name], logical_type, semantic_tag)
             data_columns[dc.name] = dc
         return data_columns
@@ -143,7 +143,7 @@ class DataTable(object):
 
     def add_semantic_tags(self, semantic_tags):
         # semantic_tags: (dict -> SemanticTag/str)
-        # will not overwrite, will append to set
+        # will not overwrite, will add to set
         pass
 
     def remove_semantic_tags(self, semantic_tags):
@@ -194,7 +194,8 @@ class DataTable(object):
                            if col.logical_type in ltypes_to_include]
 
         # Retain types, indices, and name of original DataTable
-        new_semantic_tags = {col_name: semantic_tag for col_name, semantic_tag
+        # --> something about semantic tags being able to refer to a single column's set of semantic tags but also an entire dt's set of tags seems off and confusing to me
+        new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
                              in self.semantic_tags.items() if col_name in cols_to_include}
         new_logical_types = {col_name: logical_type for col_name, logical_type
                              in self.logical_types.items() if col_name in cols_to_include}

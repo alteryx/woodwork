@@ -111,10 +111,9 @@ def test_datatable_init_with_semantic_tags(sample_df):
                    semantic_tags=semantic_tags)
 
     id_semantic_tags = dt.columns['id'].semantic_tags
-    assert isinstance(id_semantic_tags, dict)
+    assert isinstance(id_semantic_tags, set)
     assert len(id_semantic_tags) == 1
-    assert 'index' in id_semantic_tags.keys()
-    assert id_semantic_tags['index'] == {}
+    assert 'index' in id_semantic_tags
 
 
 def test_validate_params_errors(sample_df):
@@ -209,9 +208,10 @@ def test_datatable_types(sample_df):
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
-        assert isinstance(tag, dict)
+        assert isinstance(tag, set)
         # TODO: Add a tag to DataTable, and check the tag shows up
         # Waiting on init with semantic tags / set_semantic_tags
+        # --> should this get added now? Not sure how it's relevant at this exact location
 
 
 def test_datatable_physical_types(sample_df):
@@ -237,9 +237,7 @@ def test_datatable_logical_types(sample_df):
 def test_datatable_semantic_tags(sample_df):
     semantic_tags = {
         'full_name': 'tag1',
-        'email': {'tag2': {'option1': 'value1'}},
-        'phone_number': {'tag3': None},
-        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
+        'email': ['tag2'],
         'age': ['numeric', 'age']
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags)
@@ -248,7 +246,7 @@ def test_datatable_semantic_tags(sample_df):
     for k, v in dt.semantic_tags.items():
         assert isinstance(k, str)
         assert k in sample_df.columns
-        assert isinstance(v, dict)
+        assert isinstance(v, set)
         assert v == dt.columns[k].semantic_tags
 
 
@@ -270,10 +268,10 @@ def test_check_semantic_tags_errors(sample_df):
 
 def test_set_logical_types(sample_df):
     semantic_tags = {
-        'full_name': {'tag1': {}},
-        'email': {'tag2': {'option1': 'value1'}},
-        'phone_number': {'tag3': {}},
-        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'signup_date': ['secondary_time_index'],
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
@@ -320,17 +318,17 @@ def test_set_logical_types_invalid_data(sample_df):
 def test_semantic_tags_during_init(sample_df):
     semantic_tags = {
         'full_name': 'tag1',
-        'email': {'tag2': {'option1': 'value1'}},
-        'phone_number': {'tag3': None},
-        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
+        'email': ['tag2'],
+        'phone_number': ['tag3'],
+        'signup_date': ['secondary_time_index'],
         'age': ['numeric', 'age']
     }
     expected_types = {
-        'full_name': {'tag1': {}},
-        'email': {'tag2': {'option1': 'value1'}},
-        'phone_number': {'tag3': {}},
-        'signup_date': {'secondary_time_index': {'columns': ['expired']}},
-        'age': {'numeric': {}, 'age': {}}
+        'full_name': {'tag1'},
+        'email': {'tag2'},
+        'phone_number': {'tag3'},
+        'signup_date': {'secondary_time_index'},
+        'age': {'numeric', 'age'}
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags)
     assert dt.columns['full_name'].semantic_tags == expected_types['full_name']
@@ -345,21 +343,21 @@ def test_set_semantic_tags(sample_df):
         'full_name': 'tag1',
         'age': ['numeric', 'age']
     }
-    expected_types = {
-        'full_name': {'tag1': {}},
-        'age': {'numeric': {}, 'age': {}}
+    expected_tags = {
+        'full_name': {'tag1'},
+        'age': {'numeric', 'age'}
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags)
-    assert dt.columns['full_name'].semantic_tags == expected_types['full_name']
-    assert dt.columns['age'].semantic_tags == expected_types['age']
+    assert dt.columns['full_name'].semantic_tags == expected_tags['full_name']
+    assert dt.columns['age'].semantic_tags == expected_tags['age']
 
     new_tags = {
-        'full_name': {'new_tag': {'additional': 'value'}},
+        'full_name': ['new_tag'],
         'age': 'numeric',
     }
     dt.set_semantic_tags(new_tags)
-    assert dt.columns['full_name'].semantic_tags == new_tags['full_name']
-    assert dt.columns['age'].semantic_tags == {'numeric': {}}
+    assert dt.columns['full_name'].semantic_tags == {'new_tag'}
+    assert dt.columns['age'].semantic_tags == {'numeric'}
 
 
 def test_replace_none_with_pdna(none_df):
@@ -765,7 +763,7 @@ def test_select_ltypes_table(sample_df):
         'signup_date': Datetime,
     })
     dt.set_semantic_tags({
-        'full_name': {'new_tag': {'additional': 'value'}},
+        'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
 
@@ -784,4 +782,4 @@ def test_select_ltypes_table(sample_df):
     assert col.logical_type == original_col.logical_type
     assert col.series.equals(original_col.series)
     assert col.dtype == original_col.dtype
-    assert col.semantic_tags.keys() == original_col.semantic_tags.keys()
+    assert col.semantic_tags == original_col.semantic_tags

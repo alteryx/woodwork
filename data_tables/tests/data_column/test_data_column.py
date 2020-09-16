@@ -20,7 +20,7 @@ def test_data_column_init(sample_series):
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
-    assert data_col.semantic_tags == {}
+    assert data_col.semantic_tags == set()
 
 
 def test_data_column_init_with_logical_type(sample_series):
@@ -177,7 +177,7 @@ def test_natural_language_inference():
 
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series)
-    assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = {})>"
+    assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = set())>"
 
 
 def test_set_semantic_tags(sample_series):
