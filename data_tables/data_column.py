@@ -13,7 +13,7 @@ from data_tables.logical_types import (
     NaturalLanguage,
     Timedelta,
     WholeNumber,
-    get_logical_types
+    str_to_logical_type
 )
 
 
@@ -52,12 +52,11 @@ class DataColumn(object):
         return msg
 
     def set_logical_type(self, logical_type):
-        logical_types_dict = get_logical_types()
         if logical_type:
             if logical_type in LogicalType.__subclasses__():
                 self._logical_type = logical_type
-            elif isinstance(logical_type, str) and logical_type in logical_types_dict:
-                self._logical_type = logical_types_dict[logical_type]
+            elif isinstance(logical_type, str):
+                self._logical_type = str_to_logical_type(logical_type)
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.series.name}'")
         else:

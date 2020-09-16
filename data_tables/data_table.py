@@ -1,6 +1,7 @@
 import pandas as pd
 
 from data_tables.data_column import DataColumn
+from data_tables.logical_types import LogicalType, str_to_logical_type
 
 
 class DataTable(object):
@@ -164,6 +165,52 @@ class DataTable(object):
     def to_pandas_dataframe(self):
         return self.dataframe
 
+    def select_ltypes(self, include):
+        """Create a DataTable that includes only columns whose logical types are specified here.
+            Will not include any column, including indices, whose logical type is not specified.
+            The new DataTable's dataframe will also only contain columns that are in the DataTable.
+
+        Args:
+            include (str or LogicalType or list[str or LogicalType]):
+                Logical types to include in the DataTable
+
+        Returns:
+            DataTable:
+                The subset of the original DataTable that contains just the ltypes in `include`.
+        """
+        if not isinstance(include, list):
+            include = [include]
+
+        ltypes_to_include = set()
+        for ltype in include:
+            if ltype in LogicalType.__subclasses__():
+                ltypes_to_include.add(ltype)
+            elif isinstance(ltype, str):
+                ltypes_to_include.add(str_to_logical_type(ltype))
+            else:
+                raise TypeError(f"Invalid logical type specified: {ltype}")
+
+        cols_to_include = [col_name for col_name, col in self.columns.items()
+                           if col.logical_type in ltypes_to_include]
+
+        # Retain types, indices, and name of original DataTable
+        new_semantic_types = {col_name: semantic_type for col_name, semantic_type
+                              in self.semantic_types.items() if col_name in cols_to_include}
+        new_logical_types = {col_name: logical_type for col_name, logical_type
+                             in self.logical_types.items() if col_name in cols_to_include}
+        new_index = self.index if self.index in cols_to_include else None
+        new_time_index = self.time_index if self.time_index in cols_to_include else None
+
+        # TODO: when dt[[col]] syntax is implemented
+        # (https://github.com/FeatureLabs/datatables/issues/98), use that here
+        return DataTable(self.dataframe[cols_to_include],
+                         name=self.name,
+                         index=new_index,
+                         time_index=new_time_index,
+                         semantic_types=new_semantic_types,
+                         logical_types=new_logical_types,
+                         copy_dataframe=True)
+
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_types):
     """Check that values supplied during DataTable initialization are valid"""
@@ -175,7 +222,7 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
     if index:
         _check_index(dataframe, index)
     if time_index:
-        _check_time_index(dataframe, index)
+        _check_time_index(dataframe, time_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
     if semantic_types:
