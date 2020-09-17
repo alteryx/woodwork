@@ -12,7 +12,8 @@ class DataTable(object):
                  semantic_tags=None,
                  logical_types=None,
                  copy_dataframe=False,
-                 replace_none=True):
+                 replace_none=True,
+                 add_standard_tags=True):
         """ Create DataTable
 
         Args:
@@ -39,9 +40,12 @@ class DataTable(object):
                 reference to the input dataframe.
             replace_none (bool, optional): If True, will replace any `None` values in the supplied
                 dataframe with `pd.NA`. Defaults to True.
+            add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
+                on the inferred or specified logical type for the column. Defaults to True.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
+        self.add_standard_tags = add_standard_tags
 
         if copy_dataframe:
             self.dataframe = dataframe.copy()
@@ -58,7 +62,8 @@ class DataTable(object):
         # Infer logical types and create columns
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
-                                            semantic_tags)
+                                            semantic_tags,
+                                            self.add_standard_tags)
         self._update_dtypes(self.columns)
 
     @property
@@ -73,7 +78,7 @@ class DataTable(object):
         df.index.name = 'Data Column'
         return df
 
-    def _create_columns(self, column_names, logical_types, semantic_tags):
+    def _create_columns(self, column_names, logical_types, semantic_tags, add_standard_tags):
         """Create a dictionary with column names as keys and new DataColumn objects
             as values, while assigning any values that are passed for logical types or
             semantic tags to the new column."""
@@ -87,7 +92,7 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = []
-            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag)
+            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag, add_standard_tags)
             data_columns[dc.name] = dc
         return data_columns
 
@@ -120,7 +125,8 @@ class DataTable(object):
             semantic_tags[name] = self.columns[name].semantic_tags
         cols_to_update = self._create_columns(logical_types.keys(),
                                               logical_types,
-                                              semantic_tags)
+                                              semantic_tags,
+                                              self.add_standard_tags)
         self._update_columns(cols_to_update)
         self._update_dtypes(cols_to_update)
 

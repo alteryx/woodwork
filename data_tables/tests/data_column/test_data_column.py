@@ -6,17 +6,21 @@ from data_tables.data_column import DataColumn, infer_logical_type
 from data_tables.logical_types import (
     Boolean,
     Categorical,
+    CountryCode,
     Datetime,
     Double,
     Integer,
     NaturalLanguage,
+    Ordinal,
+    SubRegionCode,
     Timedelta,
-    WholeNumber
+    WholeNumber,
+    ZIPCode
 )
 
 
 def test_data_column_init(sample_series):
-    data_col = DataColumn(sample_series)
+    data_col = DataColumn(sample_series, add_standard_tags=False)
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
@@ -39,17 +43,17 @@ def test_data_column_init_with_logical_type(sample_series):
 
 def test_data_column_init_with_semantic_tags(sample_series):
     semantic_tags = ['index', 'tag2']
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == set(semantic_tags)
 
 
 def test_data_column_with_alternate_semantic_tags_input(sample_series):
     semantic_tags = 'index'
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == {'index'}
 
     semantic_tags = {'index', 'numeric'}
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
 
@@ -176,15 +180,46 @@ def test_natural_language_inference():
 
 
 def test_data_column_repr(sample_series):
-    data_col = DataColumn(sample_series)
-    assert data_col.__repr__() == "<DataColumn: sample_series (Physical Type = object) (Logical Type = Categorical) (Semantic Tags = set())>"
+    data_col = DataColumn(sample_series, add_standard_tags=False)
+    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = object) ' \
+        '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
 def test_set_semantic_tags(sample_series):
     semantic_tags = {'index', 'tag2'}
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
     data_col.set_semantic_tags(new_tags)
     assert data_col.semantic_tags == set(new_tags)
+
+
+def test_numeric_standard_tag():
+    series = pd.Series([1, 2, 3])
+    semantic_tags = 'custom_tag'
+
+    logical_types = [Integer, Double, WholeNumber]
+    for logical_type in logical_types:
+        data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
+        assert data_col.semantic_tags == {'custom_tag', 'numeric'}
+
+
+def test_category_standard_tag():
+    series = pd.Series([1, 2, 3])
+    semantic_tags = 'custom_tag'
+
+    logical_types = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
+    for logical_type in logical_types:
+        data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
+        assert data_col.semantic_tags == {'custom_tag', 'category'}
+
+
+def test_does_not_add_standard_tags():
+    series = pd.Series([1, 2, 3])
+    semantic_tags = 'custom_tag'
+    data_col = DataColumn(series,
+                          logical_type=Double,
+                          semantic_tags=semantic_tags,
+                          add_standard_tags=False)
+    assert data_col.semantic_tags == {'custom_tag'}
