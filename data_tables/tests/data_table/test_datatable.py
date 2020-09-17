@@ -369,6 +369,24 @@ def test_set_semantic_tags(sample_df):
     assert dt.columns['age'].semantic_tags == {'numeric'}
 
 
+def test_add_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': ['numeric', 'age']
+    }
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
+
+    new_tags = {
+        'full_name': ['list_tag'],
+        'age': 'str_tag',
+        'id': {'set_tag'}
+    }
+    dt.add_semantic_tags(new_tags)
+    assert dt.columns['full_name'].semantic_tags == {'tag1', 'list_tag'}
+    assert dt.columns['age'].semantic_tags == {'numeric', 'age', 'str_tag'}
+    assert dt.columns['id'].semantic_tags == {'set_tag'}
+
+
 def test_replace_none_with_pdna(none_df):
     logical_types = {
         'all_none': NaturalLanguage,
