@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_tables import DataTable
-from data_tables.data_table import (
+from woodwork import DataTable
+from woodwork.data_table import (
     _check_index,
     _check_logical_types,
     _check_semantic_tags,
@@ -13,7 +13,7 @@ from data_tables.data_table import (
     _check_unique_column_names,
     _validate_params
 )
-from data_tables.logical_types import (
+from woodwork.logical_types import (
     URL,
     Boolean,
     Categorical,

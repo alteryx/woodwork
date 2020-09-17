@@ -1,6 +1,6 @@
-# DataTables
+# Woodwork
 
-[![codecov](https://codecov.io/gh/FeatureLabs/datatables/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/datatables)
+[![codecov](https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/woodwork)
 
 DataTable are common data objects to use with Featuretools, EvalML, and general ML. A DataTable object contains the physical, logical, and semantic data types present in the data. In addition, it stores metadata about the data.
 
@@ -9,8 +9,8 @@ DataTable are common data objects to use with Featuretools, EvalML, and general 
 Clone repo
 
 ```bash
-git clone https://github.com/FeatureLabs/datatables.git
-cd datatables
+git clone https://github.com/FeatureLabs/woodwork.git
+cd woodwork
 ```
 
 Install with pip in editable mode
@@ -21,11 +21,11 @@ python -m pip install -e .
 
 ## Example
 
-Below is an example of using DataTables.
+Below is an example of using Woodwork.
 
 ```python
-from data_tables import DataTable
-from data_tables.logical_types import Datetime, Categorical, NaturalLanguage
+from woodwork import DataTable
+from woodwork.logical_types import Datetime, Categorical, NaturalLanguage
 
 import pandas as pd
 

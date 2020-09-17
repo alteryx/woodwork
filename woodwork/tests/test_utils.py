@@ -1,4 +1,4 @@
-from data_tables.utils import camel_to_snake
+from woodwork.utils import camel_to_snake
 
 
 def test_camel_to_snake():

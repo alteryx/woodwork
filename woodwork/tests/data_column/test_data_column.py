@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_tables.data_column import DataColumn, infer_logical_type
-from data_tables.logical_types import (
+from woodwork.data_column import DataColumn, infer_logical_type
+from woodwork.logical_types import (
     Boolean,
     Categorical,
     CountryCode,

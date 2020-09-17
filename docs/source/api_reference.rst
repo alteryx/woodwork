@@ -5,7 +5,7 @@ API Reference
 Logical Types
 =============
 
-.. currentmodule:: data_tables.logical_types
+.. currentmodule:: woodwork.logical_types
 .. autosummary::
     :toctree: generated/
 

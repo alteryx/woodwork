@@ -9,13 +9,13 @@ executors:
       - image: circleci/python:<< parameters.image_tag >>
 
 commands:
-  pkg_data_tables:
+  pkg_woodwork:
     steps:
       - run: |
           python setup.py sdist
           DT_VERSION=$(python setup.py --version)
-          tar -zxvf "dist/data_tables-${DT_VERSION}.tar.gz"
-          mv "data_tables-${DT_VERSION}" unpacked_sdist
+          tar -zxvf "dist/woodwork-${DT_VERSION}.tar.gz"
+          mv "woodwork-${DT_VERSION}" unpacked_sdist
   install_dependencies_dev:
     steps:
       - run: |
@@ -26,7 +26,7 @@ commands:
 
 jobs:
   install_dt:
-    working_directory: ~/datatables
+    working_directory: ~/woodwork
     parameters:
       image_tag:
         type: string
@@ -36,8 +36,8 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/datatables
-      - pkg_data_tables
+          at: ~/woodwork
+      - pkg_woodwork
       - run : |
           virtualenv venv
           source venv/bin/activate
@@ -46,13 +46,13 @@ jobs:
           python -m pip install -e unpacked_sdist/
           python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
-          root: ~/datatables
+          root: ~/woodwork
           paths:
             - venv
             - unpacked_sdist
 
   unit_tests:
-    working_directory: ~/datatables
+    working_directory: ~/woodwork
     parameters:
       image_tag:
         type: string
@@ -62,7 +62,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/datatables
+          at: ~/woodwork
       - when:
           condition:
             equal: [ "3.6", << parameters.image_tag >> ]
@@ -73,7 +73,7 @@ jobs:
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
-                pytest data_tables/ -n 2 --cov=data_tables --cov-config=../.coveragerc
+                pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
                 codecov --required
@@ -84,10 +84,10 @@ jobs:
             - run: |
                 source venv/bin/activate
                 cd unpacked_sdist
-                pytest data_tables/ -n 2
+                pytest woodwork/ -n 2
 
   lint_test:
-    working_directory: ~/datatables
+    working_directory: ~/woodwork
     parameters:
       image_tag:
         type: string
@@ -97,14 +97,14 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/datatables
+          at: ~/woodwork
       - run: |
           source venv/bin/activate
           python -m pip install -r unpacked_sdist/dev-requirements.txt
       - run: source venv/bin/activate && make lint
 
   build_docs:
-    working_directory: ~/datatables
+    working_directory: ~/woodwork
     executor:
       name: python
       image_tag: "3.7"
@@ -129,18 +129,18 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> install data_tables
+          name: << matrix.image_tag >> install woodwork
       - unit_tests:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> unit tests
           requires:
-            - << matrix.image_tag >> install data_tables
+            - << matrix.image_tag >> install woodwork
       - lint_test:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> lint test
           requires:
-            - << matrix.image_tag >> install data_tables
+            - << matrix.image_tag >> install woodwork

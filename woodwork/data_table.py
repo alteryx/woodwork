@@ -1,7 +1,7 @@
 import pandas as pd
 
-from data_tables.data_column import DataColumn
-from data_tables.logical_types import LogicalType, str_to_logical_type
+from woodwork.data_column import DataColumn
+from woodwork.logical_types import LogicalType, str_to_logical_type
 
 
 class DataTable(object):

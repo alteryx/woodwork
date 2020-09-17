@@ -1,5 +1,5 @@
 [run]
-source = data_tables
+source = woodwork
 
 [report]
 exclude_lines =

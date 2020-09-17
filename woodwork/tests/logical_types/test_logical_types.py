@@ -1,4 +1,4 @@
-from data_tables.logical_types import (
+from woodwork.logical_types import (
     Boolean,
     Categorical,
     FullName,
