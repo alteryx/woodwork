@@ -108,12 +108,25 @@ def test_datatable_init_with_semantic_tags(sample_df):
     }
     dt = DataTable(sample_df,
                    name='datatable',
-                   semantic_tags=semantic_tags)
+                   semantic_tags=semantic_tags,
+                   add_standard_tags=False)
 
     id_semantic_tags = dt.columns['id'].semantic_tags
     assert isinstance(id_semantic_tags, set)
     assert len(id_semantic_tags) == 1
     assert 'index' in id_semantic_tags
+
+
+def test_datatable_adds_standard_semantic_tags(sample_df):
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types={
+                       'id': Categorical,
+                       'age': WholeNumber,
+                   })
+
+    assert dt.semantic_tags['id'] == {'category'}
+    assert dt.semantic_tags['age'] == {'numeric'}
 
 
 def test_validate_params_errors(sample_df):
@@ -269,7 +282,7 @@ def test_set_logical_types(sample_df):
         'phone_number': ['tag3', 'tag2'],
         'signup_date': {'secondary_time_index'},
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage

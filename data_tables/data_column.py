@@ -18,7 +18,10 @@ from data_tables.logical_types import (
 
 
 class DataColumn(object):
-    def __init__(self, series, logical_type=None, semantic_tags=None):
+    def __init__(self, series,
+                 logical_type=None,
+                 semantic_tags=None,
+                 add_standard_tags=True):
         """Create DataColumn
 
         Args:
@@ -31,8 +34,11 @@ class DataColumn(object):
                 specifying the semantic tags:
                     (str) If only one semantic tag is being set, a single string can be passed.
                     (list or set) If muliple tags are being set, a list or set of strings can be passed.
+            add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
+                on the inferred or specified logical type for the column. Defaults to True.
         """
         self.series = series
+        self.add_standard_tags = add_standard_tags
         self.set_logical_type(logical_type)
         self.set_semantic_tags(semantic_tags)
 
@@ -57,6 +63,8 @@ class DataColumn(object):
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
         self._semantic_tags = _parse_semantic_tags(semantic_tags)
+        if self.add_standard_tags:
+            self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
 
     @property
     def logical_type(self):
