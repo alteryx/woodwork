@@ -877,6 +877,7 @@ def test_select_semantic_tags(sample_df):
         'email': ['tag2'],
         'age': ['numeric', 'tag2'],
         'phone_number': ['tag3', 'tag2'],
+        'is_registered': 'category',
         'signup_date': ['secondary_time_index'],
     })
 
@@ -901,3 +902,31 @@ def test_select_semantic_tags(sample_df):
     assert 'age' in dt_overlapping_tags.columns
     assert 'phone_number' in dt_overlapping_tags.columns
     assert 'email' in dt_overlapping_tags.columns
+
+    dt_common_tags = dt.select_semantic_tags(['category', 'numeric'])
+    assert len(dt_common_tags.columns) == 2
+    assert 'is_registered' in dt_common_tags.columns
+    assert 'age' in dt_common_tags.columns
+
+
+def test_select_semantic_tags_warning(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+    })
+
+    warning = "The following semantic tags were not present in your DataTable: ['doesnt_exist']"
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select_semantic_tags(['doesnt_exist'])
+    assert len(dt_empty.columns) == 0
+
+    warning = "The following semantic tags were not present in your DataTable: ['doesnt_exist']"
+    with pytest.warns(UserWarning, match=warning):
+        dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist'])
+    assert len(dt_single.columns) == 1
+
+    warning = "The following semantic tags were not present in your DataTable: ['category', 'doesnt_exist']"
+    with pytest.warns(UserWarning, match=warning):
+        dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist', 'category', 'tag2'])
+    assert len(dt_single.columns) == 2

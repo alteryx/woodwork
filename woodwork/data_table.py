@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 
 from woodwork.data_column import DataColumn
@@ -224,7 +226,16 @@ class DataTable(object):
             if intersection:
                 cols_to_include.append(col_name)
 
-        return self._new_dt_from_cols(cols_to_include)
+        new_dt = self._new_dt_from_cols(cols_to_include)
+
+        tags_present = {tag for col in new_dt.columns.values() for tag in col.semantic_tags}
+        tags_not_present = include - tags_present
+
+        if tags_not_present:
+            not_present_str = ' '.join(sorted(list(tags_not_present)))
+            warnings.warn(f'The following semantic tags were not present in your DataTable: {not_present_str}')
+
+        return new_dt
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types, indices, and name of original DataTable"""
