@@ -2,7 +2,7 @@ import urllib.request
 
 import pytest
 
-from data_tables.demo import load_retail
+from woodwork.demo import load_retail
 
 
 @pytest.fixture(autouse=True)

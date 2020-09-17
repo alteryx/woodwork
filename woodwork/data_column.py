@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from data_tables.logical_types import (
+from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,
