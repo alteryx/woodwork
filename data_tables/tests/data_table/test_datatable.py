@@ -282,7 +282,7 @@ def test_set_logical_types(sample_df):
         'phone_number': ['tag3', 'tag2'],
         'signup_date': {'secondary_time_index'},
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
@@ -291,26 +291,26 @@ def test_set_logical_types(sample_df):
     original_name_column = dt.columns['full_name']
 
     dt.set_logical_types({
-        'full_name': FullName,
+        'full_name': Categorical,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
     })
 
-    assert dt.columns['full_name'].logical_type == FullName
+    assert dt.columns['full_name'].logical_type == Categorical
     assert dt.columns['email'].logical_type == EmailAddress
     assert dt.columns['phone_number'].logical_type == PhoneNumber
     assert dt.columns['age'].logical_type == Double
 
     # Verify new column object was created
     new_name_column = dt.columns['full_name']
-    assert new_name_column != original_name_column
+    assert new_name_column is not original_name_column
 
-    # Verify semantic tags were not changed
-    assert dt.columns['full_name'].semantic_tags == {semantic_tags['full_name']}
-    assert dt.columns['email'].semantic_tags == set(semantic_tags['email'])
-    assert dt.columns['phone_number'].semantic_tags == set(semantic_tags['phone_number'])
-    assert dt.columns['age'].semantic_tags == set()
+    # Verify semantic tags were reset to standard tags
+    assert dt.columns['full_name'].semantic_tags == {'category'}
+    assert dt.columns['email'].semantic_tags == set()
+    assert dt.columns['phone_number'].semantic_tags == set()
+    assert dt.columns['age'].semantic_tags == {'numeric'}
 
 
 def test_set_logical_types_invalid_data(sample_df):
