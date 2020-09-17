@@ -119,10 +119,9 @@ class DataTable(object):
             dictionary, resetting the semantic tags for the column. Replaces the existing
             column with a new column object."""
         _check_logical_types(self.dataframe, logical_types)
-        cols_to_update = self._create_columns(logical_types.keys(),
-                                              logical_types,
-                                              None,
-                                              self.add_standard_tags)
+        cols_to_update = {}
+        for colname, logical_type in logical_types.items():
+            cols_to_update[colname] = self.columns[colname].set_logical_type(logical_type)
         self._update_columns(cols_to_update)
         self._update_dtypes(cols_to_update)
 
