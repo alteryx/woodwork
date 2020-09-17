@@ -76,7 +76,7 @@ def test_semantic_tag_errors(sample_series):
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_tags={'index': {}, 'time_index': {}})
 
-    error_message = "Semantic tags must be specified as strings"
+    error_message = "semantic_tags must contain only strings"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_tags=['index', 1])
 

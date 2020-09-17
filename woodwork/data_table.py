@@ -4,6 +4,7 @@ import pandas as pd
 
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import LogicalType, str_to_logical_type
+from woodwork.utils import _parse_semantic_tags
 
 
 class DataTable(object):
@@ -204,20 +205,13 @@ class DataTable(object):
             the original DataTable.
 
             Args:
-                include (str or list[str]): Semantic tags to include in the DataTable
+                include (str or list[str] or set[str]): Semantic tags to include in the DataTable
 
             Returns:
                 DataTable:
                     The subset of the original DataTable that contains just the semantic tags in `include`.
         """
-        if isinstance(include, str):
-            include = [include]
-        elif isinstance(include, list):
-            for tag in include:
-                if not isinstance(tag, str):
-                    raise TypeError(f"include list must contain only strings; {tag} is not a string")
-        else:
-            raise TypeError("include parameter must be either a list or string")
+        include = _parse_semantic_tags(include, 'include parameter')
 
         include = set(include)
         cols_to_include = []

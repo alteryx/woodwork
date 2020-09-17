@@ -857,11 +857,11 @@ def test_invalid_select_semantic_tags(sample_df):
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
-    err_msg = 'include parameter must be either a list or string'
+    err_msg = 'include parameter must be a string, set or list'
     with pytest.raises(TypeError, match=err_msg):
         dt.select_semantic_tags(1)
 
-    err_msg = 'include list must contain only strings; 1 is not a string'
+    err_msg = 'include parameter must contain only strings'
     with pytest.raises(TypeError, match=err_msg):
         dt.select_semantic_tags(['test', 1])
 

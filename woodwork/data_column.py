@@ -16,6 +16,7 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
+from data_tables.utils import _parse_semantic_tags
 
 
 class DataColumn(object):
@@ -69,12 +70,12 @@ class DataColumn(object):
 
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
-        self._semantic_tags = _parse_semantic_tags(semantic_tags)
+        self._semantic_tags = _parse_semantic_tags(semantic_tags, 'semantic_tags')
         if self.add_standard_tags:
             self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
 
     def add_semantic_tags(self, semantic_tags):
-        new_tags = _parse_semantic_tags(semantic_tags)
+        new_tags = _parse_semantic_tags(semantic_tags, 'semantic_tags')
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
@@ -95,25 +96,6 @@ class DataColumn(object):
     @property
     def dtype(self):
         return self.series.dtype
-
-
-def _parse_semantic_tags(semantic_tags):
-    if not semantic_tags:
-        return set()
-
-    if type(semantic_tags) not in [list, set, str]:
-        raise TypeError("semantic_tags must be a string, set or list")
-
-    if isinstance(semantic_tags, str):
-        return {semantic_tags}
-
-    if isinstance(semantic_tags, list):
-        semantic_tags = set(semantic_tags)
-
-    if not all([isinstance(tag, str) for tag in semantic_tags]):
-        raise TypeError("Semantic tags must be specified as strings")
-
-    return semantic_tags
 
 
 def infer_logical_type(series):
