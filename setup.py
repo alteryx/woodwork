@@ -11,6 +11,7 @@ setup(
     name='data_tables',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
+    license='BSD 3-clause',
     version='0.0.1',
     description='a two-dimensional data object with labeled axes and typing information',
     url='https://github.com/FeatureLabs/data_tables/',
