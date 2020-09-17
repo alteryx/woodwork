@@ -40,7 +40,7 @@ class DataColumn(object):
         """
         self.series = series
         self.add_standard_tags = add_standard_tags
-        self.set_logical_type(logical_type)
+        self._logical_type = self._parse_logical_type(logical_type)
         self.set_semantic_tags(semantic_tags)
 
     def __repr__(self):
@@ -51,15 +51,21 @@ class DataColumn(object):
         return msg
 
     def set_logical_type(self, logical_type):
+        new_logical_type = self._parse_logical_type(logical_type)
+        return DataColumn(series=self.series,
+                          logical_type=new_logical_type,
+                          add_standard_tags=self.add_standard_tags)
+
+    def _parse_logical_type(self, logical_type):
         if logical_type:
             if logical_type in LogicalType.__subclasses__():
-                self._logical_type = logical_type
+                return logical_type
             elif isinstance(logical_type, str):
-                self._logical_type = str_to_logical_type(logical_type)
+                return str_to_logical_type(logical_type)
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.series.name}'")
         else:
-            self._logical_type = infer_logical_type(self.series)
+            return infer_logical_type(self.series)
 
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""

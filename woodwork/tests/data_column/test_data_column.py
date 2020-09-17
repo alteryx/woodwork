@@ -248,3 +248,29 @@ def test_warns_on_setting_duplicate_tag(sample_series):
         data_col.add_semantic_tags(['first_tag', 'second_tag'])
     assert len(record) == 1
     assert record[0].message.args[0] == expected_message
+
+
+def test_set_logical_type_with_standard_tags(sample_series):
+    data_col = DataColumn(sample_series,
+                          logical_type=NaturalLanguage,
+                          semantic_tags='original_tag',
+                          add_standard_tags=True)
+
+    new_col = data_col.set_logical_type(Categorical)
+    assert isinstance(new_col, DataColumn)
+    assert new_col is not data_col
+    assert new_col.logical_type == Categorical
+    assert new_col.semantic_tags == {'category'}
+
+
+def test_set_logical_type_without_standard_tags(sample_series):
+    data_col = DataColumn(sample_series,
+                          logical_type=NaturalLanguage,
+                          semantic_tags='original_tag',
+                          add_standard_tags=False)
+
+    new_col = data_col.set_logical_type(Categorical)
+    assert isinstance(new_col, DataColumn)
+    assert new_col is not data_col
+    assert new_col.logical_type == Categorical
+    assert new_col.semantic_tags == set()

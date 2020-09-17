@@ -91,7 +91,7 @@ class DataTable(object):
             if semantic_tags and name in semantic_tags:
                 semantic_tag = semantic_tags[name]
             else:
-                semantic_tag = []
+                semantic_tag = None
             dc = DataColumn(self.dataframe[name], logical_type, semantic_tag, add_standard_tags)
             data_columns[dc.name] = dc
         return data_columns
@@ -116,17 +116,12 @@ class DataTable(object):
 
     def set_logical_types(self, logical_types):
         """Update the logical type for any columns names in the provided logical_types
-            dictionary, retaining any semantic tags for the column. Replaces the existing
+            dictionary, resetting the semantic tags for the column. Replaces the existing
             column with a new column object."""
         _check_logical_types(self.dataframe, logical_types)
-        # Get any existing semantic tags to retain on new columns
-        semantic_tags = {}
-        for name in logical_types.keys():
-            semantic_tags[name] = self.columns[name].semantic_tags
-        cols_to_update = self._create_columns(logical_types.keys(),
-                                              logical_types,
-                                              semantic_tags,
-                                              self.add_standard_tags)
+        cols_to_update = {}
+        for colname, logical_type in logical_types.items():
+            cols_to_update[colname] = self.columns[colname].set_logical_type(logical_type)
         self._update_columns(cols_to_update)
         self._update_dtypes(cols_to_update)
 
