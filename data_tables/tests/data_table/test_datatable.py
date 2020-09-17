@@ -289,6 +289,7 @@ def test_set_logical_types(sample_df):
     assert dt.columns['age'].logical_type == WholeNumber
     assert dt.columns['signup_date'].logical_type == Datetime
     original_name_column = dt.columns['full_name']
+    original_signup_column = dt.columns['signup_date']
 
     dt.set_logical_types({
         'full_name': Categorical,
@@ -311,6 +312,11 @@ def test_set_logical_types(sample_df):
     assert dt.columns['email'].semantic_tags == set()
     assert dt.columns['phone_number'].semantic_tags == set()
     assert dt.columns['age'].semantic_tags == {'numeric'}
+
+    # Verify signup date column was unchanged
+    assert dt.columns['signup_date'] is original_signup_column
+    assert dt.columns['signup_date'].logical_type == Datetime
+    assert dt.columns['signup_date'].semantic_tags == {'secondary_time_index'}
 
 
 def test_set_logical_types_invalid_data(sample_df):
