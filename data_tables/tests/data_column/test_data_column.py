@@ -195,7 +195,7 @@ def test_set_semantic_tags(sample_series):
     assert data_col.semantic_tags == set(new_tags)
 
 
-def test_numeric_standard_tag():
+def test_adds_numeric_standard_tag():
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
@@ -205,7 +205,7 @@ def test_numeric_standard_tag():
         assert data_col.semantic_tags == {'custom_tag', 'numeric'}
 
 
-def test_category_standard_tag():
+def test_adds_category_standard_tag():
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
