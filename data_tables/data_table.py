@@ -147,9 +147,10 @@ class DataTable(object):
                 column.series = self.dataframe[name]
 
     def add_semantic_tags(self, semantic_tags):
-        # semantic_tags: (dict -> SemanticTag/str)
-        # will not overwrite, will add to set
-        pass
+        """Adds specified semantic tags to columns. Will retain any previously set values."""
+        _check_semantic_tags(self.dataframe, semantic_tags)
+        for name in semantic_tags.keys():
+            self.columns[name].add_semantic_tags(semantic_tags[name])
 
     def remove_semantic_tags(self, semantic_tags):
         # semantic_tags: (dict -> SemanticTag/str)

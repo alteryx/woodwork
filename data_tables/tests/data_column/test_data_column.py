@@ -223,3 +223,28 @@ def test_does_not_add_standard_tags():
                           semantic_tags=semantic_tags,
                           add_standard_tags=False)
     assert data_col.semantic_tags == {'custom_tag'}
+
+
+def test_add_custom_tags(sample_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+
+    data_col.add_semantic_tags('string_tag')
+    assert data_col.semantic_tags == {'initial_tag', 'string_tag'}
+
+    data_col.add_semantic_tags(['list_tag'])
+    assert data_col.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
+
+    data_col.add_semantic_tags({'set_tag'})
+    assert data_col.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
+
+
+def test_warns_on_setting_duplicate_tag(sample_series):
+    semantic_tags = ['first_tag', 'second_tag']
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+
+    expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
+    with pytest.warns(UserWarning) as record:
+        data_col.add_semantic_tags(['first_tag', 'second_tag'])
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
