@@ -6,7 +6,7 @@ def camel_to_snake(s):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
 
-def _parse_input_to_set(semantic_tags, error_language='semantic_tags'):
+def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
     """Takes input as a single string, a list of strings, or a set of strings
         and returns a set with the supplied values. If no values are supplied,
         an empty set will be returned."""

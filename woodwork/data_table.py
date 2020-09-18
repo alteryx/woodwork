@@ -4,7 +4,7 @@ import pandas as pd
 
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import LogicalType, str_to_logical_type
-from woodwork.utils import _parse_input_to_set
+from woodwork.utils import _convert_input_to_set
 
 
 class DataTable(object):
@@ -169,7 +169,7 @@ class DataTable(object):
             property on the table. Columns names can be provided as a single string,
             a list of strings or a set of strings. If columns is not specified,
             tags will be reset for all columns."""
-        columns = _parse_input_to_set(columns, "columns")
+        columns = _convert_input_to_set(columns, "columns")
         if not columns:
             columns = self.columns.keys()
         cols_to_update = {}
@@ -226,7 +226,7 @@ class DataTable(object):
                 DataTable:
                     The subset of the original DataTable that contains just the semantic tags in `include`.
         """
-        include = _parse_input_to_set(include, 'include parameter')
+        include = _convert_input_to_set(include, 'include parameter')
 
         include = set(include)
         cols_to_include = []

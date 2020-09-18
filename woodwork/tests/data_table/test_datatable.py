@@ -415,7 +415,6 @@ def test_reset_selected_column_semantic_tags(sample_df):
     input_types = ['age', ['age'], {'age'}]
     for input_type in input_types:
         dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
-        breakpoint()
         dt.reset_semantic_tags(input_type)
         assert dt.columns['full_name'].semantic_tags == {'tag1'}
         assert dt.columns['age'].semantic_tags == {'numeric'}
