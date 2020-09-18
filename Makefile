@@ -7,20 +7,20 @@ clean:
 
 .PHONY: lint
 lint:
-	flake8 data_tables && isort --check-only data_tables
+	flake8 woodwork && isort --check-only woodwork
 
 .PHONY: lint-fix
 lint-fix:
-	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221,E261,E111,E114" data_tables
-	isort data_tables
+	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221,E261,E111,E114" woodwork
+	isort woodwork
 
 .PHONY: test
 test: lint
-	pytest data_tables/
+	pytest woodwork/
 
 .PHONY: testcoverage
 testcoverage: lint
-	pytest data_tables/ --cov=data_tables
+	pytest woodwork/ --cov=woodwork
 
 .PHONY: installdeps
 installdeps:

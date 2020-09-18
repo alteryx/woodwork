@@ -1,9 +1,10 @@
+import warnings
 from datetime import datetime
 
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from data_tables.logical_types import (
+from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,
@@ -15,10 +16,14 @@ from data_tables.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
+from woodwork.utils import _convert_input_to_set
 
 
 class DataColumn(object):
-    def __init__(self, series, logical_type=None, semantic_tags=None):
+    def __init__(self, series,
+                 logical_type=None,
+                 semantic_tags=None,
+                 add_standard_tags=True):
         """Create DataColumn
 
         Args:
@@ -31,9 +36,12 @@ class DataColumn(object):
                 specifying the semantic tags:
                     (str) If only one semantic tag is being set, a single string can be passed.
                     (list or set) If muliple tags are being set, a list or set of strings can be passed.
+            add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
+                on the inferred or specified logical type for the column. Defaults to True.
         """
         self.series = series
-        self.set_logical_type(logical_type)
+        self.add_standard_tags = add_standard_tags
+        self._logical_type = self._parse_logical_type(logical_type)
         self.set_semantic_tags(semantic_tags)
 
     def __repr__(self):
@@ -44,19 +52,60 @@ class DataColumn(object):
         return msg
 
     def set_logical_type(self, logical_type):
+        new_logical_type = self._parse_logical_type(logical_type)
+        return DataColumn(series=self.series,
+                          logical_type=new_logical_type,
+                          add_standard_tags=self.add_standard_tags)
+
+    def _parse_logical_type(self, logical_type):
         if logical_type:
             if logical_type in LogicalType.__subclasses__():
-                self._logical_type = logical_type
+                return logical_type
             elif isinstance(logical_type, str):
-                self._logical_type = str_to_logical_type(logical_type)
+                return str_to_logical_type(logical_type)
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.series.name}'")
         else:
-            self._logical_type = infer_logical_type(self.series)
+            return infer_logical_type(self.series)
 
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
-        self._semantic_tags = _parse_semantic_tags(semantic_tags)
+        self._semantic_tags = _convert_input_to_set(semantic_tags)
+        if self.add_standard_tags:
+            self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
+
+    def add_semantic_tags(self, semantic_tags):
+        new_tags = _convert_input_to_set(semantic_tags)
+        duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
+        if duplicate_tags:
+            warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
+        self._semantic_tags = self._semantic_tags.union(new_tags)
+
+    def reset_semantic_tags(self):
+        """Reset the semantic tags to the default values. The default values
+            will be either an empty set or a set of the standard tags based
+            on the column logical type, controlled by the add_default_tags
+            property."""
+        return DataColumn(series=self.series,
+                          logical_type=self.logical_type,
+                          semantic_tags=None,
+                          add_standard_tags=self.add_standard_tags)
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Removes specified semantic tags from column and returns a new column"""
+        tags_to_remove = _convert_input_to_set(semantic_tags)
+        invalid_tags = sorted(list(tags_to_remove.difference(self._semantic_tags)))
+        if invalid_tags:
+            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")
+        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self._logical_type.standard_tags)))
+        if standard_tags_to_remove and self.add_standard_tags:
+            warnings.warn(f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{self.name}'",
+                          UserWarning)
+        new_tags = self._semantic_tags.difference(tags_to_remove)
+        return DataColumn(series=self.series,
+                          logical_type=self.logical_type,
+                          semantic_tags=new_tags,
+                          add_standard_tags=False)
 
     @property
     def logical_type(self):
@@ -73,25 +122,6 @@ class DataColumn(object):
     @property
     def dtype(self):
         return self.series.dtype
-
-
-def _parse_semantic_tags(semantic_tags):
-    if not semantic_tags:
-        return set()
-
-    if type(semantic_tags) not in [list, set, str]:
-        raise TypeError("semantic_tags must be a string, set or list")
-
-    if isinstance(semantic_tags, str):
-        return {semantic_tags}
-
-    if isinstance(semantic_tags, list):
-        semantic_tags = set(semantic_tags)
-
-    if not all([isinstance(tag, str) for tag in semantic_tags]):
-        raise TypeError("Semantic tags must be specified as strings")
-
-    return semantic_tags
 
 
 def infer_logical_type(series):

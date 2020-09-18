@@ -32,7 +32,7 @@ Below is an example of using a DataTable to automatically infer the Logical Type
 
 .. ipython:: python
 
-    import data_tables as dt
+    import woodwork as dt
 
     data = dt.demo.load_retail(nrows=100)
 

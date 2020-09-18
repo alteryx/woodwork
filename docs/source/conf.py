@@ -12,7 +12,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import data_tables
+import woodwork
 import os
 import sys
 import subprocess
@@ -32,9 +32,9 @@ copyright = '2019, Alteryx, Inc.'
 author = 'Alteryx Innovation Labs'
 
 # The short X.Y version
-version = data_tables.__version__
+version = woodwork.__version__
 # The full version, including alpha/beta/rc tags
-release = data_tables.__version__
+release = woodwork.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -227,7 +227,7 @@ class AccessorLevelDocumenter(Documenter):
     and sphinx-doc (https://github.com/sphinx-doc/sphinx/blob/8c7faed6fcbc6b7d40f497698cb80fc10aee1ab3/sphinx/ext/autodoc/__init__.py#L846)
     """
     def resolve_name(self, modname, parents, path, base):
-        modname = 'data_tables'
+        modname = 'woodwork'
         mod_cls = path.rstrip('.')
         mod_cls = mod_cls.split('.')
         return modname, mod_cls + [base]

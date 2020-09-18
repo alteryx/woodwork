@@ -1,4 +1,4 @@
-from data_tables.utils import camel_to_snake
+from woodwork.utils import camel_to_snake
 
 
 class ClassNameDescriptor(object):
@@ -18,6 +18,7 @@ class LogicalTypeMetaClass(type):
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     type_string = ClassNameDescriptor()
     dtype = 'string'
+    standard_tags = {}
 
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__)
@@ -29,6 +30,7 @@ class Boolean(LogicalType):
 
 class Categorical(LogicalType):
     pandas_dtype = 'category'
+    standard_tags = {'category'}
 
     def __init__(self, encoding=None):
         # encoding dict(str -> int)
@@ -38,6 +40,7 @@ class Categorical(LogicalType):
 
 class CountryCode(LogicalType):
     pandas_dtype = 'category'
+    standard_tags = {'category'}
 
 
 class Datetime(LogicalType):
@@ -46,10 +49,12 @@ class Datetime(LogicalType):
 
 class Double(LogicalType):
     pandas_dtype = 'float64'
+    standard_tags = {'numeric'}
 
 
 class Integer(LogicalType):
     pandas_dtype = 'Int64'
+    standard_tags = {'numeric'}
 
 
 class EmailAddress(LogicalType):
@@ -78,6 +83,7 @@ class NaturalLanguage(LogicalType):
 
 class Ordinal(LogicalType):
     pandas_dtype = 'category'
+    standard_tags = {'category'}
 
     def __init__(self, ranking=None):
         # ranking can be used specify the ordering (lowest to highest)
@@ -90,6 +96,7 @@ class PhoneNumber(LogicalType):
 
 class SubRegionCode(LogicalType):
     pandas_dtype = 'category'
+    standard_tags = {'category'}
 
 
 class Timedelta(LogicalType):
@@ -103,10 +110,12 @@ class URL(LogicalType):
 class WholeNumber(LogicalType):
     """Represents Logical Types that contain natural numbers, including zero (0)."""
     pandas_dtype = 'Int64'
+    standard_tags = {'numeric'}
 
 
 class ZIPCode(LogicalType):
     pandas_dtype = 'category'
+    standard_tags = {'category'}
 
 
 def get_logical_types():

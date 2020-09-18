@@ -1,7 +1,10 @@
+import warnings
+
 import pandas as pd
 
-from data_tables.data_column import DataColumn
-from data_tables.logical_types import LogicalType, str_to_logical_type
+from woodwork.data_column import DataColumn
+from woodwork.logical_types import LogicalType, str_to_logical_type
+from woodwork.utils import _convert_input_to_set
 
 
 class DataTable(object):
@@ -12,7 +15,8 @@ class DataTable(object):
                  semantic_tags=None,
                  logical_types=None,
                  copy_dataframe=False,
-                 replace_none=True):
+                 replace_none=True,
+                 add_standard_tags=True):
         """ Create DataTable
 
         Args:
@@ -39,9 +43,12 @@ class DataTable(object):
                 reference to the input dataframe.
             replace_none (bool, optional): If True, will replace any `None` values in the supplied
                 dataframe with `pd.NA`. Defaults to True.
+            add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
+                on the inferred or specified logical type for the column. Defaults to True.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
+        self.add_standard_tags = add_standard_tags
 
         if copy_dataframe:
             self.dataframe = dataframe.copy()
@@ -58,8 +65,16 @@ class DataTable(object):
         # Infer logical types and create columns
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
-                                            semantic_tags)
+                                            semantic_tags,
+                                            self.add_standard_tags)
         self._update_dtypes(self.columns)
+
+    def __getitem__(self, key):
+        if not isinstance(key, str):
+            raise KeyError('Column name must be a string')
+        if key not in self.columns.keys():
+            raise KeyError(f"Column with name '{key}' not found in DataTable")
+        return self.columns[key]
 
     @property
     def types(self):
@@ -73,7 +88,7 @@ class DataTable(object):
         df.index.name = 'Data Column'
         return df
 
-    def _create_columns(self, column_names, logical_types, semantic_tags):
+    def _create_columns(self, column_names, logical_types, semantic_tags, add_standard_tags):
         """Create a dictionary with column names as keys and new DataColumn objects
             as values, while assigning any values that are passed for logical types or
             semantic tags to the new column."""
@@ -86,8 +101,8 @@ class DataTable(object):
             if semantic_tags and name in semantic_tags:
                 semantic_tag = semantic_tags[name]
             else:
-                semantic_tag = []
-            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag)
+                semantic_tag = None
+            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag, add_standard_tags)
             data_columns[dc.name] = dc
         return data_columns
 
@@ -111,16 +126,12 @@ class DataTable(object):
 
     def set_logical_types(self, logical_types):
         """Update the logical type for any columns names in the provided logical_types
-            dictionary, retaining any semantic tags for the column. Replaces the existing
+            dictionary, resetting the semantic tags for the column. Replaces the existing
             column with a new column object."""
         _check_logical_types(self.dataframe, logical_types)
-        # Get any existing semantic tags to retain on new columns
-        semantic_tags = {}
-        for name in logical_types.keys():
-            semantic_tags[name] = self.columns[name].semantic_tags
-        cols_to_update = self._create_columns(logical_types.keys(),
-                                              logical_types,
-                                              semantic_tags)
+        cols_to_update = {}
+        for colname, logical_type in logical_types.items():
+            cols_to_update[colname] = self.columns[colname].set_logical_type(logical_type)
         self._update_columns(cols_to_update)
         self._update_dtypes(cols_to_update)
 
@@ -141,14 +152,19 @@ class DataTable(object):
                 column.series = self.dataframe[name]
 
     def add_semantic_tags(self, semantic_tags):
-        # semantic_tags: (dict -> SemanticTag/str)
-        # will not overwrite, will add to set
-        pass
+        """Adds specified semantic tags to columns. Will retain any previously set values."""
+        _check_semantic_tags(self.dataframe, semantic_tags)
+        for name in semantic_tags.keys():
+            self.columns[name].add_semantic_tags(semantic_tags[name])
 
     def remove_semantic_tags(self, semantic_tags):
-        # semantic_tags: (dict -> SemanticTag/str)
-        # remove tag from a data column
-        pass
+        """Remove the semantic tags for any column names in the provided semantic_tags
+            dictionary. Replaces the column with a new column object."""
+        _check_semantic_tags(self.dataframe, semantic_tags)
+        cols_to_update = {}
+        for colname, tags in semantic_tags.items():
+            cols_to_update[colname] = self.columns[colname].remove_semantic_tags(tags)
+        self._update_columns(cols_to_update)
 
     def set_semantic_tags(self, semantic_tags):
         """Update the semantic tags for any column names in the provided semantic_tags
@@ -156,6 +172,25 @@ class DataTable(object):
         _check_semantic_tags(self.dataframe, semantic_tags)
         for name in semantic_tags.keys():
             self.columns[name].set_semantic_tags(semantic_tags[name])
+
+    def reset_semantic_tags(self, columns=None):
+        """Reset the semantic tags for the specified columns to the default values.
+            The default values will be either an empty set or a set of the standard
+            tags based on the column logical type, controlled by the add_default_tags
+            property on the table. Columns names can be provided as a single string,
+            a list of strings or a set of strings. If columns is not specified,
+            tags will be reset for all columns."""
+        columns = _convert_input_to_set(columns, "columns")
+        cols_not_found = sorted(list(columns.difference(set(self.dataframe.columns))))
+        if cols_not_found:
+            raise LookupError("Input contains columns that are not present in "
+                              f"dataframe: '{', '.join(cols_not_found)}'")
+        if not columns:
+            columns = self.columns.keys()
+        cols_to_update = {}
+        for colname in columns:
+            cols_to_update[colname] = self.columns[colname].reset_semantic_tags()
+        self._update_columns(cols_to_update)
 
     @property
     def df(self):
@@ -192,7 +227,44 @@ class DataTable(object):
         cols_to_include = [col_name for col_name, col in self.columns.items()
                            if col.logical_type in ltypes_to_include]
 
-        # Retain types, indices, and name of original DataTable
+        return self._new_dt_from_cols(cols_to_include)
+
+    def select_semantic_tags(self, include):
+        """Create a DataTable that includes only columns that have at least one of the semantic tags
+            specified here. The new DataTable with retain any logical types or semantic tags from
+            the original DataTable.
+
+            Args:
+                include (str or list[str] or set[str]): Semantic tags to include in the DataTable
+
+            Returns:
+                DataTable:
+                    The subset of the original DataTable that contains just the semantic tags in `include`.
+        """
+        include = _convert_input_to_set(include, 'include parameter')
+
+        include = set(include)
+        cols_to_include = []
+        for col_name, tags in self.semantic_tags.items():
+            intersection = tags.intersection(include)
+            if intersection:
+                cols_to_include.append(col_name)
+
+        new_dt = self._new_dt_from_cols(cols_to_include)
+
+        tags_present = {tag for col in new_dt.columns.values() for tag in col.semantic_tags}
+        tags_not_present = include - tags_present
+
+        if tags_not_present:
+            not_present_str = ' '.join(sorted(list(tags_not_present)))
+            warnings.warn(f'The following semantic tags were not present in your DataTable: {not_present_str}')
+
+        return new_dt
+
+    def _new_dt_from_cols(self, cols_to_include):
+        """Creates a new DataTable from a list of column names, retaining all types, indices, and name of original DataTable"""
+        assert all([col_name in self.columns for col_name in cols_to_include])
+
         new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
                              in self.semantic_tags.items() if col_name in cols_to_include}
         new_logical_types = {col_name: logical_type for col_name, logical_type
