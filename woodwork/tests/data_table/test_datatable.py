@@ -1009,3 +1009,29 @@ def test_getitem_invalid_input(sample_df):
     error_msg = "Column with name 'invalid_column' not found in DataTable"
     with pytest.raises(KeyError, match=error_msg):
         dt['invalid_column']
+
+
+def test_select_invalid_inputs(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+        'signup_date': Datetime,
+    })
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+    })
+
+    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select(1)
+
+    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select(['boolean', 'index', Double, 1])
+
+    dt_empty = dt.select([])
+    assert len(dt_empty.columns) == 0
