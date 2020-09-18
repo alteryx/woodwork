@@ -394,6 +394,39 @@ def test_add_semantic_tags(sample_df):
     assert dt.columns['id'].semantic_tags == {'set_tag'}
 
 
+def test_reset_all_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': 'age'
+    }
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+
+    dt.reset_semantic_tags()
+    assert dt.columns['full_name'].semantic_tags == set()
+    assert dt.columns['age'].semantic_tags == {'numeric'}
+
+
+def test_reset_selected_column_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': 'age'
+    }
+
+    input_types = ['age', ['age'], {'age'}]
+    for input_type in input_types:
+        dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+        dt.reset_semantic_tags(input_type)
+        assert dt.columns['full_name'].semantic_tags == {'tag1'}
+        assert dt.columns['age'].semantic_tags == {'numeric'}
+
+
+def test_reset_semantic_tags_invalid_column(sample_df):
+    dt = DataTable(sample_df)
+    error_msg = "Input contains columns that are not present in dataframe: 'invalid_column'"
+    with pytest.raises(LookupError, match=error_msg):
+        dt.reset_semantic_tags('invalid_column')
+
+
 def test_remove_semantic_tags(sample_df):
     semantic_tags = {
         'full_name': ['tag1', 'tag2', 'tag3'],

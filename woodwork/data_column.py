@@ -16,7 +16,7 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
-from woodwork.utils import _parse_semantic_tags
+from woodwork.utils import _convert_input_to_set
 
 
 class DataColumn(object):
@@ -70,20 +70,30 @@ class DataColumn(object):
 
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
-        self._semantic_tags = _parse_semantic_tags(semantic_tags)
+        self._semantic_tags = _convert_input_to_set(semantic_tags)
         if self.add_standard_tags:
             self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
 
     def add_semantic_tags(self, semantic_tags):
-        new_tags = _parse_semantic_tags(semantic_tags)
+        new_tags = _convert_input_to_set(semantic_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
         self._semantic_tags = self._semantic_tags.union(new_tags)
 
+    def reset_semantic_tags(self):
+        """Reset the semantic tags to the default values. The default values
+            will be either an empty set or a set of the standard tags based
+            on the column logical type, controlled by the add_default_tags
+            property."""
+        return DataColumn(series=self.series,
+                          logical_type=self.logical_type,
+                          semantic_tags=None,
+                          add_standard_tags=self.add_standard_tags)
+
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from column and returns a new column"""
-        tags_to_remove = _parse_semantic_tags(semantic_tags)
+        tags_to_remove = _convert_input_to_set(semantic_tags)
         invalid_tags = sorted(list(tags_to_remove.difference(self._semantic_tags)))
         if invalid_tags:
             raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")

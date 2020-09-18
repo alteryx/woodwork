@@ -4,7 +4,7 @@ import pandas as pd
 
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import LogicalType, str_to_logical_type
-from woodwork.utils import _parse_semantic_tags
+from woodwork.utils import _convert_input_to_set
 
 
 class DataTable(object):
@@ -173,6 +173,25 @@ class DataTable(object):
         for name in semantic_tags.keys():
             self.columns[name].set_semantic_tags(semantic_tags[name])
 
+    def reset_semantic_tags(self, columns=None):
+        """Reset the semantic tags for the specified columns to the default values.
+            The default values will be either an empty set or a set of the standard
+            tags based on the column logical type, controlled by the add_default_tags
+            property on the table. Columns names can be provided as a single string,
+            a list of strings or a set of strings. If columns is not specified,
+            tags will be reset for all columns."""
+        columns = _convert_input_to_set(columns, "columns")
+        cols_not_found = sorted(list(columns.difference(set(self.dataframe.columns))))
+        if cols_not_found:
+            raise LookupError("Input contains columns that are not present in "
+                              f"dataframe: '{', '.join(cols_not_found)}'")
+        if not columns:
+            columns = self.columns.keys()
+        cols_to_update = {}
+        for colname in columns:
+            cols_to_update[colname] = self.columns[colname].reset_semantic_tags()
+        self._update_columns(cols_to_update)
+
     @property
     def df(self):
         return self.dataframe
@@ -222,7 +241,7 @@ class DataTable(object):
                 DataTable:
                     The subset of the original DataTable that contains just the semantic tags in `include`.
         """
-        include = _parse_semantic_tags(include, 'include parameter')
+        include = _convert_input_to_set(include, 'include parameter')
 
         include = set(include)
         cols_to_include = []
