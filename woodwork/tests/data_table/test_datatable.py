@@ -420,6 +420,13 @@ def test_reset_selected_column_semantic_tags(sample_df):
         assert dt.columns['age'].semantic_tags == {'numeric'}
 
 
+def test_reset_semantic_tags_invalid_column(sample_df):
+    dt = DataTable(sample_df)
+    error_msg = "Input contains columns that are not present in dataframe: 'invalid_column'"
+    with pytest.raises(LookupError, match=error_msg):
+        dt.reset_semantic_tags('invalid_column')
+
+
 def test_replace_none_with_pdna(none_df):
     logical_types = {
         'all_none': NaturalLanguage,

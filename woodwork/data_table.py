@@ -170,6 +170,10 @@ class DataTable(object):
             a list of strings or a set of strings. If columns is not specified,
             tags will be reset for all columns."""
         columns = _convert_input_to_set(columns, "columns")
+        cols_not_found = sorted(list(columns.difference(set(self.dataframe.columns))))
+        if cols_not_found:
+            raise LookupError("Input contains columns that are not present in "
+                              f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
             columns = self.columns.keys()
         cols_to_update = {}
