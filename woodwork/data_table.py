@@ -1,7 +1,10 @@
+import warnings
+
 import pandas as pd
 
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import LogicalType, str_to_logical_type
+from woodwork.utils import _parse_semantic_tags
 
 
 class DataTable(object):
@@ -194,7 +197,44 @@ class DataTable(object):
         cols_to_include = [col_name for col_name, col in self.columns.items()
                            if col.logical_type in ltypes_to_include]
 
-        # Retain types, indices, and name of original DataTable
+        return self._new_dt_from_cols(cols_to_include)
+
+    def select_semantic_tags(self, include):
+        """Create a DataTable that includes only columns that have at least one of the semantic tags
+            specified here. The new DataTable with retain any logical types or semantic tags from
+            the original DataTable.
+
+            Args:
+                include (str or list[str] or set[str]): Semantic tags to include in the DataTable
+
+            Returns:
+                DataTable:
+                    The subset of the original DataTable that contains just the semantic tags in `include`.
+        """
+        include = _parse_semantic_tags(include, 'include parameter')
+
+        include = set(include)
+        cols_to_include = []
+        for col_name, tags in self.semantic_tags.items():
+            intersection = tags.intersection(include)
+            if intersection:
+                cols_to_include.append(col_name)
+
+        new_dt = self._new_dt_from_cols(cols_to_include)
+
+        tags_present = {tag for col in new_dt.columns.values() for tag in col.semantic_tags}
+        tags_not_present = include - tags_present
+
+        if tags_not_present:
+            not_present_str = ' '.join(sorted(list(tags_not_present)))
+            warnings.warn(f'The following semantic tags were not present in your DataTable: {not_present_str}')
+
+        return new_dt
+
+    def _new_dt_from_cols(self, cols_to_include):
+        """Creates a new DataTable from a list of column names, retaining all types, indices, and name of original DataTable"""
+        assert all([col_name in self.columns for col_name in cols_to_include])
+
         new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
                              in self.semantic_tags.items() if col_name in cols_to_include}
         new_logical_types = {col_name: logical_type for col_name, logical_type

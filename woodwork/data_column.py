@@ -16,6 +16,7 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
+from woodwork.utils import _parse_semantic_tags
 
 
 class DataColumn(object):
@@ -95,25 +96,6 @@ class DataColumn(object):
     @property
     def dtype(self):
         return self.series.dtype
-
-
-def _parse_semantic_tags(semantic_tags):
-    if not semantic_tags:
-        return set()
-
-    if type(semantic_tags) not in [list, set, str]:
-        raise TypeError("semantic_tags must be a string, set or list")
-
-    if isinstance(semantic_tags, str):
-        return {semantic_tags}
-
-    if isinstance(semantic_tags, list):
-        semantic_tags = set(semantic_tags)
-
-    if not all([isinstance(tag, str) for tag in semantic_tags]):
-        raise TypeError("Semantic tags must be specified as strings")
-
-    return semantic_tags
 
 
 def infer_logical_type(series):

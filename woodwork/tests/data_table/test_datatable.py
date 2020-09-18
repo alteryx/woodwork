@@ -34,6 +34,7 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
+from woodwork.tests.testing_utils import validate_subset_dt
 
 
 def test_datatable_init(sample_df):
@@ -816,3 +817,119 @@ def test_select_ltypes_table(sample_df):
     assert col.series.equals(original_col.series)
     assert col.dtype == original_col.dtype
     assert col.semantic_tags == original_col.semantic_tags
+
+
+def test_new_dt_from_columns(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+        'signup_date': Datetime,
+    })
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+    })
+    empty_dt = dt._new_dt_from_cols([])
+    assert len(empty_dt.columns) == 0
+
+    just_index = dt._new_dt_from_cols(['id'])
+    assert just_index.index == dt.index
+    assert just_index.time_index is None
+    validate_subset_dt(just_index, dt)
+
+    just_time_index = dt._new_dt_from_cols(['signup_date'])
+    assert just_time_index.time_index == dt.time_index
+    assert just_time_index.index is None
+    validate_subset_dt(just_time_index, dt)
+
+    transfer_schema = dt._new_dt_from_cols(['phone_number'])
+    assert transfer_schema.index is None
+    assert transfer_schema.time_index is None
+    validate_subset_dt(transfer_schema, dt)
+
+
+def test_invalid_select_semantic_tags(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+    })
+    err_msg = 'include parameter must be a string, set or list'
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select_semantic_tags(1)
+
+    err_msg = 'include parameter must contain only strings'
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select_semantic_tags(['test', 1])
+
+    dt_empty = dt.select_semantic_tags([])
+    assert len(dt_empty.columns) == 0
+
+
+def test_select_semantic_tags(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_semantic_tags({
+        'full_name': 'tag1',
+        'id': 'index',
+        'email': ['tag2'],
+        'age': ['numeric', 'tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'is_registered': 'category',
+        'signup_date': ['secondary_time_index'],
+    })
+
+    dt_one_match = dt.select_semantic_tags('numeric')
+    assert len(dt_one_match.columns) == 2
+    assert 'age' in dt_one_match.columns
+    assert 'id' in dt_one_match.columns
+
+    dt_multiple_matches = dt.select_semantic_tags('tag2')
+    assert len(dt_multiple_matches.columns) == 3
+    assert 'age' in dt_multiple_matches.columns
+    assert 'phone_number' in dt_multiple_matches.columns
+    assert 'email' in dt_multiple_matches.columns
+
+    dt_multiple_tags = dt.select_semantic_tags(['index', 'numeric', 'secondary_time_index'])
+    assert len(dt_multiple_tags.columns) == 3
+    assert 'id' in dt_multiple_tags.columns
+    assert 'age' in dt_multiple_tags.columns
+    assert 'signup_date' in dt_multiple_tags.columns
+
+    dt_overlapping_tags = dt.select_semantic_tags(['numeric', 'tag2'])
+    assert len(dt_overlapping_tags.columns) == 4
+    assert 'id' in dt_overlapping_tags.columns
+    assert 'age' in dt_overlapping_tags.columns
+    assert 'phone_number' in dt_overlapping_tags.columns
+    assert 'email' in dt_overlapping_tags.columns
+
+    dt_common_tags = dt.select_semantic_tags(['category', 'numeric'])
+    assert len(dt_common_tags.columns) == 3
+    assert 'id' in dt_common_tags.columns
+    assert 'is_registered' in dt_common_tags.columns
+    assert 'age' in dt_common_tags.columns
+
+
+def test_select_semantic_tags_warning(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+    })
+
+    warning = "The following semantic tags were not present in your DataTable: ['doesnt_exist']"
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select_semantic_tags(['doesnt_exist'])
+    assert len(dt_empty.columns) == 0
+
+    warning = "The following semantic tags were not present in your DataTable: ['doesnt_exist']"
+    with pytest.warns(UserWarning, match=warning):
+        dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist'])
+    assert len(dt_single.columns) == 2
+
+    warning = "The following semantic tags were not present in your DataTable: ['category', 'doesnt_exist']"
+    with pytest.warns(UserWarning, match=warning):
+        dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist', 'category', 'tag2'])
+    assert len(dt_single.columns) == 3
