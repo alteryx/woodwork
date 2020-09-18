@@ -1,20 +1,20 @@
 Install
 *******
 
-<TBD> is available for Python 3.6, 3.7, and 3.8. The recommended way to install <TBD> is using ``pip``
+Woodwork is available for Python 3.6, 3.7, and 3.8. The recommended way to install woodwork is using ``pip``
 ::
 
-    python -m pip install data_tables
+    python -m pip install woodwork
 
 
 Install from Source
 -------------------
 
-To install <TBD> from source, clone the repository from `github
-<https://github.com/FeatureLabs/datatables>`_::
+To install Woodwork from source, clone the repository from `github
+<https://github.com/FeatureLabs/woodwork>`_::
 
-    git clone https://github.com/FeatureLabs/datatables.git
-    cd datatables
+    git clone https://github.com/FeatureLabs/woodwork.git
+    cd woodwork
     python setup.py install
 
 or use ``pip`` locally if you want to install all dependencies as well::
@@ -27,7 +27,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/datatables/blob/main/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/woodwork/blob/main/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~
@@ -45,7 +45,7 @@ Run::
 Test
 ~~~~
 
-Run <TBD> tests::
+Run woodwork tests::
 
     make test
 
