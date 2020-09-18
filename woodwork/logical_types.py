@@ -135,6 +135,5 @@ def str_to_logical_type(logical_str, raise_error=True):
 
     if logical_str in logical_types_dict:
         return logical_types_dict[logical_str]
-    else:
-        if raise_error:
-            raise ValueError('String %s is not a valid logical type' % logical_str)
+    elif raise_error:
+        raise ValueError('String %s is not a valid logical type' % logical_str)

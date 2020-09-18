@@ -229,7 +229,7 @@ class DataTable(object):
                 if selector in ltypes_in_dt:
                     ltypes_present.add(selector)
                 else:
-                    selectors_not_present.append(selector)
+                    selectors_not_present.append(str(selector))
             elif isinstance(selector, str):
                 # If the str is a viable ltype, it'll take precedence
                 # but if it's not present, we'll check if it's a tag
@@ -245,7 +245,7 @@ class DataTable(object):
                 raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
 
         if selectors_not_present:
-            not_present_str = ' '.join(sorted(list(selectors_not_present)))
+            not_present_str = ' '.join(sorted(selectors_not_present))
             warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
 
         cols_to_include = []
