@@ -394,6 +394,33 @@ def test_add_semantic_tags(sample_df):
     assert dt.columns['id'].semantic_tags == {'set_tag'}
 
 
+def test_reset_all_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': 'age'
+    }
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+
+    dt.reset_semantic_tags()
+    assert dt.columns['full_name'].semantic_tags == set()
+    assert dt.columns['age'].semantic_tags == {'numeric'}
+
+
+def test_reset_selected_column_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': 'age'
+    }
+
+    input_types = ['age', ['age'], {'age'}]
+    for input_type in input_types:
+        dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+        breakpoint()
+        dt.reset_semantic_tags(input_type)
+        assert dt.columns['full_name'].semantic_tags == {'tag1'}
+        assert dt.columns['age'].semantic_tags == {'numeric'}
+
+
 def test_replace_none_with_pdna(none_df):
     logical_types = {
         'all_none': NaturalLanguage,

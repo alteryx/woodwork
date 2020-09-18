@@ -16,7 +16,7 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
-from woodwork.utils import _parse_semantic_tags
+from woodwork.utils import _parse_input_to_set
 
 
 class DataColumn(object):
@@ -70,16 +70,22 @@ class DataColumn(object):
 
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
-        self._semantic_tags = _parse_semantic_tags(semantic_tags)
+        self._semantic_tags = _parse_input_to_set(semantic_tags)
         if self.add_standard_tags:
             self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
 
     def add_semantic_tags(self, semantic_tags):
-        new_tags = _parse_semantic_tags(semantic_tags)
+        new_tags = _parse_input_to_set(semantic_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
         self._semantic_tags = self._semantic_tags.union(new_tags)
+
+    def reset_semantic_tags(self):
+        return DataColumn(series=self.series,
+                          logical_type=self.logical_type,
+                          semantic_tags=None,
+                          add_standard_tags=self.add_standard_tags)
 
     @property
     def logical_type(self):

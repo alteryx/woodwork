@@ -274,3 +274,26 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert new_col is not data_col
     assert new_col.logical_type == Categorical
     assert new_col.semantic_tags == set()
+
+
+def test_reset_semantic_tags_with_standard_tags(sample_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_series,
+                          semantic_tags=semantic_tags,
+                          logical_type=Categorical,
+                          add_standard_tags=True)
+
+    new_col = data_col.reset_semantic_tags()
+    assert new_col is not data_col
+    assert new_col.semantic_tags == Categorical.standard_tags
+
+
+def test_reset_semantic_tags_without_standard_tags(sample_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_series,
+                          semantic_tags=semantic_tags,
+                          add_standard_tags=False)
+
+    new_col = data_col.reset_semantic_tags()
+    assert new_col is not data_col
+    assert new_col.semantic_tags == set()
