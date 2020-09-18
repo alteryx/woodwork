@@ -11,7 +11,7 @@ Changelog
 
 
 **v0.1.0** September <TBD>, 2020
-    * Add changelog, and update changelog check to CI (:pr:`118`)
+    * Add changelog, and update changelog check to CI (:pr:`123`)
     * Implement reset_semantic_tags (:pr:`118`)
     * Implement DataTable getitem (:pr:`119`)
     * Add remove_semantic_tags selection (:pr:`117`)
