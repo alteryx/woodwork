@@ -274,3 +274,30 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert new_col is not data_col
     assert new_col.logical_type == Categorical
     assert new_col.semantic_tags == set()
+
+
+def test_remove_semantic_tags(sample_series):
+    tags_to_remove = [
+        'tag1',
+        ['tag1'],
+        {'tag1'}
+    ]
+
+    data_col = DataColumn(sample_series,
+                          semantic_tags=['tag1', 'tag2'],
+                          add_standard_tags=False)
+
+    for tag in tags_to_remove:
+        new_col = data_col.remove_semantic_tags(tag)
+        assert new_col is not data_col
+        assert new_col.semantic_tags == {'tag2'}
+                
+
+def test_remove_standard_semantic_tag(sample_series):
+    # Check that warning is raised if add_standard_tags is True - tag should be removed
+    # Check that warning is not raised if add_standard_tags is False - tag should be removed
+    raise NotImplementedError
+
+def test_remove_semantic_tags_warns_invalid_tag(sample_series):
+    # Raise a warning if user passes a tag that is not present on a column
+    raise NotImplementedError

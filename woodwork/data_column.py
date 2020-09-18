@@ -80,6 +80,15 @@ class DataColumn(object):
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
         self._semantic_tags = self._semantic_tags.union(new_tags)
 
+    def remove_semantic_tags(self, semantic_tags):
+        """Removes specified semantic tags from column and returns a new column"""
+        tags_to_remove = _parse_semantic_tags(semantic_tags)
+        new_tags = self._semantic_tags.difference(tags_to_remove)
+        return DataColumn(series=self.series,
+                          logical_type=self.logical_type,
+                          semantic_tags=new_tags,
+                          add_standard_tags=self.add_standard_tags)
+
     @property
     def logical_type(self):
         return self._logical_type
