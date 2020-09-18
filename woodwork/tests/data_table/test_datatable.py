@@ -427,6 +427,24 @@ def test_reset_semantic_tags_invalid_column(sample_df):
         dt.reset_semantic_tags('invalid_column')
 
 
+def test_remove_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': ['tag1', 'tag2', 'tag3'],
+        'age': ['numeric', 'age'],
+        'id': ['tag1', 'tag2']
+    }
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
+    tags_to_remove = {
+        'full_name': ['tag1', 'tag3'],
+        'age': 'numeric',
+        'id': {'tag1'}
+    }
+    dt.remove_semantic_tags(tags_to_remove)
+    assert dt.columns['full_name'].semantic_tags == {'tag2'}
+    assert dt.columns['age'].semantic_tags == {'age'}
+    assert dt.columns['id'].semantic_tags == {'tag2'}
+
+
 def test_replace_none_with_pdna(none_df):
     logical_types = {
         'all_none': NaturalLanguage,
