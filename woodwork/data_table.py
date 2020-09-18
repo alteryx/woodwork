@@ -199,6 +199,62 @@ class DataTable(object):
     def to_pandas_dataframe(self):
         return self.dataframe
 
+    def select(self, include):
+        """Create a DataTable including only columns whose logical type and semantic tags are specified
+            in the list of types and tags to include.
+
+        Args:
+            include  (str or LogicalType or list[str or LogicalType]): Logical types and semantic tags to
+                include in the DataTable.
+
+        Returns:
+            DataTable:
+                The subset of the original DataTable that contains just the ltypes and semantic tags
+                in `include`.
+        """
+        if not isinstance(include, list):
+            include = [include]
+
+        ltypes_present = set()
+        tags_present = set()
+
+        # --> see how much of this can be taken from below
+        # also make sure that the other selects are exactly the same to the user
+        ltypes_in_dt = {col.logical_type for col in self.columns.values()}
+        tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
+        selectors_not_present = []
+
+        for selector in include:
+            if selector in LogicalType.__subclasses__():
+                if selector in ltypes_in_dt:
+                    ltypes_present.add(selector)
+                else:
+                    selectors_not_present.append(selector)
+            elif isinstance(selector, str):
+                # If the str is a viable ltype, it'll take precedence
+                # but if it's not present, we'll check if it's a tag
+                ltype = str_to_logical_type(selector, raise_error=False)
+                if ltype and ltype in ltypes_in_dt:
+                    ltypes_present.add(ltype)
+                    continue
+                elif selector in tags_in_dt:
+                    tags_present.add(selector)
+                else:
+                    selectors_not_present.append(selector)
+            else:
+                raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
+
+        if selectors_not_present:
+            not_present_str = ' '.join(sorted(list(selectors_not_present)))
+            warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
+
+        cols_to_include = []
+        for col_name, col in self.columns.items():
+            if col.logical_type in ltypes_present or col.semantic_tags.intersection(tags_present):
+                cols_to_include.append(col_name)
+
+        return self._new_dt_from_cols(cols_to_include)
+
     def select_ltypes(self, include):
         """Create a DataTable that includes only columns whose logical types are specified here.
             Will not include any column, including indices, whose logical type is not specified.
