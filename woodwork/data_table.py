@@ -151,9 +151,13 @@ class DataTable(object):
             self.columns[name].add_semantic_tags(semantic_tags[name])
 
     def remove_semantic_tags(self, semantic_tags):
-        # semantic_tags: (dict -> SemanticTag/str)
-        # remove tag from a data column
-        pass
+        """Remove the semantic tags for any column names in the provided semantic_tags
+            dictionary. Replaces the column with a new column object."""
+        _check_semantic_tags(self.dataframe, semantic_tags)
+        cols_to_update = {}
+        for colname, tags in semantic_tags.items():
+            cols_to_update[colname] = self.columns[colname].remove_semantic_tags(tags)
+        self._update_columns(cols_to_update)
 
     def set_semantic_tags(self, semantic_tags):
         """Update the semantic tags for any column names in the provided semantic_tags
