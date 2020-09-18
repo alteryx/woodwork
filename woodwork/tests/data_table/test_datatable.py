@@ -396,14 +396,13 @@ def test_add_semantic_tags(sample_df):
 
 def test_remove_semantic_tags(sample_df):
     semantic_tags = {
-        'full_name': ['tag1', 'tag2'],
+        'full_name': ['tag1', 'tag2', 'tag3'],
         'age': ['numeric', 'age'],
         'id': ['tag1', 'tag2']
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
-
     tags_to_remove = {
-        'full_name': ['tag1'],
+        'full_name': ['tag1', 'tag3'],
         'age': 'numeric',
         'id': {'tag1'}
     }

@@ -84,11 +84,18 @@ class DataColumn(object):
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from column and returns a new column"""
         tags_to_remove = _parse_semantic_tags(semantic_tags)
+        invalid_tags = sorted(list(tags_to_remove.difference(self._semantic_tags)))
+        if invalid_tags:
+            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")
+        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self._logical_type.standard_tags)))
+        if standard_tags_to_remove and self.add_standard_tags:
+            warnings.warn(f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{self.name}'",
+                          UserWarning)
         new_tags = self._semantic_tags.difference(tags_to_remove)
         return DataColumn(series=self.series,
                           logical_type=self.logical_type,
                           semantic_tags=new_tags,
-                          add_standard_tags=self.add_standard_tags)
+                          add_standard_tags=False)
 
     @property
     def logical_type(self):

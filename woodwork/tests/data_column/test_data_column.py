@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -291,13 +293,36 @@ def test_remove_semantic_tags(sample_series):
         new_col = data_col.remove_semantic_tags(tag)
         assert new_col is not data_col
         assert new_col.semantic_tags == {'tag2'}
-                
+
 
 def test_remove_standard_semantic_tag(sample_series):
     # Check that warning is raised if add_standard_tags is True - tag should be removed
-    # Check that warning is not raised if add_standard_tags is False - tag should be removed
-    raise NotImplementedError
+    data_col = DataColumn(sample_series,
+                          logical_type=Categorical,
+                          semantic_tags='tag1',
+                          add_standard_tags=True)
+    expected_message = "Removing standard semantic tag(s) 'category' from column 'sample_series'"
+    with pytest.warns(UserWarning) as record:
+        new_col = data_col.remove_semantic_tags(['tag1', 'category'])
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
+    assert new_col.semantic_tags == set()
 
-def test_remove_semantic_tags_warns_invalid_tag(sample_series):
-    # Raise a warning if user passes a tag that is not present on a column
-    raise NotImplementedError
+    # Check that warning is not raised if add_standard_tags is False - tag should be removed
+    data_col = DataColumn(sample_series,
+                          logical_type=Categorical,
+                          semantic_tags=['category', 'tag1'],
+                          add_standard_tags=False)
+
+    with pytest.warns(None) as record:
+        new_col = data_col.remove_semantic_tags(['tag1', 'category'])
+    assert len(record) == 0
+    assert new_col.semantic_tags == set()
+
+
+def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
+    data_col = DataColumn(sample_series,
+                          semantic_tags='tag1')
+    error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
+    with pytest.raises(LookupError, match=error_msg):
+        data_col.remove_semantic_tags('invalid_tagname')
