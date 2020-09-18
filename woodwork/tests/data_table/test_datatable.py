@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork import DataTable
+from woodwork import DataColumn, DataTable
 from woodwork.data_table import (
     _check_index,
     _check_logical_types,
@@ -984,3 +984,28 @@ def test_select_semantic_tags_warning(sample_df):
     with pytest.warns(UserWarning, match=warning):
         dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist', 'category', 'tag2'])
     assert len(dt_single.columns) == 3
+
+
+def test_getitem(sample_df):
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types={'age': WholeNumber},
+                   semantic_tags={'age': 'custom_tag'},
+                   add_standard_tags=True)
+
+    data_col = dt['age']
+    assert isinstance(data_col, DataColumn)
+    assert data_col.logical_type == WholeNumber
+    assert data_col.semantic_tags == {'numeric', 'custom_tag'}
+
+
+def test_getitem_invalid_input(sample_df):
+    dt = DataTable(sample_df)
+
+    error_msg = 'Column name must be a string'
+    with pytest.raises(KeyError, match=error_msg):
+        dt[1]
+
+    error_msg = "Column with name 'invalid_column' not found in DataTable"
+    with pytest.raises(KeyError, match=error_msg):
+        dt['invalid_column']

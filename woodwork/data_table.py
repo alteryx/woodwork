@@ -69,6 +69,13 @@ class DataTable(object):
                                             self.add_standard_tags)
         self._update_dtypes(self.columns)
 
+    def __getitem__(self, key):
+        if not isinstance(key, str):
+            raise KeyError('Column name must be a string')
+        if key not in self.columns.keys():
+            raise KeyError(f"Column with name '{key}' not found in DataTable")
+        return self.columns[key]
+
     @property
     def types(self):
         typing_info = {}
