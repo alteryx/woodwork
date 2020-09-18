@@ -117,6 +117,14 @@ jobs:
           make -C docs/ html
       - run: ls docs/build/html
 
+  changelog_updated:
+    working_directory: ~/woodwork
+    docker:
+      - image: busybox:latest
+    steps:
+      - checkout
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/woodwork/pull/}\`"
+
 workflows:
   version: 2
   build_docs:
@@ -144,3 +152,11 @@ workflows:
           name: << matrix.image_tag >> lint test
           requires:
             - << matrix.image_tag >> install woodwork
+      - changelog_updated:
+          name: "changelog updated"
+          filters:
+            branches:
+              ignore:
+                - /^main?/
+                - /^v\d+\.\d+\.\d+$/
+                - /^dep-update-[a-f0-9]{7}$/
