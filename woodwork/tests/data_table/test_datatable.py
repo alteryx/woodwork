@@ -34,7 +34,7 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
-from data_tables.tests.testing_utils import validate_subset_dt
+from woodwork.tests.testing_utils import validate_subset_dt
 
 
 def test_datatable_init(sample_df):

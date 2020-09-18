@@ -16,7 +16,7 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
-from data_tables.utils import _parse_semantic_tags
+from woodwork.utils import _parse_semantic_tags
 
 
 class DataColumn(object):
