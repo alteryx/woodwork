@@ -18,11 +18,11 @@ def test_camel_to_snake():
 def test_parse_semantic_tags():
     error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        _parse_semantic_tags(int, 'semantic_tags')
+        _parse_semantic_tags(int)
 
-    error_message = "semantic_tags must be a string, set or list"
+    error_message = "test_text must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        _parse_semantic_tags({'index': {}, 'time_index': {}}, 'semantic_tags')
+        _parse_semantic_tags({'index': {}, 'time_index': {}}, 'test_text')
 
     error_message = "include parameter must contain only strings"
     with pytest.raises(TypeError, match=error_message):
@@ -31,7 +31,7 @@ def test_parse_semantic_tags():
     semantic_tags_from_single = _parse_semantic_tags('index', 'include parameter')
     assert semantic_tags_from_single == {'index'}
 
-    semantic_tags_from_list = _parse_semantic_tags(['index', 'numeric', 'category'], 'semantic_tags')
+    semantic_tags_from_list = _parse_semantic_tags(['index', 'numeric', 'category'])
     assert semantic_tags_from_list == {'index', 'numeric', 'category'}
 
     semantic_tags_from_set = _parse_semantic_tags({'index', 'numeric', 'category'}, 'include parameter')

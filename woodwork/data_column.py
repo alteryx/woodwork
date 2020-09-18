@@ -70,12 +70,12 @@ class DataColumn(object):
 
     def set_semantic_tags(self, semantic_tags):
         """Replace semantic tags with passed values"""
-        self._semantic_tags = _parse_semantic_tags(semantic_tags, 'semantic_tags')
+        self._semantic_tags = _parse_semantic_tags(semantic_tags)
         if self.add_standard_tags:
             self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
 
     def add_semantic_tags(self, semantic_tags):
-        new_tags = _parse_semantic_tags(semantic_tags, 'semantic_tags')
+        new_tags = _parse_semantic_tags(semantic_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)

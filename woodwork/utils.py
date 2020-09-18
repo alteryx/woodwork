@@ -6,7 +6,7 @@ def camel_to_snake(s):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
 
 
-def _parse_semantic_tags(semantic_tags, error_language):
+def _parse_semantic_tags(semantic_tags, error_language='semantic_tags'):
     if not semantic_tags:
         return set()
 
