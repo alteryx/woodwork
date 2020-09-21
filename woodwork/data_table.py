@@ -210,7 +210,7 @@ class DataTable(object):
         Returns:
             DataTable:
                 The subset of the original DataTable that contains just the
-                ltypes and semantic tags in `include`.
+                logical types and semantic tags in `include`.
         """
         if not isinstance(include, list):
             include = [include]

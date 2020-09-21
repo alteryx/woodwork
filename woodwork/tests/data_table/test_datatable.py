@@ -1093,7 +1093,8 @@ def test_select_list_inputs(sample_df):
         'age': 'numeric',
         'id': 'index',
         'signup_date': ['time_index', 'date_of_birth'],
-        'email': 'tag2'
+        'email': 'tag2',
+        'is_registered': 'category'
     })
 
     dt_just_strings = dt.select(['FullName', 'index', 'tag2', 'boolean'])
@@ -1109,6 +1110,12 @@ def test_select_list_inputs(sample_df):
     assert 'full_name' in dt_mixed_selectors.columns
     assert 'signup_date' in dt_mixed_selectors.columns
     assert 'age' in dt_mixed_selectors.columns
+
+    dt_common_tags = dt.select(['category', 'numeric', Boolean])
+    assert len(dt_common_tags.columns) == 3
+    assert 'id' in dt_common_tags.columns
+    assert 'is_registered' in dt_common_tags.columns
+    assert 'age' in dt_common_tags.columns
 
 
 def test_select_warnings(sample_df):
