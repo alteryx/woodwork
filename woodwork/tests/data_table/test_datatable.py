@@ -1229,8 +1229,7 @@ def test_select_single_inputs(sample_df):
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
-        'id': 'index',
-        'signup_date': ['time_index', 'date_of_birth']
+        'signup_date': 'date_of_birth'
     })
 
     dt_ltype_string = dt.select('full_name')
@@ -1258,8 +1257,7 @@ def test_select_list_inputs(sample_df):
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
-        'id': 'index',
-        'signup_date': ['time_index', 'date_of_birth'],
+        'signup_date': 'date_of_birth',
         'email': 'tag2',
         'is_registered': 'category'
     })
@@ -1296,8 +1294,7 @@ def test_select_warnings(sample_df):
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
-        'id': 'index',
-        'signup_date': ['time_index', 'date_of_birth'],
+        'signup_date': 'date_of_birth',
         'email': 'tag2'
     })
 
