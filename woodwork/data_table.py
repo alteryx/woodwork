@@ -202,6 +202,7 @@ class DataTable(object):
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
             semantic tags are specified in the list of types and tags to include.
+            The new DataTable's dataframe will also only contain columns that are in the DataTable.
 
         Args:
             include  (str or LogicalType or list[str or LogicalType]):
@@ -216,15 +217,14 @@ class DataTable(object):
             include = [include]
 
         ltypes_present = set()
-        tags_present = set()
-
-        # --> see how much of this can be taken from below
-        # also make sure that the other selects are exactly the same to the user
         ltypes_in_dt = {col.logical_type for col in self.columns.values()}
+
+        tags_present = set()
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
 
         unused_selectors = []
 
+        # Confirm correct types and group into tags, ltypes, and unused
         for selector in include:
             if selector in LogicalType.__subclasses__():
                 if selector in ltypes_in_dt:
