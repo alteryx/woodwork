@@ -766,19 +766,37 @@ def test_invalid_select_ltypes(sample_df):
     with pytest.raises(ValueError, match=error_message):
         dt.select_ltypes('test')
 
-    all_types = LogicalType.__subclasses__()
-    dt_all_types = dt.select_ltypes(all_types)
-    assert len(dt_all_types.columns) == len(dt.columns)
-    assert len(dt_all_types.df.columns) == len(dt.df.columns)
-
     dt_empty = dt.select_ltypes([])
     assert not dt_empty.columns
     assert len(dt_empty.df.columns) == 0
 
-    # Now that there are no columns, repeat the check with all ltypes
-    dt_from_empty = dt_empty.select_ltypes(all_types)
-    assert not dt_from_empty.columns
-    assert len(dt_from_empty.df.columns) == 0
+
+def test_select_ltypes_warning(sample_df):
+    dt = DataTable(sample_df)
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+        'signup_date': Datetime,
+    })
+
+    warning = 'The following logical types were not present in your DataTable: ZIPCode'
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select_ltypes(ZIPCode)
+    assert len(dt_empty.columns) == 0
+
+    warning = 'The following logical types were not present in your DataTable: ZIPCode'
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select_ltypes(['ZIPCode', PhoneNumber])
+    assert len(dt_empty.columns) == 1
+
+    all_types = LogicalType.__subclasses__()
+    warning = 'The following logical types were not present in your DataTable: Categorical, CountryCode, Filepath, IPAddress, Integer, LatLong, NaturalLanguage, Ordinal, SubRegionCode, Timedelta, URL, ZIPCode'
+    with pytest.warns(UserWarning, match=warning):
+        dt_all_types = dt.select_ltypes(all_types)
+    assert len(dt_all_types.columns) == len(dt.columns)
+    assert len(dt_all_types.df.columns) == len(dt.df.columns)
 
 
 def test_select_ltypes_strings(sample_df):
@@ -832,10 +850,6 @@ def test_select_ltypes_mixed(sample_df):
     dt_mixed_ltypes = dt.select_ltypes(['FullName', 'email_address', Double])
     assert len(dt_mixed_ltypes.columns) == 3
     assert 'phone_number' not in dt_mixed_ltypes.columns
-
-    # Selecting for an ltype that isn't present should result in an empty DataTable
-    dt_not_present = dt.select_ltypes('url')
-    assert not dt_not_present.columns
 
 
 def test_select_ltypes_table(sample_df):
@@ -1009,3 +1023,128 @@ def test_getitem_invalid_input(sample_df):
     error_msg = "Column with name 'invalid_column' not found in DataTable"
     with pytest.raises(KeyError, match=error_msg):
         dt['invalid_column']
+
+
+def test_select_invalid_inputs(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+        'signup_date': Datetime,
+    })
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+    })
+
+    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select(1)
+
+    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select(['boolean', 'index', Double, 1])
+
+    dt_empty = dt.select([])
+    assert len(dt_empty.columns) == 0
+
+
+def test_select_single_inputs(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'signup_date': Datetime,
+    })
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+        'id': 'index',
+        'signup_date': ['time_index', 'date_of_birth']
+    })
+
+    dt_ltype_string = dt.select('full_name')
+    assert len(dt_ltype_string.columns) == 1
+    assert 'full_name' in dt_ltype_string.columns
+
+    dt_ltype_obj = dt.select(WholeNumber)
+    assert len(dt_ltype_obj.columns) == 2
+    assert 'age' in dt_ltype_obj.columns
+    assert 'id' in dt_ltype_obj.columns
+
+    dt_tag_string = dt.select('index')
+    assert len(dt_tag_string.columns) == 1
+    assert 'id' in dt_tag_string.columns
+
+
+def test_select_list_inputs(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'signup_date': Datetime,
+    })
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+        'id': 'index',
+        'signup_date': ['time_index', 'date_of_birth'],
+        'email': 'tag2',
+        'is_registered': 'category'
+    })
+
+    dt_just_strings = dt.select(['FullName', 'index', 'tag2', 'boolean'])
+    assert len(dt_just_strings.columns) == 4
+    assert 'id' in dt_just_strings.columns
+    assert 'full_name' in dt_just_strings.columns
+    assert 'email' in dt_just_strings.columns
+    assert 'is_registered' in dt_just_strings.columns
+
+    dt_mixed_selectors = dt.select([FullName, 'index', 'time_index', WholeNumber])
+    assert len(dt_mixed_selectors.columns) == 4
+    assert 'id' in dt_mixed_selectors.columns
+    assert 'full_name' in dt_mixed_selectors.columns
+    assert 'signup_date' in dt_mixed_selectors.columns
+    assert 'age' in dt_mixed_selectors.columns
+
+    dt_common_tags = dt.select(['category', 'numeric', Boolean])
+    assert len(dt_common_tags.columns) == 3
+    assert 'id' in dt_common_tags.columns
+    assert 'is_registered' in dt_common_tags.columns
+    assert 'age' in dt_common_tags.columns
+
+
+def test_select_warnings(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'signup_date': Datetime,
+    })
+    dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+        'id': 'index',
+        'signup_date': ['time_index', 'date_of_birth'],
+        'email': 'tag2'
+    })
+
+    warning = 'The following selectors were not present in your DataTable: doesnt_exist'
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select(['doesnt_exist'])
+    assert len(dt_empty.columns) == 0
+
+    warning = 'The following selectors were not present in your DataTable: category, doesnt_exist'
+    with pytest.warns(UserWarning, match=warning):
+        dt_multiple_unused = dt.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
+    assert len(dt_multiple_unused.columns) == 2
+
+    warning = 'The following selectors were not present in your DataTable: ZIPCode, doesnt_exist'
+    with pytest.warns(UserWarning, match=warning):
+        dt_unused_ltype = dt.select(['doesnt_exist', ZIPCode, 'date_of_birth', WholeNumber])
+    assert len(dt_unused_ltype.columns) == 3

@@ -1,3 +1,5 @@
+import pytest
+
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -34,6 +36,10 @@ def test_get_logical_types():
 
 def test_str_to_logical_type():
     all_types = LogicalType.__subclasses__()
+
+    with pytest.raises(ValueError, match='String test is not a valid logical type'):
+        str_to_logical_type('test')
+    assert str_to_logical_type('test', raise_error=False) is None
 
     for logical_type in all_types:
         assert str_to_logical_type(logical_type.__name__) == logical_type
