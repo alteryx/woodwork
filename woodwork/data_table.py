@@ -281,10 +281,6 @@ class DataTable(object):
             cols_to_update[colname] = self.columns[colname].reset_semantic_tags(retain_index_tags)
         self._update_columns(cols_to_update)
 
-    @property
-    def df(self):
-        return self.dataframe
-
     def to_pandas_dataframe(self):
         return self.dataframe
 

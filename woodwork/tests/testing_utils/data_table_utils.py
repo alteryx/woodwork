@@ -1,6 +1,6 @@
 def validate_subset_dt(subset_dt, dt):
     assert subset_dt.name == dt.name
-    assert len(subset_dt.columns) == len(subset_dt.df.columns)
+    assert len(subset_dt.columns) == len(subset_dt.to_pandas_dataframe().columns)
     for subset_col_name, subset_col in subset_dt.columns.items():
         assert subset_col_name in dt.columns
         col = dt.columns[subset_col_name]
