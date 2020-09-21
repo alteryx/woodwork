@@ -11,6 +11,7 @@ Changelog
 
 
 **v0.1.0** September <TBD>, 2020
+    * Add combined tag and ltype selection (:pr:`124`)
     * Add changelog, and update changelog check to CI (:pr:`123`)
     * Implement reset_semantic_tags (:pr:`118`)
     * Implement DataTable getitem (:pr:`119`)
