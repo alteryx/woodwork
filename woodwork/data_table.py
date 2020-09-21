@@ -200,17 +200,17 @@ class DataTable(object):
         return self.dataframe
 
     def select(self, include):
-        """Create a DataTable including only columns whose logical type and semantic tags are specified
-            in the list of types and tags to include.
+        """Create a DataTable including only columns whose logical type and
+            semantic tags are specified in the list of types and tags to include.
 
         Args:
-            include  (str or LogicalType or list[str or LogicalType]): Logical types and semantic tags to
-                include in the DataTable.
+            include  (str or LogicalType or list[str or LogicalType]):
+                Logical types and semantic tags to include in the DataTable.
 
         Returns:
             DataTable:
-                The subset of the original DataTable that contains just the ltypes and semantic tags
-                in `include`.
+                The subset of the original DataTable that contains just the
+                ltypes and semantic tags in `include`.
         """
         if not isinstance(include, list):
             include = [include]
@@ -222,14 +222,15 @@ class DataTable(object):
         # also make sure that the other selects are exactly the same to the user
         ltypes_in_dt = {col.logical_type for col in self.columns.values()}
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
-        selectors_not_present = []
+
+        unused_selectors = []
 
         for selector in include:
             if selector in LogicalType.__subclasses__():
                 if selector in ltypes_in_dt:
                     ltypes_present.add(selector)
                 else:
-                    selectors_not_present.append(str(selector))
+                    unused_selectors.append(str(selector))
             elif isinstance(selector, str):
                 # If the str is a viable ltype, it'll take precedence
                 # but if it's not present, we'll check if it's a tag
@@ -240,12 +241,12 @@ class DataTable(object):
                 elif selector in tags_in_dt:
                     tags_present.add(selector)
                 else:
-                    selectors_not_present.append(selector)
+                    unused_selectors.append(selector)
             else:
                 raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
 
-        if selectors_not_present:
-            not_present_str = ' '.join(sorted(selectors_not_present))
+        if unused_selectors:
+            not_present_str = ', '.join(sorted(unused_selectors))
             warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
 
         cols_to_include = []
