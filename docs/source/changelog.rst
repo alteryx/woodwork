@@ -14,7 +14,7 @@ Changelog
     * Add changelog, and update changelog check to CI (:pr:`123`)
     * Implement reset_semantic_tags (:pr:`118`)
     * Implement DataTable getitem (:pr:`119`)
-    * Add remove_semantic_tags selection (:pr:`117`)
+    * Add remove_semantic_tags method (:pr:`117`)
     * Add semantic tag selection (:pr:`106`)
     * Add github action, rename to woodwork (:pr:`113`)
     * Add license to setup.py (:pr:`112`)

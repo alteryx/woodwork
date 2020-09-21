@@ -159,4 +159,3 @@ workflows:
               ignore:
                 - /^main?/
                 - /^v\d+\.\d+\.\d+$/
-                - /^dep-update-[a-f0-9]{7}$/
