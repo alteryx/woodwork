@@ -40,7 +40,7 @@ from woodwork.tests.testing_utils import validate_subset_dt
 
 def test_datatable_init(sample_df):
     dt = DataTable(sample_df)
-    df = dt.to_pandas_dataframe()
+    df = dt.to_pandas()
 
     assert dt.name is None
     assert dt.index is None
@@ -53,10 +53,10 @@ def test_datatable_init(sample_df):
 
 def test_datatable_copy_param(sample_df):
     dt_with_copy = DataTable(sample_df, copy_dataframe=True)
-    assert sample_df is not dt_with_copy.to_pandas_dataframe()
+    assert sample_df is not dt_with_copy.to_pandas()
 
     dt_no_copy = DataTable(sample_df)
-    assert sample_df is dt_no_copy.to_pandas_dataframe()
+    assert sample_df is dt_no_copy.to_pandas()
 
 
 def test_datatable_init_with_name_and_index_vals(sample_df):
@@ -556,10 +556,10 @@ def test_replace_none_with_pdna(none_df):
         'some_none': NaturalLanguage,
     }
     dt = DataTable(none_df, logical_types=logical_types, replace_none=True)
-    assert dt.to_pandas_dataframe()['all_none'].loc[0] is pd.NA
-    assert dt.to_pandas_dataframe()['all_none'].loc[1] is pd.NA
-    assert dt.to_pandas_dataframe()['all_none'].loc[2] is pd.NA
-    assert dt.to_pandas_dataframe()['some_none'].loc[1] is pd.NA
+    assert dt.to_pandas()['all_none'].loc[0] is pd.NA
+    assert dt.to_pandas()['all_none'].loc[1] is pd.NA
+    assert dt.to_pandas()['all_none'].loc[2] is pd.NA
+    assert dt.to_pandas()['some_none'].loc[1] is pd.NA
 
 
 def test_sets_category_dtype_on_init():
@@ -873,7 +873,7 @@ def test_invalid_select_ltypes(sample_df):
 
     dt_empty = dt.select_ltypes([])
     assert not dt_empty.columns
-    assert len(dt_empty.to_pandas_dataframe().columns) == 0
+    assert len(dt_empty.to_pandas().columns) == 0
 
 
 def test_select_ltypes_warning(sample_df):
@@ -901,7 +901,7 @@ def test_select_ltypes_warning(sample_df):
     with pytest.warns(UserWarning, match=warning):
         dt_all_types = dt.select_ltypes(all_types)
     assert len(dt_all_types.columns) == len(dt.columns)
-    assert len(dt_all_types.to_pandas_dataframe().columns) == len(dt.to_pandas_dataframe().columns)
+    assert len(dt_all_types.to_pandas().columns) == len(dt.to_pandas().columns)
 
 
 def test_select_ltypes_strings(sample_df):
