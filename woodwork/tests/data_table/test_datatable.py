@@ -766,19 +766,37 @@ def test_invalid_select_ltypes(sample_df):
     with pytest.raises(ValueError, match=error_message):
         dt.select_ltypes('test')
 
-    all_types = LogicalType.__subclasses__()
-    dt_all_types = dt.select_ltypes(all_types)
-    assert len(dt_all_types.columns) == len(dt.columns)
-    assert len(dt_all_types.df.columns) == len(dt.df.columns)
-
     dt_empty = dt.select_ltypes([])
     assert not dt_empty.columns
     assert len(dt_empty.df.columns) == 0
 
-    # Now that there are no columns, repeat the check with all ltypes
-    dt_from_empty = dt_empty.select_ltypes(all_types)
-    assert not dt_from_empty.columns
-    assert len(dt_from_empty.df.columns) == 0
+
+def test_select_ltypes_warning(sample_df):
+    dt = DataTable(sample_df)
+    dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+        'signup_date': Datetime,
+    })
+
+    warning = 'The following logical types were not present in your DataTable: ZIPCode'
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select_ltypes(ZIPCode)
+    assert len(dt_empty.columns) == 0
+
+    warning = 'The following logical types were not present in your DataTable: ZIPCode'
+    with pytest.warns(UserWarning, match=warning):
+        dt_empty = dt.select_ltypes(['ZIPCode', PhoneNumber])
+    assert len(dt_empty.columns) == 1
+
+    all_types = LogicalType.__subclasses__()
+    warning = 'The following logical types were not present in your DataTable: Categorical, CountryCode, Filepath, IPAddress, Integer, LatLong, NaturalLanguage, Ordinal, SubRegionCode, Timedelta, URL, ZIPCode'
+    with pytest.warns(UserWarning, match=warning):
+        dt_all_types = dt.select_ltypes(all_types)
+    assert len(dt_all_types.columns) == len(dt.columns)
+    assert len(dt_all_types.df.columns) == len(dt.df.columns)
 
 
 def test_select_ltypes_strings(sample_df):
@@ -832,10 +850,6 @@ def test_select_ltypes_mixed(sample_df):
     dt_mixed_ltypes = dt.select_ltypes(['FullName', 'email_address', Double])
     assert len(dt_mixed_ltypes.columns) == 3
     assert 'phone_number' not in dt_mixed_ltypes.columns
-
-    # Selecting for an ltype that isn't present should result in an empty DataTable
-    dt_not_present = dt.select_ltypes('url')
-    assert not dt_not_present.columns
 
 
 def test_select_ltypes_table(sample_df):
