@@ -46,3 +46,4 @@ API Reference
    :maxdepth: 1
 
    api_reference
+   changelog
