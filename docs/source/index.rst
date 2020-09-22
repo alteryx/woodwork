@@ -32,11 +32,11 @@ Below is an example of using a DataTable to automatically infer the Logical Type
 
 .. ipython:: python
 
-    import woodwork as dt
+    import woodwork as ww
 
     data = dt.demo.load_retail(nrows=100)
 
-    dt = dt.DataTable(data, name="retail")
+    dt = ww.DataTable(data, name="retail")
     dt.types
 
 Table of contents
