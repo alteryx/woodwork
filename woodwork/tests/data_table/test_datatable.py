@@ -251,6 +251,27 @@ def test_datatable_types(sample_df):
         assert isinstance(tag, set)
 
 
+def test_datatable_ltypes(sample_df):
+    dt = DataTable(sample_df)
+    returned_types = dt.ltypes
+    assert isinstance(returned_types, pd.Series)
+    assert returned_types.name == 'Logical Type'
+    assert len(returned_types.index) == len(sample_df.columns)
+    assert all([issubclass(logical_type, LogicalType) for logical_type in returned_types.values])
+    correct_logical_types = {
+        'id': WholeNumber,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': WholeNumber,
+        'signup_date': Datetime,
+        'is_registered': Boolean
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(returned_types)
+
+
 def test_datatable_physical_types(sample_df):
     dt = DataTable(sample_df)
     assert isinstance(dt.physical_types, dict)
