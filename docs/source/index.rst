@@ -48,3 +48,4 @@ Table of contents
    install
    start
    api_reference
+   changelog
