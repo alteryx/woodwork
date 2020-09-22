@@ -11,6 +11,7 @@ Changelog
 
 
 **v0.1.0** September <TBD>, 2020
+    * Add ability to create new datatable from specified columns with ``dt[[columns]]`` (:pr:`127`)
     * Add combined tag and ltype selection (:pr:`124`)
     * Add changelog, and update changelog check to CI (:pr:`123`)
     * Implement reset_semantic_tags (:pr:`118`)
