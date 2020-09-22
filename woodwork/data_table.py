@@ -98,6 +98,10 @@ class DataTable(object):
         df.index.name = 'Data Column'
         return df
 
+    @property
+    def ltypes(self):
+        return self.types['Logical Type']
+
     def _create_columns(self,
                         column_names,
                         logical_types,

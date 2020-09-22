@@ -11,6 +11,7 @@ Changelog
 
 
 **v0.1.0** September <TBD>, 2020
+    * Add DataTable.ltypes property to return series of logical types (:pr:`131`)
     * Add ability to create new datatable from specified columns with ``dt[[columns]]`` (:pr:`127`)
     * Handle setting and tagging of index and time index columns (:pr:`125`)
     * Add combined tag and ltype selection (:pr:`124`)
