@@ -67,6 +67,33 @@ def test_datatable_init_with_name_and_index_vals(sample_df):
     assert dt.name == 'datatable'
     assert dt.index == 'id'
     assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+
+
+def test_datatable_init_with_valid_string_time_index():
+    df = pd.DataFrame({
+        'id': [0, 1, 2, 3],
+        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA]
+    })
+    dt = DataTable(df,
+                   name='datatable',
+                   index='id',
+                   time_index='times')
+
+    assert dt.name == 'datatable'
+    assert dt.index == 'id'
+    assert dt.time_index == 'times'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+
+
+def test_datatable_init_with_invalid_string_time_index():
+    df = pd.DataFrame({
+        'id': [0, 1, 2],
+        'times': ['not_a_datetime', '2019-01-02', '2019-01-03']
+    })
+    error_msg = 'Time index column must contain datetime values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, name='datatable', time_index='times')
 
 
 def test_datatable_init_with_logical_types(sample_df):
@@ -105,7 +132,7 @@ def test_datatable_init_with_string_logical_types(sample_df):
 
 def test_datatable_init_with_semantic_tags(sample_df):
     semantic_tags = {
-        'id': 'index',
+        'id': 'custom_tag',
     }
     dt = DataTable(sample_df,
                    name='datatable',
@@ -115,7 +142,7 @@ def test_datatable_init_with_semantic_tags(sample_df):
     id_semantic_tags = dt.columns['id'].semantic_tags
     assert isinstance(id_semantic_tags, set)
     assert len(id_semantic_tags) == 1
-    assert 'index' in id_semantic_tags
+    assert 'custom_tag' in id_semantic_tags
 
 
 def test_datatable_adds_standard_semantic_tags(sample_df):
@@ -376,6 +403,32 @@ def test_set_semantic_tags(sample_df):
     assert dt.columns['age'].semantic_tags == {'numeric'}
 
 
+def test_set_semantic_tags_with_index(sample_df):
+    dt = DataTable(sample_df, index='id', add_standard_tags=False)
+    assert dt.columns['id'].semantic_tags == {'index'}
+
+    new_tags = {
+        'id': 'new_tag',
+    }
+    dt.set_semantic_tags(new_tags)
+    assert dt.columns['id'].semantic_tags == {'index', 'new_tag'}
+    dt.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert dt.columns['id'].semantic_tags == {'new_tag'}
+
+
+def test_set_semantic_tags_with_time_index(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', add_standard_tags=False)
+    assert dt.columns['signup_date'].semantic_tags == {'time_index'}
+
+    new_tags = {
+        'signup_date': 'new_tag',
+    }
+    dt.set_semantic_tags(new_tags)
+    assert dt.columns['signup_date'].semantic_tags == {'time_index', 'new_tag'}
+    dt.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert dt.columns['signup_date'].semantic_tags == {'new_tag'}
+
+
 def test_add_semantic_tags(sample_df):
     semantic_tags = {
         'full_name': 'tag1',
@@ -418,6 +471,36 @@ def test_reset_selected_column_semantic_tags(sample_df):
         dt.reset_semantic_tags(input_type)
         assert dt.columns['full_name'].semantic_tags == {'tag1'}
         assert dt.columns['age'].semantic_tags == {'numeric'}
+
+
+def test_reset_semantic_tags_with_index(sample_df):
+    semantic_tags = {
+        'id': 'tag1',
+    }
+    dt = DataTable(sample_df,
+                   index='id',
+                   semantic_tags=semantic_tags,
+                   add_standard_tags=False)
+    assert dt['id'].semantic_tags == {'index', 'tag1'}
+    dt.reset_semantic_tags('id', retain_index_tags=True)
+    assert dt['id'].semantic_tags == {'index'}
+    dt.reset_semantic_tags('id')
+    assert dt['id'].semantic_tags == set()
+
+
+def test_reset_semantic_tags_with_time_index(sample_df):
+    semantic_tags = {
+        'signup_date': 'tag1',
+    }
+    dt = DataTable(sample_df,
+                   time_index='signup_date',
+                   semantic_tags=semantic_tags,
+                   add_standard_tags=False)
+    assert dt['signup_date'].semantic_tags == {'time_index', 'tag1'}
+    dt.reset_semantic_tags('signup_date', retain_index_tags=True)
+    assert dt['signup_date'].semantic_tags == {'time_index'}
+    dt.reset_semantic_tags('signup_date')
+    assert dt['signup_date'].semantic_tags == set()
 
 
 def test_reset_semantic_tags_invalid_column(sample_df):
@@ -854,6 +937,7 @@ def test_select_ltypes_mixed(sample_df):
 
 def test_select_ltypes_table(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id')
+
     dt.set_logical_types({
         'full_name': FullName,
         'email': EmailAddress,
@@ -938,12 +1022,10 @@ def test_select_semantic_tags(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt.set_semantic_tags({
         'full_name': 'tag1',
-        'id': 'index',
         'email': ['tag2'],
         'age': ['numeric', 'tag2'],
         'phone_number': ['tag3', 'tag2'],
         'is_registered': 'category',
-        'signup_date': ['secondary_time_index'],
     })
 
     dt_one_match = dt.select_semantic_tags('numeric')
@@ -957,7 +1039,7 @@ def test_select_semantic_tags(sample_df):
     assert 'phone_number' in dt_multiple_matches.columns
     assert 'email' in dt_multiple_matches.columns
 
-    dt_multiple_tags = dt.select_semantic_tags(['index', 'numeric', 'secondary_time_index'])
+    dt_multiple_tags = dt.select_semantic_tags(['numeric', 'time_index'])
     assert len(dt_multiple_tags.columns) == 3
     assert 'id' in dt_multiple_tags.columns
     assert 'age' in dt_multiple_tags.columns
@@ -1086,6 +1168,105 @@ def test_datatable_getitem_list_warnings(sample_df):
         dt[columns]
 
 
+def test_set_index(sample_df):
+    # Test setting index with set_index()
+    dt = DataTable(sample_df)
+    dt.set_index('id')
+    assert dt.index == 'id'
+    assert 'index' in dt.columns['id'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'id']
+    assert all(['index' not in col.semantic_tags for col in non_index_cols])
+    # Test changing index with set_index()
+    dt.set_index('full_name')
+    assert 'index' in dt.columns['full_name'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
+    assert all(['index' not in col.semantic_tags for col in non_index_cols])
+
+    # Test setting index using setter
+    dt = DataTable(sample_df)
+    dt.index = 'id'
+    assert dt.index == 'id'
+    assert 'index' in dt.columns['id'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'id']
+    assert all(['index' not in col.semantic_tags for col in non_index_cols])
+    # Test changing index with setter
+    dt.index = 'full_name'
+    assert 'index' in dt.columns['full_name'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
+    assert all(['index' not in col.semantic_tags for col in non_index_cols])
+
+
+def test_set_time_index(sample_df):
+    # Test setting time index with set_time_index()
+    dt = DataTable(sample_df)
+    dt.set_time_index('signup_date')
+    assert dt.time_index == 'signup_date'
+    assert 'time_index' in dt.columns['signup_date'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'signup_date']
+    assert all(['time_index' not in col.semantic_tags for col in non_index_cols])
+
+    # Test changing time index with set_time_index()
+    sample_df['transaction_date'] = pd.to_datetime('2015-09-02')
+    dt = DataTable(sample_df)
+    dt.set_time_index('signup_date')
+    assert dt.time_index == 'signup_date'
+    dt.set_time_index('transaction_date')
+    assert 'time_index' in dt.columns['transaction_date'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'transaction_date']
+    assert all(['time_index' not in col.semantic_tags for col in non_index_cols])
+
+    # Test setting index using setter
+    dt = DataTable(sample_df)
+    assert dt.time_index is None
+    dt.time_index = 'signup_date'
+    assert dt.time_index == 'signup_date'
+    assert 'time_index' in dt.columns['signup_date'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'signup_date']
+    assert all(['time_index' not in col.semantic_tags for col in non_index_cols])
+
+    # Test changing time index with setter
+    sample_df['transaction_date'] = pd.to_datetime('2015-09-02')
+    dt = DataTable(sample_df)
+    dt.time_index = 'signup_date'
+    assert dt.time_index == 'signup_date'
+    dt.time_index = 'transaction_date'
+    assert 'time_index' in dt.columns['transaction_date'].semantic_tags
+    non_index_cols = [col for col in dt.columns.values() if col.name != 'transaction_date']
+    assert all(['time_index' not in col.semantic_tags for col in non_index_cols])
+
+
+def test_datatable_clear_index(sample_df):
+    # Test by removing index tag
+    dt = DataTable(sample_df, index='id')
+    assert dt.index == 'id'
+    dt.remove_semantic_tags({'id': 'index'})
+    assert dt.index is None
+    assert all(['index' not in col.semantic_tags for col in dt.columns.values()])
+
+    # Test using setter
+    dt = DataTable(sample_df, index='id')
+    assert dt.index == 'id'
+    dt.index = None
+    assert dt.index is None
+    assert all(['index' not in col.semantic_tags for col in dt.columns.values()])
+
+
+def test_datatable_clear_time_index(sample_df):
+    # Test by removing time_index tag
+    dt = DataTable(sample_df, time_index='signup_date')
+    assert dt.time_index == 'signup_date'
+    dt.remove_semantic_tags({'signup_date': 'time_index'})
+    assert dt.time_index is None
+    assert all(['time_index' not in col.semantic_tags for col in dt.columns.values()])
+
+    # Test using setter
+    dt = DataTable(sample_df, time_index='signup_date')
+    assert dt.time_index == 'signup_date'
+    dt.time_index = None
+    assert dt.time_index is None
+    assert all(['time_index' not in col.semantic_tags for col in dt.columns.values()])
+
+
 def test_select_invalid_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt.set_logical_types({
@@ -1123,8 +1304,7 @@ def test_select_single_inputs(sample_df):
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
-        'id': 'index',
-        'signup_date': ['time_index', 'date_of_birth']
+        'signup_date': 'date_of_birth'
     })
 
     dt_ltype_string = dt.select('full_name')
@@ -1152,8 +1332,7 @@ def test_select_list_inputs(sample_df):
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
-        'id': 'index',
-        'signup_date': ['time_index', 'date_of_birth'],
+        'signup_date': 'date_of_birth',
         'email': 'tag2',
         'is_registered': 'category'
     })
@@ -1190,8 +1369,7 @@ def test_select_warnings(sample_df):
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
-        'id': 'index',
-        'signup_date': ['time_index', 'date_of_birth'],
+        'signup_date': 'date_of_birth',
         'email': 'tag2'
     })
 

@@ -22,6 +22,11 @@ def sample_series():
 
 
 @pytest.fixture()
+def sample_datetime_series():
+    return pd.Series([pd.to_datetime('2020-09-01')] * 3, name='sample_datetime_series').astype('object')
+
+
+@pytest.fixture()
 def none_df():
     return pd.DataFrame({
         'id': range(3),

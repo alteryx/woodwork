@@ -44,17 +44,17 @@ def test_data_column_init_with_logical_type(sample_series):
 
 
 def test_data_column_init_with_semantic_tags(sample_series):
-    semantic_tags = ['index', 'tag2']
+    semantic_tags = ['tag1', 'tag2']
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == set(semantic_tags)
 
 
 def test_data_column_with_alternate_semantic_tags_input(sample_series):
-    semantic_tags = 'index'
+    semantic_tags = 'custom_tag'
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
-    assert data_col.semantic_tags == {'index'}
+    assert data_col.semantic_tags == {'custom_tag'}
 
-    semantic_tags = {'index', 'numeric'}
+    semantic_tags = {'custom_tag', 'numeric'}
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
@@ -188,13 +188,37 @@ def test_data_column_repr(sample_series):
 
 
 def test_set_semantic_tags(sample_series):
-    semantic_tags = {'index', 'tag2'}
+    semantic_tags = {'tag1', 'tag2'}
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
     data_col.set_semantic_tags(new_tags)
     assert data_col.semantic_tags == set(new_tags)
+
+
+def test_set_semantic_tags_with_index(sample_series):
+    semantic_tags = {'tag1', 'tag2'}
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col._set_as_index()
+    assert data_col.semantic_tags == {'tag1', 'tag2', 'index'}
+    new_tags = ['new_tag']
+    data_col.set_semantic_tags(new_tags)
+    assert data_col.semantic_tags == {'index', 'new_tag'}
+    data_col.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert data_col.semantic_tags == {'new_tag'}
+
+
+def test_set_semantic_tags_with_time_index(sample_datetime_series):
+    semantic_tags = {'tag1', 'tag2'}
+    data_col = DataColumn(sample_datetime_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col._set_as_time_index()
+    assert data_col.semantic_tags == {'tag1', 'tag2', 'time_index'}
+    new_tags = ['new_tag']
+    data_col.set_semantic_tags(new_tags)
+    assert data_col.semantic_tags == {'time_index', 'new_tag'}
+    data_col.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert data_col.semantic_tags == {'new_tag'}
 
 
 def test_adds_numeric_standard_tag():
@@ -278,6 +302,34 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert new_col.semantic_tags == set()
 
 
+def test_set_logical_type_retains_index_tag(sample_series):
+    data_col = DataColumn(sample_series,
+                          logical_type=NaturalLanguage,
+                          semantic_tags='original_tag',
+                          add_standard_tags=False)
+
+    data_col._set_as_index()
+    assert data_col.semantic_tags == {'index', 'original_tag'}
+    new_col = data_col.set_logical_type(Categorical)
+    assert new_col.semantic_tags == {'index'}
+    new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
+    assert new_col.semantic_tags == set()
+
+
+def test_set_logical_type_retains_time_index_tag(sample_datetime_series):
+    data_col = DataColumn(sample_datetime_series,
+                          logical_type=Datetime,
+                          semantic_tags='original_tag',
+                          add_standard_tags=False)
+
+    data_col._set_as_time_index()
+    assert data_col.semantic_tags == {'time_index', 'original_tag'}
+    new_col = data_col.set_logical_type(Categorical)
+    assert new_col.semantic_tags == {'time_index'}
+    new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
+    assert new_col.semantic_tags == set()
+
+
 def test_reset_semantic_tags_with_standard_tags(sample_series):
     semantic_tags = 'initial_tag'
     data_col = DataColumn(sample_series,
@@ -298,6 +350,32 @@ def test_reset_semantic_tags_without_standard_tags(sample_series):
 
     new_col = data_col.reset_semantic_tags()
     assert new_col is not data_col
+    assert new_col.semantic_tags == set()
+
+
+def test_reset_semantic_tags_with_index(sample_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_series,
+                          semantic_tags=semantic_tags,
+                          add_standard_tags=False)
+
+    data_col._set_as_index()
+    new_col = data_col.reset_semantic_tags(retain_index_tags=True)
+    assert new_col.semantic_tags == {'index'}
+    new_col = data_col.reset_semantic_tags()
+    assert new_col.semantic_tags == set()
+
+
+def test_reset_semantic_tags_with_time_index(sample_datetime_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_datetime_series,
+                          semantic_tags=semantic_tags,
+                          add_standard_tags=False)
+
+    data_col._set_as_time_index()
+    new_col = data_col.reset_semantic_tags(retain_index_tags=True)
+    assert new_col.semantic_tags == {'time_index'}
+    new_col = data_col.reset_semantic_tags()
     assert new_col.semantic_tags == set()
 
 
@@ -349,3 +427,41 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
     error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
     with pytest.raises(LookupError, match=error_msg):
         data_col.remove_semantic_tags('invalid_tagname')
+
+
+def test_raises_error_setting_index_tag_directly(sample_series):
+    error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
+                          "use DataTable.set_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, semantic_tags='index')
+
+    data_col = DataColumn(sample_series)
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.add_semantic_tags('index')
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.set_semantic_tags('index')
+
+
+def test_raises_error_setting_time_index_tag_directly(sample_series):
+    error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
+                          "use DataTable.set_time_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, semantic_tags='time_index')
+
+    data_col = DataColumn(sample_series)
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.add_semantic_tags('time_index')
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.set_semantic_tags('time_index')
+
+
+def test_set_as_index(sample_series):
+    data_col = DataColumn(sample_series)
+    data_col._set_as_index()
+    assert 'index' in data_col.semantic_tags
+
+
+def test_set_as_time_index(sample_series):
+    data_col = DataColumn(sample_series)
+    data_col._set_as_time_index()
+    assert 'time_index' in data_col.semantic_tags
