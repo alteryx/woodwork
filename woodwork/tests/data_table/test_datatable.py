@@ -1107,6 +1107,67 @@ def test_getitem_invalid_input(sample_df):
         dt['invalid_column']
 
 
+def test_datatable_getitem_list_input(sample_df):
+    # Test regular columns
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    columns = ['age', 'full_name']
+    new_dt = dt[columns]
+    assert new_dt is not dt
+    assert new_dt.df is not dt.df
+    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
+    assert all(new_dt.df.columns == ['age', 'full_name'])
+    assert set(new_dt.columns.keys()) == {'age', 'full_name'}
+    assert new_dt.index is None
+    assert new_dt.time_index is None
+
+    # Test with index
+    columns = ['id', 'full_name']
+    new_dt = dt[columns]
+    assert new_dt is not dt
+    assert new_dt.df is not dt.df
+    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
+    assert all(new_dt.df.columns == ['id', 'full_name'])
+    assert set(new_dt.columns.keys()) == {'id', 'full_name'}
+    assert new_dt.index == 'id'
+    assert new_dt.time_index is None
+
+    # Test with time_index
+    columns = ['id', 'signup_date', 'full_name']
+    new_dt = dt[columns]
+    assert new_dt is not dt
+    assert new_dt.df is not dt.df
+    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
+    assert all(new_dt.df.columns == ['id', 'signup_date', 'full_name'])
+    assert set(new_dt.columns.keys()) == {'id', 'signup_date', 'full_name'}
+    assert new_dt.index == 'id'
+    assert new_dt.time_index == 'signup_date'
+
+    # Test with empty list selector
+    columns = []
+    new_dt = dt[columns]
+    assert new_dt is not dt
+    assert new_dt.df is not dt.df
+    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
+    assert len(new_dt.df.columns) == 0
+    assert set(new_dt.columns.keys()) == set()
+    assert new_dt.index is None
+    assert new_dt.time_index is None
+
+
+def test_datatable_getitem_list_warnings(sample_df):
+    # Test regular columns
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    columns = ['age', 'invalid_col1', 'invalid_col2']
+    error_msg = re.escape("Column(s) 'invalid_col1, invalid_col2' not found in DataTable")
+    with pytest.raises(KeyError, match=error_msg):
+        dt[columns]
+
+    columns = [1]
+    error_msg = 'Column names must be strings'
+    with pytest.raises(KeyError, match=error_msg):
+        dt[columns]
+
+
 def test_set_index(sample_df):
     # Test setting index with set_index()
     dt = DataTable(sample_df)

@@ -73,6 +73,13 @@ class DataTable(object):
         self._update_dtypes(self.columns)
 
     def __getitem__(self, key):
+        if isinstance(key, list):
+            if not all([isinstance(col, str) for col in key]):
+                raise KeyError('Column names must be strings')
+            invalid_cols = set(key).difference(set(self.columns.keys()))
+            if invalid_cols:
+                raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
+            return self._new_dt_from_cols(key)
         if not isinstance(key, str):
             raise KeyError('Column name must be a string')
         if key not in self.columns.keys():
@@ -412,8 +419,6 @@ class DataTable(object):
         if new_time_index:
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-        # TODO: when dt[[col]] syntax is implemented
-        # (https://github.com/FeatureLabs/datatables/issues/98), use that here
         return DataTable(self.dataframe[cols_to_include],
                          name=self.name,
                          index=new_index,

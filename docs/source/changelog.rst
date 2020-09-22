@@ -11,6 +11,7 @@ Changelog
 
 
 **v0.1.0** September <TBD>, 2020
+    * Add ability to create new datatable from specified columns with ``dt[[columns]]`` (:pr:`127`)
     * Handle setting and tagging of index and time index columns (:pr:`125`)
     * Add combined tag and ltype selection (:pr:`124`)
     * Add changelog, and update changelog check to CI (:pr:`123`)
