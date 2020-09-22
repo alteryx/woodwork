@@ -482,9 +482,9 @@ def test_reset_semantic_tags_with_index(sample_df):
                    semantic_tags=semantic_tags,
                    add_standard_tags=False)
     assert dt['id'].semantic_tags == {'index', 'tag1'}
-    dt.reset_semantic_tags('id')
+    dt.reset_semantic_tags('id', retain_index_tags=True)
     assert dt['id'].semantic_tags == {'index'}
-    dt.reset_semantic_tags('id', retain_index_tags=False)
+    dt.reset_semantic_tags('id')
     assert dt['id'].semantic_tags == set()
 
 
@@ -497,9 +497,9 @@ def test_reset_semantic_tags_with_time_index(sample_df):
                    semantic_tags=semantic_tags,
                    add_standard_tags=False)
     assert dt['signup_date'].semantic_tags == {'time_index', 'tag1'}
-    dt.reset_semantic_tags('signup_date')
+    dt.reset_semantic_tags('signup_date', retain_index_tags=True)
     assert dt['signup_date'].semantic_tags == {'time_index'}
-    dt.reset_semantic_tags('signup_date', retain_index_tags=False)
+    dt.reset_semantic_tags('signup_date')
     assert dt['signup_date'].semantic_tags == set()
 
 

@@ -360,9 +360,9 @@ def test_reset_semantic_tags_with_index(sample_series):
                           add_standard_tags=False)
 
     data_col._set_as_index()
-    new_col = data_col.reset_semantic_tags()
+    new_col = data_col.reset_semantic_tags(retain_index_tags=True)
     assert new_col.semantic_tags == {'index'}
-    new_col = data_col.reset_semantic_tags(retain_index_tags=False)
+    new_col = data_col.reset_semantic_tags()
     assert new_col.semantic_tags == set()
 
 
@@ -373,9 +373,9 @@ def test_reset_semantic_tags_with_time_index(sample_datetime_series):
                           add_standard_tags=False)
 
     data_col._set_as_time_index()
-    new_col = data_col.reset_semantic_tags()
+    new_col = data_col.reset_semantic_tags(retain_index_tags=True)
     assert new_col.semantic_tags == {'time_index'}
-    new_col = data_col.reset_semantic_tags(retain_index_tags=False)
+    new_col = data_col.reset_semantic_tags()
     assert new_col.semantic_tags == set()
 
 

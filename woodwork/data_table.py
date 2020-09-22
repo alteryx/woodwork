@@ -241,7 +241,7 @@ class DataTable(object):
         for name in semantic_tags.keys():
             self.columns[name].set_semantic_tags(semantic_tags[name], retain_index_tags)
 
-    def reset_semantic_tags(self, columns=None, retain_index_tags=True):
+    def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
             The default values will be either an empty set or a set of the standard
             tags based on the column logical type, controlled by the add_default_tags
@@ -252,7 +252,7 @@ class DataTable(object):
             columns (str/list/set): The columns for which the semantic tags should be reset.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
                 semantic tags set on the column. If False, will clear all semantic tags. Defaults to
-                True.
+                False.
         """
         columns = _convert_input_to_set(columns, "columns")
         cols_not_found = sorted(list(columns.difference(set(self.dataframe.columns))))

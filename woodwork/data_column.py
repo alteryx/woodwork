@@ -110,7 +110,7 @@ class DataColumn(object):
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
         self._semantic_tags = self._semantic_tags.union(new_tags)
 
-    def reset_semantic_tags(self, retain_index_tags=True):
+    def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
             will be either an empty set or a set of the standard tags based
             on the column logical type, controlled by the add_default_tags
@@ -119,7 +119,7 @@ class DataColumn(object):
          Args:
             retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
                 the column will be retained. If False, all tags will be cleared.
-                Defaults to True.
+                Defaults to False.
         """
         new_col = DataColumn(series=self.series,
                              logical_type=self.logical_type,
