@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import woodwork as ww
 from woodwork import DataColumn, DataTable
 from woodwork.data_table import (
     _check_index,
@@ -1408,3 +1409,15 @@ def test_select_warnings(sample_df):
     with pytest.warns(UserWarning, match=warning):
         dt_unused_ltype = dt.select(['doesnt_exist', ZIPCode, 'date_of_birth', WholeNumber])
     assert len(dt_unused_ltype.columns) == 3
+
+
+def test_inference_with_config_options():
+    dataframe = pd.DataFrame({
+        'index': [0, 1, 2],
+        'dates': ["2019~01~01", "2019~01~02", "2019~01~03"]
+    })
+
+    ww.config.set_option('datetime_format', '%Y~%m~%d')
+    dt = DataTable(dataframe, name='dt_name')
+    assert dt.columns['dates'].logical_type == Datetime
+    ww.config.reset_option('datetime_format')

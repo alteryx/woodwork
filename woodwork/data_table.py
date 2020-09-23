@@ -2,8 +2,9 @@ import warnings
 
 import pandas as pd
 
+from woodwork.config import config
 from woodwork.data_column import DataColumn
-from woodwork.logical_types import LogicalType, str_to_logical_type
+from woodwork.logical_types import Datetime, LogicalType, str_to_logical_type
 from woodwork.utils import _convert_input_to_set, col_is_datetime
 
 
@@ -214,7 +215,10 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self.dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
+                    if column.logical_type == Datetime:
+                        self.dataframe[name] = pd.to_datetime(self.dataframe[name], format=config.get_option('datetime_format'))
+                    else:
+                        self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
                 except TypeError:
                     error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
                         f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
