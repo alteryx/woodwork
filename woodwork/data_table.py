@@ -294,8 +294,11 @@ class DataTable(object):
             cols_to_update[colname] = self.columns[colname].reset_semantic_tags(retain_index_tags)
         self._update_columns(cols_to_update)
 
-    def to_pandas(self):
-        return self.dataframe
+    def to_pandas(self, na_value=None):
+        if na_value is None:
+            return self.dataframe
+
+        return self.dataframe.fillna(na_value)
 
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
