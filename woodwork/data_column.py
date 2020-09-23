@@ -2,6 +2,7 @@ import warnings
 
 import pandas.api.types as pdtypes
 
+from woodwork.config import config
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -180,11 +181,13 @@ def _validate_tags(semantic_tags):
                          "use DataTable.set_time_index() instead.")
 
 
-def infer_logical_type(series, datetime_format=None):
+def infer_logical_type(series):
     """Infer logical type for a dataframe column
     Args:
         series (pd.Series): Input Series
     """
+    datetime_format = config.get_option('datetime_format')
+
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
