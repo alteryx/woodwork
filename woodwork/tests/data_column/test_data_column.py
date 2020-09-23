@@ -88,7 +88,7 @@ def test_integer_inference():
         pd.Series([-1, 2, 1]),
         pd.Series([-1, 0, 5]),
     ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int']
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -101,7 +101,7 @@ def test_whole_number_inference():
         pd.Series([2, 3, 5]),
     ]
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int']
+              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -125,7 +125,7 @@ def test_boolean_inference():
         pd.Series([True, False, True]),
         pd.Series([True, False, np.nan]),
     ]
-    dtypes = ['bool']
+    dtypes = ['bool', 'boolean']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -179,6 +179,26 @@ def test_natural_language_inference():
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == NaturalLanguage
+
+
+def test_pdna_inference():
+    series_list = [
+        pd.Series(['Mr. John Doe', pd.NA, 'James Brown']).astype('string'),
+        pd.Series([1, pd.NA, -2]).astype('Int64'),
+        pd.Series([1, pd.NA, 2]).astype('Int64'),
+        pd.Series([True, pd.NA, False]).astype('boolean'),
+    ]
+
+    expected_logical_types = [
+        NaturalLanguage,
+        Integer,
+        WholeNumber,
+        Boolean,
+    ]
+
+    for index, series in enumerate(series_list):
+        inferred_type = infer_logical_type(series)
+        assert inferred_type == expected_logical_types[index]
 
 
 def test_data_column_repr(sample_series):

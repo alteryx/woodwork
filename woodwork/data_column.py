@@ -211,7 +211,7 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        if any(series < 0):
+        if any(series.dropna() < 0):
             inferred_type = Integer
         else:
             inferred_type = WholeNumber
