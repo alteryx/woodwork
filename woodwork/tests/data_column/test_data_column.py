@@ -144,6 +144,18 @@ def test_datetime_inference():
             assert inferred_type == Datetime
 
 
+def test_datetime_inference_with_format():
+    series_list = [
+        pd.Series(['3~11~2000', '3~12~2000', '3~13~2000']),
+        pd.Series(['3~11~2000', '3~12~2000', np.nan]),
+    ]
+    dtypes = ['object', 'string']
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype), datetime_format='%m~%d~%Y')
+            assert inferred_type == Datetime
+
+
 def test_categorical_inference():
     series_list = [
         pd.Series(['a', 'b', 'a']),

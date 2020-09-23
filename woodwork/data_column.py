@@ -180,7 +180,7 @@ def _validate_tags(semantic_tags):
                          "use DataTable.set_time_index() instead.")
 
 
-def infer_logical_type(series):
+def infer_logical_type(series, datetime_format=None):
     """Infer logical type for a dataframe column
     Args:
         series (pd.Series): Input Series
@@ -188,7 +188,7 @@ def infer_logical_type(series):
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series):
+        if col_is_datetime(series, datetime_format):
             inferred_type = Datetime
         else:
             inferred_type = Categorical

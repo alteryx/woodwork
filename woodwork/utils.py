@@ -31,9 +31,9 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
     return semantic_tags
 
 
-def col_is_datetime(col):
+def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
-    contains datetimes, False if not."""
+    contains datetimes, False if not. Optionally specify the datetime format string for the column."""
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.iloc[0], datetime))):
         return True
@@ -46,7 +46,7 @@ def col_is_datetime(col):
         # finally, try to cast to datetime
         if col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
             try:
-                pd.to_datetime(dropped_na, errors='raise')
+                pd.to_datetime(dropped_na, errors='raise', format=datetime_format)
             except Exception:
                 return False
             else:
