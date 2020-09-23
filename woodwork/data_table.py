@@ -48,7 +48,7 @@ class DataTable(object):
             add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             replacement_dtypes (dict[str -> str]): Dictionary mapping a pandas dtype whose presence
-                in the DataTable is not desired with a replacement dtype.
+                in the DataTable is not desired with a replacement dtype. --> also allow actualy PandasDtype objs
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
@@ -218,7 +218,7 @@ class DataTable(object):
     def _update_dtypes(self, cols_to_update):
         """Update the dtypes of the underlying dataframe to match the dtypes corresponding
             to the LogicalType for the column. Will override a LogicalType's pandas_dtype
-            if present in `pandas_dtypes`"""
+            if present in `self.replacement_dtypes`"""
 
         for name, column in cols_to_update.items():
             pandas_dtype = column.logical_type.pandas_dtype
@@ -235,8 +235,13 @@ class DataTable(object):
                 except TypeError:
                     error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
                         f'to type {pandas_dtype}. Please confirm the underlying data is consistent with ' \
-                        f'logical type {column.logical_type}.'
+                        f'pandas dtype {pandas_dtype}.'
                     raise TypeError(error_msg)
+                except ValueError:
+                    error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
+                        f'to type {pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                        f'pandas dtype {pandas_dtype}.'
+                    raise ValueError(error_msg)
                 # Update the column object since .astype returns a new series object
                 column.series = self.dataframe[name]
 

@@ -818,8 +818,66 @@ def test_sets_datetime_dtype_on_update():
     assert dt.dataframe[column_name].dtype == Datetime.pandas_dtype
 
 
+def test_replacement_dtypes_on_init(sample_df):
+    dt = DataTable(sample_df)
+    assert dt.to_pandas()['is_registered'].dtype == 'boolean'
+    assert dt.to_pandas()['age'].dtype == 'Int64'
+    assert dt.to_pandas()['email'].dtype == 'string'
+    assert dt.to_pandas()['full_name'].dtype == 'string'
+    assert dt.to_pandas()['phone_number'].dtype == 'string'
+
+    dt_no_strings = DataTable(sample_df,
+                              replacement_dtypes={'string': 'object'})
+    df_no_strings = dt_no_strings.to_pandas()
+
+    assert df_no_strings['is_registered'].dtype == 'boolean'
+    assert df_no_strings['age'].dtype == 'Int64'
+    assert df_no_strings['email'].dtype == 'object'
+    assert df_no_strings['full_name'].dtype == 'object'
+    assert df_no_strings['phone_number'].dtype == 'object'
+
+
+def test_replacement_dtypes_on_update(sample_df):
+    # test automatically inferred types, set at init, and set at update
+    dt_no_strings = DataTable(sample_df,
+                              replacement_dtypes={'string': 'object'},
+                              logical_types={'email': 'emailaddress',
+                                             'is_registered': 'NaturalLanguage'})
+    dt_no_strings.set_logical_types({'age': 'NaturalLanguage'})
+    df_no_strings = dt_no_strings.to_pandas()
+
+    assert df_no_strings['is_registered'].dtype == 'object'
+    assert df_no_strings['age'].dtype == 'object'
+    assert df_no_strings['email'].dtype == 'object'
+    assert df_no_strings['full_name'].dtype == 'object'
+    assert df_no_strings['phone_number'].dtype == 'object'
+
+    assert dt_no_strings['is_registered'].dtype == 'object'
+    assert dt_no_strings['age'].dtype == 'object'
+    assert dt_no_strings['email'].dtype == 'object'
+    assert dt_no_strings['full_name'].dtype == 'object'
+    assert dt_no_strings['phone_number'].dtype == 'object'
+
+
+def test_multiple_replacement_dtypes(sample_df):
+    dt_multiple_replacements = DataTable(sample_df,
+                                         replacement_dtypes={'Int64': 'float64',
+                                                             'string': 'category',
+                                                             'boolean': 'bool',
+                                                             'uint8': 'int64'})
+    df_multiple_replacements = dt_multiple_replacements.to_pandas()
+    assert df_multiple_replacements['is_registered'].dtype == 'bool'
+    assert df_multiple_replacements['age'].dtype == 'float'
+    assert df_multiple_replacements['email'].dtype == 'category'
+    assert df_multiple_replacements['full_name'].dtype == 'category'
+    assert df_multiple_replacements['phone_number'].dtype == 'category'
+    assert df_multiple_replacements['signup_date'].dtype == 'datetime64[ns]'
+
+
 def test_invalid_dtype_casting():
     column_name = 'test_series'
+
+    # Create invalid casting through setting a LogicalType
 
     # Cannot cast a column with pd.NA to Double
     series = pd.Series([1.1, pd.NA, 3], name=column_name)
@@ -827,7 +885,7 @@ def test_invalid_dtype_casting():
         column_name: Double,
     }
     err_msg = 'Error converting datatype for column test_series from type object to type ' \
-        'float64. Please confirm the underlying data is consistent with logical type Double.'
+        'float64. Please confirm the underlying data is consistent with pandas dtype float64.'
     with pytest.raises(TypeError, match=err_msg):
         DataTable(pd.DataFrame(series), logical_types=ltypes)
 
@@ -838,7 +896,7 @@ def test_invalid_dtype_casting():
     }
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
     err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
-        'float64. Please confirm the underlying data is consistent with logical type Double.'
+        'float64. Please confirm the underlying data is consistent with pandas dtype float64.'
     with pytest.raises(TypeError, match=re.escape(err_msg)):
         dt.set_logical_types({column_name: Double})
 
@@ -848,9 +906,28 @@ def test_invalid_dtype_casting():
         column_name: WholeNumber,
     }
     err_msg = 'Error converting datatype for column test_series from type object to type ' \
-        'Int64. Please confirm the underlying data is consistent with logical type WholeNumber.'
+        'Int64. Please confirm the underlying data is consistent with pandas dtype Int64.'
     with pytest.raises(TypeError, match=err_msg):
         DataTable(pd.DataFrame(series), logical_types=ltypes)
+
+    # Create invalid casting through replacing dtypes
+
+    # Cannot cast from invalid strings to boolean
+    series = pd.Series(['test', 'two', 'three'], name=column_name)
+    ltypes = {
+        column_name: NaturalLanguage,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'boolean. Please confirm the underlying data is consistent with pandas dtype boolean.'
+    with pytest.raises(TypeError, match=err_msg):
+        DataTable(pd.DataFrame(series), logical_types=ltypes, replacement_dtypes={'string': 'boolean'})
+
+    # Cannot cast from Int64 to int64 if there are missing values
+    series = pd.Series([1, 2, pd.NA], name=column_name, dtype='Int64')
+    err_msg = 'Error converting datatype for column test_series from type Int64 to type ' \
+        'int64. Please confirm the underlying data is consistent with pandas dtype int64.'
+    with pytest.raises(ValueError, match=err_msg):
+        DataTable(pd.DataFrame(series), replacement_dtypes={'Int64': 'int64'})
 
 
 def test_invalid_select_ltypes(sample_df):
