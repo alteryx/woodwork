@@ -88,7 +88,7 @@ def test_integer_inference():
         pd.Series([-1, 2, 1]),
         pd.Series([-1, 0, 5]),
     ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int']
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -125,7 +125,7 @@ def test_boolean_inference():
         pd.Series([True, False, True]),
         pd.Series([True, False, np.nan]),
     ]
-    dtypes = ['bool']
+    dtypes = ['bool', 'boolean']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
