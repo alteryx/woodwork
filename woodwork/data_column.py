@@ -2,6 +2,7 @@ import warnings
 
 import pandas.api.types as pdtypes
 
+from woodwork.config import config
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -185,10 +186,12 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
+    datetime_format = config.get_option('datetime_format')
+
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series):
+        if col_is_datetime(series, datetime_format):
             inferred_type = Datetime
         else:
             inferred_type = Categorical

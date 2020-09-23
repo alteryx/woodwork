@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import woodwork as ww
 from woodwork.data_column import DataColumn, infer_logical_type
 from woodwork.logical_types import (
     Boolean,
@@ -142,6 +143,23 @@ def test_datetime_inference():
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Datetime
+
+
+def test_datetime_inference_with_format():
+    series_list = [
+        pd.Series(['3~11~2000', '3~12~2000', '3~13~2000']),
+        pd.Series(['3~11~2000', '3~12~2000', np.nan]),
+    ]
+    dtypes = ['object', 'string']
+
+    ww.config.set_option('datetime_format', '%m~%d~%Y')
+
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Datetime
+
+    ww.config.reset_option('datetime_format')
 
 
 def test_categorical_inference():
