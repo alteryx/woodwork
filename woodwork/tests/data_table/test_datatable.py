@@ -49,7 +49,6 @@ def test_datatable_init(sample_df):
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
     pd.testing.assert_frame_equal(df, sample_df)
-    breakpoint()
 
 
 def test_datatable_copy_param(sample_df):
