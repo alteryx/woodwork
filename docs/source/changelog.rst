@@ -7,6 +7,8 @@ Changelog
     * Fixes
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
+        * Add `replacement_dtypes` parameter to replace unwanted dtypes (:pr:`144`)
+        * Get dataframe with just `to_pandas` with na_value and maintain_dtypes params (:pr:`144`)
     * Documentation Changes
     * Testing Changes
 
