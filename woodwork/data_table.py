@@ -319,10 +319,10 @@ class DataTable(object):
         if na_value is None:
             return self.dataframe
 
-        with_na_value = self.dataframe.copy()
+        df_with_na_value = self.dataframe.copy()
         changed_col_dtypes = []
 
-        for col_name in with_na_value.columns:
+        for col_name in df_with_na_value.columns:
             try:
                 new_col = self.dataframe[col_name].fillna(na_value)
             # If na_value does not match the dtype, convert the dtype to object
@@ -334,16 +334,16 @@ class DataTable(object):
             original_dtype = self.dataframe[col_name].dtype
 
             if not maintain_dtypes or original_dtype == new_col.dtype:
-                with_na_value[col_name] = new_col
+                df_with_na_value[col_name] = new_col
 
-            new_dtype = with_na_value[col_name].dtype
+            new_dtype = df_with_na_value[col_name].dtype
             if original_dtype != new_dtype:
                 changed_col_dtypes.append(f'{col_name}: {original_dtype} -> {new_dtype}')
 
         if changed_col_dtypes:
-            changed_col_dtypes_str = ', '.join(changed_col_dtypes)
-            warnings.warn(f'The following columns have had their dtypes change: {changed_col_dtypes_str}')
-        return with_na_value
+            changed_col_dtypes_str = '\n'.join(changed_col_dtypes)
+            warnings.warn(f'The followng columns have had their dtypes change:\n{changed_col_dtypes_str}')
+        return df_with_na_value
 
     def select(self, include):
         """Create a DataTable including only columns whose logical type and

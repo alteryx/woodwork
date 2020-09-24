@@ -847,17 +847,12 @@ def test_replacement_dtypes_on_update(sample_df):
     dt_no_strings.set_logical_types({'age': 'NaturalLanguage'})
     df_no_strings = dt_no_strings.to_pandas()
 
-    assert df_no_strings['is_registered'].dtype == 'object'
-    assert df_no_strings['age'].dtype == 'object'
-    assert df_no_strings['email'].dtype == 'object'
-    assert df_no_strings['full_name'].dtype == 'object'
-    assert df_no_strings['phone_number'].dtype == 'object'
-
-    assert dt_no_strings['is_registered'].dtype == 'object'
-    assert dt_no_strings['age'].dtype == 'object'
-    assert dt_no_strings['email'].dtype == 'object'
-    assert dt_no_strings['full_name'].dtype == 'object'
-    assert dt_no_strings['phone_number'].dtype == 'object'
+    for data_repr in [df_no_strings, dt_no_strings]:
+        assert data_repr['is_registered'].dtype == 'object'
+        assert data_repr['age'].dtype == 'object'
+        assert data_repr['email'].dtype == 'object'
+        assert data_repr['full_name'].dtype == 'object'
+        assert data_repr['phone_number'].dtype == 'object'
 
 
 def test_multiple_replacement_dtypes(sample_df):
@@ -1534,10 +1529,11 @@ def test_to_pandas_changing_dtypes():
     assert df_NA['floats_nan_specified'].dtype == 'category'
     assert np.isnan(df_NA['floats_nan_specified'].loc[1])
 
-    warning = 'The following columns have had their dtypes change: '\
-        'ints_nan: category -> object, '\
-        'floats_nan_specified: category -> object, '\
+    warning = 'The followng columns have had their dtypes change:\n'\
+        'ints_nan: category -> object\n'\
+        'floats_nan_specified: category -> object\n'\
         'ints_NA_specified: Int64 -> object'
+
     with pytest.warns(UserWarning, match=warning):
         df_str = dt_NA.to_pandas(na_value='test')
     assert df_str['ints_nan'].dtype == 'object'
@@ -1550,8 +1546,8 @@ def test_to_pandas_changing_dtypes():
     # convert Int64s to floats and then convert to nan
     dt_nan = DataTable(df_numerics, replacement_dtypes={'Int64': 'object'})
 
-    warning = 'The following columns have had their dtypes change: '\
-        'ints_no_nans: object -> int64, '\
+    warning = 'The followng columns have had their dtypes change:\n'\
+        'ints_no_nans: object -> int64\n'\
         'ints_NA_specified: object -> float64'
     with pytest.warns(UserWarning, match=warning):
         df_nan = dt_nan.to_pandas(na_value=np.nan)
