@@ -1411,7 +1411,7 @@ def test_select_warnings(sample_df):
     assert len(dt_unused_ltype.columns) == 3
 
 
-def test_inference_with_config_options():
+def test_datetime_inference_with_config_options():
     dataframe = pd.DataFrame({
         'index': [0, 1, 2],
         'dates': ["2019~01~01", "2019~01~02", "2019~01~03"]
@@ -1421,3 +1421,15 @@ def test_inference_with_config_options():
     dt = DataTable(dataframe, name='dt_name')
     assert dt.columns['dates'].logical_type == Datetime
     ww.config.reset_option('datetime_format')
+
+
+def test_natural_language_inference_with_config_options():
+    dataframe = pd.DataFrame({
+        'index': [0, 1, 2],
+        'values': ["0123456", "01234567", "012345"]
+    })
+
+    ww.config.set_option('natural_language_threshold', 5)
+    dt = DataTable(dataframe, name='dt_name')
+    assert dt.columns['values'].logical_type == NaturalLanguage
+    ww.config.reset_option('natural_language_threshold')

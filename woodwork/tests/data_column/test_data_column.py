@@ -199,6 +199,27 @@ def test_natural_language_inference():
             assert inferred_type == NaturalLanguage
 
 
+def test_natural_language_inference_with_threshhold():
+    natural_language_series = pd.Series([
+        '01234567890123456789',
+        '01234567890123456789',
+        '01234567890123456789'])
+    category_series = pd.Series([
+        '0123456789012345678',
+        '0123456789012345678',
+        '0123456789012345678'])
+
+    dtypes = ['object', 'string']
+
+    ww.config.set_option('natural_language_threshold', 19)
+    for dtype in dtypes:
+        inferred_type = infer_logical_type(natural_language_series.astype(dtype))
+        assert inferred_type == NaturalLanguage
+        inferred_type = infer_logical_type(category_series.astype(dtype))
+        assert inferred_type == Categorical
+    ww.config.reset_option('natural_language_threshold')
+
+
 def test_pdna_inference():
     series_list = [
         pd.Series(['Mr. John Doe', pd.NA, 'James Brown']).astype('string'),

@@ -11,6 +11,7 @@ Changelog
 
 
 **v0.1.0** September <TBD>, 2020
+    * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
     * Add global config options and add ``datetime_format`` option for type inference (:pr:`134`)
     * Fix bug with Integer and WholeNumber inference in column with ``pd.NA`` values (:pr:`133`)
     * Add DataTable.ltypes property to return series of logical types (:pr:`131`)
