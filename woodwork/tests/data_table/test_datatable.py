@@ -1132,12 +1132,13 @@ def test_getitem_invalid_input(sample_df):
 def test_datatable_getitem_list_input(sample_df):
     # Test regular columns
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    df = dt.to_pandas()
     columns = ['age', 'full_name']
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert all(new_dt.df.columns == ['age', 'full_name'])
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert all(new_dt.to_pandas().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
     assert new_dt.time_index is None
@@ -1146,9 +1147,9 @@ def test_datatable_getitem_list_input(sample_df):
     columns = ['id', 'full_name']
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert all(new_dt.df.columns == ['id', 'full_name'])
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert all(new_dt.to_pandas().columns == ['id', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'full_name'}
     assert new_dt.index == 'id'
     assert new_dt.time_index is None
@@ -1157,9 +1158,9 @@ def test_datatable_getitem_list_input(sample_df):
     columns = ['id', 'signup_date', 'full_name']
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert all(new_dt.df.columns == ['id', 'signup_date', 'full_name'])
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert all(new_dt.to_pandas().columns == ['id', 'signup_date', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'signup_date', 'full_name'}
     assert new_dt.index == 'id'
     assert new_dt.time_index == 'signup_date'
@@ -1168,9 +1169,9 @@ def test_datatable_getitem_list_input(sample_df):
     columns = []
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert len(new_dt.df.columns) == 0
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert len(new_dt.to_pandas().columns) == 0
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
     assert new_dt.time_index is None
