@@ -2,15 +2,16 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
+        * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-
+Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 **v0.1.0** September 24, 2020
     * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
