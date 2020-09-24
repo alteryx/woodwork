@@ -2,15 +2,17 @@
 
 Changelog
 ---------
-**Future Release**
+.. **Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
+.. Thanks to the following people for contributing to this release:
 
-**v0.1.0** September <TBD>, 2020
+
+**v0.1.0** September 24, 2020
     * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
     * Add global config options and add ``datetime_format`` option for type inference (:pr:`134`)
     * Fix bug with Integer and WholeNumber inference in column with ``pd.NA`` values (:pr:`133`)
