@@ -2,15 +2,23 @@
 
 Changelog
 ---------
-**Future Release**
+.. **Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
+.. Thanks to the following people for contributing to this release:
 
-**v0.1.0** September <TBD>, 2020
+
+**v0.1.0** September 24, 2020
+    * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
+    * Add global config options and add ``datetime_format`` option for type inference (:pr:`134`)
+    * Fix bug with Integer and WholeNumber inference in column with ``pd.NA`` values (:pr:`133`)
+    * Add DataTable.ltypes property to return series of logical types (:pr:`131`)
+    * Add ability to create new datatable from specified columns with ``dt[[columns]]`` (:pr:`127`)
+    * Handle setting and tagging of index and time index columns (:pr:`125`)
     * Add combined tag and ltype selection (:pr:`124`)
     * Add changelog, and update changelog check to CI (:pr:`123`)
     * Implement reset_semantic_tags (:pr:`118`)

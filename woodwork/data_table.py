@@ -2,9 +2,10 @@ import warnings
 
 import pandas as pd
 
+from woodwork.config import config
 from woodwork.data_column import DataColumn
-from woodwork.logical_types import LogicalType, str_to_logical_type
-from woodwork.utils import _convert_input_to_set
+from woodwork.logical_types import Datetime, LogicalType, str_to_logical_type
+from woodwork.utils import _convert_input_to_set, col_is_datetime
 
 
 class DataTable(object):
@@ -59,17 +60,27 @@ class DataTable(object):
             self.dataframe.fillna(pd.NA, inplace=True)
 
         self.name = name
-        self.index = index
-        self.time_index = time_index
 
         # Infer logical types and create columns
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
                                             semantic_tags,
                                             self.add_standard_tags)
+        if index:
+            self.set_index(index)
+        if time_index:
+            self.set_time_index(time_index)
+
         self._update_dtypes(self.columns)
 
     def __getitem__(self, key):
+        if isinstance(key, list):
+            if not all([isinstance(col, str) for col in key]):
+                raise KeyError('Column names must be strings')
+            invalid_cols = set(key).difference(set(self.columns.keys()))
+            if invalid_cols:
+                raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
+            return self._new_dt_from_cols(key)
         if not isinstance(key, str):
             raise KeyError('Column name must be a string')
         if key not in self.columns.keys():
@@ -88,7 +99,15 @@ class DataTable(object):
         df.index.name = 'Data Column'
         return df
 
-    def _create_columns(self, column_names, logical_types, semantic_tags, add_standard_tags):
+    @property
+    def ltypes(self):
+        return self.types['Logical Type']
+
+    def _create_columns(self,
+                        column_names,
+                        logical_types,
+                        semantic_tags,
+                        add_standard_tags):
         """Create a dictionary with column names as keys and new DataColumn objects
             as values, while assigning any values that are passed for logical types or
             semantic tags to the new column."""
@@ -118,20 +137,74 @@ class DataTable(object):
     def semantic_tags(self):
         return {dc.name: dc.semantic_tags for dc in self.columns.values()}
 
+    @property
+    def index(self):
+        for column in self.columns.values():
+            if 'index' in column.semantic_tags:
+                return column.name
+        return None
+
+    @index.setter
+    def index(self, index):
+        if self.index and index is None:
+            self.remove_semantic_tags({self.index: 'index'})
+        elif index is not None:
+            self.set_index(index)
+
+    @property
+    def time_index(self):
+        for column in self.columns.values():
+            if 'time_index' in column.semantic_tags:
+                return column.name
+        return None
+
+    @time_index.setter
+    def time_index(self, time_index):
+        if self.time_index and time_index is None:
+            self.remove_semantic_tags({self.time_index: 'time_index'})
+        elif time_index is not None:
+            self.set_time_index(time_index)
+
     def _update_columns(self, new_columns):
         """Update the DataTable columns based on items contained in the
             provided new_columns dictionary"""
         for name, column in new_columns.items():
             self.columns[name] = column
 
-    def set_logical_types(self, logical_types):
+    def set_index(self, index):
+        """Set the index column. Adds the 'index' semantic tag to the column and
+            clears the tag from any previously set index column"""
+        _check_index(self.dataframe, index)
+        old_index = self.index
+        self.columns[index]._set_as_index()
+        if old_index:
+            self._update_columns({old_index: self.columns[old_index].remove_semantic_tags('index')})
+
+    def set_time_index(self, time_index):
+        """Set the time index column. Adds the 'time_index' semantic tag to the column and
+            clears the tag from any previously set index column"""
+        _check_time_index(self.dataframe, time_index)
+        old_time_index = self.time_index
+        self.columns[time_index]._set_as_time_index()
+        if old_time_index:
+            self._update_columns({old_time_index: self.columns[old_time_index].remove_semantic_tags('time_index')})
+
+    def set_logical_types(self, logical_types, retain_index_tags=True):
         """Update the logical type for any columns names in the provided logical_types
-            dictionary, resetting the semantic tags for the column. Replaces the existing
-            column with a new column object."""
+            dictionary. Replaces existing columns with new column objects.
+
+            Args:
+                logical_types (dict): A dictionary defining the new logical types for the
+                    specified columns.
+                retain_index_tags (bool, optional): If True, will retain any index or time_index
+                    semantic tags set on the column. If false, will clear all semantic tags. Defaults to
+                    True.
+        """
         _check_logical_types(self.dataframe, logical_types)
         cols_to_update = {}
         for colname, logical_type in logical_types.items():
-            cols_to_update[colname] = self.columns[colname].set_logical_type(logical_type)
+            cols_to_update[colname] = self.columns[colname].set_logical_type(logical_type,
+                                                                             retain_index_tags=retain_index_tags)
         self._update_columns(cols_to_update)
         self._update_dtypes(cols_to_update)
 
@@ -142,7 +215,10 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self.dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
+                    if column.logical_type == Datetime:
+                        self.dataframe[name] = pd.to_datetime(self.dataframe[name], format=config.get_option('datetime_format'))
+                    else:
+                        self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
                 except TypeError:
                     error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
                         f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
@@ -166,20 +242,33 @@ class DataTable(object):
             cols_to_update[colname] = self.columns[colname].remove_semantic_tags(tags)
         self._update_columns(cols_to_update)
 
-    def set_semantic_tags(self, semantic_tags):
+    def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Update the semantic tags for any column names in the provided semantic_tags
-            dictionary. Replaces the existing semantic tags with the new values."""
+            dictionary. Replaces the existing semantic tags with the new values.
+        Args:
+            semantic_tags (dict): A dictionary defining the new semantic_tags for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
+                True.
+        """
         _check_semantic_tags(self.dataframe, semantic_tags)
         for name in semantic_tags.keys():
-            self.columns[name].set_semantic_tags(semantic_tags[name])
+            self.columns[name].set_semantic_tags(semantic_tags[name], retain_index_tags)
 
-    def reset_semantic_tags(self, columns=None):
+    def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
             The default values will be either an empty set or a set of the standard
             tags based on the column logical type, controlled by the add_default_tags
             property on the table. Columns names can be provided as a single string,
             a list of strings or a set of strings. If columns is not specified,
-            tags will be reset for all columns."""
+            tags will be reset for all columns.
+        Args:
+            columns (str/list/set): The columns for which the semantic tags should be reset.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will clear all semantic tags. Defaults to
+                False.
+        """
         columns = _convert_input_to_set(columns, "columns")
         cols_not_found = sorted(list(columns.difference(set(self.dataframe.columns))))
         if cols_not_found:
@@ -189,7 +278,7 @@ class DataTable(object):
             columns = self.columns.keys()
         cols_to_update = {}
         for colname in columns:
-            cols_to_update[colname] = self.columns[colname].reset_semantic_tags()
+            cols_to_update[colname] = self.columns[colname].reset_semantic_tags(retain_index_tags)
         self._update_columns(cols_to_update)
 
     @property
@@ -332,9 +421,12 @@ class DataTable(object):
                              in self.logical_types.items() if col_name in cols_to_include}
         new_index = self.index if self.index in cols_to_include else None
         new_time_index = self.time_index if self.time_index in cols_to_include else None
+        # Remove 'index' or 'time_index' from semantic tags, if present as those can't be set directly during init
+        if new_index:
+            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+        if new_time_index:
+            new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-        # TODO: when dt[[col]] syntax is implemented
-        # (https://github.com/FeatureLabs/datatables/issues/98), use that here
         return DataTable(self.dataframe[cols_to_include],
                          name=self.name,
                          index=new_index,
@@ -380,6 +472,8 @@ def _check_time_index(dataframe, time_index):
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
+    if not col_is_datetime(dataframe[time_index]):
+        raise TypeError('Time index column must contain datetime values')
 
 
 def _check_logical_types(dataframe, logical_types):

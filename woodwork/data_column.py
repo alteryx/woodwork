@@ -1,9 +1,8 @@
 import warnings
-from datetime import datetime
 
-import pandas as pd
 import pandas.api.types as pdtypes
 
+from woodwork.config import config
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -16,7 +15,7 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set
+from woodwork.utils import _convert_input_to_set, col_is_datetime
 
 
 class DataColumn(object):
@@ -42,6 +41,7 @@ class DataColumn(object):
         self.series = series
         self.add_standard_tags = add_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
+        self._semantic_tags = set()
         self.set_semantic_tags(semantic_tags)
 
     def __repr__(self):
@@ -51,11 +51,25 @@ class DataColumn(object):
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
 
-    def set_logical_type(self, logical_type):
+    def set_logical_type(self, logical_type, retain_index_tags=True):
+        """Update the logical type for the column and return a new column object.
+
+        Args:
+            logical_type (LogicalType, str): The new logical type to set for the column.
+            retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
+                the column will be retained. If False, all tags will be cleared.
+                Defaults to True.
+        """
         new_logical_type = self._parse_logical_type(logical_type)
-        return DataColumn(series=self.series,
-                          logical_type=new_logical_type,
-                          add_standard_tags=self.add_standard_tags)
+        new_col = DataColumn(series=self.series,
+                             logical_type=new_logical_type,
+                             add_standard_tags=self.add_standard_tags)
+        if retain_index_tags and 'index' in self.semantic_tags:
+            new_col._set_as_index()
+        if retain_index_tags and 'time_index' in self.semantic_tags:
+            new_col._set_as_time_index()
+
+        return new_col
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
@@ -68,28 +82,55 @@ class DataColumn(object):
         else:
             return infer_logical_type(self.series)
 
-    def set_semantic_tags(self, semantic_tags):
-        """Replace semantic tags with passed values"""
-        self._semantic_tags = _convert_input_to_set(semantic_tags)
+    def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
+        """Replace semantic tags with passed values.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to set for column
+            retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
+                the column will be retained. If False, all tags will be replaced.
+                Defaults to True.
+        """
+        semantic_tags = _convert_input_to_set(semantic_tags)
+        _validate_tags(semantic_tags)
+        is_index = 'index' in self._semantic_tags
+        is_time_index = 'time_index' in self._semantic_tags
+        self._semantic_tags = semantic_tags
         if self.add_standard_tags:
             self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
+        if retain_index_tags and is_index:
+            self._set_as_index()
+        if retain_index_tags and is_time_index:
+            self._set_as_time_index()
 
     def add_semantic_tags(self, semantic_tags):
         new_tags = _convert_input_to_set(semantic_tags)
+        _validate_tags(new_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
         self._semantic_tags = self._semantic_tags.union(new_tags)
 
-    def reset_semantic_tags(self):
+    def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
             will be either an empty set or a set of the standard tags based
             on the column logical type, controlled by the add_default_tags
-            property."""
-        return DataColumn(series=self.series,
-                          logical_type=self.logical_type,
-                          semantic_tags=None,
-                          add_standard_tags=self.add_standard_tags)
+            property.
+
+         Args:
+            retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
+                the column will be retained. If False, all tags will be cleared.
+                Defaults to False.
+        """
+        new_col = DataColumn(series=self.series,
+                             logical_type=self.logical_type,
+                             semantic_tags=None,
+                             add_standard_tags=self.add_standard_tags)
+        if retain_index_tags and 'index' in self.semantic_tags:
+            new_col._set_as_index()
+        if retain_index_tags and 'time_index' in self.semantic_tags:
+            new_col._set_as_time_index()
+        return new_col
 
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from column and returns a new column"""
@@ -106,6 +147,12 @@ class DataColumn(object):
                           logical_type=self.logical_type,
                           semantic_tags=new_tags,
                           add_standard_tags=False)
+
+    def _set_as_index(self):
+        self._semantic_tags.add('index')
+
+    def _set_as_time_index(self):
+        self._semantic_tags.add('time_index')
 
     @property
     def logical_type(self):
@@ -124,15 +171,28 @@ class DataColumn(object):
         return self.series.dtype
 
 
+def _validate_tags(semantic_tags):
+    """Verify user has not supplied tags that cannot be set directly"""
+    if 'index' in semantic_tags:
+        raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
+                         "use DataTable.set_index() instead.")
+    if 'time_index' in semantic_tags:
+        raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
+                         "use DataTable.set_time_index() instead.")
+
+
 def infer_logical_type(series):
     """Infer logical type for a dataframe column
     Args:
         series (pd.Series): Input Series
     """
+    datetime_format = config.get_option('datetime_format')
+    natural_language_threshold = config.get_option('natural_language_threshold')
+
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series):
+        if col_is_datetime(series, datetime_format):
             inferred_type = Datetime
         else:
             inferred_type = Categorical
@@ -143,7 +203,7 @@ def infer_logical_type(series):
             # catch cases where object dtype cannot be interpreted as a string
             try:
                 avg_length = sample.str.len().mean()
-                if avg_length > 10:
+                if avg_length > natural_language_threshold:
                     inferred_type = NaturalLanguage
             except AttributeError:
                 pass
@@ -155,7 +215,7 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        if any(series < 0):
+        if any(series.dropna() < 0):
             inferred_type = Integer
         else:
             inferred_type = WholeNumber
@@ -170,27 +230,3 @@ def infer_logical_type(series):
         inferred_type = Timedelta
 
     return inferred_type
-
-
-def col_is_datetime(col):
-    """Determine if a dataframe column contains datetime values or not. Returns True if column
-    contains datetimes, False if not."""
-    if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.iloc[0], datetime))):
-        return True
-
-    # if it can be casted to numeric, it's not a datetime
-    dropped_na = col.dropna()
-    try:
-        pd.to_numeric(dropped_na, errors='raise')
-    except (ValueError, TypeError):
-        # finally, try to cast to datetime
-        if col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
-            try:
-                pd.to_datetime(dropped_na, errors='raise')
-            except Exception:
-                return False
-            else:
-                return True
-
-    return False

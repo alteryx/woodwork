@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import woodwork as ww
 from woodwork.data_column import DataColumn, infer_logical_type
 from woodwork.logical_types import (
     Boolean,
@@ -44,17 +45,17 @@ def test_data_column_init_with_logical_type(sample_series):
 
 
 def test_data_column_init_with_semantic_tags(sample_series):
-    semantic_tags = ['index', 'tag2']
+    semantic_tags = ['tag1', 'tag2']
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == set(semantic_tags)
 
 
 def test_data_column_with_alternate_semantic_tags_input(sample_series):
-    semantic_tags = 'index'
+    semantic_tags = 'custom_tag'
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
-    assert data_col.semantic_tags == {'index'}
+    assert data_col.semantic_tags == {'custom_tag'}
 
-    semantic_tags = {'index', 'numeric'}
+    semantic_tags = {'custom_tag', 'numeric'}
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
@@ -88,7 +89,7 @@ def test_integer_inference():
         pd.Series([-1, 2, 1]),
         pd.Series([-1, 0, 5]),
     ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int']
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -101,7 +102,7 @@ def test_whole_number_inference():
         pd.Series([2, 3, 5]),
     ]
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int']
+              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -125,7 +126,7 @@ def test_boolean_inference():
         pd.Series([True, False, True]),
         pd.Series([True, False, np.nan]),
     ]
-    dtypes = ['bool']
+    dtypes = ['bool', 'boolean']
     for series in series_list:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -142,6 +143,23 @@ def test_datetime_inference():
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Datetime
+
+
+def test_datetime_inference_with_format():
+    series_list = [
+        pd.Series(['3~11~2000', '3~12~2000', '3~13~2000']),
+        pd.Series(['3~11~2000', '3~12~2000', np.nan]),
+    ]
+    dtypes = ['object', 'string']
+
+    ww.config.set_option('datetime_format', '%m~%d~%Y')
+
+    for series in series_list:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Datetime
+
+    ww.config.reset_option('datetime_format')
 
 
 def test_categorical_inference():
@@ -181,6 +199,47 @@ def test_natural_language_inference():
             assert inferred_type == NaturalLanguage
 
 
+def test_natural_language_inference_with_threshhold():
+    natural_language_series = pd.Series([
+        '01234567890123456789',
+        '01234567890123456789',
+        '01234567890123456789'])
+    category_series = pd.Series([
+        '0123456789012345678',
+        '0123456789012345678',
+        '0123456789012345678'])
+
+    dtypes = ['object', 'string']
+
+    ww.config.set_option('natural_language_threshold', 19)
+    for dtype in dtypes:
+        inferred_type = infer_logical_type(natural_language_series.astype(dtype))
+        assert inferred_type == NaturalLanguage
+        inferred_type = infer_logical_type(category_series.astype(dtype))
+        assert inferred_type == Categorical
+    ww.config.reset_option('natural_language_threshold')
+
+
+def test_pdna_inference():
+    series_list = [
+        pd.Series(['Mr. John Doe', pd.NA, 'James Brown']).astype('string'),
+        pd.Series([1, pd.NA, -2]).astype('Int64'),
+        pd.Series([1, pd.NA, 2]).astype('Int64'),
+        pd.Series([True, pd.NA, False]).astype('boolean'),
+    ]
+
+    expected_logical_types = [
+        NaturalLanguage,
+        Integer,
+        WholeNumber,
+        Boolean,
+    ]
+
+    for index, series in enumerate(series_list):
+        inferred_type = infer_logical_type(series)
+        assert inferred_type == expected_logical_types[index]
+
+
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series, add_standard_tags=False)
     assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = object) ' \
@@ -188,13 +247,37 @@ def test_data_column_repr(sample_series):
 
 
 def test_set_semantic_tags(sample_series):
-    semantic_tags = {'index', 'tag2'}
+    semantic_tags = {'tag1', 'tag2'}
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
     data_col.set_semantic_tags(new_tags)
     assert data_col.semantic_tags == set(new_tags)
+
+
+def test_set_semantic_tags_with_index(sample_series):
+    semantic_tags = {'tag1', 'tag2'}
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col._set_as_index()
+    assert data_col.semantic_tags == {'tag1', 'tag2', 'index'}
+    new_tags = ['new_tag']
+    data_col.set_semantic_tags(new_tags)
+    assert data_col.semantic_tags == {'index', 'new_tag'}
+    data_col.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert data_col.semantic_tags == {'new_tag'}
+
+
+def test_set_semantic_tags_with_time_index(sample_datetime_series):
+    semantic_tags = {'tag1', 'tag2'}
+    data_col = DataColumn(sample_datetime_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col._set_as_time_index()
+    assert data_col.semantic_tags == {'tag1', 'tag2', 'time_index'}
+    new_tags = ['new_tag']
+    data_col.set_semantic_tags(new_tags)
+    assert data_col.semantic_tags == {'time_index', 'new_tag'}
+    data_col.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert data_col.semantic_tags == {'new_tag'}
 
 
 def test_adds_numeric_standard_tag():
@@ -278,6 +361,34 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert new_col.semantic_tags == set()
 
 
+def test_set_logical_type_retains_index_tag(sample_series):
+    data_col = DataColumn(sample_series,
+                          logical_type=NaturalLanguage,
+                          semantic_tags='original_tag',
+                          add_standard_tags=False)
+
+    data_col._set_as_index()
+    assert data_col.semantic_tags == {'index', 'original_tag'}
+    new_col = data_col.set_logical_type(Categorical)
+    assert new_col.semantic_tags == {'index'}
+    new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
+    assert new_col.semantic_tags == set()
+
+
+def test_set_logical_type_retains_time_index_tag(sample_datetime_series):
+    data_col = DataColumn(sample_datetime_series,
+                          logical_type=Datetime,
+                          semantic_tags='original_tag',
+                          add_standard_tags=False)
+
+    data_col._set_as_time_index()
+    assert data_col.semantic_tags == {'time_index', 'original_tag'}
+    new_col = data_col.set_logical_type(Categorical)
+    assert new_col.semantic_tags == {'time_index'}
+    new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
+    assert new_col.semantic_tags == set()
+
+
 def test_reset_semantic_tags_with_standard_tags(sample_series):
     semantic_tags = 'initial_tag'
     data_col = DataColumn(sample_series,
@@ -298,6 +409,32 @@ def test_reset_semantic_tags_without_standard_tags(sample_series):
 
     new_col = data_col.reset_semantic_tags()
     assert new_col is not data_col
+    assert new_col.semantic_tags == set()
+
+
+def test_reset_semantic_tags_with_index(sample_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_series,
+                          semantic_tags=semantic_tags,
+                          add_standard_tags=False)
+
+    data_col._set_as_index()
+    new_col = data_col.reset_semantic_tags(retain_index_tags=True)
+    assert new_col.semantic_tags == {'index'}
+    new_col = data_col.reset_semantic_tags()
+    assert new_col.semantic_tags == set()
+
+
+def test_reset_semantic_tags_with_time_index(sample_datetime_series):
+    semantic_tags = 'initial_tag'
+    data_col = DataColumn(sample_datetime_series,
+                          semantic_tags=semantic_tags,
+                          add_standard_tags=False)
+
+    data_col._set_as_time_index()
+    new_col = data_col.reset_semantic_tags(retain_index_tags=True)
+    assert new_col.semantic_tags == {'time_index'}
+    new_col = data_col.reset_semantic_tags()
     assert new_col.semantic_tags == set()
 
 
@@ -349,3 +486,41 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
     error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
     with pytest.raises(LookupError, match=error_msg):
         data_col.remove_semantic_tags('invalid_tagname')
+
+
+def test_raises_error_setting_index_tag_directly(sample_series):
+    error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
+                          "use DataTable.set_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, semantic_tags='index')
+
+    data_col = DataColumn(sample_series)
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.add_semantic_tags('index')
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.set_semantic_tags('index')
+
+
+def test_raises_error_setting_time_index_tag_directly(sample_series):
+    error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
+                          "use DataTable.set_time_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, semantic_tags='time_index')
+
+    data_col = DataColumn(sample_series)
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.add_semantic_tags('time_index')
+    with pytest.raises(ValueError, match=error_msg):
+        data_col.set_semantic_tags('time_index')
+
+
+def test_set_as_index(sample_series):
+    data_col = DataColumn(sample_series)
+    data_col._set_as_index()
+    assert 'index' in data_col.semantic_tags
+
+
+def test_set_as_time_index(sample_series):
+    data_col = DataColumn(sample_series)
+    data_col._set_as_time_index()
+    assert 'time_index' in data_col.semantic_tags
