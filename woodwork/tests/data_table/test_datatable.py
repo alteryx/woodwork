@@ -820,11 +820,12 @@ def test_sets_datetime_dtype_on_update():
 
 def test_replacement_dtypes_on_init(sample_df):
     dt = DataTable(sample_df)
-    assert dt.to_pandas()['is_registered'].dtype == 'boolean'
-    assert dt.to_pandas()['age'].dtype == 'Int64'
-    assert dt.to_pandas()['email'].dtype == 'string'
-    assert dt.to_pandas()['full_name'].dtype == 'string'
-    assert dt.to_pandas()['phone_number'].dtype == 'string'
+    dt_df = dt.to_pandas()
+    assert dt_df['is_registered'].dtype == 'boolean'
+    assert dt_df['age'].dtype == 'Int64'
+    assert dt_df['email'].dtype == 'string'
+    assert dt_df['full_name'].dtype == 'string'
+    assert dt_df['phone_number'].dtype == 'string'
 
     dt_no_strings = DataTable(sample_df,
                               replacement_dtypes={'string': 'object'})
@@ -1510,3 +1511,131 @@ def test_natural_language_inference_with_config_options():
     dt = DataTable(dataframe, name='dt_name')
     assert dt.columns['values'].logical_type == NaturalLanguage
     ww.config.reset_option('natural_language_threshold')
+
+
+def test_to_pandas_changing_dtypes():
+    df_numerics = pd.DataFrame({
+        'ints_no_nans': pd.Series([1, 2, 3]),
+        'ints_nan': pd.Series([1, np.nan, 3]),
+        'floats_nan_specified': pd.Series([1, np.nan, 3], dtype='float'),
+        'ints_NA_specified': pd.Series([1, pd.NA, 3], dtype='Int64')})
+    dt_NA = DataTable(df_numerics)
+
+    # With replace_none=True, ints_nan and floats_nan_specified are categorical
+    df_NA = dt_NA.to_pandas(na_value=pd.NA)
+    assert not any(df_NA['ints_no_nans'].isna())
+    assert df_NA['ints_NA_specified'].dtype == 'Int64'
+    assert df_NA['ints_NA_specified'].loc[1] is pd.NA
+    # Confirm that these columns won't get changed because
+    # category can't take pd.NA and won't convert to object
+    assert df_NA['ints_nan'].dtype == 'category'
+    assert np.isnan(df_NA['ints_nan'].loc[1])
+    assert df_NA['floats_nan_specified'].dtype == 'category'
+    assert np.isnan(df_NA['floats_nan_specified'].loc[1])
+
+    warning = 'The following columns have had their dtypes change: '\
+        'ints_nan: category -> object, '\
+        'floats_nan_specified: category -> object, '\
+        'ints_NA_specified: Int64 -> object'
+    with pytest.warns(UserWarning, match=warning):
+        df_str = dt_NA.to_pandas(na_value='test')
+    assert df_str['ints_nan'].dtype == 'object'
+    assert df_str['ints_NA_specified'].loc[1] == 'test'
+    assert df_str['ints_nan'].dtype == 'object'
+    assert df_str['ints_nan'].loc[1] == 'test'
+    assert df_str['floats_nan_specified'].dtype == 'object'
+    assert df_str['floats_nan_specified'].loc[1] == 'test'
+
+    # convert Int64s to floats and then convert to nan
+    dt_nan = DataTable(df_numerics, replacement_dtypes={'Int64': 'object'})
+
+    warning = 'The following columns have had their dtypes change: '\
+        'ints_no_nans: object -> int64, '\
+        'ints_NA_specified: object -> float64'
+    with pytest.warns(UserWarning, match=warning):
+        df_nan = dt_nan.to_pandas(na_value=np.nan)
+    assert dt_NA.to_pandas()['ints_NA_specified'].loc[1] is pd.NA
+    assert np.isnan(df_nan['ints_NA_specified'].loc[1])
+
+
+def test_to_pandas_maintain_dtypes():
+    df_strings = pd.DataFrame({
+        'str_nan': pd.Series(['a', np.nan, 'c']),
+        'str_NA_specified': pd.Series(['a', pd.NA, 'c'], dtype='string'),
+        'nat_lang_NA_specified': pd.Series(['this is a long testing string',
+                                            pd.NA,
+                                            'this testing string is even longer than the last one'],
+                                           dtype='string')})
+    dt_NA = DataTable(df_strings)
+    df_no_params = dt_NA.to_pandas()
+    assert df_no_params['str_nan'].dtype == 'category'
+    assert df_no_params['str_NA_specified'].dtype == 'category'
+    assert df_no_params['nat_lang_NA_specified'].dtype == 'string'
+
+    df_str = dt_NA.to_pandas(na_value='a', maintain_dtypes=True)
+    assert df_str['str_nan'].dtype == 'category'
+    assert df_str['str_nan'].loc[1] == 'a'
+    assert df_str['str_NA_specified'].dtype == 'category'
+    assert df_str['str_NA_specified'].loc[1] == 'a'
+    assert df_str['nat_lang_NA_specified'].dtype == 'string'
+    assert df_str['nat_lang_NA_specified'].loc[1] == 'a'
+
+    df_str = dt_NA.to_pandas(na_value='test', maintain_dtypes=True)
+    assert df_str['str_nan'].dtype == 'category'
+    assert pd.isna(df_str['str_nan'].loc[1])
+    assert df_str['str_NA_specified'].dtype == 'category'
+    assert pd.isna(df_str['str_NA_specified'].loc[1])
+    assert df_str['nat_lang_NA_specified'].dtype == 'string'
+    assert df_str['nat_lang_NA_specified'].loc[1] == 'test'
+
+
+def test_to_pandas_datetime():
+    df = pd.DataFrame({
+        'date_nan': pd.Series([pd.to_datetime('2020-09-01'), np.nan]),
+        'date_NA_specified': pd.Series([pd.to_datetime('2020-09-01'), pd.NA])})
+    dt = DataTable(df)
+
+    df_datetimes = dt.to_pandas(na_value='test')
+    assert df_datetimes['date_nan'].dtype == 'object'
+    assert df_datetimes['date_nan'].loc[1] == 'test'
+    assert df_datetimes['date_NA_specified'].dtype == 'object'
+    assert df_datetimes['date_NA_specified'].loc[1] == 'test'
+
+    df_datetimes = dt.to_pandas(na_value=pd.to_datetime('2040-09-01'))
+    assert df_datetimes['date_nan'].dtype == 'datetime64[ns]'
+    assert df_datetimes['date_nan'].loc[1] == pd.to_datetime('2040-09-01')
+    assert df_datetimes['date_NA_specified'].dtype == 'datetime64[ns]'
+    assert df_datetimes['date_NA_specified'].loc[1] == pd.to_datetime('2040-09-01')
+
+    df_datetimes = dt.to_pandas(na_value=1, maintain_dtypes=True)
+    assert df_datetimes['date_nan'].dtype == 'datetime64[ns]'
+    assert df_datetimes['date_nan'].loc[1] is pd.NaT
+    assert df_datetimes['date_NA_specified'].dtype == 'datetime64[ns]'
+    assert df_datetimes['date_NA_specified'].loc[1] is pd.NaT
+
+
+# def test_to_pandas_strings():
+#     df_strings = pd.DataFrame({
+#         'str_no_nans': pd.Series(['a', 'b', 'c']),
+#         'str_nan': pd.Series(['a', 'b', np.nan]),
+#         'str_NA': pd.Series(['a', 'b', pd.NA]),
+#         'str_NA_specified': pd.Series(['a', 'b', pd.NA], dtype="string")})
+
+    # convert to objects and then convert to nan
+    # try with another not nan value
+    # mixture of values and whether na is possible or not confirm that each column is as expected
+
+    # 'bools_no_nans': pd.Series([True, False]),
+    # 'bool_nan': pd.Series([True, np.nan]),
+    # 'bool_NA': pd.Series([True, pd.NA]),
+    # 'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean"),
+    # 'str_no_nans': pd.Series(['a', 'b']),
+    # 'str_nan': pd.Series(['a', np.nan]),
+    # 'str_NA': pd.Series(['a', pd.NA]),
+    # 'str_NA_specified': pd.Series(['a', pd.NA], dtype="string"),
+    # 'floats_no_nans': pd.Series([1.1, 2.2]),
+    # 'floats_nan': pd.Series([1.1, np.nan]),
+    # 'floats_NA': pd.Series([1.1, pd.NA]),
+    # 'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float'),
+
+    # })

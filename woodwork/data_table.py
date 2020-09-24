@@ -48,7 +48,7 @@ class DataTable(object):
             add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             replacement_dtypes (dict[str -> str]): Dictionary mapping a pandas dtype whose presence
-                in the DataTable is not desired with a replacement dtype. --> also allow actualy PandasDtype objs
+                in the DataTable is not desired with a replacement dtype.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
@@ -309,6 +309,9 @@ class DataTable(object):
                 with na_value. If True, will fill the na_value for any column where adding
                 na_value will change the dtype. Defaults to False.
 
+            Note that certain dtypes will not apply na_value unless it is allowed
+                (ex. category with pd.NA and datetime64[ns] with any non-datetime)
+                and will not change their dtype to apply na_value
         Returns:
             DataTable:
                 The underlying dataframe with null values filled
@@ -317,6 +320,7 @@ class DataTable(object):
             return self.dataframe
 
         with_na_value = self.dataframe.copy()
+        changed_col_dtypes = []
 
         for col_name in with_na_value.columns:
             try:
@@ -324,10 +328,21 @@ class DataTable(object):
             # If na_value does not match the dtype, convert the dtype to object
             except TypeError:
                 new_col = self.dataframe[col_name].astype('object').fillna(na_value)
+            except ValueError:
+                new_col = self.dataframe[col_name].astype('object').fillna(na_value)
 
-            if not maintain_dtypes or self.dataframe[col_name].dtype == new_col.dtype:
+            original_dtype = self.dataframe[col_name].dtype
+
+            if not maintain_dtypes or original_dtype == new_col.dtype:
                 with_na_value[col_name] = new_col
 
+            new_dtype = with_na_value[col_name].dtype
+            if original_dtype != new_dtype:
+                changed_col_dtypes.append(f'{col_name}: {original_dtype} -> {new_dtype}')
+
+        if changed_col_dtypes:
+            changed_col_dtypes_str = ', '.join(changed_col_dtypes)
+            warnings.warn(f'The following columns have had their dtypes change: {changed_col_dtypes_str}')
         return with_na_value
 
     def select(self, include):
