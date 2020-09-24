@@ -299,11 +299,36 @@ class DataTable(object):
             cols_to_update[colname] = self.columns[colname].reset_semantic_tags(retain_index_tags)
         self._update_columns(cols_to_update)
 
-    def to_pandas(self, na_value=None):
+    def to_pandas(self, na_value=None, maintain_dtypes=False):
+        """Retrieves the underlying dataframe.
+
+        Args:
+            na_value: value with which to fill null values in the dataframe
+            maintain_dtypes (bool): If False, will replace every possible value with
+                na_value, even overwriting a column's dtype to be able to fill
+                with na_value. If True, will fill the na_value for any column where adding
+                na_value will change the dtype. Defaults to False.
+
+        Returns:
+            DataTable:
+                The underlying dataframe with null values filled
+        """
         if na_value is None:
             return self.dataframe
 
-        return self.dataframe.fillna(na_value)
+        with_na_value = self.dataframe.copy()
+
+        for col_name in with_na_value.columns:
+            try:
+                new_col = self.dataframe[col_name].fillna(na_value)
+            # If na_value does not match the dtype, convert the dtype to object
+            except TypeError:
+                new_col = self.dataframe[col_name].astype('object').fillna(na_value)
+
+            if not maintain_dtypes or self.dataframe[col_name].dtype == new_col.dtype:
+                with_na_value[col_name] = new_col
+
+        return with_na_value
 
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
