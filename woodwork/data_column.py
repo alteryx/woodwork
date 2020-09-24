@@ -187,6 +187,7 @@ def infer_logical_type(series):
         series (pd.Series): Input Series
     """
     datetime_format = config.get_option('datetime_format')
+    natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage
 
@@ -202,7 +203,7 @@ def infer_logical_type(series):
             # catch cases where object dtype cannot be interpreted as a string
             try:
                 avg_length = sample.str.len().mean()
-                if avg_length > 10:
+                if avg_length > natural_language_threshold:
                     inferred_type = NaturalLanguage
             except AttributeError:
                 pass

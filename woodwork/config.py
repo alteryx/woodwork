@@ -1,5 +1,6 @@
 CONFIG_DEFAULTS = {
     'datetime_format': None,
+    'natural_language_threshold': 10,
 }
 
 
