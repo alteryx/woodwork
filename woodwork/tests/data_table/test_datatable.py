@@ -1582,9 +1582,9 @@ def test_to_pandas_maintain_dtypes():
 
     df_str = dt_NA.to_pandas(na_value='test', maintain_dtypes=True)
     assert df_str['str_nan'].dtype == 'category'
-    assert pd.isna(df_str['str_nan'].loc[1])
+    assert np.isnan(df_str['str_nan'].loc[1])
     assert df_str['str_NA_specified'].dtype == 'category'
-    assert pd.isna(df_str['str_NA_specified'].loc[1])
+    assert np.isnan(df_str['str_NA_specified'].loc[1])
     assert df_str['nat_lang_NA_specified'].dtype == 'string'
     assert df_str['nat_lang_NA_specified'].loc[1] == 'test'
 
@@ -1614,28 +1614,52 @@ def test_to_pandas_datetime():
     assert df_datetimes['date_NA_specified'].loc[1] is pd.NaT
 
 
-# def test_to_pandas_strings():
-#     df_strings = pd.DataFrame({
-#         'str_no_nans': pd.Series(['a', 'b', 'c']),
-#         'str_nan': pd.Series(['a', 'b', np.nan]),
-#         'str_NA': pd.Series(['a', 'b', pd.NA]),
-#         'str_NA_specified': pd.Series(['a', 'b', pd.NA], dtype="string")})
+def test_removing_pd_NA():
+    df = pd.DataFrame({
+        'nat_lang_NA_specified': pd.Series(['this is a long testing string',
+                                            pd.NA,
+                                            'this testing string is even longer than the last one'],
+                                           dtype='string'),
+        'ints_NA_specified': pd.Series([1, pd.NA, 3], dtype='Int64'),
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com'],
+        'bools_NA_specified': pd.Series([True, pd.NA, False], dtype='boolean')})
 
-    # convert to objects and then convert to nan
-    # try with another not nan value
-    # mixture of values and whether na is possible or not confirm that each column is as expected
+    # Using replacement_dtypes will get rid of the pd.NA for Int64 and boolean
+    # since float and category will auotmatically switch tp np.nan
+    # We'll need to use to_pandas to change the string pd.NA
+    dt = DataTable(df, replacement_dtypes={'Int64': 'float',
+                                           'boolean': 'category',
+                                           'string': 'object'},
+                   logical_types={'email': 'emailaddress'})
 
-    # 'bools_no_nans': pd.Series([True, False]),
-    # 'bool_nan': pd.Series([True, np.nan]),
-    # 'bool_NA': pd.Series([True, pd.NA]),
-    # 'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean"),
-    # 'str_no_nans': pd.Series(['a', 'b']),
-    # 'str_nan': pd.Series(['a', np.nan]),
-    # 'str_NA': pd.Series(['a', pd.NA]),
-    # 'str_NA_specified': pd.Series(['a', pd.NA], dtype="string"),
-    # 'floats_no_nans': pd.Series([1.1, 2.2]),
-    # 'floats_nan': pd.Series([1.1, np.nan]),
-    # 'floats_NA': pd.Series([1.1, pd.NA]),
-    # 'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float'),
+    df_with_replacements = dt.to_pandas()
+    assert df_with_replacements['ints_NA_specified'].dtype == 'float'
+    assert np.isnan(df_with_replacements['ints_NA_specified'].loc[1])
+    assert df_with_replacements['email'].dtype == 'object'
+    assert df_with_replacements['email'].loc[1] is pd.NA
+    assert df_with_replacements['nat_lang_NA_specified'].dtype == 'object'
+    assert df_with_replacements['nat_lang_NA_specified'].loc[1] is pd.NA
+    assert df_with_replacements['bools_NA_specified'].dtype == 'category'
+    assert np.isnan(df_with_replacements['bools_NA_specified'].loc[1])
 
-    # })
+    df_no_nans = dt.to_pandas(na_value=np.nan)
+    assert df_no_nans['ints_NA_specified'].dtype == 'float'
+    assert np.isnan(df_no_nans['ints_NA_specified'].loc[1])
+    assert df_no_nans['email'].dtype == 'object'
+    assert np.isnan(df_no_nans['email'].loc[1])
+    assert df_no_nans['nat_lang_NA_specified'].dtype == 'object'
+    assert np.isnan(df_no_nans['nat_lang_NA_specified'].loc[1])
+    assert df_no_nans['bools_NA_specified'].dtype == 'category'
+    assert np.isnan(df_no_nans['bools_NA_specified'].loc[1])
+
+    # If we wanted to just replace the string nan with anpother string,
+    # We'll need to specity maintain_dtypes to not also change the other columns
+    df_fill_string = dt.to_pandas(na_value='test', maintain_dtypes=True)
+    assert df_fill_string['ints_NA_specified'].dtype == 'float'
+    assert np.isnan(df_fill_string['ints_NA_specified'].loc[1])
+    assert df_fill_string['email'].dtype == 'object'
+    assert df_fill_string['email'].loc[1] == 'test'
+    assert df_fill_string['nat_lang_NA_specified'].dtype == 'object'
+    assert df_fill_string['nat_lang_NA_specified'].loc[1] == 'test'
+    assert df_fill_string['bools_NA_specified'].dtype == 'category'
+    assert np.isnan(df_fill_string['bools_NA_specified'].loc[1])
