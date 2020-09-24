@@ -8,6 +8,7 @@ Changelog
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
         * Change add_standard_tags to use_standard_Tags to better describe behavior (:pr:`149`)
+        * Remove df property and change to_pandas_dataframe to to_datafram on DataTable (:pr:`146`)
     * Documentation Changes
     * Testing Changes
 
