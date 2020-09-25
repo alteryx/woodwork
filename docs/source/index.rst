@@ -13,11 +13,12 @@ Woodwork is a library that helps with data typing of 2-dimensional tabular data 
 It provides a DataTable object, which contains the physical, logical, and semantic data types.
 It can be used with `Featuretools <https://www.featuretools.com>`__, `EvalML <https://evalml.featurelabs.com/en/latest/>`__, and general machine learning applications where logical and semantic typing information is important.
 
+Woodwork provides simple interfaces for adding and updating logical and semantic typing information, as well as selecting data columns based on the types.
 
 Quick Start
 -----------
 
-Below is an example of using a Woodwork DataTable to automatically infer the Logical Types for a data structure.
+Below is an example of using a Woodwork DataTable to automatically infer the Logical Types for a data structure and select columns with specific types.
 
 
 .. ipython:: python
@@ -38,6 +39,9 @@ Below is an example of using a Woodwork DataTable to automatically infer the Log
 
     dt = ww.DataTable(data, name="retail")
     dt.types
+
+    filtered_dt = dt.select(include=['numeric', 'Boolean'])
+    filtered_dt.to_pandas()
 
 Table of contents
 -----------------
