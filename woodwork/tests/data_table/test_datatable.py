@@ -907,12 +907,14 @@ def test_datetime_dtype_inference_on_init():
         'date_no_nans': pd.Series([pd.to_datetime('2020-09-01')] * 2),
         'date_nan': pd.Series([pd.to_datetime('2020-09-01'), np.nan]),
         'date_NA': pd.Series([pd.to_datetime('2020-09-01'), pd.NA]),
+        'date_NaT': pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]),
         'date_NA_specified': pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]')})
     df_from_dt = DataTable(df).to_pandas()
 
     assert df_from_dt['date_no_nans'].dtype == 'datetime64[ns]'
     assert df_from_dt['date_nan'].dtype == 'datetime64[ns]'
     assert df_from_dt['date_NA'].dtype == 'datetime64[ns]'
+    assert df_from_dt['date_NaT'].dtype == 'datetime64[ns]'
     assert df_from_dt['date_NA_specified'].dtype == 'datetime64[ns]'
 
 
@@ -920,12 +922,14 @@ def test_timedelta_dtype_inference_on_init():
     df = pd.DataFrame({
         'delta_no_nans': (pd.Series([pd.to_datetime('2020-09-01')] * 2) - pd.to_datetime('2020-07-01')),
         'delta_nan': (pd.Series([pd.to_datetime('2020-09-01'), np.nan]) - pd.to_datetime('2020-07-01')),
+        'delta_NaT': (pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]) - pd.to_datetime('2020-07-01')),
         'delta_NA_specified': (pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]') - pd.to_datetime('2020-07-01')),
     })
     df_from_dt = DataTable(df).to_pandas()
 
     assert df_from_dt['delta_no_nans'].dtype == 'timedelta64[ns]'
     assert df_from_dt['delta_nan'].dtype == 'timedelta64[ns]'
+    assert df_from_dt['delta_NaT'].dtype == 'timedelta64[ns]'
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
