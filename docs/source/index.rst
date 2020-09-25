@@ -34,7 +34,7 @@ Below is an example of using a DataTable to automatically infer the Logical Type
 
     import woodwork as ww
 
-    data = dt.demo.load_retail(nrows=100)
+    data = ww.demo.load_retail(nrows=100)
 
     dt = ww.DataTable(data, name="retail")
     dt.types

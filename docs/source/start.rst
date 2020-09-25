@@ -49,7 +49,7 @@ We can also select some of the columns based on the Logical Type
 
 .. ipython:: python
 
-    numeric_dt = dt.select_ltypes(['WholeNumber', 'Integer', 'Double'])
+    numeric_dt = dt.select_ltypes(['WholeNumber', 'Double'])
 
     numeric_dt.types
 
@@ -57,7 +57,7 @@ Let's add some Semantic Tags to some of the columns
 
 .. ipython:: python
 
-    dt.set_semantic_tags({'order_id':'index', 'order_date': 'time_index'})
+    dt.set_semantic_tags({'order_id':'order_index', 'order_date': 'order_time_index'})
 
     dt.types
 
@@ -94,7 +94,7 @@ We can also remove some of the Semnatic tags on the DataColumn
 
 .. ipython:: python
 
-    dt.remove_semantic_tags({'order_id':'index'})
+    dt.remove_semantic_tags({'order_id':'order_index'})
 
     dt.types
 
@@ -106,5 +106,3 @@ Notice how the index column has now been removed. If we wanted to remove all use
     dt.reset_semantic_tags()
 
     dt.types
-
-
