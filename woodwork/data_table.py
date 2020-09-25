@@ -16,14 +16,8 @@ class DataTable(object):
                  semantic_tags=None,
                  logical_types=None,
                  copy_dataframe=False,
-<< << << < HEAD
                  replace_none=True,
                  use_standard_tags=True):
-
-
-== == == =
-                 add_standard_tags = True):
->>>>>> > remove replace_none param
         """ Create DataTable
 
         Args:
@@ -53,17 +47,17 @@ class DataTable(object):
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
-        self.use_standard_tags=use_standard_tags
+        self.use_standard_tags = use_standard_tags
 
         if copy_dataframe:
-            self._dataframe=dataframe.copy()
+            self._dataframe = dataframe.copy()
         else:
-            self._dataframe=dataframe
+            self._dataframe = dataframe
 
-        self.name=name
+        self.name = name
 
         # Infer logical types and create columns
-        self.columns=self._create_columns(self._dataframe.columns,
+        self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
                                             self.use_standard_tags)
@@ -78,7 +72,7 @@ class DataTable(object):
         if isinstance(key, list):
             if not all([isinstance(col, str) for col in key]):
                 raise KeyError('Column names must be strings')
-            invalid_cols=set(key).difference(set(self.columns.keys()))
+            invalid_cols = set(key).difference(set(self.columns.keys()))
             if invalid_cols:
                 raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
             return self._new_dt_from_cols(key)
@@ -90,10 +84,10 @@ class DataTable(object):
 
     @property
     def types(self):
-        typing_info={}
+        typing_info = {}
         for dc in self.columns.values():
-            typing_info[dc.name]=[dc.dtype, dc.logical_type, dc.semantic_tags]
-        df=pd.DataFrame.from_dict(typing_info,
+            typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
+        df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
                                     columns=['Physical Type', 'Logical Type', 'Semantic Tag(s)'],
                                     dtype="object")
@@ -283,7 +277,7 @@ class DataTable(object):
         self._update_columns(cols_to_update)
 
     def to_pandas(self, copy=False):
-        """Retrieves the DataTable's underlying dataframe. 
+        """Retrieves the DataTable's underlying dataframe.
 
         Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
 
