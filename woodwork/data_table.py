@@ -52,17 +52,17 @@ class DataTable(object):
         self.use_standard_tags = use_standard_tags
 
         if copy_dataframe:
-            self.dataframe = dataframe.copy()
+            self._dataframe = dataframe.copy()
         else:
-            self.dataframe = dataframe
+            self._dataframe = dataframe
 
         if replace_none:
-            self.dataframe.fillna(pd.NA, inplace=True)
+            self._dataframe.fillna(pd.NA, inplace=True)
 
         self.name = name
 
         # Infer logical types and create columns
-        self.columns = self._create_columns(self.dataframe.columns,
+        self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
                                             self.use_standard_tags)
@@ -121,7 +121,7 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag, use_standard_tags)
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags)
             data_columns[dc.name] = dc
         return data_columns
 
@@ -174,7 +174,7 @@ class DataTable(object):
     def set_index(self, index):
         """Set the index column. Adds the 'index' semantic tag to the column and
             clears the tag from any previously set index column"""
-        _check_index(self.dataframe, index)
+        _check_index(self._dataframe, index)
         old_index = self.index
         self.columns[index]._set_as_index()
         if old_index:
@@ -183,7 +183,7 @@ class DataTable(object):
     def set_time_index(self, time_index):
         """Set the time index column. Adds the 'time_index' semantic tag to the column and
             clears the tag from any previously set index column"""
-        _check_time_index(self.dataframe, time_index)
+        _check_time_index(self._dataframe, time_index)
         old_time_index = self.time_index
         self.columns[time_index]._set_as_time_index()
         if old_time_index:
@@ -200,7 +200,7 @@ class DataTable(object):
                     semantic tags set on the column. If false, will clear all semantic tags. Defaults to
                     True.
         """
-        _check_logical_types(self.dataframe, logical_types)
+        _check_logical_types(self._dataframe, logical_types)
         cols_to_update = {}
         for colname, logical_type in logical_types.items():
             cols_to_update[colname] = self.columns[colname].set_logical_type(logical_type,
@@ -212,31 +212,31 @@ class DataTable(object):
         """Update the dtypes of the underlying dataframe to match the dtypes corresponding
             to the LogicalType for the column."""
         for name, column in cols_to_update.items():
-            if column.logical_type.pandas_dtype != str(self.dataframe[name].dtype):
+            if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
                     if column.logical_type == Datetime:
-                        self.dataframe[name] = pd.to_datetime(self.dataframe[name], format=config.get_option('datetime_format'))
+                        self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=config.get_option('datetime_format'))
                     else:
-                        self.dataframe[name] = self.dataframe[name].astype(column.logical_type.pandas_dtype)
+                        self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
                 except TypeError:
-                    error_msg = f'Error converting datatype for column {name} from type {str(self.dataframe[name].dtype)} ' \
+                    error_msg = f'Error converting datatype for column {name} from type {str(self._dataframe[name].dtype)} ' \
                         f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
                         f'logical type {column.logical_type}.'
                     raise TypeError(error_msg)
                 # Update the column object since .astype returns a new series object
-                column.series = self.dataframe[name]
+                column.series = self._dataframe[name]
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values."""
-        _check_semantic_tags(self.dataframe, semantic_tags)
+        _check_semantic_tags(self._dataframe, semantic_tags)
         for name in semantic_tags.keys():
             self.columns[name].add_semantic_tags(semantic_tags[name])
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
             dictionary. Replaces the column with a new column object."""
-        _check_semantic_tags(self.dataframe, semantic_tags)
+        _check_semantic_tags(self._dataframe, semantic_tags)
         cols_to_update = {}
         for colname, tags in semantic_tags.items():
             cols_to_update[colname] = self.columns[colname].remove_semantic_tags(tags)
@@ -252,7 +252,7 @@ class DataTable(object):
                 semantic tags set on the column. If False, will replace all semantic tags. Defaults to
                 True.
         """
-        _check_semantic_tags(self.dataframe, semantic_tags)
+        _check_semantic_tags(self._dataframe, semantic_tags)
         for name in semantic_tags.keys():
             self.columns[name].set_semantic_tags(semantic_tags[name], retain_index_tags)
 
@@ -270,7 +270,7 @@ class DataTable(object):
                 False.
         """
         columns = _convert_input_to_set(columns, "columns")
-        cols_not_found = sorted(list(columns.difference(set(self.dataframe.columns))))
+        cols_not_found = sorted(list(columns.difference(set(self._dataframe.columns))))
         if cols_not_found:
             raise LookupError("Input contains columns that are not present in "
                               f"dataframe: '{', '.join(cols_not_found)}'")
@@ -282,7 +282,7 @@ class DataTable(object):
         self._update_columns(cols_to_update)
 
     def to_pandas(self):
-        return self.dataframe
+        return self._dataframe
 
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
@@ -423,7 +423,7 @@ class DataTable(object):
         if new_time_index:
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-        return DataTable(self.dataframe[cols_to_include],
+        return DataTable(self._dataframe[cols_to_include],
                          name=self.name,
                          index=new_index,
                          time_index=new_time_index,
