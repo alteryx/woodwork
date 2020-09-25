@@ -7,11 +7,12 @@ Changelog
     * Fixes
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
+        * Change add_standard_tags to use_standard_Tags to better describe behavior (:pr:`149`)
     * Documentation Changes
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`thehomebrewnerd`, :user:`tamargrey`
 
 **v0.1.0** September 24, 2020
     * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)

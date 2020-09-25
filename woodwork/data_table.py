@@ -17,7 +17,7 @@ class DataTable(object):
                  logical_types=None,
                  copy_dataframe=False,
                  replace_none=True,
-                 add_standard_tags=True):
+                 use_standard_tags=True):
         """ Create DataTable
 
         Args:
@@ -44,12 +44,12 @@ class DataTable(object):
                 reference to the input dataframe.
             replace_none (bool, optional): If True, will replace any `None` values in the supplied
                 dataframe with `pd.NA`. Defaults to True.
-            add_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
+            use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
-        self.add_standard_tags = add_standard_tags
+        self.use_standard_tags = use_standard_tags
 
         if copy_dataframe:
             self.dataframe = dataframe.copy()
@@ -65,7 +65,7 @@ class DataTable(object):
         self.columns = self._create_columns(self.dataframe.columns,
                                             logical_types,
                                             semantic_tags,
-                                            self.add_standard_tags)
+                                            self.use_standard_tags)
         if index:
             self.set_index(index)
         if time_index:
@@ -107,7 +107,7 @@ class DataTable(object):
                         column_names,
                         logical_types,
                         semantic_tags,
-                        add_standard_tags):
+                        use_standard_tags):
         """Create a dictionary with column names as keys and new DataColumn objects
             as values, while assigning any values that are passed for logical types or
             semantic tags to the new column."""
@@ -121,7 +121,7 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag, add_standard_tags)
+            dc = DataColumn(self.dataframe[name], logical_type, semantic_tag, use_standard_tags)
             data_columns[dc.name] = dc
         return data_columns
 
@@ -259,7 +259,7 @@ class DataTable(object):
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
             The default values will be either an empty set or a set of the standard
-            tags based on the column logical type, controlled by the add_default_tags
+            tags based on the column logical type, controlled by the use_standard_tags
             property on the table. Columns names can be provided as a single string,
             a list of strings or a set of strings. If columns is not specified,
             tags will be reset for all columns.
