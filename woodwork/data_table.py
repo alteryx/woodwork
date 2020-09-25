@@ -282,7 +282,23 @@ class DataTable(object):
             cols_to_update[colname] = self.columns[colname].reset_semantic_tags(retain_index_tags)
         self._update_columns(cols_to_update)
 
-    def to_pandas(self):
+    def to_pandas(self, copy=False):
+        """Retrieves the DataTable's underlying dataframe. 
+
+        Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
+
+        Args:
+            copy (bool): If set to True, returns a copy of the underlying dataframe.
+                If False, will return a reference to the DataTable's dataframe, which,
+                if modified, can cause unexpected behavior in the DataTable.
+                Defaults to False.
+
+        Returns:
+            pd.DataFrane:
+                The underlying dataframe of the DataTable
+        """
+        if copy:
+            return self._dataframe.copy()
         return self._dataframe
 
     def select(self, include):

@@ -1422,3 +1422,19 @@ def test_natural_language_inference_with_config_options():
     dt = DataTable(dataframe, name='dt_name')
     assert dt.columns['values'].logical_type == NaturalLanguage
     ww.config.reset_option('natural_language_threshold')
+
+
+def test_to_pandas_copy(sample_df):
+    dt = DataTable(sample_df)
+
+    df_no_copy = dt.to_pandas()
+    df_copy = dt.to_pandas(copy=True)
+
+    assert df_no_copy is sample_df
+
+    assert df_no_copy is not df_copy
+
+    df_copy['test_col'] = pd.Series([1, 2, 3])
+    assert 'test_col' in df_copy.columns
+    assert 'test_col' not in df_no_copy.columns
+    assert 'test_col' not in dt.columns
