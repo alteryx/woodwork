@@ -1,6 +1,10 @@
+<p align="center"><img width=50% src="https://raw.githubusercontent.com/FeatureLabs/woodwork/main/docs/source/images/woodwork_light.png" alt="Woodwork" /></p>
+
 # Woodwork
 
 [![codecov](https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/woodwork)
+[![PyPI version](https://badge.fury.io/py/woodwork.svg?maxAge=2592000)](https://badge.fury.io/py/woodwork)
+[![Downloads](https://pepy.tech/badge/woodwork/month)](https://pepy.tech/project/woodwork/month)
 
 Woodwork provides you with a common DataTable object to use with Featuretools, EvalML, and general ML. A DataTable object contains the physical, logical, and semantic data types present in the data. In addition, it can store metadata about the data.
 
