@@ -12,6 +12,8 @@ Start
 
 
 
+In this guide, we will walk through an example of creating a Woodwork DataTable, updating and removing logical types and semantic tags, and using the typing information to select subsets of data.
+
 First, let's load in some demo retail data.
 
 .. ipython:: python
@@ -22,7 +24,9 @@ First, let's load in some demo retail data.
 
     data.head(5)
 
-As we can see, this is a DataFrame containing different data types. Let's use Woodwork to create a DataTable.
+As we can see, this is a dataframe containing several different data types, including dates, categorical values, numeric values and natural language descriptions. Let's use Woodwork to create a DataTable from this data.
+
+Creating a Woodwork DataTable is as simple as passing in a dataframe with the data of interest. An optional name parameter can be specified to label the DataTable.
 
 .. ipython:: python
 
@@ -30,9 +34,9 @@ As we can see, this is a DataFrame containing different data types. Let's use Wo
 
     dt.types
 
-Woodwork was able to infer the Logical Types present in our data on the DataFrame dtypes. In addition, it also added semantic tags to some of the columns.
+Using just this simple call, Woodwork was able to infer the logical types present in our data by analyzing the dataframe dtypes as well as the information contained in the columns. In addition, it also added semantic tags to some of the columns based on the logical types that were inferred.
 
-Let's change some of the columns to a different Logical Type
+If the initial inference was not to our liking, the logical type can be changed to a more appropriate value. Let's change some of the columns to a different logical type to illustrate this process. Below we will set the logical type for the ``quantity``, ``customer_name`` and ``country`` columns to be ``Categorical``.
 
 
 .. ipython:: python
@@ -45,7 +49,7 @@ Let's change some of the columns to a different Logical Type
 
     dt.types
 
-We can also select some of the columns based on the Logical Type
+Now that we have logical types we are happy with, we can select a subset of the columns based on the logical type. Let's select only the columns that have a logical type of ``WholeNumber`` or ``Double``:
 
 .. ipython:: python
 
@@ -53,16 +57,25 @@ We can also select some of the columns based on the Logical Type
 
     numeric_dt.types
 
-Let's add some Semantic Tags to some of the columns
+After we have selected the columns we want, we can also access a dataframe containing just those columns if we need it for additional analysis.
 
 .. ipython:: python
 
-    dt.set_semantic_tags({'order_id':'order_index', 'order_date': 'order_time_index'})
+    numeric_dt.to_pandas()
+
+.. note::
+    Accessing the dataframe associated with a ``DataTable`` by using ``dt.to_pandas()`` will return a reference to the dataframe. Modifications to the returned dataframe can cause unexpected results. If you need to modify the dataframe, you should use ``dt.to_pandas(copy=True)`` to return a copy of the stored dataframe that can be safely modified without impacting the ``DataTable`` behavior.
+
+Next, let's add semantic tags to some of the columns. We will add the tag of ``product_details`` to the ``description`` column and tag the ``total`` column with the tag ``currency``.
+
+.. ipython:: python
+
+    dt.set_semantic_tags({'description':'product_details', 'total': 'currency'})
 
     dt.types
 
 
-We can also select some of the columns based on a Semantic Tag
+We can also select columns based on a semantic tag. Perhaps we want to only select the columns tagged with ``category``:
 
 .. ipython:: python
 
@@ -70,7 +83,7 @@ We can also select some of the columns based on a Semantic Tag
 
     category_dt.types
 
-We can also select with mutiple Semantic Tags
+We can also select columns using mutiple semantic tags, or even a mixture of semantic tags and logical types:
 
 .. ipython:: python
 
@@ -78,8 +91,12 @@ We can also select with mutiple Semantic Tags
 
     category_numeric_dt.types
 
+    mixed_dt = dt.select(include=['Boolean', 'product_details'])
 
-If we wanted to select individual columns, we just need to specify the column name. We can then get access to the data in the Data Column
+    mixed_dt.types
+
+
+If we wanted to select an individual column, we just need to specify the column name. We can then get access to the data in the DataColumn:
 
 .. ipython:: python
 
@@ -90,16 +107,24 @@ If we wanted to select individual columns, we just need to specify the column na
     dc.series
 
 
-We can also remove some of the Semnatic tags on the DataColumn
+You can also access multiple columns by supplying a list of column names:
 
 .. ipython:: python
 
-    dt.remove_semantic_tags({'order_id':'order_index'})
+   multiple_cols_dt = dt[['product_id', 'total', 'unit_price']]
+
+   multiple_cols_dt.types
+
+We can also remove specific semantic tags from a column if they are no longer needed:
+
+.. ipython:: python
+
+    dt.remove_semantic_tags({'description':'product_details'})
 
     dt.types
 
 
-Notice how the index column has now been removed. If we wanted to remove all user-added semantic tags, we can also do that
+Notice how the ``product_details`` tag has now been removed from the ``description`` column. If we wanted to remove all user-added semantic tags from all columns, we can also do that:
 
 .. ipython:: python
 

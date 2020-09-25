@@ -6,18 +6,18 @@
 .. currentmodule:: featuretools
 
 
-What is <TBD>?
---------------
+What is Woodwork?
+-----------------
 
-<TBD> is a library that helps with data typing of 2-dimensional tabular data structures.
+Woodwork is a library that helps with data typing of 2-dimensional tabular data structures.
 It provides a DataTable object, which contains the physical, logical, and semantic data types.
-It can be used with `Featuretools <https://www.featuretools.com>`__, `EvalML <https://evalml.featurelabs.com/en/latest/>`__, and general ML.
+It can be used with `Featuretools <https://www.featuretools.com>`__, `EvalML <https://evalml.featurelabs.com/en/latest/>`__, and general machine learning applications where logical and semantic typing information is important.
 
 
 Quick Start
 -----------
 
-Below is an example of using a DataTable to automatically infer the Logical Types.
+Below is an example of using a Woodwork DataTable to automatically infer the Logical Types for a data structure.
 
 
 .. ipython:: python

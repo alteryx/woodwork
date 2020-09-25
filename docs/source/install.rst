@@ -1,7 +1,7 @@
 Install
 *******
 
-Woodwork is available for Python 3.6, 3.7, and 3.8. The recommended way to install woodwork is using ``pip``
+Woodwork is available for Python 3.6, 3.7, and 3.8. The recommended way to install woodwork is using ``pip``:
 ::
 
     python -m pip install woodwork
@@ -27,7 +27,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/woodwork/blob/main/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/woodwork/blob/main/contributing.md>`_.
 
 Virtualenv
 ~~~~~~~~~~
@@ -45,7 +45,7 @@ Run::
 Test
 ~~~~
 
-Run woodwork tests::
+Run Woodwork tests::
 
     make test
 
