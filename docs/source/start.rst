@@ -22,7 +22,7 @@ First, let's load in some demo retail data.
 
     data.head(5)
 
-As we can see, this is a DataFrame containing different data types. Let's use woodwork to create a DataTable.
+As we can see, this is a DataFrame containing different data types. Let's use Woodwork to create a DataTable.
 
 .. ipython:: python
 
@@ -79,7 +79,7 @@ We can also select with mutiple Semantic Tags
     category_numeric_dt.types
 
 
-If we wanted to select individual columns, we just need to specify the column name. We can then get access to the data inn the Data Column
+If we wanted to select individual columns, we just need to specify the column name. We can then get access to the data in the Data Column
 
 .. ipython:: python
 
