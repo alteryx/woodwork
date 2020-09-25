@@ -138,7 +138,7 @@ def test_datatable_init_with_semantic_tags(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
                    semantic_tags=semantic_tags,
-                   add_standard_tags=False)
+                   use_standard_tags=False)
 
     id_semantic_tags = dt.columns['id'].semantic_tags
     assert isinstance(id_semantic_tags, set)
@@ -332,7 +332,7 @@ def test_set_logical_types(sample_df):
         'phone_number': ['tag3', 'tag2'],
         'signup_date': {'secondary_time_index'},
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
@@ -426,7 +426,7 @@ def test_set_semantic_tags(sample_df):
 
 
 def test_set_semantic_tags_with_index(sample_df):
-    dt = DataTable(sample_df, index='id', add_standard_tags=False)
+    dt = DataTable(sample_df, index='id', use_standard_tags=False)
     assert dt.columns['id'].semantic_tags == {'index'}
 
     new_tags = {
@@ -439,7 +439,7 @@ def test_set_semantic_tags_with_index(sample_df):
 
 
 def test_set_semantic_tags_with_time_index(sample_df):
-    dt = DataTable(sample_df, time_index='signup_date', add_standard_tags=False)
+    dt = DataTable(sample_df, time_index='signup_date', use_standard_tags=False)
     assert dt.columns['signup_date'].semantic_tags == {'time_index'}
 
     new_tags = {
@@ -456,7 +456,7 @@ def test_add_semantic_tags(sample_df):
         'full_name': 'tag1',
         'age': ['numeric', 'age']
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=False)
 
     new_tags = {
         'full_name': ['list_tag'],
@@ -474,7 +474,7 @@ def test_reset_all_semantic_tags(sample_df):
         'full_name': 'tag1',
         'age': 'age'
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
 
     dt.reset_semantic_tags()
     assert dt.columns['full_name'].semantic_tags == set()
@@ -489,7 +489,7 @@ def test_reset_selected_column_semantic_tags(sample_df):
 
     input_types = ['age', ['age'], {'age'}]
     for input_type in input_types:
-        dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=True)
+        dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
         dt.reset_semantic_tags(input_type)
         assert dt.columns['full_name'].semantic_tags == {'tag1'}
         assert dt.columns['age'].semantic_tags == {'numeric'}
@@ -502,7 +502,7 @@ def test_reset_semantic_tags_with_index(sample_df):
     dt = DataTable(sample_df,
                    index='id',
                    semantic_tags=semantic_tags,
-                   add_standard_tags=False)
+                   use_standard_tags=False)
     assert dt['id'].semantic_tags == {'index', 'tag1'}
     dt.reset_semantic_tags('id', retain_index_tags=True)
     assert dt['id'].semantic_tags == {'index'}
@@ -517,7 +517,7 @@ def test_reset_semantic_tags_with_time_index(sample_df):
     dt = DataTable(sample_df,
                    time_index='signup_date',
                    semantic_tags=semantic_tags,
-                   add_standard_tags=False)
+                   use_standard_tags=False)
     assert dt['signup_date'].semantic_tags == {'time_index', 'tag1'}
     dt.reset_semantic_tags('signup_date', retain_index_tags=True)
     assert dt['signup_date'].semantic_tags == {'time_index'}
@@ -538,7 +538,7 @@ def test_remove_semantic_tags(sample_df):
         'age': ['numeric', 'age'],
         'id': ['tag1', 'tag2']
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, add_standard_tags=False)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=False)
     tags_to_remove = {
         'full_name': ['tag1', 'tag3'],
         'age': 'numeric',
@@ -1109,7 +1109,7 @@ def test_getitem(sample_df):
                    name='datatable',
                    logical_types={'age': WholeNumber},
                    semantic_tags={'age': 'custom_tag'},
-                   add_standard_tags=True)
+                   use_standard_tags=True)
 
     data_col = dt['age']
     assert isinstance(data_col, DataColumn)

@@ -26,9 +26,9 @@ class Config:
 
     def __repr__(self):
         output_string = "Woodwork Global Config Settings\n"
-        output_string += "-" * (len(output_string) - 1) + "\n"
+        output_string += "-" * (len(output_string) - 1)
         for key, value in self._data.items():
-            output_string += f"{key}: {value}"
+            output_string += f"\n{key}: {value}"
         return output_string
 
 

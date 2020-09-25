@@ -23,7 +23,7 @@ from woodwork.logical_types import (
 
 
 def test_data_column_init(sample_series):
-    data_col = DataColumn(sample_series, add_standard_tags=False)
+    data_col = DataColumn(sample_series, use_standard_tags=False)
     assert data_col.series is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
@@ -46,17 +46,17 @@ def test_data_column_init_with_logical_type(sample_series):
 
 def test_data_column_init_with_semantic_tags(sample_series):
     semantic_tags = ['tag1', 'tag2']
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == set(semantic_tags)
 
 
 def test_data_column_with_alternate_semantic_tags_input(sample_series):
     semantic_tags = 'custom_tag'
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == {'custom_tag'}
 
     semantic_tags = {'custom_tag', 'numeric'}
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
 
@@ -241,14 +241,14 @@ def test_pdna_inference():
 
 
 def test_data_column_repr(sample_series):
-    data_col = DataColumn(sample_series, add_standard_tags=False)
+    data_col = DataColumn(sample_series, use_standard_tags=False)
     assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = object) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
 def test_set_semantic_tags(sample_series):
     semantic_tags = {'tag1', 'tag2'}
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
@@ -258,7 +258,7 @@ def test_set_semantic_tags(sample_series):
 
 def test_set_semantic_tags_with_index(sample_series):
     semantic_tags = {'tag1', 'tag2'}
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     data_col._set_as_index()
     assert data_col.semantic_tags == {'tag1', 'tag2', 'index'}
     new_tags = ['new_tag']
@@ -270,7 +270,7 @@ def test_set_semantic_tags_with_index(sample_series):
 
 def test_set_semantic_tags_with_time_index(sample_datetime_series):
     semantic_tags = {'tag1', 'tag2'}
-    data_col = DataColumn(sample_datetime_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_datetime_series, semantic_tags=semantic_tags, use_standard_tags=False)
     data_col._set_as_time_index()
     assert data_col.semantic_tags == {'tag1', 'tag2', 'time_index'}
     new_tags = ['new_tag']
@@ -306,13 +306,13 @@ def test_does_not_add_standard_tags():
     data_col = DataColumn(series,
                           logical_type=Double,
                           semantic_tags=semantic_tags,
-                          add_standard_tags=False)
+                          use_standard_tags=False)
     assert data_col.semantic_tags == {'custom_tag'}
 
 
 def test_add_custom_tags(sample_series):
     semantic_tags = 'initial_tag'
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
 
     data_col.add_semantic_tags('string_tag')
     assert data_col.semantic_tags == {'initial_tag', 'string_tag'}
@@ -326,7 +326,7 @@ def test_add_custom_tags(sample_series):
 
 def test_warns_on_setting_duplicate_tag(sample_series):
     semantic_tags = ['first_tag', 'second_tag']
-    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, add_standard_tags=False)
+    data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
 
     expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
     with pytest.warns(UserWarning) as record:
@@ -339,7 +339,7 @@ def test_set_logical_type_with_standard_tags(sample_series):
     data_col = DataColumn(sample_series,
                           logical_type=NaturalLanguage,
                           semantic_tags='original_tag',
-                          add_standard_tags=True)
+                          use_standard_tags=True)
 
     new_col = data_col.set_logical_type(Categorical)
     assert isinstance(new_col, DataColumn)
@@ -352,7 +352,7 @@ def test_set_logical_type_without_standard_tags(sample_series):
     data_col = DataColumn(sample_series,
                           logical_type=NaturalLanguage,
                           semantic_tags='original_tag',
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     new_col = data_col.set_logical_type(Categorical)
     assert isinstance(new_col, DataColumn)
@@ -365,7 +365,7 @@ def test_set_logical_type_retains_index_tag(sample_series):
     data_col = DataColumn(sample_series,
                           logical_type=NaturalLanguage,
                           semantic_tags='original_tag',
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     data_col._set_as_index()
     assert data_col.semantic_tags == {'index', 'original_tag'}
@@ -379,7 +379,7 @@ def test_set_logical_type_retains_time_index_tag(sample_datetime_series):
     data_col = DataColumn(sample_datetime_series,
                           logical_type=Datetime,
                           semantic_tags='original_tag',
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     data_col._set_as_time_index()
     assert data_col.semantic_tags == {'time_index', 'original_tag'}
@@ -394,7 +394,7 @@ def test_reset_semantic_tags_with_standard_tags(sample_series):
     data_col = DataColumn(sample_series,
                           semantic_tags=semantic_tags,
                           logical_type=Categorical,
-                          add_standard_tags=True)
+                          use_standard_tags=True)
 
     new_col = data_col.reset_semantic_tags()
     assert new_col is not data_col
@@ -405,7 +405,7 @@ def test_reset_semantic_tags_without_standard_tags(sample_series):
     semantic_tags = 'initial_tag'
     data_col = DataColumn(sample_series,
                           semantic_tags=semantic_tags,
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     new_col = data_col.reset_semantic_tags()
     assert new_col is not data_col
@@ -416,7 +416,7 @@ def test_reset_semantic_tags_with_index(sample_series):
     semantic_tags = 'initial_tag'
     data_col = DataColumn(sample_series,
                           semantic_tags=semantic_tags,
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     data_col._set_as_index()
     new_col = data_col.reset_semantic_tags(retain_index_tags=True)
@@ -429,7 +429,7 @@ def test_reset_semantic_tags_with_time_index(sample_datetime_series):
     semantic_tags = 'initial_tag'
     data_col = DataColumn(sample_datetime_series,
                           semantic_tags=semantic_tags,
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     data_col._set_as_time_index()
     new_col = data_col.reset_semantic_tags(retain_index_tags=True)
@@ -447,7 +447,7 @@ def test_remove_semantic_tags(sample_series):
 
     data_col = DataColumn(sample_series,
                           semantic_tags=['tag1', 'tag2'],
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     for tag in tags_to_remove:
         new_col = data_col.remove_semantic_tags(tag)
@@ -456,11 +456,11 @@ def test_remove_semantic_tags(sample_series):
 
 
 def test_remove_standard_semantic_tag(sample_series):
-    # Check that warning is raised if add_standard_tags is True - tag should be removed
+    # Check that warning is raised if use_standard_tags is True - tag should be removed
     data_col = DataColumn(sample_series,
                           logical_type=Categorical,
                           semantic_tags='tag1',
-                          add_standard_tags=True)
+                          use_standard_tags=True)
     expected_message = "Removing standard semantic tag(s) 'category' from column 'sample_series'"
     with pytest.warns(UserWarning) as record:
         new_col = data_col.remove_semantic_tags(['tag1', 'category'])
@@ -468,11 +468,11 @@ def test_remove_standard_semantic_tag(sample_series):
     assert record[0].message.args[0] == expected_message
     assert new_col.semantic_tags == set()
 
-    # Check that warning is not raised if add_standard_tags is False - tag should be removed
+    # Check that warning is not raised if use_standard_tags is False - tag should be removed
     data_col = DataColumn(sample_series,
                           logical_type=Categorical,
                           semantic_tags=['category', 'tag1'],
-                          add_standard_tags=False)
+                          use_standard_tags=False)
 
     with pytest.warns(None) as record:
         new_col = data_col.remove_semantic_tags(['tag1', 'category'])
