@@ -550,18 +550,6 @@ def test_remove_semantic_tags(sample_df):
     assert dt.columns['id'].semantic_tags == {'tag2'}
 
 
-def test_replace_none_with_pdna(none_df):
-    logical_types = {
-        'all_none': NaturalLanguage,
-        'some_none': NaturalLanguage,
-    }
-    dt = DataTable(none_df, logical_types=logical_types, replace_none=True)
-    assert dt.to_pandas()['all_none'].loc[0] is pd.NA
-    assert dt.to_pandas()['all_none'].loc[1] is pd.NA
-    assert dt.to_pandas()['all_none'].loc[2] is pd.NA
-    assert dt.to_pandas()['some_none'].loc[1] is pd.NA
-
-
 def test_sets_category_dtype_on_init():
     column_name = 'test_series'
     series_list = [
@@ -686,7 +674,7 @@ def test_sets_boolean_dtype_on_init():
         ltypes = {
             column_name: logical_type,
         }
-        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
@@ -722,7 +710,7 @@ def test_sets_int64_dtype_on_init():
             ltypes = {
                 column_name: logical_type,
             }
-            dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+            dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
@@ -762,7 +750,7 @@ def test_sets_float64_dtype_on_init():
         ltypes = {
             column_name: logical_type,
         }
-        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
@@ -798,7 +786,7 @@ def test_sets_datetime64_dtype_on_init():
         ltypes = {
             column_name: logical_type,
         }
-        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype

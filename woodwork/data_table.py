@@ -16,8 +16,14 @@ class DataTable(object):
                  semantic_tags=None,
                  logical_types=None,
                  copy_dataframe=False,
+<< << << < HEAD
                  replace_none=True,
                  use_standard_tags=True):
+
+
+== == == =
+                 add_standard_tags = True):
+>>>>>> > remove replace_none param
         """ Create DataTable
 
         Args:
@@ -42,27 +48,22 @@ class DataTable(object):
             copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
                 prior to creating the DataTable. Defaults to False, which results in using a
                 reference to the input dataframe.
-            replace_none (bool, optional): If True, will replace any `None` values in the supplied
-                dataframe with `pd.NA`. Defaults to True.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
-        self.use_standard_tags = use_standard_tags
+        self.use_standard_tags=use_standard_tags
 
         if copy_dataframe:
-            self._dataframe = dataframe.copy()
+            self._dataframe=dataframe.copy()
         else:
-            self._dataframe = dataframe
+            self._dataframe=dataframe
 
-        if replace_none:
-            self._dataframe.fillna(pd.NA, inplace=True)
-
-        self.name = name
+        self.name=name
 
         # Infer logical types and create columns
-        self.columns = self._create_columns(self._dataframe.columns,
+        self.columns=self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
                                             self.use_standard_tags)
@@ -77,7 +78,7 @@ class DataTable(object):
         if isinstance(key, list):
             if not all([isinstance(col, str) for col in key]):
                 raise KeyError('Column names must be strings')
-            invalid_cols = set(key).difference(set(self.columns.keys()))
+            invalid_cols=set(key).difference(set(self.columns.keys()))
             if invalid_cols:
                 raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
             return self._new_dt_from_cols(key)
@@ -89,10 +90,10 @@ class DataTable(object):
 
     @property
     def types(self):
-        typing_info = {}
+        typing_info={}
         for dc in self.columns.values():
-            typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
-        df = pd.DataFrame.from_dict(typing_info,
+            typing_info[dc.name]=[dc.dtype, dc.logical_type, dc.semantic_tags]
+        df=pd.DataFrame.from_dict(typing_info,
                                     orient='index',
                                     columns=['Physical Type', 'Logical Type', 'Semantic Tag(s)'],
                                     dtype="object")
