@@ -114,7 +114,7 @@ class DataColumn(object):
     def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
             will be either an empty set or a set of the standard tags based
-            on the column logical type, controlled by the add_default_tags
+            on the column logical type, controlled by the use_standard_tags
             property.
 
          Args:

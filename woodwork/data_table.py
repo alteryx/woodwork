@@ -259,7 +259,7 @@ class DataTable(object):
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
             The default values will be either an empty set or a set of the standard
-            tags based on the column logical type, controlled by the add_default_tags
+            tags based on the column logical type, controlled by the use_standard_tags
             property on the table. Columns names can be provided as a single string,
             a list of strings or a set of strings. If columns is not specified,
             tags will be reset for all columns.
