@@ -26,6 +26,8 @@ First, let's load in some demo retail data.
 
 As we can see, this is a dataframe containing several different data types, including dates, categorical values, numeric values and natural language descriptions. Let's use Woodwork to create a DataTable from this data.
 
+Creating a DataTable
+====================
 Creating a Woodwork DataTable is as simple as passing in a dataframe with the data of interest. An optional name parameter can be specified to label the DataTable.
 
 .. ipython:: python
@@ -36,6 +38,9 @@ Creating a Woodwork DataTable is as simple as passing in a dataframe with the da
 
 Using just this simple call, Woodwork was able to infer the logical types present in our data by analyzing the dataframe dtypes as well as the information contained in the columns. In addition, it also added semantic tags to some of the columns based on the logical types that were inferred.
 
+
+Updating Logical Types
+======================
 If the initial inference was not to our liking, the logical type can be changed to a more appropriate value. Let's change some of the columns to a different logical type to illustrate this process. Below we will set the logical type for the ``quantity``, ``customer_name`` and ``country`` columns to be ``Categorical``.
 
 
@@ -49,6 +54,8 @@ If the initial inference was not to our liking, the logical type can be changed 
 
     dt.types
 
+Selecting Columns
+=================
 Now that we have logical types we are happy with, we can select a subset of the columns based on the logical type. Let's select only the columns that have a logical type of ``WholeNumber`` or ``Double``:
 
 .. ipython:: python
@@ -115,6 +122,9 @@ You can also access multiple columns by supplying a list of column names:
 
    multiple_cols_dt.types
 
+
+Removing Semantic Tags
+======================
 We can also remove specific semantic tags from a column if they are no longer needed:
 
 .. ipython:: python
@@ -122,7 +132,6 @@ We can also remove specific semantic tags from a column if they are no longer ne
     dt.remove_semantic_tags({'description':'product_details'})
 
     dt.types
-
 
 Notice how the ``product_details`` tag has now been removed from the ``description`` column. If we wanted to remove all user-added semantic tags from all columns, we can also do that:
 
