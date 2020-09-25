@@ -1,6 +1,4 @@
-<p align="center"><img width=50% src="https://raw.githubusercontent.com/FeatureLabs/woodwork/main/docs/source/images/woodwork_light.png" alt="Woodwork" /></p>
-
-# Woodwork
+<p align="center"><img width=50% src="https://raw.githubusercontent.com/FeatureLabs/woodwork/add_docs/docs/source/images/woodwork_light.png?token=ABA3QOJZIMGTSN4NPXAVSYC7O53OG" alt="Woodwork" /></p>
 
 [![codecov](https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/woodwork)
 [![PyPI version](https://badge.fury.io/py/woodwork.svg?maxAge=2592000)](https://badge.fury.io/py/woodwork)
