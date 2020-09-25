@@ -40,7 +40,7 @@ from woodwork.tests.testing_utils import validate_subset_dt
 
 def test_datatable_init(sample_df):
     dt = DataTable(sample_df)
-    df = dt.df
+    df = dt.to_pandas()
 
     assert dt.name is None
     assert dt.index is None
@@ -53,10 +53,10 @@ def test_datatable_init(sample_df):
 
 def test_datatable_copy_param(sample_df):
     dt_with_copy = DataTable(sample_df, copy_dataframe=True)
-    assert sample_df is not dt_with_copy.df
+    assert sample_df is not dt_with_copy.to_pandas()
 
     dt_no_copy = DataTable(sample_df)
-    assert sample_df is dt_no_copy.df
+    assert sample_df is dt_no_copy.to_pandas()
 
 
 def test_datatable_init_with_name_and_index_vals(sample_df):
@@ -550,18 +550,6 @@ def test_remove_semantic_tags(sample_df):
     assert dt.columns['id'].semantic_tags == {'tag2'}
 
 
-def test_replace_none_with_pdna(none_df):
-    logical_types = {
-        'all_none': NaturalLanguage,
-        'some_none': NaturalLanguage,
-    }
-    dt = DataTable(none_df, logical_types=logical_types, replace_none=True)
-    assert dt.df['all_none'].loc[0] is pd.NA
-    assert dt.df['all_none'].loc[1] is pd.NA
-    assert dt.df['all_none'].loc[2] is pd.NA
-    assert dt.df['some_none'].loc[1] is pd.NA
-
-
 def test_sets_category_dtype_on_init():
     column_name = 'test_series'
     series_list = [
@@ -589,7 +577,7 @@ def test_sets_category_dtype_on_init():
             dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
             assert dt.columns[column_name].logical_type == logical_type
             assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-            assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+            assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_category_dtype_on_update():
@@ -612,7 +600,7 @@ def test_sets_category_dtype_on_update():
         dt.set_logical_types({column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_string_dtype_on_init():
@@ -643,7 +631,7 @@ def test_sets_string_dtype_on_init():
             dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
             assert dt.columns[column_name].logical_type == logical_type
             assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-            assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+            assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_string_dtype_on_update():
@@ -668,7 +656,7 @@ def test_sets_string_dtype_on_update():
         dt.set_logical_types({column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_boolean_dtype_on_init():
@@ -686,10 +674,10 @@ def test_sets_boolean_dtype_on_init():
         ltypes = {
             column_name: logical_type,
         }
-        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_boolean_dtype_on_update():
@@ -703,7 +691,7 @@ def test_sets_boolean_dtype_on_update():
     dt.set_logical_types({column_name: Boolean})
     assert dt.columns[column_name].logical_type == Boolean
     assert dt.columns[column_name].dtype == Boolean.pandas_dtype
-    assert dt.dataframe[column_name].dtype == Boolean.pandas_dtype
+    assert dt.to_pandas()[column_name].dtype == Boolean.pandas_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -722,10 +710,10 @@ def test_sets_int64_dtype_on_init():
             ltypes = {
                 column_name: logical_type,
             }
-            dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+            dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_int64_dtype_on_update():
@@ -745,7 +733,7 @@ def test_sets_int64_dtype_on_update():
         dt.set_logical_types({column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_float64_dtype_on_init():
@@ -762,10 +750,10 @@ def test_sets_float64_dtype_on_init():
         ltypes = {
             column_name: logical_type,
         }
-        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_float64_dtype_on_update():
@@ -779,7 +767,7 @@ def test_sets_float64_dtype_on_update():
     dt.set_logical_types({column_name: Double})
     assert dt.columns[column_name].logical_type == Double
     assert dt.columns[column_name].dtype == Double.pandas_dtype
-    assert dt.dataframe[column_name].dtype == Double.pandas_dtype
+    assert dt.to_pandas()[column_name].dtype == Double.pandas_dtype
 
 
 def test_sets_datetime64_dtype_on_init():
@@ -798,10 +786,10 @@ def test_sets_datetime64_dtype_on_init():
         ltypes = {
             column_name: logical_type,
         }
-        dt = DataTable(pd.DataFrame(series), logical_types=ltypes, replace_none=False)
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.dataframe[column_name].dtype == logical_type.pandas_dtype
+        assert dt.to_pandas()[column_name].dtype == logical_type.pandas_dtype
 
 
 def test_sets_datetime_dtype_on_update():
@@ -815,7 +803,7 @@ def test_sets_datetime_dtype_on_update():
     dt.set_logical_types({column_name: Datetime})
     assert dt.columns[column_name].logical_type == Datetime
     assert dt.columns[column_name].dtype == Datetime.pandas_dtype
-    assert dt.dataframe[column_name].dtype == Datetime.pandas_dtype
+    assert dt.to_pandas()[column_name].dtype == Datetime.pandas_dtype
 
 
 def test_invalid_dtype_casting():
@@ -873,7 +861,7 @@ def test_invalid_select_ltypes(sample_df):
 
     dt_empty = dt.select_ltypes([])
     assert not dt_empty.columns
-    assert len(dt_empty.df.columns) == 0
+    assert len(dt_empty.to_pandas().columns) == 0
 
 
 def test_select_ltypes_warning(sample_df):
@@ -901,7 +889,7 @@ def test_select_ltypes_warning(sample_df):
     with pytest.warns(UserWarning, match=warning):
         dt_all_types = dt.select_ltypes(all_types)
     assert len(dt_all_types.columns) == len(dt.columns)
-    assert len(dt_all_types.df.columns) == len(dt.df.columns)
+    assert len(dt_all_types.to_pandas().columns) == len(dt.to_pandas().columns)
 
 
 def test_select_ltypes_strings(sample_df):
@@ -1132,12 +1120,13 @@ def test_getitem_invalid_input(sample_df):
 def test_datatable_getitem_list_input(sample_df):
     # Test regular columns
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    df = dt.to_pandas()
     columns = ['age', 'full_name']
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert all(new_dt.df.columns == ['age', 'full_name'])
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert all(new_dt.to_pandas().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
     assert new_dt.time_index is None
@@ -1146,9 +1135,9 @@ def test_datatable_getitem_list_input(sample_df):
     columns = ['id', 'full_name']
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert all(new_dt.df.columns == ['id', 'full_name'])
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert all(new_dt.to_pandas().columns == ['id', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'full_name'}
     assert new_dt.index == 'id'
     assert new_dt.time_index is None
@@ -1157,9 +1146,9 @@ def test_datatable_getitem_list_input(sample_df):
     columns = ['id', 'signup_date', 'full_name']
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert all(new_dt.df.columns == ['id', 'signup_date', 'full_name'])
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert all(new_dt.to_pandas().columns == ['id', 'signup_date', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'signup_date', 'full_name'}
     assert new_dt.index == 'id'
     assert new_dt.time_index == 'signup_date'
@@ -1168,9 +1157,9 @@ def test_datatable_getitem_list_input(sample_df):
     columns = []
     new_dt = dt[columns]
     assert new_dt is not dt
-    assert new_dt.df is not dt.df
-    pd.testing.assert_frame_equal(dt.df[columns], new_dt.df)
-    assert len(new_dt.df.columns) == 0
+    assert new_dt.to_pandas() is not df
+    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    assert len(new_dt.to_pandas().columns) == 0
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
     assert new_dt.time_index is None
@@ -1433,3 +1422,19 @@ def test_natural_language_inference_with_config_options():
     dt = DataTable(dataframe, name='dt_name')
     assert dt.columns['values'].logical_type == NaturalLanguage
     ww.config.reset_option('natural_language_threshold')
+
+
+def test_to_pandas_copy(sample_df):
+    dt = DataTable(sample_df)
+
+    df_no_copy = dt.to_pandas()
+    df_copy = dt.to_pandas(copy=True)
+
+    assert df_no_copy is sample_df
+
+    assert df_no_copy is not df_copy
+
+    df_copy['test_col'] = pd.Series([1, 2, 3])
+    assert 'test_col' in df_copy.columns
+    assert 'test_col' not in df_no_copy.columns
+    assert 'test_col' not in dt.columns
