@@ -22,7 +22,7 @@ Changelog
     * Documentation Changes
         * Add working code example to README and create Using Woodwork page (:pr:`103`)
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.1.0** September 24, 2020
