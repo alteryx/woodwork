@@ -2,15 +2,16 @@
 
 Changelog
 ---------
-.. **Future Release**
-..     * Enhancements
-..     * Fixes
-..     * Changes
-..     * Documentation Changes
-..     * Testing Changes
+**Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Remove unused code from sphinx conf.py :pr:`160`
+    * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-..     :user:`thehomebrewnerd`, :user:`tamargrey`
+Thanks to the following people for contributing to this release:
+   :user:`gsheni`
 
 **v0.0.2** September 28, 2020
     * Fixes
