@@ -23,7 +23,7 @@ class DataColumn(object):
                  logical_type=None,
                  semantic_tags=None,
                  use_standard_tags=True):
-        """Create DataColumn
+        """Create a DataColumn.
 
         Args:
             series (pd.Series): Series containing the data associated with the column.
@@ -33,8 +33,8 @@ class DataColumn(object):
             semantic_tags (str or list or set, optional): Semantic tags to assign to the column.
                 Defaults to an empty set if not specified. There are two options for
                 specifying the semantic tags:
-                    (str) If only one semantic tag is being set, a single string can be passed.
-                    (list or set) If muliple tags are being set, a list or set of strings can be passed.
+                (str) If only one semantic tag is being set, a single string can be passed.
+                (list or set) If muliple tags are being set, a list or set of strings can be passed.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
         """
@@ -83,7 +83,7 @@ class DataColumn(object):
             return infer_logical_type(self.series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        """Replace semantic tags with passed values.
+        """Replace current semantic tags with new values.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to set for column
@@ -104,6 +104,11 @@ class DataColumn(object):
             self._set_as_time_index()
 
     def add_semantic_tags(self, semantic_tags):
+        """Add the specified semantic tags to the column.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to add to the column
+        """
         new_tags = _convert_input_to_set(semantic_tags)
         _validate_tags(new_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
@@ -113,14 +118,14 @@ class DataColumn(object):
 
     def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
-            will be either an empty set or a set of the standard tags based
-            on the column logical type, controlled by the use_standard_tags
-            property.
+        will be either an empty set or a set of the standard tags based
+        on the column logical type, controlled by the use_standard_tags
+        property.
 
-         Args:
-            retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
-                the column will be retained. If False, all tags will be cleared.
-                Defaults to False.
+        Args:
+            retain_index_tags (bool, optional): If True, any 'index' or
+                'time_index' tags on the column will be retained. If False,
+                all tags will be cleared. Defaults to False.
         """
         new_col = DataColumn(series=self.series,
                              logical_type=self.logical_type,
@@ -133,7 +138,11 @@ class DataColumn(object):
         return new_col
 
     def remove_semantic_tags(self, semantic_tags):
-        """Removes specified semantic tags from column and returns a new column"""
+        """Removes specified semantic tags from column and returns a new column.
+
+        Args:
+            semantic_tags (str/list/set): Semantic tag(s) to remove from the column.
+        """
         tags_to_remove = _convert_input_to_set(semantic_tags)
         invalid_tags = sorted(list(tags_to_remove.difference(self._semantic_tags)))
         if invalid_tags:
@@ -156,18 +165,22 @@ class DataColumn(object):
 
     @property
     def logical_type(self):
+        """The logical type for the column"""
         return self._logical_type
 
     @property
     def semantic_tags(self):
+        """The set of semantic tags currently assigned to the column"""
         return self._semantic_tags
 
     @property
     def name(self):
+        """The name of the column"""
         return self.series.name
 
     @property
     def dtype(self):
+        """The dtype of the underlying series"""
         return self.series.dtype
 
 

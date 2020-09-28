@@ -7,12 +7,13 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
-        * Remove unused code from sphinx conf.py :pr:`160`
-        * Update README and docs with new Woodwork logo :pr:`161`
+        * Remove unused code from sphinx conf.py (:pr:`160`)
+        * Update README and docs with new Woodwork logo (:pr:`161`)
+        * Add DataTable and DataColumn to API Reference (:pr:``)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-   :user:`gsheni`
+   :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.0.2** September 28, 2020
     * Fixes
