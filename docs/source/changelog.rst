@@ -9,7 +9,7 @@ Changelog
     * Documentation Changes
         * Remove unused code from sphinx conf.py (:pr:`160`)
         * Update README and docs with new Woodwork logo (:pr:`161`)
-        * Add DataTable and DataColumn to API Reference (:pr:``)
+        * Add DataTable and DataColumn to API Reference (:pr:`162`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
