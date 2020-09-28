@@ -2,8 +2,17 @@
 
 Changelog
 ---------
-**Future Release**
-    * Enhancements
+.. **Future Release**
+..     * Enhancements
+..     * Fixes
+..     * Changes
+..     * Documentation Changes
+..     * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+..     :user:`thehomebrewnerd`, :user:`tamargrey`
+
+**v0.0.2** September 28, 2020
     * Fixes
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
@@ -12,10 +21,9 @@ Changelog
         * Remove ``replace_none`` parameter to DataTables (:pr:`146`)
     * Documentation Changes
         * Add working code example to README and create Using Woodwork page (:pr:`103`)
-    * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.1.0** September 24, 2020
     * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
@@ -66,7 +74,7 @@ Thanks to the following people for contributing to this release:
 
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`gsheni`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 .. command
 .. git log --pretty=oneline --abbrev-commit
