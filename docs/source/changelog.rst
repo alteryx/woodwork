@@ -8,6 +8,7 @@ Changelog
     * Changes
     * Documentation Changes
         * Remove unused code from sphinx conf.py :pr:`160`
+        * Update README and docs with new Woodwork logo :pr:`161`
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
