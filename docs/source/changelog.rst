@@ -10,8 +10,8 @@ Changelog
         * Change add_standard_tags to use_standard_Tags to better describe behavior (:pr:`149`)
         * Change access of underlying dataframe to be through ``to_pandas`` with ._dataframe field on class (:pr:`146`)
         * Remove ``replace_none`` parameter to DataTables (:pr:`146`)
-
     * Documentation Changes
+        * Add working code example to README and create Using Woodwork page (:pr:`103`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
