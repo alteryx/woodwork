@@ -27,7 +27,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/woodwork/blob/main/contributing.md>`_.
+Before making contributions to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/woodwork/blob/main/contributing.md>`_.
 
 Virtualenv
 ~~~~~~~~~~
