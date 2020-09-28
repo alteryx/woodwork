@@ -118,14 +118,14 @@ class DataColumn(object):
 
     def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
-        will be either an empty set or a set of the standard tags based
-        on the column logical type, controlled by the use_standard_tags
-        property.
+            will be either an empty set or a set of the standard tags based
+            on the column logical type, controlled by the use_standard_tags
+            property.
 
-        Args:
-            retain_index_tags (bool, optional): If True, any 'index' or
-                'time_index' tags on the column will be retained. If False,
-                all tags will be cleared. Defaults to False.
+            Args:
+                retain_index_tags (bool, optional): If True, any 'index' or
+                    'time_index' tags on the column will be retained. If False,
+                    all tags will be cleared. Defaults to False.
         """
         new_col = DataColumn(series=self.series,
                              logical_type=self.logical_type,
@@ -140,8 +140,8 @@ class DataColumn(object):
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from column and returns a new column.
 
-        Args:
-            semantic_tags (str/list/set): Semantic tag(s) to remove from the column.
+            Args:
+                semantic_tags (str/list/set): Semantic tag(s) to remove from the column.
         """
         tags_to_remove = _convert_input_to_set(semantic_tags)
         invalid_tags = sorted(list(tags_to_remove.difference(self._semantic_tags)))
@@ -196,8 +196,9 @@ def _validate_tags(semantic_tags):
 
 def infer_logical_type(series):
     """Infer logical type for a dataframe column
-    Args:
-        series (pd.Series): Input Series
+
+        Args:
+            series (pd.Series): Input Series
     """
     datetime_format = config.get_option('datetime_format')
     natural_language_threshold = config.get_option('natural_language_threshold')

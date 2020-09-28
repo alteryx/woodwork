@@ -175,7 +175,7 @@ class DataTable(object):
     def set_index(self, index):
         """Set the index column. Adds the 'index' semantic tag to the column and
             clears the tag from any previously set index column.
-        
+
             Args:
                 index (str): The name of the column to set as the index
         """
@@ -238,7 +238,7 @@ class DataTable(object):
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
-        
+
             Args:
                 semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                     in the DataTable to the tags that should be added to the column
@@ -250,7 +250,7 @@ class DataTable(object):
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
             dictionary. Replaces the column with a new column object.
-            
+
             Args:
                 semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                     in the DataTable to the tags that should be removed to the column
