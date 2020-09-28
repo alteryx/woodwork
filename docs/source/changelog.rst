@@ -8,6 +8,7 @@ Changelog
     * Changes
     * Documentation Changes
         * Remove unused code from sphinx conf.py :pr:`160`
+        * Update README and docs with new Woodwork logo :pr:`161`
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
@@ -23,7 +24,7 @@ Thanks to the following people for contributing to this release:
     * Documentation Changes
         * Add working code example to README and create Using Woodwork page (:pr:`103`)
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.1.0** September 24, 2020

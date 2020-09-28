@@ -1,4 +1,4 @@
-<p align="center"><img width=50% src="https://raw.githubusercontent.com/FeatureLabs/woodwork/add_docs/docs/source/images/woodwork_light.png?token=ABA3QOJZIMGTSN4NPXAVSYC7O53OG" alt="Woodwork" /></p>
+<p align="center"><img width=50% src="https://woodwork-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
 
 [![codecov](https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/woodwork)
 [![PyPI version](https://badge.fury.io/py/woodwork.svg?maxAge=2592000)](https://badge.fury.io/py/woodwork)
@@ -16,7 +16,7 @@ python -m pip install woodwork
 
 ## Example
 
-Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataTable`, specifying the `LogicalType` for three of the columns. 
+Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataTable`, specifying the `LogicalType` for three of the columns.
 
 ```python
 >> import woodwork as ww
@@ -32,7 +32,7 @@ Below is an example of using Woodwork. In this example, a sample dataset of orde
 })
 >> dt.types
                 Physical Type     Logical Type Semantic Tag(s)
-Data Column                                                   
+Data Column
 order_id                Int64      WholeNumber       {numeric}
 product_id           category      Categorical      {category}
 description            string  NaturalLanguage              {}
