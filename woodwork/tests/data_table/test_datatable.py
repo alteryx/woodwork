@@ -1284,6 +1284,31 @@ def test_setitem_invalid_input(sample_df):
         dt['test'] = pd.Series([1, 2, 3], dtype='Int64')
 
 
+def test_setitem_different_name(sample_df):
+    dt = DataTable(sample_df)
+
+    warning = 'Key, id, does not match the name of the provided DataColumn, wrong.'\
+        ' Changing DataColumn name to: id'
+    with pytest.warns(UserWarning, match=warning):
+        dt['id'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong'),
+                              use_standard_tags=False)
+
+    assert dt['id'].name == 'id'
+    assert dt['id'].series.name == 'id'
+    assert dt.to_pandas()['id'].name == 'id'
+    assert 'wrong' not in dt.columns
+
+    warning = 'Key, new_col, does not match the name of the provided DataColumn, wrong2.'\
+        ' Changing DataColumn name to: new_col'
+    with pytest.warns(UserWarning, match=warning):
+        dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'),
+                                   use_standard_tags=False)
+    assert dt['new_col'].name == 'new_col'
+    assert dt['new_col'].series.name == 'new_col'
+    assert dt.to_pandas()['new_col'].name == 'new_col'
+    assert 'wrong2' not in dt.columns
+
+
 def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
 
