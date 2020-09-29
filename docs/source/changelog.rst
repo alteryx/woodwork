@@ -8,6 +8,7 @@ Changelog
         * Add ``to_pandas`` method to DataColumn to access the underlying series (:pr:`169`)
     * Fixes
     * Changes
+        * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py (:pr:`160`)
         * Update README and docs with new Woodwork logo (:pr:`161`)
