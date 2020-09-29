@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Implement DataTable setitem (:pr:`165`)
     * Fixes
     * Changes
     * Documentation Changes
