@@ -1,6 +1,11 @@
 import pytest
 
-from woodwork.utils import _convert_input_to_set, camel_to_snake
+from woodwork.logical_types import LogicalType, str_to_logical_type
+from woodwork.utils import (
+    _convert_input_to_set,
+    camel_to_snake,
+    list_logical_types
+)
 
 
 def test_camel_to_snake():
@@ -36,3 +41,15 @@ def test_convert_input_to_set():
 
     semantic_tags_from_set = _convert_input_to_set({'index', 'numeric', 'category'}, 'include parameter')
     assert semantic_tags_from_set == {'index', 'numeric', 'category'}
+
+
+def test_list_logical_types():
+    all_ltypes = LogicalType.__subclasses__()
+
+    df = list_logical_types()
+
+    assert set(df.columns) == {'name', 'type_string', 'description', 'pandas_dtype', 'standard_tags'}
+
+    assert len(all_ltypes) == len(df)
+    for name in df['name']:
+        assert str_to_logical_type(name) in all_ltypes
