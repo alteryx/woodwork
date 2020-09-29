@@ -1,7 +1,6 @@
 import click
-import pkg_resources
+
 import woodwork as ww
-import pandas as pd
 
 
 @click.group()
