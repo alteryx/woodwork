@@ -7,6 +7,7 @@ Changelog
         * Implement setitem on DataTable to create/overwrite an existing DataColumn (:pr:`165`)
     * Fixes
     * Changes
+        * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py (:pr:`160`)
         * Update README and docs with new Woodwork logo (:pr:`161`)
