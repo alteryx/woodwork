@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Implement setitem on DataTable to create/overwrite an existing DataColumn (:pr:`165`)
     * Fixes
     * Changes
     * Documentation Changes
