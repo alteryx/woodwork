@@ -45,6 +45,7 @@ class Categorical(LogicalType):
 
             ["red", "green", "blue"]
             ["produce", "dairy", "bakery"]
+            [3, 1, 2]
     """
     pandas_dtype = 'category'
     standard_tags = {'category'}
@@ -166,7 +167,7 @@ class IPAddress(LogicalType):
 
 
 class LatLong(LogicalType):
-    """Represents Logical Types that contain lattitude and longitude values
+    """Represents Logical Types that contain latitude and longitude values
 
     Examples:
         .. code-block:: python
@@ -251,7 +252,7 @@ class Timedelta(LogicalType):
 
 
 class URL(LogicalType):
-    """Represents Logical Types that contain URLs, which may include protocal, hostname
+    """Represents Logical Types that contain URLs, which may include protocol, hostname
     and file name
 
     Examples:
@@ -284,9 +285,9 @@ class ZIPCode(LogicalType):
     Examples:
         .. code-block:: python
 
-            [90210"
+            ["90210"
              "60018-0123",
-             10021]
+             "10021"]
     """
     pandas_dtype = 'category'
     standard_tags = {'category'}
