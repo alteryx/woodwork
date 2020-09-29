@@ -80,6 +80,17 @@ class DataTable(object):
             raise KeyError(f"Column with name '{key}' not found in DataTable")
         return self.columns[key]
 
+    def __setitem__(self, col_name, column):
+        if not isinstance(col_name, str):
+            raise KeyError('Column name must be a string')
+
+        if not isinstance(column, DataColumn):
+            raise ValueError('New column must be of DataColumn type')
+
+        self._dataframe[col_name] = column.series
+        self._update_columns({col_name: column})
+        self._update_dtypes(self.columns)
+
     @property
     def types(self):
         """Dataframe containing the physical dtypes, logical types and semantic
