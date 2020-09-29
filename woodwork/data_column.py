@@ -34,7 +34,7 @@ class DataColumn(object):
                 Defaults to an empty set if not specified. There are two options for
                 specifying the semantic tags:
                 (str) If only one semantic tag is being set, a single string can be passed.
-                (list or set) If muliple tags are being set, a list or set of strings can be passed.
+                (list or set) If multiple tags are being set, a list or set of strings can be passed.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
         """
