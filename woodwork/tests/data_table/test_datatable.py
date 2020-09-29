@@ -1271,9 +1271,33 @@ def test_datatable_getitem_list_warnings(sample_df):
         dt[columns]
 
 
+def test_setitem_invalid_input(sample_df):
+    dt = DataTable(sample_df)
+
+    error_msg = 'Column name must be a string'
+    with pytest.raises(KeyError, match=error_msg):
+        dt[1] = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
+                           use_standard_tags=False)
+
+    error_msg = 'New column must be of DataColumn type'
+    with pytest.raises(ValueError, match=error_msg):
+        dt['test'] = pd.Series([1, 2, 3], dtype='Int64')
+
+
 def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
 
+    new_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
+                         use_standard_tags=False)
+    dt['test_col2'] = new_col
+    updated_df = dt.to_pandas()
+    assert 'test_col2' in dt.columns
+    assert dt['test_col2'].logical_type == WholeNumber
+    assert dt['test_col2'].semantic_tags == set()
+    assert 'test_col2' in updated_df.columns
+    assert updated_df['test_col2'].dtype == 'Int64'
+
+    # Standard tags and no logical type
     new_col = DataColumn(pd.Series(['new', 'column', 'inserted'], dtype='string'),
                          use_standard_tags=True)
     dt['test_col'] = new_col
@@ -1284,16 +1308,7 @@ def test_setitem_new_column(sample_df):
     assert 'test_col' in updated_df.columns
     assert updated_df['test_col'].dtype == 'category'
 
-    new_col = DataColumn(pd.Series([1, 2, 3]),
-                         use_standard_tags=False)
-    dt['test_col2'] = new_col
-    updated_df = dt.to_pandas()
-    assert 'test_col2' in dt.columns
-    assert dt['test_col2'].logical_type == WholeNumber
-    assert dt['test_col2'].semantic_tags == set()
-    assert 'test_col2' in updated_df.columns
-    assert updated_df['test_col2'].dtype == 'Int64'
-
+    # Add with logical type and semantic tag
     new_col = DataColumn(pd.Series([1, 2, 3]),
                          logical_type=Double,
                          use_standard_tags=False,
@@ -1308,9 +1323,67 @@ def test_setitem_new_column(sample_df):
 
 
 def test_setitem_overwrite_column(sample_df):
-    # dt = DataTable(sample_df)
-    # overwrite_col = DataColumn(sample_series)
-    pass
+    dt = DataTable(sample_df, index='id',
+                   time_index='signup_date',
+                   use_standard_tags=True)
+
+    # Change to column no change in types
+    original_col = dt['age']
+    overwrite_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
+                               use_standard_tags=True)
+    dt['age'] = overwrite_col
+    updated_df = dt.to_pandas()
+
+    assert 'age' in dt.columns
+    assert dt['age'].logical_type == original_col.logical_type
+    assert dt['age'].semantic_tags == original_col.semantic_tags
+    assert 'age' in updated_df.columns
+    assert updated_df['age'].dtype == 'Int64'
+    assert original_col.series is not dt['age'].series
+
+    # Change dtype, logical types, and tags with conflicting use_standard_tags
+    original_col = dt['full_name']
+    overwrite_col = DataColumn(pd.Series([True, False, False], dtype='boolean'),
+                               use_standard_tags=False,
+                               semantic_tags='test_tag')
+    dt['full_name'] = overwrite_col
+    updated_df = dt.to_pandas()
+
+    assert 'full_name' in dt.columns
+    assert dt['full_name'].logical_type == Boolean
+    assert dt['full_name'].semantic_tags == {'test_tag'}
+    assert 'full_name' in updated_df.columns
+    assert updated_df['full_name'].dtype == 'boolean'
+    assert original_col.series is not dt['full_name'].series
+
+    # Change index
+    original_col = dt['id']
+    overwrite_col = DataColumn(pd.Series([True, False, False], dtype='boolean'),
+                               use_standard_tags=True)
+    dt['id'] = overwrite_col
+    updated_df = dt.to_pandas()
+
+    assert 'id' in dt.columns
+    assert dt['id'].logical_type == Boolean
+    assert dt['id'].semantic_tags == set()
+    assert 'id' in updated_df.columns
+    assert updated_df['id'].dtype == 'boolean'
+    assert not original_col.series.equals(dt['id'].series)
+
+    # Change time index
+    original_col = dt['signup_date']
+    overwrite_col = DataColumn(pd.Series(['test text', 'file', 'False'], dtype='string'),
+                               use_standard_tags=True,
+                               logical_type=Filepath)
+    dt['signup_date'] = overwrite_col
+    updated_df = dt.to_pandas()
+
+    assert 'signup_date' in dt.columns
+    assert dt['signup_date'].logical_type == Filepath
+    assert dt['signup_date'].semantic_tags == set()
+    assert 'signup_date' in updated_df.columns
+    assert updated_df['signup_date'].dtype == 'string'
+    assert original_col.series is not dt['signup_date'].series
 
 
 def test_set_index(sample_df):
