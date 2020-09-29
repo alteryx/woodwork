@@ -1272,7 +1272,7 @@ def test_datatable_getitem_list_warnings(sample_df):
 
 
 def test_setitem_invalid_input(sample_df):
-    dt = DataTable(sample_df)
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
 
     error_msg = 'Column name must be a string'
     with pytest.raises(KeyError, match=error_msg):
@@ -1282,6 +1282,14 @@ def test_setitem_invalid_input(sample_df):
     error_msg = 'New column must be of DataColumn type'
     with pytest.raises(ValueError, match=error_msg):
         dt['test'] = pd.Series([1, 2, 3], dtype='Int64')
+
+    error_msg = 'Cannot reassign index'
+    with pytest.raises(KeyError, match=error_msg):
+        dt['id'] = DataColumn(pd.Series([True, False, False]))
+
+    error_msg = 'Cannot reassign time index'
+    with pytest.raises(KeyError, match=error_msg):
+        dt['signup_date'] = DataColumn(pd.Series(['test text', 'file', 'False']))
 
 
 def test_setitem_different_name(sample_df):
@@ -1380,35 +1388,6 @@ def test_setitem_overwrite_column(sample_df):
     assert 'full_name' in updated_df.columns
     assert updated_df['full_name'].dtype == 'boolean'
     assert original_col.series is not dt['full_name'].series
-
-    # Change index
-    original_col = dt['id']
-    overwrite_col = DataColumn(pd.Series([True, False, False], dtype='boolean'),
-                               use_standard_tags=True)
-    dt['id'] = overwrite_col
-    updated_df = dt.to_pandas()
-
-    assert 'id' in dt.columns
-    assert dt['id'].logical_type == Boolean
-    assert dt['id'].semantic_tags == set()
-    assert 'id' in updated_df.columns
-    assert updated_df['id'].dtype == 'boolean'
-    assert not original_col.series.equals(dt['id'].series)
-
-    # Change time index
-    original_col = dt['signup_date']
-    overwrite_col = DataColumn(pd.Series(['test text', 'file', 'False'], dtype='string'),
-                               use_standard_tags=True,
-                               logical_type=Filepath)
-    dt['signup_date'] = overwrite_col
-    updated_df = dt.to_pandas()
-
-    assert 'signup_date' in dt.columns
-    assert dt['signup_date'].logical_type == Filepath
-    assert dt['signup_date'].semantic_tags == set()
-    assert 'signup_date' in updated_df.columns
-    assert updated_df['signup_date'].dtype == 'string'
-    assert original_col.series is not dt['signup_date'].series
 
 
 def test_set_index(sample_df):

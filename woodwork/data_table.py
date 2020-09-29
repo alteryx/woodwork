@@ -87,6 +87,12 @@ class DataTable(object):
         if not isinstance(column, DataColumn):
             raise ValueError('New column must be of DataColumn type')
 
+        # Don't allow reassigning of index or time index with setitem
+        if self.index == col_name:
+            raise KeyError('Cannot reassign index')
+        if self.time_index == col_name:
+            raise KeyError('Cannot reassign time index')
+
         if column.series.name is not None and column.series.name != col_name:
             warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
                           f' {column.series.name}. Changing DataColumn name to: {col_name}')
@@ -94,7 +100,7 @@ class DataTable(object):
 
         self._dataframe[col_name] = column.series
         self._update_columns({col_name: column})
-        self._update_dtypes(self.columns)
+        self._update_dtypes({col_name: column})
 
     @property
     def types(self):
