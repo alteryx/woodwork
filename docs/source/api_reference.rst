@@ -36,6 +36,7 @@ DataColumn
     DataColumn.reset_semantic_tags
     DataColumn.set_logical_type
     DataColumn.set_semantic_tags
+    DataColumn.to_pandas
 
 
 Logical Types

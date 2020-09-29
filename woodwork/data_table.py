@@ -92,12 +92,12 @@ class DataTable(object):
         if self.time_index == col_name:
             raise KeyError('Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.')
 
-        if column.series.name is not None and column.series.name != col_name:
+        if column.name is not None and column.name != col_name:
             warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
-                          f' {column.series.name}. Changing DataColumn name to: {col_name}')
-            column.series.name = col_name
+                          f' {column.name}. Changing DataColumn name to: {col_name}')
+            column._series.name = col_name
 
-        self._dataframe[col_name] = column.series
+        self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
         self._update_dtypes({col_name: column})
 
@@ -255,7 +255,7 @@ class DataTable(object):
                         f'logical type {column.logical_type}.'
                     raise TypeError(error_msg)
                 # Update the column object since .astype returns a new series object
-                column.series = self._dataframe[name]
+                column._series = self._dataframe[name]
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
