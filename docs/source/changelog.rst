@@ -9,10 +9,11 @@ Changelog
     * Documentation Changes
         * Remove unused code from sphinx conf.py :pr:`160`
         * Update README and docs with new Woodwork logo :pr:`161`
+        * Add Github URL to theme conf :pr:`163`
     * Testing Changes
 
-Thanks to the following people for contributing to this release:
-   :user:`gsheni`
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 **v0.0.2** September 28, 2020
     * Fixes
@@ -73,7 +74,6 @@ Thanks to the following people for contributing to this release:
     * Add Logical Types, DataTable, DataColumn (:pr:`3`)
     * Add Makefile, setup.py, requirements.txt (:pr:`2`)
     * Initial Release (:pr:`1`)
-
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
