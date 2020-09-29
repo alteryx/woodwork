@@ -38,7 +38,8 @@ class DataColumn(object):
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
         """
-        self.series = series
+        self._series = series
+
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         self._semantic_tags = set()
@@ -61,7 +62,7 @@ class DataColumn(object):
                 Defaults to True.
         """
         new_logical_type = self._parse_logical_type(logical_type)
-        new_col = DataColumn(series=self.series,
+        new_col = DataColumn(series=self._series,
                              logical_type=new_logical_type,
                              use_standard_tags=self.use_standard_tags)
         if retain_index_tags and 'index' in self.semantic_tags:
@@ -78,9 +79,9 @@ class DataColumn(object):
             elif isinstance(logical_type, str):
                 return str_to_logical_type(logical_type)
             else:
-                raise TypeError(f"Invalid logical type specified for '{self.series.name}'")
+                raise TypeError(f"Invalid logical type specified for '{self.name}'")
         else:
-            return infer_logical_type(self.series)
+            return infer_logical_type(self._series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Replace current semantic tags with new values.
@@ -126,7 +127,7 @@ class DataColumn(object):
                 'time_index' tags on the column will be retained. If False,
                 all tags will be cleared. Defaults to False.
         """
-        new_col = DataColumn(series=self.series,
+        new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
                              semantic_tags=None,
                              use_standard_tags=self.use_standard_tags)
@@ -151,7 +152,7 @@ class DataColumn(object):
             warnings.warn(f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{self.name}'",
                           UserWarning)
         new_tags = self._semantic_tags.difference(tags_to_remove)
-        return DataColumn(series=self.series,
+        return DataColumn(series=self._series,
                           logical_type=self.logical_type,
                           semantic_tags=new_tags,
                           use_standard_tags=False)
@@ -177,8 +178,8 @@ class DataColumn(object):
             pandas.Series: The underlying series of the DataColumn
         """
         if copy:
-            return self.series.copy()
-        return self.series
+            return self._series.copy()
+        return self._series
 
     @property
     def logical_type(self):
@@ -193,12 +194,12 @@ class DataColumn(object):
     @property
     def name(self):
         """The name of the column"""
-        return self.series.name
+        return self._series.name
 
     @property
     def dtype(self):
         """The dtype of the underlying series"""
-        return self.series.dtype
+        return self._series.dtype
 
 
 def _validate_tags(semantic_tags):

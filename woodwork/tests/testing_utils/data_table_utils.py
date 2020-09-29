@@ -7,4 +7,4 @@ def validate_subset_dt(subset_dt, dt):
         assert subset_col.logical_type == col.logical_type
         assert subset_col.semantic_tags == col.semantic_tags
         assert subset_col.dtype == col.dtype
-        assert subset_col.series.equals(col.series)
+        assert subset_col.to_pandas().equals(col.to_pandas())

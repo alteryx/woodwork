@@ -24,7 +24,7 @@ from woodwork.logical_types import (
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.series is sample_series
+    assert data_col.to_pandas() is sample_series
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
