@@ -45,7 +45,6 @@ class DataTable(object):
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
-        self.use_standard_tags = use_standard_tags
 
         if copy_dataframe:
             self._dataframe = dataframe.copy()
@@ -58,7 +57,7 @@ class DataTable(object):
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
-                                            self.use_standard_tags)
+                                            use_standard_tags)
         if index:
             self.set_index(index)
         if time_index:
