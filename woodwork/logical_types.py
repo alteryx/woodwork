@@ -181,7 +181,7 @@ class LatLong(LogicalType):
 class NaturalLanguage(LogicalType):
     """Represents Logical Types that contain text or characters representing
     natural human language
-    
+
     Examples:
         .. code-block:: python
 

@@ -11,6 +11,7 @@ Changelog
         * Update README and docs with new Woodwork logo (:pr:`161`)
         * Add Github URL to theme conf (:pr:`163`)
         * Add DataTable and DataColumn to API Reference (:pr:`162`)
+        * Add docstrings to LogicalType clases (:pr:`168`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
