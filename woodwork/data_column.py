@@ -39,7 +39,6 @@ class DataColumn(object):
                 on the inferred or specified logical type for the column. Defaults to True.
         """
         self._series = series
-
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         self._semantic_tags = set()
