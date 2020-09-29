@@ -3,6 +3,8 @@ from datetime import datetime
 
 import pandas as pd
 
+import woodwork as ww
+
 
 def camel_to_snake(s):
     s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
@@ -53,3 +55,14 @@ def col_is_datetime(col, datetime_format=None):
                 return True
 
     return False
+
+
+def list_logical_types():
+    return pd.DataFrame(
+        [{'name': ltype.__name__,
+          'type_string': ltype.type_string,
+          'description': ltype.__doc__,
+          'pandas_dtype': ltype.pandas_dtype,
+          'standard_tags': ltype.standard_tags}
+            for ltype in ww.logical_types.LogicalType.__subclasses__()]
+    )
