@@ -19,18 +19,21 @@ python -m pip install woodwork
 Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataTable`, specifying the `LogicalType` for three of the columns.
 
 ```python
->> import woodwork as ww
->> from woodwork.logical_types import Datetime, Categorical, NaturalLanguage
+import woodwork as ww
+from woodwork.logical_types import Datetime, Categorical, NaturalLanguage
 
->> data = ww.demo.load_retail(nrows=100)
+data = ww.demo.load_retail(nrows=100)
 
->> dt = ww.DataTable(data, name='retail')
->> dt.set_logical_types({
+dt = ww.DataTable(data, name='retail')
+dt.set_logical_types({
     'quantity': 'Double',
     'customer_name': 'Categorical',
     'country': 'Categorical'
 })
->> dt.types
+dt.types
+```
+
+```
                 Physical Type     Logical Type Semantic Tag(s)
 Data Column
 order_id                Int64      WholeNumber       {numeric}
@@ -49,8 +52,11 @@ We now have created a Woodwork `DataTable` with the specified logical types assi
 If we wanted to do further analysis on only the columns in this table that have a logical type of `Boolean` or a semantic tag of `numeric` we can simply select those columns and access a dataframe containing just those columns:
 
 ```python
->> filtered_df = dt.select(include=['Boolean', 'numeric']).to_pandas()
->> filtered_df
+filtered_df = dt.select(include=['Boolean', 'numeric']).to_pandas()
+filtered_df
+```
+
+```
     order_id  quantity  unit_price   total  cancelled
 0     536365       6.0      4.2075  25.245      False
 1     536365       6.0      5.5935  33.561      False
