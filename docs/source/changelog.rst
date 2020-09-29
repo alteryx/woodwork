@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Implement DataTable setitem (:pr:`165`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -14,7 +15,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
 
 **v0.0.2** September 28, 2020
     * Fixes
