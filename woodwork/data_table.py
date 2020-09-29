@@ -153,7 +153,7 @@ class DataTable(object):
 
     @property
     def time_index(self):
-        """The Time index column for the table"""
+        """The time index column for the table"""
         for column in self.columns.values():
             if 'time_index' in column.semantic_tags:
                 return column.name
