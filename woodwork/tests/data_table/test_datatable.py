@@ -1283,11 +1283,11 @@ def test_setitem_invalid_input(sample_df):
     with pytest.raises(ValueError, match=error_msg):
         dt['test'] = pd.Series([1, 2, 3], dtype='Int64')
 
-    error_msg = 'Cannot reassign index'
+    error_msg = 'Cannot reassign index. Change column name and then use dt.set_index to reassign index.'
     with pytest.raises(KeyError, match=error_msg):
         dt['id'] = DataColumn(pd.Series([True, False, False]))
 
-    error_msg = 'Cannot reassign time index'
+    error_msg = 'Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.'
     with pytest.raises(KeyError, match=error_msg):
         dt['signup_date'] = DataColumn(pd.Series(['test text', 'file', 'False']))
 

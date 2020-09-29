@@ -89,9 +89,9 @@ class DataTable(object):
 
         # Don't allow reassigning of index or time index with setitem
         if self.index == col_name:
-            raise KeyError('Cannot reassign index')
+            raise KeyError('Cannot reassign index. Change column name and then use dt.set_index to reassign index.')
         if self.time_index == col_name:
-            raise KeyError('Cannot reassign time index')
+            raise KeyError('Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.')
 
         if column.series.name is not None and column.series.name != col_name:
             warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
