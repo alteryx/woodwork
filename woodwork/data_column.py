@@ -162,6 +162,24 @@ class DataColumn(object):
     def _set_as_time_index(self):
         self._semantic_tags.add('time_index')
 
+    def to_pandas(self, copy=False):
+        """Retrieves the DataColumn's underlying series.
+
+        Note: Do not modify the series unless copy=True has been set to avoid unexpected behavior
+
+        Args:
+            copy (bool): If set to True, returns a copy of the underlying series.
+                If False, will return a reference to the DataColumn's series, which,
+                if modified, can cause unexpected behavior in the DataColumn.
+                Defaults to False.
+
+        Returns:
+            pandas.Series: The underlying series of the DataColumn
+        """
+        if copy:
+            return self.series.copy()
+        return self.series
+
     @property
     def logical_type(self):
         """The logical type for the column"""
