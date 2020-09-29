@@ -1179,6 +1179,48 @@ def test_datatable_getitem_list_warnings(sample_df):
         dt[columns]
 
 
+def test_setitem_new_column(sample_df):
+    dt = DataTable(sample_df)
+
+    new_col = DataColumn(pd.Series(['new', 'column', 'inserted'], dtype='string'),
+                         use_standard_tags=True)
+    dt['test_col'] = new_col
+    updated_df = dt.to_pandas()
+    assert 'test_col' in dt.columns
+    assert dt['test_col'].logical_type == Categorical
+    assert dt['test_col'].semantic_tags == {'category'}
+    assert 'test_col' in updated_df.columns
+    assert updated_df['test_col'].dtype == 'category'
+
+    new_col = DataColumn(pd.Series([1, 2, 3]),
+                         use_standard_tags=False)
+    dt['test_col2'] = new_col
+    updated_df = dt.to_pandas()
+    assert 'test_col2' in dt.columns
+    assert dt['test_col2'].logical_type == WholeNumber
+    assert dt['test_col2'].semantic_tags == set()
+    assert 'test_col2' in updated_df.columns
+    assert updated_df['test_col2'].dtype == 'Int64'
+
+    new_col = DataColumn(pd.Series([1, 2, 3]),
+                         logical_type=Double,
+                         use_standard_tags=False,
+                         semantic_tags={'test_tag'})
+    dt['test_col3'] = new_col
+    updated_df = dt.to_pandas()
+    assert 'test_col3' in dt.columns
+    assert dt['test_col3'].logical_type == Double
+    assert dt['test_col3'].semantic_tags == {'test_tag'}
+    assert 'test_col3' in updated_df.columns
+    assert updated_df['test_col3'].dtype == 'float'
+
+
+def test_setitem_overwrite_column(sample_df):
+    # dt = DataTable(sample_df)
+    # overwrite_col = DataColumn(sample_series)
+    pass
+
+
 def test_set_index(sample_df):
     # Test setting index with set_index()
     dt = DataTable(sample_df)
