@@ -12,9 +12,10 @@ Changelog
         * Add Github URL to theme conf (:pr:`163`)
         * Add DataTable and DataColumn to API Reference (:pr:`162`)
     * Testing Changes
+        * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
 
 **v0.0.2** September 28, 2020
     * Fixes
@@ -25,6 +26,7 @@ Changelog
         * Remove ``replace_none`` parameter to DataTables (:pr:`146`)
     * Documentation Changes
         * Add working code example to README and create Using Woodwork page (:pr:`103`)
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`

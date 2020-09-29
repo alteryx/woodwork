@@ -841,6 +841,98 @@ def test_invalid_dtype_casting():
         DataTable(pd.DataFrame(series), logical_types=ltypes)
 
 
+def test_int_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'ints_no_nans': pd.Series([1, 2]),
+        'ints_nan': pd.Series([1, np.nan]),
+        'ints_NA': pd.Series([1, pd.NA]),
+        'ints_NA_specified': pd.Series([1, pd.NA], dtype='Int64')})
+    df_from_dt = DataTable(df).to_pandas()
+
+    assert df_from_dt['ints_no_nans'].dtype == 'Int64'
+    assert df_from_dt['ints_nan'].dtype == 'float64'
+    assert df_from_dt['ints_NA'].dtype == 'category'
+    assert df_from_dt['ints_NA_specified'].dtype == 'Int64'
+
+
+def test_bool_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'bools_no_nans': pd.Series([True, False]),
+        'bool_nan': pd.Series([True, np.nan]),
+        'bool_NA': pd.Series([True, pd.NA]),
+        'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean")})
+    df_from_dt = DataTable(df).to_pandas()
+
+    assert df_from_dt['bools_no_nans'].dtype == 'boolean'
+    assert df_from_dt['bool_nan'].dtype == 'category'
+    assert df_from_dt['bool_NA'].dtype == 'category'
+    assert df_from_dt['bool_NA_specified'].dtype == 'boolean'
+
+
+def test_str_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'str_no_nans': pd.Series(['a', 'b']),
+        'str_nan': pd.Series(['a', np.nan]),
+        'str_NA': pd.Series(['a', pd.NA]),
+        'str_NA_specified': pd.Series([1, pd.NA], dtype="string"),
+        'long_str_NA_specified': pd.Series(['this is a very long sentence inferred as a string', pd.NA], dtype="string"),
+        'long_str_NA': pd.Series(['this is a very long sentence inferred as a string', pd.NA])
+    })
+    df_from_dt = DataTable(df).to_pandas()
+
+    assert df_from_dt['str_no_nans'].dtype == 'category'
+    assert df_from_dt['str_nan'].dtype == 'category'
+    assert df_from_dt['str_NA'].dtype == 'category'
+    assert df_from_dt['str_NA_specified'].dtype == 'category'
+    assert df_from_dt['long_str_NA_specified'].dtype == 'string'
+    assert df_from_dt['long_str_NA'].dtype == 'string'
+
+
+def test_float_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'floats_no_nans': pd.Series([1.1, 2.2]),
+        'floats_nan': pd.Series([1.1, np.nan]),
+        'floats_NA': pd.Series([1.1, pd.NA]),
+        'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float')})
+    df_from_dt = DataTable(df).to_pandas()
+
+    assert df_from_dt['floats_no_nans'].dtype == 'float64'
+    assert df_from_dt['floats_nan'].dtype == 'float64'
+    assert df_from_dt['floats_NA'].dtype == 'category'
+    assert df_from_dt['floats_nan_specified'].dtype == 'float64'
+
+
+def test_datetime_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'date_no_nans': pd.Series([pd.to_datetime('2020-09-01')] * 2),
+        'date_nan': pd.Series([pd.to_datetime('2020-09-01'), np.nan]),
+        'date_NA': pd.Series([pd.to_datetime('2020-09-01'), pd.NA]),
+        'date_NaT': pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]),
+        'date_NA_specified': pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]')})
+    df_from_dt = DataTable(df).to_pandas()
+
+    assert df_from_dt['date_no_nans'].dtype == 'datetime64[ns]'
+    assert df_from_dt['date_nan'].dtype == 'datetime64[ns]'
+    assert df_from_dt['date_NA'].dtype == 'datetime64[ns]'
+    assert df_from_dt['date_NaT'].dtype == 'datetime64[ns]'
+    assert df_from_dt['date_NA_specified'].dtype == 'datetime64[ns]'
+
+
+def test_timedelta_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'delta_no_nans': (pd.Series([pd.to_datetime('2020-09-01')] * 2) - pd.to_datetime('2020-07-01')),
+        'delta_nan': (pd.Series([pd.to_datetime('2020-09-01'), np.nan]) - pd.to_datetime('2020-07-01')),
+        'delta_NaT': (pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]) - pd.to_datetime('2020-07-01')),
+        'delta_NA_specified': (pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]') - pd.to_datetime('2020-07-01')),
+    })
+    df_from_dt = DataTable(df).to_pandas()
+
+    assert df_from_dt['delta_no_nans'].dtype == 'timedelta64[ns]'
+    assert df_from_dt['delta_nan'].dtype == 'timedelta64[ns]'
+    assert df_from_dt['delta_NaT'].dtype == 'timedelta64[ns]'
+    assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
+
+
 def test_invalid_select_ltypes(sample_df):
     dt = DataTable(sample_df)
     dt.set_logical_types({
