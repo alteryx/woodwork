@@ -83,7 +83,7 @@ class DataTable(object):
     @property
     def types(self):
         """Dataframe containing the physical dtypes, logical types and semantic
-            tags for the table"""
+        tags for the table"""
         typing_info = {}
         for dc in self.columns.values():
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
@@ -105,8 +105,8 @@ class DataTable(object):
                         semantic_tags,
                         use_standard_tags):
         """Create a dictionary with column names as keys and new DataColumn objects
-            as values, while assigning any values that are passed for logical types or
-            semantic tags to the new column."""
+        as values, while assigning any values that are passed for logical types or
+        semantic tags to the new column."""
         data_columns = {}
         for name in column_names:
             if logical_types and name in logical_types:
@@ -168,16 +168,16 @@ class DataTable(object):
 
     def _update_columns(self, new_columns):
         """Update the DataTable columns based on items contained in the
-            provided new_columns dictionary"""
+        provided new_columns dictionary"""
         for name, column in new_columns.items():
             self.columns[name] = column
 
     def set_index(self, index):
         """Set the index column. Adds the 'index' semantic tag to the column and
-            clears the tag from any previously set index column.
+        clears the tag from any previously set index column.
 
-            Args:
-                index (str): The name of the column to set as the index
+        Args:
+            index (str): The name of the column to set as the index
         """
         _check_index(self._dataframe, index)
         old_index = self.index
@@ -187,10 +187,10 @@ class DataTable(object):
 
     def set_time_index(self, time_index):
         """Set the time index column. Adds the 'time_index' semantic tag to the column and
-            clears the tag from any previously set index column
+        clears the tag from any previously set index column
 
-            Args:
-                time_index (str): The name of the column to set as the time index.
+        Args:
+            time_index (str): The name of the column to set as the time index.
         """
         _check_time_index(self._dataframe, time_index)
         old_time_index = self.time_index
@@ -200,14 +200,14 @@ class DataTable(object):
 
     def set_logical_types(self, logical_types, retain_index_tags=True):
         """Update the logical type for any columns names in the provided logical_types
-            dictionary. Replaces existing columns with new column objects.
+        dictionary. Replaces existing columns with new column objects.
 
-            Args:
-                logical_types (dict[str -> str/list/set]): A dictionary defining the new logical types for the
-                    specified columns.
-                retain_index_tags (bool, optional): If True, will retain any index or time_index
-                    semantic tags set on the column. If false, will clear all semantic tags. Defaults to
-                    True.
+        Args:
+            logical_types (dict[str -> str/list/set]): A dictionary defining the new logical types for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If false, will clear all semantic tags. Defaults to
+                True.
         """
         _check_logical_types(self._dataframe, logical_types)
         cols_to_update = {}
@@ -219,7 +219,7 @@ class DataTable(object):
 
     def _update_dtypes(self, cols_to_update):
         """Update the dtypes of the underlying dataframe to match the dtypes corresponding
-            to the LogicalType for the column."""
+        to the LogicalType for the column."""
         for name, column in cols_to_update.items():
             if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
@@ -239,9 +239,9 @@ class DataTable(object):
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
 
-            Args:
-                semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
-                    in the DataTable to the tags that should be added to the column
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataTable to the tags that should be added to the column
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         for name in semantic_tags.keys():
@@ -249,11 +249,11 @@ class DataTable(object):
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
-            dictionary. Replaces the column with a new column object.
+        dictionary. Replaces the column with a new column object.
 
-            Args:
-                semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
-                    in the DataTable to the tags that should be removed to the column
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataTable to the tags that should be removed to the column
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         cols_to_update = {}
@@ -263,14 +263,14 @@ class DataTable(object):
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Update the semantic tags for any column names in the provided semantic_tags
-            dictionary. Replaces the existing semantic tags with the new values.
+        dictionary. Replaces the existing semantic tags with the new values.
 
-            Args:
-                semantic_tags (dict): A dictionary defining the new semantic_tags for the
-                    specified columns.
-                retain_index_tags (bool, optional): If True, will retain any index or
-                    time_index semantic tags set on the column. If False, will replace all
-                    semantic tags. Defaults to True.
+        Args:
+            semantic_tags (dict): A dictionary defining the new semantic_tags for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or
+                time_index semantic tags set on the column. If False, will replace all
+                semantic tags. Defaults to True.
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         for name in semantic_tags.keys():
@@ -278,17 +278,17 @@ class DataTable(object):
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
-            The default values will be either an empty set or a set of the standard
-            tags based on the column logical type, controlled by the use_standard_tags
-            property on the table. Columns names can be provided as a single string,
-            a list of strings or a set of strings. If columns is not specified,
-            tags will be reset for all columns.
+        The default values will be either an empty set or a set of the standard
+        tags based on the column logical type, controlled by the use_standard_tags
+        property on the table. Columns names can be provided as a single string,
+        a list of strings or a set of strings. If columns is not specified,
+        tags will be reset for all columns.
 
-            Args:
-                columns (str/list/set): The columns for which the semantic tags should be reset.
-                retain_index_tags (bool, optional): If True, will retain any index or time_index
-                    semantic tags set on the column. If False, will clear all semantic tags. Defaults to
-                    False.
+        Args:
+            columns (str/list/set): The columns for which the semantic tags should be reset.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will clear all semantic tags. Defaults to
+                False.
         """
         columns = _convert_input_to_set(columns, "columns")
         cols_not_found = sorted(list(columns.difference(set(self._dataframe.columns))))
@@ -305,16 +305,16 @@ class DataTable(object):
     def to_pandas(self, copy=False):
         """Retrieves the DataTable's underlying dataframe.
 
-            Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
+        Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
 
-            Args:
-                copy (bool): If set to True, returns a copy of the underlying dataframe.
-                    If False, will return a reference to the DataTable's dataframe, which,
-                    if modified, can cause unexpected behavior in the DataTable.
-                    Defaults to False.
+        Args:
+            copy (bool): If set to True, returns a copy of the underlying dataframe.
+                If False, will return a reference to the DataTable's dataframe, which,
+                if modified, can cause unexpected behavior in the DataTable.
+                Defaults to False.
 
-            Returns:
-                pandas.DataFrame: The underlying dataframe of the DataTable
+        Returns:
+            pandas.DataFrame: The underlying dataframe of the DataTable
         """
         if copy:
             return self._dataframe.copy()
@@ -442,7 +442,8 @@ class DataTable(object):
         return new_dt
 
     def _new_dt_from_cols(self, cols_to_include):
-        """Creates a new DataTable from a list of column names, retaining all types, indices, and name of original DataTable"""
+        """Creates a new DataTable from a list of column names, retaining all types,
+        indices, and name of original DataTable"""
         assert all([col_name in self.columns for col_name in cols_to_include])
 
         new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
