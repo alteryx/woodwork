@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Implement setitem on DataTable to create/overwrite an existing DataColumn (:pr:`165`)
+        * Add ``to_pandas`` method to DataColumn to access the underlying series (:pr:`169`)
     * Fixes
     * Changes
     * Documentation Changes
