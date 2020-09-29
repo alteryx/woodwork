@@ -98,7 +98,9 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "github_url": "https://github.com/FeatureLabs/woodwork"
+}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
