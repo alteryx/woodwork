@@ -98,11 +98,13 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "github_url": "https://github.com/FeatureLabs/woodwork"
+}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "images/woodwork_light.png"
+html_logo = "images/woodwork.svg"
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -255,15 +257,10 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
-
-
-def build_finished(app, Exception):
-    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
-
+    
 
 def setup(app):
     app.add_js_file('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_css_file("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('build-finished', build_finished)
