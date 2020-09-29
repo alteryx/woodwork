@@ -11,6 +11,7 @@ Changelog
         * Update README and docs with new Woodwork logo (:pr:`161`)
         * Add Github URL to theme conf (:pr:`163`)
         * Add DataTable and DataColumn to API Reference (:pr:`162`)
+        * Update README with better code snippets (:pr:`159`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
