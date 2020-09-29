@@ -59,7 +59,7 @@ def col_is_datetime(col, datetime_format=None):
 
 def list_logical_types():
     return pd.DataFrame(
-        [{'name': str(ltype),
+        [{'name': ltype.__name__,
           'type_string': ltype.type_string,
           'description': ltype.__doc__,
           'pandas_dtype': ltype.pandas_dtype,

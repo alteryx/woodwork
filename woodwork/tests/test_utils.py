@@ -51,3 +51,7 @@ def test_list_logical_types():
     assert len(all_ltypes) == len(df)
     for name in df['name']:
         assert str_to_logical_type(name) in all_ltypes
+
+    cols = {'name', 'type_string', 'description', 'pandas_dtype', 'standard_tags'}
+
+    assert set(df.columns) == cols
