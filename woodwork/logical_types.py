@@ -17,7 +17,7 @@ class LogicalTypeMetaClass(type):
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
     type_string = ClassNameDescriptor()
-    dtype = 'string'
+    pandas_dtype = 'string'
     standard_tags = {}
 
     def __eq__(self, other, deep=False):
@@ -25,13 +25,28 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
 
 class Boolean(LogicalType):
-    """Represents a Logical type that contain values indicating true/false values"""
+    """Represents Logical Types that contain binary values indicating true/false.
+
+    Examples:
+        .. code-block:: python
+
+            [True, False, True]
+            [0, 1, 1]
+    """
     pandas_dtype = 'boolean'
 
 
 class Categorical(LogicalType):
     """Represents Logical Types that contain unordered discrete values that fall
-    into one of a set of possible values"""
+    into one of a set of possible values
+    
+    Examples:
+        .. code-block:: python
+
+            ["red", "green", "blue"]
+            ["produce", "dairy", "bakery"]
+
+    """
     pandas_dtype = 'category'
     standard_tags = {'category'}
 
