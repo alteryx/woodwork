@@ -87,6 +87,11 @@ class DataTable(object):
         if not isinstance(column, DataColumn):
             raise ValueError('New column must be of DataColumn type')
 
+        if column.series.name is not None and column.series.name != col_name:
+            warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
+                          f' {column.series.name}. Changing DataColumn name to: {col_name}')
+            column.series.name = col_name
+
         self._dataframe[col_name] = column.series
         self._update_columns({col_name: column})
         self._update_dtypes(self.columns)
