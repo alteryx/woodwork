@@ -59,22 +59,22 @@ Whether you are a novice or experienced software developer, all contributions an
   * Documentation Changes
   * Testing Changes
 
-   Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
+  Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
+
+  If your work includes a [breaking change](https://en.wiktionary.org/wiki/breaking_change), please add a description of what has been affected in the "Breaking Changes" section below the latest release notes. If no "Breaking Changes" section yet exists, please create one as follows. See past release notes for examples of this.
+
+  ```
+  .. warning::
+
+      **Breaking Changes**
+
+      * Description of your breaking change
+  ```
 
 * If your changes alter the following please fix them as well:
   * Docstrings - if your changes render docstrings invalid
   * API changes - if you change the API update `docs/source/api_reference.rst`
   * Documentation - run the documentation notebooks locally to ensure everything is logical and works as intended
-
-If your work includes a [breaking change](https://en.wiktionary.org/wiki/breaking_change), please add a description of what has been affected in the "Breaking Changes" section below the latest release notes. If no "Breaking Changes" section yet exists, please create one as follows. See past release notes for examples of this.
-
-```
-.. warning::
-
-    **Breaking Changes**
-
-    * Description of your breaking change
-```
 
 * We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Woodwork, passes continuous integration, we will merge it, and you will have successfully contributed to Woodwork!
 
