@@ -503,7 +503,7 @@ class DataTable(object):
                 get the most recent dates to calculate frequency for
                 DateTime columns. Defaults to 3.
         Returns:
-            pd.DataFrame: A Dataframe containing statistics for the data.=
+            pd.DataFrame: A Dataframe containing statistics for the data.
         """
         agg_stats_to_calculate = {
             'category': ["count", "nunique"],
