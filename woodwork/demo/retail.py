@@ -17,4 +17,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
                          parse_dates=["order_date"])
+    # Add unique column for index
+    df.insert(0, 'order_product_id', range(len(df)))
+
     return df
