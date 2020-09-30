@@ -500,8 +500,8 @@ class DataTable(object):
                 the most frequent values for Categorical columns.
                 Defaults to 3
             recent_x_datetime (int): How many recent values to get when
-                get the most recent dates to calculate frequency for
-                DateTime columns. Defaults to 3.
+                getting the most recent dates formDateTime columns.
+                Defaults to 3.
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data.
         """
