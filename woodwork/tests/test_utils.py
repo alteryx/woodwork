@@ -1,8 +1,11 @@
+import numpy as np
+import pandas as pd
 import pytest
 
 from woodwork.logical_types import LogicalType, str_to_logical_type
 from woodwork.utils import (
     _convert_input_to_set,
+    _get_mode,
     camel_to_snake,
     list_logical_types
 )
@@ -53,3 +56,24 @@ def test_list_logical_types():
     assert len(all_ltypes) == len(df)
     for name in df['name']:
         assert str_to_logical_type(name) in all_ltypes
+
+
+def test_get_mode():
+    series_list = [
+        pd.Series([1, 2, 3, 4, 2, 2, 3]),
+        pd.Series(['a', 'b', 'b', 'c', 'b']),
+        pd.Series([3, 2, 3, 2]),
+        pd.Series([np.nan, np.nan, np.nan]),
+        pd.Series([pd.NA, pd.NA, pd.NA]),
+        pd.Series([1, 2, np.nan, 2, np.nan, 3, 2]),
+        pd.Series([1, 2, pd.NA, 2, pd.NA, 3, 2])
+    ]
+
+    answer_list = [2, 'b', 2, None, None, 2, 2]
+
+    for series, answer in zip(series_list, answer_list):
+        mode = _get_mode(series)
+        if answer is None:
+            assert mode is None
+        else:
+            assert mode == answer

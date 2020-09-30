@@ -21,6 +21,7 @@ DataTable
     DataTable.set_semantic_tags
     DataTable.set_time_index
     DataTable.to_pandas
+    DataTable.describe
 
 
 DataColumn

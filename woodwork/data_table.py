@@ -4,8 +4,13 @@ import pandas as pd
 
 from woodwork.config import config
 from woodwork.data_column import DataColumn
-from woodwork.logical_types import Datetime, LogicalType, str_to_logical_type
-from woodwork.utils import _convert_input_to_set, col_is_datetime
+from woodwork.logical_types import (
+    Boolean,
+    Datetime,
+    LogicalType,
+    str_to_logical_type
+)
+from woodwork.utils import _convert_input_to_set, _get_mode, col_is_datetime
 
 
 class DataTable(object):
@@ -486,6 +491,73 @@ class DataTable(object):
                          semantic_tags=new_semantic_tags,
                          logical_types=new_logical_types,
                          copy_dataframe=True)
+
+    def describe(self):
+        """Calculates statistics for data contained in DataTable.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing statistics for the data.
+        """
+        agg_stats_to_calculate = {
+            'category': ["count", "nunique"],
+            'numeric': ["count", "max", "min", "nunique", "mean", "std"],
+            Datetime: ["count", "max", "min", "nunique", "mean"],
+        }
+        results = {}
+
+        for column_name, column in self.columns.items():
+            values = {}
+            logical_type = column.logical_type
+            semantic_tags = column.semantic_tags
+            series = column._series
+
+            # Calculate Aggregation Stats
+            if 'category' in semantic_tags:
+                agg_stats = agg_stats_to_calculate['category']
+            elif 'numeric' in semantic_tags:
+                agg_stats = agg_stats_to_calculate['numeric']
+            elif issubclass(logical_type, Datetime):
+                agg_stats = agg_stats_to_calculate[Datetime]
+            else:
+                agg_stats = ["count"]
+            values = series.agg(agg_stats).to_dict()
+
+            # Calculate other specific stats based on logical type or semantic tags
+            if issubclass(logical_type, Boolean):
+                values["num_false"] = series.value_counts().get(False, 0)
+                values["num_true"] = series.value_counts().get(True, 0)
+            elif 'numeric' in semantic_tags:
+                quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
+                values["first_quartile"] = quant_values[0]
+                values["second_quartile"] = quant_values[2]
+                values["third_quartile"] = quant_values[2]
+
+            values["nan_count"] = series.isna().sum()
+            values["mode"] = _get_mode(series)
+            values["physical_type"] = column.dtype
+            values["logical_type"] = logical_type
+            values["semantic_tags"] = semantic_tags
+            results[column_name] = values
+
+        index_order = [
+            'physical_type',
+            'logical_type',
+            'semantic_tags',
+            'count',
+            'nunique',
+            'nan_count',
+            'mean',
+            'mode',
+            'std',
+            'min',
+            'first_quartile',
+            'second_quartile',
+            'third_quartile',
+            'max',
+            'num_true',
+            'num_false',
+        ]
+        return pd.DataFrame(results).reindex(index_order)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags):

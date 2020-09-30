@@ -32,6 +32,7 @@ from woodwork.logical_types import (
     Ordinal,
     PhoneNumber,
     SubRegionCode,
+    Timedelta,
     WholeNumber,
     ZIPCode
 )
@@ -1649,3 +1650,172 @@ def test_to_pandas_copy(sample_df):
     assert 'test_col' in df_copy.columns
     assert 'test_col' not in df_no_copy.columns
     assert 'test_col' not in dt.columns
+
+
+def test_data_table_describe_method():
+    categorical_ltypes = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
+    boolean_ltypes = [Boolean]
+    datetime_ltypes = [Datetime]
+    timedelta_ltypes = [Timedelta]
+    numeric_ltypes = [Double, Integer, WholeNumber]
+    natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
+                               LatLong, PhoneNumber, URL]
+
+    index_data = [0, 1, 2, 3, 4, 5, 6, 7]
+    boolean_data = [True, False, True, True, False, True, np.nan, True]
+    category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
+    datetime_data = pd.to_datetime(['2020-01-01',
+                                    '2020-02-01',
+                                    '2020-01-01 08:00',
+                                    '2020-02-02 16:00',
+                                    '2020-02-02 18:00',
+                                    pd.NaT,
+                                    '2020-02-01',
+                                    '2020-01-02'])
+    numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
+    natural_language_data = [
+        'This is a natural language sentence',
+        'Duplicate sentence.',
+        'This line has numbers in it 000123.',
+        'How about some symbols?!',
+        'This entry contains two sentences. Second sentence.',
+        'Duplicate sentence.',
+        np.nan,
+        'I am the last line',
+    ]
+    timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
+
+    expected_index = ['physical_type',
+                      'logical_type',
+                      'semantic_tags',
+                      'count',
+                      'nunique',
+                      'nan_count',
+                      'mean',
+                      'mode',
+                      'std',
+                      'min',
+                      'first_quartile',
+                      'second_quartile',
+                      'third_quartile',
+                      'max',
+                      'num_true',
+                      'num_false']
+
+    # Test categorical columns
+    for ltype in categorical_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'category', 'custom_tag'},
+            'count': 7,
+            'nunique': 3,
+            'nan_count': 1,
+            'mode': 'red'}, name='col')
+        df = pd.DataFrame({'col': category_data})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test boolean columns
+    for ltype in boolean_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nan_count': 1,
+            'mode': True,
+            'num_true': 5,
+            'num_false': 2}, name='col')
+        expected_vals.name = 'col'
+        df = pd.DataFrame({'index': index_data, 'col': boolean_data})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'index', 'col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test datetime columns
+    for ltype in datetime_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nunique': 6,
+            'nan_count': 1,
+            'mean': datetime_data.mean(),
+            'mode': pd.to_datetime('2020-02-01'),
+            'min': datetime_data.min(),
+            'max': datetime_data.max()}, name='col')
+        df = pd.DataFrame({'col': datetime_data})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test timedelta columns
+    for ltype in timedelta_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nan_count': 1,
+            'mode': pd.Timedelta('31days')}, name='col')
+        df = pd.DataFrame({'col': timedelta_data})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test numeric columns
+    for ltype in numeric_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'numeric', 'custom_tag'},
+            'count': 7,
+            'nunique': 6,
+            'nan_count': 1,
+            'mean': numeric_data.mean(),
+            'mode': 10,
+            'std': numeric_data.std(),
+            'min': 1,
+            'first_quartile': 10,
+            'second_quartile': 26,
+            'third_quartile': 26,
+            'max': 56}, name='col')
+        df = pd.DataFrame({'col': numeric_data})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test natural language columns
+    for ltype in natural_language_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nan_count': 1,
+            'mode': 'Duplicate sentence.'}, name='col')
+        df = pd.DataFrame({'col': natural_language_data})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
