@@ -71,6 +71,6 @@ def list_logical_types():
 def _get_mode(series):
     """Get the mode value for a series"""
     mode_values = series.mode()
-    if mode_values is not None and len(mode_values) > 0:
+    if len(mode_values) > 0:
         return mode_values[0]
     return None
