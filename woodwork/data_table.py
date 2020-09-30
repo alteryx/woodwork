@@ -529,7 +529,7 @@ class DataTable(object):
             elif 'numeric' in semantic_tags:
                 quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
                 values["first_quartile"] = quant_values[0]
-                values["second_quartile"] = quant_values[2]
+                values["second_quartile"] = quant_values[1]
                 values["third_quartile"] = quant_values[2]
 
             values["nan_count"] = series.isna().sum()

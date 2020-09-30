@@ -9,6 +9,7 @@ Changelog
         * Add list_logical_types function and CLI to get dataframe of woodwork LogicalTypes (:pr:`172`)
         * Add ``describe`` method to DataTable to generate statistics for the underlying data (:pr:`181`)
     * Fixes
+        * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
     * Changes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
     * Documentation Changes
