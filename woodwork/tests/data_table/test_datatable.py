@@ -1792,7 +1792,7 @@ def test_data_table_describe_method():
             'std': numeric_data.std(),
             'min': 1,
             'first_quartile': 10,
-            'second_quartile': 26,
+            'second_quartile': 17,
             'third_quartile': 26,
             'max': 56}, name='col')
         df = pd.DataFrame({'col': numeric_data})
