@@ -62,7 +62,7 @@ def test_get_mode():
     series_list = [
         pd.Series([1, 2, 3, 4, 2, 2, 3]),
         pd.Series(['a', 'b', 'b', 'c', 'b']),
-        pd.Series([1, 3, 2, 4, 3, 5, 2]),
+        pd.Series([3, 2, 3, 2]),
         pd.Series([np.nan, np.nan, np.nan]),
         pd.Series([pd.NA, pd.NA, pd.NA]),
         pd.Series([1, 2, np.nan, 2, np.nan, 3, 2]),
