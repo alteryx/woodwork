@@ -1685,7 +1685,9 @@ def test_data_table_describe_method():
     ]
     timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
 
-    expected_index = ['logical_type',
+    expected_index = ['physical_type',
+                      'logical_type',
+                      'semantic_tags',
                       'count',
                       'nunique',
                       'nan_count',
@@ -1703,13 +1705,15 @@ def test_data_table_describe_method():
     # Test categorical columns
     for ltype in categorical_ltypes:
         expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
+            'semantic_tags': {'category', 'custom_tag'},
             'count': 7,
             'nunique': 3,
             'nan_count': 1,
             'mode': 'red'}, name='col')
         df = pd.DataFrame({'col': category_data})
-        dt = DataTable(df, logical_types={'col': ltype})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}
@@ -1719,7 +1723,9 @@ def test_data_table_describe_method():
     # Test boolean columns
     for ltype in boolean_ltypes:
         expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
             'mode': True,
@@ -1727,7 +1733,7 @@ def test_data_table_describe_method():
             'num_false': 2}, name='col')
         expected_vals.name = 'col'
         df = pd.DataFrame({'index': index_data, 'col': boolean_data})
-        dt = DataTable(df, logical_types={'col': ltype})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'index', 'col'}
@@ -1737,7 +1743,9 @@ def test_data_table_describe_method():
     # Test datetime columns
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
             'count': 7,
             'nunique': 6,
             'nan_count': 1,
@@ -1746,7 +1754,7 @@ def test_data_table_describe_method():
             'min': datetime_data.min(),
             'max': datetime_data.max()}, name='col')
         df = pd.DataFrame({'col': datetime_data})
-        dt = DataTable(df, logical_types={'col': ltype})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}
@@ -1756,12 +1764,14 @@ def test_data_table_describe_method():
     # Test timedelta columns
     for ltype in timedelta_ltypes:
         expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
             'mode': pd.Timedelta('31days')}, name='col')
         df = pd.DataFrame({'col': timedelta_data})
-        dt = DataTable(df, logical_types={'col': ltype})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}
@@ -1771,7 +1781,9 @@ def test_data_table_describe_method():
     # Test numeric columns
     for ltype in numeric_ltypes:
         expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
+            'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7,
             'nunique': 6,
             'nan_count': 1,
@@ -1784,7 +1796,7 @@ def test_data_table_describe_method():
             'third_quartile': 26,
             'max': 56}, name='col')
         df = pd.DataFrame({'col': numeric_data})
-        dt = DataTable(df, logical_types={'col': ltype})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}
@@ -1794,12 +1806,14 @@ def test_data_table_describe_method():
     # Test natural language columns
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
             'mode': 'Duplicate sentence.'}, name='col')
         df = pd.DataFrame({'col': natural_language_data})
-        dt = DataTable(df, logical_types={'col': ltype})
+        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}

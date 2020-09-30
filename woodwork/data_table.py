@@ -537,11 +537,15 @@ class DataTable(object):
             values["mode"] = None
             if mode_values is not None and len(mode_values) > 0:
                 values["mode"] = mode_values[0]
+            values["physical_type"] = column.dtype
             values["logical_type"] = logical_type
+            values["semantic_tags"] = semantic_tags
             results[column_name] = values
 
         index_order = [
+            'physical_type',
             'logical_type',
+            'semantic_tags',
             'count',
             'nunique',
             'nan_count',
