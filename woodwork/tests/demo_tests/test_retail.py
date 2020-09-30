@@ -19,3 +19,6 @@ def test_load_retail_diff():
     nrows_second = 11
     df = load_retail(nrows=nrows_second)
     assert df.shape[0] == nrows_second
+
+    assert 'order_product_id' in df.columns
+    assert df['order_product_id'].is_unique
