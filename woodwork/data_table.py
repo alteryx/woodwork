@@ -4,7 +4,12 @@ import pandas as pd
 
 from woodwork.config import config
 from woodwork.data_column import DataColumn
-from woodwork.logical_types import Datetime, LogicalType, str_to_logical_type
+from woodwork.logical_types import (
+    Boolean,
+    Datetime,
+    LogicalType,
+    str_to_logical_type
+)
 from woodwork.utils import _convert_input_to_set, col_is_datetime
 
 
@@ -486,6 +491,85 @@ class DataTable(object):
                          semantic_tags=new_semantic_tags,
                          logical_types=new_logical_types,
                          copy_dataframe=True)
+
+    def describe(self, top_x_categorical=3, recent_x_datetime=3):
+        """Calculates statistics for data contained in DataTable.
+
+        Args:
+            top_x_categorical (int): How many values to get when getting
+                the most frequent values for Categorical columns.
+                Defaults to 3
+            recent_x_datetime (int): How many recent values to get when
+                get the most recent dates to calculate frequency for
+                DateTime columns. Defaults to 3.
+        Returns:
+            pd.DataFrame: A Dataframe containing statistics for the data.=
+        """
+        agg_stats_to_calculate = {
+            'category': ["count", "nunique"],
+            'numeric': ["count", "max", "min", "nunique", "mean", "std"],
+            Datetime: ["count", "max", "min", "nunique", "mean"],
+        }
+        results = {}
+
+        for column_name, column in self.columns.items():
+            values = {}
+            logical_type = column.logical_type
+            semantic_tags = column.semantic_tags
+            series = column._series
+
+            # Calculate Aggregation Stats
+            if 'category' in semantic_tags:
+                agg_stats = agg_stats_to_calculate['category']
+            elif 'numeric' in semantic_tags:
+                agg_stats = agg_stats_to_calculate['numeric']
+            elif issubclass(logical_type, Datetime):
+                agg_stats = agg_stats_to_calculate[Datetime]
+            else:
+                agg_stats = ["count"]
+            values = series.agg(agg_stats).to_dict()
+
+            # Calculate other specific stats based on logical type or semantic tags
+            if issubclass(logical_type, Boolean):
+                values["num_false"] = series.value_counts().get(False, 0)
+                values["num_true"] = series.value_counts().get(True, 0)
+            elif 'numeric' in semantic_tags:
+                quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
+                values["first_quartile"] = quant_values[0]
+                values["second_quartile"] = quant_values[2]
+                values["third_quartile"] = quant_values[2]
+            elif 'category' in semantic_tags:
+                values["top_values"] = series.value_counts().head(top_x_categorical).index.tolist()
+            elif issubclass(logical_type, Datetime):
+                values["recent_values"] = series.sort_values().dropna().tail(recent_x_datetime).tolist()
+
+            values["nan_count"] = series.isna().sum()
+            mode_values = series.mode()
+            values["mode"] = None
+            if mode_values is not None and len(mode_values) > 0:
+                values["mode"] = mode_values[0]
+            values["logical_type"] = logical_type
+            results[column_name] = values
+
+        index_order = [
+            'logical_type',
+            'count',
+            'nunique',
+            'top_values',
+            'nan_count',
+            'recent_values',
+            'mean',
+            'mode',
+            'std',
+            'min',
+            'first_quartile',
+            'second_quartile',
+            'third_quartile',
+            'max',
+            'num_true',
+            'num_false',
+        ]
+        return pd.DataFrame(results).reindex(index_order)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags):
