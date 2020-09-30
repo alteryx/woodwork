@@ -10,7 +10,7 @@ from woodwork.logical_types import (
     LogicalType,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set, col_is_datetime
+from woodwork.utils import _convert_input_to_set, _get_mode, col_is_datetime
 
 
 class DataTable(object):
@@ -533,10 +533,7 @@ class DataTable(object):
                 values["third_quartile"] = quant_values[2]
 
             values["nan_count"] = series.isna().sum()
-            mode_values = series.mode()
-            values["mode"] = None
-            if mode_values is not None and len(mode_values) > 0:
-                values["mode"] = mode_values[0]
+            values["mode"] = _get_mode(series)
             values["physical_type"] = column.dtype
             values["logical_type"] = logical_type
             values["semantic_tags"] = semantic_tags
