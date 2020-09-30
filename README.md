@@ -20,10 +20,8 @@ Below is an example of using Woodwork. In this example, a sample dataset of orde
 
 ```python
 import woodwork as ww
-from woodwork.logical_types import Datetime, Categorical, NaturalLanguage
 
 data = ww.demo.load_retail(nrows=100)
-
 dt = ww.DataTable(data, name='retail')
 dt.set_logical_types({
     'quantity': 'Double',

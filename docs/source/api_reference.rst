@@ -65,3 +65,17 @@ Logical Types
     URL
     WholeNumber
     ZIPCode
+
+.. currentmodule:: woodwork.utils
+
+Utils
+=====
+
+General Utils
+~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    list_logical_types
