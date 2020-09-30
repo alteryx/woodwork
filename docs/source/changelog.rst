@@ -11,13 +11,12 @@ Changelog
     * Changes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
     * Documentation Changes
-        * Remove unused code from sphinx conf.py (:pr:`160`)
-        * Update README and docs with new Woodwork logo (:pr:`161`)
-        * Add Github URL to theme conf (:pr:`163`)
+        * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
+        * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
         * Add DataTable and DataColumn to API Reference (:pr:`162`)
-        * Update README with better code snippets (:pr:`159`)
         * Add docstrings to LogicalType classes (:pr:`168`)
         * Add Woodwork image to index, clear outputs of Juypter notebook in docs (:pr:`173`)
+        * Update contributing.md, release.md with all instructions (:pr:`176`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
