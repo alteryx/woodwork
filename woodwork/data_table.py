@@ -492,16 +492,9 @@ class DataTable(object):
                          logical_types=new_logical_types,
                          copy_dataframe=True)
 
-    def describe(self, top_x_categorical=3, recent_x_datetime=3):
+    def describe(self):
         """Calculates statistics for data contained in DataTable.
 
-        Args:
-            top_x_categorical (int): How many values to get when getting
-                the most frequent values for Categorical columns.
-                Defaults to 3
-            recent_x_datetime (int): How many recent values to get when
-                getting the most recent dates formDateTime columns.
-                Defaults to 3.
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data.
         """
@@ -538,10 +531,6 @@ class DataTable(object):
                 values["first_quartile"] = quant_values[0]
                 values["second_quartile"] = quant_values[2]
                 values["third_quartile"] = quant_values[2]
-            elif 'category' in semantic_tags:
-                values["top_values"] = series.value_counts().head(top_x_categorical).index.tolist()
-            elif issubclass(logical_type, Datetime):
-                values["recent_values"] = series.sort_values().dropna().tail(recent_x_datetime).tolist()
 
             values["nan_count"] = series.isna().sum()
             mode_values = series.mode()
@@ -555,9 +544,7 @@ class DataTable(object):
             'logical_type',
             'count',
             'nunique',
-            'top_values',
             'nan_count',
-            'recent_values',
             'mean',
             'mode',
             'std',

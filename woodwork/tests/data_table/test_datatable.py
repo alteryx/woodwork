@@ -1688,9 +1688,7 @@ def test_data_table_describe_method():
     expected_index = ['logical_type',
                       'count',
                       'nunique',
-                      'top_values',
                       'nan_count',
-                      'recent_values',
                       'mean',
                       'mode',
                       'std',
@@ -1708,12 +1706,11 @@ def test_data_table_describe_method():
             'logical_type': ltype,
             'count': 7,
             'nunique': 3,
-            'top_values': ['red', 'blue'],
             'nan_count': 1,
             'mode': 'red'}, name='col')
         df = pd.DataFrame({'col': category_data})
         dt = DataTable(df, logical_types={'col': ltype})
-        stats_df = dt.describe(top_x_categorical=2)
+        stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
@@ -1744,14 +1741,13 @@ def test_data_table_describe_method():
             'count': 7,
             'nunique': 6,
             'nan_count': 1,
-            'recent_values': datetime_data.sort_values()[-2:],
             'mean': datetime_data.mean(),
             'mode': pd.to_datetime('2020-02-01'),
             'min': datetime_data.min(),
             'max': datetime_data.max()}, name='col')
         df = pd.DataFrame({'col': datetime_data})
         dt = DataTable(df, logical_types={'col': ltype})
-        stats_df = dt.describe(recent_x_datetime=2)
+        stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
