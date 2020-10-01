@@ -37,7 +37,6 @@ Release Notes
         * Remove ``replace_none`` parameter to DataTables (:pr:`146`)
     * Documentation Changes
         * Add working code example to README and create Using Woodwork page (:pr:`103`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
