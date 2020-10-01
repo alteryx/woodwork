@@ -22,7 +22,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_dataframe=False):
             return all possible rows. Defaults to None.
         return_dataframe (bool): If True, will return a pandas DataFrame. If False,
             will return a Woodwork DataTable. Defaults to False.
-    
+
     Returns:
         pd.DataFrame or ww.DataTable: A DataFrame or DataTable containing the demo data.
     """
