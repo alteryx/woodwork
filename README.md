@@ -21,7 +21,7 @@ Below is an example of using Woodwork. In this example, a sample dataset of orde
 ```python
 import woodwork as ww
 
-data = ww.demo.load_retail(nrows=100)
+data = ww.demo.load_retail(nrows=100, return_dataframe=True)
 dt = ww.DataTable(data, name='retail')
 dt.set_logical_types({
     'quantity': 'Double',
