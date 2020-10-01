@@ -7,7 +7,7 @@ Before starting the release process, verify the following:
 * All work required for this release has been completed and the team is ready to release.
 * [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/FeatureLabs/woodwork?branch=main).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-datatables/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
-* The [public documentation for the "latest" branch](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/) looks correct, and the [changelog](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/changelog.html) includes the last change which was made on `main`.
+* The [public documentation for the "latest" branch](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/) looks correct, and the [release notes](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 * Get agreement on the version number to use for the release.
 
 #### Version Numbering
@@ -26,18 +26,18 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
 1. Bump `__version__` in `setup.py`, `woodwork/version.py`, and `woodwork/tests/test_version.py`.
 
-#### Update changelog
+#### Update Release Notes
 
-1. Replace "Future Release" in `docs/source/changelog.rst` with the current date
+1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date
 
     ```
     **v0.13.3 September 28, 2020**
     ```
 
-2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes)
+2. Remove any unused Release Notes sections for this release (e.g. Fixes, Testing Changes)
 3. Add yourself to the list of contributors to this release and **put the contributors in alphabetical order**
 4. The release PR does not need to be mentioned in the list of changes
-5. Add a commented out "Future Release" section with all of the changelog sections above the current section
+5. Add a commented out "Future Release" section with all of the Release Notes sections above the current section
 
     ```
     .. **Future Release**
@@ -68,6 +68,6 @@ After the release pull request has been merged into the `main` branch, it is tim
 * The target should be the `main` branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
 * Release title is the same as the tag
-* Release description should be the full changelog updates for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`gsheni\`) to github syntax (@gsheni)
+* Release description should be the full Release Notes updates for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`gsheni\`) to github syntax (@gsheni)
 * This is not a pre-release
 * Publishing the release will automatically upload the package to PyPI

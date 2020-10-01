@@ -1,7 +1,7 @@
-.. _changelog:
+.. _release_notes:
 
-Changelog
----------
+Release Notes
+-------------
 **Future Release**
     * Enhancements
         * Implement setitem on DataTable to create/overwrite an existing DataColumn (:pr:`165`)
@@ -21,6 +21,7 @@ Changelog
         * Add Woodwork image to index, clear outputs of Juypter notebook in docs (:pr:`173`)
         * Update contributing.md, release.md with all instructions (:pr:`176`)
         * Add section for setting index and time index to start notebook (:pr:`179`)
+        * Rename changelog to Release Notes (:pr:`193`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
@@ -36,7 +37,6 @@ Changelog
         * Remove ``replace_none`` parameter to DataTables (:pr:`146`)
     * Documentation Changes
         * Add working code example to README and create Using Woodwork page (:pr:`103`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
