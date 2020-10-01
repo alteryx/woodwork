@@ -200,7 +200,9 @@ class DataTable(object):
 
     def set_index(self, index):
         """Set the index column. Adds the 'index' semantic tag to the column and
-        clears the tag from any previously set index column.
+        clears the tag from any previously set index column. Setting a column as the
+        index column will also cause any previously set standard tags for the column
+        to be removed.
 
         Args:
             index (str): The name of the column to set as the index
@@ -506,6 +508,8 @@ class DataTable(object):
         results = {}
 
         for column_name, column in self.columns.items():
+            if 'index' in column.semantic_tags:
+                continue
             values = {}
             logical_type = column.logical_type
             semantic_tags = column.semantic_tags
