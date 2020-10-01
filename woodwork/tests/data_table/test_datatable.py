@@ -1838,6 +1838,30 @@ def test_datatable_describe_with_improper_tags():
     stats_df = dt.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert stats_df['bool_col']['num_true'] == 3
+    assert stats_df['bool_col']['logical_type'] == Boolean
+    assert stats_df['bool_col']['semantic_tags'] == {'category'}
     # Make sure numeric stats were not computed with improper 'numeric' tag
+    assert stats_df['text_col']['semantic_tags'] == {'numeric'}
     assert stats_df['text_col'][['mean', 'std', 'min', 'max']].isnull().all()
+
+
+def test_datatable_describe_with_no_semantic_tags():
+    df = pd.DataFrame({'category_col': ['a', 'b', 'c', 'a', 'a'],
+                       'num_col': [1, 3, 2, 4, 0]})
+
+    logical_types = {
+        'category_col': Categorical,
+        'num_col': WholeNumber,
+    }
+
+    dt = DataTable(df, logical_types=logical_types, use_standard_tags=False)
+    stats_df = dt.describe()
+    assert dt['category_col'].semantic_tags == set()
+    assert dt['num_col'].semantic_tags == set()
+
+    # Make sure category stats were computed
+    assert stats_df['category_col']['semantic_tags'] == set()
+    assert stats_df['category_col']['nunique'] == 3
+    # Make sure numeric stats were computed
+    assert stats_df['num_col']['semantic_tags'] == set()
+    assert stats_df['num_col']['mean'] == 2
