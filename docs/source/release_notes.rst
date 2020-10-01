@@ -21,6 +21,7 @@ Release Notes
         * Add Woodwork image to index, clear outputs of Juypter notebook in docs (:pr:`173`)
         * Update contributing.md, release.md with all instructions (:pr:`176`)
         * Add section for setting index and time index to start notebook (:pr:`179`)
+        * Rename changelog to Release Notes (:pr:`193`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
