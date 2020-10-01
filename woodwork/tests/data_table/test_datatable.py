@@ -1821,7 +1821,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
 
-def test_datatable_describe_with_incorrect_tags():
+def test_datatable_describe_with_improper_tags():
     df = pd.DataFrame({'bool_col': [True, False, True, np.nan, True],
                        'text_col': ['one', 'two', 'three', 'four', 'five']})
 
@@ -1839,5 +1839,5 @@ def test_datatable_describe_with_incorrect_tags():
 
     # Make sure boolean stats were computed with improper 'category' tag
     assert stats_df['bool_col']['num_true'] == 3
-    # Make sure numeric stats were computed not with improper 'numeric' tag
+    # Make sure numeric stats were not computed with improper 'numeric' tag
     assert stats_df['text_col'][['mean', 'std', 'min', 'max']].isnull().all()
