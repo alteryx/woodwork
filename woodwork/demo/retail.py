@@ -22,6 +22,9 @@ def load_retail(id='demo_retail_data', nrows=None, return_dataframe=False):
             return all possible rows. Defaults to None.
         return_dataframe (bool): If True, will return a pandas DataFrame. If False,
             will return a Woodwork DataTable. Defaults to False.
+    
+    Returns:
+        pd.DataFrame or ww.DataTable: A DataFrame or DataTable containing the demo data.
     """
     csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?version=" + ww.__version__
     csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?version=" + ww.__version__
