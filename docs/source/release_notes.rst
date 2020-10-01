@@ -19,7 +19,7 @@ Release Notes
         * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
         * Add DataTable and DataColumn to API Reference (:pr:`162`)
         * Add docstrings to LogicalType classes (:pr:`168`)
-        * Add Woodwork image to index, clear outputs of Juypter notebook in docs (:pr:`173`)
+        * Add Woodwork image to index, clear outputs of Jupyter notebook in docs (:pr:`173`)
         * Update contributing.md, release.md with all instructions (:pr:`176`)
         * Add section for setting index and time index to start notebook (:pr:`179`)
         * Rename changelog to Release Notes (:pr:`193`)
