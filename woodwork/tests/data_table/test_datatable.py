@@ -1819,3 +1819,25 @@ def test_data_table_describe_method():
         assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+
+def test_datatable_describe_with_incorrect_tags():
+    df = pd.DataFrame({'bool_col': [True, False, True, np.nan, True],
+                       'text_col': ['one', 'two', 'three', 'four', 'five']})
+
+    logical_types = {
+        'bool_col': Boolean,
+        'text_col': NaturalLanguage,
+    }
+    semantic_tags = {
+        'bool_col': 'category',
+        'text_col': 'numeric',
+    }
+
+    dt = DataTable(df, logical_types=logical_types, semantic_tags=semantic_tags)
+    stats_df = dt.describe()
+
+    # Make sure boolean stats were computed with improper 'category' tag
+    assert stats_df['bool_col']['num_true'] == 3
+    # Make sure numeric stats were computed not with improper 'numeric' tag
+    assert stats_df['text_col'][['mean', 'std', 'min', 'max']].isnull().all()
