@@ -80,3 +80,12 @@ General Utils
     :nosignatures:
 
     list_logical_types
+
+Demo Data
+=========
+
+.. currentmodule:: woodwork.demo
+.. autosummary::
+    :toctree: generated/
+
+    load_retail
