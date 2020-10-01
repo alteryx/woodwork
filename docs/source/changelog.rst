@@ -8,6 +8,7 @@ Changelog
         * Add ``to_pandas`` method to DataColumn to access the underlying series (:pr:`169`)
         * Add list_logical_types function and CLI to get dataframe of woodwork LogicalTypes (:pr:`172`)
         * Add ``describe`` method to DataTable to generate statistics for the underlying data (:pr:`181`)
+        * Add optional ``return_dataframe`` parameter to ``load_retail`` to return either DataFrame or DataTable (:pr:`189`)
     * Fixes
         * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
     * Changes
