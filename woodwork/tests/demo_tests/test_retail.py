@@ -56,5 +56,5 @@ def test_load_retail_datatable():
 
     assert dt.index == 'order_product_id'
     assert dt.time_index == 'order_date'
-    assert dt.columns['order_product_id'].semantic_tags == {'category', 'index'}
+    assert dt.columns['order_product_id'].semantic_tags == {'index'}
     assert dt.columns['order_date'].semantic_tags == {'time_index'}

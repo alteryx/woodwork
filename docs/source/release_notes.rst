@@ -14,12 +14,13 @@ Release Notes
         * Fix bug in ``DataTable.describe`` that could cause an error if certain semantic tags were applied improperly (:pr:`190`)
     * Changes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
+        * Remove standard tags from index column and do not return stats for index column from ``DataTable.describe`` (:pr:`196`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
         * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
         * Add DataTable and DataColumn to API Reference (:pr:`162`)
         * Add docstrings to LogicalType classes (:pr:`168`)
-        * Add Woodwork image to index, clear outputs of Juypter notebook in docs (:pr:`173`)
+        * Add Woodwork image to index, clear outputs of Jupyter notebook in docs (:pr:`173`)
         * Update contributing.md, release.md with all instructions (:pr:`176`)
         * Add section for setting index and time index to start notebook (:pr:`179`)
         * Rename changelog to Release Notes (:pr:`193`)

@@ -157,6 +157,7 @@ class DataColumn(object):
                           use_standard_tags=False)
 
     def _set_as_index(self):
+        self._semantic_tags = self._semantic_tags.difference(self._logical_type.standard_tags)
         self._semantic_tags.add('index')
 
     def _set_as_time_index(self):
