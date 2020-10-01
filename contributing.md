@@ -52,14 +52,14 @@ Whether you are a novice or experienced software developer, all contributions an
 
 * Until your pull request is ready for review, please [draft the pull request](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/about-pull-requests#draft-pull-requests) to indicate its not yet ready for review. This signals the team to ignore it and allow you to develop.
 
-* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
+* Update the "Future Release" section of the Release Notes (`docs/source/release_notes.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
   * Enhancements: new features or additions to Woodwork.
   * Fixes: things like bugfixes or adding more descriptive error messages.
   * Changes: modifications to an existing part of Woodwork.
   * Documentation Changes
   * Testing Changes
 
-  Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
+  Documentation or testing changes rarely warrant an individual Release Notes entry; the PR number can be added to their respective "Miscellaneous changes" entries.
 
   If your work includes a [breaking change](https://en.wiktionary.org/wiki/breaking_change), please add a description of what has been affected in the "Breaking Changes" section below the latest release notes. If no "Breaking Changes" section yet exists, please create one as follows. See past release notes for examples of this.
 
