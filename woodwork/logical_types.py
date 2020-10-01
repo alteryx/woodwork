@@ -38,7 +38,7 @@ class Boolean(LogicalType):
 
 class Categorical(LogicalType):
     """Represents Logical Types that contain unordered discrete values that fall
-    into one of a set of possible values.
+    into one of a set of possible values. Has 'category' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -58,7 +58,7 @@ class Categorical(LogicalType):
 
 class CountryCode(LogicalType):
     """Represents Logical Types that contain categorical information specifically
-    used to represent countries.
+    used to represent countries. Has 'category' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -86,6 +86,7 @@ class Datetime(LogicalType):
 class Double(LogicalType):
     """Represents Logical Types that contain positive and negative numbers, some of
     which include a fractional component. Includes zero (0).
+    Has 'numeric' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -100,6 +101,7 @@ class Double(LogicalType):
 class Integer(LogicalType):
     """Represents Logical Types that contain positive and negative numbers
     without a fractional component, including zero (0).
+    Has 'numeric' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -194,7 +196,8 @@ class NaturalLanguage(LogicalType):
 
 
 class Ordinal(LogicalType):
-    """Represents Logical Types that contain ordered discrete values
+    """Represents Logical Types that contain ordered discrete values.
+    Has 'category' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -226,7 +229,7 @@ class PhoneNumber(LogicalType):
 
 class SubRegionCode(LogicalType):
     """Represents Logical Types that contain codes representing a portion of
-    a larger geographic region
+    a larger geographic region. Has 'category' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -267,6 +270,7 @@ class URL(LogicalType):
 
 class WholeNumber(LogicalType):
     """Represents Logical Types that contain natural numbers, including zero (0).
+    Has 'numeric' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -281,6 +285,7 @@ class WholeNumber(LogicalType):
 class ZIPCode(LogicalType):
     """Represents Logical Types that contain a series of postal codes used by
     the US Postal Service for representing a group of addresses.
+    Has 'category' as a standard tag.
 
     Examples:
         .. code-block:: python
