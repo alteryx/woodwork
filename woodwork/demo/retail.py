@@ -13,6 +13,16 @@ from woodwork.logical_types import (
 
 
 def load_retail(id='demo_retail_data', nrows=None, return_dataframe=False):
+    """Load a demo retail dataset into either a DataTable or a DataFrame
+
+    Args:
+        id (str, optional): The name to assign to the DataTable, if returning a DataTable.
+            If not returning a DataTable, this will be ignored. Defaults to ``demo_retail_data``.
+        nrows (int, optional): The number of rows to return in the dataset. If None, will
+            return all possible rows. Defaults to None.
+        return_dataframe (bool): If True, will return a pandas DataFrame. If False,
+            will return a Woodwork DataTable. Defaults to False.
+    """
     csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?version=" + ww.__version__
     csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?version=" + ww.__version__
     # Try to read in gz compressed file
