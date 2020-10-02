@@ -25,6 +25,7 @@ Release Notes
         * Add section for setting index and time index to start notebook (:pr:`179`)
         * Rename changelog to Release Notes (:pr:`193`)
         * Add section for standard tags to start notebook (:pr:`188`)
+        * Add Understanding Types and Tags user guide (:pr:`201`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
