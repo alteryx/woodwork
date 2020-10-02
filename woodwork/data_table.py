@@ -571,6 +571,60 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
+    def _format_df_for_mutual_info(self, num_bins, nrows):
+        """Formats dataframe so that mutual_info can be calculated on just
+            Boolean, categorical, and numeric columns that have been
+            transformed into numeric categories
+
+
+        Returns:
+            df (pd.DataFrame): Transformed data with NaNs removed or replaced,
+                invalid column types removed, and data trimmed if longer
+                than nrows
+        """
+        # We only want numeric, categorical, and Boolean columns
+        valid_columns = {col_name for col_name, column
+                         in self.columns.items() if (column._is_numeric() or
+                                                     column._is_categorical() or
+                                                     issubclass(column.logical_type, Boolean))}
+        null_cols = {col_name for col_name, col in self.columns.items() if col._series.isnull().all()}
+
+        df = pd.DataFrame()
+        # replace or remove null values
+        for column_name, column in self.columns.items():
+            if column_name in null_cols or column_name not in valid_columns:
+                continue
+            series = column._series
+            ltype = column._logical_type
+
+            if series.isnull().values.any():
+                if column._is_numeric():
+                    mean = series.mean()
+                    if isinstance(mean, float) and not issubclass(ltype, Double):
+                        df[column_name] = series.astype('float')
+                    df[column_name] = series.fillna(mean)
+                elif column._is_categorical() or issubclass(ltype, Boolean):
+                    mode_values = series.mode()
+                    if mode_values is not None and len(mode_values) > 0:
+                        df[column_name] = series.fillna(mode_values[0])
+            else:
+                df[column_name] = series.copy()
+
+        # cut off data if necessary
+        if nrows is not None and nrows < df.shape[0]:
+            df = df.sample(nrows)
+
+        col_names = list(df.columns.values)
+        for col_name in col_names:
+            if self[col_name]._is_numeric():
+                # bin numeric features to make categories
+                df[col_name] = pd.to_numeric(df[col_name])
+                df[col_name] = pd.qcut(df[col_name], num_bins, duplicates="drop")
+            # convert categories to integers
+            df[col_name] = df[col_name].astype("category").cat.codes
+
+        return df
+
     def get_mutual_information(self, num_bins=10, nrows=100000):
         """
         Calculates mutual information between all pairs of columns in the DataTable
@@ -586,25 +640,11 @@ class DataTable(object):
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info`
         """
-        df = self._dataframe
-
-        # cut off data if necessary
-        if nrows is not None and nrows < df.shape[0]:
-            df = df.sample(nrows)
-
-        df = self._handle_nans_for_mutual_info()
-
-        col_names = list(df.columns.values)
-        for col_name in col_names:
-            if self[col_name]._is_numeric():
-                # bin numeric features to make categories
-                df[col_name] = pd.to_numeric(df[col_name])
-                df[col_name] = pd.qcut(df[col_name], num_bins, duplicates="drop")
-            # convert categories to integers
-            df[col_name] = df[col_name].astype("category").cat.codes
+        df = self._format_df_for_mutual_info(num_bins, nrows)
 
         # calculate mutual info for all pairs of columns
         mutual_info = []
+        col_names = list(df.columns.values)
         for i, a_col in enumerate(col_names):
             for j in range(i, len(col_names)):
                 b_col = col_names[j]
@@ -619,43 +659,6 @@ class DataTable(object):
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
         return pd.DataFrame(mutual_info)
-
-    def _handle_nans_for_mutual_info(self):
-        """Remove NaNs from the dataframe by removing any fully null columns, taking
-            the mean value for numeric columns, and taking the most common
-            value for categorical/Boolean columns
-
-            Note: Columns that don't fall into Boolean logical type,
-            `numeric` semantic tag, or `category` semantic tag will not make it into the
-            dataframe.
-
-        Returns:
-            df (pd.DataFrame): the data with NaNs removed or replaced
-        """
-        df = pd.DataFrame()
-        null_cols = {col_name for col_name, col in self.columns.items() if col._series.isnull().all()}
-
-        for column_name, column in self.columns.items():
-            if column_name in null_cols:
-                continue
-            series = column._series
-            ltype = column._logical_type
-
-            if series.isnull().values.any():
-                if column._is_numeric():
-                    mean = series.mean()
-                    if isinstance(mean, float) and not issubclass(ltype, Double):
-                        df[column_name] = series.astype('float')
-                    df[column_name] = series.fillna(mean)
-                elif column._is_categorical() or issubclass(ltype, Boolean):
-                    mode_values = series.mode()
-                    if mode_values is not None and len(mode_values) > 0:
-                        df[column_name] = series.fillna(mode_values[0])
-                else:
-                    df[column_name] = series.copy()
-            else:
-                df[column_name] = series.copy()
-        return df
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags):
