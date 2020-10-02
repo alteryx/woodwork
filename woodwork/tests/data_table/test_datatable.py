@@ -1874,7 +1874,7 @@ def test_datatable_describe_with_no_semantic_tags():
 
 
 def test_data_table_format_df_for_mutual_info():
-    df = pd.DataFrame({
+    df_nans = pd.DataFrame({
         'nans': pd.Series([None, None, None, None]),
         'ints': pd.Series([2, np.nan, 5, 2]),
         'floats': pd.Series([1, None, 100, 1]),
@@ -1885,12 +1885,12 @@ def test_data_table_format_df_for_mutual_info():
         'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
         'date_no_nan': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
     })
-    dt = DataTable(df)
-    original_df = dt.to_pandas(copy=True)
-    formatted_df = dt._format_df_for_mutual_info(num_bins=10, nrows=100000)
+    dt_nans = DataTable(df_nans)
+    original_df = dt_nans.to_pandas(copy=True)
+    formatted_df = dt_nans._format_df_for_mutual_info(num_bins=10, nrows=100000)
 
     assert isinstance(formatted_df, pd.DataFrame)
-    pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
+    pd.testing.assert_frame_equal(dt_nans.to_pandas(), original_df)
 
     assert 'nans' not in formatted_df.columns
     assert 'nat_lang' not in formatted_df.columns
@@ -1902,6 +1902,46 @@ def test_data_table_format_df_for_mutual_info():
     assert formatted_df['str'].equals(pd.Series([0, 0, 1, 0], dtype='int8'))
     assert formatted_df['str_no_nan'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
+    df_params = pd.DataFrame({
+        'ints1': pd.Series([1, 2, 3, 2]),
+        'ints2': pd.Series([1, 100, 1, 100]),
+        'bools': pd.Series([True, False, True, False])})
+    dt_params = DataTable(df_params)
+    formatted_nrows_df = dt_params._format_df_for_mutual_info(num_bins=10, nrows=3)
+    assert formatted_nrows_df.shape[0] == 3
+
+    formatted_num_bins_df = dt_params._format_df_for_mutual_info(num_bins=4, nrows=100000)
+    assert formatted_num_bins_df['ints1'].equals(pd.Series([0, 1, 3, 1], dtype='int8'))
+    assert formatted_num_bins_df['ints2'].equals(pd.Series([0, 1, 0, 1], dtype='int8'))
+    assert formatted_num_bins_df['bools'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
+
+
+def mi_between_cols(col1, col2, df):
+    return df.loc[df['column_1'] == col1].loc[df['column_2'] == col2]['mutual_info'].iloc[0]
+
 
 def test_data_table_get_mutual_information():
-    pass
+    df_same_mi = pd.DataFrame({
+        'ints': pd.Series([2, np.nan, 5, 2]),
+        'floats': pd.Series([1, None, 100, 1]),
+    })
+    dt_same_mi = DataTable(df_same_mi)
+
+    mi = dt_same_mi.get_mutual_information()
+    assert mi.shape[0] == 3
+    assert mi_between_cols('ints', 'ints', mi) == 1.0
+    assert mi_between_cols('ints', 'floats', mi) == 1.0
+    assert mi_between_cols('floats', 'floats', mi) == 1.0
+
+    df = pd.DataFrame({
+        'ints': pd.Series([1, 2, 3]),
+        'bools': pd.Series([True, False, True]),
+        'strs': pd.Series(['hi', 'hi', 'hi'])
+    })
+
+    dt = DataTable(df)
+    mi = dt.get_mutual_information()
+    assert mi.shape[0] == 6
+    assert mi_between_cols('ints', 'bools', mi) == 0.7336804366512112
+    assert mi_between_cols('ints', 'strs', mi) == 0.0
+    assert mi_between_cols('bools', 'strs', mi) == 1.7442235851550392e-16
