@@ -58,6 +58,15 @@ def col_is_datetime(col, datetime_format=None):
 
 
 def list_logical_types():
+    """Returns a dataframe describing all of the available LogicalTypes.
+    
+    Args:
+        None
+
+    Returns:
+        pd.DataFrame: A dataframe containing details on each LogicalType, including
+        the corresponding physical type and any standard semantic tags.
+    """
     return pd.DataFrame(
         [{'name': ltype.__name__,
           'type_string': ltype.type_string,
