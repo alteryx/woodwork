@@ -1,12 +1,14 @@
 import warnings
 
 import pandas as pd
+from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.config import config
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
     Boolean,
     Datetime,
+    Double,
     LogicalType,
     str_to_logical_type
 )
@@ -568,6 +570,78 @@ class DataTable(object):
             'num_false',
         ]
         return pd.DataFrame(results).reindex(index_order)
+
+    def get_mutual_information(self, num_bins=10, nrows=100000):
+        data = self._dataframe
+
+        # cut off data if necessary
+        if nrows is not None and nrows < data.shape[0]:
+            data = data.sample(nrows)
+
+        data = self._handle_nan()
+
+        columns = list(data.columns.values)
+        for idx, col in enumerate(columns):
+            if 'numeric' in self[col].logical_type.standard_tags:
+                # bin numeric features into discrete
+                data[col] = pd.to_numeric(data[col])
+                data[col] = pd.qcut(data[col], num_bins, duplicates="drop")
+            # convert discrete to integers
+            data[col] = data[col].astype("category").cat.codes
+
+        # calculate mutual info for all pairs of columns
+        mutual_info = []
+        for i in range(len(columns)):
+            a_col = columns[i]
+            for j in range(i, len(columns)):
+                b_col = columns[j]
+                if a_col == b_col:
+                    # set mutual info of 1.0 for column with itself
+                    mutual_info.append(
+                        {"column_1": a_col, "column_2": b_col, "mutual_info": 1.0}
+                    )
+                else:
+                    mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
+                    mutual_info.append(
+                        {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
+                    )
+        return pd.DataFrame(mutual_info)
+
+    def _handle_nan(self):
+        """Fix any NaN rows, by taking the mean value for Numeric
+            columns, or taking the most common value for Discrete/Boolean
+            columns
+
+        Args:
+            df (pd.DataFrame): the data use
+
+            variable_types (dict[str -> ft.Variable]): the dictionary
+                of column variable types
+
+        Returns:
+            df (pd.DataFrame): the data with NaN fixed
+        """
+        df = self._dataframe.copy()
+
+        cols_to_skip = {col_name for col_name, col in self.columns.items() if col._series.isnull().all()}
+        for col_name, col in list(self.columns.items()):
+            if col_name in cols_to_skip:
+                df.drop(columns=[col_name], inplace=True)
+                continue
+            series = col._series
+            ltype = col._logical_type
+
+            if series.isnull().values.any():
+                if 'numeric' in ltype.standard_tags:
+                    mean = df[col_name].mean()
+                    if isinstance(mean, float) and not issubclass(ltype, Double):
+                        df[col_name] = series.astype(np.float64)
+                    df[col_name] = series.fillna(mean)
+                elif 'category' in ltype.standard_tags or issubclass(ltype, Boolean):
+                    mode_values = df[col_name].mode()
+                    if mode_values is not None and len(mode_values) > 0:
+                        df[col_name] = series.fillna(mode_values[0])
+        return df
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags):
