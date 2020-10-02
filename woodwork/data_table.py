@@ -524,9 +524,9 @@ class DataTable(object):
             series = column._series
 
             # Calculate Aggregation Stats
-            if 'category' in logical_type.standard_tags:
+            if column._is_categorical():
                 agg_stats = agg_stats_to_calculate['category']
-            elif 'numeric' in logical_type.standard_tags:
+            elif column._is_numeric():
                 agg_stats = agg_stats_to_calculate['numeric']
             elif issubclass(logical_type, Datetime):
                 agg_stats = agg_stats_to_calculate[Datetime]
@@ -538,7 +538,7 @@ class DataTable(object):
             if issubclass(logical_type, Boolean):
                 values["num_false"] = series.value_counts().get(False, 0)
                 values["num_true"] = series.value_counts().get(True, 0)
-            elif 'numeric' in logical_type.standard_tags:
+            elif column._is_numeric():
                 quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
                 values["first_quartile"] = quant_values[0]
                 values["second_quartile"] = quant_values[1]
@@ -596,7 +596,7 @@ class DataTable(object):
 
         columns = list(data.columns.values)
         for idx, col in enumerate(columns):
-            if 'numeric' in self[col].logical_type.standard_tags:
+            if self[col]._is_numeric():
                 # bin numeric features into discrete
                 data[col] = pd.to_numeric(data[col])
                 data[col] = pd.qcut(data[col], num_bins, duplicates="drop")
@@ -640,12 +640,12 @@ class DataTable(object):
             ltype = col._logical_type
 
             if series.isnull().values.any():
-                if 'numeric' in ltype.standard_tags:
+                if col._is_numeric():
                     mean = df[col_name].mean()
                     if isinstance(mean, float) and not issubclass(ltype, Double):
                         df[col_name] = series.astype('float')
                     df[col_name] = series.fillna(mean)
-                elif 'category' in ltype.standard_tags or issubclass(ltype, Boolean):
+                elif col._is_categorical() or issubclass(ltype, Boolean):
                     mode_values = df[col_name].mode()
                     if mode_values is not None and len(mode_values) > 0:
                         df[col_name] = series.fillna(mode_values[0])
