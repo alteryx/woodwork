@@ -200,7 +200,9 @@ class DataTable(object):
 
     def set_index(self, index):
         """Set the index column. Adds the 'index' semantic tag to the column and
-        clears the tag from any previously set index column.
+        clears the tag from any previously set index column. Setting a column as the
+        index column will also cause any previously set standard tags for the column
+        to be removed.
 
         Args:
             index (str): The name of the column to set as the index
@@ -506,15 +508,17 @@ class DataTable(object):
         results = {}
 
         for column_name, column in self.columns.items():
+            if 'index' in column.semantic_tags:
+                continue
             values = {}
             logical_type = column.logical_type
             semantic_tags = column.semantic_tags
             series = column._series
 
             # Calculate Aggregation Stats
-            if 'category' in semantic_tags:
+            if 'category' in logical_type.standard_tags:
                 agg_stats = agg_stats_to_calculate['category']
-            elif 'numeric' in semantic_tags:
+            elif 'numeric' in logical_type.standard_tags:
                 agg_stats = agg_stats_to_calculate['numeric']
             elif issubclass(logical_type, Datetime):
                 agg_stats = agg_stats_to_calculate[Datetime]
@@ -526,7 +530,7 @@ class DataTable(object):
             if issubclass(logical_type, Boolean):
                 values["num_false"] = series.value_counts().get(False, 0)
                 values["num_true"] = series.value_counts().get(True, 0)
-            elif 'numeric' in semantic_tags:
+            elif 'numeric' in logical_type.standard_tags:
                 quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
                 values["first_quartile"] = quant_values[0]
                 values["second_quartile"] = quant_values[1]

@@ -1122,7 +1122,7 @@ def test_invalid_select_semantic_tags(sample_df):
 
 
 def test_select_semantic_tags(sample_df):
-    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt = DataTable(sample_df, time_index='signup_date', name='dt_name')
     dt.set_semantic_tags({
         'full_name': 'tag1',
         'email': ['tag2'],
@@ -1163,7 +1163,7 @@ def test_select_semantic_tags(sample_df):
 
 
 def test_select_semantic_tags_warning(sample_df):
-    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt = DataTable(sample_df, name='dt_name')
     dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
@@ -1396,12 +1396,12 @@ def test_set_index(sample_df):
     dt = DataTable(sample_df)
     dt.set_index('id')
     assert dt.index == 'id'
-    assert 'index' in dt.columns['id'].semantic_tags
+    assert dt.columns['id'].semantic_tags == {'index'}
     non_index_cols = [col for col in dt.columns.values() if col.name != 'id']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
     # Test changing index with set_index()
     dt.set_index('full_name')
-    assert 'index' in dt.columns['full_name'].semantic_tags
+    assert dt.columns['full_name'].semantic_tags == {'index'}
     non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
 
@@ -1575,8 +1575,7 @@ def test_select_list_inputs(sample_df):
     assert 'age' in dt_mixed_selectors.columns
 
     dt_common_tags = dt.select(['category', 'numeric', Boolean])
-    assert len(dt_common_tags.columns) == 3
-    assert 'id' in dt_common_tags.columns
+    assert len(dt_common_tags.columns) == 2
     assert 'is_registered' in dt_common_tags.columns
     assert 'age' in dt_common_tags.columns
 
@@ -1652,6 +1651,14 @@ def test_to_pandas_copy(sample_df):
     assert 'test_col' not in dt.columns
 
 
+def test_describe_does_not_include_index():
+    df = pd.DataFrame({'index_col': [0, 1, 2],
+                       'values': [10, 20.3, 5]})
+    dt = DataTable(df, index='index_col')
+    stats_df = dt.describe()
+    assert 'index_col' not in stats_df.columns
+
+
 def test_data_table_describe_method():
     categorical_ltypes = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
     boolean_ltypes = [Boolean]
@@ -1661,7 +1668,6 @@ def test_data_table_describe_method():
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
                                LatLong, PhoneNumber, URL]
 
-    index_data = [0, 1, 2, 3, 4, 5, 6, 7]
     boolean_data = [True, False, True, True, False, True, np.nan, True]
     category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
     datetime_data = pd.to_datetime(['2020-01-01',
@@ -1732,11 +1738,11 @@ def test_data_table_describe_method():
             'num_true': 5,
             'num_false': 2}, name='col')
         expected_vals.name = 'col'
-        df = pd.DataFrame({'index': index_data, 'col': boolean_data})
+        df = pd.DataFrame({'col': boolean_data})
         dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'index', 'col'}
+        assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
@@ -1819,3 +1825,49 @@ def test_data_table_describe_method():
         assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+
+def test_datatable_describe_with_improper_tags():
+    df = pd.DataFrame({'bool_col': [True, False, True, np.nan, True],
+                       'text_col': ['one', 'two', 'three', 'four', 'five']})
+
+    logical_types = {
+        'bool_col': Boolean,
+        'text_col': NaturalLanguage,
+    }
+    semantic_tags = {
+        'bool_col': 'category',
+        'text_col': 'numeric',
+    }
+
+    dt = DataTable(df, logical_types=logical_types, semantic_tags=semantic_tags)
+    stats_df = dt.describe()
+
+    # Make sure boolean stats were computed with improper 'category' tag
+    assert stats_df['bool_col']['logical_type'] == Boolean
+    assert stats_df['bool_col']['semantic_tags'] == {'category'}
+    # Make sure numeric stats were not computed with improper 'numeric' tag
+    assert stats_df['text_col']['semantic_tags'] == {'numeric'}
+    assert stats_df['text_col'][['mean', 'std', 'min', 'max']].isnull().all()
+
+
+def test_datatable_describe_with_no_semantic_tags():
+    df = pd.DataFrame({'category_col': ['a', 'b', 'c', 'a', 'a'],
+                       'num_col': [1, 3, 2, 4, 0]})
+
+    logical_types = {
+        'category_col': Categorical,
+        'num_col': WholeNumber,
+    }
+
+    dt = DataTable(df, logical_types=logical_types, use_standard_tags=False)
+    stats_df = dt.describe()
+    assert dt['category_col'].semantic_tags == set()
+    assert dt['num_col'].semantic_tags == set()
+
+    # Make sure category stats were computed
+    assert stats_df['category_col']['semantic_tags'] == set()
+    assert stats_df['category_col']['nunique'] == 3
+    # Make sure numeric stats were computed
+    assert stats_df['num_col']['semantic_tags'] == set()
+    assert stats_df['num_col']['mean'] == 2
