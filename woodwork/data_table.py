@@ -572,6 +572,20 @@ class DataTable(object):
         return pd.DataFrame(results).reindex(index_order)
 
     def get_mutual_information(self, num_bins=10, nrows=100000):
+        """
+        Calculates mutual information between all pairs of columns in the DataTable
+        that support mutual information: numeric, categorical, and boolean.
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining mutual info.
+                Defaults to first 100,000 rows. If given None, will use all rows.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
+            `column_2`, and `mutual_info`
+        """
         data = self._dataframe
 
         # cut off data if necessary
@@ -608,18 +622,12 @@ class DataTable(object):
         return pd.DataFrame(mutual_info)
 
     def _handle_nan(self):
-        """Fix any NaN rows, by taking the mean value for Numeric
-            columns, or taking the most common value for Discrete/Boolean
-            columns
-
-        Args:
-            df (pd.DataFrame): the data use
-
-            variable_types (dict[str -> ft.Variable]): the dictionary
-                of column variable types
+        """Fix any NaN rows, by removing any fully null columns and taking
+            the mean value for Numeric columns, or taking the most common
+            value for Discrete/Boolean columns
 
         Returns:
-            df (pd.DataFrame): the data with NaN fixed
+            df (pd.DataFrame): the data with NaNs removed or replaced
         """
         df = self._dataframe.copy()
 
@@ -635,7 +643,7 @@ class DataTable(object):
                 if 'numeric' in ltype.standard_tags:
                     mean = df[col_name].mean()
                     if isinstance(mean, float) and not issubclass(ltype, Double):
-                        df[col_name] = series.astype(np.float64)
+                        df[col_name] = series.astype('float')
                     df[col_name] = series.fillna(mean)
                 elif 'category' in ltype.standard_tags or issubclass(ltype, Boolean):
                     mode_values = df[col_name].mode()
