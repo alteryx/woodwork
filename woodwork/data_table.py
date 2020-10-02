@@ -626,7 +626,8 @@ class DataTable(object):
             value for categorical/Boolean columns
 
             Note: Columns that don't fall into Boolean logical type,
-            `numeric` semantic tag, or `category` semantic tag will not have their NaNs replaced
+            `numeric` semantic tag, or `category` semantic tag will not make it into the
+            dataframe.
 
         Returns:
             df (pd.DataFrame): the data with NaNs removed or replaced
@@ -650,6 +651,8 @@ class DataTable(object):
                     mode_values = series.mode()
                     if mode_values is not None and len(mode_values) > 0:
                         df[column_name] = series.fillna(mode_values[0])
+                else:
+                    df[column_name] = series.copy()
             else:
                 df[column_name] = series.copy()
         return df

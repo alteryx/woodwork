@@ -1871,3 +1871,31 @@ def test_datatable_describe_with_no_semantic_tags():
     # Make sure numeric stats were computed
     assert stats_df['num_col']['semantic_tags'] == set()
     assert stats_df['num_col']['mean'] == 2
+
+
+def test_data_table_handle_nans_for_mutual_info():
+    df = pd.DataFrame({
+        'nans': pd.Series([None, None, None, None]),
+        'ints': pd.Series([2, np.nan, 5, 2]),
+        'floats': pd.Series([1, None, 100, 1]),
+        'bools': pd.Series([True, None, True, False]),
+        'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
+        'str_to_cat_nan': pd.Series(['test', np.nan, 'test2', 'test']),
+        'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
+        'nat_lang_nan': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
+    })
+    dt = DataTable(df)
+    original_df = dt.to_pandas(copy=True)
+    handled_nans_df = dt._handle_nans_for_mutual_info()
+
+    pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
+    assert isinstance(handled_nans_df, pd.DataFrame)
+
+    assert 'nans' not in handled_nans_df.columns
+    assert 'str_no_nan' in handled_nans_df.columns
+    assert handled_nans_df['ints'].loc[1] == 3.0
+    assert handled_nans_df['floats'].loc[1] == 34.0
+    assert handled_nans_df['bools'].loc[1] is True
+    assert handled_nans_df['int_to_cat_nan'].loc[1] == 1
+    assert handled_nans_df['str_to_cat_nan'].loc[1] == 'test'
+    assert handled_nans_df['nat_lang_nan'].loc[1] is pd.NA
