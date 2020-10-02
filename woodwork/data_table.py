@@ -586,69 +586,72 @@ class DataTable(object):
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info`
         """
-        data = self._dataframe
+        df = self._dataframe
 
         # cut off data if necessary
-        if nrows is not None and nrows < data.shape[0]:
-            data = data.sample(nrows)
+        if nrows is not None and nrows < df.shape[0]:
+            df = df.sample(nrows)
 
-        data = self._handle_nan()
+        df = self._handle_nans_for_mutual_info()
 
-        columns = list(data.columns.values)
-        for idx, col in enumerate(columns):
-            if self[col]._is_numeric():
-                # bin numeric features into discrete
-                data[col] = pd.to_numeric(data[col])
-                data[col] = pd.qcut(data[col], num_bins, duplicates="drop")
-            # convert discrete to integers
-            data[col] = data[col].astype("category").cat.codes
+        col_names = list(df.columns.values)
+        for col_name in col_names:
+            if self[col_name]._is_numeric():
+                # bin numeric features to make categories
+                df[col_name] = pd.to_numeric(df[col_name])
+                df[col_name] = pd.qcut(df[col_name], num_bins, duplicates="drop")
+            # convert categories to integers
+            df[col_name] = df[col_name].astype("category").cat.codes
 
         # calculate mutual info for all pairs of columns
         mutual_info = []
-        for i in range(len(columns)):
-            a_col = columns[i]
-            for j in range(i, len(columns)):
-                b_col = columns[j]
+        for i, a_col in enumerate(col_names):
+            for j in range(i, len(col_names)):
+                b_col = col_names[j]
                 if a_col == b_col:
                     # set mutual info of 1.0 for column with itself
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": 1.0}
                     )
                 else:
-                    mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
+                    mi_score = normalized_mutual_info_score(df[a_col], df[b_col])
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
         return pd.DataFrame(mutual_info)
 
-    def _handle_nan(self):
-        """Fix any NaN rows, by removing any fully null columns and taking
-            the mean value for Numeric columns, or taking the most common
-            value for Discrete/Boolean columns
+    def _handle_nans_for_mutual_info(self):
+        """Remove NaNs from the dataframe by removing any fully null columns, taking
+            the mean value for numeric columns, and taking the most common
+            value for categorical/Boolean columns
+
+            Note: Columns that don't fall into Boolean logical type,
+            `numeric` semantic tag, or `category` semantic tag will not have their NaNs replaced
 
         Returns:
             df (pd.DataFrame): the data with NaNs removed or replaced
         """
-        df = self._dataframe.copy()
+        df = pd.DataFrame()
+        null_cols = {col_name for col_name, col in self.columns.items() if col._series.isnull().all()}
 
-        cols_to_skip = {col_name for col_name, col in self.columns.items() if col._series.isnull().all()}
-        for col_name, col in list(self.columns.items()):
-            if col_name in cols_to_skip:
-                df.drop(columns=[col_name], inplace=True)
+        for column_name, column in self.columns.items():
+            if column_name in null_cols:
                 continue
-            series = col._series
-            ltype = col._logical_type
+            series = column._series
+            ltype = column._logical_type
 
             if series.isnull().values.any():
-                if col._is_numeric():
-                    mean = df[col_name].mean()
+                if column._is_numeric():
+                    mean = series.mean()
                     if isinstance(mean, float) and not issubclass(ltype, Double):
-                        df[col_name] = series.astype('float')
-                    df[col_name] = series.fillna(mean)
-                elif col._is_categorical() or issubclass(ltype, Boolean):
-                    mode_values = df[col_name].mode()
+                        df[column_name] = series.astype('float')
+                    df[column_name] = series.fillna(mean)
+                elif column._is_categorical() or issubclass(ltype, Boolean):
+                    mode_values = series.mode()
                     if mode_values is not None and len(mode_values) > 0:
-                        df[col_name] = series.fillna(mode_values[0])
+                        df[column_name] = series.fillna(mode_values[0])
+            else:
+                df[column_name] = series.copy()
         return df
 
 
