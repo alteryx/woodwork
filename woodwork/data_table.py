@@ -266,14 +266,17 @@ class DataTable(object):
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
+        Replaces updated columns with new column objects.
 
         Args:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataTable to the tags that should be added to the column
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
+        cols_to_update = {}
         for name in semantic_tags.keys():
-            self.columns[name].add_semantic_tags(semantic_tags[name])
+            cols_to_update[name] = self.columns[name].add_semantic_tags(semantic_tags[name])
+        self._update_columns(cols_to_update)
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
@@ -301,8 +304,10 @@ class DataTable(object):
                 semantic tags. Defaults to True.
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
+        cols_to_update = {}
         for name in semantic_tags.keys():
-            self.columns[name].set_semantic_tags(semantic_tags[name], retain_index_tags)
+            cols_to_update[name] = self.columns[name].set_semantic_tags(semantic_tags[name], retain_index_tags)
+        self._update_columns(cols_to_update)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
