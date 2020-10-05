@@ -15,6 +15,7 @@ Release Notes
     * Changes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
         * Remove standard tags from index column and do not return stats for index column from ``DataTable.describe`` (:pr:`196`)
+        * Update ``DataColumn.set_semantic_tags`` and ``DataColumn.add_semantic_tags`` to return new objects (:pr:`205`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
         * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
