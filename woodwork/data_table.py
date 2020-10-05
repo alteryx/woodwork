@@ -294,7 +294,8 @@ class DataTable(object):
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Update the semantic tags for any column names in the provided semantic_tags
-        dictionary. Replaces the existing semantic tags with the new values.
+        dictionary. Replaces the existing semantic tags with the new values. Also replaces
+        any updated columns with new column objects.
 
         Args:
             semantic_tags (dict): A dictionary defining the new semantic_tags for the
