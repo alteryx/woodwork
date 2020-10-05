@@ -58,7 +58,7 @@ def col_is_datetime(col, datetime_format=None):
 
 
 def list_logical_types():
-    """Returns a dataframe describing all of the available LogicalTypes.
+    """Returns a dataframe describing all of the available Logical Types.
 
     Args:
         None
