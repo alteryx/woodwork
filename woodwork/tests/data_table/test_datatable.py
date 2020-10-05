@@ -1953,9 +1953,9 @@ def test_data_table_get_mutual_information():
 
     mi = dt.get_mutual_information()
     assert mi.shape[0] == 6
-    assert mi_between_cols('ints', 'bools', mi) == 0.7336804366512112
-    assert mi_between_cols('ints', 'strs', mi) == 0.0
-    assert mi_between_cols('bools', 'strs', mi) == 1.7442235851550392e-16
+    np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
+    np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 1.744e-16, 3)
 
     mi = dt.get_mutual_information(nrows=1)
     assert mi.shape[0] == 6
@@ -1963,9 +1963,9 @@ def test_data_table_get_mutual_information():
 
     mi = dt.get_mutual_information(num_bins=2)
     assert mi.shape[0] == 6
-    assert mi_between_cols('ints', 'bools', mi) == 0.2740175421212811
-    assert mi_between_cols('ints', 'strs', mi) == 1.7442235851550392e-16
-    assert mi_between_cols('bools', 'strs', mi) == 1.7442235851550392e-16
+    np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
+    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 1.744e-16, 3)
+    np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 1.744e-16, 3)
 
     # Confirm that none of this changed the DataTable's underlying df
     pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
