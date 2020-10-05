@@ -1873,64 +1873,74 @@ def test_datatable_describe_with_no_semantic_tags():
     assert stats_df['num_col']['mean'] == 2
 
 
-def test_data_table_format_df_for_mutual_info():
+def test_data_table_handle_nans_for_mutual_info():
     df_nans = pd.DataFrame({
         'nans': pd.Series([None, None, None, None]),
         'ints': pd.Series([2, np.nan, 5, 2]),
-        'floats': pd.Series([1, None, 100, 1]),
+        'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
         'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
         'str': pd.Series(['test', np.nan, 'test2', 'test']),
         'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
-        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
-        'date_no_nan': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
     })
     dt_nans = DataTable(df_nans)
-    original_df = dt_nans.to_pandas(copy=True)
-    formatted_df = dt_nans._format_df_for_mutual_info(num_bins=10, nrows=100000)
+    formatted_df = dt_nans._handle_nans_for_mutual_info(dt_nans.to_pandas(copy=True))
 
     assert isinstance(formatted_df, pd.DataFrame)
-    pd.testing.assert_frame_equal(dt_nans.to_pandas(), original_df)
 
     assert 'nans' not in formatted_df.columns
-    assert 'nat_lang' not in formatted_df.columns
-    assert 'date_no_nan' not in formatted_df.columns
-    assert formatted_df['ints'].equals(pd.Series([0, 3, 6, 0], dtype='int8'))
-    assert formatted_df['floats'].equals(pd.Series([0, 3, 6, 0], dtype='int8'))
-    assert formatted_df['bools'].equals(pd.Series([1, 1, 1, 0], dtype='int8'))
-    assert formatted_df['int_to_cat_nan'].equals(pd.Series([0, 0, 1, 0], dtype='int8'))
-    assert formatted_df['str'].equals(pd.Series([0, 0, 1, 0], dtype='int8'))
-    assert formatted_df['str_no_nan'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
+    assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='float'))
+    assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
+    assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
+    assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
+    assert formatted_df['str'].equals(pd.Series(['test', 'test', 'test2', 'test'], dtype='category'))
+    assert formatted_df['str_no_nan'].equals(pd.Series(['test', 'test2', 'test2', 'test'], dtype='category'))
 
-    df_params = pd.DataFrame({
+
+def test_data_table_make_categorical_for_mutual_info():
+    df = pd.DataFrame({
         'ints1': pd.Series([1, 2, 3, 2]),
         'ints2': pd.Series([1, 100, 1, 100]),
-        'bools': pd.Series([True, False, True, False])})
-    dt_params = DataTable(df_params)
-    formatted_nrows_df = dt_params._format_df_for_mutual_info(num_bins=10, nrows=3)
-    assert formatted_nrows_df.shape[0] == 3
+        'bools': pd.Series([True, False, True, False]),
+        'categories': pd.Series(['test', 'test2', 'test2', 'test'])
+    })
+    dt = DataTable(df)
+    formatted_num_bins_df = dt._make_categorical_for_mutual_info(dt.to_pandas(copy=True), num_bins=4)
 
-    formatted_num_bins_df = dt_params._format_df_for_mutual_info(num_bins=4, nrows=100000)
+    assert isinstance(formatted_num_bins_df, pd.DataFrame)
+
     assert formatted_num_bins_df['ints1'].equals(pd.Series([0, 1, 3, 1], dtype='int8'))
     assert formatted_num_bins_df['ints2'].equals(pd.Series([0, 1, 0, 1], dtype='int8'))
     assert formatted_num_bins_df['bools'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
+    assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
 def mi_between_cols(col1, col2, df):
-    return df.loc[df['column_1'] == col1].loc[df['column_2'] == col2]['mutual_info'].iloc[0]
+    mi_series = df.loc[df['column_1'] == col1].loc[df['column_2'] == col2]['mutual_info']
+
+    if len(mi_series) == 0:
+        mi_series = df.loc[df['column_1'] == col2].loc[df['column_2'] == col1]['mutual_info']
+
+    return mi_series.iloc[0]
 
 
 def test_data_table_get_mutual_information():
     df_same_mi = pd.DataFrame({
         'ints': pd.Series([2, np.nan, 5, 2]),
         'floats': pd.Series([1, None, 100, 1]),
+        'nans': pd.Series([None, None, None, None]),
+        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
+        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
     })
     dt_same_mi = DataTable(df_same_mi)
 
     mi = dt_same_mi.get_mutual_information()
+    assert 'nans' not in mi.columns
+    assert 'nat_lang' not in mi.columns
+    assert 'date_no_nan' not in mi.columns
     assert mi.shape[0] == 3
     assert mi_between_cols('ints', 'ints', mi) == 1.0
-    assert mi_between_cols('ints', 'floats', mi) == 1.0
+    assert mi_between_cols('floats', 'ints', mi) == 1.0
     assert mi_between_cols('floats', 'floats', mi) == 1.0
 
     df = pd.DataFrame({
@@ -1938,10 +1948,24 @@ def test_data_table_get_mutual_information():
         'bools': pd.Series([True, False, True]),
         'strs': pd.Series(['hi', 'hi', 'hi'])
     })
-
     dt = DataTable(df)
+    original_df = dt.to_pandas(copy=True)
+
     mi = dt.get_mutual_information()
     assert mi.shape[0] == 6
     assert mi_between_cols('ints', 'bools', mi) == 0.7336804366512112
     assert mi_between_cols('ints', 'strs', mi) == 0.0
     assert mi_between_cols('bools', 'strs', mi) == 1.7442235851550392e-16
+
+    mi = dt.get_mutual_information(nrows=1)
+    assert mi.shape[0] == 6
+    assert (mi['mutual_info'] == 1.0).all()
+
+    mi = dt.get_mutual_information(num_bins=2)
+    assert mi.shape[0] == 6
+    assert mi_between_cols('ints', 'bools', mi) == 0.2740175421212811
+    assert mi_between_cols('ints', 'strs', mi) == 1.7442235851550392e-16
+    assert mi_between_cols('bools', 'strs', mi) == 1.7442235851550392e-16
+
+    # Confirm that none of this changed the DataTable's underlying df
+    pd.testing.assert_frame_equal(dt.to_pandas(), original_df)

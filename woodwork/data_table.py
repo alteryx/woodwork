@@ -571,29 +571,24 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
-    def _format_df_for_mutual_info(self, num_bins, nrows):
-        """Formats dataframe so that mutual_info can be calculated on just
-            Boolean, Categorical, and Numeric columns that have been
-            transformed into numeric categories
+    def _handle_nans_for_mutual_info(self, df):
+        """
+        Remove NaN values in the dataframe so that mutual information can be calculated
 
+        Args:
+            df (pd.DataFrame): dataframe to use for caculating mutual information
 
         Returns:
-            df (pd.DataFrame): Transformed data with NaNs removed or replaced,
-                invalid column types removed, and data trimmed if longer
-                than nrows
-        """
-        # We only want Numeric, Categorical, and Boolean columns
-        valid_columns = {col_name for col_name, column
-                         in self.columns.items() if (column._is_numeric() or
-                                                     column._is_categorical() or
-                                                     issubclass(column.logical_type, Boolean))}
-        null_cols = {col_name for col_name in valid_columns if self[col_name]._series.isnull().all()}
+            pd.DataFrame: data with fully null columns removed and nans filled in
+                with either mean or mode
 
-        df = pd.DataFrame()
+        """
+        null_cols = {col_name for col_name in df.columns if self[col_name]._series.isnull().all()}
+        df = df.drop(columns=null_cols)
+
         # replace or remove null values
-        for column_name, column in self.columns.items():
-            if column_name in null_cols or column_name not in valid_columns:
-                continue
+        for column_name in df.columns:
+            column = self[column_name]
             series = column._series
             ltype = column._logical_type
 
@@ -606,12 +601,21 @@ class DataTable(object):
                 elif column._is_categorical() or issubclass(ltype, Boolean):
                     mode = _get_mode(series)
                     df[column_name] = series.fillna(mode)
-            else:
-                df[column_name] = series.copy()
+        return df
 
-        # cut off data if necessary
-        if nrows is not None and nrows < df.shape[0]:
-            df = df.sample(nrows)
+    def _make_categorical_for_mutual_info(self, df, num_bins):
+        """Transforms dataframe columns into numeric categories so that
+        mutual information can be calculated
+
+        Args:
+            df (pd.DataFrame): dataframe to use for caculating mutual information
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+
+
+        Returns:
+            df (pd.DataFrame): Transformed data
+        """
 
         col_names = list(df.columns.values)
         for col_name in col_names:
@@ -621,7 +625,6 @@ class DataTable(object):
                 df[col_name] = pd.qcut(df[col_name], num_bins, duplicates="drop")
             # convert categories to integers
             df[col_name] = df[col_name].astype("category").cat.codes
-
         return df
 
     def get_mutual_information(self, num_bins=10, nrows=100000):
@@ -639,7 +642,19 @@ class DataTable(object):
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info`
         """
-        df = self._format_df_for_mutual_info(num_bins, nrows)
+        # We only want Numeric, Categorical, and Boolean columns
+        valid_columns = {col_name for col_name, column
+                         in self.columns.items() if (column._is_numeric() or
+                                                     column._is_categorical() or
+                                                     issubclass(column.logical_type, Boolean))}
+        df = self._dataframe[valid_columns]
+
+        # cut off data if necessary
+        if nrows is not None and nrows < df.shape[0]:
+            df = df.sample(nrows)
+
+        df = self._handle_nans_for_mutual_info(df)
+        df = self._make_categorical_for_mutual_info(df, num_bins)
 
         # calculate mutual info for all pairs of columns
         mutual_info = []
