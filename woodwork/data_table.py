@@ -573,7 +573,7 @@ class DataTable(object):
 
     def _format_df_for_mutual_info(self, num_bins, nrows):
         """Formats dataframe so that mutual_info can be calculated on just
-            Boolean, categorical, and numeric columns that have been
+            Boolean, Categorical, and Numeric columns that have been
             transformed into numeric categories
 
 
@@ -582,12 +582,12 @@ class DataTable(object):
                 invalid column types removed, and data trimmed if longer
                 than nrows
         """
-        # We only want numeric, categorical, and Boolean columns
+        # We only want Numeric, Categorical, and Boolean columns
         valid_columns = {col_name for col_name, column
                          in self.columns.items() if (column._is_numeric() or
                                                      column._is_categorical() or
                                                      issubclass(column.logical_type, Boolean))}
-        null_cols = {col_name for col_name, col in self.columns.items() if col._series.isnull().all()}
+        null_cols = {col_name for col_name in valid_columns if self[col_name]._series.isnull().all()}
 
         df = pd.DataFrame()
         # replace or remove null values
@@ -604,9 +604,8 @@ class DataTable(object):
                         df[column_name] = series.astype('float')
                     df[column_name] = series.fillna(mean)
                 elif column._is_categorical() or issubclass(ltype, Boolean):
-                    mode_values = series.mode()
-                    if mode_values is not None and len(mode_values) > 0:
-                        df[column_name] = series.fillna(mode_values[0])
+                    mode = _get_mode(series)
+                    df[column_name] = series.fillna(mode)
             else:
                 df[column_name] = series.copy()
 
@@ -628,7 +627,7 @@ class DataTable(object):
     def get_mutual_information(self, num_bins=10, nrows=100000):
         """
         Calculates mutual information between all pairs of columns in the DataTable
-        that support mutual information: numeric, categorical, and boolean.
+        that support mutual information: Numeric, Categorical, and Boolean.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
