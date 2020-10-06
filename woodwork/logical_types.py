@@ -73,6 +73,9 @@ class CountryCode(LogicalType):
 class Datetime(LogicalType):
     """Represents Logical Types that contain date and time information.
 
+    Args:
+        datetime_format (str): Desired datetime format for data
+
     Examples:
         .. code-block:: python
 
@@ -81,10 +84,10 @@ class Datetime(LogicalType):
              "01/01/2000 08:30"]
     """
     pandas_dtype = 'datetime64[ns]'
-    date_format = None
+    datetime_format = None
 
-    def __init__(self, date_format=None):
-        self.date_format = date_format
+    def __init__(self, datetime_format=None):
+        self.datetime_format = datetime_format
 
 
 class Double(LogicalType):

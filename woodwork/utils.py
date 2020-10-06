@@ -34,6 +34,7 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
 
 
 def col_is_datetime(col, datetime_format=None):
+    # -->might be able to get rid of datetimeformat here
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column."""
     if (col.dtype.name.find('datetime') > -1 or

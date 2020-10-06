@@ -3,7 +3,6 @@ import warnings
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
-from woodwork.config import config
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
     Boolean,
@@ -257,8 +256,8 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    if column.logical_type == Datetime:
-                        self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=config.get_option('datetime_format'))
+                    if column.logical_type == Datetime or isinstance(column.logical_type, Datetime):
+                        self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
                     else:
                         self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
                 except TypeError:
@@ -743,6 +742,7 @@ def _check_index(dataframe, index):
 
 
 def _check_time_index(dataframe, time_index):
+    # --> we should be able to handle different formats, right?
     if not isinstance(time_index, str):
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:

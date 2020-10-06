@@ -1638,15 +1638,15 @@ def test_select_warnings(sample_df):
 
 
 def test_datetime_inference_with_config_options():
+    # --> not as useful of a test since we're inherently not inferring anymore
+    # I guess it's saying the only type we infer is simple and if you want more ocmplex you need to specify
     dataframe = pd.DataFrame({
         'index': [0, 1, 2],
         'dates': ["2019~01~01", "2019~01~02", "2019~01~03"]
     })
 
-    ww.config.set_option('datetime_format', '%Y~%m~%d')
-    dt = DataTable(dataframe, name='dt_name')
-    assert dt.columns['dates'].logical_type == Datetime
-    ww.config.reset_option('datetime_format')
+    dt = DataTable(dataframe, name='dt_name', logical_types={'dates': Datetime(datetime_format='%Y~%m~%d')})
+    assert isinstance(dt.columns['dates'].logical_type, Datetime)
 
 
 def test_natural_language_inference_with_config_options():
