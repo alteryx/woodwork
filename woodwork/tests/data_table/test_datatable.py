@@ -1950,6 +1950,9 @@ def test_data_table_get_mutual_information():
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
 
+    mi_many_rows = dt.get_mutual_information(nrows=100000)
+    pd.testing.assert_frame_equal(mi, mi_many_rows)
+
     mi = dt.get_mutual_information(nrows=1)
     assert mi.shape[0] == 6
     assert (mi['mutual_info'] == 1.0).all()

@@ -628,10 +628,10 @@ class DataTable(object):
             data[col_name] = new_col.cat.codes
         return data
 
-    def get_mutual_information(self, num_bins=10, nrows=100000):
+    def get_mutual_information(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataTable
-        that support mutual information. Logical types that support mutual information are
+        that support mutual information. Logical Types that support mutual information are
         as follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode,
         WholeNumber, and ZIPCode
 
@@ -639,7 +639,8 @@ class DataTable(object):
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical.
             nrows (int): The number of rows to sample for when determining mutual info.
-                Defaults to first 100,000 rows. If given None, will use all rows.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
 
         Returns:
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
