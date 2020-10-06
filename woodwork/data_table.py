@@ -340,16 +340,18 @@ class DataTable(object):
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
         """Helper method that can be used for updating columns by calling the column method
-        that is specified, passing along information contained in values and any
+        that is specified, passing along information contained in new_values and any
         additional positional arguments.
 
         Args:
-            method (str): The name of the method to call on the column object to perform
-            the update.
+            method (str): The name of the method to call on the column object to perform the update.
             new_values (dict/list): If a dictionary is provided the keys should correspond to column
             names and the items in the dictionary values will be passed along to the column method.
             If a list is provided, the items in the list should correspond to column names and
             no additional values will be passed along to the column method.
+
+        Returns:
+            woodwork.DataTable: A new DataTable with updated columns
         """
         new_dt = self._new_dt_from_cols(self.columns)
         cols_to_update = {}
