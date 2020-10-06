@@ -113,6 +113,7 @@ class DataTable(object):
         tags for the table"""
         typing_info = {}
         for dc in self.columns.values():
+            # --> logical type doesnt look good when we have Datetime() passed in
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',

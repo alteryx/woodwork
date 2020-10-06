@@ -1637,16 +1637,30 @@ def test_select_warnings(sample_df):
     assert len(dt_unused_ltype.columns) == 3
 
 
-def test_datetime_inference_with_config_options():
+def test_datetime_inference_with_format_param():
     # --> not as useful of a test since we're inherently not inferring anymore
     # I guess it's saying the only type we infer is simple and if you want more ocmplex you need to specify
-    dataframe = pd.DataFrame({
+    df = pd.DataFrame({
         'index': [0, 1, 2],
-        'dates': ["2019~01~01", "2019~01~02", "2019~01~03"]
+        'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
+        'dates_special_format': ["2019~01~01", "2019~01~02", "2019~01~03"],
     })
 
-    dt = DataTable(dataframe, name='dt_name', logical_types={'dates': Datetime(datetime_format='%Y~%m~%d')})
-    assert isinstance(dt.columns['dates'].logical_type, Datetime)
+    instantiated_datetime = Datetime(datetime_format='%Y~%m~%d')
+    dt = DataTable(df, name='dt_name', logical_types={'dates_special_format': instantiated_datetime,
+                                                      'dates': Datetime,
+                                                      })
+
+    assert dt.columns['dates'].logical_type == Datetime
+    assert isinstance(dt.columns['dates_special_format'].logical_type, Datetime)
+
+    # -->figure out what's going on wiht the time index :(
+    # error_msg = 'Time index column must contain datetime values'
+    # with pytest.raises(TypeError, match=error_msg):
+    #     DataTable(df, name='dt_name', logical_types={'dates_special_format': instantiated_datetime,
+    #                                                  'dates': Datetime,
+    #                                                  },
+    #               time_index='dates_special_format')
 
 
 def test_natural_language_inference_with_config_options():
