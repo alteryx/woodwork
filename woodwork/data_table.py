@@ -346,9 +346,9 @@ class DataTable(object):
         Args:
             method (str): The name of the method to call on the column object to perform the update.
             new_values (dict/list): If a dictionary is provided the keys should correspond to column
-            names and the items in the dictionary values will be passed along to the column method.
-            If a list is provided, the items in the list should correspond to column names and
-            no additional values will be passed along to the column method.
+                names and the items in the dictionary values will be passed along to the column method.
+                If a list is provided, the items in the list should correspond to column names and
+                no additional values will be passed along to the column method.
 
         Returns:
             woodwork.DataTable: A new DataTable with updated columns
@@ -657,15 +657,21 @@ def _check_semantic_tags(dataframe, semantic_tags):
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
-def _update_index(obj, index, old_index=None):
-    _check_index(obj._dataframe, index)
-    obj.columns[index]._set_as_index()
+def _update_index(data_table, index, old_index=None):
+    """Add the `index` tag to the specified index column and remove the tag from the
+    old_index column, if specified. Also checks that the specified index column
+    can be used as an index."""
+    _check_index(data_table._dataframe, index)
+    data_table.columns[index]._set_as_index()
     if old_index:
-        obj._update_columns({old_index: obj.columns[old_index].remove_semantic_tags('index')})
+        data_table._update_columns({old_index: data_table.columns[old_index].remove_semantic_tags('index')})
 
 
-def _update_time_index(obj, time_index, old_time_index=None):
-    _check_time_index(obj._dataframe, time_index)
-    obj.columns[time_index]._set_as_time_index()
+def _update_time_index(data_table, time_index, old_time_index=None):
+    """Add the `time_index` tag to the specified time_index column and remove the tag from the
+    old_time_index column, if specified. Also checks that the specified time_index
+    column can be used as a time index."""
+    _check_time_index(data_table._dataframe, time_index)
+    data_table.columns[time_index]._set_as_time_index()
     if old_time_index:
-        obj._update_columns({old_time_index: obj.columns[old_time_index].remove_semantic_tags('time_index')})
+        data_table._update_columns({old_time_index: data_table.columns[old_time_index].remove_semantic_tags('time_index')})
