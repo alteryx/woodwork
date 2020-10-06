@@ -241,13 +241,9 @@ class DataTable(object):
             woodwork.DataTable: DataTable with updated logical types
         """
         _check_logical_types(self._dataframe, logical_types)
-        new_dt = self._new_dt_from_cols(self.columns)
-        cols_to_update = {}
-        for colname, logical_type in logical_types.items():
-            cols_to_update[colname] = new_dt.columns[colname].set_logical_type(logical_type,
-                                                                               retain_index_tags=retain_index_tags)
-        new_dt._update_columns(cols_to_update)
-        new_dt._update_dtypes(cols_to_update)
+        new_dt = self._update_cols_and_get_new_dt('set_logical_type', logical_types, retain_index_tags)
+        cols_for_dtype_update = {col: new_dt.columns[col] for col in logical_types.keys()}
+        new_dt._update_dtypes(cols_for_dtype_update)
         return new_dt
 
     def _update_dtypes(self, cols_to_update):
@@ -281,12 +277,7 @@ class DataTable(object):
             woodwork.DataTable: DataTable with semantic tags added
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
-        new_dt = self._new_dt_from_cols(self.columns)
-        cols_to_update = {}
-        for name in semantic_tags.keys():
-            cols_to_update[name] = new_dt.columns[name].add_semantic_tags(semantic_tags[name])
-        new_dt._update_columns(cols_to_update)
-        return new_dt
+        return self._update_cols_and_get_new_dt('add_semantic_tags', semantic_tags)
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
@@ -301,12 +292,7 @@ class DataTable(object):
             woodwork.DataTable: DataTable with the specified semantic tags removed
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
-        new_dt = self._new_dt_from_cols(self.columns)
-        cols_to_update = {}
-        for colname, tags in semantic_tags.items():
-            cols_to_update[colname] = new_dt.columns[colname].remove_semantic_tags(tags)
-        new_dt._update_columns(cols_to_update)
-        return new_dt
+        return self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Update the semantic tags for any column names in the provided semantic_tags
@@ -324,12 +310,7 @@ class DataTable(object):
             woodwork.DataTable: DataTable with the specified semantic tags set
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
-        new_dt = self._new_dt_from_cols(self.columns)
-        cols_to_update = {}
-        for name in semantic_tags.keys():
-            cols_to_update[name] = new_dt.columns[name].set_semantic_tags(semantic_tags[name], retain_index_tags)
-        new_dt._update_columns(cols_to_update)
-        return new_dt
+        return self._update_cols_and_get_new_dt('set_semantic_tags', semantic_tags, retain_index_tags)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
@@ -355,10 +336,29 @@ class DataTable(object):
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
             columns = self.columns.keys()
+        return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
+
+    def _update_cols_and_get_new_dt(self, method, new_values, *args):
+        """Helper method that can be used for updating columns by calling the column method
+        that is specified, passing along information contained in values and any
+        additional positional arguments.
+
+        Args:
+            method (str): The name of the method to call on the column object to perform
+            the update.
+            new_values (dict/list): If a dictionary is provided the keys should correspond to column
+            names and the items in the dictionary values will be passed along to the column method.
+            If a list is provided, the items in the list should correspond to column names and
+            no additional values will be passed along to the column method.
+        """
         new_dt = self._new_dt_from_cols(self.columns)
         cols_to_update = {}
-        for colname in columns:
-            cols_to_update[colname] = new_dt.columns[colname].reset_semantic_tags(retain_index_tags)
+        if isinstance(new_values, dict):
+            for name, tags in new_values.items():
+                cols_to_update[name] = getattr(new_dt.columns[name], method)(tags, *args)
+        else:
+            for name in new_values:
+                cols_to_update[name] = getattr(new_dt.columns[name], method)(*args)
         new_dt._update_columns(cols_to_update)
         return new_dt
 
