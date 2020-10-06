@@ -571,66 +571,69 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
-    def _handle_nans_for_mutual_info(self, df):
+    def _handle_nans_for_mutual_info(self, data):
         """
         Remove NaN values in the dataframe so that mutual information can be calculated
 
         Args:
-            df (pd.DataFrame): dataframe to use for caculating mutual information
+            data (pd.DataFrame): dataframe to use for caculating mutual information
 
         Returns:
             pd.DataFrame: data with fully null columns removed and nans filled in
                 with either mean or mode
 
         """
-        null_cols = {col_name for col_name in df.columns if self[col_name]._series.isnull().all()}
-        df = df.drop(columns=null_cols)
+        # remove fully null columns
+        data = data.loc[:, data.columns[data.notnull().any()]]
 
         # replace or remove null values
-        for column_name in df.columns:
+        for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
             series = column._series
             ltype = column._logical_type
 
-            if series.isnull().values.any():
-                if column._is_numeric():
-                    mean = series.mean()
-                    if isinstance(mean, float) and not issubclass(ltype, Double):
-                        df[column_name] = series.astype('float')
-                    df[column_name] = series.fillna(mean)
-                elif column._is_categorical() or issubclass(ltype, Boolean):
-                    mode = _get_mode(series)
-                    df[column_name] = series.fillna(mode)
-        return df
+            if column._is_numeric():
+                mean = series.mean()
+                if isinstance(mean, float) and not issubclass(ltype, Double):
+                    data[column_name] = series.astype('float')
+                data[column_name] = series.fillna(mean)
+            elif column._is_categorical() or issubclass(ltype, Boolean):
+                mode = _get_mode(series)
+                data[column_name] = series.fillna(mode)
+        return data
 
-    def _make_categorical_for_mutual_info(self, df, num_bins):
+    def _make_categorical_for_mutual_info(self, data, num_bins):
         """Transforms dataframe columns into numeric categories so that
         mutual information can be calculated
 
         Args:
-            df (pd.DataFrame): dataframe to use for caculating mutual information
+            data (pd.DataFrame): dataframe to use for caculating mutual information
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical.
 
 
         Returns:
-            df (pd.DataFrame): Transformed data
+            data (pd.DataFrame): Transformed data
         """
 
-        col_names = list(df.columns.values)
+        col_names = data.columns.to_list()
         for col_name in col_names:
             if self[col_name]._is_numeric():
                 # bin numeric features to make categories
-                df[col_name] = pd.to_numeric(df[col_name])
-                df[col_name] = pd.qcut(df[col_name], num_bins, duplicates="drop")
+                data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
             # convert categories to integers
-            df[col_name] = df[col_name].astype("category").cat.codes
-        return df
+            new_col = data[col_name]
+            if new_col.dtype != 'category':
+                new_col = new_col.astype('category')
+            data[col_name] = new_col.cat.codes
+        return data
 
     def get_mutual_information(self, num_bins=10, nrows=100000):
         """
         Calculates mutual information between all pairs of columns in the DataTable
-        that support mutual information: Numeric, Categorical, and Boolean.
+        that support mutual information. Logical types that support mutual information are
+        as follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode,
+        WholeNumber, and ZIPCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -640,25 +643,26 @@ class DataTable(object):
 
         Returns:
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
-            `column_2`, and `mutual_info`
+            `column_2`, and `mutual_info`. Mutual information values are between 0 (no mutual information)
+            and 1 (perfect correlation)
         """
         # We only want Numeric, Categorical, and Boolean columns
         valid_columns = {col_name for col_name, column
                          in self.columns.items() if (column._is_numeric() or
                                                      column._is_categorical() or
                                                      issubclass(column.logical_type, Boolean))}
-        df = self._dataframe[valid_columns]
+        data = self._dataframe[valid_columns]
 
         # cut off data if necessary
-        if nrows is not None and nrows < df.shape[0]:
-            df = df.sample(nrows)
+        if nrows is not None and nrows < data.shape[0]:
+            data = data.sample(nrows)
 
-        df = self._handle_nans_for_mutual_info(df)
-        df = self._make_categorical_for_mutual_info(df, num_bins)
+        data = self._handle_nans_for_mutual_info(data)
+        data = self._make_categorical_for_mutual_info(data, num_bins)
 
         # calculate mutual info for all pairs of columns
         mutual_info = []
-        col_names = list(df.columns.values)
+        col_names = data.columns.to_list()
         for i, a_col in enumerate(col_names):
             for j in range(i, len(col_names)):
                 b_col = col_names[j]
@@ -668,7 +672,7 @@ class DataTable(object):
                         {"column_1": a_col, "column_2": b_col, "mutual_info": 1.0}
                     )
                 else:
-                    mi_score = normalized_mutual_info_score(df[a_col], df[b_col])
+                    mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )

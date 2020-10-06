@@ -36,7 +36,7 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
-from woodwork.tests.testing_utils import validate_subset_dt
+from woodwork.tests.testing_utils import mi_between_cols, validate_subset_dt
 
 
 def test_datatable_init(sample_df):
@@ -1876,7 +1876,7 @@ def test_datatable_describe_with_no_semantic_tags():
 def test_data_table_handle_nans_for_mutual_info():
     df_nans = pd.DataFrame({
         'nans': pd.Series([None, None, None, None]),
-        'ints': pd.Series([2, np.nan, 5, 2]),
+        'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
         'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
@@ -1889,7 +1889,7 @@ def test_data_table_handle_nans_for_mutual_info():
     assert isinstance(formatted_df, pd.DataFrame)
 
     assert 'nans' not in formatted_df.columns
-    assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='float'))
+    assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
     assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
     assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
@@ -1915,18 +1915,9 @@ def test_data_table_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
-def mi_between_cols(col1, col2, df):
-    mi_series = df.loc[df['column_1'] == col1].loc[df['column_2'] == col2]['mutual_info']
-
-    if len(mi_series) == 0:
-        mi_series = df.loc[df['column_1'] == col2].loc[df['column_2'] == col1]['mutual_info']
-
-    return mi_series.iloc[0]
-
-
 def test_data_table_get_mutual_information():
     df_same_mi = pd.DataFrame({
-        'ints': pd.Series([2, np.nan, 5, 2]),
+        'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([1, None, 100, 1]),
         'nans': pd.Series([None, None, None, None]),
         'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
@@ -1935,9 +1926,11 @@ def test_data_table_get_mutual_information():
     dt_same_mi = DataTable(df_same_mi)
 
     mi = dt_same_mi.get_mutual_information()
-    assert 'nans' not in mi.columns
-    assert 'nat_lang' not in mi.columns
-    assert 'date_no_nan' not in mi.columns
+
+    cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
+    assert 'nans' not in cols_used
+    assert 'nat_lang' not in cols_used
+    assert 'date' not in cols_used
     assert mi.shape[0] == 3
     assert mi_between_cols('ints', 'ints', mi) == 1.0
     assert mi_between_cols('floats', 'ints', mi) == 1.0
@@ -1955,7 +1948,7 @@ def test_data_table_get_mutual_information():
     assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 1.744e-16, 3)
+    np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
 
     mi = dt.get_mutual_information(nrows=1)
     assert mi.shape[0] == 6
@@ -1964,8 +1957,8 @@ def test_data_table_get_mutual_information():
     mi = dt.get_mutual_information(num_bins=2)
     assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
-    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 1.744e-16, 3)
-    np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 1.744e-16, 3)
+    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
 
     # Confirm that none of this changed the DataTable's underlying df
     pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
