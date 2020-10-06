@@ -934,6 +934,21 @@ def test_timedelta_dtype_inference_on_init():
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
+def test_data_table_timezone():
+    df = pd.DataFrame({
+        'unspecified': pd.Series(['2020-01-01 01:00:00+00:00', '2020-01-02 02:00:00+00:00', '2020-01-03 03:00:00+00:00']),
+        'utc': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns, UTC]'),
+        'pacific': pd.Series([pd.Timestamp(1262347200000000000).tz_localize('US/Pacific')] * 3),
+        'berlin': pd.Series(pd.date_range('20130101', periods=3, tz='Europe/Berlin'))
+
+    })
+    dt = DataTable(df)
+    assert dt['unspecified'].dtype == 'datetime64[ns, UTC]'
+    assert dt['utc'].dtype == 'datetime64[ns, UTC]'
+    assert dt['pacific'].dtype == 'datetime64[ns, US/Pacific]'
+    assert dt['berlin'].dtype == 'datetime64[ns, Europe/Berlin]'
+
+
 def test_invalid_select_ltypes(sample_df):
     dt = DataTable(sample_df)
     dt.set_logical_types({
