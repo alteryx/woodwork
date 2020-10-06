@@ -1394,15 +1394,18 @@ def test_setitem_overwrite_column(sample_df):
 def test_set_index(sample_df):
     # Test setting index with set_index()
     dt = DataTable(sample_df)
-    dt.set_index('id')
-    assert dt.index == 'id'
-    assert dt.columns['id'].semantic_tags == {'index'}
-    non_index_cols = [col for col in dt.columns.values() if col.name != 'id']
+    new_dt = dt.set_index('id')
+    assert new_dt is not dt
+    assert new_dt.index == 'id'
+    assert dt.index is None
+    assert new_dt.columns['id'].semantic_tags == {'index'}
+    non_index_cols = [col for col in new_dt.columns.values() if col.name != 'id']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
     # Test changing index with set_index()
-    dt.set_index('full_name')
-    assert dt.columns['full_name'].semantic_tags == {'index'}
-    non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
+    new_dt2 = new_dt.set_index('full_name')
+    assert new_dt.index == 'id'
+    assert new_dt2.columns['full_name'].semantic_tags == {'index'}
+    non_index_cols = [col for col in new_dt2.columns.values() if col.name != 'full_name']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
 
     # Test setting index using setter
@@ -1422,20 +1425,22 @@ def test_set_index(sample_df):
 def test_set_time_index(sample_df):
     # Test setting time index with set_time_index()
     dt = DataTable(sample_df)
-    dt.set_time_index('signup_date')
-    assert dt.time_index == 'signup_date'
-    assert 'time_index' in dt.columns['signup_date'].semantic_tags
-    non_index_cols = [col for col in dt.columns.values() if col.name != 'signup_date']
+    new_dt = dt.set_time_index('signup_date')
+    assert new_dt is not dt
+    assert dt.time_index is None
+    assert new_dt.time_index == 'signup_date'
+    assert 'time_index' in new_dt.columns['signup_date'].semantic_tags
+    non_index_cols = [col for col in new_dt.columns.values() if col.name != 'signup_date']
     assert all(['time_index' not in col.semantic_tags for col in non_index_cols])
 
     # Test changing time index with set_time_index()
     sample_df['transaction_date'] = pd.to_datetime('2015-09-02')
     dt = DataTable(sample_df)
-    dt.set_time_index('signup_date')
-    assert dt.time_index == 'signup_date'
-    dt.set_time_index('transaction_date')
-    assert 'time_index' in dt.columns['transaction_date'].semantic_tags
-    non_index_cols = [col for col in dt.columns.values() if col.name != 'transaction_date']
+    new_dt = dt.set_time_index('signup_date')
+    assert new_dt.time_index == 'signup_date'
+    new_dt2 = new_dt.set_time_index('transaction_date')
+    assert 'time_index' in new_dt2.columns['transaction_date'].semantic_tags
+    non_index_cols = [col for col in new_dt2.columns.values() if col.name != 'transaction_date']
     assert all(['time_index' not in col.semantic_tags for col in non_index_cols])
 
     # Test setting index using setter

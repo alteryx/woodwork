@@ -64,9 +64,9 @@ class DataTable(object):
                                             semantic_tags,
                                             use_standard_tags)
         if index:
-            self.set_index(index)
+            _update_index(self, index)
         if time_index:
-            self.set_time_index(time_index)
+            _update_time_index(self, time_index)
 
         self._update_dtypes(self.columns)
 
@@ -175,7 +175,7 @@ class DataTable(object):
         if self.index and index is None:
             self.remove_semantic_tags({self.index: 'index'})
         elif index is not None:
-            self.set_index(index)
+            _update_index(self, index, self.index)
 
     @property
     def time_index(self):
@@ -190,7 +190,7 @@ class DataTable(object):
         if self.time_index and time_index is None:
             self.remove_semantic_tags({self.time_index: 'time_index'})
         elif time_index is not None:
-            self.set_time_index(time_index)
+            _update_time_index(self, time_index, self.time_index)
 
     def _update_columns(self, new_columns):
         """Update the DataTable columns based on items contained in the
@@ -199,19 +199,20 @@ class DataTable(object):
             self.columns[name] = column
 
     def set_index(self, index):
-        """Set the index column. Adds the 'index' semantic tag to the column and
-        clears the tag from any previously set index column. Setting a column as the
-        index column will also cause any previously set standard tags for the column
-        to be removed.
+        """Set the index column and return a new DataTable. Adds the 'index' semantic
+        tag to the column and clears the tag from any previously set index column.
+        Setting a column as the index column will also cause any previously set standard
+        tags for the column to be removed.
 
         Args:
             index (str): The name of the column to set as the index
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified index column set.
         """
-        _check_index(self._dataframe, index)
-        old_index = self.index
-        self.columns[index]._set_as_index()
-        if old_index:
-            self._update_columns({old_index: self.columns[old_index].remove_semantic_tags('index')})
+        new_dt = self._new_dt_from_cols(self.columns)
+        _update_index(new_dt, index, self.index)
+        return new_dt
 
     def set_time_index(self, time_index):
         """Set the time index column. Adds the 'time_index' semantic tag to the column and
@@ -220,11 +221,9 @@ class DataTable(object):
         Args:
             time_index (str): The name of the column to set as the time index.
         """
-        _check_time_index(self._dataframe, time_index)
-        old_time_index = self.time_index
-        self.columns[time_index]._set_as_time_index()
-        if old_time_index:
-            self._update_columns({old_time_index: self.columns[old_time_index].remove_semantic_tags('time_index')})
+        new_dt = self._new_dt_from_cols(self.columns)
+        _update_time_index(new_dt, time_index, self.time_index)
+        return new_dt
 
     def set_logical_types(self, logical_types, retain_index_tags=True):
         """Update the logical type for any columns names in the provided logical_types
@@ -626,3 +625,17 @@ def _check_semantic_tags(dataframe, semantic_tags):
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _update_index(obj, index, old_index=None):
+    _check_index(obj._dataframe, index)
+    obj.columns[index]._set_as_index()
+    if old_index:
+        obj._update_columns({old_index: obj.columns[old_index].remove_semantic_tags('index')})
+
+
+def _update_time_index(obj, time_index, old_time_index=None):
+    _check_time_index(obj._dataframe, time_index)
+    obj.columns[time_index]._set_as_time_index()
+    if old_time_index:
+        obj._update_columns({old_time_index: obj.columns[old_time_index].remove_semantic_tags('time_index')})
