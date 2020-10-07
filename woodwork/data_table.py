@@ -115,7 +115,6 @@ class DataTable(object):
         tags for the table"""
         typing_info = {}
         for dc in self.columns.values():
-            # --> logical type doesnt look good when we have Datetime() passed in
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
@@ -259,7 +258,7 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    if column.logical_type == Datetime or isinstance(column.logical_type, Datetime):
+                    if str(column.logical_type) == 'Datetime':
                         self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
                     else:
                         self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)

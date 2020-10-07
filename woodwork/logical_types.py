@@ -23,6 +23,9 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__)
 
+    def __str__(self):
+        return str(self.__class__)
+
 
 class Boolean(LogicalType):
     """Represents Logical Types that contain binary values indicating true/false.
