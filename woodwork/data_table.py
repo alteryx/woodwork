@@ -173,7 +173,8 @@ class DataTable(object):
     @index.setter
     def index(self, index):
         if self.index and index is None:
-            self._update_columns({self.index: self.columns[self.index].remove_semantic_tags('index')})
+            updated_index_col = self.columns[self.index].remove_semantic_tags('index')
+            self._update_columns({self.index: updated_index_col})
         elif index is not None:
             _update_index(self, index, self.index)
 
@@ -188,7 +189,8 @@ class DataTable(object):
     @time_index.setter
     def time_index(self, time_index):
         if self.time_index and time_index is None:
-            self._update_columns({self.time_index: self.columns[self.time_index].remove_semantic_tags('time_index')})
+            updated_time_index_col = self.columns[self.time_index].remove_semantic_tags('time_index')
+            self._update_columns({self.time_index: updated_time_index_col})
         elif time_index is not None:
             _update_time_index(self, time_index, self.time_index)
 
