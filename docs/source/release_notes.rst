@@ -9,12 +9,15 @@ Release Notes
         * Add list_logical_types function and CLI to get dataframe of woodwork LogicalTypes (:pr:`172`)
         * Add ``describe`` method to DataTable to generate statistics for the underlying data (:pr:`181`)
         * Add optional ``return_dataframe`` parameter to ``load_retail`` to return either DataFrame or DataTable (:pr:`189`)
+        * Add ``get_mutual_information`` method to DataTable to generate mutual information between columns (:pr:`203`)
     * Fixes
         * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
         * Fix bug in ``DataTable.describe`` that could cause an error if certain semantic tags were applied improperly (:pr:`190`)
     * Changes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
         * Remove standard tags from index column and do not return stats for index column from ``DataTable.describe`` (:pr:`196`)
+        * Update ``DataColumn.set_semantic_tags`` and ``DataColumn.add_semantic_tags`` to return new objects (:pr:`205`)
+        * Update various ``DataTable`` methods to return new objects rather than modifying in place (:pr:`210`)
         * Add support for Python 3.9 (:pr:`207`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
@@ -26,6 +29,7 @@ Release Notes
         * Add section for setting index and time index to start notebook (:pr:`179`)
         * Rename changelog to Release Notes (:pr:`193`)
         * Add section for standard tags to start notebook (:pr:`188`)
+        * Add Understanding Types and Tags user guide (:pr:`201`)
         * Add missing docstring to ``list_logical_types`` (:pr:`202`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)

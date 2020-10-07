@@ -71,7 +71,7 @@ def list_logical_types():
         [{'name': ltype.__name__,
           'type_string': ltype.type_string,
           'description': ltype.__doc__,
-          'pandas_dtype': ltype.pandas_dtype,
+          'physical_type': ltype.pandas_dtype,
           'standard_tags': ltype.standard_tags}
             for ltype in ww.logical_types.LogicalType.__subclasses__()]
     )

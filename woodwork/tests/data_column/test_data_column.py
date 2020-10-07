@@ -252,8 +252,9 @@ def test_set_semantic_tags(sample_series):
     assert data_col.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
-    data_col.set_semantic_tags(new_tags)
-    assert data_col.semantic_tags == set(new_tags)
+    new_col = data_col.set_semantic_tags(new_tags)
+    assert new_col is not data_col
+    assert new_col.semantic_tags == set(new_tags)
 
 
 def test_set_semantic_tags_with_index(sample_series):
@@ -262,10 +263,10 @@ def test_set_semantic_tags_with_index(sample_series):
     data_col._set_as_index()
     assert data_col.semantic_tags == {'tag1', 'tag2', 'index'}
     new_tags = ['new_tag']
-    data_col.set_semantic_tags(new_tags)
-    assert data_col.semantic_tags == {'index', 'new_tag'}
-    data_col.set_semantic_tags(new_tags, retain_index_tags=False)
-    assert data_col.semantic_tags == {'new_tag'}
+    new_col = data_col.set_semantic_tags(new_tags)
+    assert new_col.semantic_tags == {'index', 'new_tag'}
+    new_col2 = new_col.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert new_col2.semantic_tags == {'new_tag'}
 
 
 def test_set_semantic_tags_with_time_index(sample_datetime_series):
@@ -274,10 +275,10 @@ def test_set_semantic_tags_with_time_index(sample_datetime_series):
     data_col._set_as_time_index()
     assert data_col.semantic_tags == {'tag1', 'tag2', 'time_index'}
     new_tags = ['new_tag']
-    data_col.set_semantic_tags(new_tags)
-    assert data_col.semantic_tags == {'time_index', 'new_tag'}
-    data_col.set_semantic_tags(new_tags, retain_index_tags=False)
-    assert data_col.semantic_tags == {'new_tag'}
+    new_col = data_col.set_semantic_tags(new_tags)
+    assert new_col.semantic_tags == {'time_index', 'new_tag'}
+    new_col2 = new_col.set_semantic_tags(new_tags, retain_index_tags=False)
+    assert new_col2.semantic_tags == {'new_tag'}
 
 
 def test_adds_numeric_standard_tag():
@@ -314,14 +315,15 @@ def test_add_custom_tags(sample_series):
     semantic_tags = 'initial_tag'
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
 
-    data_col.add_semantic_tags('string_tag')
-    assert data_col.semantic_tags == {'initial_tag', 'string_tag'}
+    new_col = data_col.add_semantic_tags('string_tag')
+    assert new_col is not data_col
+    assert new_col.semantic_tags == {'initial_tag', 'string_tag'}
 
-    data_col.add_semantic_tags(['list_tag'])
-    assert data_col.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
+    new_col2 = new_col.add_semantic_tags(['list_tag'])
+    assert new_col2.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
 
-    data_col.add_semantic_tags({'set_tag'})
-    assert data_col.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
+    new_col3 = new_col2.add_semantic_tags({'set_tag'})
+    assert new_col3.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
 
 
 def test_warns_on_setting_duplicate_tag(sample_series):

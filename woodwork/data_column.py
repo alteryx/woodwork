@@ -41,8 +41,11 @@ class DataColumn(object):
         self._series = series
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
-        self._semantic_tags = set()
-        self.set_semantic_tags(semantic_tags)
+        semantic_tags = _convert_input_to_set(semantic_tags)
+        _validate_tags(semantic_tags)
+        if use_standard_tags:
+            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
+        self._semantic_tags = semantic_tags
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -52,13 +55,16 @@ class DataColumn(object):
         return msg
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
-        """Update the logical type for the column and return a new column object.
+        """Update the logical type for the column and return a new DataColumn object.
 
         Args:
             logical_type (LogicalType, str): The new logical type to set for the column.
             retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
                 the column will be retained. If False, all tags will be cleared.
                 Defaults to True.
+
+        Returns:
+            woodwork.DataColumn: DataColumn with updated logical type.
         """
         new_logical_type = self._parse_logical_type(logical_type)
         new_col = DataColumn(series=self._series,
@@ -83,38 +89,53 @@ class DataColumn(object):
             return infer_logical_type(self._series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        """Replace current semantic tags with new values.
+        """Replace current semantic tags with new values and return a new DataColumn object.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to set for column
             retain_index_tags (bool, optional): If True, any 'index' or 'time_index' tags on
                 the column will be retained. If False, all tags will be replaced.
                 Defaults to True.
+
+        Returns:
+            woodwork.DataColumn: DataColumn with specified semantic tags.
         """
         semantic_tags = _convert_input_to_set(semantic_tags)
         _validate_tags(semantic_tags)
         is_index = 'index' in self._semantic_tags
         is_time_index = 'time_index' in self._semantic_tags
-        self._semantic_tags = semantic_tags
-        if self.use_standard_tags:
-            self._semantic_tags = self._semantic_tags.union(self._logical_type.standard_tags)
+        new_col = DataColumn(series=self._series,
+                             logical_type=self.logical_type,
+                             semantic_tags=semantic_tags,
+                             use_standard_tags=self.use_standard_tags)
+        if new_col.use_standard_tags:
+            new_col._semantic_tags = new_col._semantic_tags.union(new_col._logical_type.standard_tags)
         if retain_index_tags and is_index:
-            self._set_as_index()
+            new_col._set_as_index()
         if retain_index_tags and is_time_index:
-            self._set_as_time_index()
+            new_col._set_as_time_index()
+        return new_col
 
     def add_semantic_tags(self, semantic_tags):
-        """Add the specified semantic tags to the column.
+        """Add the specified semantic tags to the column and return a new DataColumn object.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add to the column
+
+        Returns:
+            woodwork.DataColumn: DataColumn with specified semantic tags added.
         """
         new_tags = _convert_input_to_set(semantic_tags)
         _validate_tags(new_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
             warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
-        self._semantic_tags = self._semantic_tags.union(new_tags)
+        new_col_tags = self._semantic_tags.union(new_tags)
+        new_col = DataColumn(series=self._series,
+                             logical_type=self.logical_type,
+                             semantic_tags=new_col_tags,
+                             use_standard_tags=self.use_standard_tags)
+        return new_col
 
     def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
@@ -125,6 +146,9 @@ class DataColumn(object):
             retain_index_tags (bool, optional): If True, any 'index' or
                 'time_index' tags on the column will be retained. If False,
                 all tags will be cleared. Defaults to False.
+
+        Returns:
+            woodwork.DataColumn: DataColumn with reset semantic tags.
         """
         new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
@@ -141,6 +165,9 @@ class DataColumn(object):
 
         Args:
             semantic_tags (str/list/set): Semantic tag(s) to remove from the column.
+
+        Returns:
+            woodwork.DataColumn: DataColumn with specified tags removed.
         """
         tags_to_remove = _convert_input_to_set(semantic_tags)
         invalid_tags = sorted(list(tags_to_remove.difference(self._semantic_tags)))
@@ -162,6 +189,12 @@ class DataColumn(object):
 
     def _set_as_time_index(self):
         self._semantic_tags.add('time_index')
+
+    def _is_numeric(self):
+        return 'numeric' in self.logical_type.standard_tags
+
+    def _is_categorical(self):
+        return 'category' in self.logical_type.standard_tags
 
     def to_pandas(self, copy=False):
         """Retrieves the DataColumn's underlying series.
