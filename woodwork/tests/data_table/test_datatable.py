@@ -1638,28 +1638,35 @@ def test_select_warnings(sample_df):
 
 
 def test_datetime_inference_with_format_param():
-    ymd_format = Datetime(datetime_format='%Y~%m~%d')
-    mdy_format = Datetime(datetime_format='%m~%d~%Y')
-
     df = pd.DataFrame({
         'index': [0, 1, 2],
         'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
         'ymd_special': ["2019~01~01", "2019~01~02", "2019~01~03"],
-        'mdy_special': pd.Series(['3~11~2000', '3~12~2000', '3~13~2000']),
+        'mdy_special': pd.Series(['3~11~2000', '3~12~2000', '3~13~2000'], dtype='string'),
     })
     dt = DataTable(df,
                    name='dt_name',
-                   logical_types={'ymd_special': ymd_format,
-                                  'mdy_special': mdy_format,
+                   logical_types={'ymd_special': Datetime(datetime_format='%Y~%m~%d'),
+                                  'mdy_special': Datetime(datetime_format='%m~%d~%Y'),
                                   'dates': Datetime},
                    time_index='ymd_special')
 
     assert dt.time_index == 'ymd_special'
-    assert dt.columns['dates'].logical_type == Datetime
-    assert isinstance(dt.columns['ymd_special'].logical_type, Datetime)
-    assert isinstance(dt.columns['mdy_special'].logical_type, Datetime)
+    assert dt['dates'].logical_type == Datetime
+    assert isinstance(dt['ymd_special'].logical_type, Datetime)
+    assert isinstance(dt['mdy_special'].logical_type, Datetime)
 
     dt.set_time_index('mdy_special')
+    assert dt.time_index == 'mdy_special'
+
+    df = pd.DataFrame({
+        'mdy_special': pd.Series(['3&11&2000', '3&12&2000', '3&13&2000'], dtype='string'),
+    })
+    dt = DataTable(df)
+
+    dt.set_logical_types({'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
+    dt.time_index = 'mdy_special'
+    assert isinstance(dt['mdy_special'].logical_type, Datetime)
     assert dt.time_index == 'mdy_special'
 
 

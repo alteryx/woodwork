@@ -258,7 +258,7 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    if str(column.logical_type) == 'Datetime':
+                    if column.logical_type == Datetime or isinstance(column.logical_type, Datetime):
                         self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
                     else:
                         self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
