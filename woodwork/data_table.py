@@ -227,7 +227,7 @@ class DataTable(object):
 
     def set_logical_types(self, logical_types, retain_index_tags=True):
         """Update the logical type for any columns names in the provided logical_types
-        dictionary. Replaces existing columns with new column objects and returns a new
+        dictionary. Replaces existing columns with new DataColumn objects and returns a new
         DataTable object.
 
         Args:
@@ -267,7 +267,7 @@ class DataTable(object):
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
-        Replaces updated columns with new column objects and returns a new DataTable object.
+        Replaces updated columns with new DataColumn objects and returns a new DataTable object.
 
         Args:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
@@ -281,7 +281,7 @@ class DataTable(object):
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
-        dictionary. Replaces the column with a new column object and return a new DataTable
+        dictionary. Replaces the column with a new DataColumn object and return a new DataTable
         object.
 
         Args:
@@ -297,7 +297,7 @@ class DataTable(object):
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Update the semantic tags for any column names in the provided semantic_tags
         dictionary. Replaces the existing semantic tags with the new values. Also replaces
-        any updated columns with new column objects and returns a new DataTable object.
+        any updated columns with new DataColumn objects and returns a new DataTable object.
 
         Args:
             semantic_tags (dict): A dictionary defining the new semantic_tags for the
@@ -344,11 +344,11 @@ class DataTable(object):
         additional positional arguments.
 
         Args:
-            method (str): The name of the method to call on the column object to perform the update.
+            method (str): The name of the method to call on the DataColumn object to perform the update.
             new_values (dict/list): If a dictionary is provided the keys should correspond to column
-                names and the items in the dictionary values will be passed along to the column method.
+                names and the items in the dictionary values will be passed along to the DataColumn method.
                 If a list is provided, the items in the list should correspond to column names and
-                no additional values will be passed along to the column method.
+                no additional values will be passed along to the DataColumn method.
 
         Returns:
             woodwork.DataTable: A new DataTable with updated columns
