@@ -228,7 +228,9 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
-    dt = DataTable(sample_df)
+    sample_df['formatted_date'] = pd.Series(["2019~01~01", "2019~01~02", "2019~01~03"])
+    ymd_format = Datetime(datetime_format='%Y~%m~%d')
+    dt = DataTable(sample_df, logical_types={'formatted_date': ymd_format})
     returned_types = dt.types
     assert isinstance(returned_types, pd.DataFrame)
     assert 'Physical Type' in returned_types.columns
@@ -236,7 +238,7 @@ def test_datatable_types(sample_df):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
-    assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
         'id': WholeNumber,
         'full_name': NaturalLanguage,
@@ -244,7 +246,8 @@ def test_datatable_types(sample_df):
         'phone_number': NaturalLanguage,
         'age': WholeNumber,
         'signup_date': Datetime,
-        'is_registered': Boolean
+        'is_registered': Boolean,
+        'formatted_date': ymd_format
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
