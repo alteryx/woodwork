@@ -55,7 +55,7 @@ class DataColumn(object):
         return msg
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
-        """Update the logical type for the column and return a new column object.
+        """Update the logical type for the column and return a new DataColumn object.
 
         Args:
             logical_type (LogicalType, str): The new logical type to set for the column.
@@ -89,7 +89,7 @@ class DataColumn(object):
             return infer_logical_type(self._series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        """Replace current semantic tags with new values and return a new column object.
+        """Replace current semantic tags with new values and return a new DataColumn object.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to set for column
@@ -117,7 +117,7 @@ class DataColumn(object):
         return new_col
 
     def add_semantic_tags(self, semantic_tags):
-        """Add the specified semantic tags to the column and return a new column object.
+        """Add the specified semantic tags to the column and return a new DataColumn object.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add to the column
