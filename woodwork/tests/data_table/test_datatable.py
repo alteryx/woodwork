@@ -1656,7 +1656,7 @@ def test_datetime_inference_with_format_param():
     assert isinstance(dt['ymd_special'].logical_type, Datetime)
     assert isinstance(dt['mdy_special'].logical_type, Datetime)
 
-    dt.set_time_index('mdy_special')
+    dt = dt.set_time_index('mdy_special')
     assert dt.time_index == 'mdy_special'
 
     df = pd.DataFrame({
@@ -1664,7 +1664,7 @@ def test_datetime_inference_with_format_param():
     })
     dt = DataTable(df)
 
-    dt.set_logical_types({'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
+    dt = dt.set_logical_types({'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
     dt.time_index = 'mdy_special'
     assert isinstance(dt['mdy_special'].logical_type, Datetime)
     assert dt.time_index == 'mdy_special'
