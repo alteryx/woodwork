@@ -23,6 +23,9 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__)
 
+    def __str__(self):
+        return str(self.__class__)
+
 
 class Boolean(LogicalType):
     """Represents Logical Types that contain binary values indicating true/false.
@@ -73,6 +76,9 @@ class CountryCode(LogicalType):
 class Datetime(LogicalType):
     """Represents Logical Types that contain date and time information.
 
+    Args:
+        datetime_format (str): Desired datetime format for data
+
     Examples:
         .. code-block:: python
 
@@ -81,6 +87,10 @@ class Datetime(LogicalType):
              "01/01/2000 08:30"]
     """
     pandas_dtype = 'datetime64[ns]'
+    datetime_format = None
+
+    def __init__(self, datetime_format=None):
+        self.datetime_format = datetime_format
 
 
 class Double(LogicalType):

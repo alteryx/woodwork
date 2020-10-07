@@ -228,7 +228,9 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
-    dt = DataTable(sample_df)
+    sample_df['formatted_date'] = pd.Series(["2019~01~01", "2019~01~02", "2019~01~03"])
+    ymd_format = Datetime(datetime_format='%Y~%m~%d')
+    dt = DataTable(sample_df, logical_types={'formatted_date': ymd_format})
     returned_types = dt.types
     assert isinstance(returned_types, pd.DataFrame)
     assert 'Physical Type' in returned_types.columns
@@ -236,7 +238,7 @@ def test_datatable_types(sample_df):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
-    assert all([issubclass(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
         'id': WholeNumber,
         'full_name': NaturalLanguage,
@@ -244,7 +246,8 @@ def test_datatable_types(sample_df):
         'phone_number': NaturalLanguage,
         'age': WholeNumber,
         'signup_date': Datetime,
-        'is_registered': Boolean
+        'is_registered': Boolean,
+        'formatted_date': ymd_format
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
@@ -1637,16 +1640,37 @@ def test_select_warnings(sample_df):
     assert len(dt_unused_ltype.columns) == 3
 
 
-def test_datetime_inference_with_config_options():
-    dataframe = pd.DataFrame({
+def test_datetime_inference_with_format_param():
+    df = pd.DataFrame({
         'index': [0, 1, 2],
-        'dates': ["2019~01~01", "2019~01~02", "2019~01~03"]
+        'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
+        'ymd_special': ["2019~01~01", "2019~01~02", "2019~01~03"],
+        'mdy_special': pd.Series(['3~11~2000', '3~12~2000', '3~13~2000'], dtype='string'),
     })
+    dt = DataTable(df,
+                   name='dt_name',
+                   logical_types={'ymd_special': Datetime(datetime_format='%Y~%m~%d'),
+                                  'mdy_special': Datetime(datetime_format='%m~%d~%Y'),
+                                  'dates': Datetime},
+                   time_index='ymd_special')
 
-    ww.config.set_option('datetime_format', '%Y~%m~%d')
-    dt = DataTable(dataframe, name='dt_name')
-    assert dt.columns['dates'].logical_type == Datetime
-    ww.config.reset_option('datetime_format')
+    assert dt.time_index == 'ymd_special'
+    assert dt['dates'].logical_type == Datetime
+    assert isinstance(dt['ymd_special'].logical_type, Datetime)
+    assert isinstance(dt['mdy_special'].logical_type, Datetime)
+
+    dt = dt.set_time_index('mdy_special')
+    assert dt.time_index == 'mdy_special'
+
+    df = pd.DataFrame({
+        'mdy_special': pd.Series(['3&11&2000', '3&12&2000', '3&13&2000'], dtype='string'),
+    })
+    dt = DataTable(df)
+
+    dt = dt.set_logical_types({'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
+    dt.time_index = 'mdy_special'
+    assert isinstance(dt['mdy_special'].logical_type, Datetime)
+    assert dt.time_index == 'mdy_special'
 
 
 def test_natural_language_inference_with_config_options():

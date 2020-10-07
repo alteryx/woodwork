@@ -79,7 +79,7 @@ class DataColumn(object):
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
-            if logical_type in LogicalType.__subclasses__():
+            if logical_type in LogicalType.__subclasses__() or isinstance(logical_type, LogicalType):
                 return logical_type
             elif isinstance(logical_type, str):
                 return str_to_logical_type(logical_type)
@@ -251,13 +251,12 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
-    datetime_format = config.get_option('datetime_format')
     natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series, datetime_format):
+        if col_is_datetime(series):
             inferred_type = Datetime
         else:
             inferred_type = Categorical
