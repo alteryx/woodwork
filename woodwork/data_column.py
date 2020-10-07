@@ -190,6 +190,12 @@ class DataColumn(object):
     def _set_as_time_index(self):
         self._semantic_tags.add('time_index')
 
+    def _is_numeric(self):
+        return 'numeric' in self.logical_type.standard_tags
+
+    def _is_categorical(self):
+        return 'category' in self.logical_type.standard_tags
+
     def to_pandas(self, copy=False):
         """Retrieves the DataColumn's underlying series.
 
