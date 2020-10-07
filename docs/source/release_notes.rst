@@ -30,6 +30,7 @@ Release Notes
         * Add section for standard tags to start notebook (:pr:`188`)
         * Add Understanding Types and Tags user guide (:pr:`201`)
         * Add missing docstring to ``list_logical_types`` (:pr:`202`)
+        * Add Woodwork Global Configuration Options guide (:pr:`215`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
