@@ -1638,29 +1638,29 @@ def test_select_warnings(sample_df):
 
 
 def test_datetime_inference_with_format_param():
-    # --> not as useful of a test since we're inherently not inferring anymore
-    # I guess it's saying the only type we infer is simple and if you want more ocmplex you need to specify
+    ymd_format = Datetime(datetime_format='%Y~%m~%d')
+    mdy_format = Datetime(datetime_format='%m~%d~%Y')
+
     df = pd.DataFrame({
         'index': [0, 1, 2],
         'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
-        'dates_special_format': ["2019~01~01", "2019~01~02", "2019~01~03"],
+        'ymd_special': ["2019~01~01", "2019~01~02", "2019~01~03"],
+        'mdy_special': pd.Series(['3~11~2000', '3~12~2000', '3~13~2000']),
     })
+    dt = DataTable(df,
+                   name='dt_name',
+                   logical_types={'ymd_special': ymd_format,
+                                  'mdy_special': mdy_format,
+                                  'dates': Datetime},
+                   time_index='ymd_special')
 
-    instantiated_datetime = Datetime(datetime_format='%Y~%m~%d')
-    dt = DataTable(df, name='dt_name', logical_types={'dates_special_format': instantiated_datetime,
-                                                      'dates': Datetime,
-                                                      })
-
+    assert dt.time_index == 'ymd_special'
     assert dt.columns['dates'].logical_type == Datetime
-    assert isinstance(dt.columns['dates_special_format'].logical_type, Datetime)
+    assert isinstance(dt.columns['ymd_special'].logical_type, Datetime)
+    assert isinstance(dt.columns['mdy_special'].logical_type, Datetime)
 
-    # -->figure out what's going on wiht the time index :(
-    # error_msg = 'Time index column must contain datetime values'
-    # with pytest.raises(TypeError, match=error_msg):
-    #     DataTable(df, name='dt_name', logical_types={'dates_special_format': instantiated_datetime,
-    #                                                  'dates': Datetime,
-    #                                                  },
-    #               time_index='dates_special_format')
+    dt.set_time_index('mdy_special')
+    assert dt.time_index == 'mdy_special'
 
 
 def test_natural_language_inference_with_config_options():

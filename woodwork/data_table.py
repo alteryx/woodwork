@@ -66,10 +66,12 @@ class DataTable(object):
                                             use_standard_tags)
         if index:
             _update_index(self, index)
+
+        # Update dtypes before setting time index so that any Datetime formatting is applied
+        self._update_dtypes(self.columns)
+
         if time_index:
             _update_time_index(self, time_index)
-
-        self._update_dtypes(self.columns)
 
     def __getitem__(self, key):
         if isinstance(key, list):
@@ -720,10 +722,14 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         raise TypeError('DataTable name must be a string')
     if index:
         _check_index(dataframe, index)
-    if time_index:
-        _check_time_index(dataframe, time_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
+    if time_index:
+        datetime_format = None
+        if logical_types is not None and time_index in logical_types:
+            datetime_format = logical_types[time_index].datetime_format
+        _check_time_index(dataframe, time_index, datetime_format=datetime_format)
+
     if semantic_tags:
         _check_semantic_tags(dataframe, semantic_tags)
 
@@ -742,13 +748,12 @@ def _check_index(dataframe, index):
         raise IndexError('Index column must be unique')
 
 
-def _check_time_index(dataframe, time_index):
-    # --> we should be able to handle different formats, right?
+def _check_time_index(dataframe, time_index, datetime_format=None):
     if not isinstance(time_index, str):
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
-    if not col_is_datetime(dataframe[time_index]):
+    if not col_is_datetime(dataframe[time_index], datetime_format=datetime_format):
         raise TypeError('Time index column must contain datetime values')
 
 
