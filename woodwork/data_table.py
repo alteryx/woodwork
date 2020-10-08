@@ -406,8 +406,8 @@ class DataTable(object):
         if not isinstance(include, list):
             include = [include]
 
-        ltypes_used = []
-        ltypes_in_dt = [_get_ltype_class(col.logical_type) for col in self.columns.values()]
+        ltypes_used = set()
+        ltypes_in_dt = {_get_ltype_class(col.logical_type) for col in self.columns.values()}
 
         tags_used = set()
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
@@ -419,7 +419,7 @@ class DataTable(object):
                 if selector not in LogicalType.__subclasses__():
                     raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
                 if selector in ltypes_in_dt:
-                    ltypes_used.append(selector)
+                    ltypes_used.add(selector)
                 else:
                     unused_selectors.append(str(selector))
             elif isinstance(selector, str):
@@ -427,7 +427,7 @@ class DataTable(object):
                 # but if it's not present, we'll check if it's a tag
                 ltype = str_to_logical_type(selector, raise_error=False)
                 if ltype and ltype in ltypes_in_dt:
-                    ltypes_used.append(ltype)
+                    ltypes_used.add(ltype)
                     continue
                 elif selector in tags_in_dt:
                     tags_used.add(selector)
@@ -633,10 +633,10 @@ class DataTable(object):
 
             if column._is_numeric():
                 mean = series.mean()
-                if isinstance(mean, float) and not issubclass(ltype, Double):
+                if isinstance(mean, float) and not _get_ltype_class(ltype) == Double:
                     data[column_name] = series.astype('float')
                 data[column_name] = series.fillna(mean)
-            elif column._is_categorical() or issubclass(ltype, Boolean):
+            elif column._is_categorical() or _get_ltype_class(ltype) == Boolean:
                 mode = _get_mode(series)
                 data[column_name] = series.fillna(mode)
         return data
@@ -692,7 +692,7 @@ class DataTable(object):
                          in self.columns.items() if (col_name != self.index and
                                                      (column._is_numeric() or
                                                       column._is_categorical() or
-                                                      issubclass(column.logical_type, Boolean))
+                                                      _get_ltype_class(column.logical_type) == Boolean)
                                                      )}
         data = self._dataframe[valid_columns]
 

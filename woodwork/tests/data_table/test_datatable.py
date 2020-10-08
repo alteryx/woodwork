@@ -2035,7 +2035,7 @@ def test_data_table_get_mutual_information():
         'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
         'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
     })
-    dt_same_mi = DataTable(df_same_mi)
+    dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
 
