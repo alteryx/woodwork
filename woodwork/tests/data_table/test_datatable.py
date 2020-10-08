@@ -1713,6 +1713,7 @@ def test_data_table_describe_method():
     categorical_ltypes = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
     boolean_ltypes = [Boolean]
     datetime_ltypes = [Datetime]
+    formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
     numeric_ltypes = [Double, Integer, WholeNumber]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
@@ -1728,6 +1729,14 @@ def test_data_table_describe_method():
                                     pd.NaT,
                                     '2020-02-01',
                                     '2020-01-02'])
+    formatted_datetime_data = pd.Series(['2020~01~01',
+                                         '2020~02~01',
+                                         '2020~03~01',
+                                         '2020~02~02',
+                                         '2020~03~02',
+                                         pd.NaT,
+                                         '2020~02~01',
+                                         '2020~01~02'])
     numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
     natural_language_data = [
         'This is a natural language sentence',
@@ -1816,6 +1825,35 @@ def test_data_table_describe_method():
         assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test formatted datetime columns
+    for ltype in formatted_datetime_ltypes:
+        converted_to_datetime = pd.to_datetime(['2020-01-01',
+                                                '2020-02-01',
+                                                '2020-03-01',
+                                                '2020-02-02',
+                                                '2020-03-02',
+                                                pd.NaT,
+                                                '2020-02-01',
+                                                '2020-01-02'])
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nunique': 6,
+            'nan_count': 1,
+            'mean': converted_to_datetime.mean(),
+            'mode': pd.to_datetime('2020-02-01'),
+            'min': converted_to_datetime.min(),
+            'max': converted_to_datetime.max()}, name='formatted_col')
+        df = pd.DataFrame({'formatted_col': formatted_datetime_data})
+        dt = DataTable(df, logical_types={'formatted_col': ltype}, semantic_tags={'formatted_col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'formatted_col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['formatted_col'].dropna())
 
     # Test timedelta columns
     for ltype in timedelta_ltypes:

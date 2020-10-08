@@ -133,3 +133,11 @@ def read_csv(filepath=None,
                         logical_types=logical_types,
                         copy_dataframe=copy_dataframe,
                         use_standard_tags=use_standard_tags)
+
+
+def _is_ltype_subclass_or_instance(to_check, logical_type_class):
+    # if it's a subclass of logical tpye then we can check subclass
+    if to_check in ww.logical_types.LogicalType.__subclasses__():
+        return issubclass(to_check, logical_type_class)
+    else:
+        return isinstance(to_check, logical_type_class)
