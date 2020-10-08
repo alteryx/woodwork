@@ -77,6 +77,20 @@ def list_logical_types():
     )
 
 
+def list_semantic_tags():
+    """Returns a dataframe describing all built in (standard, index, time_index) woodwork
+    semantic tags.
+
+    Args:
+        None
+
+    Returns:
+        pd.DataFrame: A dataframe containing details on each semantic_tag, including name,
+        whether it is a standard tag, description, and valid associated logical_types.
+    """
+    pass
+
+
 def _get_mode(series):
     """Get the mode value for a series"""
     mode_values = series.mode()
