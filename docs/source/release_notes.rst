@@ -19,6 +19,7 @@ Release Notes
         * Update ``DataColumn.set_semantic_tags`` and ``DataColumn.add_semantic_tags`` to return new objects (:pr:`205`)
         * Update various ``DataTable`` methods to return new objects rather than modifying in place (:pr:`210`)
         * Move datetime_format to Datetime LogicalType (:pr:`216`)
+        * Do not calculate mutual info with index column in ``DataTable.get_mutual_information`` (:pr:`221`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
         * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
