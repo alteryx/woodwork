@@ -1551,7 +1551,7 @@ def test_select_single_inputs(sample_df):
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'signup_date': Datetime,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d')
     })
     dt = dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
@@ -1572,6 +1572,10 @@ def test_select_single_inputs(sample_df):
     assert len(dt_tag_string.columns) == 1
     assert 'id' in dt_tag_string.columns
 
+    dt_tag_instantiated = dt.select('Datetime')
+    assert len(dt_tag_instantiated.columns) == 1
+    assert 'signup_date' in dt_tag_instantiated.columns
+
 
 def test_select_list_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
@@ -1579,7 +1583,7 @@ def test_select_list_inputs(sample_df):
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'signup_date': Datetime,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
     dt = dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
@@ -1603,10 +1607,11 @@ def test_select_list_inputs(sample_df):
     assert 'signup_date' in dt_mixed_selectors.columns
     assert 'age' in dt_mixed_selectors.columns
 
-    dt_common_tags = dt.select(['category', 'numeric', Boolean])
-    assert len(dt_common_tags.columns) == 2
+    dt_common_tags = dt.select(['category', 'numeric', Boolean, Datetime])
+    assert len(dt_common_tags.columns) == 3
     assert 'is_registered' in dt_common_tags.columns
     assert 'age' in dt_common_tags.columns
+    assert 'signup_date' in dt_common_tags.columns
 
 
 def test_select_warnings(sample_df):
@@ -1615,7 +1620,7 @@ def test_select_warnings(sample_df):
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'signup_date': Datetime,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
     dt = dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
@@ -1636,7 +1641,7 @@ def test_select_warnings(sample_df):
 
     warning = 'The following selectors were not present in your DataTable: ZIPCode, doesnt_exist'
     with pytest.warns(UserWarning, match=warning):
-        dt_unused_ltype = dt.select(['doesnt_exist', ZIPCode, 'date_of_birth', WholeNumber])
+        dt_unused_ltype = dt.select(['date_of_birth', 'doesnt_exist', ZIPCode, WholeNumber])
     assert len(dt_unused_ltype.columns) == 3
 
 

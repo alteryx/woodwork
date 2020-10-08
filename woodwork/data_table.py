@@ -13,8 +13,8 @@ from woodwork.logical_types import (
 )
 from woodwork.utils import (
     _convert_input_to_set,
+    _get_ltype_class,
     _get_mode,
-    _is_ltype_subclass_or_instance,
     col_is_datetime
 )
 
@@ -263,7 +263,7 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    if column.logical_type == Datetime or isinstance(column.logical_type, Datetime):
+                    if _get_ltype_class(column.logical_type) == Datetime:
                         self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
                     else:
                         self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
@@ -406,8 +406,9 @@ class DataTable(object):
         if not isinstance(include, list):
             include = [include]
 
-        ltypes_used = set()
-        ltypes_in_dt = {col.logical_type for col in self.columns.values()}
+        ltypes_used = []
+        ltypes_in_dt = [_get_ltype_class(col.logical_type) for col in self.columns.values()]
+        print(ltypes_in_dt)
 
         tags_used = set()
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
@@ -415,10 +416,10 @@ class DataTable(object):
         unused_selectors = []
 
         for selector in include:
-            # --> use better check so that a Date() will return true
+            # --> confirm we only want uninstantiated
             if selector in LogicalType.__subclasses__():
                 if selector in ltypes_in_dt:
-                    ltypes_used.add(selector)
+                    ltypes_used.append(selector)
                 else:
                     unused_selectors.append(str(selector))
             elif isinstance(selector, str):
@@ -426,13 +427,14 @@ class DataTable(object):
                 # but if it's not present, we'll check if it's a tag
                 ltype = str_to_logical_type(selector, raise_error=False)
                 if ltype and ltype in ltypes_in_dt:
-                    ltypes_used.add(ltype)
+                    ltypes_used.append(ltype)
                     continue
                 elif selector in tags_in_dt:
                     tags_used.add(selector)
                 else:
                     unused_selectors.append(selector)
             else:
+                # --> maybe change this language
                 raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
 
         if unused_selectors:
@@ -441,7 +443,7 @@ class DataTable(object):
 
         cols_to_include = []
         for col_name, col in self.columns.items():
-            if col.logical_type in ltypes_used or col.semantic_tags.intersection(tags_used):
+            if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
                 cols_to_include.append(col_name)
 
         return self._new_dt_from_cols(cols_to_include)
@@ -567,14 +569,14 @@ class DataTable(object):
                 agg_stats = agg_stats_to_calculate['category']
             elif column._is_numeric():
                 agg_stats = agg_stats_to_calculate['numeric']
-            elif _is_ltype_subclass_or_instance(logical_type, Datetime):
+            elif _get_ltype_class(logical_type) == Datetime:
                 agg_stats = agg_stats_to_calculate[Datetime]
             else:
                 agg_stats = ["count"]
             values = series.agg(agg_stats).to_dict()
 
             # Calculate other specific stats based on logical type or semantic tags
-            if _is_ltype_subclass_or_instance(logical_type, Boolean):
+            if _get_ltype_class(logical_type) == Boolean:
                 values["num_false"] = series.value_counts().get(False, 0)
                 values["num_true"] = series.value_counts().get(True, 0)
             elif column._is_numeric():
