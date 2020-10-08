@@ -9,6 +9,7 @@ Release Notes
         * Add list_logical_types function and CLI to get dataframe of woodwork LogicalTypes (:pr:`172`)
         * Add ``describe`` method to DataTable to generate statistics for the underlying data (:pr:`181`)
         * Add optional ``return_dataframe`` parameter to ``load_retail`` to return either DataFrame or DataTable (:pr:`189`)
+        * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
     * Fixes
         * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
         * Fix bug in ``DataTable.describe`` that could cause an error if certain semantic tags were applied improperly (:pr:`190`)
@@ -31,7 +32,7 @@ Release Notes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`ctduffy`
 
 **v0.0.2** September 28, 2020
     * Fixes

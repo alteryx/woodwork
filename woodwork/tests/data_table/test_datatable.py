@@ -1871,3 +1871,44 @@ def test_datatable_describe_with_no_semantic_tags():
     # Make sure numeric stats were computed
     assert stats_df['num_col']['semantic_tags'] == set()
     assert stats_df['num_col']['mean'] == 2
+
+
+def test_data_table_describe_with_include(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'age': ['numeric', 'age']
+    }
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
+
+    col_name_df = dt.describe(include=['full_name'])
+    assert col_name_df.shape == (16, 1)
+    assert 'full_name', 'email' in col_name_df.columns
+
+    semantic_tags_df = dt.describe(['tag1', 'tag2'])
+    assert 'full_name' in col_name_df.columns
+    assert len(semantic_tags_df.columns) == 2
+
+    logical_types_df = dt.describe([Datetime, Boolean])
+    assert 'signup_date', 'is_registered' in logical_types_df.columns
+    assert len(logical_types_df.columns) == 2
+
+    multi_params_df = dt.describe(['age', 'tag1', Datetime])
+    expected = ['full_name', 'age', 'signup_date']
+    for col_name in expected:
+        assert col_name in multi_params_df.columns
+    multi_params_df['full_name'].equals(col_name_df['full_name'])
+    multi_params_df['full_name'].equals(dt.describe()['full_name'])
+
+
+def test_data_table_describe_with_include_error(sample_df):
+    dt = DataTable(sample_df)
+    formula = ' is not a valid column name or semantic_tag, or instance of logicalType'
+    with pytest.raises(ValueError, match='wrongname' + formula):
+        dt.describe(include=['wrongname'])
+
+    with pytest.raises(ValueError, match='tag4' + formula):
+        dt.describe(include=['tag4'])
+
+    with pytest.raises(ValueError, match='url' + formula):
+        dt.describe(include=[URL])

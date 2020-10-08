@@ -8,6 +8,7 @@ from woodwork.logical_types import (
     Boolean,
     Datetime,
     LogicalType,
+    LogicalTypeMetaClass,
     str_to_logical_type
 )
 from woodwork.utils import _convert_input_to_set, _get_mode, col_is_datetime
@@ -504,8 +505,8 @@ class DataTable(object):
         """Calculates statistics for data contained in DataTable.
         Arguments:
             include (list[str or LogicalType], optional): filter for what columns to include in the
-                statistics returned. Can be a list of columns, semantic tags, logical types, or a list
-                combining any of the three. Follows most broad specification
+            statistics returned. Can be a list of columns, semantic tags, logical types, or a list
+            combining any of the three. Follows most broad specification
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
@@ -523,10 +524,12 @@ class DataTable(object):
         filter_tags = set()
         if include is not None:
             for item in include:
-                if not (isinstance(item, LogicalType) or item in self.columns or item in all_tags for item in include):
+                if not (item in self.logical_types.values() or item in self.columns or item in all_tags):
+                    if isinstance(item, LogicalTypeMetaClass):
+                        item = item.type_string
                     raise ValueError(item + " is not a valid column name or semantic_tag, or instance of logicalType")
                 elif item in all_tags:
-                    filter_tags.update(item)
+                    filter_tags.update({item})
 
         results = {}
 
