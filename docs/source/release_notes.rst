@@ -10,6 +10,7 @@ Release Notes
         * Add ``describe`` method to DataTable to generate statistics for the underlying data (:pr:`181`)
         * Add optional ``return_dataframe`` parameter to ``load_retail`` to return either DataFrame or DataTable (:pr:`189`)
         * Add ``get_mutual_information`` method to DataTable to generate mutual information between columns (:pr:`203`)
+        * Add ``read_csv`` function to create DataTable directly from CSV file (:pr:`222`)
     * Fixes
         * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
         * Fix bug in ``DataTable.describe`` that could cause an error if certain semantic tags were applied improperly (:pr:`190`)
