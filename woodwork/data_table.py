@@ -680,10 +680,13 @@ class DataTable(object):
             and 1 (perfect correlation)
         """
         # We only want Numeric, Categorical, and Boolean columns
+        # And we don't want the index column
         valid_columns = {col_name for col_name, column
-                         in self.columns.items() if (column._is_numeric() or
-                                                     column._is_categorical() or
-                                                     issubclass(column.logical_type, Boolean))}
+                         in self.columns.items() if (col_name != self.index and
+                                                     (column._is_numeric() or
+                                                      column._is_categorical() or
+                                                      issubclass(column.logical_type, Boolean))
+                                                     )}
         data = self._dataframe[valid_columns]
 
         # cut off data if necessary
