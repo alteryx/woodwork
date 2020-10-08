@@ -1645,6 +1645,25 @@ def test_select_warnings(sample_df):
     assert len(dt_unused_ltype.columns) == 3
 
 
+def test_select_instantiated():
+    ymd_format = Datetime(datetime_format='%Y~%m~%d')
+
+    df = pd.DataFrame({
+        'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
+        'ymd': ["2019~01~01", "2019~01~02", "2019~01~03"],
+    })
+    dt = DataTable(df,
+                   logical_types={'ymd': ymd_format,
+                                  'dates': Datetime})
+
+    dt = dt.select('Datetime')
+    assert len(dt.columns) == 2
+
+    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select(ymd_format)
+
+
 def test_datetime_inference_with_format_param():
     df = pd.DataFrame({
         'index': [0, 1, 2],

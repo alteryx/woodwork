@@ -408,7 +408,6 @@ class DataTable(object):
 
         ltypes_used = []
         ltypes_in_dt = [_get_ltype_class(col.logical_type) for col in self.columns.values()]
-        print(ltypes_in_dt)
 
         tags_used = set()
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
@@ -416,8 +415,9 @@ class DataTable(object):
         unused_selectors = []
 
         for selector in include:
-            # --> confirm we only want uninstantiated
-            if selector in LogicalType.__subclasses__():
+            if _get_ltype_class(selector) in LogicalType.__subclasses__():
+                if selector not in LogicalType.__subclasses__():
+                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
                 if selector in ltypes_in_dt:
                     ltypes_used.append(selector)
                 else:
