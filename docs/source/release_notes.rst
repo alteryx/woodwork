@@ -37,6 +37,7 @@ Release Notes
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
         * Remove unused ``none_df`` test fixture (:pr:`224`)
+        * Add test for ``LogicalType.__str__`` method (:pr:`225`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`
