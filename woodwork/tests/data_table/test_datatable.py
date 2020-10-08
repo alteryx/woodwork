@@ -2015,3 +2015,14 @@ def test_data_table_get_mutual_information():
 
     # Confirm that none of this changed the DataTable's underlying df
     pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
+
+
+def test_mutual_info_does_not_include_index():
+    df = pd.DataFrame({'index_col': pd.Series([0, 1, 2], dtype='string'),
+                       'values': [10, 20.3, 5]})
+    dt = DataTable(df, index='index_col')
+    mi = dt.get_mutual_information()
+
+    assert mi.shape[0] == 1
+    cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
+    assert 'index_col' not in cols_used
