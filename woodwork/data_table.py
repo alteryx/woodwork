@@ -434,7 +434,6 @@ class DataTable(object):
                 else:
                     unused_selectors.append(selector)
             else:
-                # --> maybe change this language
                 raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
 
         if unused_selectors:
@@ -465,7 +464,6 @@ class DataTable(object):
 
         ltypes_to_include = set()
         for ltype in include:
-            # --> use better check
             if ltype in LogicalType.__subclasses__():
                 ltypes_to_include.add(ltype)
             elif isinstance(ltype, str):
