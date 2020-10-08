@@ -1,7 +1,10 @@
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
 
+import woodwork as ww
 from woodwork.logical_types import LogicalType, str_to_logical_type
 from woodwork.utils import (
     _convert_input_to_set,
@@ -77,3 +80,57 @@ def test_get_mode():
             assert mode is None
         else:
             assert mode == answer
+
+
+def test_read_csv_no_params(sample_df, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df.to_csv(filepath, index=False)
+
+    dt_from_csv = ww.read_csv(filepath=filepath)
+    dt = ww.DataTable(sample_df)
+    assert isinstance(dt, ww.DataTable)
+    assert dt_from_csv.logical_types == dt.logical_types
+    assert dt_from_csv.semantic_tags == dt.semantic_tags
+    pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas())
+
+
+def test_read_csv_with_woodwork_params(sample_df, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df.to_csv(filepath, index=False)
+    logical_types = {
+        'full_name': 'NaturalLanguage',
+        'phone_number': 'PhoneNumber'
+    }
+    semantic_tags = {
+        'age': ['tag1', 'tag2'],
+        'is_registered': ['tag3', 'tag4']
+    }
+    dt_from_csv = ww.read_csv(filepath=filepath,
+                              index='id',
+                              time_index='signup_date',
+                              logical_types=logical_types,
+                              semantic_tags=semantic_tags)
+    dt = ww.DataTable(sample_df,
+                      index='id',
+                      time_index='signup_date',
+                      logical_types=logical_types,
+                      semantic_tags=semantic_tags)
+
+    assert isinstance(dt, ww.DataTable)
+    assert dt_from_csv.logical_types == dt.logical_types
+    assert dt_from_csv.semantic_tags == dt.semantic_tags
+    pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas())
+
+
+def test_read_csv_with_pandas_params(sample_df, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df.to_csv(filepath, index=False)
+    nrows = 2
+    dt_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
+    dt = ww.DataTable(sample_df)
+
+    assert isinstance(dt, ww.DataTable)
+    assert dt_from_csv.logical_types == dt.logical_types
+    assert dt_from_csv.semantic_tags == dt.semantic_tags
+    assert len(dt_from_csv.to_pandas()) == nrows
+    pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas().head(nrows))

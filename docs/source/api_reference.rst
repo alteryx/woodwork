@@ -81,6 +81,7 @@ General Utils
     :nosignatures:
 
     list_logical_types
+    read_csv
 
 Demo Data
 =========
