@@ -23,6 +23,11 @@ def test_logical_repr():
     assert repr(Categorical) == 'Categorical'
 
 
+def test_instantiated_type_str():
+    assert str(Categorical()) == 'Categorical'
+    assert str(Boolean()) == 'Boolean'
+
+
 def test_get_logical_types():
     all_types = LogicalType.__subclasses__()
     logical_types = get_logical_types()

@@ -22,6 +22,7 @@ DataTable
     DataTable.set_time_index
     DataTable.to_pandas
     DataTable.describe
+    DataTable.get_mutual_information
 
 
 DataColumn
@@ -80,6 +81,7 @@ General Utils
     :nosignatures:
 
     list_logical_types
+    read_csv
 
 Demo Data
 =========

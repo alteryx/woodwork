@@ -55,7 +55,7 @@ class DataColumn(object):
         return msg
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
-        """Update the logical type for the column and return a new column object.
+        """Update the logical type for the column and return a new DataColumn object.
 
         Args:
             logical_type (LogicalType, str): The new logical type to set for the column.
@@ -79,7 +79,7 @@ class DataColumn(object):
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
-            if logical_type in LogicalType.__subclasses__():
+            if logical_type in LogicalType.__subclasses__() or isinstance(logical_type, LogicalType):
                 return logical_type
             elif isinstance(logical_type, str):
                 return str_to_logical_type(logical_type)
@@ -89,7 +89,7 @@ class DataColumn(object):
             return infer_logical_type(self._series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        """Replace current semantic tags with new values and return a new column object.
+        """Replace current semantic tags with new values and return a new DataColumn object.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to set for column
@@ -117,7 +117,7 @@ class DataColumn(object):
         return new_col
 
     def add_semantic_tags(self, semantic_tags):
-        """Add the specified semantic tags to the column and return a new column object.
+        """Add the specified semantic tags to the column and return a new DataColumn object.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add to the column
@@ -190,6 +190,12 @@ class DataColumn(object):
     def _set_as_time_index(self):
         self._semantic_tags.add('time_index')
 
+    def _is_numeric(self):
+        return 'numeric' in self.logical_type.standard_tags
+
+    def _is_categorical(self):
+        return 'category' in self.logical_type.standard_tags
+
     def to_pandas(self, copy=False):
         """Retrieves the DataColumn's underlying series.
 
@@ -245,13 +251,12 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
-    datetime_format = config.get_option('datetime_format')
     natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series, datetime_format):
+        if col_is_datetime(series):
             inferred_type = Datetime
         else:
             inferred_type = Categorical

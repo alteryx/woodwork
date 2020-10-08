@@ -10,6 +10,8 @@ Release Notes
         * Add ``describe`` method to DataTable to generate statistics for the underlying data (:pr:`181`)
         * Add optional ``return_dataframe`` parameter to ``load_retail`` to return either DataFrame or DataTable (:pr:`189`)
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
+        * Add ``get_mutual_information`` method to DataTable to generate mutual information between columns (:pr:`203`)
+        * Add ``read_csv`` function to create DataTable directly from CSV file (:pr:`222`)
     * Fixes
         * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
         * Fix bug in ``DataTable.describe`` that could cause an error if certain semantic tags were applied improperly (:pr:`190`)
@@ -17,6 +19,9 @@ Release Notes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
         * Remove standard tags from index column and do not return stats for index column from ``DataTable.describe`` (:pr:`196`)
         * Update ``DataColumn.set_semantic_tags`` and ``DataColumn.add_semantic_tags`` to return new objects (:pr:`205`)
+        * Update various ``DataTable`` methods to return new objects rather than modifying in place (:pr:`210`)
+        * Move datetime_format to Datetime LogicalType (:pr:`216`)
+        * Do not calculate mutual info with index column in ``DataTable.get_mutual_information`` (:pr:`221`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
         * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
@@ -27,9 +32,13 @@ Release Notes
         * Add section for setting index and time index to start notebook (:pr:`179`)
         * Rename changelog to Release Notes (:pr:`193`)
         * Add section for standard tags to start notebook (:pr:`188`)
+        * Add Understanding Types and Tags user guide (:pr:`201`)
         * Add missing docstring to ``list_logical_types`` (:pr:`202`)
+        * Add Woodwork Global Configuration Options guide (:pr:`215`)
     * Testing Changes
         * Add tests that confirm dtypes are as expected after DataTable init (:pr:`152`)
+        * Remove unused ``none_df`` test fixture (:pr:`224`)
+        * Add test for ``LogicalType.__str__`` method (:pr:`225`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tamargrey`, :user:`ctduffy`
