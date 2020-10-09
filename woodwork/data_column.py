@@ -1,5 +1,6 @@
 import warnings
 
+import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.config import config
@@ -46,6 +47,7 @@ class DataColumn(object):
         if use_standard_tags:
             semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
         self._semantic_tags = semantic_tags
+        self._update_dtype()
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -53,6 +55,22 @@ class DataColumn(object):
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
+
+    def _update_dtype(self):
+        """Update the dtype of the underlying series to match the dtype corresponding
+        to the LogicalType for the column."""
+        if self.logical_type.pandas_dtype != str(self._series.dtype):
+            # Update the underlying series
+            try:
+                if self.logical_type == Datetime or isinstance(self.logical_type, Datetime):
+                    self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                else:
+                    self._series = self._series.astype(self.logical_type.pandas_dtype)
+            except TypeError:
+                error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
+                    f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                    f'logical type {self.logical_type}.'
+                raise TypeError(error_msg)
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
         """Update the logical type for the column and return a new DataColumn object.

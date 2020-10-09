@@ -24,7 +24,7 @@ from woodwork.logical_types import (
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.to_pandas() is sample_series
+    pd.testing.assert_series_equal(data_col.to_pandas(), sample_series.astype('category'))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -225,7 +225,7 @@ def test_pdna_inference():
 
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = object) ' \
+    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = category) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
@@ -515,13 +515,27 @@ def test_to_pandas_no_copy(sample_series):
     data_col = DataColumn(sample_series)
     series = data_col.to_pandas()
 
-    assert series is sample_series
-    pd.testing.assert_series_equal(series, sample_series)
+    assert series is data_col._series
+    pd.testing.assert_series_equal(series, data_col._series)
 
 
 def test_to_pandas_with_copy(sample_series):
     data_col = DataColumn(sample_series)
     series = data_col.to_pandas(copy=True)
 
-    assert series is not sample_series
-    pd.testing.assert_series_equal(series, sample_series)
+    assert series is not data_col._series
+    pd.testing.assert_series_equal(series, data_col._series)
+
+
+def test_dtype_update_on_init():
+    dc = DataColumn(pd.Series(["2020-09-10", "2020-01-10 00:00:00", "01/01/2000 08:30"]),
+                    logical_type='DateTime')
+    assert dc._series.dtype == 'datetime64[ns]'
+
+
+def test_dtype_update_on_ltype_change():
+    dc = DataColumn(pd.Series([1, 2, 3]),
+                    logical_type='WholeNumber')
+    assert dc._series.dtype == 'Int64'
+    dc = dc.set_logical_type('Double')
+    assert dc._series.dtype == 'float64'
