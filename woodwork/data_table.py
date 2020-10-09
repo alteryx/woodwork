@@ -73,7 +73,7 @@ class DataTable(object):
             _update_index(self, index)
 
         # Update dtypes before setting time index so that any Datetime formatting is applied
-        self._update_dtypes(self.columns)
+        self._update_columns(self.columns)
 
         if time_index:
             _update_time_index(self, time_index)
@@ -112,7 +112,6 @@ class DataTable(object):
 
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
-        self._update_dtypes({col_name: column})
 
     @property
     def types(self):
@@ -207,6 +206,8 @@ class DataTable(object):
         provided new_columns dictionary"""
         for name, column in new_columns.items():
             self.columns[name] = column
+            # Make sure the underlying dataframe is in sync in case series data has changed
+            self._dataframe[name] = column._series
 
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
@@ -252,28 +253,7 @@ class DataTable(object):
         """
         _check_logical_types(self._dataframe, logical_types)
         new_dt = self._update_cols_and_get_new_dt('set_logical_type', logical_types, retain_index_tags)
-        cols_for_dtype_update = {col: new_dt.columns[col] for col in logical_types.keys()}
-        new_dt._update_dtypes(cols_for_dtype_update)
         return new_dt
-
-    def _update_dtypes(self, cols_to_update):
-        """Update the dtypes of the underlying dataframe to match the dtypes corresponding
-        to the LogicalType for the column."""
-        for name, column in cols_to_update.items():
-            if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
-                # Update the underlying dataframe
-                try:
-                    if _get_ltype_class(column.logical_type) == Datetime:
-                        self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
-                    else:
-                        self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
-                except TypeError:
-                    error_msg = f'Error converting datatype for column {name} from type {str(self._dataframe[name].dtype)} ' \
-                        f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
-                        f'logical type {column.logical_type}.'
-                    raise TypeError(error_msg)
-                # Update the column object since .astype returns a new series object
-                column._series = self._dataframe[name]
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
@@ -532,7 +512,7 @@ class DataTable(object):
         if new_time_index:
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-        return DataTable(self._dataframe[cols_to_include],
+        return DataTable(self._dataframe.loc[:, cols_to_include],
                          name=self.name,
                          index=new_index,
                          time_index=new_time_index,

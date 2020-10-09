@@ -22,6 +22,7 @@ Release Notes
         * Update various ``DataTable`` methods to return new objects rather than modifying in place (:pr:`210`)
         * Move datetime_format to Datetime LogicalType (:pr:`216`)
         * Do not calculate mutual info with index column in ``DataTable.get_mutual_information`` (:pr:`221`)
+        * Move setting of underlying physical types from ``DataTable`` to ``DataColumn`` (:pr:`233`)
     * Documentation Changes
         * Remove unused code from sphinx conf.py, update with Github URL(:pr:`160`, :pr:`163`)
         * Update README and docs with new Woodwork logo, with better code snippets (:pr:`161`, :pr:`159`)
