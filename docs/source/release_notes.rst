@@ -14,6 +14,7 @@ Release Notes
     * Fixes
         * Fix bug causing incorrect values for quartiles in ``DataTable.describe`` method (:pr:`187`)
         * Fix bug in ``DataTable.describe`` that could cause an error if certain semantic tags were applied improperly (:pr:`190`)
+        * Fix bug with instantiated LogicalTypes breaking when used with issubclass (:pr:`231`)
     * Changes
         * Remove unnecessary ``add_standard_tags`` attribute from DataTable (:pr:`171`)
         * Remove standard tags from index column and do not return stats for index column from ``DataTable.describe`` (:pr:`196`)

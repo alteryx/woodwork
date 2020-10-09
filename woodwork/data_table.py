@@ -11,7 +11,12 @@ from woodwork.logical_types import (
     LogicalType,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set, _get_mode, col_is_datetime
+from woodwork.utils import (
+    _convert_input_to_set,
+    _get_ltype_class,
+    _get_mode,
+    col_is_datetime
+)
 
 
 class DataTable(object):
@@ -258,7 +263,7 @@ class DataTable(object):
             if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
                 # Update the underlying dataframe
                 try:
-                    if column.logical_type == Datetime or isinstance(column.logical_type, Datetime):
+                    if _get_ltype_class(column.logical_type) == Datetime:
                         self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
                     else:
                         self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
@@ -402,7 +407,7 @@ class DataTable(object):
             include = [include]
 
         ltypes_used = set()
-        ltypes_in_dt = {col.logical_type for col in self.columns.values()}
+        ltypes_in_dt = {_get_ltype_class(col.logical_type) for col in self.columns.values()}
 
         tags_used = set()
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
@@ -410,7 +415,9 @@ class DataTable(object):
         unused_selectors = []
 
         for selector in include:
-            if selector in LogicalType.__subclasses__():
+            if _get_ltype_class(selector) in LogicalType.__subclasses__():
+                if selector not in LogicalType.__subclasses__():
+                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
                 if selector in ltypes_in_dt:
                     ltypes_used.add(selector)
                 else:
@@ -435,7 +442,7 @@ class DataTable(object):
 
         cols_to_include = []
         for col_name, col in self.columns.items():
-            if col.logical_type in ltypes_used or col.semantic_tags.intersection(tags_used):
+            if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
                 cols_to_include.append(col_name)
 
         return self._new_dt_from_cols(cols_to_include)
@@ -560,14 +567,14 @@ class DataTable(object):
                 agg_stats = agg_stats_to_calculate['category']
             elif column._is_numeric():
                 agg_stats = agg_stats_to_calculate['numeric']
-            elif issubclass(logical_type, Datetime):
+            elif _get_ltype_class(logical_type) == Datetime:
                 agg_stats = agg_stats_to_calculate[Datetime]
             else:
                 agg_stats = ["count"]
             values = series.agg(agg_stats).to_dict()
 
             # Calculate other specific stats based on logical type or semantic tags
-            if issubclass(logical_type, Boolean):
+            if _get_ltype_class(logical_type) == Boolean:
                 values["num_false"] = series.value_counts().get(False, 0)
                 values["num_true"] = series.value_counts().get(True, 0)
             elif column._is_numeric():
@@ -626,10 +633,10 @@ class DataTable(object):
 
             if column._is_numeric():
                 mean = series.mean()
-                if isinstance(mean, float) and not issubclass(ltype, Double):
+                if isinstance(mean, float) and not _get_ltype_class(ltype) == Double:
                     data[column_name] = series.astype('float')
                 data[column_name] = series.fillna(mean)
-            elif column._is_categorical() or issubclass(ltype, Boolean):
+            elif column._is_categorical() or _get_ltype_class(ltype) == Boolean:
                 mode = _get_mode(series)
                 data[column_name] = series.fillna(mode)
         return data
@@ -685,7 +692,7 @@ class DataTable(object):
                          in self.columns.items() if (col_name != self.index and
                                                      (column._is_numeric() or
                                                       column._is_categorical() or
-                                                      issubclass(column.logical_type, Boolean))
+                                                      _get_ltype_class(column.logical_type) == Boolean)
                                                      )}
         data = self._dataframe[valid_columns]
 

@@ -15,7 +15,11 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set, col_is_datetime
+from woodwork.utils import (
+    _convert_input_to_set,
+    _get_ltype_class,
+    col_is_datetime
+)
 
 
 class DataColumn(object):
@@ -79,7 +83,7 @@ class DataColumn(object):
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
-            if logical_type in LogicalType.__subclasses__() or isinstance(logical_type, LogicalType):
+            if _get_ltype_class(logical_type) in LogicalType.__subclasses__():
                 return logical_type
             elif isinstance(logical_type, str):
                 return str_to_logical_type(logical_type)
