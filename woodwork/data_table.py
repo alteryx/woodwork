@@ -201,6 +201,7 @@ class DataTable(object):
         provided new_columns dictionary"""
         for name, column in new_columns.items():
             self.columns[name] = column
+            # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
 
     def set_index(self, index):
