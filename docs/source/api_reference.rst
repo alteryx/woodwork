@@ -14,8 +14,6 @@ DataTable
     DataTable.remove_semantic_tags
     DataTable.reset_semantic_tags
     DataTable.select
-    DataTable.select_ltypes
-    DataTable.select_semantic_tags
     DataTable.set_index
     DataTable.set_logical_types
     DataTable.set_semantic_tags
