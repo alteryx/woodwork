@@ -1551,7 +1551,7 @@ def test_select_single_inputs(sample_df):
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'signup_date': Datetime,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d')
     })
     dt = dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
@@ -1572,6 +1572,10 @@ def test_select_single_inputs(sample_df):
     assert len(dt_tag_string.columns) == 1
     assert 'id' in dt_tag_string.columns
 
+    dt_tag_instantiated = dt.select('Datetime')
+    assert len(dt_tag_instantiated.columns) == 1
+    assert 'signup_date' in dt_tag_instantiated.columns
+
 
 def test_select_list_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
@@ -1579,7 +1583,7 @@ def test_select_list_inputs(sample_df):
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'signup_date': Datetime,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
     dt = dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
@@ -1603,10 +1607,11 @@ def test_select_list_inputs(sample_df):
     assert 'signup_date' in dt_mixed_selectors.columns
     assert 'age' in dt_mixed_selectors.columns
 
-    dt_common_tags = dt.select(['category', 'numeric', Boolean])
-    assert len(dt_common_tags.columns) == 2
+    dt_common_tags = dt.select(['category', 'numeric', Boolean, Datetime])
+    assert len(dt_common_tags.columns) == 3
     assert 'is_registered' in dt_common_tags.columns
     assert 'age' in dt_common_tags.columns
+    assert 'signup_date' in dt_common_tags.columns
 
 
 def test_select_warnings(sample_df):
@@ -1615,7 +1620,7 @@ def test_select_warnings(sample_df):
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
-        'signup_date': Datetime,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
     dt = dt.set_semantic_tags({
         'full_name': ['new_tag', 'tag2'],
@@ -1636,8 +1641,27 @@ def test_select_warnings(sample_df):
 
     warning = 'The following selectors were not present in your DataTable: ZIPCode, doesnt_exist'
     with pytest.warns(UserWarning, match=warning):
-        dt_unused_ltype = dt.select(['doesnt_exist', ZIPCode, 'date_of_birth', WholeNumber])
+        dt_unused_ltype = dt.select(['date_of_birth', 'doesnt_exist', ZIPCode, WholeNumber])
     assert len(dt_unused_ltype.columns) == 3
+
+
+def test_select_instantiated():
+    ymd_format = Datetime(datetime_format='%Y~%m~%d')
+
+    df = pd.DataFrame({
+        'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
+        'ymd': ["2019~01~01", "2019~01~02", "2019~01~03"],
+    })
+    dt = DataTable(df,
+                   logical_types={'ymd': ymd_format,
+                                  'dates': Datetime})
+
+    dt = dt.select('Datetime')
+    assert len(dt.columns) == 2
+
+    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
+    with pytest.raises(TypeError, match=err_msg):
+        dt.select(ymd_format)
 
 
 def test_datetime_inference_with_format_param():
@@ -1713,6 +1737,7 @@ def test_data_table_describe_method():
     categorical_ltypes = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
     boolean_ltypes = [Boolean]
     datetime_ltypes = [Datetime]
+    formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
     numeric_ltypes = [Double, Integer, WholeNumber]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
@@ -1728,6 +1753,14 @@ def test_data_table_describe_method():
                                     pd.NaT,
                                     '2020-02-01',
                                     '2020-01-02'])
+    formatted_datetime_data = pd.Series(['2020~01~01',
+                                         '2020~02~01',
+                                         '2020~03~01',
+                                         '2020~02~02',
+                                         '2020~03~02',
+                                         pd.NaT,
+                                         '2020~02~01',
+                                         '2020~01~02'])
     numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
     natural_language_data = [
         'This is a natural language sentence',
@@ -1816,6 +1849,35 @@ def test_data_table_describe_method():
         assert set(stats_df.columns) == {'col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+
+    # Test formatted datetime columns
+    for ltype in formatted_datetime_ltypes:
+        converted_to_datetime = pd.to_datetime(['2020-01-01',
+                                                '2020-02-01',
+                                                '2020-03-01',
+                                                '2020-02-02',
+                                                '2020-03-02',
+                                                pd.NaT,
+                                                '2020-02-01',
+                                                '2020-01-02'])
+        expected_vals = pd.Series({
+            'physical_type': ltype.pandas_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nunique': 6,
+            'nan_count': 1,
+            'mean': converted_to_datetime.mean(),
+            'mode': pd.to_datetime('2020-02-01'),
+            'min': converted_to_datetime.min(),
+            'max': converted_to_datetime.max()}, name='formatted_col')
+        df = pd.DataFrame({'formatted_col': formatted_datetime_data})
+        dt = DataTable(df, logical_types={'formatted_col': ltype}, semantic_tags={'formatted_col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'formatted_col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['formatted_col'].dropna())
 
     # Test timedelta columns
     for ltype in timedelta_ltypes:
@@ -1973,7 +2035,7 @@ def test_data_table_get_mutual_information():
         'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
         'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
     })
-    dt_same_mi = DataTable(df_same_mi)
+    dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
 
