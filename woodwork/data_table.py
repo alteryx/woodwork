@@ -12,7 +12,12 @@ from woodwork.logical_types import (
     LogicalTypeMetaClass,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set, _get_mode, col_is_datetime
+from woodwork.utils import (
+    _convert_input_to_set,
+    _get_ltype_class,
+    _get_mode,
+    col_is_datetime
+)
 
 
 class DataTable(object):
@@ -69,7 +74,7 @@ class DataTable(object):
             _update_index(self, index)
 
         # Update dtypes before setting time index so that any Datetime formatting is applied
-        self._update_dtypes(self.columns)
+        self._update_columns(self.columns)
 
         if time_index:
             _update_time_index(self, time_index)
@@ -108,7 +113,6 @@ class DataTable(object):
 
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
-        self._update_dtypes({col_name: column})
 
     @property
     def types(self):
@@ -203,6 +207,8 @@ class DataTable(object):
         provided new_columns dictionary"""
         for name, column in new_columns.items():
             self.columns[name] = column
+            # Make sure the underlying dataframe is in sync in case series data has changed
+            self._dataframe[name] = column._series
 
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
@@ -248,28 +254,7 @@ class DataTable(object):
         """
         _check_logical_types(self._dataframe, logical_types)
         new_dt = self._update_cols_and_get_new_dt('set_logical_type', logical_types, retain_index_tags)
-        cols_for_dtype_update = {col: new_dt.columns[col] for col in logical_types.keys()}
-        new_dt._update_dtypes(cols_for_dtype_update)
         return new_dt
-
-    def _update_dtypes(self, cols_to_update):
-        """Update the dtypes of the underlying dataframe to match the dtypes corresponding
-        to the LogicalType for the column."""
-        for name, column in cols_to_update.items():
-            if column.logical_type.pandas_dtype != str(self._dataframe[name].dtype):
-                # Update the underlying dataframe
-                try:
-                    if column.logical_type == Datetime or isinstance(column.logical_type, Datetime):
-                        self._dataframe[name] = pd.to_datetime(self._dataframe[name], format=column.logical_type.datetime_format)
-                    else:
-                        self._dataframe[name] = self._dataframe[name].astype(column.logical_type.pandas_dtype)
-                except TypeError:
-                    error_msg = f'Error converting datatype for column {name} from type {str(self._dataframe[name].dtype)} ' \
-                        f'to type {column.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
-                        f'logical type {column.logical_type}.'
-                    raise TypeError(error_msg)
-                # Update the column object since .astype returns a new series object
-                column._series = self._dataframe[name]
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns. Will retain any previously set values.
@@ -399,46 +384,7 @@ class DataTable(object):
             DataTable: The subset of the original DataTable that contains just the
             logical types and semantic tags in ``include``.
         """
-        if not isinstance(include, list):
-            include = [include]
-
-        ltypes_used = set()
-        ltypes_in_dt = {col.logical_type for col in self.columns.values()}
-
-        tags_used = set()
-        tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
-
-        unused_selectors = []
-
-        for selector in include:
-            if selector in LogicalType.__subclasses__():
-                if selector in ltypes_in_dt:
-                    ltypes_used.add(selector)
-                else:
-                    unused_selectors.append(str(selector))
-            elif isinstance(selector, str):
-                # If the str is a viable ltype, it'll take precedence
-                # but if it's not present, we'll check if it's a tag
-                ltype = str_to_logical_type(selector, raise_error=False)
-                if ltype and ltype in ltypes_in_dt:
-                    ltypes_used.add(ltype)
-                    continue
-                elif selector in tags_in_dt:
-                    tags_used.add(selector)
-                else:
-                    unused_selectors.append(selector)
-            else:
-                raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
-
-        if unused_selectors:
-            not_present_str = ', '.join(sorted(unused_selectors))
-            warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
-
-        cols_to_include = []
-        for col_name, col in self.columns.items():
-            if col.logical_type in ltypes_used or col.semantic_tags.intersection(tags_used):
-                cols_to_include.append(col_name)
-
+        cols_to_include = self._filter_cols(include, logical_types=True, semantic_tags=True)
         return self._new_dt_from_cols(cols_to_include)
 
     def select_ltypes(self, include):
@@ -453,28 +399,7 @@ class DataTable(object):
             DataTable: The subset of the original DataTable that contains just the ltypes
             in ``include``.
         """
-        if not isinstance(include, list):
-            include = [include]
-
-        ltypes_to_include = set()
-        for ltype in include:
-            if ltype in LogicalType.__subclasses__():
-                ltypes_to_include.add(ltype)
-            elif isinstance(ltype, str):
-                ltypes_to_include.add(str_to_logical_type(ltype))
-            else:
-                raise TypeError(f"Invalid logical type specified: {ltype}")
-
-        ltypes_present = {col.logical_type for col in self.columns.values()}
-        unused_ltypes = ltypes_to_include - ltypes_present
-
-        if unused_ltypes:
-            not_present_str = ', '.join(sorted([str(ltype) for ltype in unused_ltypes]))
-            warnings.warn(f'The following logical types were not present in your DataTable: {not_present_str}')
-
-        cols_to_include = [col_name for col_name, col in self.columns.items()
-                           if col.logical_type in ltypes_to_include]
-
+        cols_to_include = self._filter_cols(include, logical_types=True)
         return self._new_dt_from_cols(cols_to_include)
 
     def select_semantic_tags(self, include):
@@ -489,25 +414,83 @@ class DataTable(object):
             DataTable: The subset of the original DataTable that contains just the semantic
             tags in ``include``.
         """
-        include = _convert_input_to_set(include, 'include parameter')
+        cols_to_include = self._filter_cols(include, semantic_tags=True)
+        return self._new_dt_from_cols(cols_to_include)
 
-        include = set(include)
-        cols_to_include = []
-        for col_name, tags in self.semantic_tags.items():
-            intersection = tags.intersection(include)
-            if intersection:
-                cols_to_include.append(col_name)
+    def _filter_cols(self, include, col_names=False, logical_types=False, semantic_tags=False):
+        """Return list of columns filtered in specified way
 
-        new_dt = self._new_dt_from_cols(cols_to_include)
+        Args:
+            include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
+                filter columns by.
 
-        tags_present = {tag for col in new_dt.columns.values() for tag in col.semantic_tags}
-        unused_tags = include - tags_present
+            col_names (bool): Specifies whether to filter columns by name. Defaults to False.
 
-        if unused_tags:
-            not_present_str = ', '.join(sorted(list(unused_tags)))
-            warnings.warn(f'The following semantic tags were not present in your DataTable: {not_present_str}')
+            logical_types (bool): Specifies whether to filter columns by LogicalType. Defaults to False.
 
-        return new_dt
+            semantic_tags (bool): Specifies whether to filter columns by semantic Tag. Defaults to False.
+
+        Returns:
+            List[str] of column names that fit into filter.
+        """
+        if not isinstance(include, list):
+            include = [include]
+
+        only_logical_types = logical_types and not(semantic_tags or col_names)
+
+        ltypes_used = set()
+        if logical_types:
+            ltypes_in_dt = {_get_ltype_class(col.logical_type) for col in self.columns.values()}
+
+        tags_used = set()
+        if semantic_tags:
+            tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
+
+        cols_used = set()
+
+        unused_selectors = []
+
+        for selector in include:
+            if _get_ltype_class(selector) in LogicalType.__subclasses__() and logical_types:
+                if selector not in LogicalType.__subclasses__():
+                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
+                if selector in ltypes_in_dt:
+                    ltypes_used.add(selector)
+                else:
+                    unused_selectors.append(str(selector))
+            elif isinstance(selector, str):
+                # If the str is a viable ltype, it'll take precedence
+                # but if it's not present, we'll check if it's a tag
+                if logical_types:
+                    ltype = str_to_logical_type(selector, raise_error=False)
+
+                if logical_types and ltype and ltype in ltypes_in_dt:
+                    ltypes_used.add(ltype)
+                    continue
+                elif semantic_tags and selector in tags_in_dt:
+                    tags_used.add(selector)
+                elif col_names and selector in self.columns:
+                    cols_used.add(selector)
+                elif only_logical_types and not ltype:
+                    raise ValueError(f"String {selector} is not a valid logical type")
+                else:
+                    unused_selectors.append(selector)
+            else:
+                error_type = "either a string or LogicalType" if logical_types else "a string"
+                if logical_types and not (semantic_tags or col_names):
+                    error_type = "a string representing a logical type or a LogicalType"
+                raise TypeError(f"Invalid selector used in include: {selector} must be {error_type}")
+
+        if unused_selectors:
+            not_present_str = ', '.join(sorted(unused_selectors))
+            warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
+
+        cols_to_include = cols_used
+        for col_name, col in self.columns.items():
+            if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
+                cols_to_include.add(col_name)
+
+        return list(cols_to_include)
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
@@ -526,7 +509,7 @@ class DataTable(object):
         if new_time_index:
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-        return DataTable(self._dataframe[cols_to_include],
+        return DataTable(self._dataframe.loc[:, cols_to_include],
                          name=self.name,
                          index=new_index,
                          time_index=new_time_index,
@@ -552,6 +535,12 @@ class DataTable(object):
             'numeric': ["count", "max", "min", "nunique", "mean", "std"],
             Datetime: ["count", "max", "min", "nunique", "mean"],
         }
+        cols_to_include = {}
+        for item in include:
+            if item in self.columns:
+                cols_to_include[item] = self.columns[item]
+            # elif item in filter
+
         all_tags = set()
         for tag in self.semantic_tags.values():
             all_tags.update(tag)
@@ -581,14 +570,14 @@ class DataTable(object):
                     agg_stats = agg_stats_to_calculate['category']
                 elif column._is_numeric():
                     agg_stats = agg_stats_to_calculate['numeric']
-                elif issubclass(logical_type, Datetime):
+                elif _get_ltype_class(logical_type) == Datetime:
                     agg_stats = agg_stats_to_calculate[Datetime]
                 else:
                     agg_stats = ["count"]
                 values = series.agg(agg_stats).to_dict()
 
                 # Calculate other specific stats based on logical type or semantic tags
-                if issubclass(logical_type, Boolean):
+                if _get_ltype_class(logical_type) == Boolean:
                     values["num_false"] = series.value_counts().get(False, 0)
                     values["num_true"] = series.value_counts().get(True, 0)
                 elif column._is_numeric():
@@ -622,7 +611,7 @@ class DataTable(object):
                 'num_true',
                 'num_false',
             ]
-        return pd.DataFrame(results).reindex(index_order)
+            return pd.DataFrame(results).reindex(index_order)
 
     def _handle_nans_for_mutual_info(self, data):
         """
@@ -647,10 +636,10 @@ class DataTable(object):
 
             if column._is_numeric():
                 mean = series.mean()
-                if isinstance(mean, float) and not issubclass(ltype, Double):
+                if isinstance(mean, float) and not _get_ltype_class(ltype) == Double:
                     data[column_name] = series.astype('float')
                 data[column_name] = series.fillna(mean)
-            elif column._is_categorical() or issubclass(ltype, Boolean):
+            elif column._is_categorical() or _get_ltype_class(ltype) == Boolean:
                 mode = _get_mode(series)
                 data[column_name] = series.fillna(mode)
         return data
@@ -706,7 +695,7 @@ class DataTable(object):
                          in self.columns.items() if (col_name != self.index and
                                                      (column._is_numeric() or
                                                       column._is_categorical() or
-                                                      issubclass(column.logical_type, Boolean))
+                                                      _get_ltype_class(column.logical_type) == Boolean)
                                                      )}
         data = self._dataframe[valid_columns]
 

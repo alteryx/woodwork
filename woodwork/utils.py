@@ -133,3 +133,9 @@ def read_csv(filepath=None,
                         logical_types=logical_types,
                         copy_dataframe=copy_dataframe,
                         use_standard_tags=use_standard_tags)
+
+
+def _get_ltype_class(ltype):
+    if ltype in ww.logical_types.LogicalType.__subclasses__():
+        return ltype
+    return ltype.__class__
