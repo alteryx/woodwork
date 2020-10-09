@@ -16,7 +16,11 @@ from woodwork.logical_types import (
     WholeNumber,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set, col_is_datetime
+from woodwork.utils import (
+    _convert_input_to_set,
+    _get_ltype_class,
+    col_is_datetime
+)
 
 
 class DataColumn(object):
@@ -62,7 +66,7 @@ class DataColumn(object):
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series
             try:
-                if self.logical_type == Datetime or isinstance(self.logical_type, Datetime):
+                if _get_ltype_class(self.logical_type) == Datetime:
                     self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
                     self._series = self._series.astype(self.logical_type.pandas_dtype)
@@ -97,7 +101,7 @@ class DataColumn(object):
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
-            if logical_type in LogicalType.__subclasses__() or isinstance(logical_type, LogicalType):
+            if _get_ltype_class(logical_type) in LogicalType.__subclasses__():
                 return logical_type
             elif isinstance(logical_type, str):
                 return str_to_logical_type(logical_type)
