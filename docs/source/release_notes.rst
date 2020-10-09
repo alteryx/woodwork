@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
+        * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
     * Enhancements
