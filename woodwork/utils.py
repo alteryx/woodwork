@@ -78,17 +78,22 @@ def list_logical_types():
 
 
 def list_semantic_tags():
-    """Returns a dataframe describing all built in (standard, index, time_index) woodwork
-    semantic tags.
+    """Returns a dataframe describing all of the common semantic tags.
 
     Args:
         None
 
     Returns:
-        pd.DataFrame: A dataframe containing details on each semantic_tag, including name,
-        whether it is a standard tag, description, and valid associated logical_types.
+        pd.DataFrame: A dataframe containing details on each Semantic Tag, including
+        the corresponding physical type and any standard semantic tags.
     """
-    pass
+    return pd.DataFrame(
+        {'name': ['index', 'time_index', 'date_of_birth', 'numeric', 'categorical'],
+          'is_standard_tag': [False, False, False, True, True],
+          'description': ["", "", "", "", ""],
+          'valid_logical_types': [[], [], [], [], []],
+        }
+    )
 
 
 def _get_mode(series):
