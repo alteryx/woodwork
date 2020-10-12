@@ -523,7 +523,7 @@ class DataTable(object):
         Arguments:
             include (list[str or LogicalType], optional): filter for what columns to include in the
             statistics returned. Can be a list of columns, semantic tags, logical types, or a list
-            combining any of the three. Follows most broad specification
+            combining any of the three. It follows the most broad specification.
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
