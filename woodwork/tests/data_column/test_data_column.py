@@ -546,3 +546,19 @@ def test_ordinal_with_ranking(sample_series):
     dc = DataColumn(sample_series, logical_type=ordinal_with_ranking)
     assert isinstance(dc.logical_type, Ordinal)
     assert dc.logical_type.ranking == ['a', 'b', 'c']
+
+
+def test_ordinal_with_incomplete_ranking(sample_series):
+    ordinal_incomplete_ranking = Ordinal(ranking=['a', 'b'])
+    error_msg = re.escape("Ordinal column sample_series contains values that are not "
+                          "present in the ranking values provided: ['c']")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, logical_type=ordinal_incomplete_ranking)
+
+
+def test_ordinal_with_nan_values():
+    nan_series = pd.Series(['a', 'b', np.nan, 'a'])
+    ordinal_with_ranking = Ordinal(ranking=['a', 'b'])
+    dc = DataColumn(nan_series, logical_type=ordinal_with_ranking)
+    assert isinstance(dc.logical_type, Ordinal)
+    assert dc.logical_type.ranking == ['a', 'b']

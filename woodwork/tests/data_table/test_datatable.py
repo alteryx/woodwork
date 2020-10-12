@@ -590,6 +590,7 @@ def test_sets_category_dtype_on_init():
         Categorical,
         CountryCode,
         Ordinal,
+        Ordinal(ranking=['a', 'b', 'c']),
         SubRegionCode,
         ZIPCode,
     ]
@@ -614,6 +615,7 @@ def test_sets_category_dtype_on_update():
         Categorical,
         CountryCode,
         Ordinal,
+        Ordinal(ranking=['a', 'b', 'c']),
         SubRegionCode,
         ZIPCode,
     ]
@@ -1734,7 +1736,12 @@ def test_describe_does_not_include_index():
 
 
 def test_data_table_describe_method():
-    categorical_ltypes = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
+    categorical_ltypes = [Categorical,
+                          CountryCode,
+                          Ordinal,
+                          Ordinal(ranking=('yellow', 'red', 'blue')),
+                          SubRegionCode,
+                          ZIPCode]
     boolean_ltypes = [Boolean]
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
