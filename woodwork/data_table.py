@@ -417,7 +417,8 @@ class DataTable(object):
         return self._new_dt_from_cols(cols_to_include)
 
     def _filter_cols(self, include, col_names=False, logical_types=False, semantic_tags=False):
-        """Return list of columns filtered in specified way
+        """Return list of columns filtered in specified way. In case of collision, favors logical types
+        then semantic tag then column name.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
@@ -435,8 +436,7 @@ class DataTable(object):
         if not isinstance(include, list):
             include = [include]
 
-        if not (col_names or logical_types or semantic_tags):
-            raise ValueError('one of the parameter filters must be set to True')
+        assert (col_names or logical_types or semantic_tags), 'one of the parameter filters must be set to True'
 
         only_logical_types = logical_types and not(semantic_tags or col_names)
 
@@ -525,7 +525,8 @@ class DataTable(object):
         Arguments:
             include (list[str or LogicalType], optional): filter for what columns to include in the
             statistics returned. Can be a list of columns, semantic tags, logical types, or a list
-            combining any of the three. It follows the most broad specification.
+            combining any of the three. It follows the most broad specification. In case of collision,
+            favors logical types then semantic tag then column name.
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
@@ -548,7 +549,6 @@ class DataTable(object):
         results = {}
 
         for column_name, column in cols_to_include:
-            # if include is None or column_name in include or column.logical_type in include or len(filter_tags.intersection(column.semantic_tags)) > 0:
             if 'index' in column.semantic_tags:
                 continue
             values = {}

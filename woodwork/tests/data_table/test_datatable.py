@@ -1691,7 +1691,7 @@ def test_filter_cols(sample_df):
 def test_filter_cols_errors(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
 
-    with pytest.raises(ValueError, match='one of the parameter filters must be set to True'):
+    with pytest.raises(AssertionError, match='one of the parameter filters must be set to True'):
         dt._filter_cols(include='email')
 
     with pytest.raises(ValueError, match='String email is not a valid logical type'):
