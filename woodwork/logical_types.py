@@ -211,9 +211,9 @@ class Ordinal(LogicalType):
 
     Args:
         ranking (list or tuple, optional): An optional list or tuple specifying
-        the ranking of the ordinal values from low to high. If ranking is specified,
-        there cannot be any values in the underlying series that are not present in
-        the ranking. Defaults to None.
+            the ranking of the ordinal values from low to high. If ranking is specified,
+            there cannot be any values in the underlying series that are not present in
+            the ranking. Defaults to None.
 
     Examples:
         .. code-block:: python
