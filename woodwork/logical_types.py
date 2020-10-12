@@ -209,6 +209,10 @@ class Ordinal(LogicalType):
     """Represents Logical Types that contain ordered discrete values.
     Has 'category' as a standard tag.
 
+    Args:
+        ranking (list or tuple, optional): An optional list or tuple specifying
+        the ranking of the ordinal values from low to high. Defaults to None.
+
     Examples:
         .. code-block:: python
 
@@ -219,8 +223,11 @@ class Ordinal(LogicalType):
     standard_tags = {'category'}
 
     def __init__(self, ranking=None):
-        # ranking can be used specify the ordering (lowest to highest)
-        pass
+        if not isinstance(ranking, (list, tuple)):
+            raise TypeError("Ordinal ranking values must be specified in a list or tuple")
+        if len(ranking) != len(set(ranking)):
+            raise ValueError("Ordinal ranking values cannot contain duplicates")
+        self.ranking = ranking
 
 
 class PhoneNumber(LogicalType):

@@ -5,6 +5,7 @@ from woodwork.logical_types import (
     Categorical,
     FullName,
     LogicalType,
+    Ordinal,
     get_logical_types,
     str_to_logical_type
 )
@@ -53,3 +54,21 @@ def test_str_to_logical_type():
     assert str_to_logical_type('bOoLeAn') == Boolean
     assert str_to_logical_type('full_NAME') == FullName
     assert str_to_logical_type('FullnamE') == FullName
+
+
+def test_ordinal_ranking_errors():
+    with pytest.raises(TypeError, match='Ordinal ranking values must be specified in a list or tuple'):
+        Ordinal(ranking='not_valid')
+
+    with pytest.raises(ValueError, match='Ordinal ranking values cannot contain duplicates'):
+        Ordinal(ranking=['a', 'b', 'b'])
+
+
+def test_ordinal_init_with_ranking():
+    ranks = ['bronze', 'silver', 'gold']
+    ordinal_from_list = Ordinal(ranking=ranks)
+    assert ordinal_from_list.ranking == ranks
+
+    ranks = ('bronze', 'silver', 'gold')
+    ordinal_from_tuple = Ordinal(ranking=ranks)
+    assert ordinal_from_tuple.ranking == ranks

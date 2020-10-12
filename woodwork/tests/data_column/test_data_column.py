@@ -539,3 +539,10 @@ def test_dtype_update_on_ltype_change():
     assert dc._series.dtype == 'Int64'
     dc = dc.set_logical_type('Double')
     assert dc._series.dtype == 'float64'
+
+
+def test_ordinal_with_ranking(sample_series):
+    ordinal_with_ranking = Ordinal(ranking=['a', 'b', 'c'])
+    dc = DataColumn(sample_series, logical_type=ordinal_with_ranking)
+    assert isinstance(dc.logical_type, Ordinal)
+    assert dc.logical_type.ranking == ['a', 'b', 'c']
