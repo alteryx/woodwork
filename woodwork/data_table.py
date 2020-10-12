@@ -435,6 +435,9 @@ class DataTable(object):
         if not isinstance(include, list):
             include = [include]
 
+        if not (col_names or logical_types or semantic_tags):
+            raise ValueError('one of the parameter filters must be set to True')
+
         only_logical_types = logical_types and not(semantic_tags or col_names)
 
         ltypes_used = set()
