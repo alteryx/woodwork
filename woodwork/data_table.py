@@ -9,7 +9,6 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     LogicalType,
-    LogicalTypeMetaClass,
     str_to_logical_type
 )
 from woodwork.utils import (
