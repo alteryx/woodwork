@@ -535,83 +535,72 @@ class DataTable(object):
             'numeric': ["count", "max", "min", "nunique", "mean", "std"],
             Datetime: ["count", "max", "min", "nunique", "mean"],
         }
-        cols_to_include = {}
-        for item in include:
-            if item in self.columns:
-                cols_to_include[item] = self.columns[item]
-            # elif item in filter
-
-        all_tags = set()
-        for tag in self.semantic_tags.values():
-            all_tags.update(tag)
-        filter_tags = set()
         if include is not None:
-            for item in include:
-                if not (item in self.logical_types.values() or item in self.columns or item in all_tags):
-                    if isinstance(item, LogicalTypeMetaClass):
-                        item = item.type_string
-                    raise ValueError(item + " is not a valid column name or semantic_tag, or instance of logicalType")
-                elif item in all_tags:
-                    filter_tags.update({item})
+            filtered_cols = self._filter_cols(include, col_names=True, logical_types=True, semantic_tags=True)
+            if filtered_cols == []:
+                raise ValueError('no columns matched the given include filters.')
+            cols_to_include = [(k, v) for k, v in self.columns.items() if k in filtered_cols]
+        else:
+            cols_to_include = self.columns.items()
 
         results = {}
 
-        for column_name, column in self.columns.items():
-            if include is None or column_name in include or column.logical_type in include or len(filter_tags.intersection(column.semantic_tags)) > 0:
-                if 'index' in column.semantic_tags:
-                    continue
-                values = {}
-                logical_type = column.logical_type
-                semantic_tags = column.semantic_tags
-                series = column._series
+        for column_name, column in cols_to_include:
+            # if include is None or column_name in include or column.logical_type in include or len(filter_tags.intersection(column.semantic_tags)) > 0:
+            if 'index' in column.semantic_tags:
+                continue
+            values = {}
+            logical_type = column.logical_type
+            semantic_tags = column.semantic_tags
+            series = column._series
 
-                # Calculate Aggregation Stats
-                if column._is_categorical():
-                    agg_stats = agg_stats_to_calculate['category']
-                elif column._is_numeric():
-                    agg_stats = agg_stats_to_calculate['numeric']
-                elif _get_ltype_class(logical_type) == Datetime:
-                    agg_stats = agg_stats_to_calculate[Datetime]
-                else:
-                    agg_stats = ["count"]
-                values = series.agg(agg_stats).to_dict()
+            # Calculate Aggregation Stats
+            if column._is_categorical():
+                agg_stats = agg_stats_to_calculate['category']
+            elif column._is_numeric():
+                agg_stats = agg_stats_to_calculate['numeric']
+            elif _get_ltype_class(logical_type) == Datetime:
+                agg_stats = agg_stats_to_calculate[Datetime]
+            else:
+                agg_stats = ["count"]
+            values = series.agg(agg_stats).to_dict()
 
-                # Calculate other specific stats based on logical type or semantic tags
-                if _get_ltype_class(logical_type) == Boolean:
-                    values["num_false"] = series.value_counts().get(False, 0)
-                    values["num_true"] = series.value_counts().get(True, 0)
-                elif column._is_numeric():
-                    quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
-                    values["first_quartile"] = quant_values[0]
-                    values["second_quartile"] = quant_values[1]
-                    values["third_quartile"] = quant_values[2]
+            # Calculate other specific stats based on logical type or semantic tags
+            if _get_ltype_class(logical_type) == Boolean:
+                values["num_false"] = series.value_counts().get(False, 0)
+                values["num_true"] = series.value_counts().get(True, 0)
+            elif column._is_numeric():
+                quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
+                values["first_quartile"] = quant_values[0]
+                values["second_quartile"] = quant_values[1]
+                values["third_quartile"] = quant_values[2]
 
-                values["nan_count"] = series.isna().sum()
-                values["mode"] = _get_mode(series)
-                values["physical_type"] = column.dtype
-                values["logical_type"] = logical_type
-                values["semantic_tags"] = semantic_tags
-                results[column_name] = values
+            values["nan_count"] = series.isna().sum()
+            values["mode"] = _get_mode(series)
+            values["physical_type"] = column.dtype
+            values["logical_type"] = logical_type
+            values["semantic_tags"] = semantic_tags
+            results[column_name] = values
 
-            index_order = [
-                'physical_type',
-                'logical_type',
-                'semantic_tags',
-                'count',
-                'nunique',
-                'nan_count',
-                'mean',
-                'mode',
-                'std',
-                'min',
-                'first_quartile',
-                'second_quartile',
-                'third_quartile',
-                'max',
-                'num_true',
-                'num_false',
-            ]
-            return pd.DataFrame(results).reindex(index_order)
+        index_order = [
+            'physical_type',
+            'logical_type',
+            'semantic_tags',
+            'count',
+            'nunique',
+            'nan_count',
+            'mean',
+            'mode',
+            'std',
+            'min',
+            'first_quartile',
+            'second_quartile',
+            'third_quartile',
+            'max',
+            'num_true',
+            'num_false',
+        ]
+        return pd.DataFrame(results).reindex(index_order)
 
     def _handle_nans_for_mutual_info(self, data):
         """
