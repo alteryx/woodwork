@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
     * Fixes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
