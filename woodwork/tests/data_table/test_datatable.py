@@ -2132,6 +2132,22 @@ def test_mutual_info_does_not_include_index():
     assert mi.shape[0] == 0
 
 
+def test_mutual_info_sort():
+    df = pd.DataFrame({
+        'ints': pd.Series([1, 2, 3]),
+        'bools': pd.Series([True, False, True]),
+        'strs2': pd.Series(['bye', 'hi', 'bye']),
+
+        'strs': pd.Series(['hi', 'hi', 'hi'])
+
+    })
+    dt = DataTable(df)
+    mi = dt.get_mutual_information()
+
+    for i in range(len(mi['mutual_info']) - 1):
+        assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
+
+
 def test_make_index(sample_df):
     dt = DataTable(sample_df, index='new_index', make_index=True)
     assert dt.index == 'new_index'
