@@ -278,7 +278,7 @@ def test_adds_category_standard_tag():
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
-    logical_types = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
+    logical_types = [Categorical, CountryCode, Ordinal(order=(1, 2, 3)), SubRegionCode, ZIPCode]
     for logical_type in logical_types:
         data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
         assert data_col.semantic_tags == {'custom_tag', 'category'}
@@ -539,3 +539,49 @@ def test_dtype_update_on_ltype_change():
     assert dc._series.dtype == 'Int64'
     dc = dc.set_logical_type('Double')
     assert dc._series.dtype == 'float64'
+
+
+def test_ordinal_requires_instance_on_init(sample_series):
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        DataColumn(sample_series, logical_type=Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        DataColumn(sample_series, logical_type="Ordinal")
+
+
+def test_ordinal_requires_instance_on_update(sample_series):
+    dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        dc.set_logical_type(Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        dc.set_logical_type("Ordinal")
+
+
+def test_ordinal_with_order(sample_series):
+    ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
+    dc = DataColumn(sample_series, logical_type=ordinal_with_order)
+    assert isinstance(dc.logical_type, Ordinal)
+    assert dc.logical_type.order == ['a', 'b', 'c']
+
+    dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+    new_dc = dc.set_logical_type(ordinal_with_order)
+    assert isinstance(new_dc.logical_type, Ordinal)
+    assert new_dc.logical_type.order == ['a', 'b', 'c']
+
+
+def test_ordinal_with_incomplete_ranking(sample_series):
+    ordinal_incomplete_order = Ordinal(order=['a', 'b'])
+    error_msg = re.escape("Ordinal column sample_series contains values that are not "
+                          "present in the order values provided: ['c']")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, logical_type=ordinal_incomplete_order)
+
+
+def test_ordinal_with_nan_values():
+    nan_series = pd.Series(['a', 'b', np.nan, 'a'])
+    ordinal_with_order = Ordinal(order=['a', 'b'])
+    dc = DataColumn(nan_series, logical_type=ordinal_with_order)
+    assert isinstance(dc.logical_type, Ordinal)
+    assert dc.logical_type.order == ['a', 'b']
