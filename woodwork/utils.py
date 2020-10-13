@@ -100,10 +100,11 @@ def list_semantic_tags():
           'valid_logical_types': sem_tags[tag]}
          for tag in sem_tags]
     )
-    tags_df = tags_df.append(pd.DataFrame([['index', False, [ww.logical_types.str_to_logical_type(tag) for tag in ['integer', 'wholenumber', 'double', 'categorical', 'datetime']]],
-                                           ['time_index', False, [ww.logical_types.str_to_logical_type('datetime')]],
-                                           ['date_of_birth', False, [ww.logical_types.str_to_logical_type('datetime')]]
-        ], columns=tags_df.columns), ignore_index=True)
+    tags_df = tags_df.append(
+        pd.DataFrame([['index', False, [ww.logical_types.str_to_logical_type(tag) for tag in ['integer', 'wholenumber', 'double', 'categorical', 'datetime']]],
+                      ['time_index', False, [ww.logical_types.str_to_logical_type('datetime')]],
+                      ['date_of_birth', False, [ww.logical_types.str_to_logical_type('datetime')]]
+                      ], columns=tags_df.columns), ignore_index=True)
     return tags_df
 
 
