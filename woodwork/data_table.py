@@ -27,7 +27,8 @@ class DataTable(object):
                  semantic_tags=None,
                  logical_types=None,
                  copy_dataframe=False,
-                 use_standard_tags=True):
+                 use_standard_tags=True,
+                 make_index=False):
         """Create DataTable
 
         Args:
@@ -52,14 +53,22 @@ class DataTable(object):
                 reference to the input dataframe.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
+            make_index (bool, optional): If True, will create a new unique, numeric index column with the
+                name specified by ``index`` and will add the new index column to the supplied DataFrame.
+                If True, the name specified in ``index`` cannot match an existing column name in
+                ``dataframe``. If False, the name is specified in ``index`` must match a column
+                present in the ``dataframe``. Defaults to False.
         """
         # Check that inputs are valid
-        _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags)
+        _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
 
         if copy_dataframe:
             self._dataframe = dataframe.copy()
         else:
             self._dataframe = dataframe
+
+        if make_index:
+            self._dataframe.insert(0, index, range(len(self._dataframe)))
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -427,74 +436,6 @@ class DataTable(object):
 
         return self._new_dt_from_cols(cols_to_include)
 
-    def select_ltypes(self, include):
-        """Create a DataTable that includes only columns whose logical types
-        are specified here. Will not include any column, including indices, whose
-        logical type is not specified.
-
-        Args:
-            include (str or LogicalType or list[str or LogicalType]): Logical types to
-                include in the DataTable.
-        Returns:
-            DataTable: The subset of the original DataTable that contains just the ltypes
-            in ``include``.
-        """
-        if not isinstance(include, list):
-            include = [include]
-
-        ltypes_to_include = set()
-        for ltype in include:
-            if ltype in LogicalType.__subclasses__():
-                ltypes_to_include.add(ltype)
-            elif isinstance(ltype, str):
-                ltypes_to_include.add(str_to_logical_type(ltype))
-            else:
-                raise TypeError(f"Invalid logical type specified: {ltype}")
-
-        ltypes_present = {col.logical_type for col in self.columns.values()}
-        unused_ltypes = ltypes_to_include - ltypes_present
-
-        if unused_ltypes:
-            not_present_str = ', '.join(sorted([str(ltype) for ltype in unused_ltypes]))
-            warnings.warn(f'The following logical types were not present in your DataTable: {not_present_str}')
-
-        cols_to_include = [col_name for col_name, col in self.columns.items()
-                           if col.logical_type in ltypes_to_include]
-
-        return self._new_dt_from_cols(cols_to_include)
-
-    def select_semantic_tags(self, include):
-        """Create a DataTable that includes only columns that have at least one of the semantic tags
-        specified here. The new DataTable with retain any logical types or semantic tags from
-        the original DataTable.
-
-        Args:
-            include (str or list[str] or set[str]): Semantic tags to include in the DataTable.
-
-        Returns:
-            DataTable: The subset of the original DataTable that contains just the semantic
-            tags in ``include``.
-        """
-        include = _convert_input_to_set(include, 'include parameter')
-
-        include = set(include)
-        cols_to_include = []
-        for col_name, tags in self.semantic_tags.items():
-            intersection = tags.intersection(include)
-            if intersection:
-                cols_to_include.append(col_name)
-
-        new_dt = self._new_dt_from_cols(cols_to_include)
-
-        tags_present = {tag for col in new_dt.columns.values() for tag in col.semantic_tags}
-        unused_tags = include - tags_present
-
-        if unused_tags:
-            not_present_str = ', '.join(sorted(list(unused_tags)))
-            warnings.warn(f'The following semantic tags were not present in your DataTable: {not_present_str}')
-
-        return new_dt
-
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
         indices, and name of original DataTable"""
@@ -702,15 +643,15 @@ class DataTable(object):
         return pd.DataFrame(mutual_info)
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags):
+def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
     if not isinstance(dataframe, pd.DataFrame):
         raise TypeError('Dataframe must be a pandas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
-    if index:
-        _check_index(dataframe, index)
+    if index or make_index:
+        _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
     if time_index:
@@ -728,13 +669,21 @@ def _check_unique_column_names(dataframe):
         raise IndexError('Dataframe cannot contain duplicate columns names')
 
 
-def _check_index(dataframe, index):
-    if not isinstance(index, str):
+def _check_index(dataframe, index, make_index=False):
+    if index and not isinstance(index, str):
         raise TypeError('Index column name must be a string')
-    if index not in dataframe.columns:
-        raise LookupError(f'Specified index column `{index}` not found in dataframe')
-    if not dataframe[index].is_unique:
+    if not make_index and index not in dataframe.columns:
+        # User specifies an index that is not in the dataframe, without setting make_index to True
+        raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
+    if index and not make_index and not dataframe[index].is_unique:
+        # User specifies an index that is in the dataframe but not unique
         raise IndexError('Index column must be unique')
+    if make_index and index and index in dataframe.columns:
+        # User sets make_index to True, but supplies an index name that matches a column already present
+        raise IndexError('When setting make_index to True, the name specified for index cannot match an existing column name')
+    if make_index and not index:
+        # User sets make_index to True, but does not supply a name for the index
+        raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None):
