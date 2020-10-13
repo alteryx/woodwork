@@ -1632,7 +1632,7 @@ def test_select_instantiated():
 def test_filter_cols(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
 
-    filtered = dt._filter_cols(include='email')
+    filtered = dt._filter_cols(include='email', col_names=True)
     assert filtered == ['email']
 
     filtered_log_type_string = dt._filter_cols(include='NaturalLanguage')
@@ -1642,12 +1642,12 @@ def test_filter_cols(sample_df):
     filtered_semantic_tag = dt._filter_cols(include='numeric')
     assert filtered_semantic_tag == ['age']
 
-    filtered_multiple = dt._filter_cols(include=['NaturalLanguage', 'numeric'])
-    expected = ['full_name', 'phone_number', 'age', 'email']
+    filtered_multiple = dt._filter_cols(include=['numeric'])
+    expected = ['phone_number', 'age']
     for col in filtered_multiple:
         assert col in expected
 
-    filtered_multiple_overlap = dt._filter_cols(include=['NaturalLanguage', 'email'])
+    filtered_multiple_overlap = dt._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
     expected = ['full_name', 'phone_number', 'email']
     for col in filtered_multiple_overlap:
         assert col in expected

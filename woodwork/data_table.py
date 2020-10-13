@@ -397,13 +397,15 @@ class DataTable(object):
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
 
-    def _filter_cols(self, include):
+    def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
         then semantic tag then column name.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
                 filter columns by.
+
+            col_names (bool): Specifies whether to filter columns by name. Defaults to False.
 
         Returns:
             List[str] of column names that fit into filter.
@@ -438,7 +440,7 @@ class DataTable(object):
                     continue
                 elif selector in tags_in_dt:
                     tags_used.add(selector)
-                elif selector in self.columns:
+                elif selector in self.columns and col_names:
                     cols_to_include.add(selector)
                 else:
                     unused_selectors.append(selector)
@@ -500,7 +502,7 @@ class DataTable(object):
             Datetime: ["count", "max", "min", "nunique", "mean"],
         }
         if include is not None:
-            filtered_cols = self._filter_cols(include)
+            filtered_cols = self._filter_cols(include, col_names=True)
             if filtered_cols == []:
                 raise ValueError('no columns matched the given include filters.')
             cols_to_include = [(k, v) for k, v in self.columns.items() if k in filtered_cols]

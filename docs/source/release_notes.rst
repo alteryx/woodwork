@@ -12,7 +12,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
