@@ -1632,22 +1632,22 @@ def test_select_instantiated():
 def test_filter_cols(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
 
-    filtered = dt._filter_cols(include='email', col_names=True)
+    filtered = dt._filter_cols(include='email')
     assert filtered == ['email']
 
-    filtered_log_type_string = dt._filter_cols(include='NaturalLanguage', logical_types=True)
-    filtered_log_type = dt._filter_cols(include=NaturalLanguage, logical_types=True)
+    filtered_log_type_string = dt._filter_cols(include='NaturalLanguage')
+    filtered_log_type = dt._filter_cols(include=NaturalLanguage)
     assert filtered_log_type == filtered_log_type_string
 
-    filtered_semantic_tag = dt._filter_cols(include='numeric', semantic_tags=True)
+    filtered_semantic_tag = dt._filter_cols(include='numeric')
     assert filtered_semantic_tag == ['age']
 
-    filtered_multiple = dt._filter_cols(include=['NaturalLanguage', 'numeric'], semantic_tags=True, logical_types=True)
+    filtered_multiple = dt._filter_cols(include=['NaturalLanguage', 'numeric'])
     expected = ['full_name', 'phone_number', 'age', 'email']
     for col in filtered_multiple:
         assert col in expected
 
-    filtered_multiple_overlap = dt._filter_cols(include=['NaturalLanguage', 'email'], logical_types=True, col_names=True)
+    filtered_multiple_overlap = dt._filter_cols(include=['NaturalLanguage', 'email'])
     expected = ['full_name', 'phone_number', 'email']
     for col in filtered_multiple_overlap:
         assert col in expected
@@ -1656,14 +1656,8 @@ def test_filter_cols(sample_df):
 def test_filter_cols_errors(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
 
-    with pytest.raises(AssertionError, match='one of the parameter filters must be set to True'):
-        dt._filter_cols(include='email')
-
-    with pytest.raises(ValueError, match='String email is not a valid logical type'):
-        dt._filter_cols(include='email', logical_types=True)
-
     with pytest.warns(UserWarning, match='The following selectors were not present in your DataTable: nothing'):
-        filter_no_matches = dt._filter_cols(include='nothing', col_names=True)
+        filter_no_matches = dt._filter_cols(include='nothing')
     assert filter_no_matches == []
 
 
