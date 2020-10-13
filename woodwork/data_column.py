@@ -64,13 +64,8 @@ class DataColumn(object):
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""
-        if _get_ltype_class(self.logical_type) == Ordinal and self.logical_type.order:
-            # Check that order values are complete
-            missing_order_vals = set(self._series.dropna().values).difference(set(self.logical_type.order))
-            if missing_order_vals:
-                error_msg = f'Ordinal column {self.name} contains values that are not present ' \
-                    f'in the order values provided: {sorted(list(missing_order_vals))}'
-                raise ValueError(error_msg)
+        if isinstance(self.logical_type, Ordinal):
+            self.logical_type._validate_data(self._series)
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series
             try:
@@ -112,7 +107,6 @@ class DataColumn(object):
             if isinstance(logical_type, str):
                 logical_type = str_to_logical_type(logical_type)
             ltype_class = _get_ltype_class(logical_type)
-
             if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
                 raise TypeError("Must use an Ordinal instance with order values defined")
             if ltype_class in LogicalType.__subclasses__():

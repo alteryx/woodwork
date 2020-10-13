@@ -541,7 +541,7 @@ def test_dtype_update_on_ltype_change():
     assert dc._series.dtype == 'float64'
 
 
-def test_ordinal_requires_instance(sample_series):
+def test_ordinal_requires_instance_on_init(sample_series):
     error_msg = 'Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error_msg):
         DataColumn(sample_series, logical_type=Ordinal)
@@ -549,11 +549,26 @@ def test_ordinal_requires_instance(sample_series):
         DataColumn(sample_series, logical_type="Ordinal")
 
 
+def test_ordinal_requires_instance_on_update(sample_series):
+    dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        dc.set_logical_type(Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        dc.set_logical_type("Ordinal")
+
+
 def test_ordinal_with_order(sample_series):
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
     assert dc.logical_type.order == ['a', 'b', 'c']
+
+    dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+    new_dc = dc.set_logical_type(ordinal_with_order)
+    assert isinstance(new_dc.logical_type, Ordinal)
+    assert new_dc.logical_type.order == ['a', 'b', 'c']
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
