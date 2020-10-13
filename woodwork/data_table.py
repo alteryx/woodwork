@@ -449,8 +449,6 @@ class DataTable(object):
                     unused_selectors.append(selector)
             else:
                 error_type = "either a string or LogicalType" if logical_types else "a string"
-                if logical_types and not (semantic_tags or col_names):
-                    error_type = "a string representing a logical type or a LogicalType"
                 raise TypeError(f"Invalid selector used in include: {selector} must be {error_type}")
 
         if unused_selectors:
