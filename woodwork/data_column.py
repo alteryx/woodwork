@@ -1,5 +1,6 @@
 import warnings
 
+import dask.dataframe as dd
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -279,6 +280,8 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
+    if isinstance(series, dd.Series):
+        series = series.get_partition(0).compute()
     natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage
