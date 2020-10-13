@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
         * Add support for setting ranking order on columns with Ordinal logical type (:pr:`240`)
     * Fixes
@@ -12,8 +13,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-    Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+Thanks to the following people for contributing to this release:
+    :user:`ctduffy`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
     * Enhancements
