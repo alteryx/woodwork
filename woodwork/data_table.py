@@ -674,7 +674,10 @@ class DataTable(object):
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
-        return pd.DataFrame(mutual_info).sort_values('mutual_info', ascending=False)
+        mi = pd.DataFrame(mutual_info)
+        if not mutual_info:
+            return mi
+        return mi.sort_values('mutual_info', ascending=False)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
