@@ -85,15 +85,26 @@ def list_semantic_tags():
 
     Returns:
         pd.DataFrame: A dataframe containing details on each Semantic Tag, including
-        the corresponding physical type and any standard semantic tags.
+        the corresponding logical type(s).
     """
-    return pd.DataFrame(
-        {'name': ['index', 'time_index', 'date_of_birth', 'numeric', 'categorical'],
-          'is_standard_tag': [False, False, False, True, True],
-          'description': ["", "", "", "", ""],
-          'valid_logical_types': [[], [], [], [], []],
-        }
+    sem_tags = {}
+    for ltype in ww.logical_types.LogicalType.__subclasses__():
+        for tag in ltype.standard_tags:
+            if tag in sem_tags:
+                sem_tags[tag].append(ltype.__name__)
+            else:
+                sem_tags[tag] = [ltype.__name__]
+    tags_df = pd.DataFrame(
+        [{'name': tag,
+          'is_standard_tag': True,
+          'valid_logical_types': sem_tags[tag]}
+         for tag in sem_tags]
     )
+    tags_df = tags_df.append(pd.DataFrame([['index', False, [ww.logical_types.str_to_logical_type(tag) for tag in ['integer', 'wholenumber', 'double', 'categorical', 'datetime']]],
+                                           ['time_index', False, [ww.logical_types.str_to_logical_type('datetime')]],
+                                           ['date_of_birth', False, [ww.logical_types.str_to_logical_type('datetime')]]
+        ], columns=tags_df.columns), ignore_index=True)
+    return tags_df
 
 
 def _get_mode(series):
