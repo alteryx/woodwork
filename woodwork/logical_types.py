@@ -209,6 +209,11 @@ class Ordinal(LogicalType):
     """Represents Logical Types that contain ordered discrete values.
     Has 'category' as a standard tag.
 
+    Args:
+        order (list or tuple): An list or tuple specifying the order of the ordinal
+            values from low to high. The underlying series cannot contain values that
+            are not present in the order values.
+
     Examples:
         .. code-block:: python
 
@@ -218,9 +223,21 @@ class Ordinal(LogicalType):
     pandas_dtype = 'category'
     standard_tags = {'category'}
 
-    def __init__(self, ranking=None):
-        # ranking can be used specify the ordering (lowest to highest)
-        pass
+    def __init__(self, order):
+        if not isinstance(order, (list, tuple)):
+            raise TypeError("Order values must be specified in a list or tuple")
+        if len(order) != len(set(order)):
+            raise ValueError("Order values cannot contain duplicates")
+        self.order = order
+
+    def _validate_data(self, series):
+        """Confirm the supplied series does not contain any values that are not
+        in the specified order values"""
+        missing_order_vals = set(series.dropna().values).difference(self.order)
+        if missing_order_vals:
+            error_msg = f'Ordinal column {series.name} contains values that are not present ' \
+                f'in the order values provided: {sorted(list(missing_order_vals))}'
+            raise ValueError(error_msg)
 
 
 class PhoneNumber(LogicalType):

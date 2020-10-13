@@ -12,6 +12,7 @@ from woodwork.logical_types import (
     Integer,
     LogicalType,
     NaturalLanguage,
+    Ordinal,
     Timedelta,
     WholeNumber,
     str_to_logical_type
@@ -63,6 +64,8 @@ class DataColumn(object):
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""
+        if isinstance(self.logical_type, Ordinal):
+            self.logical_type._validate_data(self._series)
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series
             try:
@@ -101,10 +104,13 @@ class DataColumn(object):
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
-            if _get_ltype_class(logical_type) in LogicalType.__subclasses__():
+            if isinstance(logical_type, str):
+                logical_type = str_to_logical_type(logical_type)
+            ltype_class = _get_ltype_class(logical_type)
+            if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
+                raise TypeError("Must use an Ordinal instance with order values defined")
+            if ltype_class in LogicalType.__subclasses__():
                 return logical_type
-            elif isinstance(logical_type, str):
-                return str_to_logical_type(logical_type)
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.name}'")
         else:
