@@ -667,16 +667,14 @@ class DataTable(object):
             for j in range(i, len(col_names)):
                 b_col = col_names[j]
                 if a_col == b_col:
-                    # set mutual info of 1.0 for column with itself
-                    mutual_info.append(
-                        {"column_1": a_col, "column_2": b_col, "mutual_info": 1.0}
-                    )
+                    # Ignore because the mutual info for a column with itself will always be 1
+                    continue
                 else:
                     mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
-        return pd.DataFrame(mutual_info)
+        return pd.DataFrame(mutual_info).sort_values('mutual_info', ascending=False)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
