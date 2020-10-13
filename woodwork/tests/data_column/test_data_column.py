@@ -254,7 +254,6 @@ def test_pdna_inference():
         # Test inference with Dask
         inferred_type = infer_logical_type(dd.from_pandas(series, npartitions=2))
         assert inferred_type == expected_logical_types[index]
-        
 
 
 def test_data_column_repr(sample_series):
