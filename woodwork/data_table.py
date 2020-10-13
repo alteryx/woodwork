@@ -372,13 +372,16 @@ class DataTable(object):
             return self._dataframe.copy()
         return self._dataframe
 
-    def select(self, include):
+    def select(self, include, col_names=True):
         """Create a DataTable including only columns whose logical type and
         semantic tags are specified in the list of types and tags to include.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): Logical
-                types and semantic tags to include in the DataTable.
+                types and semantic tags (and optionally column names) to include
+                in the DataTable.
+
+            col_names (bool): If the select criteria includes column name. Defaults to True.
         Returns:
             DataTable: The subset of the original DataTable that contains just the
             logical types and semantic tags in ``include``.
