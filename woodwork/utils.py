@@ -91,9 +91,9 @@ def list_semantic_tags():
     for ltype in ww.logical_types.LogicalType.__subclasses__():
         for tag in ltype.standard_tags:
             if tag in sem_tags:
-                sem_tags[tag].append(ltype.__name__)
+                sem_tags[tag].append(ltype)
             else:
-                sem_tags[tag] = [ltype.__name__]
+                sem_tags[tag] = [ltype]
     tags_df = pd.DataFrame(
         [{'name': tag,
           'is_standard_tag': True,
