@@ -387,10 +387,28 @@ class DataTable(object):
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): Logical
-                types and semantic tags to include in the DataTable.
+                types, semantic tags or column names to include
+                in the DataTable.
+
         Returns:
             DataTable: The subset of the original DataTable that contains just the
             logical types and semantic tags in ``include``.
+        """
+        cols_to_include = self._filter_cols(include)
+        return self._new_dt_from_cols(cols_to_include)
+
+    def _filter_cols(self, include, col_names=False):
+        """Return list of columns filtered in specified way. In case of collision, favors logical types
+        then semantic tag then column name.
+
+        Args:
+            include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
+                filter columns by.
+
+            col_names (bool): Specifies whether to filter columns by name. Defaults to False.
+
+        Returns:
+            List[str] of column names that fit into filter.
         """
         if not isinstance(include, list):
             include = [include]
@@ -402,6 +420,8 @@ class DataTable(object):
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
 
         unused_selectors = []
+
+        cols_to_include = set()
 
         for selector in include:
             if _get_ltype_class(selector) in LogicalType.__subclasses__():
@@ -420,6 +440,8 @@ class DataTable(object):
                     continue
                 elif selector in tags_in_dt:
                     tags_used.add(selector)
+                elif col_names and selector in self.columns:
+                    cols_to_include.add(selector)
                 else:
                     unused_selectors.append(selector)
             else:
@@ -429,12 +451,11 @@ class DataTable(object):
             not_present_str = ', '.join(sorted(unused_selectors))
             warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
 
-        cols_to_include = []
         for col_name, col in self.columns.items():
             if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
-                cols_to_include.append(col_name)
+                cols_to_include.add(col_name)
 
-        return self._new_dt_from_cols(cols_to_include)
+        return list(cols_to_include)
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
@@ -462,20 +483,35 @@ class DataTable(object):
                          copy_dataframe=False,
                          use_standard_tags=self.use_standard_tags)
 
-    def describe(self):
+    def describe(self, include=None):
         """Calculates statistics for data contained in DataTable.
+        Arguments:
+            include (list[str or LogicalType], optional): filter for what columns to include in the
+            statistics returned. Can be a list of columns, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name.
 
         Returns:
-            pd.DataFrame: A Dataframe containing statistics for the data.
+            pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
+            DataTable that just containing the logical types, semantic tags, or column names specified
+            in ``include``.
         """
         agg_stats_to_calculate = {
             'category': ["count", "nunique"],
             'numeric': ["count", "max", "min", "nunique", "mean", "std"],
             Datetime: ["count", "max", "min", "nunique", "mean"],
         }
+        if include is not None:
+            filtered_cols = self._filter_cols(include, col_names=True)
+            if filtered_cols == []:
+                raise ValueError('no columns matched the given include filters.')
+            cols_to_include = [(k, v) for k, v in self.columns.items() if k in filtered_cols]
+        else:
+            cols_to_include = self.columns.items()
+
         results = {}
 
-        for column_name, column in self.columns.items():
+        for column_name, column in cols_to_include:
             if 'index' in column.semantic_tags:
                 continue
             values = {}

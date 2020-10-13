@@ -1162,17 +1162,17 @@ def test_select_semantic_tags_warning(sample_df):
         'age': 'numeric',
     })
 
-    warning = "The following selectors were not present in your DataTable: ['doesnt_exist']"
+    warning = "The following selectors were not present in your DataTable: doesnt_exist"
     with pytest.warns(UserWarning, match=warning):
         dt_empty = dt.select(['doesnt_exist'])
     assert len(dt_empty.columns) == 0
 
-    warning = "The following selectors were not present in your DataTable: ['doesnt_exist']"
+    warning = "The following selectors were not present in your DataTable: doesnt_exist"
     with pytest.warns(UserWarning, match=warning):
         dt_single = dt.select(['numeric', 'doesnt_exist'])
     assert len(dt_single.columns) == 2
 
-    warning = "The following selectors were not present in your DataTable: ['category', 'doesnt_exist']"
+    warning = "The following selectors were not present in your DataTable: category, doesnt_exist"
     with pytest.warns(UserWarning, match=warning):
         dt_single = dt.select(['numeric', 'doesnt_exist', 'category', 'tag2'])
     assert len(dt_single.columns) == 3
@@ -1629,6 +1629,38 @@ def test_select_instantiated():
         dt.select(ymd_format)
 
 
+def test_filter_cols(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+
+    filtered = dt._filter_cols(include='email', col_names=True)
+    assert filtered == ['email']
+
+    filtered_log_type_string = dt._filter_cols(include='NaturalLanguage')
+    filtered_log_type = dt._filter_cols(include=NaturalLanguage)
+    assert filtered_log_type == filtered_log_type_string
+
+    filtered_semantic_tag = dt._filter_cols(include='numeric')
+    assert filtered_semantic_tag == ['age']
+
+    filtered_multiple = dt._filter_cols(include=['numeric'])
+    expected = ['phone_number', 'age']
+    for col in filtered_multiple:
+        assert col in expected
+
+    filtered_multiple_overlap = dt._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
+    expected = ['full_name', 'phone_number', 'email']
+    for col in filtered_multiple_overlap:
+        assert col in expected
+
+
+def test_filter_cols_errors(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+
+    with pytest.warns(UserWarning, match='The following selectors were not present in your DataTable: nothing'):
+        filter_no_matches = dt._filter_cols(include='nothing')
+    assert filter_no_matches == []
+
+
 def test_datetime_inference_with_format_param():
     df = pd.DataFrame({
         'index': [0, 1, 2],
@@ -1952,6 +1984,51 @@ def test_datatable_describe_with_no_semantic_tags():
     # Make sure numeric stats were computed
     assert stats_df['num_col']['semantic_tags'] == set()
     assert stats_df['num_col']['mean'] == 2
+
+
+def test_data_table_describe_with_include(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'age': ['numeric', 'age']
+    }
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
+
+    col_name_df = dt.describe(include=['full_name'])
+    assert col_name_df.shape == (16, 1)
+    assert 'full_name', 'email' in col_name_df.columns
+
+    semantic_tags_df = dt.describe(['tag1', 'tag2'])
+    assert 'full_name' in col_name_df.columns
+    assert len(semantic_tags_df.columns) == 2
+
+    logical_types_df = dt.describe([Datetime, Boolean])
+    assert 'signup_date', 'is_registered' in logical_types_df.columns
+    assert len(logical_types_df.columns) == 2
+
+    multi_params_df = dt.describe(['age', 'tag1', Datetime])
+    expected = ['full_name', 'age', 'signup_date']
+    for col_name in expected:
+        assert col_name in multi_params_df.columns
+    multi_params_df['full_name'].equals(col_name_df['full_name'])
+    multi_params_df['full_name'].equals(dt.describe()['full_name'])
+
+
+def test_data_table_describe_with_include_error(sample_df):
+    dt = DataTable(sample_df)
+    match = 'no columns matched the given include filters.'
+    warning = 'The following selectors were not present in your DataTable: '
+
+    with pytest.raises(ValueError, match=match):
+        with pytest.warns(UserWarning, match=warning + 'wrongname'):
+            dt.describe(include=['wrongname'])
+
+    with pytest.warns(UserWarning, match=warning + 'tag4'):
+        dt.describe(include=['email', 'tag4'])
+
+    with pytest.raises(ValueError, match=match):
+        with pytest.warns(UserWarning, match=warning + 'url'):
+            dt.describe(include=[URL])
 
 
 def test_data_table_handle_nans_for_mutual_info():
