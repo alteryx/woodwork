@@ -64,12 +64,12 @@ class DataColumn(object):
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""
-        if _get_ltype_class(self.logical_type) == Ordinal and self.logical_type.ranking:
-            # Check that rankings are complete
-            missing_ranking_vals = set(self._series.dropna().values).difference(set(self.logical_type.ranking))
-            if missing_ranking_vals:
+        if _get_ltype_class(self.logical_type) == Ordinal and self.logical_type.order:
+            # Check that order values are complete
+            missing_order_vals = set(self._series.dropna().values).difference(set(self.logical_type.order))
+            if missing_order_vals:
                 error_msg = f'Ordinal column {self.name} contains values that are not present ' \
-                    f'in the ranking values provided: {sorted(list(missing_ranking_vals))}'
+                    f'in the order values provided: {sorted(list(missing_order_vals))}'
                 raise ValueError(error_msg)
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series

@@ -210,10 +210,10 @@ class Ordinal(LogicalType):
     Has 'category' as a standard tag.
 
     Args:
-        ranking (list or tuple, optional): An optional list or tuple specifying
-            the ranking of the ordinal values from low to high. If ranking is specified,
+        order (list or tuple, optional): An optional list or tuple specifying
+            the order of the ordinal values from low to high. If order is specified,
             there cannot be any values in the underlying series that are not present in
-            the ranking. Defaults to None.
+            the order values. Defaults to None.
 
     Examples:
         .. code-block:: python
@@ -223,14 +223,14 @@ class Ordinal(LogicalType):
     """
     pandas_dtype = 'category'
     standard_tags = {'category'}
-    ranking = None
+    order = None
 
-    def __init__(self, ranking=None):
-        if not isinstance(ranking, (list, tuple)):
-            raise TypeError("Ordinal ranking values must be specified in a list or tuple")
-        if len(ranking) != len(set(ranking)):
-            raise ValueError("Ordinal ranking values cannot contain duplicates")
-        self.ranking = ranking
+    def __init__(self, order=None):
+        if not isinstance(order, (list, tuple)):
+            raise TypeError("Order values must be specified in a list or tuple")
+        if len(order) != len(set(order)):
+            raise ValueError("Order values cannot contain duplicates")
+        self.order = order
 
 
 class PhoneNumber(LogicalType):

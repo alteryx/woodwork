@@ -56,19 +56,19 @@ def test_str_to_logical_type():
     assert str_to_logical_type('FullnamE') == FullName
 
 
-def test_ordinal_ranking_errors():
-    with pytest.raises(TypeError, match='Ordinal ranking values must be specified in a list or tuple'):
-        Ordinal(ranking='not_valid')
+def test_ordinal_order_errors():
+    with pytest.raises(TypeError, match='Order values must be specified in a list or tuple'):
+        Ordinal(order='not_valid')
 
-    with pytest.raises(ValueError, match='Ordinal ranking values cannot contain duplicates'):
-        Ordinal(ranking=['a', 'b', 'b'])
+    with pytest.raises(ValueError, match='Order values cannot contain duplicates'):
+        Ordinal(order=['a', 'b', 'b'])
 
 
-def test_ordinal_init_with_ranking():
-    ranks = ['bronze', 'silver', 'gold']
-    ordinal_from_list = Ordinal(ranking=ranks)
-    assert ordinal_from_list.ranking == ranks
+def test_ordinal_init_with_order():
+    order = ['bronze', 'silver', 'gold']
+    ordinal_from_list = Ordinal(order=order)
+    assert ordinal_from_list.order == order
 
-    ranks = ('bronze', 'silver', 'gold')
-    ordinal_from_tuple = Ordinal(ranking=ranks)
-    assert ordinal_from_tuple.ranking == ranks
+    order = ('bronze', 'silver', 'gold')
+    ordinal_from_tuple = Ordinal(order=order)
+    assert ordinal_from_tuple.order == order
