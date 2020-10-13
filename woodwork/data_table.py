@@ -386,7 +386,7 @@ class DataTable(object):
             DataTable: The subset of the original DataTable that contains just the
             logical types and semantic tags in ``include``.
         """
-        cols_to_include = self._filter_cols(include, logical_types=True, semantic_tags=True)
+        cols_to_include = self._filter_cols(include, col_names, logical_types=True, semantic_tags=True)
         return self._new_dt_from_cols(cols_to_include)
 
     def _filter_cols(self, include, col_names=False, logical_types=False, semantic_tags=False):
