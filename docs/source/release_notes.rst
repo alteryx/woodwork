@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
+        * Add support for setting ranking order on columns with Ordinal logical type (:pr:`240`)
     * Fixes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
