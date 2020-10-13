@@ -2,16 +2,17 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
     * Fixes
     * Changes
+        * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
-    :user:`ctduffy`
+    :user:`ctduffy`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
     * Enhancements

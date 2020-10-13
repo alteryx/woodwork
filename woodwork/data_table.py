@@ -386,36 +386,6 @@ class DataTable(object):
         cols_to_include = self._filter_cols(include, logical_types=True, semantic_tags=True)
         return self._new_dt_from_cols(cols_to_include)
 
-    def select_ltypes(self, include):
-        """Create a DataTable that includes only columns whose logical types
-        are specified here. Will not include any column, including indices, whose
-        logical type is not specified.
-
-        Args:
-            include (str or LogicalType or list[str or LogicalType]): Logical types to
-                include in the DataTable.
-        Returns:
-            DataTable: The subset of the original DataTable that contains just the ltypes
-            in ``include``.
-        """
-        cols_to_include = self._filter_cols(include, logical_types=True)
-        return self._new_dt_from_cols(cols_to_include)
-
-    def select_semantic_tags(self, include):
-        """Create a DataTable that includes only columns that have at least one of the semantic tags
-        specified here. The new DataTable with retain any logical types or semantic tags from
-        the original DataTable.
-
-        Args:
-            include (str or list[str] or set[str]): Semantic tags to include in the DataTable.
-
-        Returns:
-            DataTable: The subset of the original DataTable that contains just the semantic
-            tags in ``include``.
-        """
-        cols_to_include = self._filter_cols(include, semantic_tags=True)
-        return self._new_dt_from_cols(cols_to_include)
-
     def _filter_cols(self, include, col_names=False, logical_types=False, semantic_tags=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
         then semantic tag then column name.
