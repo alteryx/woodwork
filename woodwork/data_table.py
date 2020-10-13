@@ -440,7 +440,7 @@ class DataTable(object):
                     continue
                 elif selector in tags_in_dt:
                     tags_used.add(selector)
-                elif selector in self.columns and col_names:
+                elif col_names and selector in self.columns:
                     cols_to_include.add(selector)
                 else:
                     unused_selectors.append(selector)
