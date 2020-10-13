@@ -167,7 +167,8 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         semantic_tags=None)
+                         semantic_tags=None,
+                         make_index=False)
 
     error_message = 'DataTable name must be a string'
     with pytest.raises(TypeError, match=error_message):
@@ -176,7 +177,8 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         semantic_tags=None)
+                         semantic_tags=None,
+                         make_index=False)
 
 
 def test_check_index_errors(sample_df):
@@ -184,13 +186,21 @@ def test_check_index_errors(sample_df):
     with pytest.raises(TypeError, match=error_message):
         _check_index(dataframe=sample_df, index=1)
 
-    error_message = 'Specified index column `foo` not found in dataframe'
+    error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
     error_message = 'Index column must be unique'
     with pytest.raises(LookupError, match=error_message):
         _check_index(sample_df, index='age')
+
+    error_message = 'When setting make_index to True, the name specified for index cannot match an existing column name'
+    with pytest.raises(IndexError, match=error_message):
+        _check_index(sample_df, index='id', make_index=True)
+
+    error_message = 'When setting make_index to True, the name for the new index must be specified in the index parameter'
+    with pytest.raises(IndexError, match=error_message):
+        _check_index(sample_df, index=None, make_index=True)
 
 
 def test_check_time_index_errors(sample_df):
@@ -2126,3 +2136,12 @@ def test_mutual_info_does_not_include_index():
     assert mi.shape[0] == 1
     cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
     assert 'index_col' not in cols_used
+
+
+def test_make_index(sample_df):
+    dt = DataTable(sample_df, index='new_index', make_index=True)
+    assert dt.index == 'new_index'
+    assert 'new_index' in dt._dataframe.columns
+    assert dt._dataframe['new_index'].unique
+    assert dt._dataframe['new_index'].is_monotonic
+    assert 'index' in dt.columns['new_index'].semantic_tags
