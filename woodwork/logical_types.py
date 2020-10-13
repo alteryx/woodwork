@@ -210,10 +210,9 @@ class Ordinal(LogicalType):
     Has 'category' as a standard tag.
 
     Args:
-        order (list or tuple, optional): An optional list or tuple specifying
-            the order of the ordinal values from low to high. If order is specified,
-            there cannot be any values in the underlying series that are not present in
-            the order values. Defaults to None.
+        order (list or tuple): An list or tuple specifying the order of the ordinal
+            values from low to high. The underlying series cannot contain values that
+            are not present in the order values.
 
     Examples:
         .. code-block:: python
@@ -223,9 +222,8 @@ class Ordinal(LogicalType):
     """
     pandas_dtype = 'category'
     standard_tags = {'category'}
-    order = None
 
-    def __init__(self, order=None):
+    def __init__(self, order):
         if not isinstance(order, (list, tuple)):
             raise TypeError("Order values must be specified in a list or tuple")
         if len(order) != len(set(order)):

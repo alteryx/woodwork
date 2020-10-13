@@ -599,7 +599,6 @@ def test_sets_category_dtype_on_init():
     logical_types = [
         Categorical,
         CountryCode,
-        Ordinal,
         Ordinal(order=['a', 'b', 'c']),
         SubRegionCode,
         ZIPCode,
@@ -624,7 +623,6 @@ def test_sets_category_dtype_on_update():
     logical_types = [
         Categorical,
         CountryCode,
-        Ordinal,
         Ordinal(order=['a', 'b', 'c']),
         SubRegionCode,
         ZIPCode,
@@ -1703,7 +1701,6 @@ def test_describe_does_not_include_index():
 def test_data_table_describe_method():
     categorical_ltypes = [Categorical,
                           CountryCode,
-                          Ordinal,
                           Ordinal(order=('yellow', 'red', 'blue')),
                           SubRegionCode,
                           ZIPCode]
