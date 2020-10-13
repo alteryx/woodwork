@@ -56,8 +56,8 @@ class DataTable(object):
             make_index (bool, optional): If True, will create a new unique, numeric index column with the
                 name specified by ``index`` and will add the new index column to the supplied DataFrame.
                 If True, the name specified in ``index`` cannot match an existing column name in
-                ``dataframe``. If False, and a name is specified in ``index`` this name must match a column
-                present in ``dataframe``. Defaults to False.
+                ``dataframe``. If False, the name is specified in ``index`` must match a column
+                present in the ``dataframe``. Defaults to False.
         """
         # Check that inputs are valid
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
