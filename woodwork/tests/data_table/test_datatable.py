@@ -2089,10 +2089,8 @@ def test_data_table_get_mutual_information():
     assert 'nans' not in cols_used
     assert 'nat_lang' not in cols_used
     assert 'date' not in cols_used
-    assert mi.shape[0] == 3
-    assert mi_between_cols('ints', 'ints', mi) == 1.0
+    assert mi.shape[0] == 1
     assert mi_between_cols('floats', 'ints', mi) == 1.0
-    assert mi_between_cols('floats', 'floats', mi) == 1.0
 
     df = pd.DataFrame({
         'ints': pd.Series([1, 2, 3]),
@@ -2103,7 +2101,7 @@ def test_data_table_get_mutual_information():
     original_df = dt.to_pandas(copy=True)
 
     mi = dt.get_mutual_information()
-    assert mi.shape[0] == 6
+    assert mi.shape[0] == 3
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
@@ -2112,11 +2110,11 @@ def test_data_table_get_mutual_information():
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = dt.get_mutual_information(nrows=1)
-    assert mi.shape[0] == 6
+    assert mi.shape[0] == 3
     assert (mi['mutual_info'] == 1.0).all()
 
     mi = dt.get_mutual_information(num_bins=2)
-    assert mi.shape[0] == 6
+    assert mi.shape[0] == 3
     np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
     np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
@@ -2131,9 +2129,7 @@ def test_mutual_info_does_not_include_index():
     dt = DataTable(df, index='index_col')
     mi = dt.get_mutual_information()
 
-    assert mi.shape[0] == 1
-    cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
-    assert 'index_col' not in cols_used
+    assert mi.shape[0] == 0
 
 
 def test_make_index(sample_df):
