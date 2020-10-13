@@ -167,7 +167,8 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         semantic_tags=None)
+                         semantic_tags=None,
+                         make_index=False)
 
     error_message = 'DataTable name must be a string'
     with pytest.raises(TypeError, match=error_message):
@@ -176,7 +177,8 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         semantic_tags=None)
+                         semantic_tags=None,
+                         make_index=False)
 
 
 def test_check_index_errors(sample_df):
@@ -184,13 +186,21 @@ def test_check_index_errors(sample_df):
     with pytest.raises(TypeError, match=error_message):
         _check_index(dataframe=sample_df, index=1)
 
-    error_message = 'Specified index column `foo` not found in dataframe'
+    error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
     error_message = 'Index column must be unique'
     with pytest.raises(LookupError, match=error_message):
         _check_index(sample_df, index='age')
+
+    error_message = 'When setting make_index to True, the name specified for index cannot match an existing column name'
+    with pytest.raises(IndexError, match=error_message):
+        _check_index(sample_df, index='id', make_index=True)
+
+    error_message = 'When setting make_index to True, the name for the new index must be specified in the index parameter'
+    with pytest.raises(IndexError, match=error_message):
+        _check_index(sample_df, index=None, make_index=True)
 
 
 def test_check_time_index_errors(sample_df):
@@ -961,29 +971,6 @@ def test_timedelta_dtype_inference_on_init():
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
-def test_invalid_select_ltypes(sample_df):
-    dt = DataTable(sample_df)
-    dt.set_logical_types({
-        'full_name': FullName,
-        'email': EmailAddress,
-        'phone_number': PhoneNumber,
-        'age': Double,
-        'signup_date': Datetime,
-    })
-
-    error_message = "Invalid logical type specified: 1"
-    with pytest.raises(TypeError, match=error_message):
-        dt.select_ltypes(1)
-
-    error_message = "String test is not a valid logical type"
-    with pytest.raises(ValueError, match=error_message):
-        dt.select_ltypes('test')
-
-    dt_empty = dt.select_ltypes([])
-    assert not dt_empty.columns
-    assert len(dt_empty.to_pandas().columns) == 0
-
-
 def test_select_ltypes_warning(sample_df):
     dt = DataTable(sample_df)
     dt = dt.set_logical_types({
@@ -994,20 +981,20 @@ def test_select_ltypes_warning(sample_df):
         'signup_date': Datetime,
     })
 
-    warning = 'The following logical types were not present in your DataTable: ZIPCode'
+    warning = 'The following selectors were not present in your DataTable: ZIPCode'
     with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select_ltypes(ZIPCode)
+        dt_empty = dt.select(ZIPCode)
     assert len(dt_empty.columns) == 0
 
-    warning = 'The following logical types were not present in your DataTable: ZIPCode'
+    warning = 'The following selectors were not present in your DataTable: ZIPCode'
     with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select_ltypes(['ZIPCode', PhoneNumber])
+        dt_empty = dt.select(['ZIPCode', PhoneNumber])
     assert len(dt_empty.columns) == 1
 
     all_types = LogicalType.__subclasses__()
-    warning = 'The following logical types were not present in your DataTable: Categorical, CountryCode, Filepath, IPAddress, Integer, LatLong, NaturalLanguage, Ordinal, SubRegionCode, Timedelta, URL, ZIPCode'
+    warning = 'The following selectors were not present in your DataTable: Categorical, CountryCode, Filepath, IPAddress, Integer, LatLong, NaturalLanguage, Ordinal, SubRegionCode, Timedelta, URL, ZIPCode'
     with pytest.warns(UserWarning, match=warning):
-        dt_all_types = dt.select_ltypes(all_types)
+        dt_all_types = dt.select(all_types)
     assert len(dt_all_types.columns) == len(dt.columns)
     assert len(dt_all_types.to_pandas().columns) == len(dt.to_pandas().columns)
 
@@ -1022,12 +1009,12 @@ def test_select_ltypes_strings(sample_df):
         'signup_date': Datetime,
     })
 
-    dt_multiple_ltypes = dt.select_ltypes(['FullName', 'email_address', 'double', 'Boolean', 'datetime'])
+    dt_multiple_ltypes = dt.select(['FullName', 'email_address', 'double', 'Boolean', 'datetime'])
     assert len(dt_multiple_ltypes.columns) == 5
     assert 'phone_number' not in dt_multiple_ltypes.columns
     assert 'id' not in dt_multiple_ltypes.columns
 
-    dt_single_ltype = dt.select_ltypes('full_name')
+    dt_single_ltype = dt.select('full_name')
     assert len(dt_single_ltype.columns) == 1
 
 
@@ -1041,12 +1028,12 @@ def test_select_ltypes_objects(sample_df):
         'signup_date': Datetime,
     })
 
-    dt_multiple_ltypes = dt.select_ltypes([FullName, EmailAddress, Double, Boolean, Datetime])
+    dt_multiple_ltypes = dt.select([FullName, EmailAddress, Double, Boolean, Datetime])
     assert len(dt_multiple_ltypes.columns) == 5
     assert 'phone_number' not in dt_multiple_ltypes.columns
     assert 'id' not in dt_multiple_ltypes.columns
 
-    dt_single_ltype = dt.select_ltypes(FullName)
+    dt_single_ltype = dt.select(FullName)
     assert len(dt_single_ltype.columns) == 1
 
 
@@ -1060,7 +1047,7 @@ def test_select_ltypes_mixed(sample_df):
         'signup_date': Datetime,
     })
 
-    dt_mixed_ltypes = dt.select_ltypes(['FullName', 'email_address', Double])
+    dt_mixed_ltypes = dt.select(['FullName', 'email_address', Double])
     assert len(dt_mixed_ltypes.columns) == 3
     assert 'phone_number' not in dt_mixed_ltypes.columns
 
@@ -1079,15 +1066,15 @@ def test_select_ltypes_table(sample_df):
         'age': 'numeric',
     })
 
-    dt_no_indices = dt.select_ltypes('phone_number')
+    dt_no_indices = dt.select('phone_number')
     assert dt_no_indices.index is None
     assert dt_no_indices.time_index is None
 
-    dt_with_indices = dt.select_ltypes(['Datetime', 'WholeNumber'])
+    dt_with_indices = dt.select(['Datetime', 'WholeNumber'])
     assert dt_with_indices.index == 'id'
     assert dt_with_indices.time_index == 'signup_date'
 
-    dt_values = dt.select_ltypes(['FullName'])
+    dt_values = dt.select(['FullName'])
     assert dt_values.name == dt.name
     original_col = dt_values.columns['full_name']
     col = dt.columns['full_name']
@@ -1129,24 +1116,6 @@ def test_new_dt_from_columns(sample_df):
     validate_subset_dt(transfer_schema, dt)
 
 
-def test_invalid_select_semantic_tags(sample_df):
-    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt.set_semantic_tags({
-        'full_name': ['new_tag', 'tag2'],
-        'age': 'numeric',
-    })
-    err_msg = 'include parameter must be a string, set or list'
-    with pytest.raises(TypeError, match=err_msg):
-        dt.select_semantic_tags(1)
-
-    err_msg = 'include parameter must contain only strings'
-    with pytest.raises(TypeError, match=err_msg):
-        dt.select_semantic_tags(['test', 1])
-
-    dt_empty = dt.select_semantic_tags([])
-    assert len(dt_empty.columns) == 0
-
-
 def test_select_semantic_tags(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', name='dt_name')
     dt = dt.set_semantic_tags({
@@ -1157,31 +1126,31 @@ def test_select_semantic_tags(sample_df):
         'is_registered': 'category',
     })
 
-    dt_one_match = dt.select_semantic_tags('numeric')
+    dt_one_match = dt.select('numeric')
     assert len(dt_one_match.columns) == 2
     assert 'age' in dt_one_match.columns
     assert 'id' in dt_one_match.columns
 
-    dt_multiple_matches = dt.select_semantic_tags('tag2')
+    dt_multiple_matches = dt.select('tag2')
     assert len(dt_multiple_matches.columns) == 3
     assert 'age' in dt_multiple_matches.columns
     assert 'phone_number' in dt_multiple_matches.columns
     assert 'email' in dt_multiple_matches.columns
 
-    dt_multiple_tags = dt.select_semantic_tags(['numeric', 'time_index'])
+    dt_multiple_tags = dt.select(['numeric', 'time_index'])
     assert len(dt_multiple_tags.columns) == 3
     assert 'id' in dt_multiple_tags.columns
     assert 'age' in dt_multiple_tags.columns
     assert 'signup_date' in dt_multiple_tags.columns
 
-    dt_overlapping_tags = dt.select_semantic_tags(['numeric', 'tag2'])
+    dt_overlapping_tags = dt.select(['numeric', 'tag2'])
     assert len(dt_overlapping_tags.columns) == 4
     assert 'id' in dt_overlapping_tags.columns
     assert 'age' in dt_overlapping_tags.columns
     assert 'phone_number' in dt_overlapping_tags.columns
     assert 'email' in dt_overlapping_tags.columns
 
-    dt_common_tags = dt.select_semantic_tags(['category', 'numeric'])
+    dt_common_tags = dt.select(['category', 'numeric'])
     assert len(dt_common_tags.columns) == 3
     assert 'id' in dt_common_tags.columns
     assert 'is_registered' in dt_common_tags.columns
@@ -1195,19 +1164,19 @@ def test_select_semantic_tags_warning(sample_df):
         'age': 'numeric',
     })
 
-    warning = "The following semantic tags were not present in your DataTable: ['doesnt_exist']"
+    warning = "The following selectors were not present in your DataTable: ['doesnt_exist']"
     with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select_semantic_tags(['doesnt_exist'])
+        dt_empty = dt.select(['doesnt_exist'])
     assert len(dt_empty.columns) == 0
 
-    warning = "The following semantic tags were not present in your DataTable: ['doesnt_exist']"
+    warning = "The following selectors were not present in your DataTable: ['doesnt_exist']"
     with pytest.warns(UserWarning, match=warning):
-        dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist'])
+        dt_single = dt.select(['numeric', 'doesnt_exist'])
     assert len(dt_single.columns) == 2
 
-    warning = "The following semantic tags were not present in your DataTable: ['category', 'doesnt_exist']"
+    warning = "The following selectors were not present in your DataTable: ['category', 'doesnt_exist']"
     with pytest.warns(UserWarning, match=warning):
-        dt_single = dt.select_semantic_tags(['numeric', 'doesnt_exist', 'category', 'tag2'])
+        dt_single = dt.select(['numeric', 'doesnt_exist', 'category', 'tag2'])
     assert len(dt_single.columns) == 3
 
 
@@ -1534,10 +1503,6 @@ def test_select_invalid_inputs(sample_df):
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
-
-    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
-    with pytest.raises(TypeError, match=err_msg):
-        dt.select(1)
 
     err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
     with pytest.raises(TypeError, match=err_msg):
@@ -2095,3 +2060,12 @@ def test_mutual_info_does_not_include_index():
     assert mi.shape[0] == 1
     cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
     assert 'index_col' not in cols_used
+
+
+def test_make_index(sample_df):
+    dt = DataTable(sample_df, index='new_index', make_index=True)
+    assert dt.index == 'new_index'
+    assert 'new_index' in dt._dataframe.columns
+    assert dt._dataframe['new_index'].unique
+    assert dt._dataframe['new_index'].is_monotonic
+    assert 'index' in dt.columns['new_index'].semantic_tags
