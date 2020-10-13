@@ -8,3 +8,4 @@ The guides below provide more detail on the functionality of Woodwork.
 
    understanding_types_and_tags
    setting_config_options
+   using_mi_and_describe
