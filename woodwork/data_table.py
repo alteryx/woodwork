@@ -640,8 +640,9 @@ class DataTable(object):
 
         Returns:
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
-            `column_2`, and `mutual_info`. Mutual information values are between 0 (no mutual information)
-            and 1 (perfect correlation)
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect correlation).
         """
         # We only want Numeric, Categorical, and Boolean columns
         # And we don't want the index column
