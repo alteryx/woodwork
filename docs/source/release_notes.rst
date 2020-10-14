@@ -12,6 +12,7 @@ Release Notes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
         * Make results of ``get_mutual_information`` more clear by sorting and removing self calculation (:pr:`247`)
+        * Support logical type inference from a Dask dataframe (:pr:`248`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
     * Testing Changes
