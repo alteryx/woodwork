@@ -12,10 +12,11 @@ Release Notes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
     * Documentation Changes
+        * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
     * Enhancements
