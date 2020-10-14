@@ -1,8 +1,19 @@
 <p align="center"><img width=50% src="https://woodwork-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
-
-[![codecov](https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/woodwork)
-[![PyPI version](https://badge.fury.io/py/woodwork.svg?maxAge=2592000)](https://badge.fury.io/py/woodwork)
-[![Downloads](https://pepy.tech/badge/woodwork/month)](https://pepy.tech/project/woodwork/month)
+<p align="center">
+    <a href="https://codecov.io/gh/FeatureLabs/woodwork" target="_blank">
+        <img src="https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP" alt="Codecov" />
+    </a>
+    <a href='https://woodwork.alteryx.com/en/latest/?badge=stable' target="_blank">
+        <img src='https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable' alt='Documentation Status' />
+    </a>
+    <a href="https://badge.fury.io/py/woodwork" target="_blank">
+        <img src="https://badge.fury.io/py/woodwork.svg?maxAge=2592000" alt="PyPI Version" />
+    </a>
+    <a href="https://pepy.tech/project/woodwork/month" target="_blank">
+        <img src="https://pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
+    </a>
+</p>
+<hr>
 
 Woodwork provides you with a common DataTable object to use with Featuretools, EvalML, and general ML. A DataTable object contains the physical, logical, and semantic data types present in the data. In addition, it can store metadata about the data.
 
