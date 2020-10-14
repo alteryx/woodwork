@@ -640,8 +640,9 @@ class DataTable(object):
 
         Returns:
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
-            `column_2`, and `mutual_info`. Mutual information values are between 0 (no mutual information)
-            and 1 (perfect correlation)
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect correlation).
         """
         # We only want Numeric, Categorical, and Boolean columns
         # And we don't want the index column
@@ -667,16 +668,17 @@ class DataTable(object):
             for j in range(i, len(col_names)):
                 b_col = col_names[j]
                 if a_col == b_col:
-                    # set mutual info of 1.0 for column with itself
-                    mutual_info.append(
-                        {"column_1": a_col, "column_2": b_col, "mutual_info": 1.0}
-                    )
+                    # Ignore because the mutual info for a column with itself will always be 1
+                    continue
                 else:
                     mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
-        return pd.DataFrame(mutual_info)
+        mi = pd.DataFrame(mutual_info)
+        if not mutual_info:
+            return mi
+        return mi.sort_values('mutual_info', ascending=False)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
