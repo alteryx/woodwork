@@ -1,5 +1,6 @@
 import re
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -36,7 +37,11 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
-from woodwork.tests.testing_utils import mi_between_cols, validate_subset_dt
+from woodwork.tests.testing_utils import (
+    mi_between_cols,
+    to_pandas,
+    validate_subset_dt
+)
 
 
 def test_datatable_init(sample_df):
@@ -46,10 +51,10 @@ def test_datatable_init(sample_df):
     assert dt.name is None
     assert dt.index is None
     assert dt.time_index is None
-    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df, (pd.DataFrame, dd.DataFrame))
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
-    pd.testing.assert_frame_equal(df, sample_df)
+    pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
 
 
 def test_datatable_copy_param(sample_df):
@@ -160,7 +165,7 @@ def test_datatable_adds_standard_semantic_tags(sample_df):
 
 
 def test_validate_params_errors(sample_df):
-    error_message = 'Dataframe must be a pandas.DataFrame'
+    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame'
     with pytest.raises(TypeError, match=error_message):
         _validate_params(dataframe=pd.Series(),
                          name=None,
@@ -190,9 +195,11 @@ def test_check_index_errors(sample_df):
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
-    error_message = 'Index column must be unique'
-    with pytest.raises(LookupError, match=error_message):
-        _check_index(sample_df, index='age')
+    if isinstance(sample_df, pd.DataFrame):
+        # Does not check for index uniqueness with Dask
+        error_message = 'Index column must be unique'
+        with pytest.raises(LookupError, match=error_message):
+            _check_index(sample_df, index='age')
 
     error_message = 'When setting make_index to True, the name specified for index cannot match an existing column name'
     with pytest.raises(IndexError, match=error_message):
@@ -216,7 +223,10 @@ def test_check_time_index_errors(sample_df):
 
 def test_check_unique_column_names(sample_df):
     duplicate_cols_df = sample_df.copy()
-    duplicate_cols_df.insert(0, 'age', [18, 21, 65], allow_duplicates=True)
+    if isinstance(sample_df, dd.DataFrame):
+        duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
+    else:
+        duplicate_cols_df.insert(0, 'age', [18, 21, 65], allow_duplicates=True)
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
 
@@ -238,6 +248,8 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
+    if isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('fails with dask - need to update column dtype conversion for dates')
     sample_df['formatted_date'] = pd.Series(["2019~01~01", "2019~01~02", "2019~01~03"])
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
     dt = DataTable(sample_df, logical_types={'formatted_date': ymd_format})
@@ -1077,7 +1089,7 @@ def test_select_ltypes_table(sample_df):
     original_col = dt_values.columns['full_name']
     col = dt.columns['full_name']
     assert col.logical_type == original_col.logical_type
-    assert col.to_pandas().equals(original_col.to_pandas())
+    assert to_pandas(col.to_pandas()).equals(to_pandas(original_col.to_pandas()))
     assert col.dtype == original_col.dtype
     assert col.semantic_tags == original_col.semantic_tags
 
@@ -1211,7 +1223,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()))
     assert all(new_dt.to_pandas().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
@@ -1222,7 +1234,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()))
     assert all(new_dt.to_pandas().columns == ['id', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'full_name'}
     assert new_dt.index == 'id'
@@ -1233,7 +1245,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()))
     assert all(new_dt.to_pandas().columns == ['id', 'signup_date', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'signup_date', 'full_name'}
     assert new_dt.index == 'id'
@@ -1244,7 +1256,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas())
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()))
     assert len(new_dt.to_pandas().columns) == 0
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
@@ -1987,6 +1999,9 @@ def test_datatable_describe_with_no_semantic_tags():
 
 
 def test_data_table_describe_with_include(sample_df):
+    if isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('describe method not implemented for Dask dataframes')
+
     semantic_tags = {
         'full_name': 'tag1',
         'email': ['tag2'],
@@ -2015,6 +2030,9 @@ def test_data_table_describe_with_include(sample_df):
 
 
 def test_data_table_describe_with_include_error(sample_df):
+    if isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('describe method not implemented for Dask dataframes')
+
     dt = DataTable(sample_df)
     match = 'no columns matched the given include filters.'
     warning = 'The following selectors were not present in your DataTable: '
@@ -2152,6 +2170,6 @@ def test_make_index(sample_df):
     dt = DataTable(sample_df, index='new_index', make_index=True)
     assert dt.index == 'new_index'
     assert 'new_index' in dt._dataframe.columns
-    assert dt._dataframe['new_index'].unique
-    assert dt._dataframe['new_index'].is_monotonic
+    assert to_pandas(dt._dataframe)['new_index'].unique
+    assert to_pandas(dt._dataframe['new_index']).is_monotonic
     assert 'index' in dt.columns['new_index'].semantic_tags

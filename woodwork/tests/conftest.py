@@ -1,10 +1,16 @@
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
 
 
+@pytest.fixture(params=['sample_df_pandas', 'sample_df_dask'])
+def sample_df(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture()
-def sample_df():
+def sample_df_pandas():
     return pd.DataFrame({
         'id': range(3),
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
@@ -14,6 +20,11 @@ def sample_df():
         'signup_date': [pd.to_datetime('2020-09-01')] * 3,
         'is_registered': [True, False, True],
     })
+
+
+@pytest.fixture()
+def sample_df_dask(sample_df_pandas):
+    return dd.from_pandas(sample_df_pandas, npartitions=2)
 
 
 @pytest.fixture()
