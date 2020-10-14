@@ -77,6 +77,37 @@ def list_logical_types():
     )
 
 
+def list_semantic_tags():
+    """Returns a dataframe describing all of the common semantic tags.
+
+    Args:
+        None
+
+    Returns:
+        pd.DataFrame: A dataframe containing details on each Semantic Tag, including
+        the corresponding logical type(s).
+    """
+    sem_tags = {}
+    for ltype in ww.logical_types.LogicalType.__subclasses__():
+        for tag in ltype.standard_tags:
+            if tag in sem_tags:
+                sem_tags[tag].append(ltype)
+            else:
+                sem_tags[tag] = [ltype]
+    tags_df = pd.DataFrame(
+        [{'name': tag,
+          'is_standard_tag': True,
+          'valid_logical_types': sem_tags[tag]}
+         for tag in sem_tags]
+    )
+    tags_df = tags_df.append(
+        pd.DataFrame([['index', False, [ww.logical_types.str_to_logical_type(tag) for tag in ['integer', 'wholenumber', 'double', 'categorical', 'datetime']]],
+                      ['time_index', False, [ww.logical_types.str_to_logical_type('datetime')]],
+                      ['date_of_birth', False, [ww.logical_types.str_to_logical_type('datetime')]]
+                      ], columns=tags_df.columns), ignore_index=True)
+    return tags_df
+
+
 def _get_mode(series):
     """Get the mode value for a series"""
     mode_values = series.mode()

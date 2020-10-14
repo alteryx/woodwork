@@ -79,6 +79,7 @@ General Utils
     :nosignatures:
 
     list_logical_types
+    list_semantic_tags
     read_csv
 
 Demo Data

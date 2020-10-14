@@ -10,7 +10,8 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
     camel_to_snake,
-    list_logical_types
+    list_logical_types,
+    list_semantic_tags
 )
 
 
@@ -59,6 +60,17 @@ def test_list_logical_types():
     assert len(all_ltypes) == len(df)
     for name in df['name']:
         assert str_to_logical_type(name) in all_ltypes
+
+
+def test_list_semantic_tags():
+    df = list_semantic_tags()
+
+    assert set(df.columns) == {'name', 'is_standard_tag', 'valid_logical_types'}
+
+    for name, log_type_list in df[['name', 'valid_logical_types']].values:
+        if name not in ['index', 'time_index', 'date_of_birth']:
+            for log_type in log_type_list:
+                assert name in log_type.standard_tags
 
 
 def test_get_mode():
