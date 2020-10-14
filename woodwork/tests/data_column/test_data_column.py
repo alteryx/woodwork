@@ -1,14 +1,11 @@
 import re
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
 
-import woodwork as ww
-from woodwork.data_column import DataColumn, infer_logical_type
+from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
-    Boolean,
     Categorical,
     CountryCode,
     Datetime,
@@ -17,7 +14,6 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     SubRegionCode,
-    Timedelta,
     WholeNumber,
     ZIPCode
 )
@@ -83,177 +79,6 @@ def test_semantic_tag_errors(sample_series):
     error_message = "semantic_tags must contain only strings"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_tags=['index', 1])
-
-
-def test_integer_inference():
-    series_list = [
-        pd.Series([-1, 2, 1]),
-        pd.Series([-1, 0, 5]),
-    ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Integer
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == Integer
-
-
-def test_whole_number_inference():
-    series_list = [
-        pd.Series([0, 1, 5]),
-        pd.Series([2, 3, 5]),
-    ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == WholeNumber
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == WholeNumber
-
-
-def test_double_inference():
-    series_list = [
-        pd.Series([-1, 2.0, 1]),
-        pd.Series([1, np.nan, 1])
-    ]
-    dtypes = ['float', 'float32', 'float64', 'float_']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Double
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == Double
-
-
-def test_boolean_inference():
-    series_list = [
-        pd.Series([True, False, True]),
-        pd.Series([True, False, np.nan]),
-    ]
-    dtypes = ['bool', 'boolean']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Boolean
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == Boolean
-
-
-def test_datetime_inference():
-    series_list = [
-        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000']),
-        pd.Series(['3/11/2000', '3/12/2000', np.nan]),
-    ]
-    dtypes = ['object', 'string', 'datetime64[ns]']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Datetime
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == Datetime
-
-
-def test_categorical_inference():
-    series_list = [
-        pd.Series(['a', 'b', 'a']),
-        pd.Series(['1', '2', '1']),
-        pd.Series(['a', 'b', np.nan]),
-        pd.Series([1, 2, 1])
-    ]
-    dtypes = ['object', 'string', 'category']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Categorical
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == Categorical
-
-
-def test_timedelta_inference():
-    series_list = [
-        pd.Series(pd.to_timedelta(range(3), unit='s')),
-        pd.Series([pd.to_timedelta(1, unit='s'), np.nan])
-    ]
-    dtypes = ['timedelta64[ns]']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Timedelta
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == Timedelta
-
-
-def test_natural_language_inference():
-    series_list = [
-        pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown']),
-    ]
-    dtypes = ['object', 'string']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == NaturalLanguage
-            # Test inference with Dask
-            inferred_type = infer_logical_type(dd.from_pandas(series.astype(dtype), npartitions=2))
-            assert inferred_type == NaturalLanguage
-
-
-def test_natural_language_inference_with_threshhold():
-    natural_language_series = pd.Series([
-        '01234567890123456789',
-        '01234567890123456789',
-        '01234567890123456789'])
-    category_series = pd.Series([
-        '0123456789012345678',
-        '0123456789012345678',
-        '0123456789012345678'])
-
-    dtypes = ['object', 'string']
-
-    ww.config.set_option('natural_language_threshold', 19)
-    for dtype in dtypes:
-        inferred_type = infer_logical_type(natural_language_series.astype(dtype))
-        assert inferred_type == NaturalLanguage
-        inferred_type = infer_logical_type(category_series.astype(dtype))
-        assert inferred_type == Categorical
-        # Test inference with Dask
-        inferred_type = infer_logical_type(dd.from_pandas(natural_language_series.astype(dtype), npartitions=2))
-        assert inferred_type == NaturalLanguage
-        inferred_type = infer_logical_type(dd.from_pandas(category_series.astype(dtype), npartitions=2))
-        assert inferred_type == Categorical
-    ww.config.reset_option('natural_language_threshold')
-
-
-def test_pdna_inference():
-    series_list = [
-        pd.Series(['Mr. John Doe', pd.NA, 'James Brown']).astype('string'),
-        pd.Series([1, pd.NA, -2]).astype('Int64'),
-        pd.Series([1, pd.NA, 2]).astype('Int64'),
-        pd.Series([True, pd.NA, False]).astype('boolean'),
-    ]
-
-    expected_logical_types = [
-        NaturalLanguage,
-        Integer,
-        WholeNumber,
-        Boolean,
-    ]
-
-    for index, series in enumerate(series_list):
-        inferred_type = infer_logical_type(series)
-        assert inferred_type == expected_logical_types[index]
-        # Test inference with Dask
-        inferred_type = infer_logical_type(dd.from_pandas(series, npartitions=2))
-        assert inferred_type == expected_logical_types[index]
 
 
 def test_data_column_repr(sample_series):
