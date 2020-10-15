@@ -1,5 +1,6 @@
 import re
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -17,11 +18,12 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
+from woodwork.tests.testing_utils import to_pandas
 
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    pd.testing.assert_series_equal(data_col.to_pandas(), sample_series.astype('category'))
+    pd.testing.assert_series_equal(to_pandas(data_col.to_pandas()), to_pandas(sample_series.astype('category')))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -374,7 +376,7 @@ def test_to_pandas_no_copy(sample_series):
     series = data_col.to_pandas()
 
     assert series is data_col._series
-    pd.testing.assert_series_equal(series, data_col._series)
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
 def test_to_pandas_with_copy(sample_series):
@@ -382,7 +384,7 @@ def test_to_pandas_with_copy(sample_series):
     series = data_col.to_pandas(copy=True)
 
     assert series is not data_col._series
-    pd.testing.assert_series_equal(series, data_col._series)
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
 def test_dtype_update_on_init():
@@ -418,6 +420,8 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
+    if isinstance(sample_series, dd.Series):
+        pytest.xfail('fails with dask - ordinal data validation not compatible')
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
@@ -430,6 +434,8 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
+    if isinstance(sample_series, dd.Series):
+        pytest.xfail('fails with dask - ordinal data validation not compatible')
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")

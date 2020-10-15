@@ -1,5 +1,6 @@
 import warnings
 
+import dask.dataframe as dd
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -68,7 +69,11 @@ class DataTable(object):
             self._dataframe = dataframe
 
         if make_index:
-            self._dataframe.insert(0, index, range(len(self._dataframe)))
+            if isinstance(self._dataframe, dd.DataFrame):
+                self._dataframe[index] = 1
+                self._dataframe[index] = self._dataframe[index].cumsum() - 1
+            else:
+                self._dataframe.insert(0, index, range(len(self._dataframe)))
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -683,8 +688,8 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not isinstance(dataframe, pd.DataFrame):
-        raise TypeError('Dataframe must be a pandas.DataFrame')
+    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame)):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
@@ -713,8 +718,9 @@ def _check_index(dataframe, index, make_index=False):
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
-    if index and not make_index and not dataframe[index].is_unique:
+    if index and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
+        # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
     if make_index and index and index in dataframe.columns:
         # User sets make_index to True, but supplies an index name that matches a column already present
