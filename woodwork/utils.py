@@ -62,15 +62,11 @@ def _is_numeric_series(series, logical_type):
     Determines whether a series supplied to the DataTable will be considered numeric.
 
     '''
-    inferred_ltype = ww.data_column.infer_logical_type(series)
-    if 'numeric' in inferred_ltype.standard_tags:
-        return True
-
-    if logical_type is None:
-        return False
-
-    if isinstance(logical_type, str):
-        logical_type = ww.logical_types.str_to_logical_type(logical_type)
+    if logical_type is not None:
+        if isinstance(logical_type, str):
+            logical_type = ww.logical_types.str_to_logical_type(logical_type)
+    else:
+        logical_type = ww.data_column.infer_logical_type(series)
 
     return 'numeric' in logical_type.standard_tags
 

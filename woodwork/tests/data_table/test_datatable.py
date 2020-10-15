@@ -2225,7 +2225,8 @@ def test_numeric_time_index_dtypes():
 
 
 def test_numeric_index_strings():
-    df = pd.DataFrame({'strs': pd.Series(['1', '2', '3'])})
+    df = pd.DataFrame({'strs': pd.Series(['1', '2', '3']),
+                       'ints': pd.Series([1, 2, 3])})
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
@@ -2234,6 +2235,10 @@ def test_numeric_index_strings():
     error_msg = 'Error converting datatype for column strs from type object to type Int64. Please confirm the underlying data is consistent with logical type Integer.'
     with pytest.raises(TypeError, match=error_msg):
         DataTable(df, time_index='strs', logical_types={'strs': 'Integer'})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, time_index='ints', logical_types={'ints': 'Categorical'})
 
     dt = DataTable(df, time_index='strs', logical_types={'strs': 'Double'})
     date_col = dt['strs']
