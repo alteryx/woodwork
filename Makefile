@@ -39,4 +39,4 @@ installdeps-dev:
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click')
-	pip freeze | grep -v "FeatureLabs/woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
+	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
