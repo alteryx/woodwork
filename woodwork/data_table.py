@@ -12,6 +12,7 @@ from woodwork.logical_types import (
     str_to_logical_type
 )
 from woodwork.utils import (
+    _can_be_numeric,
     _convert_input_to_set,
     _get_ltype_class,
     _get_mode,
@@ -694,7 +695,8 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         _check_logical_types(dataframe, logical_types)
     if time_index:
         datetime_format = None
-        if logical_types is not None and time_index in logical_types:
+        if (logical_types is not None and time_index in logical_types and
+                _get_ltype_class(logical_types[time_index]) == Datetime):
             datetime_format = logical_types[time_index].datetime_format
         _check_time_index(dataframe, time_index, datetime_format=datetime_format)
 
@@ -729,7 +731,8 @@ def _check_time_index(dataframe, time_index, datetime_format=None):
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
-    if not col_is_datetime(dataframe[time_index], datetime_format=datetime_format):
+    if not ((_can_be_numeric(dataframe[time_index]) or
+             col_is_datetime(dataframe[time_index], datetime_format=datetime_format))):
         raise TypeError('Time index column must contain datetime values')
 
 
