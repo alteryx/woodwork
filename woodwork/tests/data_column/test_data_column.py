@@ -18,7 +18,6 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
-
 from woodwork.tests.testing_utils import to_pandas
 
 
