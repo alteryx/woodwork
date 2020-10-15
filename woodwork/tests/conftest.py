@@ -27,11 +27,31 @@ def sample_df_dask(sample_df_pandas):
     return dd.from_pandas(sample_df_pandas, npartitions=2)
 
 
-@pytest.fixture()
-def sample_series():
-    return pd.Series(['a', 'b', 'c'], name='sample_series').astype('object')
+@pytest.fixture(params=['sample_series_pandas', 'sample_series_dask'])
+def sample_series(request):
+    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture()
-def sample_datetime_series():
-    return pd.Series([pd.to_datetime('2020-09-01')] * 3, name='sample_datetime_series').astype('object')
+def sample_series_pandas():
+    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('object')
+
+
+@pytest.fixture()
+def sample_series_dask(sample_series_pandas):
+    return dd.from_pandas(sample_series_pandas, npartitions=2)
+
+
+@pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask'])
+def sample_datetime_series(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def sample_datetime_series_pandas():
+    return pd.Series([pd.to_datetime('2020-09-01')] * 4, name='sample_datetime_series').astype('object')
+
+
+@pytest.fixture()
+def sample_datetime_series_dask(sample_datetime_series_pandas):
+    return dd.from_pandas(sample_datetime_series_pandas, npartitions=2)
