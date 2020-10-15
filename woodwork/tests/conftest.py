@@ -12,13 +12,13 @@ def sample_df(request):
 @pytest.fixture()
 def sample_df_pandas():
     return pd.DataFrame({
-        'id': range(3),
-        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
-        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com'],
-        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
-        'age': [33, 25, 33],
-        'signup_date': [pd.to_datetime('2020-09-01')] * 3,
-        'is_registered': [True, False, True],
+        'id': range(4),
+        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
+        'age': [33, 25, 33, 57],
+        'signup_date': [pd.to_datetime('2020-09-01')] * 4,
+        'is_registered': [True, False, True, True],
     })
 
 

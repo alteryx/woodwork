@@ -222,7 +222,7 @@ def test_check_unique_column_names(sample_df):
     if isinstance(sample_df, dd.DataFrame):
         duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
     else:
-        duplicate_cols_df.insert(0, 'age', [18, 21, 65], allow_duplicates=True)
+        duplicate_cols_df.insert(0, 'age', [18, 21, 65, 43], allow_duplicates=True)
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
 

@@ -17,10 +17,13 @@ Release Notes
         * Skip validation of Ordinal order values for Dask dataframes (:pr:`270`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
+        * Update README.md with documentation link (:pr:`261`)
+        * Add footer to doc pages with Alteryx Open Source (:pr:`258`)
+        * Add types and tags one-sentence definitions to Understanding Types and Tags guide (:pr:`271`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
     * Enhancements

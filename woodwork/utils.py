@@ -37,7 +37,7 @@ def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column."""
     if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.head(0), datetime))):
+            (len(col) and isinstance(col.head(1), datetime))):
         return True
 
     # if it can be casted to numeric, it's not a datetime

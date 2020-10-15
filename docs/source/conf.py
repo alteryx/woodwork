@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath(path))
 
 project = 'Woodwork'
 copyright = '2020, Alteryx, Inc.'
-author = 'Alteryx Innovation Labs'
+author = 'Alteryx, Inc.'
 
 # The short X.Y version
 version = woodwork.__version__
@@ -99,7 +99,8 @@ html_theme = "pydata_sphinx_theme"
 # documentation.
 #
 html_theme_options = {
-    "github_url": "https://github.com/FeatureLabs/woodwork"
+    "github_url": "https://github.com/FeatureLabs/woodwork",
+    "twitter_url": "https://twitter.com/alteryx?lang=en",
 }
 
 # The name of an image file (relative to this directory) to place at the top
@@ -158,7 +159,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'Woodwork.tex', 'Woodwork Documentation',
-     author, 'manual'),
+     'Alteryx, Inc.', 'manual'),
 ]
 
 
@@ -257,7 +258,7 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
-    
+
 
 def setup(app):
     app.add_js_file('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
