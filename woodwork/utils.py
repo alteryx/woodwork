@@ -57,6 +57,27 @@ def col_is_datetime(col, datetime_format=None):
     return False
 
 
+def _is_numeric_series(series, logical_type):
+    try:
+        if pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series):
+            print('its numeric!')
+            return True
+
+        # We do not infer a numeric Logical Type from non numeric series' such as ['1', '2', '3'],
+        # so unless a numeric Logical Type is specified, we shouldn't interpret the series as numeric
+        if logical_type is None:
+            return False
+
+        pd.to_numeric(series, errors='raise')
+
+        if isinstance(logical_type, str):
+            logical_type = ww.logical_types.str_to_logical_type(logical_type)
+
+        return 'numeric' in logical_type.standard_tags
+    except (ValueError, TypeError):
+        return False
+
+
 def list_logical_types():
     """Returns a dataframe describing all of the available Logical Types.
 

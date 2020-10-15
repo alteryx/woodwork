@@ -15,6 +15,7 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
     _get_mode,
+    _is_numeric_series,
     col_is_datetime
 )
 
@@ -694,10 +695,13 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         _check_logical_types(dataframe, logical_types)
     if time_index:
         datetime_format = None
-        if (logical_types is not None and time_index in logical_types and
-                _get_ltype_class(logical_types[time_index]) == Datetime):
-            datetime_format = logical_types[time_index].datetime_format
-        _check_time_index(dataframe, time_index, datetime_format=datetime_format)
+        logical_type = None
+        if logical_types is not None and time_index in logical_types:
+            logical_type = logical_types[time_index]
+            if _get_ltype_class(logical_types[time_index]) == Datetime:
+                datetime_format = logical_types[time_index].datetime_format
+
+        _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
 
     if semantic_tags:
         _check_semantic_tags(dataframe, semantic_tags)
@@ -725,13 +729,13 @@ def _check_index(dataframe, index, make_index=False):
         raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
 
 
-def _check_time_index(dataframe, time_index, datetime_format=None):
+def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
     if not isinstance(time_index, str):
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
-    if not ((pd.api.types.is_numeric_dtype(dataframe[time_index]) or
-             col_is_datetime(dataframe[time_index], datetime_format=datetime_format))):
+    if not (_is_numeric_series(dataframe[time_index], logical_type) or
+            col_is_datetime(dataframe[time_index], datetime_format=datetime_format)):
         raise TypeError('Time index column must contain datetime or numeric values')
 
 
