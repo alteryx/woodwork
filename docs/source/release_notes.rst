@@ -15,6 +15,7 @@ Release Notes
         * Support logical type inference from a Dask dataframe (:pr:`248`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
+        * Update README.md with documentation link (:pr:`261`)
         * Add footer to doc pages with Alteryx Open Source (:pr:`258`)
     * Testing Changes
 
