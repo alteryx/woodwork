@@ -733,7 +733,7 @@ def _check_time_index(dataframe, time_index, datetime_format=None):
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
     if not ((_can_be_numeric(dataframe[time_index]) or
              col_is_datetime(dataframe[time_index], datetime_format=datetime_format))):
-        raise TypeError('Time index column must contain datetime values')
+        raise TypeError('Time index column must contain datetime or numeric values')
 
 
 def _check_logical_types(dataframe, logical_types):
