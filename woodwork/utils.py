@@ -42,7 +42,9 @@ def col_is_datetime(col, datetime_format=None):
 
     # if it can be casted to numeric, it's not a datetime
     dropped_na = col.dropna()
-    if not _can_be_numeric(dropped_na):
+    try:
+        pd.to_numeric(dropped_na, errors='raise')
+    except (ValueError, TypeError):
         # finally, try to cast to datetime
         if col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
             try:
@@ -53,14 +55,6 @@ def col_is_datetime(col, datetime_format=None):
                 return True
 
     return False
-
-
-def _can_be_numeric(col):
-    try:
-        pd.to_numeric(col, errors='raise')
-        return True
-    except (ValueError, TypeError):
-        return False
 
 
 def list_logical_types():
