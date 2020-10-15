@@ -13,19 +13,21 @@ jobs:
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: '3.8.x'
     - name: Update dependencies
       run: |
         python -m pip install --upgrade pip
         make installdeps
         make checkdeps OUTPUT_PATH=woodwork/tests/latest_dependencies.txt
+        cat woodwork/tests/latest_dependencies.txt
     - name: Create Pull Request
       uses: Featurelabs/create-pull-request@v2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: Update latest dependencies
-        title: Automated Update with New Dependencies
-        body: "This is an auto-generated PR with dependency updates."
+        title: Automated Latest Dependency Updates
+        body: "This is an auto-generated PR with dependency updates.
+               Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
         branch: dep-update
         branch-suffix: short-commit-hash
         base: main
