@@ -123,7 +123,6 @@ def read_csv(filepath=None,
              semantic_tags=None,
              logical_types=None,
              copy_dataframe=False,
-             use_standard_tags=True,
              **kwargs):
     """Read data from the specified CSV file and return a Woodwork DataTable
 
@@ -147,8 +146,6 @@ def read_csv(filepath=None,
         copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
             prior to creating the DataTable. Defaults to False, which results in using a
             reference to the input dataframe.
-        use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-            on the inferred or specified logical type for the column. Defaults to True.
         **kwargs: Additional keyword arguments to pass to the underlying ``pandas.read_csv`` function. For more
             information on available keywords refer to the pandas documentation.
 
@@ -162,8 +159,7 @@ def read_csv(filepath=None,
                         time_index=time_index,
                         semantic_tags=semantic_tags,
                         logical_types=logical_types,
-                        copy_dataframe=copy_dataframe,
-                        use_standard_tags=use_standard_tags)
+                        copy_dataframe=copy_dataframe)
 
 
 def _get_ltype_class(ltype):

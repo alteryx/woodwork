@@ -27,8 +27,7 @@ from woodwork.utils import (
 class DataColumn(object):
     def __init__(self, series,
                  logical_type=None,
-                 semantic_tags=None,
-                 use_standard_tags=True):
+                 semantic_tags=None):
         """Create a DataColumn.
 
         Args:
@@ -41,17 +40,12 @@ class DataColumn(object):
                 specifying the semantic tags:
                 (str) If only one semantic tag is being set, a single string can be passed.
                 (list or set) If multiple tags are being set, a list or set of strings can be passed.
-            use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-                on the inferred or specified logical type for the column. Defaults to True.
         """
         self._series = series
-        self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         semantic_tags = _convert_input_to_set(semantic_tags)
         _validate_tags(semantic_tags)
-        if use_standard_tags:
-            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
-        self._semantic_tags = semantic_tags
+        self._semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
         self._update_dtype()
 
     def __repr__(self):
@@ -93,8 +87,7 @@ class DataColumn(object):
         """
         new_logical_type = self._parse_logical_type(logical_type)
         new_col = DataColumn(series=self._series,
-                             logical_type=new_logical_type,
-                             use_standard_tags=self.use_standard_tags)
+                             logical_type=new_logical_type)
         if retain_index_tags and 'index' in self.semantic_tags:
             new_col._set_as_index()
         if retain_index_tags and 'time_index' in self.semantic_tags:
@@ -134,10 +127,8 @@ class DataColumn(object):
         is_time_index = 'time_index' in self._semantic_tags
         new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
-                             semantic_tags=semantic_tags,
-                             use_standard_tags=self.use_standard_tags)
-        if new_col.use_standard_tags:
-            new_col._semantic_tags = new_col._semantic_tags.union(new_col._logical_type.standard_tags)
+                             semantic_tags=semantic_tags)
+        new_col._semantic_tags = new_col._semantic_tags.union(new_col._logical_type.standard_tags)
         if retain_index_tags and is_index:
             new_col._set_as_index()
         if retain_index_tags and is_time_index:
@@ -161,14 +152,12 @@ class DataColumn(object):
         new_col_tags = self._semantic_tags.union(new_tags)
         new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
-                             semantic_tags=new_col_tags,
-                             use_standard_tags=self.use_standard_tags)
+                             semantic_tags=new_col_tags)
         return new_col
 
     def reset_semantic_tags(self, retain_index_tags=False):
         """Reset the semantic tags to the default values. The default values
-        will be either an empty set or a set of the standard tags based on the
-        column logical type, controlled by the use_standard_tags property.
+        will be either an empty set.
 
         Args:
             retain_index_tags (bool, optional): If True, any 'index' or
@@ -180,8 +169,7 @@ class DataColumn(object):
         """
         new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
-                             semantic_tags=None,
-                             use_standard_tags=self.use_standard_tags)
+                             semantic_tags=None)
         if retain_index_tags and 'index' in self.semantic_tags:
             new_col._set_as_index()
         if retain_index_tags and 'time_index' in self.semantic_tags:
@@ -202,14 +190,13 @@ class DataColumn(object):
         if invalid_tags:
             raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")
         standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self._logical_type.standard_tags)))
-        if standard_tags_to_remove and self.use_standard_tags:
+        if standard_tags_to_remove:
             warnings.warn(f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{self.name}'",
                           UserWarning)
         new_tags = self._semantic_tags.difference(tags_to_remove)
         return DataColumn(series=self._series,
                           logical_type=self.logical_type,
-                          semantic_tags=new_tags,
-                          use_standard_tags=False)
+                          semantic_tags=new_tags)
 
     def _set_as_index(self):
         self._semantic_tags = self._semantic_tags.difference(self._logical_type.standard_tags)

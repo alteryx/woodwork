@@ -138,12 +138,11 @@ def test_datatable_init_with_semantic_tags(sample_df):
     }
     dt = DataTable(sample_df,
                    name='datatable',
-                   semantic_tags=semantic_tags,
-                   use_standard_tags=False)
+                   semantic_tags=semantic_tags)
 
     id_semantic_tags = dt.columns['id'].semantic_tags
     assert isinstance(id_semantic_tags, set)
-    assert len(id_semantic_tags) == 1
+    assert len(id_semantic_tags) == 2
     assert 'custom_tag' in id_semantic_tags
 
 
@@ -346,7 +345,7 @@ def test_set_logical_types(sample_df):
         'phone_number': ['tag3', 'tag2'],
         'signup_date': {'secondary_time_index'},
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
 
     new_dt = dt.set_logical_types({
         'full_name': Categorical,
@@ -446,7 +445,7 @@ def test_set_semantic_tags(sample_df):
 
 
 def test_set_semantic_tags_with_index(sample_df):
-    dt = DataTable(sample_df, index='id', use_standard_tags=False)
+    dt = DataTable(sample_df, index='id')
     assert dt.columns['id'].semantic_tags == {'index'}
 
     new_tags = {
@@ -455,11 +454,11 @@ def test_set_semantic_tags_with_index(sample_df):
     dt = dt.set_semantic_tags(new_tags)
     assert dt.columns['id'].semantic_tags == {'index', 'new_tag'}
     dt = dt.set_semantic_tags(new_tags, retain_index_tags=False)
-    assert dt.columns['id'].semantic_tags == {'new_tag'}
+    assert dt.columns['id'].semantic_tags == {'new_tag', 'numeric'}
 
 
 def test_set_semantic_tags_with_time_index(sample_df):
-    dt = DataTable(sample_df, time_index='signup_date', use_standard_tags=False)
+    dt = DataTable(sample_df, time_index='signup_date')
     assert dt.columns['signup_date'].semantic_tags == {'time_index'}
 
     new_tags = {
@@ -476,7 +475,7 @@ def test_add_semantic_tags(sample_df):
         'full_name': 'tag1',
         'age': ['numeric', 'age']
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=False)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
 
     new_tags = {
         'full_name': ['list_tag'],
@@ -491,7 +490,7 @@ def test_add_semantic_tags(sample_df):
     assert new_dt is not dt
     assert new_dt.columns['full_name'].semantic_tags == {'tag1', 'list_tag'}
     assert new_dt.columns['age'].semantic_tags == {'numeric', 'age', 'str_tag'}
-    assert new_dt.columns['id'].semantic_tags == {'set_tag'}
+    assert new_dt.columns['id'].semantic_tags == {'set_tag', 'numeric'}
 
 
 def test_reset_all_semantic_tags(sample_df):
@@ -499,7 +498,7 @@ def test_reset_all_semantic_tags(sample_df):
         'full_name': 'tag1',
         'age': 'age'
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
 
     new_dt = dt.reset_semantic_tags()
     # Verify original tags were not changed
@@ -519,7 +518,7 @@ def test_reset_selected_column_semantic_tags(sample_df):
 
     input_types = ['age', ['age'], {'age'}]
     for input_type in input_types:
-        dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
+        dt = DataTable(sample_df, semantic_tags=semantic_tags)
         dt = dt.reset_semantic_tags(input_type)
         assert dt.columns['full_name'].semantic_tags == {'tag1'}
         assert dt.columns['age'].semantic_tags == {'numeric'}
@@ -531,13 +530,12 @@ def test_reset_semantic_tags_with_index(sample_df):
     }
     dt = DataTable(sample_df,
                    index='id',
-                   semantic_tags=semantic_tags,
-                   use_standard_tags=False)
+                   semantic_tags=semantic_tags)
     assert dt['id'].semantic_tags == {'index', 'tag1'}
     dt = dt.reset_semantic_tags('id', retain_index_tags=True)
     assert dt['id'].semantic_tags == {'index'}
     dt = dt.reset_semantic_tags('id')
-    assert dt['id'].semantic_tags == set()
+    assert dt['id'].semantic_tags == {'numeric'}
 
 
 def test_reset_semantic_tags_with_time_index(sample_df):
@@ -546,8 +544,7 @@ def test_reset_semantic_tags_with_time_index(sample_df):
     }
     dt = DataTable(sample_df,
                    time_index='signup_date',
-                   semantic_tags=semantic_tags,
-                   use_standard_tags=False)
+                   semantic_tags=semantic_tags)
     assert dt['signup_date'].semantic_tags == {'time_index', 'tag1'}
     dt = dt.reset_semantic_tags('signup_date', retain_index_tags=True)
     assert dt['signup_date'].semantic_tags == {'time_index'}
@@ -568,7 +565,7 @@ def test_remove_semantic_tags(sample_df):
         'age': ['numeric', 'age'],
         'id': ['tag1', 'tag2']
     }
-    dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=False)
+    dt = DataTable(sample_df, semantic_tags=semantic_tags)
     tags_to_remove = {
         'full_name': ['tag1', 'tag3'],
         'age': 'numeric',
@@ -578,12 +575,12 @@ def test_remove_semantic_tags(sample_df):
     # Verify original tags were not changed
     assert dt.columns['full_name'].semantic_tags == {'tag1', 'tag2', 'tag3'}
     assert dt.columns['age'].semantic_tags == {'numeric', 'age'}
-    assert dt.columns['id'].semantic_tags == {'tag1', 'tag2'}
+    assert dt.columns['id'].semantic_tags == {'tag1', 'tag2', 'numeric'}
 
     assert new_dt is not dt
     assert new_dt.columns['full_name'].semantic_tags == {'tag2'}
-    assert new_dt.columns['age'].semantic_tags == {'age'}
-    assert new_dt.columns['id'].semantic_tags == {'tag2'}
+    assert new_dt.columns['age'].semantic_tags == {'age', 'numeric'}
+    assert new_dt.columns['id'].semantic_tags == {'tag2', 'numeric'}
 
 
 def test_sets_category_dtype_on_init():
@@ -1182,8 +1179,7 @@ def test_getitem(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
                    logical_types={'age': WholeNumber},
-                   semantic_tags={'age': 'custom_tag'},
-                   use_standard_tags=True)
+                   semantic_tags={'age': 'custom_tag'})
 
     data_col = dt['age']
     assert isinstance(data_col, DataColumn)
@@ -1270,8 +1266,7 @@ def test_setitem_invalid_input(sample_df):
 
     error_msg = 'Column name must be a string'
     with pytest.raises(KeyError, match=error_msg):
-        dt[1] = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                           use_standard_tags=False)
+        dt[1] = DataColumn(pd.Series([1, 2, 3], dtype='Int64'))
 
     error_msg = 'New column must be of DataColumn type'
     with pytest.raises(ValueError, match=error_msg):
@@ -1292,8 +1287,7 @@ def test_setitem_different_name(sample_df):
     warning = 'Key, id, does not match the name of the provided DataColumn, wrong.'\
         ' Changing DataColumn name to: id'
     with pytest.warns(UserWarning, match=warning):
-        dt['id'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong'),
-                              use_standard_tags=False)
+        dt['id'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong'))
 
     assert dt['id'].name == 'id'
     assert dt['id'].to_pandas().name == 'id'
@@ -1303,8 +1297,7 @@ def test_setitem_different_name(sample_df):
     warning = 'Key, new_col, does not match the name of the provided DataColumn, wrong2.'\
         ' Changing DataColumn name to: new_col'
     with pytest.warns(UserWarning, match=warning):
-        dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'),
-                                   use_standard_tags=False)
+        dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'))
     assert dt['new_col'].name == 'new_col'
     assert dt['new_col'].to_pandas().name == 'new_col'
     assert dt.to_pandas()['new_col'].name == 'new_col'
@@ -1314,19 +1307,17 @@ def test_setitem_different_name(sample_df):
 def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
 
-    new_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                         use_standard_tags=False)
+    new_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'))
     dt['test_col2'] = new_col
     updated_df = dt.to_pandas()
     assert 'test_col2' in dt.columns
     assert dt['test_col2'].logical_type == WholeNumber
-    assert dt['test_col2'].semantic_tags == set()
+    assert dt['test_col2'].semantic_tags == {'numeric'}
     assert 'test_col2' in updated_df.columns
     assert updated_df['test_col2'].dtype == 'Int64'
 
     # Standard tags and no logical type
-    new_col = DataColumn(pd.Series(['new', 'column', 'inserted'], dtype='string'),
-                         use_standard_tags=True)
+    new_col = DataColumn(pd.Series(['new', 'column', 'inserted'], dtype='string'))
     dt['test_col'] = new_col
     updated_df = dt.to_pandas()
     assert 'test_col' in dt.columns
@@ -1338,26 +1329,23 @@ def test_setitem_new_column(sample_df):
     # Add with logical type and semantic tag
     new_col = DataColumn(pd.Series([1, 2, 3]),
                          logical_type=Double,
-                         use_standard_tags=False,
                          semantic_tags={'test_tag'})
     dt['test_col3'] = new_col
     updated_df = dt.to_pandas()
     assert 'test_col3' in dt.columns
     assert dt['test_col3'].logical_type == Double
-    assert dt['test_col3'].semantic_tags == {'test_tag'}
+    assert dt['test_col3'].semantic_tags == {'test_tag', 'numeric'}
     assert 'test_col3' in updated_df.columns
     assert updated_df['test_col3'].dtype == 'float'
 
 
 def test_setitem_overwrite_column(sample_df):
     dt = DataTable(sample_df, index='id',
-                   time_index='signup_date',
-                   use_standard_tags=True)
+                   time_index='signup_date')
 
     # Change to column no change in types
     original_col = dt['age']
-    overwrite_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                               use_standard_tags=True)
+    overwrite_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'))
     dt['age'] = overwrite_col
     updated_df = dt.to_pandas()
 
@@ -1371,7 +1359,6 @@ def test_setitem_overwrite_column(sample_df):
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = dt['full_name']
     overwrite_col = DataColumn(pd.Series([True, False, False], dtype='boolean'),
-                               use_standard_tags=False,
                                semantic_tags='test_tag')
     dt['full_name'] = overwrite_col
     updated_df = dt.to_pandas()
@@ -1973,16 +1960,16 @@ def test_datatable_describe_with_no_semantic_tags():
         'num_col': WholeNumber,
     }
 
-    dt = DataTable(df, logical_types=logical_types, use_standard_tags=False)
+    dt = DataTable(df, logical_types=logical_types)
     stats_df = dt.describe()
-    assert dt['category_col'].semantic_tags == set()
-    assert dt['num_col'].semantic_tags == set()
+    assert dt['category_col'].semantic_tags == {'category'}
+    assert dt['num_col'].semantic_tags == {'numeric'}
 
     # Make sure category stats were computed
-    assert stats_df['category_col']['semantic_tags'] == set()
+    assert stats_df['category_col']['semantic_tags'] == {'category'}
     assert stats_df['category_col']['nunique'] == 3
     # Make sure numeric stats were computed
-    assert stats_df['num_col']['semantic_tags'] == set()
+    assert stats_df['num_col']['semantic_tags'] == {'numeric'}
     assert stats_df['num_col']['mean'] == 2
 
 
