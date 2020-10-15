@@ -15,10 +15,11 @@ Release Notes
         * Support logical type inference from a Dask dataframe (:pr:`248`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
+        * Add footer to doc pages with Alteryx Open Source (:pr:`258`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
     * Enhancements
