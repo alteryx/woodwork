@@ -2252,36 +2252,3 @@ def test_numeric_index_strings():
     assert dt.time_index == 'strs'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
-
-
-def test_numeric_time_index_no_standard_tags():
-    df = pd.DataFrame({
-        'whole_numbers': pd.Series([1, 2, 3], dtype='int8'),
-        'floats': pd.Series([1, 2, 3], dtype='float'),
-        'ints': pd.Series([1, -2, 3], dtype='Int64'),
-        'with_null': pd.Series([1, 2, pd.NA], dtype='Int64'),
-    })
-
-    dt = DataTable(df, time_index='whole_numbers', use_standard_tags=False)
-    date_col = dt['whole_numbers']
-    assert dt.time_index == 'whole_numbers'
-    assert date_col.logical_type == WholeNumber
-    assert date_col.semantic_tags == {'time_index'}
-
-    dt = dt.set_time_index('floats')
-    date_col = dt['floats']
-    assert dt.time_index == 'floats'
-    assert date_col.logical_type == Double
-    assert date_col.semantic_tags == {'time_index'}
-
-    dt = dt.set_time_index('ints')
-    date_col = dt['ints']
-    assert dt.time_index == 'ints'
-    assert date_col.logical_type == Integer
-    assert date_col.semantic_tags == {'time_index'}
-
-    dt = dt.set_time_index('with_null')
-    date_col = dt['with_null']
-    assert dt.time_index == 'with_null'
-    assert date_col.logical_type == WholeNumber
-    assert date_col.semantic_tags == {'time_index'}

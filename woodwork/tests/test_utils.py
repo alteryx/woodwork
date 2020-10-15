@@ -165,6 +165,7 @@ def test_is_numeric_series():
 
     assert _is_numeric_series(df['numerics'], None)
     assert _is_numeric_series(df['numerics'], Double)
+    assert not _is_numeric_series(df['numerics'], Categorical)
 
     assert not _is_numeric_series(df['strs'], None)
     assert not _is_numeric_series(df['strs'], 'Categorical')
