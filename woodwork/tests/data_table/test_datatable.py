@@ -93,14 +93,10 @@ def test_datatable_init_with_valid_string_time_index():
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
-def test_datatable_init_with_invalid_string_time_index():
-    df = pd.DataFrame({
-        'id': [0, 1, 2],
-        'times': ['not_a_datetime', '2019-01-02', '2019-01-03']
-    })
+def test_datatable_init_with_invalid_string_time_index(sample_df):
     error_msg = 'Time index column must contain datetime values'
     with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, name='datatable', time_index='times')
+        DataTable(sample_df, name='datatable', time_index='full_name')
 
 
 def test_datatable_init_with_logical_types(sample_df):
