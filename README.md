@@ -3,8 +3,8 @@
     <a href="https://codecov.io/gh/FeatureLabs/woodwork" target="_blank">
         <img src="https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP" alt="Codecov" />
     </a>
-    <a href='https://woodwork.alteryx.com/en/latest/?badge=stable' target="_blank">
-        <img src='https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable' alt='Documentation Status' />
+    <a href="https://woodwork.alteryx.com/en/latest/?badge=stable" target="_blank">
+        <img src="https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable" alt="Documentation Status" />
     </a>
     <a href="https://badge.fury.io/py/woodwork" target="_blank">
         <img src="https://badge.fury.io/py/woodwork.svg?maxAge=2592000" alt="PyPI Version" />
