@@ -12,8 +12,8 @@ def pd_to_dask(series):
 @pytest.fixture
 def pandas_integers():
     return [
-        pd.Series([-1, 2, 1]),
-        pd.Series([-1, 0, 5]),
+        pd.Series([-1, 2, 1, 7]),
+        pd.Series([-1, 0, 5, 3]),
     ]
 
 
@@ -31,8 +31,8 @@ def integers(request):
 @pytest.fixture
 def pandas_whole_nums():
     return [
-        pd.Series([0, 1, 5]),
-        pd.Series([2, 3, 5]),
+        pd.Series([0, 1, 5, 7]),
+        pd.Series([2, 3, 5, 3]),
     ]
 
 
@@ -50,8 +50,8 @@ def whole_nums(request):
 @pytest.fixture
 def pandas_doubles():
     return [
-        pd.Series([-1, 2.0, 1]),
-        pd.Series([1, np.nan, 1])
+        pd.Series([-1, 2.0, 1, 7]),
+        pd.Series([1, np.nan, 1, 3])
     ]
 
 
@@ -69,8 +69,8 @@ def doubles(request):
 @pytest.fixture
 def pandas_bools():
     return [
-        pd.Series([True, False, True]),
-        pd.Series([True, False, np.nan]),
+        pd.Series([True, False, True, True]),
+        pd.Series([True, np.nan, True, True]),
     ]
 
 
@@ -88,8 +88,8 @@ def bools(request):
 @pytest.fixture
 def pandas_datetimes():
     return [
-        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000']),
-        pd.Series(['3/11/2000', '3/12/2000', np.nan]),
+        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000', '3/14/2000']),
+        pd.Series(['3/11/2000', np.nan, '3/13/2000', '3/14/2000']),
     ]
 
 
@@ -107,10 +107,10 @@ def datetimes(request):
 @pytest.fixture
 def pandas_categories():
     return [
-        pd.Series(['a', 'b', 'a']),
-        pd.Series(['1', '2', '1']),
-        pd.Series(['a', 'b', np.nan]),
-        pd.Series([1, 2, 1])
+        pd.Series(['a', 'b', 'a', 'b']),
+        pd.Series(['1', '2', '1', '2']),
+        pd.Series(['a', np.nan, 'b', 'b']),
+        pd.Series([1, 2, 1, 2])
     ]
 
 
@@ -128,7 +128,7 @@ def categories(request):
 @pytest.fixture
 def pandas_timedeltas():
     return [
-        pd.Series(pd.to_timedelta(range(3), unit='s')),
+        pd.Series(pd.to_timedelta(range(4), unit='s')),
         pd.Series([pd.to_timedelta(1, unit='s'), np.nan])
     ]
 
@@ -147,7 +147,7 @@ def timedeltas(request):
 @pytest.fixture
 def pandas_strings():
     return [
-        pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown']),
+        pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']),
     ]
 
 
@@ -167,8 +167,10 @@ def pandas_long_strings():
     natural_language_series = pd.Series([
         '01234567890123456789',
         '01234567890123456789',
+        '01234567890123456789',
         '01234567890123456789'])
     category_series = pd.Series([
+        '0123456789012345678',
         '0123456789012345678',
         '0123456789012345678',
         '0123456789012345678'])
@@ -189,10 +191,10 @@ def long_strings(request):
 @pytest.fixture
 def pandas_pdnas():
     return [
-        pd.Series(['Mr. John Doe', pd.NA, 'James Brown']).astype('string'),
-        pd.Series([1, pd.NA, -2]).astype('Int64'),
-        pd.Series([1, pd.NA, 2]).astype('Int64'),
-        pd.Series([True, pd.NA, False]).astype('boolean'),
+        pd.Series(['Mr. John Doe', pd.NA, 'James Brown', 'Ms. Paige Turner']).astype('string'),
+        pd.Series([-1, pd.NA, 2, 3]).astype('Int64'),
+        pd.Series([1, pd.NA, 2, 3]).astype('Int64'),
+        pd.Series([True, pd.NA, False, True]).astype('boolean'),
     ]
 
 
