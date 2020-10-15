@@ -420,8 +420,6 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if isinstance(sample_series, dd.Series):
-        pytest.xfail('fails with dask - ordinal data validation not compatible')
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
@@ -435,7 +433,7 @@ def test_ordinal_with_order(sample_series):
 
 def test_ordinal_with_incomplete_ranking(sample_series):
     if isinstance(sample_series, dd.Series):
-        pytest.xfail('fails with dask - ordinal data validation not compatible')
+        pytest.xfail('Fails with Dask - ordinal data validation not supported')
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")
