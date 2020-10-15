@@ -18,6 +18,7 @@ Release Notes
         * Add footer to doc pages with Alteryx Open Source (:pr:`258`)
         * Add types and tags one-sentence definitions to Understanding Types and Tags guide (:pr:`271`)
     * Testing Changes
+        * Add automated process to check latest dependencies. (:pr:`268`)
 
 Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
