@@ -435,7 +435,7 @@ def test_ordinal_with_order(sample_series):
 
 def test_ordinal_with_incomplete_ranking(sample_series):
     if isinstance(sample_series, dd.Series):
-        pytest.xfail('fails with dask - ordinal data validation not compatible')
+        pytest.xfail('Fails with Dask - ordinal data validation not supported')
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")

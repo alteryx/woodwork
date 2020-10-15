@@ -14,6 +14,7 @@ Release Notes
         * Make results of ``get_mutual_information`` more clear by sorting and removing self calculation (:pr:`247`)
         * Support logical type inference from a Dask dataframe (:pr:`248`)
         * Fix validation checks and ``make_index`` to work with Dask dataframes (:pr:`260`)
+        * Skip validation of Ordinal order values for Dask dataframes (:pr:`270`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
         * Update README.md with documentation link (:pr:`261`)
