@@ -12,6 +12,7 @@ Release Notes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
         * Make results of ``get_mutual_information`` more clear by sorting and removing self calculation (:pr:`247`)
+        * Completely remove ``use_standard_tags`` from DataTable and DataColumn (:pr:`276`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
         * Update README.md with documentation link (:pr:`261`)
@@ -68,7 +69,7 @@ Thanks to the following people for contributing to this release:
     * Fixes
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
-        * Change add_standard_tags to use_standard_Tags to better describe behavior (:pr:`149`)
+        * Change ``add_standard_tags`` to ``use_standard_tags`` to better describe behavior (:pr:`149`)
         * Change access of underlying dataframe to be through ``to_pandas`` with ._dataframe field on class (:pr:`146`)
         * Remove ``replace_none`` parameter to DataTables (:pr:`146`)
     * Documentation Changes
