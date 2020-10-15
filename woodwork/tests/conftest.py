@@ -34,7 +34,7 @@ def sample_series(request):
 
 @pytest.fixture()
 def sample_series_pandas():
-    return pd.Series(['a', 'b', 'c', 'a', np.nan], name='sample_series').astype('object')
+    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('object')
 
 
 @pytest.fixture()
