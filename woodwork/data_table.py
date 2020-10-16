@@ -757,6 +757,8 @@ def _update_index(data_table, index, old_index=None):
     can be used as an index."""
     _check_index(data_table._dataframe, index)
     data_table.columns[index]._set_as_index()
+    if isinstance(data_table._dataframe, pd.DataFrame):
+        data_table._dataframe.set_index(index, drop=False)
     if old_index:
         data_table._update_columns({old_index: data_table.columns[old_index].remove_semantic_tags('index')})
 
