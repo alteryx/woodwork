@@ -5,10 +5,17 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import LogicalType, str_to_logical_type
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    LogicalType,
+    str_to_logical_type
+)
 from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
+    _is_numeric_series,
     camel_to_snake,
     list_logical_types,
     list_semantic_tags
@@ -146,3 +153,28 @@ def test_read_csv_with_pandas_params(sample_df, tmpdir):
     assert dt_from_csv.semantic_tags == dt.semantic_tags
     assert len(dt_from_csv.to_pandas()) == nrows
     pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas().head(nrows))
+
+
+def test_is_numeric_series():
+    df = pd.DataFrame({
+        'strs': ['1', '2', '3'],
+        'dates': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]'),
+        'bools': [True, False, False],
+        'numerics': [9.9, 3.3, 4]
+    })
+
+    assert _is_numeric_series(df['numerics'], None)
+    assert _is_numeric_series(df['numerics'], Double)
+    assert not _is_numeric_series(df['numerics'], Categorical)
+
+    assert not _is_numeric_series(df['strs'], None)
+    assert not _is_numeric_series(df['strs'], 'Categorical')
+    assert not _is_numeric_series(df['strs'], Categorical)
+    assert _is_numeric_series(df['strs'], Double)
+    assert _is_numeric_series(df['strs'], 'Double')
+
+    assert not _is_numeric_series(df['bools'], None)
+    assert not _is_numeric_series(df['bools'], 'Boolean')
+
+    assert not _is_numeric_series(df['dates'], None)
+    assert not _is_numeric_series(df['dates'], Datetime)
