@@ -157,13 +157,16 @@ def test_datatable_init_with_string_logical_types(sample_df):
 
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'age': 'WholeNumber'
+        'age': 'WholeNumber',
+        'signup_date': 'Datetime'
     }
     dt = DataTable(sample_df,
                    name='datatable',
-                   logical_types=logical_types)
+                   logical_types=logical_types,
+                   time_index='signup_date')
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['age'].logical_type == WholeNumber
+    assert dt.time_index == 'signup_date'
 
 
 def test_datatable_init_with_semantic_tags(sample_df):
