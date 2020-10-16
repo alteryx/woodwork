@@ -1414,6 +1414,13 @@ def test_set_index(sample_df):
     non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
 
+    # Test changing index also changes underlying DataFrame
+    dt = DataTable(sample_df)
+    dt.index = 'id'
+    assert (dt._dataframe.index == [0, 1, 2]).all()
+    dt.index = 'full_name'
+    assert (dt._dataframe.index == dt._dataframe['full_name']).all()
+
 
 def test_set_time_index(sample_df):
     # Test setting time index with set_time_index()
