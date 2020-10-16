@@ -1,5 +1,4 @@
 ### Bug Title
-(replace this text with your issue)
 
 #### Code Sample, a copy-pastable example to reproduce your bug.
 
