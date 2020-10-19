@@ -88,12 +88,46 @@ def test_datatable_init_with_valid_string_time_index():
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
+def test_datatable_with_numeric_time_index():
+    df = pd.DataFrame({'numeric_datetime_index': [1, 2, 3],
+                       'normal_dates': ['2020-01-01', '2020-01-02', '2020-01-03']})
+
+    # Set a numeric time index on init
+    dt = DataTable(df, time_index='numeric_datetime_index')
+    date_col = dt['numeric_datetime_index']
+    assert dt.time_index == 'numeric_datetime_index'
+    assert date_col.logical_type == WholeNumber
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    # Specify logical type for time index on init
+    dt = DataTable(df, time_index='numeric_datetime_index', logical_types={'numeric_datetime_index': 'Double'})
+    date_col = dt['numeric_datetime_index']
+    assert dt.time_index == 'numeric_datetime_index'
+    assert date_col.logical_type == Double
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    # Change time index to normal datetime time index
+    dt = dt.set_time_index('normal_dates')
+    date_col = dt['numeric_datetime_index']
+    assert dt.time_index == 'normal_dates'
+    assert date_col.logical_type == Double
+    assert date_col.semantic_tags == {'numeric'}
+
+    # Set numeric time index after init
+    dt = DataTable(df, logical_types={'numeric_datetime_index': 'Double'})
+    dt = dt.set_time_index('numeric_datetime_index')
+    date_col = dt['numeric_datetime_index']
+    assert dt.time_index == 'numeric_datetime_index'
+    assert date_col.logical_type == Double
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
 def test_datatable_init_with_invalid_string_time_index():
     df = pd.DataFrame({
         'id': [0, 1, 2],
         'times': ['not_a_datetime', '2019-01-02', '2019-01-03']
     })
-    error_msg = 'Time index column must contain datetime values'
+    error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
         DataTable(df, name='datatable', time_index='times')
 
@@ -123,13 +157,16 @@ def test_datatable_init_with_string_logical_types(sample_df):
 
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'age': 'WholeNumber'
+        'age': 'WholeNumber',
+        'signup_date': 'Datetime'
     }
     dt = DataTable(sample_df,
                    name='datatable',
-                   logical_types=logical_types)
+                   logical_types=logical_types,
+                   time_index='signup_date')
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['age'].logical_type == WholeNumber
+    assert dt.time_index == 'signup_date'
 
 
 def test_datatable_init_with_semantic_tags(sample_df):
@@ -2162,3 +2199,66 @@ def test_make_index(sample_df):
     assert dt._dataframe['new_index'].unique
     assert dt._dataframe['new_index'].is_monotonic
     assert 'index' in dt.columns['new_index'].semantic_tags
+
+
+def test_numeric_time_index_dtypes():
+    df = pd.DataFrame({
+        'whole_numbers': pd.Series([1, 2, 3], dtype='int8'),
+        'floats': pd.Series([1, 2, 3], dtype='float'),
+        'ints': pd.Series([1, -2, 3], dtype='Int64'),
+        'with_null': pd.Series([1, 2, pd.NA], dtype='Int64'),
+    })
+
+    dt = DataTable(df, time_index='whole_numbers')
+    date_col = dt['whole_numbers']
+    assert dt.time_index == 'whole_numbers'
+    assert date_col.logical_type == WholeNumber
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    dt = dt.set_time_index('floats')
+    date_col = dt['floats']
+    assert dt.time_index == 'floats'
+    assert date_col.logical_type == Double
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    dt = dt.set_time_index('ints')
+    date_col = dt['ints']
+    assert dt.time_index == 'ints'
+    assert date_col.logical_type == Integer
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    dt = dt.set_time_index('with_null')
+    date_col = dt['with_null']
+    assert dt.time_index == 'with_null'
+    assert date_col.logical_type == WholeNumber
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_numeric_index_strings():
+    df = pd.DataFrame({'strs': pd.Series(['1', '2', '3']),
+                       'ints': pd.Series([1, 2, 3])})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, time_index='strs')
+
+    error_msg = 'Error converting datatype for column strs from type object to type Int64. Please confirm the underlying data is consistent with logical type Integer.'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, time_index='strs', logical_types={'strs': 'Integer'})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, time_index='ints', logical_types={'ints': 'Categorical'})
+
+    dt = DataTable(df, time_index='strs', logical_types={'strs': 'Double'})
+    date_col = dt['strs']
+    assert dt.time_index == 'strs'
+    assert date_col.logical_type == Double
+    assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    dt = DataTable(df, logical_types={'strs': 'Double'})
+    dt = dt.set_time_index('strs')
+    date_col = dt['strs']
+    assert dt.time_index == 'strs'
+    assert date_col.logical_type == Double
+    assert date_col.semantic_tags == {'time_index', 'numeric'}

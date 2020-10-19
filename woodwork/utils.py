@@ -57,6 +57,20 @@ def col_is_datetime(col, datetime_format=None):
     return False
 
 
+def _is_numeric_series(series, logical_type):
+    '''
+    Determines whether a series supplied to the DataTable will be considered numeric.
+
+    '''
+    if logical_type is not None:
+        if isinstance(logical_type, str):
+            logical_type = ww.logical_types.str_to_logical_type(logical_type)
+    else:
+        logical_type = ww.data_column.infer_logical_type(series)
+
+    return 'numeric' in logical_type.standard_tags
+
+
 def list_logical_types():
     """Returns a dataframe describing all of the available Logical Types.
 

@@ -8,6 +8,7 @@ Release Notes
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
         * Add support for setting ranking order on columns with Ordinal logical type (:pr:`240`)
         * Add ``list_semantic_tags`` function and CLI to get dataframe of woodwork semantic_tags (:pr:`244`)
+        * Add support for numeric time index on DataTable (:pr:`267`)
     * Fixes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
@@ -20,6 +21,7 @@ Release Notes
         * Add types and tags one-sentence definitions to Understanding Types and Tags guide (:pr:`271`)
     * Testing Changes
         * Add automated process to check latest dependencies. (:pr:`268`)
+        * Add test for setting a time index with specified string logical type (:pr:`279`)
 
 Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
