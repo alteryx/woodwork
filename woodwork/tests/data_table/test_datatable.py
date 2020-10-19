@@ -89,8 +89,13 @@ def test_datatable_init_with_valid_string_time_index():
 
 
 def test_datatable_init_with_numeric_datetime_time_index():
-    df = pd.DataFrame({'ints': pd.Series([1, 2, 3])})
+    df = pd.DataFrame({'ints': pd.Series([1, 2, 3]),
+                       'strs': ['1', '2', '3']})
     dt = DataTable(df, time_index='ints', logical_types={'ints': Datetime})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, name='datatable', time_index='strs')
 
     assert dt.time_index == 'ints'
     assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
