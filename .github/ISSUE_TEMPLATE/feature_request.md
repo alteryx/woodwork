@@ -1,6 +1,6 @@
 #### Is your feature request related to a problem?
 
-[this should provide a description of what the problem is, e.g. "I wish I could use pandas to do [...]"]
+[this should provide a description of what the problem is, e.g. "I wish I could use Woodwork to do [...]"]
 
 #### Describe the solution you'd like
 
