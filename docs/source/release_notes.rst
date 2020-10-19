@@ -19,6 +19,7 @@ Release Notes
         * Update README.md with documentation link (:pr:`261`)
         * Add footer to doc pages with Alteryx Open Source (:pr:`258`)
         * Add types and tags one-sentence definitions to Understanding Types and Tags guide (:pr:`271`)
+        * Add issue and pull request templates (:pr:`280`)
     * Testing Changes
         * Add automated process to check latest dependencies. (:pr:`268`)
         * Add test for setting a time index with specified string logical type (:pr:`279`)
