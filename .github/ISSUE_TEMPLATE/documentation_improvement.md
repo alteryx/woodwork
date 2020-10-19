@@ -1,3 +1,12 @@
+---
+name: Documentation Improvment
+about: Suggest an idea for improving the documentation
+title: ''
+labels: 'documentation'
+assignees: ''
+
+---
+
 #### Location of the documentation
 
 [this should provide the location of the documentation, e.g. "woodwork.read_csv" or the URL of the documentation, e.g. "https://woodwork.alteryx.com/en/stable/generated/woodwork.data_table.DataTable.add_semantic_tags.html"]
