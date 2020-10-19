@@ -100,11 +100,6 @@ def test_datatable_with_numeric_datetime_time_index():
     assert dt.time_index == 'ints'
     assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
 
-    dt = DataTable(df, logical_types={'ints': Datetime})
-    dt = dt.set_time_index('ints')
-    assert dt.time_index == 'ints'
-    assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
-
 
 def test_datatable_with_numeric_time_index():
     df = pd.DataFrame({'numeric_datetime_index': [1, 2, 3],
