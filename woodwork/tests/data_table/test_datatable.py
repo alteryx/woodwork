@@ -88,7 +88,7 @@ def test_datatable_init_with_valid_string_time_index():
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
-def test_datatable_init_with_numeric_datetime_time_index():
+def test_datatable_with_numeric_datetime_time_index():
     df = pd.DataFrame({'ints': pd.Series([1, 2, 3]),
                        'strs': ['1', '2', '3']})
     dt = DataTable(df, time_index='ints', logical_types={'ints': Datetime})
@@ -97,6 +97,11 @@ def test_datatable_init_with_numeric_datetime_time_index():
     with pytest.raises(TypeError, match=error_msg):
         DataTable(df, name='datatable', time_index='strs')
 
+    assert dt.time_index == 'ints'
+    assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
+
+    dt = DataTable(df, logical_types={'ints': Datetime})
+    dt = dt.set_time_index('ints')
     assert dt.time_index == 'ints'
     assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
 
