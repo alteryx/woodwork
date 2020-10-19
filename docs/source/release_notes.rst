@@ -10,6 +10,7 @@ Release Notes
         * Add ``list_semantic_tags`` function and CLI to get dataframe of woodwork semantic_tags (:pr:`244`)
         * Add support for numeric time index on DataTable (:pr:`267`)
     * Fixes
+        * Allow numeric datetime time indices (:pr:`282`)
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
         * Make results of ``get_mutual_information`` more clear by sorting and removing self calculation (:pr:`247`)
@@ -21,6 +22,7 @@ Release Notes
         * Add issue and pull request templates (:pr:`280`)
     * Testing Changes
         * Add automated process to check latest dependencies. (:pr:`268`)
+        * Add test for setting a time index with specified string logical type (:pr:`279`)
 
 Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`

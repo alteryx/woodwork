@@ -88,6 +88,19 @@ def test_datatable_init_with_valid_string_time_index():
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
+def test_datatable_with_numeric_datetime_time_index():
+    df = pd.DataFrame({'ints': pd.Series([1, 2, 3]),
+                       'strs': ['1', '2', '3']})
+    dt = DataTable(df, time_index='ints', logical_types={'ints': Datetime})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, name='datatable', time_index='strs')
+
+    assert dt.time_index == 'ints'
+    assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
+
+
 def test_datatable_with_numeric_time_index():
     df = pd.DataFrame({'numeric_datetime_index': [1, 2, 3],
                        'normal_dates': ['2020-01-01', '2020-01-02', '2020-01-03']})
@@ -157,13 +170,16 @@ def test_datatable_init_with_string_logical_types(sample_df):
 
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'age': 'WholeNumber'
+        'age': 'WholeNumber',
+        'signup_date': 'Datetime'
     }
     dt = DataTable(sample_df,
                    name='datatable',
-                   logical_types=logical_types)
+                   logical_types=logical_types,
+                   time_index='signup_date')
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['age'].logical_type == WholeNumber
+    assert dt.time_index == 'signup_date'
 
 
 def test_datatable_init_with_semantic_tags(sample_df):
