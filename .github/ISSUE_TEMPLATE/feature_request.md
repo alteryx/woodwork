@@ -1,16 +1,20 @@
-#### Is your feature request related to a problem?
+---
+name: Feature request
+about: Suggest an idea for this project
+title: ''
+labels: ''
+assignees: ''
 
-[this should provide a description of what the problem is, e.g. "I wish I could use Woodwork to do [...]"]
+---
 
-#### Describe the solution you'd like
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-[this should provide a description of the feature request, e.g. "`DataTable.foo` should get a new parameter `bar` that [...]", try to write a docstring for the desired feature]
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen.
 
-#### Additional context
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
 
-[add any other context, code examples, or references to existing implementations about the feature request here]
-
-```python
-# Your code here, if applicable
-
-```
+**Additional context**
+Add any other context or screenshots about the feature request here.
