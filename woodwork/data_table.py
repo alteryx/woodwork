@@ -755,6 +755,15 @@ class DataTable(object):
         '''
         return serialize.datatable_to_metadata(self)
 
+    def save_metadata(self, path):
+        '''
+        Save a DataTable's metadata
+
+        Args:
+            path (str) : Location on disk or S3 path to write `table_metadata.json`
+        '''
+        serialize.write_data(self, path)
+
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
