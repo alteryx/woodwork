@@ -189,3 +189,9 @@ def _get_ltype_class(ltype):
     if ltype in ww.logical_types.LogicalType.__subclasses__():
         return ltype
     return ltype.__class__
+
+
+def _get_ltype_args(ltype):
+    if ltype in ww.logical_types.LogicalType.__subclasses__():
+        return ltype().__dict__
+    return ltype.__dict__

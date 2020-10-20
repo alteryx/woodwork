@@ -11,6 +11,7 @@ from woodwork.logical_types import (
     LogicalType,
     str_to_logical_type
 )
+import woodwork.serialize as serialize
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
@@ -694,6 +695,15 @@ class DataTable(object):
         if not mutual_info:
             return mi
         return mi.sort_values('mutual_info', ascending=False)
+
+    def get_metadata(self):
+        '''
+        Get a DataTable's metadata
+
+        Returns:
+            metadata (dict) : Description of :class:`.DataTable`.            
+        '''
+        return serialize.datatable_to_metadata(self)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
