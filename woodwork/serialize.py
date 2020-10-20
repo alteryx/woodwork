@@ -1,10 +1,20 @@
+import datetime
 import json
 import os
+import tarfile
+import tempfile
 
-from woodwork.utils import _get_ltype_class, _get_ltype_params
 from .version import __version__
 
-FEATURETOOLS_VERSION = '0.20.0'  # shouldnt have to hardcode this
+from woodwork.s3_utils import (
+    _is_s3,
+    _is_url,
+    get_transport_params,
+    use_smartopen_es
+)
+from woodwork.utils import _get_ltype_class, _get_ltype_params
+
+FEATURETOOLS_VERSION = '0.20.0'  # --> shouldnt have to hardcode this
 SCHEMA_VERSION = '1.0.0'
 
 
@@ -34,15 +44,34 @@ def datatable_to_metadata(datatable):
     }
 
 
-def write_data(datatable, path):
-    # get working locally and then add s3
-    path = os.path.abspath(path)
-    dump_table_metadata(datatable, path)
+def write_table_metadata(datatable, path, profile_name=None, **kwargs):
+    if _is_s3(path):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.makedirs(os.path.join(tmpdir, 'data'))
+            dump_table_metadata(datatable, tmpdir, **kwargs)
+            file_path = create_archive(tmpdir)
+
+            transport_params = get_transport_params(profile_name)
+            use_smartopen_es(file_path, path, read=False, transport_params=transport_params)
+    elif _is_url(path):
+        raise ValueError("Writing to URLs is not supported")
+    else:
+        path = os.path.abspath(path)
+        dump_table_metadata(datatable, path)
 
 
-def dump_table_metadata(datatable, path):
-    metadata = datatable_to_metadata(datatable)
+def dump_table_metadata(datatable, path, **kwargs):
     file = os.path.join(path, 'table_metadata.json')
 
     with open(file, 'w') as file:
-        json.dump(metadata, file)
+        json.dump(datatable_to_metadata(datatable), file)
+
+
+def create_archive(tmpdir):
+    file_name = "es-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
+    file_path = os.path.join(tmpdir, file_name)
+    tar = tarfile.open(str(file_path), 'w')
+    tar.add(str(tmpdir) + '/data_description.json', arcname='/data_description.json')
+    tar.add(str(tmpdir) + '/data', arcname='/data')
+    tar.close()
+    return file_path
