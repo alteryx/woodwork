@@ -1,3 +1,4 @@
+import importlib
 import re
 from datetime import datetime
 
@@ -201,3 +202,18 @@ def _get_ltype_params(ltype):
     if ltype in ww.logical_types.LogicalType.__subclasses__():
         return ltype().__dict__
     return ltype.__dict__
+
+
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportErorr with the supplied
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)
