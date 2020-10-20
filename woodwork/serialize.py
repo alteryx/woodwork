@@ -24,7 +24,7 @@ def datatable_to_metadata(datatable):
                 'type': str(_get_ltype_class(col.logical_type))
             },
             'physical_type': {
-                'parameters': {},  # --> col.to_pandas().dtype.__dict__ works for some but not all
+                'parameters': {},  # --> col.to_pandas().dtype.__dict__ works for some but not all - hasattr(col.dtype, "__dict__")
                 'type': str(col.dtype)
             },
             'semantic_tags': sorted(list(col.semantic_tags))
