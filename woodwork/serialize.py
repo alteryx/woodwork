@@ -6,13 +6,8 @@ import tempfile
 
 from .version import __version__
 
-from woodwork.s3_utils import (
-    _is_s3,
-    _is_url,
-    get_transport_params,
-    use_smartopen_es
-)
-from woodwork.utils import _get_ltype_class, _get_ltype_params
+from woodwork.s3_utils import get_transport_params, use_smartopen_es
+from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
 
 FEATURETOOLS_VERSION = '0.20.0'  # --> shouldnt have to hardcode this
 SCHEMA_VERSION = '1.0.0'
@@ -20,9 +15,10 @@ SCHEMA_VERSION = '1.0.0'
 
 def datatable_to_metadata(datatable):
     dt_metadata = [
-        {'name': col_name,
+        {
+            'name': col.name,
             'nullable': bool(col.to_pandas().isnull().any()),  # --> not sure this is what we mean by nullable
-            'ordinal': datatable.to_pandas().columns.get_loc(col_name),
+            'ordinal': datatable.to_pandas().columns.get_loc(col.name),
             'logical_type': {
                 'parameters': _get_ltype_params(col.logical_type),
                 'type': str(_get_ltype_class(col.logical_type))
@@ -31,8 +27,9 @@ def datatable_to_metadata(datatable):
                 'parameters': {},  # --> col.to_pandas().dtype.__dict__ works for some but not all
                 'type': str(col.dtype)
             },
-            'tags': sorted(list(col.semantic_tags))}
-        for col_name, col in datatable.columns.items()
+            'semantic_tags': sorted(list(col.semantic_tags))
+        }
+        for col in datatable.columns.values()
     ]
 
     return {
