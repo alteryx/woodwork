@@ -1239,6 +1239,19 @@ def test_pop(sample_df):
     assert 'custom_tag' in datacol.semantic_tags
     assert datacol.to_pandas().values == [33, 25, 33]
 
+    assert 'age' not in dt._dataframe.columns
+    assert 'age' not in dt.columns
+
+    assert 'age' not in dt.logical_types.keys()
+    assert 'age' not in dt.semantic_tags.keys()
+
+
+def test_pop_index(sample_df):
+    dt = DataTable(sample_df, index='id', name='dt_name')
+    assert dt.index == 'id'
+    dt.pop('id')
+    assert dt.index is None
+
 
 def test_pop_error(sample_df):
     dt = DataTable(sample_df,
@@ -1249,6 +1262,7 @@ def test_pop_error(sample_df):
 
     with pytest.raises(KeyError, match="Column with name \'missing\' not found in DataTable"):
         dt.pop("missing")
+
 
 def test_getitem(sample_df):
     dt = DataTable(sample_df,

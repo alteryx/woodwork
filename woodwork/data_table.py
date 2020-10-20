@@ -230,6 +230,8 @@ class DataTable(object):
                 carried over from DataTable.
         """
         col = self[column_name]
+        del self.columns[column_name]
+        self._dataframe.pop(column_name)
         return col
 
     def set_index(self, index):
