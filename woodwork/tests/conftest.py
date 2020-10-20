@@ -61,7 +61,9 @@ def sample_datetime_series_dask(sample_datetime_series_pandas):
 def time_index_df_pandas():
     return pd.DataFrame({
         'id': [0, 1, 2, 3],
-        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA]
+        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA],
+        'ints': [1, 2, 3, 4],
+        'strs': ['1', '2', '3', '4'],
     })
 
 
