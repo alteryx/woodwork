@@ -10,6 +10,7 @@ Release Notes
         * Add ``list_semantic_tags`` function and CLI to get dataframe of woodwork semantic_tags (:pr:`244`)
         * Add support for numeric time index on DataTable (:pr:`267`)
         * Add pop method to DataTable (:pr:`289`)
+        * Add entry point to setup.py to run CLI commands (:pr:`285`)
     * Fixes
         * Allow numeric datetime time indices (:pr:`282`)
     * Changes
