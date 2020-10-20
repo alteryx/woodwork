@@ -94,7 +94,7 @@ def test_datatable_with_numeric_datetime_time_index(time_index_df):
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
-        DataTable(time_index_df, name='datatable', time_index='strs')
+        DataTable(time_index_df, name='datatable', time_index='strs', logical_types={'strs': Datetime})
 
     assert dt.time_index == 'ints'
     assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
@@ -2210,15 +2210,8 @@ def test_make_index(sample_df):
     assert 'index' in dt.columns['new_index'].semantic_tags
 
 
-def test_numeric_time_index_dtypes():
-    df = pd.DataFrame({
-        'whole_numbers': pd.Series([1, 2, 3], dtype='int8'),
-        'floats': pd.Series([1, 2, 3], dtype='float'),
-        'ints': pd.Series([1, -2, 3], dtype='Int64'),
-        'with_null': pd.Series([1, 2, pd.NA], dtype='Int64'),
-    })
-
-    dt = DataTable(df, time_index='whole_numbers')
+def test_numeric_time_index_dtypes(numeric_time_index_df):
+    dt = DataTable(numeric_time_index_df, time_index='whole_numbers')
     date_col = dt['whole_numbers']
     assert dt.time_index == 'whole_numbers'
     assert date_col.logical_type == WholeNumber
@@ -2243,7 +2236,7 @@ def test_numeric_time_index_dtypes():
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-def test_numeric_index_strings():
+def test_numeric_index_strings(time_index_df):
     df = pd.DataFrame({'strs': pd.Series(['1', '2', '3']),
                        'ints': pd.Series([1, 2, 3])})
 
