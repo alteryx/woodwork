@@ -1228,6 +1228,28 @@ def test_select_semantic_tags_warning(sample_df):
     assert len(dt_single.columns) == 3
 
 
+def test_pop(sample_df):
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types={'age': WholeNumber},
+                   semantic_tags={'age': 'custom_tag'},
+                   use_standard_tags=True)
+    datacol = dt.pop('age')
+    assert isinstance(datacol, DataColumn)
+    assert 'custom_tag' in datacol.semantic_tags
+    assert datacol.to_pandas().values == [33, 25, 33]
+
+
+def test_pop_error(sample_df):
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types={'age': WholeNumber},
+                   semantic_tags={'age': 'custom_tag'},
+                   use_standard_tags=True)
+
+    with pytest.raises(KeyError, match="Column with name \'missing\' not found in DataTable"):
+        dt.pop("missing")
+
 def test_getitem(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
