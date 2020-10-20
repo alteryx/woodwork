@@ -35,3 +35,8 @@ installdeps-test:
 .PHONY: installdeps-dev
 installdeps-dev:
 	pip install -r dev-requirements.txt
+
+.PHONY: checkdeps
+checkdeps:
+	$(eval allow_list='numpy|pandas|scikit|click')
+	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)

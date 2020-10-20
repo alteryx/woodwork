@@ -8,7 +8,9 @@ Release Notes
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
         * Add support for setting ranking order on columns with Ordinal logical type (:pr:`240`)
         * Add ``list_semantic_tags`` function and CLI to get dataframe of woodwork semantic_tags (:pr:`244`)
+        * Add support for numeric time index on DataTable (:pr:`267`)
     * Fixes
+        * Allow numeric datetime time indices (:pr:`282`)
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
         * Make results of ``get_mutual_information`` more clear by sorting and removing self calculation (:pr:`247`)
@@ -21,7 +23,10 @@ Release Notes
         * Update README.md with documentation link (:pr:`261`)
         * Add footer to doc pages with Alteryx Open Source (:pr:`258`)
         * Add types and tags one-sentence definitions to Understanding Types and Tags guide (:pr:`271`)
+        * Add issue and pull request templates (:pr:`280`, :pr:`284`)
     * Testing Changes
+        * Add automated process to check latest dependencies. (:pr:`268`)
+        * Add test for setting a time index with specified string logical type (:pr:`279`)
 
 Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
