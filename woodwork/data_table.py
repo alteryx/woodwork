@@ -220,18 +220,17 @@ class DataTable(object):
             self._dataframe[name] = column._series
 
     def pop(self, column_name):
-        """Returns column as `data_column` and drops it from the table.
+        """Return a DataColumn and drop it from the DataTable.
 
         Args:
-            column (str): The desired column to pop.
+            column (str): Name of the column to pop.
 
         Returns:
-            woodwork.DataColumn: DataColumn popped from Table including logical type and semantic tags
-                carried over from DataTable.
+            woodwork.DataColumn: DataColumn including logical type and semantic tags.
         """
         col = self[column_name]
         del self.columns[column_name]
-        self._dataframe.drop([column_name], axis=1, inplace=True)
+        self._dataframe.drop(column_name, axis=1, inplace=True)
         return col
 
     def set_index(self, index):

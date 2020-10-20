@@ -1238,8 +1238,9 @@ def test_pop(sample_df):
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
     assert datacol.to_pandas().values == [33, 25, 33]
+    assert datacol.logical_type == WholeNumber
 
-    assert 'age' not in dt._dataframe.columns
+    assert 'age' not in dt.to_pandas().columns
     assert 'age' not in dt.columns
 
     assert 'age' not in dt.logical_types.keys()
@@ -1249,8 +1250,9 @@ def test_pop(sample_df):
 def test_pop_index(sample_df):
     dt = DataTable(sample_df, index='id', name='dt_name')
     assert dt.index == 'id'
-    dt.pop('id')
+    id_col = dt.pop('id')
     assert dt.index is None
+    assert 'index' in id_col.semantic_tags
 
 
 def test_pop_error(sample_df):
