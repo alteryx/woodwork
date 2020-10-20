@@ -9,6 +9,7 @@ Release Notes
         * Add support for setting ranking order on columns with Ordinal logical type (:pr:`240`)
         * Add ``list_semantic_tags`` function and CLI to get dataframe of woodwork semantic_tags (:pr:`244`)
         * Add support for numeric time index on DataTable (:pr:`267`)
+        * Add pop method to DataTable (:pr:`289`)
     * Fixes
         * Allow numeric datetime time indices (:pr:`282`)
     * Changes
