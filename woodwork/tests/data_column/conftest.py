@@ -103,6 +103,11 @@ def datetimes(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture()
+def datetime_series(datetimes):
+    return datetimes[1]
+
+
 # Categorical Inference Fixtures
 @pytest.fixture
 def pandas_categories():

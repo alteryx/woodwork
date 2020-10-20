@@ -55,3 +55,21 @@ def sample_datetime_series_pandas():
 @pytest.fixture()
 def sample_datetime_series_dask(sample_datetime_series_pandas):
     return dd.from_pandas(sample_datetime_series_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def time_index_df_pandas():
+    return pd.DataFrame({
+        'id': [0, 1, 2, 3],
+        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA]
+    })
+
+
+@pytest.fixture()
+def time_index_df_dask(time_index_df_pandas):
+    return dd.from_pandas(time_index_df_pandas, npartitions=2)
+
+
+@pytest.fixture(params=['time_index_df_pandas', 'time_index_df_dask'])
+def time_index_df(request):
+    return request.getfixturevalue(request.param)

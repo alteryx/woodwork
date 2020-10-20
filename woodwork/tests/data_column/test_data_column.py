@@ -387,8 +387,8 @@ def test_to_pandas_with_copy(sample_series):
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
-def test_dtype_update_on_init():
-    dc = DataColumn(pd.Series(["2020-09-10", "2020-01-10 00:00:00", "01/01/2000 08:30"]),
+def test_dtype_update_on_init(datetime_series):
+    dc = DataColumn(datetime_series,
                     logical_type='DateTime')
     assert dc._series.dtype == 'datetime64[ns]'
 

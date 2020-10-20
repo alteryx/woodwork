@@ -71,7 +71,12 @@ class DataColumn(object):
             # Update the underlying series
             try:
                 if _get_ltype_class(self.logical_type) == Datetime:
-                    self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                    if isinstance(self._series, dd.Series):
+                        name = self._series.name
+                        self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                        self._series.name = name
+                    else:
+                        self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
                     self._series = self._series.astype(self.logical_type.pandas_dtype)
             except TypeError:
