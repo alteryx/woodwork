@@ -378,9 +378,13 @@ class DataTable(object):
         Returns:
             pandas.DataFrame: The underlying dataframe of the DataTable
         """
-        if copy:
-            return self._dataframe.copy()
-        return self._dataframe
+        if self.index is None:
+            if copy:
+                return self._dataframe.copy()
+            else:
+                return self._dataframe
+        else:
+            return self._dataframe.set_index(self.index, drop=False)
 
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
@@ -763,8 +767,6 @@ def _update_index(data_table, index, old_index=None):
     can be used as an index."""
     _check_index(data_table._dataframe, index)
     data_table.columns[index]._set_as_index()
-    if isinstance(data_table._dataframe, pd.DataFrame):
-        data_table._dataframe = data_table._dataframe.set_index(index, drop=False)
     if old_index:
         data_table._update_columns({old_index: data_table.columns[old_index].remove_semantic_tags('index')})
 
