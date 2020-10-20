@@ -3,6 +3,7 @@ import warnings
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
+import woodwork.serialize as serialize
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
     Boolean,
@@ -11,7 +12,6 @@ from woodwork.logical_types import (
     LogicalType,
     str_to_logical_type
 )
-import woodwork.serialize as serialize
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
@@ -705,7 +705,7 @@ class DataTable(object):
         Get a DataTable's metadata
 
         Returns:
-            metadata (dict) : Description of :class:`.DataTable`.            
+            metadata (dict) : Description of :class:`.DataTable`.
         '''
         return serialize.datatable_to_metadata(self)
 
@@ -716,7 +716,7 @@ class DataTable(object):
         Args:
             path (str) : Location on disk or S3 path to write `table_metadata.json`
         '''
-        serialize.write_data(self, path)
+        serialize.write_table_metadata(self, path)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
