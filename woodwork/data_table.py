@@ -231,7 +231,7 @@ class DataTable(object):
         """
         col = self[column_name]
         del self.columns[column_name]
-        self._dataframe.pop(column_name)
+        self._dataframe.drop([column_name], axis=1, inplace=True)
         return col
 
     def set_index(self, index):
