@@ -29,6 +29,11 @@ setup(
     python_requires='>=3.6, <4',
     keywords='data science machine learning typing',
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'woodwork = woodwork.__main__:cli'
+        ]
+    },
     long_description=long_description,
     long_description_content_type='text/markdown'
 )
