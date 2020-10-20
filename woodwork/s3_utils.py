@@ -1,4 +1,3 @@
-import json
 import shutil
 
 from woodwork.utils import import_or_raise
