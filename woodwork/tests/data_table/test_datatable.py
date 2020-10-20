@@ -240,8 +240,6 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
-    if isinstance(sample_df, dd.DataFrame):
-        pytest.xfail('fails with dask - need to update column dtype conversion for dates')
     sample_df['formatted_date'] = pd.Series(["2019~01~01", "2019~01~02", "2019~01~03"])
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
     dt = DataTable(sample_df, logical_types={'formatted_date': ymd_format})
