@@ -2237,28 +2237,21 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
 
 
 def test_numeric_index_strings(time_index_df):
-    df = pd.DataFrame({'strs': pd.Series(['1', '2', '3']),
-                       'ints': pd.Series([1, 2, 3])})
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(time_index_df, time_index='strs')
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, time_index='strs')
+        DataTable(time_index_df, time_index='ints', logical_types={'ints': 'Categorical'})
 
-    error_msg = 'Error converting datatype for column strs from type object to type Int64. Please confirm the underlying data is consistent with logical type Integer.'
-    with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, time_index='strs', logical_types={'strs': 'Integer'})
-
-    error_msg = 'Time index column must contain datetime or numeric values'
-    with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, time_index='ints', logical_types={'ints': 'Categorical'})
-
-    dt = DataTable(df, time_index='strs', logical_types={'strs': 'Double'})
+    dt = DataTable(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
     date_col = dt['strs']
     assert dt.time_index == 'strs'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
-    dt = DataTable(df, logical_types={'strs': 'Double'})
+    dt = DataTable(time_index_df, logical_types={'strs': 'Double'})
     dt = dt.set_time_index('strs')
     date_col = dt['strs']
     assert dt.time_index == 'strs'

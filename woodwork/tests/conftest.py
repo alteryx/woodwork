@@ -80,7 +80,7 @@ def time_index_df(request):
 @pytest.fixture()
 def numeric_time_index_df_pandas():
     return pd.DataFrame({
-        'whole_numbers': pd.Series([1, 2, 3, 4], dtype='int8'),
+        'whole_numbers': pd.Series([1, 2, 3, 4], dtype='Int64'),
         'floats': pd.Series([1, 2, 3, 4], dtype='float'),
         'ints': pd.Series([1, -2, 3, 4], dtype='Int64'),
         'with_null': pd.Series([1, 2, pd.NA, 4], dtype='Int64'),
