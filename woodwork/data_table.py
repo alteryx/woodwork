@@ -531,15 +531,18 @@ class DataTable(object):
 
         results = {}
 
+        if isinstance(self._dataframe, dd.DataFrame):
+            df = self._dataframe.compute()
+        else:
+            df = self._dataframe
+
         for column_name, column in cols_to_include:
             if 'index' in column.semantic_tags:
                 continue
             values = {}
             logical_type = column.logical_type
             semantic_tags = column.semantic_tags
-            series = column._series
-            if isinstance(series, dd.Series):
-                series = series.compute()
+            series = df[column_name]
 
             # Calculate Aggregation Stats
             if column._is_categorical():
