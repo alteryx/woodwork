@@ -61,7 +61,9 @@ def sample_datetime_series_dask(sample_datetime_series_pandas):
 def time_index_df_pandas():
     return pd.DataFrame({
         'id': [0, 1, 2, 3],
-        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA]
+        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA],
+        'ints': [1, 2, 3, 4],
+        'strs': ['1', '2', '3', '4'],
     })
 
 
@@ -72,4 +74,24 @@ def time_index_df_dask(time_index_df_pandas):
 
 @pytest.fixture(params=['time_index_df_pandas', 'time_index_df_dask'])
 def time_index_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def numeric_time_index_df_pandas():
+    return pd.DataFrame({
+        'whole_numbers': pd.Series([1, 2, 3, 4], dtype='Int64'),
+        'floats': pd.Series([1, 2, 3, 4], dtype='float'),
+        'ints': pd.Series([1, -2, 3, 4], dtype='Int64'),
+        'with_null': pd.Series([1, 2, pd.NA, 4], dtype='Int64'),
+    })
+
+
+@pytest.fixture()
+def numeric_time_index_df_dask(numeric_time_index_df_pandas):
+    return dd.from_pandas(numeric_time_index_df_pandas, npartitions=2)
+
+
+@pytest.fixture(params=['numeric_time_index_df_pandas', 'numeric_time_index_df_dask'])
+def numeric_time_index_df(request):
     return request.getfixturevalue(request.param)
