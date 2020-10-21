@@ -2,13 +2,13 @@
 # import os
 
 # import boto3
-import pandas as pd
+# import pandas as pd
 
 # import pytest
 # import woodwork.serialize as serialize
 import woodwork.deserialize as deserialize
 from woodwork import DataTable
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, Ordinal
 
 # BUCKET_NAME = "test-bucket"
 # WRITE_KEY_NAME = "test-key"
@@ -19,18 +19,14 @@ from woodwork.logical_types import Datetime
 # TEST_KEY = "test_access_key_es"
 
 
-def test_table_metadata():
-    df = pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
-        'bools': [True, False, False],
-        'categories': pd.Series(['hi', 'bye', None]),
-        'dates': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03']),
-        'dates2': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03']),
-    })
+def test_save_table_metadata(sample_df, tmpdir):
     date = Datetime(datetime_format='%Y-%m-%d')
-    dt = DataTable(df, index='ints', semantic_tags={'ints': 'tag1'}, logical_types={'dates': date})
+    dt = DataTable(sample_df,
+                   index='id',
+                   semantic_tags={'id': 'tag1'},
+                   logical_types={'signup_date': date, 'age': Ordinal(order=[25, 33])})
 
-    path = '../datatables/testing-dir'  # --> need to use a generalized tmpdir
+    path = str(tmpdir)
 
     dt.save_metadata(path)
     serialized = dt.get_metadata()
@@ -38,6 +34,7 @@ def test_table_metadata():
 
     for key in serialized.keys():
         assert serialized[key] == deserialized[key]
+
 
 # test saving locally
 # test storing and retreiving from s3 the same dt
