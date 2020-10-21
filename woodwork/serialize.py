@@ -31,13 +31,16 @@ def datatable_to_metadata(datatable):
     ]
 
     return {
-        'name': datatable.name,
         'woodwork_version': __version__,
         'schema_version': SCHEMA_VERSION,
+        'name': datatable.name,
+        'index': datatable.index,
+        'time_index': datatable.time_index,
         'metadata': dt_metadata
     }
 
 
+# --> next two functions will be useful for adding csv/parquet/pickle
 def write_table_metadata(datatable, path, profile_name=None, **kwargs):
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
