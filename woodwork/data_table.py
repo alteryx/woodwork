@@ -538,6 +538,8 @@ class DataTable(object):
             logical_type = column.logical_type
             semantic_tags = column.semantic_tags
             series = column._series
+            if isinstance(series, dd.Series):
+                series = series.compute()
 
             # Calculate Aggregation Stats
             if column._is_categorical():

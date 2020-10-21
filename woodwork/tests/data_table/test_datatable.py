@@ -1807,15 +1807,13 @@ def test_to_pandas_copy(sample_df):
     assert 'test_col' not in dt.columns
 
 
-def test_describe_does_not_include_index():
-    df = pd.DataFrame({'index_col': [0, 1, 2],
-                       'values': [10, 20.3, 5]})
-    dt = DataTable(df, index='index_col')
+def test_describe_does_not_include_index(describe_df):
+    dt = DataTable(describe_df, index='index_col')
     stats_df = dt.describe()
     assert 'index_col' not in stats_df.columns
 
 
-def test_data_table_describe_method():
+def test_datatable_describe_method(describe_df):
     categorical_ltypes = [Categorical,
                           CountryCode,
                           Ordinal(order=('yellow', 'red', 'blue')),
@@ -1828,37 +1826,6 @@ def test_data_table_describe_method():
     numeric_ltypes = [Double, Integer, WholeNumber]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
                                LatLong, PhoneNumber, URL]
-
-    boolean_data = [True, False, True, True, False, True, np.nan, True]
-    category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
-    datetime_data = pd.to_datetime(['2020-01-01',
-                                    '2020-02-01',
-                                    '2020-01-01 08:00',
-                                    '2020-02-02 16:00',
-                                    '2020-02-02 18:00',
-                                    pd.NaT,
-                                    '2020-02-01',
-                                    '2020-01-02'])
-    formatted_datetime_data = pd.Series(['2020~01~01',
-                                         '2020~02~01',
-                                         '2020~03~01',
-                                         '2020~02~02',
-                                         '2020~03~02',
-                                         pd.NaT,
-                                         '2020~02~01',
-                                         '2020~01~02'])
-    numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
-    natural_language_data = [
-        'This is a natural language sentence',
-        'Duplicate sentence.',
-        'This line has numbers in it 000123.',
-        'How about some symbols?!',
-        'This entry contains two sentences. Second sentence.',
-        'Duplicate sentence.',
-        np.nan,
-        'I am the last line',
-    ]
-    timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
 
     expected_index = ['physical_type',
                       'logical_type',
@@ -1878,6 +1845,7 @@ def test_data_table_describe_method():
                       'num_false']
 
     # Test categorical columns
+    category_data = describe_df['category_col']
     for ltype in categorical_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1896,6 +1864,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test boolean columns
+    boolean_data = describe_df['boolean_col']
     for ltype in boolean_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1916,6 +1885,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test datetime columns
+    datetime_data = describe_df['datetime_col']
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1924,10 +1894,10 @@ def test_data_table_describe_method():
             'count': 7,
             'nunique': 6,
             'nan_count': 1,
-            'mean': datetime_data.mean(),
-            'mode': pd.to_datetime('2020-02-01'),
-            'min': datetime_data.min(),
-            'max': datetime_data.max()}, name='col')
+            'mean': pd.Timestamp('2020-01-19 09:25:42.857142784'),
+            'mode': pd.Timestamp('2020-02-01 00:00:00'),
+            'min': pd.Timestamp('2020-01-01 00:00:00'),
+            'max': pd.Timestamp('2020-02-02 18:00:00')}, name='col')
         df = pd.DataFrame({'col': datetime_data})
         dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
@@ -1937,6 +1907,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test formatted datetime columns
+    formatted_datetime_data = describe_df['formatted_datetime_col']
     for ltype in formatted_datetime_ltypes:
         converted_to_datetime = pd.to_datetime(['2020-01-01',
                                                 '2020-02-01',
@@ -1966,6 +1937,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['formatted_col'].dropna())
 
     # Test timedelta columns
+    timedelta_data = describe_df['timedelta_col']
     for ltype in timedelta_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1983,6 +1955,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test numeric columns
+    numeric_data = describe_df['numeric_col']
     for ltype in numeric_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -2008,6 +1981,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test natural language columns
+    natural_language_data = describe_df['natural_language_col']
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -2025,56 +1999,51 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
 
-def test_datatable_describe_with_improper_tags():
-    df = pd.DataFrame({'bool_col': [True, False, True, np.nan, True],
-                       'text_col': ['one', 'two', 'three', 'four', 'five']})
+def test_datatable_describe_with_improper_tags(describe_df):
+    df = describe_df.copy()[['boolean_col', 'natural_language_col']]
 
     logical_types = {
-        'bool_col': Boolean,
-        'text_col': NaturalLanguage,
+        'boolean_col': Boolean,
+        'natural_language_col': NaturalLanguage,
     }
     semantic_tags = {
-        'bool_col': 'category',
-        'text_col': 'numeric',
+        'boolean_col': 'category',
+        'natural_language_col': 'numeric',
     }
 
     dt = DataTable(df, logical_types=logical_types, semantic_tags=semantic_tags)
     stats_df = dt.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert stats_df['bool_col']['logical_type'] == Boolean
-    assert stats_df['bool_col']['semantic_tags'] == {'category'}
+    assert stats_df['boolean_col']['logical_type'] == Boolean
+    assert stats_df['boolean_col']['semantic_tags'] == {'category'}
     # Make sure numeric stats were not computed with improper 'numeric' tag
-    assert stats_df['text_col']['semantic_tags'] == {'numeric'}
-    assert stats_df['text_col'][['mean', 'std', 'min', 'max']].isnull().all()
+    assert stats_df['natural_language_col']['semantic_tags'] == {'numeric'}
+    assert stats_df['natural_language_col'][['mean', 'std', 'min', 'max']].isnull().all()
 
 
-def test_datatable_describe_with_no_semantic_tags():
-    df = pd.DataFrame({'category_col': ['a', 'b', 'c', 'a', 'a'],
-                       'num_col': [1, 3, 2, 4, 0]})
+def test_datatable_describe_with_no_semantic_tags(describe_df):
+    df = describe_df.copy()[['category_col', 'numeric_col']]
 
     logical_types = {
         'category_col': Categorical,
-        'num_col': WholeNumber,
+        'numeric_col': WholeNumber,
     }
 
     dt = DataTable(df, logical_types=logical_types, use_standard_tags=False)
     stats_df = dt.describe()
     assert dt['category_col'].semantic_tags == set()
-    assert dt['num_col'].semantic_tags == set()
+    assert dt['numeric_col'].semantic_tags == set()
 
     # Make sure category stats were computed
     assert stats_df['category_col']['semantic_tags'] == set()
     assert stats_df['category_col']['nunique'] == 3
     # Make sure numeric stats were computed
-    assert stats_df['num_col']['semantic_tags'] == set()
-    assert stats_df['num_col']['mean'] == 2
+    assert stats_df['numeric_col']['semantic_tags'] == set()
+    np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 20.85714, 5)
 
 
 def test_data_table_describe_with_include(sample_df):
-    if isinstance(sample_df, dd.DataFrame):
-        pytest.xfail('describe method not implemented for Dask dataframes')
-
     semantic_tags = {
         'full_name': 'tag1',
         'email': ['tag2'],
@@ -2103,9 +2072,6 @@ def test_data_table_describe_with_include(sample_df):
 
 
 def test_data_table_describe_with_include_error(sample_df):
-    if isinstance(sample_df, dd.DataFrame):
-        pytest.xfail('describe method not implemented for Dask dataframes')
-
     dt = DataTable(sample_df)
     match = 'no columns matched the given include filters.'
     warning = 'The following selectors were not present in your DataTable: '

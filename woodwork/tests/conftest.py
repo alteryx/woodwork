@@ -95,3 +95,59 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 @pytest.fixture(params=['numeric_time_index_df_pandas', 'numeric_time_index_df_dask'])
 def numeric_time_index_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def describe_df_pandas():
+    index_data = [0, 1, 2, 3, 4, 5, 6, 7]
+    boolean_data = [True, False, True, True, False, True, np.nan, True]
+    category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
+    datetime_data = pd.to_datetime(['2020-01-01',
+                                    '2020-02-01',
+                                    '2020-01-01 08:00',
+                                    '2020-02-02 16:00',
+                                    '2020-02-02 18:00',
+                                    pd.NaT,
+                                    '2020-02-01',
+                                    '2020-01-02'])
+    formatted_datetime_data = pd.Series(['2020~01~01',
+                                         '2020~02~01',
+                                         '2020~03~01',
+                                         '2020~02~02',
+                                         '2020~03~02',
+                                         pd.NaT,
+                                         '2020~02~01',
+                                         '2020~01~02'])
+    numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
+    natural_language_data = [
+        'This is a natural language sentence',
+        'Duplicate sentence.',
+        'This line has numbers in it 000123.',
+        'How about some symbols?!',
+        'This entry contains two sentences. Second sentence.',
+        'Duplicate sentence.',
+        np.nan,
+        'I am the last line',
+    ]
+    timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
+
+    return pd.DataFrame({
+        'index_col': index_data,
+        'boolean_col': boolean_data,
+        'category_col': category_data,
+        'datetime_col': datetime_data,
+        'formatted_datetime_col': formatted_datetime_data,
+        'numeric_col': numeric_data,
+        'natural_language_col': natural_language_data,
+        'timedelta_col': timedelta_data,
+    })
+
+
+@pytest.fixture()
+def describe_df_dask(describe_df_pandas):
+    return dd.from_pandas(describe_df_pandas, npartitions=2)
+
+
+@pytest.fixture(params=['describe_df_pandas', 'describe_df_dask'])
+def describe_df(request):
+    return request.getfixturevalue(request.param)
