@@ -4,8 +4,6 @@ import os
 import tarfile
 import tempfile
 
-from .version import __version__
-
 from woodwork.s3_utils import get_transport_params, use_smartopen_es
 from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
 
@@ -31,7 +29,6 @@ def datatable_to_metadata(datatable):
     ]
 
     return {
-        'woodwork_version': __version__,
         'schema_version': SCHEMA_VERSION,
         'name': datatable.name,
         'index': datatable.index,
