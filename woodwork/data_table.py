@@ -224,6 +224,20 @@ class DataTable(object):
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
 
+    def pop(self, column_name):
+        """Return a DataColumn and drop it from the DataTable.
+
+        Args:
+            column (str): Name of the column to pop.
+
+        Returns:
+            woodwork.DataColumn: DataColumn including logical type and semantic tags.
+        """
+        col = self[column_name]
+        del self.columns[column_name]
+        self._dataframe.drop(column_name, axis=1, inplace=True)
+        return col
+
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
         tag to the column and clears the tag from any previously set index column.
