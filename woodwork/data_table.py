@@ -731,7 +731,7 @@ class DataTable(object):
         '''
         return serialize.datatable_to_metadata(self)
 
-    def save_metadata(self, path):
+    def save_metadata(self, path):  # --> do we need both a save and a get??
         '''
         Save a DataTable's metadata
 

@@ -186,7 +186,7 @@ def read_csv(filepath=None,
                         use_standard_tags=use_standard_tags)
 
 
-def _get_ltype_class(ltype):
+def _get_ltype_class(ltype):  # --> double check this is a good way to get teh params
     if ltype in ww.logical_types.LogicalType.__subclasses__():
         return ltype
     return ltype.__class__
