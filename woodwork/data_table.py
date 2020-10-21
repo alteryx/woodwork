@@ -722,7 +722,7 @@ class DataTable(object):
             return mi
         return mi.sort_values('mutual_info', ascending=False)
 
-    def get_metadata(self):
+    def to_dictionary(self):
         '''
         Get a DataTable's metadata
 
@@ -730,15 +730,6 @@ class DataTable(object):
             metadata (dict) : Description of :class:`.DataTable`.
         '''
         return serialize.datatable_to_metadata(self)
-
-    def save_metadata(self, path):  # --> do we need both a save and a get??
-        '''
-        Save a DataTable's metadata
-
-        Args:
-            path (str) : Location on disk or S3 path to write `table_metadata.json`
-        '''
-        serialize.write_table_metadata(self, path)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
