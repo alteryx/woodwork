@@ -37,12 +37,20 @@ def datatable_to_metadata(datatable):
     }
 
 
-# --> next two functions will be useful for adding csv/parquet/pickle
-def write_table_metadata(datatable, path, profile_name=None, **kwargs):
+def write_table(datatable, path, profile_name=None, **kwargs):
+    '''Serialize datatable and write to disk or S3 path.
+
+    Args:
+    datatable (DataTable) : Instance of :class:`.DataTable`.
+    path (str) : Location on disk to write datatable data and metadata.
+    profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+            Set to False to use an anonymous profile.
+    kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
+    '''
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
-            dump_table_metadata(datatable, tmpdir, **kwargs)
+            dump_table(datatable, tmpdir, **kwargs)
             file_path = create_archive(tmpdir)
 
             transport_params = get_transport_params(profile_name)
@@ -51,14 +59,33 @@ def write_table_metadata(datatable, path, profile_name=None, **kwargs):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
-        dump_table_metadata(datatable, path)
+        dump_table(datatable, tmpdir, **kwargs)
 
 
-def dump_table_metadata(datatable, path, **kwargs):
+def dump_table(datatable, path, **kwargs):
+    loading_info = write_table_data(entity, path, **kwargs)
+
+    metadata = datatable_to_metadata(datatable)
+    metadata['loading_info'] = loading_info
+
     file = os.path.join(path, 'table_metadata.json')
-
     with open(file, 'w') as file:
-        json.dump(datatable_to_metadata(datatable), file)
+        json.dump(metadata, file)
+
+
+def write_table_data(datatable, path, format='csv', **kwargs):
+    '''Write underlying datatable data to disk or S3 path.
+
+    Args:
+        datatable (DataTable) : Instance of :class:`.DataTable`.
+        path (str) : Location on disk to write datatable data.
+        format (str) : Format to use for writing datatable data. Defaults to csv.
+        kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
+
+    Returns:
+        loading_info (dict) : Information on storage location and format of entity data.
+    '''
+    pass
 
 
 def create_archive(tmpdir):
