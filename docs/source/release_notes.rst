@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.0.4** October 21, 2020
     * Enhancements
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
