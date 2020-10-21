@@ -50,6 +50,7 @@ Release Notes
         * Add support for numeric time index on DataTable (:pr:`267`)
         * Add pop method to DataTable (:pr:`289`)
         * Add entry point to setup.py to run CLI commands (:pr:`285`)
+        * Add ``to_dictionary`` method for getting a datatable's metadata (:pr:`294`)
     * Fixes
         * Allow numeric datetime time indices (:pr:`282`)
     * Changes
