@@ -1234,7 +1234,7 @@ def test_pop(sample_df):
     datacol = dt.pop('age')
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
-    assert datacol.to_pandas().values == [33, 25, 33]
+    assert to_pandas(datacol.to_pandas()).values == [33, 25, 33, 57]
     assert datacol.logical_type == WholeNumber
 
     assert 'age' not in dt.to_pandas().columns
