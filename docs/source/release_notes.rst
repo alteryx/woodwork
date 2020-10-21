@@ -20,6 +20,7 @@ Release Notes
         * Fix validation checks and ``make_index`` to work with Dask dataframes (:pr:`260`)
         * Skip validation of Ordinal order values for Dask dataframes (:pr:`270`)
         * Improve support for datetimes with Dask input (:pr:`286`)
+        * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
         * Update README.md with documentation link (:pr:`261`)
