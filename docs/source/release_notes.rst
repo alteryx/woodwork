@@ -4,6 +4,21 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+        * Support logical type inference from a Dask dataframe (:pr:`248`)
+        * Fix validation checks and ``make_index`` to work with Dask dataframes (:pr:`260`)
+        * Skip validation of Ordinal order values for Dask dataframes (:pr:`270`)
+        * Improve support for datetimes with Dask input (:pr:`286`)
+        * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
+**v0.0.4** October 21, 2020
+    * Enhancements
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
         * Add support for setting ranking order on columns with Ordinal logical type (:pr:`240`)
@@ -16,11 +31,7 @@ Release Notes
     * Changes
         * Remove redundant methods ``DataTable.select_ltypes`` and ``DataTable.select_semantic_tags`` (:pr:`239`)
         * Make results of ``get_mutual_information`` more clear by sorting and removing self calculation (:pr:`247`)
-        * Support logical type inference from a Dask dataframe (:pr:`248`)
-        * Fix validation checks and ``make_index`` to work with Dask dataframes (:pr:`260`)
-        * Skip validation of Ordinal order values for Dask dataframes (:pr:`270`)
-        * Improve support for datetimes with Dask input (:pr:`286`)
-        * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
+        * Lower minimum scikit-learn version to 0.21.3 (:pr:`297`)
     * Documentation Changes
         * Add guide for ``dt.describe`` and ``dt.get_mutual_information`` (:pr:`245`)
         * Update README.md with documentation link (:pr:`261`)
