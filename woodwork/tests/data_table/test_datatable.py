@@ -1294,7 +1294,6 @@ def test_getitem_invalid_input(sample_df):
 def test_datatable_getitem_list_input(sample_df):
     # Test regular columns
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    import pdb; pdb.set_trace()
     df = dt.to_pandas()
     columns = ['age', 'full_name']
     new_dt = dt[columns]
