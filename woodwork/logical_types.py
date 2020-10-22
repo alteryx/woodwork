@@ -336,12 +336,18 @@ def get_logical_types():
     return logical_types
 
 
-def str_to_logical_type(logical_str, raise_error=True):
-    """Helper function for converting a string value to the corresponding logical type object"""
+def str_to_logical_type(logical_str, params=None, raise_error=True):
+    """Helper function for converting a string value to the corresponding logical type object.
+    If a dictionary of params for the logical type is provided, apply them."""
     logical_str = logical_str.lower()
     logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types().items()}
 
     if logical_str in logical_types_dict:
-        return logical_types_dict[logical_str]
+        ltype = logical_types_dict[logical_str]
+        if params:
+            return ltype(**params)
+
+        else:
+            return ltype
     elif raise_error:
         raise ValueError('String %s is not a valid logical type' % logical_str)

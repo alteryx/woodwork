@@ -41,6 +41,7 @@ def test_get_logical_types():
 
 
 def test_str_to_logical_type():
+    # --> add test for ltype with params
     all_types = LogicalType.__subclasses__()
 
     with pytest.raises(ValueError, match='String test is not a valid logical type'):

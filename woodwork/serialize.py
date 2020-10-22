@@ -25,6 +25,7 @@ def datatable_to_metadata(datatable):
                 'type': str(col.dtype)
             },
             'semantic_tags': sorted(list(col.semantic_tags))
+            # --> might want to add a path field
         }
         for col in datatable.columns.values()
     ]
