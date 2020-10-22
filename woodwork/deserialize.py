@@ -1,17 +1,15 @@
 import json
 import os
-
 import tarfile
 import tempfile
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from woodwork.s3_utils import get_transport_params, use_smartopen_es
-from woodwork.utils import _is_s3, _is_url, import_or_raise
-from woodwork import DataTable, DataColumn
+from woodwork import DataTable
 from woodwork.logical_types import str_to_logical_type
+from woodwork.s3_utils import get_transport_params, use_smartopen_es
+from woodwork.utils import _is_s3, _is_url
 
 
 def read_table_metadata(path):
