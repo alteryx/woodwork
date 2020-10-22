@@ -38,7 +38,7 @@ def datatable_to_metadata(datatable):
     }
 
 
-def write_table(datatable, path, profile_name=None, **kwargs):
+def write_datatable(datatable, path, profile_name=None, **kwargs):
     '''Serialize datatable and write to disk or S3 path.
 
     Args:

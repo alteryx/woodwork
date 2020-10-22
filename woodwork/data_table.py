@@ -725,7 +725,7 @@ class DataTable(object):
             Returns:
                 DataTable
         '''
-        serialize.write_table(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
+        serialize.write_datatable(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self
 
 
