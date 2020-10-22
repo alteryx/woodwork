@@ -2130,7 +2130,7 @@ def test_data_table_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
-def test_data_table_get_mutual_information(df_same_mi):
+def test_data_table_get_mutual_information(df_same_mi, df_mi):
     dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
@@ -2142,16 +2142,11 @@ def test_data_table_get_mutual_information(df_same_mi):
     assert mi.shape[0] == 1
     assert mi_between_cols('floats', 'ints', mi) == 1.0
 
-    df = pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
-        'bools': pd.Series([True, False, True]),
-        'strs': pd.Series(['hi', 'hi', 'hi'])
-    })
-    dt = DataTable(df)
+    dt = DataTable(df_mi)
     original_df = dt.to_pandas(copy=True)
 
     mi = dt.get_mutual_information()
-    assert mi.shape[0] == 3
+    assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
@@ -2160,17 +2155,17 @@ def test_data_table_get_mutual_information(df_same_mi):
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = dt.get_mutual_information(nrows=1)
-    assert mi.shape[0] == 3
+    assert mi.shape[0] == 6
     assert (mi['mutual_info'] == 1.0).all()
 
     mi = dt.get_mutual_information(num_bins=2)
-    assert mi.shape[0] == 3
+    assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
     np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
 
     # Confirm that none of this changed the DataTable's underlying df
-    pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
+    pd.testing.assert_frame_equal(to_pandas(dt.to_pandas()), to_pandas(original_df))
 
 
 def test_mutual_info_does_not_include_index(sample_df):
@@ -2185,8 +2180,8 @@ def test_mutual_info_returns_empty_df_properly(sample_df):
     assert mi.empty
 
 
-def test_mutual_info_sort(df_sort_mi):
-    dt = DataTable(df_sort_mi)
+def test_mutual_info_sort(df_mi):
+    dt = DataTable(df_mi)
     mi = dt.get_mutual_information()
 
     for i in range(len(mi['mutual_info']) - 1):

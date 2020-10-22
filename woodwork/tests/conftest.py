@@ -175,7 +175,7 @@ def df_same_mi(request):
 
 
 @pytest.fixture()
-def df_sort_mi_pandas():
+def df_mi_pandas():
     return pd.DataFrame({
         'ints': pd.Series([1, 2, 3]),
         'bools': pd.Series([True, False, True]),
@@ -185,10 +185,10 @@ def df_sort_mi_pandas():
 
 
 @pytest.fixture()
-def df_sort_mi_dask(df_sort_mi_pandas):
-    return dd.from_pandas(df_sort_mi_pandas, npartitions=2)
+def df_mi_dask(df_mi_pandas):
+    return dd.from_pandas(df_mi_pandas, npartitions=1)
 
 
-@pytest.fixture(params=['df_sort_mi_pandas', 'df_sort_mi_dask'])
-def df_sort_mi(request):
+@pytest.fixture(params=['df_mi_pandas', 'df_mi_dask'])
+def df_mi(request):
     return request.getfixturevalue(request.param)
