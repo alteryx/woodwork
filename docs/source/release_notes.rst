@@ -13,6 +13,7 @@ Release Notes
         * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
         * Update ``DataTable.get_mutual_information`` to work with Dask input (:pr:`300`)
     * Documentation Changes
+        * Create a guide for using Woodwork with Dask (:pr:`304`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
 
