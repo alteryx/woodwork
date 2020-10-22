@@ -151,3 +151,44 @@ def describe_df_dask(describe_df_pandas):
 @pytest.fixture(params=['describe_df_pandas', 'describe_df_dask'])
 def describe_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def df_same_mi_pandas():
+    return pd.DataFrame({
+        'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
+        'floats': pd.Series([1, None, 100, 1]),
+        'nans': pd.Series([None, None, None, None]),
+        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
+        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
+    })
+
+
+@pytest.fixture()
+def df_same_mi_dask(df_same_mi_pandas):
+    return dd.from_pandas(df_same_mi_pandas, npartitions=2)
+
+
+@pytest.fixture(params=['df_same_mi_pandas', 'df_same_mi_dask'])
+def df_same_mi(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def df_sort_mi_pandas():
+    return pd.DataFrame({
+        'ints': pd.Series([1, 2, 3]),
+        'bools': pd.Series([True, False, True]),
+        'strs2': pd.Series(['bye', 'hi', 'bye']),
+        'strs': pd.Series(['hi', 'hi', 'hi'])
+    })
+
+
+@pytest.fixture()
+def df_sort_mi_dask(df_sort_mi_pandas):
+    return dd.from_pandas(df_sort_mi_pandas, npartitions=2)
+
+
+@pytest.fixture(params=['df_sort_mi_pandas', 'df_sort_mi_dask'])
+def df_sort_mi(request):
+    return request.getfixturevalue(request.param)

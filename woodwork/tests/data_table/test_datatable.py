@@ -2130,14 +2130,7 @@ def test_data_table_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
-def test_data_table_get_mutual_information():
-    df_same_mi = pd.DataFrame({
-        'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
-        'floats': pd.Series([1, None, 100, 1]),
-        'nans': pd.Series([None, None, None, None]),
-        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
-        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
-    })
+def test_data_table_get_mutual_information(df_same_mi):
     dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
@@ -2180,25 +2173,20 @@ def test_data_table_get_mutual_information():
     pd.testing.assert_frame_equal(dt.to_pandas(), original_df)
 
 
-def test_mutual_info_does_not_include_index():
-    df = pd.DataFrame({'index_col': pd.Series([0, 1, 2], dtype='string'),
-                       'values': [10, 20.3, 5]})
-    dt = DataTable(df, index='index_col')
+def test_mutual_info_does_not_include_index(sample_df):
+    dt = DataTable(sample_df, index='id')
     mi = dt.get_mutual_information()
+    assert 'id' not in mi['column_1'].values
 
-    assert mi.shape[0] == 0
+
+def test_mutual_info_returns_empty_df_properly(sample_df):
+    dt = DataTable(sample_df.copy()[['id', 'age']], index='id')
+    mi = dt.get_mutual_information()
+    assert mi.empty
 
 
-def test_mutual_info_sort():
-    df = pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
-        'bools': pd.Series([True, False, True]),
-        'strs2': pd.Series(['bye', 'hi', 'bye']),
-
-        'strs': pd.Series(['hi', 'hi', 'hi'])
-
-    })
-    dt = DataTable(df)
+def test_mutual_info_sort(df_sort_mi):
+    dt = DataTable(df_sort_mi)
     mi = dt.get_mutual_information()
 
     for i in range(len(mi['mutual_info']) - 1):
