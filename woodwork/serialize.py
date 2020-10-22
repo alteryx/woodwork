@@ -8,6 +8,7 @@ from woodwork.s3_utils import get_transport_params, use_smartopen_es
 from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
 
 SCHEMA_VERSION = '1.0.0'
+FORMATS = ['csv']
 
 
 def datatable_to_metadata(datatable):
@@ -59,11 +60,12 @@ def write_table(datatable, path, profile_name=None, **kwargs):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
-        dump_table(datatable, tmpdir, **kwargs)
+        os.makedirs(os.path.join(path, 'data'), exist_ok=True)
+        dump_table(datatable, path, **kwargs)
 
 
 def dump_table(datatable, path, **kwargs):
-    loading_info = write_table_data(entity, path, **kwargs)
+    loading_info = write_table_data(datatable, path, **kwargs)
 
     metadata = datatable_to_metadata(datatable)
     metadata['loading_info'] = loading_info
@@ -83,9 +85,27 @@ def write_table_data(datatable, path, format='csv', **kwargs):
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
 
     Returns:
-        loading_info (dict) : Information on storage location and format of entity data.
+        loading_info (dict) : Information on storage location and format of datatable data.
     '''
-    pass
+    format = format.lower()
+
+    basename = '.'.join([datatable.name, format])
+    location = os.path.join('data', basename)
+    file = os.path.join(path, location)
+    df = datatable.to_pandas()
+
+    if format == 'csv':
+        df.to_csv(
+            file,
+            index=kwargs['index'],
+            sep=kwargs['sep'],
+            encoding=kwargs['encoding'],
+            compression=kwargs['compression'],
+        )
+    else:
+        error = 'must be one of the following formats: {}'
+        raise ValueError(error.format(', '.join(FORMATS)))
+    return {'location': location, 'type': format, 'params': kwargs}
 
 
 def create_archive(tmpdir):
