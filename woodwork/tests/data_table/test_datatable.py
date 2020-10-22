@@ -88,6 +88,19 @@ def test_datatable_init_with_valid_string_time_index():
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
+def test_datatable_with_numeric_datetime_time_index():
+    df = pd.DataFrame({'ints': pd.Series([1, 2, 3]),
+                       'strs': ['1', '2', '3']})
+    dt = DataTable(df, time_index='ints', logical_types={'ints': Datetime})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(df, name='datatable', time_index='strs')
+
+    assert dt.time_index == 'ints'
+    assert dt.to_pandas()['ints'].dtype == 'datetime64[ns]'
+
+
 def test_datatable_with_numeric_time_index():
     df = pd.DataFrame({'numeric_datetime_index': [1, 2, 3],
                        'normal_dates': ['2020-01-01', '2020-01-02', '2020-01-03']})
@@ -1213,6 +1226,44 @@ def test_select_semantic_tags_warning(sample_df):
     with pytest.warns(UserWarning, match=warning):
         dt_single = dt.select(['numeric', 'doesnt_exist', 'category', 'tag2'])
     assert len(dt_single.columns) == 3
+
+
+def test_pop(sample_df):
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types={'age': WholeNumber},
+                   semantic_tags={'age': 'custom_tag'},
+                   use_standard_tags=True)
+    datacol = dt.pop('age')
+    assert isinstance(datacol, DataColumn)
+    assert 'custom_tag' in datacol.semantic_tags
+    assert datacol.to_pandas().values == [33, 25, 33]
+    assert datacol.logical_type == WholeNumber
+
+    assert 'age' not in dt.to_pandas().columns
+    assert 'age' not in dt.columns
+
+    assert 'age' not in dt.logical_types.keys()
+    assert 'age' not in dt.semantic_tags.keys()
+
+
+def test_pop_index(sample_df):
+    dt = DataTable(sample_df, index='id', name='dt_name')
+    assert dt.index == 'id'
+    id_col = dt.pop('id')
+    assert dt.index is None
+    assert 'index' in id_col.semantic_tags
+
+
+def test_pop_error(sample_df):
+    dt = DataTable(sample_df,
+                   name='datatable',
+                   logical_types={'age': WholeNumber},
+                   semantic_tags={'age': 'custom_tag'},
+                   use_standard_tags=True)
+
+    with pytest.raises(KeyError, match="Column with name \'missing\' not found in DataTable"):
+        dt.pop("missing")
 
 
 def test_getitem(sample_df):
