@@ -13,6 +13,7 @@ Release Notes
         * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
     * Documentation Changes
     * Testing Changes
+        * Parameterize numeric time index tests (:pr:`288`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
@@ -41,7 +42,6 @@ Release Notes
     * Testing Changes
         * Add automated process to check latest dependencies. (:pr:`268`)
         * Add test for setting a time index with specified string logical type (:pr:`279`)
-        * Parameterize numeric time index tests (:pr:`288`)
 
 Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
