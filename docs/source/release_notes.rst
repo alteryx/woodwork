@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+        * Add conda install instructions (:pr:`305`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :
 
 **v0.0.4** October 21, 2020
     * Enhancements
