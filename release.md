@@ -71,3 +71,8 @@ After the release pull request has been merged into the `main` branch, it is tim
 * Release description should be the full Release Notes updates for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`gsheni\`) to github syntax (@gsheni)
 * This is not a pre-release
 * Publishing the release will automatically upload the package to PyPI
+
+## Release on conda-forge
+1. A bot should automatically create a new PR in [conda-forge/woodwork-feedstock](https://github.com/conda-forge/woodwork-feedstock/pulls) - note, the PR may take up to a few hours to be created
+2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
+3. After tests pass, a maintainer will merge the PR in
