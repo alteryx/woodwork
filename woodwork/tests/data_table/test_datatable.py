@@ -1294,6 +1294,7 @@ def test_getitem_invalid_input(sample_df):
 def test_datatable_getitem_list_input(sample_df):
     # Test regular columns
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    import pdb; pdb.set_trace()
     df = dt.to_pandas()
     columns = ['age', 'full_name']
     new_dt = dt[columns]
@@ -1505,9 +1506,9 @@ def test_set_index(sample_df):
     # Test changing index also changes underlying DataFrame
     dt = DataTable(sample_df)
     dt.index = 'id'
-    assert (dt._dataframe.index == [0, 1, 2]).all()
+    assert (dt.to_pandas().index == [0, 1, 2]).all()
     dt.index = 'full_name'
-    assert (dt._dataframe.index == dt._dataframe['full_name']).all()
+    assert (dt.to_pandas().index == dt.to_pandas()['full_name']).all()
 
 
 def test_set_time_index(sample_df):
