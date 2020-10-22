@@ -25,6 +25,12 @@ Install with pip:
 python -m pip install woodwork
 ```
 
+or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/woodwork):
+
+```bash
+conda install -c conda-forge featuretools
+```
+
 ## Example
 
 Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataTable`, specifying the `LogicalType` for three of the columns.
