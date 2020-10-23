@@ -397,7 +397,7 @@ class DataTable(object):
         Returns:
             pandas.DataFrame: The underlying dataframe of the DataTable
         """
-        if self.index is None:
+        if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
             if copy:
                 return self._dataframe.copy()
             else:

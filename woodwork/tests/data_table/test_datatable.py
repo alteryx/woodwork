@@ -1296,7 +1296,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns].reset_index(drop=True), new_dt.to_pandas())
+    pd.testing.assert_frame_equal(to_pandas(df[columns]).reset_index(drop=True), to_pandas(new_dt.to_pandas()))
     assert all(new_dt.to_pandas().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
@@ -1307,7 +1307,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas(), check_index_type=False)
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()))
     assert all(new_dt.to_pandas().columns == ['id', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'full_name'}
     assert new_dt.index == 'id'
@@ -1318,7 +1318,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_pandas(), check_index_type=False)
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()), check_index_type=False)
     assert new_dt.index == 'id'
 
     # Test with empty list selector
@@ -1326,8 +1326,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_pandas()))
-    assert new_dt.to_pandas().empty
+    assert to_pandas(new_dt.to_pandas()).empty
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
     assert new_dt.time_index is None
@@ -1496,12 +1495,13 @@ def test_set_index(sample_df):
     non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
 
-    # Test changing index also changes underlying DataFrame
-    dt = DataTable(sample_df)
-    dt.index = 'id'
-    assert (dt.to_pandas().index == [0, 1, 2]).all()
-    dt.index = 'full_name'
-    assert (dt.to_pandas().index == dt.to_pandas()['full_name']).all()
+    # Test changing index also changes underlying DataFrame - pandas only
+    if isinstance(sample_df, pd.DataFrame):
+        dt = DataTable(sample_df)
+        dt.index = 'id'
+        assert (dt.to_pandas().index == [0, 1, 2, 3]).all()
+        dt.index = 'full_name'
+        assert (dt.to_pandas().index == dt.to_pandas()['full_name']).all()
 
 
 def test_set_time_index(sample_df):
