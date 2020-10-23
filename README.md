@@ -9,6 +9,9 @@
     <a href="https://badge.fury.io/py/woodwork" target="_blank">
         <img src="https://badge.fury.io/py/woodwork.svg?maxAge=2592000" alt="PyPI Version" />
     </a>
+    <a href="https://anaconda.org/conda-forge/woodwork" target="_blank">
+        <img src="https://anaconda.org/conda-forge/woodwork/badges/version.svg" alt="Anaconda Version" />
+    </a>
     <a href="https://pepy.tech/project/woodwork/month" target="_blank">
         <img src="https://pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
     </a>
@@ -23,6 +26,12 @@ Install with pip:
 
 ```bash
 python -m pip install woodwork
+```
+
+or from the conda-forge channel on [conda](https://anaconda.org/conda-forge/woodwork):
+
+```bash
+conda install -c conda-forge woodwork
 ```
 
 ## Example

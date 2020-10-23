@@ -15,11 +15,12 @@ Release Notes
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
+        * Add conda install instructions (:pr:`305`, :pr:`309`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.0.4** October 21, 2020
     * Enhancements
