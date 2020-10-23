@@ -28,7 +28,7 @@ python -m pip install woodwork
 or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/woodwork):
 
 ```bash
-conda install -c conda-forge featuretools
+conda install -c conda-forge woodwork
 ```
 
 ## Example
