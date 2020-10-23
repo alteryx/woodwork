@@ -397,9 +397,13 @@ class DataTable(object):
         Returns:
             pandas.DataFrame: The underlying dataframe of the DataTable
         """
-        if copy:
-            return self._dataframe.copy()
-        return self._dataframe
+        if self.index is None:
+            if copy:
+                return self._dataframe.copy()
+            else:
+                return self._dataframe
+        else:
+            return self._dataframe.set_index(self.index, drop=False)
 
     def select(self, include):
         """Create a DataTable including only columns whose logical type and

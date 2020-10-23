@@ -12,13 +12,14 @@ Release Notes
         * Improve support for datetimes with Dask input (:pr:`286`)
         * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
         * Update ``DataTable.get_mutual_information`` to work with Dask input (:pr:`300`)
+        * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`thehomebrewnerd`
 
 **v0.0.4** October 21, 2020
     * Enhancements
