@@ -4,7 +4,7 @@ import os
 import tarfile
 import tempfile
 
-from woodwork.s3_utils import get_transport_params, use_smartopen_es
+from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
 
 SCHEMA_VERSION = '1.0.0'
@@ -56,7 +56,7 @@ def write_datatable(datatable, path, profile_name=None, **kwargs):
             file_path = create_archive(tmpdir)
 
             transport_params = get_transport_params(profile_name)
-            use_smartopen_es(file_path, path, read=False, transport_params=transport_params)
+            use_smartopen(file_path, path, read=False, transport_params=transport_params)
     elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")
     else:

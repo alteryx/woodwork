@@ -8,7 +8,7 @@ import pandas as pd
 
 from woodwork import DataTable
 from woodwork.logical_types import str_to_logical_type
-from woodwork.s3_utils import get_transport_params, use_smartopen_es
+from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import _is_s3, _is_url
 
 
@@ -101,7 +101,7 @@ def read_datatable(path, profile_name=None, **kwargs):
             if _is_s3(path):
                 transport_params = get_transport_params(profile_name)
 
-            use_smartopen_es(file_path, path, transport_params)
+            use_smartopen(file_path, path, transport_params)
             with tarfile.open(str(file_path)) as tar:
                 tar.extractall(path=tmpdir)
 
