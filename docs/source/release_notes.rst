@@ -3,6 +3,7 @@
 Release Notes
 -------------
 **Future Release**
+  
     * Enhancements
     * Fixes
     * Changes
@@ -14,6 +15,11 @@ Release Notes
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+    * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``. 
+
 
 **v0.0.4** October 21, 2020
     * Enhancements
