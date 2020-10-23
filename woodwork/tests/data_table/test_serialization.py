@@ -119,11 +119,12 @@ def s3_bucket(s3_client):
 
 
 def make_public(s3_client, s3_bucket):
-    obj = list(s3_bucket.objects.all())[0].keyx
+    obj = list(s3_bucket.objects.all())[0].key
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
+    # BROKEN
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -133,6 +134,97 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     make_public(s3_client, s3_bucket)
 
     _dt = deserialize.read_datatable(TEST_S3_URL)
+
+    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    assert dt.name == _dt.name
+    assert dt.index == _dt.index
+    assert dt.time_index == _dt.time_index
+    assert dt.columns.keys() == _dt.columns.keys()
+
+    for col_name in dt.columns.keys():
+        col = dt[col_name]
+        _col = _dt[col_name]
+
+        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
+        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
+        assert col.semantic_tags == _col.semantic_tags
+        assert col.name == _col.name
+        assert col.dtype == _col.dtype
+
+
+def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
+    # BROKEN
+    dt = DataTable(sample_df,
+                   name='test_data',
+                   index='id',
+                   semantic_tags={'id': 'tag1'},
+                   logical_types={'age': Ordinal(order=[25, 33])})
+    dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    make_public(s3_client, s3_bucket)
+
+    _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    assert dt.name == _dt.name
+    assert dt.index == _dt.index
+    assert dt.time_index == _dt.time_index
+    assert dt.columns.keys() == _dt.columns.keys()
+
+    for col_name in dt.columns.keys():
+        col = dt[col_name]
+        _col = _dt[col_name]
+
+        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
+        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
+        assert col.semantic_tags == _col.semantic_tags
+        assert col.name == _col.name
+        assert col.dtype == _col.dtype
+
+
+def create_test_credentials(test_path):
+    with open(test_path, "w+") as f:
+        f.write("[test]\n")
+        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+
+
+def create_test_config(test_path_config):
+    with open(test_path_config, "w+") as f:
+        f.write("[profile test]\n")
+        f.write("region=us-east-2\n")
+        f.write("output=text\n")
+
+
+@pytest.fixture
+def setup_test_profile(monkeypatch, tmpdir):
+    cache = str(tmpdir.join('.cache').mkdir())
+    test_path = os.path.join(cache, 'test_credentials')
+    test_path_config = os.path.join(cache, 'test_config')
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    try:
+        os.remove(test_path)
+        os.remove(test_path_config)
+    except OSError:
+        pass
+
+    create_test_credentials(test_path)
+    create_test_config(test_path_config)
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)
+
+
+def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
+    # BROKEN
+    dt = DataTable(sample_df)
+    dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL, profile_name='test')
 
     pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
     assert dt.name == _dt.name
@@ -169,3 +261,25 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join('table_metadata.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)
+
+
+def test_deserialize_url_csv(sample_df):
+    # BROKEN
+    dt = DataTable(sample_df, index='id')
+    _dt = deserialize.read_datatable(URL)
+
+    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    assert dt.name == _dt.name
+    assert dt.index == _dt.index
+    assert dt.time_index == _dt.time_index
+    assert dt.columns.keys() == _dt.columns.keys()
+
+    for col_name in dt.columns.keys():
+        col = dt[col_name]
+        _col = _dt[col_name]
+
+        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
+        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
+        assert col.semantic_tags == _col.semantic_tags
+        assert col.name == _col.name
+        assert col.dtype == _col.dtype

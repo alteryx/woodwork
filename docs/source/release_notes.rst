@@ -5,6 +5,8 @@ Release Notes
 **Future Release**
   
     * Enhancements
+        * Add ``to_dictionary`` method for getting a datatable's metadata (:pr:`294`)
+        * Add ability to serialize datatable to csv and deserialize it back to a DataTable (:pr:`307`)
     * Fixes
     * Changes
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
@@ -14,7 +16,7 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
 
@@ -30,7 +32,6 @@ Release Notes
         * Add support for numeric time index on DataTable (:pr:`267`)
         * Add pop method to DataTable (:pr:`289`)
         * Add entry point to setup.py to run CLI commands (:pr:`285`)
-        * Add ``to_dictionary`` method for getting a datatable's metadata (:pr:`294`)
     * Fixes
         * Allow numeric datetime time indices (:pr:`282`)
     * Changes
