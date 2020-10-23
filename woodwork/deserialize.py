@@ -36,7 +36,7 @@ def metadata_to_datatable(table_metadata, path, **kwargs):
 
     Args:
         description (dict) : Description of an :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_metadata`
-        path (str) : --> fill in once decided how this is handled
+        path (str) : Directory from which to read table_metadata.json
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
@@ -56,7 +56,6 @@ def metadata_to_datatable(table_metadata, path, **kwargs):
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)
 
-    # --> Should we be handling latlongs specially like in featuretools?
     logical_types = {}
     semantic_tags = {}
     for col in table_metadata['metadata']:
@@ -109,5 +108,4 @@ def read_datatable(path, profile_name=None, **kwargs):
             return metadata_to_datatable(table_metadata, file_path, **kwargs)
     else:
         table_metadata = read_table_metadata(path)
-        # --> det best way to handle path here whether that's assuming we have the json file type or not
         return metadata_to_datatable(table_metadata, path, **kwargs)

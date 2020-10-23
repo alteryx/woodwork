@@ -3,6 +3,7 @@ import pytest
 from woodwork.logical_types import (
     Boolean,
     Categorical,
+    Datetime,
     FullName,
     LogicalType,
     Ordinal,
@@ -41,7 +42,6 @@ def test_get_logical_types():
 
 
 def test_str_to_logical_type():
-    # --> add test for ltype with params
     all_types = LogicalType.__subclasses__()
 
     with pytest.raises(ValueError, match='String test is not a valid logical type'):
@@ -55,6 +55,12 @@ def test_str_to_logical_type():
     assert str_to_logical_type('bOoLeAn') == Boolean
     assert str_to_logical_type('full_NAME') == FullName
     assert str_to_logical_type('FullnamE') == FullName
+
+    ymd = '%Y-%m-%d'
+    assert str_to_logical_type('datetime', params={'datetime_format': ymd}) == Datetime(datetime_format=ymd)
+    assert str_to_logical_type('datetime', params={'datetime_format': None}) != Datetime
+    assert str_to_logical_type('datetime', params={'datetime_format': None}) == Datetime()
+    assert str_to_logical_type('full_NAME', params={}) == FullName
 
 
 def test_ordinal_order_errors():

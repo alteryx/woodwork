@@ -25,7 +25,6 @@ def datatable_to_metadata(datatable):
                 'type': str(col.dtype)
             },
             'semantic_tags': sorted(list(col.semantic_tags))
-            # --> might want to add a path field
         }
         for col in datatable.columns.values()
     ]
@@ -90,7 +89,6 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     '''
     format = format.lower()
 
-    # --> not sure 'data' is the best choice if a dt has no name - folder will be data/data.csv
     dt_name = datatable.name if datatable.name is not None else 'data'
 
     basename = '.'.join([dt_name, format])
