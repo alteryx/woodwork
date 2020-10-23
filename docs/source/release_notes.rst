@@ -6,10 +6,12 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+    :user:`ctduffy`
 
 **v0.0.4** October 21, 2020
     * Enhancements
