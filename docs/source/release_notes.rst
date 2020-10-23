@@ -2,16 +2,17 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
     * Documentation Changes
+        * Add conda install instructions (:pr:`305`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-    :user:`ctduffy`
+Thanks to the following people for contributing to this release:
+    :user:`ctduffy`, :user:`gsheni`, :
 
 **v0.0.4** October 21, 2020
     * Enhancements
