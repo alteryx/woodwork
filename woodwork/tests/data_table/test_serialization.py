@@ -1,3 +1,4 @@
+import json
 import os
 
 import boto3
@@ -5,6 +6,7 @@ import pandas as pd
 import pytest
 
 import woodwork.deserialize as deserialize
+import woodwork.serialize as serialize
 from woodwork import DataTable
 from woodwork.logical_types import Ordinal
 from woodwork.utils import _get_ltype_class, _get_ltype_params
@@ -154,3 +156,16 @@ def test_serialize_url_csv(sample_df):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
         dt.to_csv(URL, encoding='utf-8', engine='python')
+
+
+def test_serialize_subdirs_not_removed(sample_df, tmpdir):
+    dt = DataTable(sample_df)
+    write_path = tmpdir.mkdir("test")
+    test_dir = write_path.mkdir("test_dir")
+    with open(str(write_path.join('table_metadata.json')), 'w') as f:
+        json.dump('__SAMPLE_TEXT__', f)
+    compression = None
+    serialize.write_datatable(dt, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
+    assert os.path.exists(str(test_dir))
+    with open(str(write_path.join('table_metadata.json')), 'r') as f:
+        assert '__SAMPLE_TEXT__' not in json.load(f)

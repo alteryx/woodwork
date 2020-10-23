@@ -90,7 +90,10 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     '''
     format = format.lower()
 
-    basename = '.'.join([datatable.name, format])
+    # --> not sure 'data' is the best choice if a dt has no name - folder will be data/data.csv
+    dt_name = datatable.name if datatable.name is not None else 'data'
+
+    basename = '.'.join([dt_name, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
     df = datatable.to_pandas()
@@ -110,10 +113,10 @@ def write_table_data(datatable, path, format='csv', **kwargs):
 
 
 def create_archive(tmpdir):
-    file_name = "es-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
+    file_name = "dt-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')
-    tar.add(str(tmpdir) + '/data_description.json', arcname='/data_description.json')
+    tar.add(str(tmpdir) + '/table_metadata.json', arcname='/table_metadata.json')
     tar.add(str(tmpdir) + '/data', arcname='/data')
     tar.close()
     return file_path
