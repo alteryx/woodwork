@@ -6,7 +6,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Updating DataTable index now updates underlying DataFrame as well (:pr:`281`)
+        * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
     * Documentation Changes
     * Testing Changes
 

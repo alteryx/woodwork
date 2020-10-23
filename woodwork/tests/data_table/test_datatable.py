@@ -1299,8 +1299,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    for column in new_dt.to_pandas().columns:
-        assert column in df[columns]
+    pd.testing.assert_frame_equal(df[columns].reset_index(drop=True), new_dt.to_pandas())
     assert all(new_dt.to_pandas().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
@@ -1334,7 +1333,7 @@ def test_datatable_getitem_list_input(sample_df):
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
     assert new_dt.to_pandas().columns.to_list() == []
-    assert len(new_dt.to_pandas().columns) == 0
+    pd.testing.assert_frame_equal(df[columns].reset_index(drop=True), new_dt.to_pandas())
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
     assert new_dt.time_index is None
