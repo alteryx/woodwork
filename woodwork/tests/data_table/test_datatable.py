@@ -1332,7 +1332,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_pandas() is not df
-    assert new_dt.to_pandas().columns.to_list() == []
+    assert new_dt.to_pandas().empty
     pd.testing.assert_frame_equal(df[columns].reset_index(drop=True), new_dt.to_pandas())
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
