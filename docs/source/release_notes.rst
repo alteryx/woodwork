@@ -6,9 +6,9 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Support logical type inference from a Dask dataframe (:pr:`248`)
-        * Fix validation checks and ``make_index`` to work with Dask dataframes (:pr:`260`)
-        * Skip validation of Ordinal order values for Dask dataframes (:pr:`270`)
+        * Support logical type inference from a Dask DataFrame (:pr:`248`)
+        * Fix validation checks and ``make_index`` to work with Dask DataFrames (:pr:`260`)
+        * Skip validation of Ordinal order values for Dask DataFrames (:pr:`270`)
         * Improve support for datetimes with Dask input (:pr:`286`)
         * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
         * Update ``DataTable.get_mutual_information`` to work with Dask input (:pr:`300`)
