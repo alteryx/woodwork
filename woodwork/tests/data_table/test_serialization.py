@@ -89,7 +89,6 @@ def test_to_csv(sample_df, tmpdir):
         col = dt[col_name]
         _col = _dt[col_name]
 
-        # --> this might be a better way to do ltype equality
         assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
         assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
         assert col.semantic_tags == _col.semantic_tags
@@ -143,7 +142,6 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
         col = dt[col_name]
         _col = _dt[col_name]
 
-        # --> this might be a better way to do ltype equality
         assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
         assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
         assert col.semantic_tags == _col.semantic_tags

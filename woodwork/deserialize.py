@@ -43,11 +43,7 @@ def metadata_to_datatable(table_metadata, path, **kwargs):
         datatable (DataTable) : Instance of :class:`.DataTable`.
     '''
     loading_info = table_metadata['loading_info']
-    # check schema version
-    # get path
-    # There should always be data??
     file = os.path.join(path, loading_info['location'])
-    # read table data to get df
     kwargs = loading_info.get('params', {})
 
     dataframe = pd.read_csv(
@@ -60,23 +56,19 @@ def metadata_to_datatable(table_metadata, path, **kwargs):
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)
 
-    # --> do i need tto handle latlongs specially?
+    # --> Should we be handling latlongs specially like in featuretools?
     logical_types = {}
     semantic_tags = {}
     for col in table_metadata['metadata']:
         col_name = col['name']
 
         ltype_metadata = col['logical_type']
-        #  --> have way of tunring str ltype + p[arams --> instantiated ltype]
         ltype = str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
 
         tags = col['semantic_tags']
 
-        #  --> not sure this is better than not including them in the list of tags when we serialize
-        # We can't have index tags in the datatabe on init
         if 'index' in tags:
             tags.remove('index')
-            # --> what happens if you try and set a col as both indx and timei index?
         elif 'time_index' in tags:
             tags.remove('time_index')
 
@@ -89,8 +81,6 @@ def metadata_to_datatable(table_metadata, path, **kwargs):
                      time_index=table_metadata['time_index'],
                      logical_types=logical_types,
                      semantic_tags=semantic_tags)
-
-    # build dt
 
 
 def read_datatable(path, profile_name=None, **kwargs):
@@ -119,5 +109,5 @@ def read_datatable(path, profile_name=None, **kwargs):
             return metadata_to_datatable(table_metadata, file_path, **kwargs)
     else:
         table_metadata = read_table_metadata(path)
-        # --> det best way to handle path here whether that's assuming we have the jsoin file type or not
+        # --> det best way to handle path here whether that's assuming we have the json file type or not
         return metadata_to_datatable(table_metadata, path, **kwargs)
