@@ -8,7 +8,7 @@ Release Notes
     * Changes
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
     * Documentation Changes
-        * Add conda install instructions (:pr:`305`)
+        * Add conda install instructions (:pr:`305`, :pr:`309`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
