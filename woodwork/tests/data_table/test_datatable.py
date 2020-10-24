@@ -1127,7 +1127,7 @@ def test_select_ltypes_table(sample_df):
     original_col = dt_values.columns['full_name']
     col = dt.columns['full_name']
     assert col.logical_type == original_col.logical_type
-    assert col.to_pandas().equals(original_col.to_pandas())
+    assert col.to_series().equals(original_col.to_series())
     assert col.dtype == original_col.dtype
     assert col.semantic_tags == original_col.semantic_tags
 
@@ -1237,7 +1237,7 @@ def test_pop(sample_df):
     datacol = dt.pop('age')
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
-    assert datacol.to_pandas().values == [33, 25, 33]
+    assert datacol.to_series().values == [33, 25, 33]
     assert datacol.logical_type == WholeNumber
 
     assert 'age' not in dt.to_pandas().columns
@@ -1383,7 +1383,7 @@ def test_setitem_different_name(sample_df):
                               use_standard_tags=False)
 
     assert dt['id'].name == 'id'
-    assert dt['id'].to_pandas().name == 'id'
+    assert dt['id'].to_series().name == 'id'
     assert dt.to_pandas()['id'].name == 'id'
     assert 'wrong' not in dt.columns
 
@@ -1393,7 +1393,7 @@ def test_setitem_different_name(sample_df):
         dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'),
                                    use_standard_tags=False)
     assert dt['new_col'].name == 'new_col'
-    assert dt['new_col'].to_pandas().name == 'new_col'
+    assert dt['new_col'].to_series().name == 'new_col'
     assert dt.to_pandas()['new_col'].name == 'new_col'
     assert 'wrong2' not in dt.columns
 
@@ -1453,7 +1453,7 @@ def test_setitem_overwrite_column(sample_df):
     assert dt['age'].semantic_tags == original_col.semantic_tags
     assert 'age' in updated_df.columns
     assert updated_df['age'].dtype == 'Int64'
-    assert original_col.to_pandas() is not dt['age'].to_pandas()
+    assert original_col.to_series() is not dt['age'].to_series()
 
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = dt['full_name']
@@ -1468,7 +1468,7 @@ def test_setitem_overwrite_column(sample_df):
     assert dt['full_name'].semantic_tags == {'test_tag'}
     assert 'full_name' in updated_df.columns
     assert updated_df['full_name'].dtype == 'boolean'
-    assert original_col.to_pandas() is not dt['full_name'].to_pandas()
+    assert original_col.to_series() is not dt['full_name'].to_series()
 
 
 def test_set_index(sample_df):
