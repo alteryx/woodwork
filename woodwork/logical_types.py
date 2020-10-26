@@ -1,6 +1,6 @@
 import pandas as pd
 
-from woodwork.utils import camel_to_snake
+from woodwork.utils import camel_to_snake, _get_ltype_params
 
 
 class ClassNameDescriptor(object):
@@ -23,7 +23,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     standard_tags = {}
 
     def __eq__(self, other, deep=False):
-        return isinstance(other, self.__class__)
+        return isinstance(other, self.__class__) and _get_ltype_params(other) == _get_ltype_params(self)
 
     def __str__(self):
         return str(self.__class__)

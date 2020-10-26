@@ -468,12 +468,15 @@ def test_data_column_equality(sample_series, sample_datetime_series):
     assert ordinal_col_1 != ordinal_col_2
     assert ordinal_col_1 == ordinal_col_1
 
+    # --> pick better names
     datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
-    datetime_col_param = DataColumn(sample_datetime_series, logical_type=datetime_ltype_instantiated)
+    datetime_col_format = DataColumn(sample_datetime_series, logical_type=datetime_ltype_instantiated)
+    datetime_col_param = DataColumn(sample_datetime_series, logical_type=Datetime(datetime_format=None))
     datetime_col_instantiated = DataColumn(sample_datetime_series, logical_type=Datetime())
     datetime_col = DataColumn(sample_datetime_series, logical_type=Datetime)
 
-    assert datetime_col == datetime_col_instantiated
-    assert datetime_col_instantiated != datetime_col_param
+    assert datetime_col != datetime_col_instantiated
+    assert datetime_col_instantiated != datetime_col_format
+    assert datetime_col_instantiated == datetime_col_param
 
     # --> add test where only diff is the series
