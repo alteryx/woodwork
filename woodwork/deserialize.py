@@ -19,19 +19,19 @@ def read_table_metadata(path):
             path (str): Location on disk, S3 path, or URL to read `table_metadata.json`.
 
         Returns:
-            description (dict) : Description of :class:`.Datatable`.
+            metadata (dict) : Metadata for :class:`.Datatable`.
     '''
 
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'table_metadata.json')
     with open(file, 'r') as file:
-        description = json.load(file)
-    description['path'] = path
-    return description
+        metadata = json.load(file)
+    metadata['path'] = path
+    return metadata
 
 
-def metadata_to_datatable(table_metadata, path, **kwargs):
+def metadata_to_datatable(table_metadata, **kwargs):
     '''Deserialize datatable from table metadata.
 
     Args:
@@ -42,6 +42,8 @@ def metadata_to_datatable(table_metadata, path, **kwargs):
     Returns:
         datatable (DataTable) : Instance of :class:`.DataTable`.
     '''
+    path = table_metadata['path']
+    # --> check schema version??
     loading_info = table_metadata['loading_info']
     file = os.path.join(path, loading_info['location'])
     kwargs = loading_info.get('params', {})
@@ -105,7 +107,7 @@ def read_datatable(path, profile_name=None, **kwargs):
                 tar.extractall(path=tmpdir)
 
             table_metadata = read_table_metadata(tmpdir)
-            return metadata_to_datatable(table_metadata, file_path, **kwargs)
+            return metadata_to_datatable(table_metadata, **kwargs)
     else:
         table_metadata = read_table_metadata(path)
-        return metadata_to_datatable(table_metadata, path, **kwargs)
+        return metadata_to_datatable(table_metadata, **kwargs)

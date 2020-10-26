@@ -98,8 +98,6 @@ def test_to_csv(sample_df, tmpdir):
         assert col.dtype == _col.dtype
 
 # TODO: Fix Moto tests needing to explicitly set permissions for objects
-
-
 @pytest.fixture
 def s3_client():
     _environ = os.environ.copy()
@@ -124,7 +122,6 @@ def make_public(s3_client, s3_bucket):
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
-    # BROKEN
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -153,7 +150,6 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-    # BROKEN
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -220,7 +216,6 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
-    # BROKEN
     dt = DataTable(sample_df)
     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
@@ -264,9 +259,29 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 
 
 def test_deserialize_url_csv(sample_df):
-    # BROKEN
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL)
+
+    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    assert dt.name == _dt.name
+    assert dt.index == _dt.index
+    assert dt.time_index == _dt.time_index
+    assert dt.columns.keys() == _dt.columns.keys()
+
+    for col_name in dt.columns.keys():
+        col = dt[col_name]
+        _col = _dt[col_name]
+
+        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
+        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
+        assert col.semantic_tags == _col.semantic_tags
+        assert col.name == _col.name
+        assert col.dtype == _col.dtype
+
+
+def test_deserialize_url_csv(sample_df):
+    dt = DataTable(sample_df, index='id')
+    _dt = deserialize.read_datatable(URL, profile_name=False)
 
     pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
     assert dt.name == _dt.name
