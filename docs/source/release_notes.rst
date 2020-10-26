@@ -11,6 +11,7 @@ Release Notes
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
     * Documentation Changes
         * Add conda install instructions (:pr:`305`, :pr:`309`)
+        * Fix README.md badge with correct link (:pr:`314`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
