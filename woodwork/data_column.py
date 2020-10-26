@@ -70,9 +70,6 @@ class DataColumn(object):
         if self.semantic_tags != other.semantic_tags:
             return False
         if self.logical_type != other.logical_type:
-            # --> might actually be more complicated than this, in which case we should update ltype equality
-            #             assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-            # assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type
             return False
         if not self.to_series().equals(other.to_series()):
             return False

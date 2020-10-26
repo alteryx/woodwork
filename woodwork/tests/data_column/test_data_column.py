@@ -452,6 +452,7 @@ def test_ordinal_with_nan_values():
 
 
 def test_data_column_equality(sample_series, sample_datetime_series):
+    # Check different parameters to DataColumn
     str_col = DataColumn(sample_series, logical_type='Categorical')
     str_col_2 = DataColumn(sample_series, logical_type=Categorical)
     str_col_diff_tags = DataColumn(sample_series, logical_type=Categorical, semantic_tags={'test'})
@@ -459,6 +460,7 @@ def test_data_column_equality(sample_series, sample_datetime_series):
     assert str_col == str_col_2
     assert str_col != str_col_diff_tags
 
+    # Check columns with same logical types but different parameters
     ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
     ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
     ordinal_col_1 = DataColumn(sample_series, logical_type=ordinal_ltype_1)
@@ -468,7 +470,6 @@ def test_data_column_equality(sample_series, sample_datetime_series):
     assert ordinal_col_1 != ordinal_col_2
     assert ordinal_col_1 == ordinal_col_1
 
-    # --> pick better names
     datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
     datetime_col_format = DataColumn(sample_datetime_series, logical_type=datetime_ltype_instantiated)
     datetime_col_param = DataColumn(sample_datetime_series, logical_type=Datetime(datetime_format=None))
@@ -479,4 +480,8 @@ def test_data_column_equality(sample_series, sample_datetime_series):
     assert datetime_col_instantiated != datetime_col_format
     assert datetime_col_instantiated == datetime_col_param
 
-    # --> add test where only diff is the series
+    # Check different underlying series
+    str_col = DataColumn(sample_series, logical_type='NaturalLanguage')
+    changed_series = sample_series.copy().replace(to_replace='a', value='test')
+    null_col = DataColumn(changed_series, logical_type='NaturalLanguage')
+    assert str_col != null_col

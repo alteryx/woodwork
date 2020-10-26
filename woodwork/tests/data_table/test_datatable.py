@@ -2269,6 +2269,7 @@ def test_datatable_equality(sample_df, sample_series):
     assert dt_index == dt_set_index
     assert dt_index != dt_time_index
 
+    # Check datatable with same parameters but changed underlying df
     dt_set_index['phone_number'] = DataColumn(sample_series.rename('phone_number'), logical_type='NaturalLanguage')
     assert dt_index != dt_set_index
 
