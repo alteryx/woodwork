@@ -154,6 +154,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
+                   time_index='signup_date',
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33])})
     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
@@ -299,3 +300,48 @@ def test_deserialize_url_csv_anon(sample_df):
         assert col.semantic_tags == _col.semantic_tags
         assert col.name == _col.name
         assert col.dtype == _col.dtype
+
+
+def test_check_later_schema_version():
+    def test_version(major, minor, patch, raises=True):
+        version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            warning_text = ('The schema version of the saved woodwork.DataTable '
+                            '%s is greater than the latest supported %s. '
+                            'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
+                            % (version_to_check, serialize.SCHEMA_VERSION))
+            with pytest.warns(UserWarning, match=warning_text):
+                deserialize._check_schema_version(version_to_check)
+        else:
+            with pytest.warns(None) as record:
+                deserialize._check_schema_version(version_to_check)
+            assert len(record) == 0
+
+    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split('.')]
+
+    test_version(major + 1, minor, patch)
+    test_version(major, minor + 1, patch)
+    test_version(major, minor, patch + 1)
+    test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_earlier_schema_version():
+    def test_version(major, minor, patch, raises=True):
+        version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            warning_text = ('The schema version of the saved woodwork.DataTable '
+                            '%s is no longer supported by this version '
+                            'of woodwork. Attempting to load woodwork.DataTable ...'
+                            % (version_to_check))
+            with pytest.warns(UserWarning, match=warning_text):
+                deserialize._check_schema_version(version_to_check)
+        else:
+            with pytest.warns(None) as record:
+                deserialize._check_schema_version(version_to_check)
+            assert len(record) == 0
+
+    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split('.')]
+
+    test_version(major - 1, minor, patch)
+    test_version(major, minor - 1, patch, raises=False)
+    test_version(major, minor, patch - 1, raises=False)

@@ -45,7 +45,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
     Returns:
         datatable (woodwork.DataTable) : Instance of :class:`.DataTable`.
     '''
-    _check_schema_version(table_metadata)
+    _check_schema_version(table_metadata['schema_version'])
 
     path = table_metadata['path']
     loading_info = table_metadata['loading_info']
@@ -117,27 +117,26 @@ def read_datatable(path, profile_name=None, **kwargs):
         return metadata_to_datatable(table_metadata, **kwargs)
 
 
-def _check_schema_version(metadata):
-    saved_version_str = metadata['schema_version']
+def _check_schema_version(saved_version_str):
     saved = saved_version_str.split('.')
     current = SCHEMA_VERSION.split('.')
 
-    warning_text_upgrade = ('The schema version of the saved woodwork.DataTable'
-                            '(%s) is greater than the latest supported (%s). '
-                            'You may need to upgrade featuretools. Attempting to load woodwork.DataTable ...'
+    warning_text_upgrade = ('The schema version of the saved woodwork.DataTable '
+                            '%s is greater than the latest supported %s. '
+                            'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
                             % (saved_version_str, SCHEMA_VERSION))
 
     for c_num, s_num in zip_longest(current, saved, fillvalue=0):
         if c_num > s_num:
             break
         elif c_num < s_num:
-            warnings.warn(warning_text_upgrade)
+            warnings.warn(warning_text_upgrade, UserWarning)
             break
 
     warning_text_outdated = ('The schema version of the saved woodwork.DataTable '
-                             '(%s) is no longer supported by this version '
-                             'of featuretools. Attempting to load woodwork.DataTable ...'
+                             '%s is no longer supported by this version '
+                             'of woodwork. Attempting to load woodwork.DataTable ...'
                              % (saved_version_str))
     # Check if saved has older major version.
     if current[0] > saved[0]:
-        warnings.warn(warning_text_outdated)
+        warnings.warn(warning_text_outdated, UserWarning)
