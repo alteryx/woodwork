@@ -9,6 +9,7 @@ Release Notes
     * Changes
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
+        * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
     * Documentation Changes
         * Add conda install instructions (:pr:`305`, :pr:`309`)
         * Fix README.md badge with correct link (:pr:`314`)
@@ -20,6 +21,7 @@ Release Notes
 **Breaking Changes**
 
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``. 
+    * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``. 
 
 
 **v0.0.4** October 21, 2020
