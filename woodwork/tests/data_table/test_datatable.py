@@ -2312,3 +2312,11 @@ def test_numeric_index_strings():
     assert dt.time_index == 'strs'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_create_datatable_from_df_slice_does_not_warn(sample_df):
+    df = sample_df[['age', 'is_registered']]
+    # with pytest.warns(None) as record:
+    #     DataTable(df)
+    # assert len(record) == 0
+    DataTable(df)

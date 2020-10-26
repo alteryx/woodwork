@@ -120,7 +120,7 @@ class DataTable(object):
                           f' {column.name}. Changing DataColumn name to: {col_name}')
             column._series.name = col_name
 
-        self._dataframe[col_name] = column._series
+        self._dataframe.loc[:, col_name] = column._series
         self._update_columns({col_name: column})
 
     @property
@@ -217,7 +217,7 @@ class DataTable(object):
         for name, column in new_columns.items():
             self.columns[name] = column
             # Make sure the underlying dataframe is in sync in case series data has changed
-            self._dataframe[name] = column._series
+            self._dataframe.loc[:, name] = column._series
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
