@@ -23,7 +23,7 @@ from woodwork.tests.testing_utils import to_pandas
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    pd.testing.assert_series_equal(to_pandas(data_col.to_pandas()), to_pandas(sample_series.astype('category')))
+    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series.astype('category')))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -371,17 +371,17 @@ def test_set_as_time_index(sample_series):
     assert 'time_index' in data_col.semantic_tags
 
 
-def test_to_pandas_no_copy(sample_series):
+def test_to_series_no_copy(sample_series):
     data_col = DataColumn(sample_series)
-    series = data_col.to_pandas()
+    series = data_col.to_series()
 
     assert series is data_col._series
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
-def test_to_pandas_with_copy(sample_series):
+def test_to_series_with_copy(sample_series):
     data_col = DataColumn(sample_series)
-    series = data_col.to_pandas(copy=True)
+    series = data_col.to_series(copy=True)
 
     assert series is not data_col._series
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))

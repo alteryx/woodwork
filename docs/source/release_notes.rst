@@ -3,6 +3,7 @@
 Release Notes
 -------------
 **Future Release**
+  
     * Enhancements
     * Fixes
     * Changes
@@ -13,14 +14,20 @@ Release Notes
         * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
         * Update ``DataTable.get_mutual_information`` to work with Dask input (:pr:`300`)
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
+        * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
+        * Fix README.md badge with correct link (:pr:`314`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+    * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``. 
 
 **v0.0.4** October 21, 2020
     * Enhancements

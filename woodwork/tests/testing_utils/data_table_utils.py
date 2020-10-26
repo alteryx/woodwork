@@ -11,7 +11,7 @@ def validate_subset_dt(subset_dt, dt):
         assert subset_col.logical_type == col.logical_type
         assert subset_col.semantic_tags == col.semantic_tags
         assert subset_col.dtype == col.dtype
-        assert to_pandas(subset_col.to_pandas()).equals(to_pandas(col.to_pandas()))
+        assert to_pandas(subset_col.to_series()).equals(to_pandas(col.to_series()))
 
 
 def mi_between_cols(col1, col2, df):
