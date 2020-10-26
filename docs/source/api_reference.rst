@@ -18,7 +18,7 @@ DataTable
     DataTable.set_logical_types
     DataTable.set_semantic_tags
     DataTable.set_time_index
-    DataTable.to_pandas
+    DataTable.to_dataframe
     DataTable.describe
     DataTable.get_mutual_information
 
