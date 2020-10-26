@@ -38,8 +38,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
     '''Deserialize DataTable from table metadata.
 
     Args:
-        description (dict) : Description of an :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_metadata`
-        path (str) : Directory from which to read table_metadata.json
+        table_metadata (dict) : Metadata of a :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_metadata`
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
@@ -85,7 +84,8 @@ def metadata_to_datatable(table_metadata, **kwargs):
                      index=table_metadata.get('index'),
                      time_index=table_metadata.get('time_index'),
                      logical_types=logical_types,
-                     semantic_tags=semantic_tags)
+                     semantic_tags=semantic_tags,
+                     use_standard_tags=False)
 
 
 def read_datatable(path, profile_name=None, **kwargs):

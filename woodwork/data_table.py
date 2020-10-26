@@ -725,7 +725,9 @@ class DataTable(object):
             Returns:
                 woodwork.DataTable
         '''
-        serialize.write_datatable(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
+        serialize.write_datatable(self, path, format='csv', index=False,
+                                  sep=sep, encoding=encoding, engine=engine,
+                                  compression=compression, profile_name=profile_name)
         return self
 
 

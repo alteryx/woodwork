@@ -89,7 +89,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     '''
     format = format.lower()
 
-    dt_name = datatable.name if datatable.name is not None else 'data'
+    dt_name = datatable.name or 'data'
 
     basename = '.'.join([dt_name, format])
     location = os.path.join('data', basename)
