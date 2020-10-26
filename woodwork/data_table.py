@@ -93,6 +93,21 @@ class DataTable(object):
         if time_index:
             _update_time_index(self, time_index)
 
+    def __eq__(self, other, deep=True):
+        if self.name != other.name:
+            return False
+        if self.index != other.index:
+            return False
+        if self.time_index != other.time_index:
+            return False
+        if self.columns.keys() != other.columns.keys():
+            return False
+        for col_name in self.columns.keys():
+            if self[col_name] != other[col_name]:
+                return False
+
+        return self.to_pandas().equals(other.to_pandas())
+
     def __getitem__(self, key):
         if isinstance(key, list):
             if not all([isinstance(col, str) for col in key]):

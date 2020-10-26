@@ -2249,3 +2249,34 @@ def test_numeric_index_strings(time_index_df):
     assert dt.time_index == 'strs'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_datatable_equality(sample_df, sample_series):
+    dt_basic = DataTable(sample_df)
+    dt_basic2 = DataTable(sample_df, copy_dataframe=True)
+    dt_names = DataTable(sample_df, name='test')
+
+    assert dt_basic != dt_names
+    assert dt_basic == dt_basic2
+    dt_basic2.pop('id')
+    assert dt_basic != dt_basic2
+
+    dt_index = DataTable(sample_df, index='id')
+    dt_time_index = DataTable(sample_df, time_index='signup_date')
+    dt_set_index = dt_basic.set_index('id')
+
+    assert dt_basic != dt_index
+    assert dt_index == dt_set_index
+    assert dt_index != dt_time_index
+
+    dt_set_index['phone_number'] = DataColumn(sample_series.rename('phone_number'), logical_type='NaturalLanguage')
+    assert dt_index != dt_set_index
+
+    dt_numeric_time_index = DataTable(sample_df, time_index='id')
+
+    assert dt_time_index != dt_numeric_time_index
+
+    dt_with_ltypes = DataTable(sample_df, time_index='id', logical_types={'full_name': 'categorical'})
+    assert dt_with_ltypes != dt_time_index
+    assert dt_with_ltypes == dt_numeric_time_index.set_logical_types({'full_name': Categorical})
+    assert dt_with_ltypes != dt_numeric_time_index.set_logical_types({'full_name': Categorical()})
