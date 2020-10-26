@@ -120,7 +120,7 @@ class DataTable(object):
                           f' {column.name}. Changing DataColumn name to: {col_name}')
             column._series.name = col_name
 
-        self._dataframe.loc[:, col_name] = column._series
+        self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
 
     @property
@@ -217,7 +217,7 @@ class DataTable(object):
         for name, column in new_columns.items():
             self.columns[name] = column
             # Make sure the underlying dataframe is in sync in case series data has changed
-            self._dataframe.loc[:, name] = column._series
+            self._dataframe[name] = column._series
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -378,7 +378,7 @@ class DataTable(object):
         new_dt._update_columns(cols_to_update)
         return new_dt
 
-    def to_pandas(self, copy=False):
+    def to_dataframe(self, copy=False):
         """Retrieves the DataTable's underlying dataframe.
 
         Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
@@ -390,7 +390,8 @@ class DataTable(object):
                 Defaults to False.
 
         Returns:
-            pandas.DataFrame: The underlying dataframe of the DataTable
+            DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
+                of dataframe used to create the DataTable.
         """
         if self.index is None:
             if copy:
