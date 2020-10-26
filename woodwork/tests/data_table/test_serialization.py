@@ -71,6 +71,14 @@ def test_to_dictionary(sample_df):
     assert metadata.__eq__(expected)
 
 
+def test_serialize_wrong_format(sample_df, tmpdir):
+    dt = DataTable(sample_df)
+
+    error = 'must be one of the following formats: csv'
+    with pytest.raises(ValueError, match=error):
+        serialize.write_datatable(dt, str(tmpdir), format='test')
+
+
 def test_to_csv(sample_df, tmpdir):
     dt = DataTable(sample_df,
                    name='test_data',
