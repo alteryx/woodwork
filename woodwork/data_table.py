@@ -710,7 +710,7 @@ class DataTable(object):
         return serialize.datatable_to_metadata(self)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
-        '''Write entityset to disk in the csv format, location specified by `path`.
+        '''Write DataTable to disk in the CSV format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
@@ -723,7 +723,7 @@ class DataTable(object):
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
 
             Returns:
-                DataTable
+                woodwork.DataTable
         '''
         serialize.write_datatable(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self

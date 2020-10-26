@@ -16,7 +16,7 @@ from woodwork.utils import _is_s3, _is_url
 
 
 def read_table_metadata(path):
-    '''Read datatable metadata from disk, S3 path, or URL.
+    '''Read DataTable metadata from disk, S3 path, or URL.
 
         Args:
             path (str): Location on disk, S3 path, or URL to read `table_metadata.json`.
@@ -35,7 +35,7 @@ def read_table_metadata(path):
 
 
 def metadata_to_datatable(table_metadata, **kwargs):
-    '''Deserialize datatable from table metadata.
+    '''Deserialize DataTable from table metadata.
 
     Args:
         description (dict) : Description of an :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_metadata`
@@ -43,7 +43,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
-        datatable (DataTable) : Instance of :class:`.DataTable`.
+        datatable (woodwork.DataTable) : Instance of :class:`.DataTable`.
     '''
     _check_schema_version(table_metadata)
 
@@ -81,15 +81,15 @@ def metadata_to_datatable(table_metadata, **kwargs):
         semantic_tags[col_name] = tags
 
     return DataTable(dataframe,
-                     name=table_metadata['name'],
-                     index=table_metadata['index'],
-                     time_index=table_metadata['time_index'],
+                     name=table_metadata.get('name'),
+                     index=table_metadata.get('index'),
+                     time_index=table_metadata.get('time_index'),
                      logical_types=logical_types,
                      semantic_tags=semantic_tags)
 
 
 def read_datatable(path, profile_name=None, **kwargs):
-    '''Read datatable from disk, S3 path, or URL.
+    '''Read DataTable from disk, S3 path, or URL.
 
         Args:
             path (str): Directory on disk, S3 path, or URL to read `table_metadata.json`.
@@ -118,14 +118,13 @@ def read_datatable(path, profile_name=None, **kwargs):
 
 
 def _check_schema_version(metadata):
-    # --> see where it might be better to use .get
     saved_version_str = metadata['schema_version']
     saved = saved_version_str.split('.')
     current = SCHEMA_VERSION.split('.')
 
-    warning_text_upgrade = ('The schema version of the saved ww.DataTable'
+    warning_text_upgrade = ('The schema version of the saved woodwork.DataTable'
                             '(%s) is greater than the latest supported (%s). '
-                            'You may need to upgrade featuretools. Attempting to load ww.DataTable ...'
+                            'You may need to upgrade featuretools. Attempting to load woodwork.DataTable ...'
                             % (saved_version_str, SCHEMA_VERSION))
 
     for c_num, s_num in zip_longest(current, saved, fillvalue=0):
@@ -135,9 +134,9 @@ def _check_schema_version(metadata):
             warnings.warn(warning_text_upgrade)
             break
 
-    warning_text_outdated = ('The schema version of the saved ww.DataTable '
+    warning_text_outdated = ('The schema version of the saved woodwork.DataTable '
                              '(%s) is no longer supported by this version '
-                             'of featuretools. Attempting to load ww.DataTable ...'
+                             'of featuretools. Attempting to load woodwork.DataTable ...'
                              % (saved_version_str))
     # Check if saved has older major version.
     if current[0] > saved[0]:
