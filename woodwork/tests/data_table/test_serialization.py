@@ -97,9 +97,10 @@ def test_to_csv(sample_df, tmpdir):
         assert col.name == _col.name
         assert col.dtype == _col.dtype
 
-# TODO: Fix Moto tests needing to explicitly set permissions for objects
+
 @pytest.fixture
 def s3_client():
+    # TODO: Fix Moto tests needing to explicitly set permissions for objects
     _environ = os.environ.copy()
     from moto import mock_s3
     with mock_s3():
@@ -279,7 +280,7 @@ def test_deserialize_url_csv(sample_df):
         assert col.dtype == _col.dtype
 
 
-def test_deserialize_url_csv(sample_df):
+def test_deserialize_url_csv_anon(sample_df):
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
 

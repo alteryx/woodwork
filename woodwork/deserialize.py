@@ -2,6 +2,8 @@ import json
 import os
 import tarfile
 import tempfile
+import warnings
+from itertools import zip_longest
 from pathlib import Path
 
 import pandas as pd
@@ -9,6 +11,7 @@ import pandas as pd
 from woodwork import DataTable
 from woodwork.logical_types import str_to_logical_type
 from woodwork.s3_utils import get_transport_params, use_smartopen
+from woodwork.serialize import SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url
 
 
@@ -42,8 +45,9 @@ def metadata_to_datatable(table_metadata, **kwargs):
     Returns:
         datatable (DataTable) : Instance of :class:`.DataTable`.
     '''
+    _check_schema_version(table_metadata)
+
     path = table_metadata['path']
-    # --> check schema version??
     loading_info = table_metadata['loading_info']
     file = os.path.join(path, loading_info['location'])
     kwargs = loading_info.get('params', {})
@@ -111,3 +115,30 @@ def read_datatable(path, profile_name=None, **kwargs):
     else:
         table_metadata = read_table_metadata(path)
         return metadata_to_datatable(table_metadata, **kwargs)
+
+
+def _check_schema_version(metadata):
+    # --> see where it might be better to use .get
+    saved_version_str = metadata['schema_version']
+    saved = saved_version_str.split('.')
+    current = SCHEMA_VERSION.split('.')
+
+    warning_text_upgrade = ('The schema version of the saved ww.DataTable'
+                            '(%s) is greater than the latest supported (%s). '
+                            'You may need to upgrade featuretools. Attempting to load ww.DataTable ...'
+                            % (saved_version_str, SCHEMA_VERSION))
+
+    for c_num, s_num in zip_longest(current, saved, fillvalue=0):
+        if c_num > s_num:
+            break
+        elif c_num < s_num:
+            warnings.warn(warning_text_upgrade)
+            break
+
+    warning_text_outdated = ('The schema version of the saved ww.DataTable '
+                             '(%s) is no longer supported by this version '
+                             'of featuretools. Attempting to load ww.DataTable ...'
+                             % (saved_version_str))
+    # Check if saved has older major version.
+    if current[0] > saved[0]:
+        warnings.warn(warning_text_outdated)
