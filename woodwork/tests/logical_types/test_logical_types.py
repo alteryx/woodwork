@@ -58,6 +58,20 @@ def test_str_to_logical_type():
     assert str_to_logical_type('full_NAME') == FullName
     assert str_to_logical_type('FullnamE') == FullName
 
+    ymd = '%Y-%m-%d'
+    datetime_with_format = str_to_logical_type('datetime', params={'datetime_format': ymd})
+    assert datetime_with_format.datetime_format == ymd
+
+    datetime_no_format = str_to_logical_type('datetime', params={'datetime_format': None})
+    assert datetime_no_format.datetime_format is None
+
+    assert datetime_with_format == Datetime(datetime_format=ymd)
+    assert datetime_no_format == Datetime()
+
+    # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated
+    assert str_to_logical_type('full_NAME', params={}) == FullName
+    assert datetime_no_format != Datetime
+
 
 def test_ordinal_order_errors():
     with pytest.raises(TypeError, match='Order values must be specified in a list or tuple'):

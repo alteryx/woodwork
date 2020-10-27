@@ -755,6 +755,27 @@ class DataTable(object):
         '''
         return serialize.datatable_to_metadata(self)
 
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
+        '''Write DataTable to disk in the CSV format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+
+            Returns:
+                woodwork.DataTable
+        '''
+        serialize.write_datatable(self, path, format='csv', index=False,
+                                  sep=sep, encoding=encoding, engine=engine,
+                                  compression=compression, profile_name=profile_name)
+        return self
+
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
