@@ -106,7 +106,8 @@ class DataTable(object):
             if self[col_name] != other[col_name]:
                 return False
 
-        return self.to_pandas().equals(other.to_pandas())
+        # TODO: will not work with dask dataframe
+        return self.to_dataframe().equals(other.to_pandas())
 
     def __getitem__(self, key):
         if isinstance(key, list):

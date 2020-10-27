@@ -71,6 +71,8 @@ class DataColumn(object):
             return False
         if self.logical_type != other.logical_type:
             return False
+
+        # TODO: will not work with dask dataframe
         if not self.to_series().equals(other.to_series()):
             return False
         return True
