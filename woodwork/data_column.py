@@ -72,9 +72,9 @@ class DataColumn(object):
         if self.logical_type != other.logical_type:
             return False
 
-        # TODO: will not work with dask dataframe
-        if not self.to_series().equals(other.to_series()):
-            return False
+        # Only check pandas series for equality
+        if isinstance(self._series, pd.Series) and isinstance(other.to_series(), pd.Series):
+            return self.to_series().equals(other.to_series())
         return True
 
     def _update_dtype(self):

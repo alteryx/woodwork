@@ -484,4 +484,9 @@ def test_data_column_equality(sample_series, sample_datetime_series):
     str_col = DataColumn(sample_series, logical_type='NaturalLanguage')
     changed_series = sample_series.copy().replace(to_replace='a', value='test')
     null_col = DataColumn(changed_series, logical_type='NaturalLanguage')
-    assert str_col != null_col
+
+    # We only check underlying data for equality with pandas dataframes
+    if isinstance(str_col.to_series(), pd.Series):
+        assert str_col != null_col
+    else:
+        assert str_col == null_col

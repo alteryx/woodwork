@@ -100,14 +100,16 @@ class DataTable(object):
             return False
         if self.time_index != other.time_index:
             return False
-        if self.columns.keys() != other.columns.keys():
+        if set(self.columns.keys()) != set(other.columns.keys()):
             return False
         for col_name in self.columns.keys():
             if self[col_name] != other[col_name]:
                 return False
 
-        # TODO: will not work with dask dataframe
-        return self.to_dataframe().equals(other.to_pandas())
+        # Only check pandas DataFrames for equality
+        if isinstance(self.to_dataframe(), pd.DataFrame) and isinstance(other.to_dataframe(), pd.DataFrame):
+            return self.to_dataframe().equals(other.to_dataframe())
+        return True
 
     def __getitem__(self, key):
         if isinstance(key, list):

@@ -2270,8 +2270,12 @@ def test_datatable_equality(sample_df, sample_series):
     assert dt_index != dt_time_index
 
     # Check datatable with same parameters but changed underlying df
+    # We only check underlying data for equality with pandas dataframes
     dt_set_index['phone_number'] = DataColumn(sample_series.rename('phone_number'), logical_type='NaturalLanguage')
-    assert dt_index != dt_set_index
+    if isinstance(dt_index.to_dataframe(), pd.DataFrame):
+        assert dt_index != dt_set_index
+    else:
+        assert dt_index == dt_set_index
 
     dt_numeric_time_index = DataTable(sample_df, time_index='id')
 
