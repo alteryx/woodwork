@@ -20,7 +20,14 @@ URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
 
 
+def xfail_not_pandas(dataframe):
+    # TODO: Allow serialization of non-pandas dataframes
+    if not isinstance(dataframe, pd.DataFrame):
+        pytest.xfail('fails with Dask - Dask serialization not yet implemented')
+
+
 def test_to_dictionary(sample_df):
+    xfail_not_pandas(sample_df)
     expected = {'schema_version': '1.0.0',
                 'name': 'test_data',
                 'index': 'id',
@@ -47,7 +54,7 @@ def test_to_dictionary(sample_df):
                               'semantic_tags': []},
                              {'name': 'age',
                               'ordinal': 4,
-                              'logical_type': {'parameters': {'order': [25, 33]}, 'type': 'Ordinal'},
+                              'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
                               'physical_type': {'type': 'category'},
                               'semantic_tags': ['category']},
                              {'name': 'signup_date',
@@ -65,13 +72,14 @@ def test_to_dictionary(sample_df):
                    name='test_data',
                    index='id',
                    semantic_tags={'id': 'tag1'},
-                   logical_types={'age': Ordinal(order=[25, 33])})
+                   logical_types={'age': Ordinal(order=[25, 33, 57])})
     metadata = dt.to_dictionary()
 
     assert metadata.__eq__(expected)
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
 
     error = 'must be one of the following formats: csv'
@@ -80,16 +88,17 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
 
 def test_to_csv(sample_df, tmpdir):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
                    semantic_tags={'id': 'tag1'},
-                   logical_types={'age': Ordinal(order=[25, 33])})
+                   logical_types={'age': Ordinal(order=[25, 33, 57])})
     dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
 
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
     assert dt.name == _dt.name
     assert dt.index == _dt.index
     assert dt.time_index == _dt.time_index
@@ -131,17 +140,18 @@ def make_public(s3_client, s3_bucket):
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
                    semantic_tags={'id': 'tag1'},
-                   logical_types={'age': Ordinal(order=[25, 33])})
+                   logical_types={'age': Ordinal(order=[25, 33, 57])})
     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
 
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
     assert dt.name == _dt.name
     assert dt.index == _dt.index
     assert dt.time_index == _dt.time_index
@@ -159,18 +169,19 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
                    time_index='signup_date',
                    semantic_tags={'id': 'tag1'},
-                   logical_types={'age': Ordinal(order=[25, 33])})
+                   logical_types={'age': Ordinal(order=[25, 33, 57])})
     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
 
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
     assert dt.name == _dt.name
     assert dt.index == _dt.index
     assert dt.time_index == _dt.time_index
@@ -226,12 +237,13 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name='test')
 
-    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
     assert dt.name == _dt.name
     assert dt.index == _dt.index
     assert dt.time_index == _dt.time_index
@@ -249,6 +261,7 @@ def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
 
 
 def test_serialize_url_csv(sample_df):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
@@ -256,6 +269,7 @@ def test_serialize_url_csv(sample_df):
 
 
 def test_serialize_subdirs_not_removed(sample_df, tmpdir):
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
@@ -269,10 +283,12 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 
 
 def test_deserialize_url_csv(sample_df):
+    # should fail til lwe update
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL)
 
-    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
     assert dt.name == _dt.name
     assert dt.index == _dt.index
     assert dt.time_index == _dt.time_index
@@ -290,10 +306,12 @@ def test_deserialize_url_csv(sample_df):
 
 
 def test_deserialize_url_csv_anon(sample_df):
+    # should fail til lwe update
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(dt.to_pandas(), _dt.to_pandas())
+    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
     assert dt.name == _dt.name
     assert dt.index == _dt.index
     assert dt.time_index == _dt.time_index
