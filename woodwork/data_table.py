@@ -753,7 +753,7 @@ class DataTable(object):
         return self
 
     def to_pickle(self, path, compression=None, profile_name=None):
-            '''Write DataTable to disk in the pickle format, location specified by `path`.
+        '''Write DataTable to disk in the pickle format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
@@ -765,9 +765,9 @@ class DataTable(object):
             Returns:
                 woodwork.DataTable
         '''
-        serialize.write_datatable(self, path, format='pickle',
-                                  compression=compression, profile_name=profile_name)
+        serialize.write_datatable(self, path, format='pickle', compression=compression, profile_name=profile_name)
         return self
+
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""

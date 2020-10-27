@@ -8,7 +8,7 @@ from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
 
 SCHEMA_VERSION = '1.0.0'
-FORMATS = ['csv']
+FORMATS = ['csv', 'pickle']
 
 
 def datatable_to_metadata(datatable):
@@ -104,6 +104,8 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             encoding=kwargs['encoding'],
             compression=kwargs['compression'],
         )
+    elif format == 'pickle':
+        df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
