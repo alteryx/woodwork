@@ -110,7 +110,7 @@ def test_read_csv_no_params(sample_df, tmpdir):
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
     assert dt_from_csv.semantic_tags == dt.semantic_tags
-    pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas())
+    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
 
 
 def test_read_csv_with_woodwork_params(sample_df, tmpdir):
@@ -138,7 +138,7 @@ def test_read_csv_with_woodwork_params(sample_df, tmpdir):
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
     assert dt_from_csv.semantic_tags == dt.semantic_tags
-    pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas())
+    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
 
 
 def test_read_csv_with_pandas_params(sample_df, tmpdir):
@@ -151,8 +151,8 @@ def test_read_csv_with_pandas_params(sample_df, tmpdir):
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
     assert dt_from_csv.semantic_tags == dt.semantic_tags
-    assert len(dt_from_csv.to_pandas()) == nrows
-    pd.testing.assert_frame_equal(dt_from_csv.to_pandas(), dt.to_pandas().head(nrows))
+    assert len(dt_from_csv.to_dataframe()) == nrows
+    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
 
 
 def test_is_numeric_series():
