@@ -6,6 +6,8 @@ Release Notes
 
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
+        * Add ``to_dictionary`` method for getting a datatable's metadata (:pr:`294`)
+        * Add ability to serialize datatable to csv and deserialize it back to a DataTable (:pr:`307`)
     * Fixes
     * Changes
         * Support logical type inference from a Dask DataFrame (:pr:`248`)
@@ -43,7 +45,6 @@ Release Notes
         * Add support for numeric time index on DataTable (:pr:`267`)
         * Add pop method to DataTable (:pr:`289`)
         * Add entry point to setup.py to run CLI commands (:pr:`285`)
-        * Add ``to_dictionary`` method for getting a datatable's metadata (:pr:`294`)
     * Fixes
         * Allow numeric datetime time indices (:pr:`282`)
     * Changes

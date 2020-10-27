@@ -3,7 +3,7 @@ import shutil
 from woodwork.utils import import_or_raise
 
 
-def use_smartopen_es(file_path, path, transport_params=None, read=True):
+def use_smartopen(file_path, path, transport_params=None, read=True):
     open = import_or_raise("smart_open", SMART_OPEN_ERR_MSG).open
     if read:
         with open(path, "rb", transport_params=transport_params) as fin:
