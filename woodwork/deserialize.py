@@ -49,14 +49,22 @@ def metadata_to_datatable(table_metadata, **kwargs):
     path = table_metadata['path']
     loading_info = table_metadata['loading_info']
     file = os.path.join(path, loading_info['location'])
+    load_format = loading_info['type']
     kwargs = loading_info.get('params', {})
 
-    dataframe = pd.read_csv(
-        file,
-        engine=kwargs['engine'],
-        compression=kwargs['compression'],
-        encoding=kwargs['encoding'],
-    )
+    if load_format == 'csv':
+        dataframe = pd.read_csv(
+            file,
+            engine=kwargs['engine'],
+            compression=kwargs['compression'],
+            encoding=kwargs['encoding'],
+        )
+    elif load_format == 'pickle':
+        dataframe = pd.read_pickle(file, **kwargs)
+    else:
+        # --> test this
+        error = 'must be one of the following formats: {}'
+        raise ValueError(error.format(', '.join(FORMATS)))
 
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)
