@@ -1,18 +1,18 @@
 <p align="center"><img width=50% src="https://woodwork-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
 <p align="center">
-    <a href="https://codecov.io/gh/FeatureLabs/woodwork" target="_blank">
+    <a href="https://codecov.io/gh/FeatureLabs/woodwork" style="text-decoration:none;" target="_blank">
         <img src="https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP" alt="Codecov" />
     </a>
-    <a href="https://woodwork.alteryx.com/en/latest/?badge=stable" target="_blank">
+    <a href="https://woodwork.alteryx.com/en/latest/?badge=stable" style="text-decoration:none;" target="_blank">
         <img src="https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable" alt="Documentation Status" />
     </a>
-    <a href="https://badge.fury.io/py/woodwork" target="_blank">
+    <a href="https://badge.fury.io/py/woodwork" style="text-decoration:none;" target="_blank">
         <img src="https://badge.fury.io/py/woodwork.svg?maxAge=2592000" alt="PyPI Version" />
     </a>
-    <a href="https://anaconda.org/conda-forge/woodwork" target="_blank">
+    <a href="https://anaconda.org/conda-forge/woodwork" style="text-decoration:none;" target="_blank">
         <img src="https://anaconda.org/conda-forge/woodwork/badges/version.svg" alt="Anaconda Version" />
     </a>
-    <a href="https://pepy.tech/project/woodwork" target="_blank">
+    <a href="https://pepy.tech/project/woodwork" style="text-decoration:none;" target="_blank">
         <img src="https://pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
     </a>
 </p>
@@ -43,7 +43,7 @@ import woodwork as ww
 
 data = ww.demo.load_retail(nrows=100, return_dataframe=True)
 dt = ww.DataTable(data, name='retail')
-dt.set_logical_types({
+dt = dt.set_logical_types({
     'quantity': 'Double',
     'customer_name': 'Categorical',
     'country': 'Categorical'
