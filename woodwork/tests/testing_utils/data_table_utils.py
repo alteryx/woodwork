@@ -23,13 +23,10 @@ def mi_between_cols(col1, col2, df):
     return mi_series.iloc[0]
 
 
-def to_pandas(df, index=None, sort_index=False, int_index=False):
+def to_pandas(df):
     '''
     Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
-    Args:
-        index (str, optional): column name to set as index, defaults to None
-        sort_index (bool, optional): whether to sort the dataframe on the index after setting it, defaults to False
-        int_index (bool, optional): Converts computed dask index to Int64Index to avoid errors, defaults to False
+
     Returns:
         Pandas DataFrame
     '''
