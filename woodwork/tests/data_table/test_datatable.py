@@ -1,5 +1,6 @@
 import re
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -36,7 +37,11 @@ from woodwork.logical_types import (
     WholeNumber,
     ZIPCode
 )
-from woodwork.tests.testing_utils import mi_between_cols, validate_subset_dt
+from woodwork.tests.testing_utils import (
+    mi_between_cols,
+    to_pandas,
+    validate_subset_dt
+)
 
 
 def test_datatable_init(sample_df):
@@ -46,10 +51,10 @@ def test_datatable_init(sample_df):
     assert dt.name is None
     assert dt.index is None
     assert dt.time_index is None
-    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df, (pd.DataFrame, dd.DataFrame))
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
-    pd.testing.assert_frame_equal(df, sample_df)
+    pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
 
 
 def test_datatable_copy_param(sample_df):
@@ -72,12 +77,8 @@ def test_datatable_init_with_name_and_index_vals(sample_df):
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
-def test_datatable_init_with_valid_string_time_index():
-    df = pd.DataFrame({
-        'id': [0, 1, 2, 3],
-        'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA]
-    })
-    dt = DataTable(df,
+def test_datatable_init_with_valid_string_time_index(time_index_df):
+    dt = DataTable(time_index_df,
                    name='datatable',
                    index='id',
                    time_index='times')
@@ -88,61 +89,52 @@ def test_datatable_init_with_valid_string_time_index():
     assert dt.columns[dt.time_index].logical_type == Datetime
 
 
-def test_datatable_with_numeric_datetime_time_index():
-    df = pd.DataFrame({'ints': pd.Series([1, 2, 3]),
-                       'strs': ['1', '2', '3']})
-    dt = DataTable(df, time_index='ints', logical_types={'ints': Datetime})
+def test_datatable_with_numeric_datetime_time_index(time_index_df):
+    dt = DataTable(time_index_df, time_index='ints', logical_types={'ints': Datetime})
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, name='datatable', time_index='strs')
+        DataTable(time_index_df, name='datatable', time_index='strs', logical_types={'strs': Datetime})
 
     assert dt.time_index == 'ints'
     assert dt.to_dataframe()['ints'].dtype == 'datetime64[ns]'
 
 
-def test_datatable_with_numeric_time_index():
-    df = pd.DataFrame({'numeric_datetime_index': [1, 2, 3],
-                       'normal_dates': ['2020-01-01', '2020-01-02', '2020-01-03']})
-
+def test_datatable_with_numeric_time_index(time_index_df):
     # Set a numeric time index on init
-    dt = DataTable(df, time_index='numeric_datetime_index')
-    date_col = dt['numeric_datetime_index']
-    assert dt.time_index == 'numeric_datetime_index'
+    dt = DataTable(time_index_df, time_index='ints')
+    date_col = dt['ints']
+    assert dt.time_index == 'ints'
     assert date_col.logical_type == WholeNumber
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
-    dt = DataTable(df, time_index='numeric_datetime_index', logical_types={'numeric_datetime_index': 'Double'})
-    date_col = dt['numeric_datetime_index']
-    assert dt.time_index == 'numeric_datetime_index'
+    dt = DataTable(time_index_df, time_index='ints', logical_types={'ints': 'Double'})
+    date_col = dt['ints']
+    assert dt.time_index == 'ints'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Change time index to normal datetime time index
-    dt = dt.set_time_index('normal_dates')
-    date_col = dt['numeric_datetime_index']
-    assert dt.time_index == 'normal_dates'
+    dt = dt.set_time_index('times')
+    date_col = dt['ints']
+    assert dt.time_index == 'times'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'numeric'}
 
     # Set numeric time index after init
-    dt = DataTable(df, logical_types={'numeric_datetime_index': 'Double'})
-    dt = dt.set_time_index('numeric_datetime_index')
-    date_col = dt['numeric_datetime_index']
-    assert dt.time_index == 'numeric_datetime_index'
+    dt = DataTable(time_index_df, logical_types={'ints': 'Double'})
+    dt = dt.set_time_index('ints')
+    date_col = dt['ints']
+    assert dt.time_index == 'ints'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-def test_datatable_init_with_invalid_string_time_index():
-    df = pd.DataFrame({
-        'id': [0, 1, 2],
-        'times': ['not_a_datetime', '2019-01-02', '2019-01-03']
-    })
+def test_datatable_init_with_invalid_string_time_index(sample_df):
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, name='datatable', time_index='times')
+        DataTable(sample_df, name='datatable', time_index='full_name')
 
 
 def test_datatable_init_with_logical_types(sample_df):
@@ -210,7 +202,7 @@ def test_datatable_adds_standard_semantic_tags(sample_df):
 
 
 def test_validate_params_errors(sample_df):
-    error_message = 'Dataframe must be a pandas.DataFrame'
+    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame'
     with pytest.raises(TypeError, match=error_message):
         _validate_params(dataframe=pd.Series(),
                          name=None,
@@ -240,9 +232,11 @@ def test_check_index_errors(sample_df):
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
-    error_message = 'Index column must be unique'
-    with pytest.raises(LookupError, match=error_message):
-        _check_index(sample_df, index='age')
+    if isinstance(sample_df, pd.DataFrame):
+        # Does not check for index uniqueness with Dask
+        error_message = 'Index column must be unique'
+        with pytest.raises(LookupError, match=error_message):
+            _check_index(sample_df, index='age')
 
     error_message = 'When setting make_index to True, the name specified for index cannot match an existing column name'
     with pytest.raises(IndexError, match=error_message):
@@ -266,7 +260,10 @@ def test_check_time_index_errors(sample_df):
 
 def test_check_unique_column_names(sample_df):
     duplicate_cols_df = sample_df.copy()
-    duplicate_cols_df.insert(0, 'age', [18, 21, 65], allow_duplicates=True)
+    if isinstance(sample_df, dd.DataFrame):
+        duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
+    else:
+        duplicate_cols_df.insert(0, 'age', [18, 21, 65, 43], allow_duplicates=True)
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
 
@@ -1127,7 +1124,7 @@ def test_select_ltypes_table(sample_df):
     original_col = dt_values.columns['full_name']
     col = dt.columns['full_name']
     assert col.logical_type == original_col.logical_type
-    assert col.to_series().equals(original_col.to_series())
+    assert to_pandas(col.to_series()).equals(to_pandas(original_col.to_series()))
     assert col.dtype == original_col.dtype
     assert col.semantic_tags == original_col.semantic_tags
 
@@ -1237,7 +1234,7 @@ def test_pop(sample_df):
     datacol = dt.pop('age')
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
-    assert datacol.to_series().values == [33, 25, 33]
+    assert to_pandas(datacol.to_series()).values == [33, 25, 33, 57]
     assert datacol.logical_type == WholeNumber
 
     assert 'age' not in dt.to_dataframe().columns
@@ -1299,7 +1296,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_dataframe() is not df
-    pd.testing.assert_frame_equal(df[columns].reset_index(drop=True), new_dt.to_dataframe())
+    pd.testing.assert_frame_equal(to_pandas(df[columns]).reset_index(drop=True), to_pandas(new_dt.to_dataframe()))
     assert all(new_dt.to_dataframe().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
@@ -1310,7 +1307,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_dataframe() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_dataframe(), check_index_type=False)
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_dataframe()))
     assert all(new_dt.to_dataframe().columns == ['id', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'full_name'}
     assert new_dt.index == 'id'
@@ -1321,18 +1318,17 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_dataframe() is not df
-    pd.testing.assert_frame_equal(df[columns], new_dt.to_dataframe(), check_index_type=False)
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_dataframe()), check_index_type=False)
     assert all(new_dt.to_dataframe().columns == ['id', 'signup_date', 'full_name'])
     assert set(new_dt.columns.keys()) == {'id', 'signup_date', 'full_name'}
     assert new_dt.index == 'id'
-    assert new_dt.time_index == 'signup_date'
 
     # Test with empty list selector
     columns = []
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_dataframe() is not df
-    assert new_dt.to_dataframe().empty
+    assert to_pandas(new_dt.to_dataframe()).empty
     assert set(new_dt.columns.keys()) == set()
     assert new_dt.index is None
     assert new_dt.time_index is None
@@ -1501,12 +1497,13 @@ def test_set_index(sample_df):
     non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
     assert all(['index' not in col.semantic_tags for col in non_index_cols])
 
-    # Test changing index also changes underlying DataFrame
-    dt = DataTable(sample_df)
-    dt.index = 'id'
-    assert (dt.to_dataframe().index == [0, 1, 2]).all()
-    dt.index = 'full_name'
-    assert (dt.to_dataframe().index == dt.to_dataframe()['full_name']).all()
+    # Test changing index also changes underlying DataFrame - pandas only
+    if isinstance(sample_df, pd.DataFrame):
+        dt = DataTable(sample_df)
+        dt.index = 'id'
+        assert (dt.to_dataframe().index == [0, 1, 2, 3]).all()
+        dt.index = 'full_name'
+        assert (dt.to_dataframe().index == dt.to_dataframe()['full_name']).all()
 
 
 def test_set_time_index(sample_df):
@@ -1816,15 +1813,13 @@ def test_to_dataframe_copy(sample_df):
     assert 'test_col' not in dt.columns
 
 
-def test_describe_does_not_include_index():
-    df = pd.DataFrame({'index_col': [0, 1, 2],
-                       'values': [10, 20.3, 5]})
-    dt = DataTable(df, index='index_col')
+def test_describe_does_not_include_index(describe_df):
+    dt = DataTable(describe_df, index='index_col')
     stats_df = dt.describe()
     assert 'index_col' not in stats_df.columns
 
 
-def test_data_table_describe_method():
+def test_datatable_describe_method(describe_df):
     categorical_ltypes = [Categorical,
                           CountryCode,
                           Ordinal(order=('yellow', 'red', 'blue')),
@@ -1837,37 +1832,6 @@ def test_data_table_describe_method():
     numeric_ltypes = [Double, Integer, WholeNumber]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
                                LatLong, PhoneNumber, URL]
-
-    boolean_data = [True, False, True, True, False, True, np.nan, True]
-    category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
-    datetime_data = pd.to_datetime(['2020-01-01',
-                                    '2020-02-01',
-                                    '2020-01-01 08:00',
-                                    '2020-02-02 16:00',
-                                    '2020-02-02 18:00',
-                                    pd.NaT,
-                                    '2020-02-01',
-                                    '2020-01-02'])
-    formatted_datetime_data = pd.Series(['2020~01~01',
-                                         '2020~02~01',
-                                         '2020~03~01',
-                                         '2020~02~02',
-                                         '2020~03~02',
-                                         pd.NaT,
-                                         '2020~02~01',
-                                         '2020~01~02'])
-    numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
-    natural_language_data = [
-        'This is a natural language sentence',
-        'Duplicate sentence.',
-        'This line has numbers in it 000123.',
-        'How about some symbols?!',
-        'This entry contains two sentences. Second sentence.',
-        'Duplicate sentence.',
-        np.nan,
-        'I am the last line',
-    ]
-    timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
 
     expected_index = ['physical_type',
                       'logical_type',
@@ -1887,6 +1851,7 @@ def test_data_table_describe_method():
                       'num_false']
 
     # Test categorical columns
+    category_data = describe_df['category_col']
     for ltype in categorical_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1905,6 +1870,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test boolean columns
+    boolean_data = describe_df['boolean_col']
     for ltype in boolean_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1925,6 +1891,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test datetime columns
+    datetime_data = describe_df['datetime_col']
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1933,10 +1900,10 @@ def test_data_table_describe_method():
             'count': 7,
             'nunique': 6,
             'nan_count': 1,
-            'mean': datetime_data.mean(),
-            'mode': pd.to_datetime('2020-02-01'),
-            'min': datetime_data.min(),
-            'max': datetime_data.max()}, name='col')
+            'mean': pd.Timestamp('2020-01-19 09:25:42.857142784'),
+            'mode': pd.Timestamp('2020-02-01 00:00:00'),
+            'min': pd.Timestamp('2020-01-01 00:00:00'),
+            'max': pd.Timestamp('2020-02-02 18:00:00')}, name='col')
         df = pd.DataFrame({'col': datetime_data})
         dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
         stats_df = dt.describe()
@@ -1946,6 +1913,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test formatted datetime columns
+    formatted_datetime_data = describe_df['formatted_datetime_col']
     for ltype in formatted_datetime_ltypes:
         converted_to_datetime = pd.to_datetime(['2020-01-01',
                                                 '2020-02-01',
@@ -1975,6 +1943,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['formatted_col'].dropna())
 
     # Test timedelta columns
+    timedelta_data = describe_df['timedelta_col']
     for ltype in timedelta_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1992,6 +1961,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test numeric columns
+    numeric_data = describe_df['numeric_col']
     for ltype in numeric_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -2017,6 +1987,7 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test natural language columns
+    natural_language_data = describe_df['natural_language_col']
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -2034,50 +2005,48 @@ def test_data_table_describe_method():
         pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
 
-def test_datatable_describe_with_improper_tags():
-    df = pd.DataFrame({'bool_col': [True, False, True, np.nan, True],
-                       'text_col': ['one', 'two', 'three', 'four', 'five']})
+def test_datatable_describe_with_improper_tags(describe_df):
+    df = describe_df.copy()[['boolean_col', 'natural_language_col']]
 
     logical_types = {
-        'bool_col': Boolean,
-        'text_col': NaturalLanguage,
+        'boolean_col': Boolean,
+        'natural_language_col': NaturalLanguage,
     }
     semantic_tags = {
-        'bool_col': 'category',
-        'text_col': 'numeric',
+        'boolean_col': 'category',
+        'natural_language_col': 'numeric',
     }
 
     dt = DataTable(df, logical_types=logical_types, semantic_tags=semantic_tags)
     stats_df = dt.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert stats_df['bool_col']['logical_type'] == Boolean
-    assert stats_df['bool_col']['semantic_tags'] == {'category'}
+    assert stats_df['boolean_col']['logical_type'] == Boolean
+    assert stats_df['boolean_col']['semantic_tags'] == {'category'}
     # Make sure numeric stats were not computed with improper 'numeric' tag
-    assert stats_df['text_col']['semantic_tags'] == {'numeric'}
-    assert stats_df['text_col'][['mean', 'std', 'min', 'max']].isnull().all()
+    assert stats_df['natural_language_col']['semantic_tags'] == {'numeric'}
+    assert stats_df['natural_language_col'][['mean', 'std', 'min', 'max']].isnull().all()
 
 
-def test_datatable_describe_with_no_semantic_tags():
-    df = pd.DataFrame({'category_col': ['a', 'b', 'c', 'a', 'a'],
-                       'num_col': [1, 3, 2, 4, 0]})
+def test_datatable_describe_with_no_semantic_tags(describe_df):
+    df = describe_df.copy()[['category_col', 'numeric_col']]
 
     logical_types = {
         'category_col': Categorical,
-        'num_col': WholeNumber,
+        'numeric_col': WholeNumber,
     }
 
     dt = DataTable(df, logical_types=logical_types, use_standard_tags=False)
     stats_df = dt.describe()
     assert dt['category_col'].semantic_tags == set()
-    assert dt['num_col'].semantic_tags == set()
+    assert dt['numeric_col'].semantic_tags == set()
 
     # Make sure category stats were computed
     assert stats_df['category_col']['semantic_tags'] == set()
     assert stats_df['category_col']['nunique'] == 3
     # Make sure numeric stats were computed
-    assert stats_df['num_col']['semantic_tags'] == set()
-    assert stats_df['num_col']['mean'] == 2
+    assert stats_df['numeric_col']['semantic_tags'] == set()
+    np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 20.85714, 5)
 
 
 def test_data_table_describe_with_include(sample_df):
@@ -2167,14 +2136,7 @@ def test_data_table_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
-def test_data_table_get_mutual_information():
-    df_same_mi = pd.DataFrame({
-        'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
-        'floats': pd.Series([1, None, 100, 1]),
-        'nans': pd.Series([None, None, None, None]),
-        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
-        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
-    })
+def test_data_table_get_mutual_information(df_same_mi, df_mi):
     dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
@@ -2186,16 +2148,10 @@ def test_data_table_get_mutual_information():
     assert mi.shape[0] == 1
     assert mi_between_cols('floats', 'ints', mi) == 1.0
 
-    df = pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
-        'bools': pd.Series([True, False, True]),
-        'strs': pd.Series(['hi', 'hi', 'hi'])
-    })
-    dt = DataTable(df)
+    dt = DataTable(df_mi)
     original_df = dt.to_dataframe(copy=True)
-
     mi = dt.get_mutual_information()
-    assert mi.shape[0] == 3
+    assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
@@ -2204,38 +2160,33 @@ def test_data_table_get_mutual_information():
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = dt.get_mutual_information(nrows=1)
-    assert mi.shape[0] == 3
+    assert mi.shape[0] == 6
     assert (mi['mutual_info'] == 1.0).all()
 
     mi = dt.get_mutual_information(num_bins=2)
-    assert mi.shape[0] == 3
+    assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
     np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
 
     # Confirm that none of this changed the DataTable's underlying df
-    pd.testing.assert_frame_equal(dt.to_dataframe(), original_df)
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(original_df))
 
 
-def test_mutual_info_does_not_include_index():
-    df = pd.DataFrame({'index_col': pd.Series([0, 1, 2], dtype='string'),
-                       'values': [10, 20.3, 5]})
-    dt = DataTable(df, index='index_col')
+def test_mutual_info_does_not_include_index(sample_df):
+    dt = DataTable(sample_df, index='id')
     mi = dt.get_mutual_information()
+    assert 'id' not in mi['column_1'].values
 
-    assert mi.shape[0] == 0
+
+def test_mutual_info_returns_empty_df_properly(sample_df):
+    dt = DataTable(sample_df.copy()[['id', 'age']], index='id')
+    mi = dt.get_mutual_information()
+    assert mi.empty
 
 
-def test_mutual_info_sort():
-    df = pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
-        'bools': pd.Series([True, False, True]),
-        'strs2': pd.Series(['bye', 'hi', 'bye']),
-
-        'strs': pd.Series(['hi', 'hi', 'hi'])
-
-    })
-    dt = DataTable(df)
+def test_mutual_info_sort(df_mi):
+    dt = DataTable(df_mi)
     mi = dt.get_mutual_information()
 
     for i in range(len(mi['mutual_info']) - 1):
@@ -2246,20 +2197,13 @@ def test_make_index(sample_df):
     dt = DataTable(sample_df, index='new_index', make_index=True)
     assert dt.index == 'new_index'
     assert 'new_index' in dt._dataframe.columns
-    assert dt._dataframe['new_index'].unique
-    assert dt._dataframe['new_index'].is_monotonic
+    assert to_pandas(dt._dataframe)['new_index'].unique
+    assert to_pandas(dt._dataframe['new_index']).is_monotonic
     assert 'index' in dt.columns['new_index'].semantic_tags
 
 
-def test_numeric_time_index_dtypes():
-    df = pd.DataFrame({
-        'whole_numbers': pd.Series([1, 2, 3], dtype='int8'),
-        'floats': pd.Series([1, 2, 3], dtype='float'),
-        'ints': pd.Series([1, -2, 3], dtype='Int64'),
-        'with_null': pd.Series([1, 2, pd.NA], dtype='Int64'),
-    })
-
-    dt = DataTable(df, time_index='whole_numbers')
+def test_numeric_time_index_dtypes(numeric_time_index_df):
+    dt = DataTable(numeric_time_index_df, time_index='whole_numbers')
     date_col = dt['whole_numbers']
     assert dt.time_index == 'whole_numbers'
     assert date_col.logical_type == WholeNumber
@@ -2284,29 +2228,22 @@ def test_numeric_time_index_dtypes():
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-def test_numeric_index_strings():
-    df = pd.DataFrame({'strs': pd.Series(['1', '2', '3']),
-                       'ints': pd.Series([1, 2, 3])})
+def test_numeric_index_strings(time_index_df):
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(time_index_df, time_index='strs')
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, time_index='strs')
+        DataTable(time_index_df, time_index='ints', logical_types={'ints': 'Categorical'})
 
-    error_msg = 'Error converting datatype for column strs from type object to type Int64. Please confirm the underlying data is consistent with logical type Integer.'
-    with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, time_index='strs', logical_types={'strs': 'Integer'})
-
-    error_msg = 'Time index column must contain datetime or numeric values'
-    with pytest.raises(TypeError, match=error_msg):
-        DataTable(df, time_index='ints', logical_types={'ints': 'Categorical'})
-
-    dt = DataTable(df, time_index='strs', logical_types={'strs': 'Double'})
+    dt = DataTable(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
     date_col = dt['strs']
     assert dt.time_index == 'strs'
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
-    dt = DataTable(df, logical_types={'strs': 'Double'})
+    dt = DataTable(time_index_df, logical_types={'strs': 'Double'})
     dt = dt.set_time_index('strs')
     date_col = dt['strs']
     assert dt.time_index == 'strs'

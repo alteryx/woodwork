@@ -1,5 +1,6 @@
 import warnings
 
+import dask.dataframe as dd
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -69,7 +70,11 @@ class DataTable(object):
             self._dataframe = dataframe
 
         if make_index:
-            self._dataframe.insert(0, index, range(len(self._dataframe)))
+            if isinstance(self._dataframe, dd.DataFrame):
+                self._dataframe[index] = 1
+                self._dataframe[index] = self._dataframe[index].cumsum() - 1
+            else:
+                self._dataframe.insert(0, index, range(len(self._dataframe)))
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -230,7 +235,7 @@ class DataTable(object):
         """
         col = self[column_name]
         del self.columns[column_name]
-        self._dataframe.drop(column_name, axis=1, inplace=True)
+        self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
 
     def set_index(self, index):
@@ -393,7 +398,7 @@ class DataTable(object):
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
                 of dataframe used to create the DataTable.
         """
-        if self.index is None:
+        if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
             if copy:
                 return self._dataframe.copy()
             else:
@@ -531,13 +536,18 @@ class DataTable(object):
 
         results = {}
 
+        if isinstance(self._dataframe, dd.DataFrame):
+            df = self._dataframe.compute()
+        else:
+            df = self._dataframe
+
         for column_name, column in cols_to_include:
             if 'index' in column.semantic_tags:
                 continue
             values = {}
             logical_type = column.logical_type
             semantic_tags = column.semantic_tags
-            series = column._series
+            series = df[column_name]
 
             # Calculate Aggregation Stats
             if column._is_categorical():
@@ -666,13 +676,15 @@ class DataTable(object):
         """
         # We only want Numeric, Categorical, and Boolean columns
         # And we don't want the index column
-        valid_columns = {col_name for col_name, column
+        valid_columns = [col_name for col_name, column
                          in self.columns.items() if (col_name != self.index and
                                                      (column._is_numeric() or
                                                       column._is_categorical() or
                                                       _get_ltype_class(column.logical_type) == Boolean)
-                                                     )}
+                                                     )]
         data = self._dataframe[valid_columns]
+        if isinstance(data, dd.DataFrame):
+            data = data.compute()
 
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
@@ -703,8 +715,8 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not isinstance(dataframe, pd.DataFrame):
-        raise TypeError('Dataframe must be a pandas.DataFrame')
+    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame)):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
@@ -737,8 +749,9 @@ def _check_index(dataframe, index, make_index=False):
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
-    if index and not make_index and not dataframe[index].is_unique:
+    if index and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
+        # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
     if make_index and index and index in dataframe.columns:
         # User sets make_index to True, but supplies an index name that matches a column already present

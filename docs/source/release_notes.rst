@@ -7,13 +7,21 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Support logical type inference from a Dask DataFrame (:pr:`248`)
+        * Fix validation checks and ``make_index`` to work with Dask DataFrames (:pr:`260`)
+        * Skip validation of Ordinal order values for Dask DataFrames (:pr:`270`)
+        * Improve support for datetimes with Dask input (:pr:`286`)
+        * Update ``DataTable.describe`` to work with Dask input (:pr:`296`)
+        * Update ``DataTable.get_mutual_information`` to work with Dask input (:pr:`300`)
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
         * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
     * Documentation Changes
+        * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
         * Fix README.md badge with correct link (:pr:`314`)
     * Testing Changes
+        * Parameterize numeric time index tests (:pr:`288`)
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`thehomebrewnerd`
@@ -22,7 +30,6 @@ Release Notes
 
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``. 
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``. 
-
 
 **v0.0.4** October 21, 2020
     * Enhancements

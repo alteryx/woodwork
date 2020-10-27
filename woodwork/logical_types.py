@@ -1,3 +1,5 @@
+import pandas as pd
+
 from woodwork.utils import camel_to_snake
 
 
@@ -233,11 +235,12 @@ class Ordinal(LogicalType):
     def _validate_data(self, series):
         """Confirm the supplied series does not contain any values that are not
         in the specified order values"""
-        missing_order_vals = set(series.dropna().values).difference(self.order)
-        if missing_order_vals:
-            error_msg = f'Ordinal column {series.name} contains values that are not present ' \
-                f'in the order values provided: {sorted(list(missing_order_vals))}'
-            raise ValueError(error_msg)
+        if isinstance(series, pd.Series):
+            missing_order_vals = set(series.dropna().values).difference(self.order)
+            if missing_order_vals:
+                error_msg = f'Ordinal column {series.name} contains values that are not present ' \
+                    f'in the order values provided: {sorted(list(missing_order_vals))}'
+                raise ValueError(error_msg)
 
 
 class PhoneNumber(LogicalType):

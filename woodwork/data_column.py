@@ -1,5 +1,6 @@
 import warnings
 
+import dask.dataframe as dd
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -70,7 +71,12 @@ class DataColumn(object):
             # Update the underlying series
             try:
                 if _get_ltype_class(self.logical_type) == Datetime:
-                    self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                    if isinstance(self._series, dd.Series):
+                        name = self._series.name
+                        self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                        self._series.name = name
+                    else:
+                        self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
                     self._series = self._series.astype(self.logical_type.pandas_dtype)
             except TypeError:
@@ -280,6 +286,8 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
+    if isinstance(series, dd.Series):
+        series = series.get_partition(0).compute()
     natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage

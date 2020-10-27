@@ -101,21 +101,21 @@ def test_get_mode():
             assert mode == answer
 
 
-def test_read_csv_no_params(sample_df, tmpdir):
+def test_read_csv_no_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
-    sample_df.to_csv(filepath, index=False)
+    sample_df_pandas.to_csv(filepath, index=False)
 
     dt_from_csv = ww.read_csv(filepath=filepath)
-    dt = ww.DataTable(sample_df)
+    dt = ww.DataTable(sample_df_pandas)
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
     assert dt_from_csv.semantic_tags == dt.semantic_tags
     pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
 
 
-def test_read_csv_with_woodwork_params(sample_df, tmpdir):
+def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
-    sample_df.to_csv(filepath, index=False)
+    sample_df_pandas.to_csv(filepath, index=False)
     logical_types = {
         'full_name': 'NaturalLanguage',
         'phone_number': 'PhoneNumber'
@@ -129,7 +129,7 @@ def test_read_csv_with_woodwork_params(sample_df, tmpdir):
                               time_index='signup_date',
                               logical_types=logical_types,
                               semantic_tags=semantic_tags)
-    dt = ww.DataTable(sample_df,
+    dt = ww.DataTable(sample_df_pandas,
                       index='id',
                       time_index='signup_date',
                       logical_types=logical_types,
@@ -141,12 +141,12 @@ def test_read_csv_with_woodwork_params(sample_df, tmpdir):
     pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
 
 
-def test_read_csv_with_pandas_params(sample_df, tmpdir):
+def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
-    sample_df.to_csv(filepath, index=False)
+    sample_df_pandas.to_csv(filepath, index=False)
     nrows = 2
     dt_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
-    dt = ww.DataTable(sample_df)
+    dt = ww.DataTable(sample_df_pandas)
 
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
