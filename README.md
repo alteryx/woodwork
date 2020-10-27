@@ -70,7 +70,7 @@ We now have created a Woodwork `DataTable` with the specified logical types assi
 If we wanted to do further analysis on only the columns in this table that have a logical type of `Boolean` or a semantic tag of `numeric` we can simply select those columns and access a dataframe containing just those columns:
 
 ```python
-filtered_df = dt.select(include=['Boolean', 'numeric']).to_pandas()
+filtered_df = dt.select(include=['Boolean', 'numeric']).to_dataframe()
 filtered_df
 ```
 
