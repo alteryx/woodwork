@@ -456,9 +456,13 @@ def test_data_column_equality(sample_series, sample_datetime_series):
     str_col = DataColumn(sample_series, logical_type='Categorical')
     str_col_2 = DataColumn(sample_series, logical_type=Categorical)
     str_col_diff_tags = DataColumn(sample_series, logical_type=Categorical, semantic_tags={'test'})
+    diff_name_col = DataColumn(sample_datetime_series, logical_type=Categorical)
+    diff_dtype_col = DataColumn(sample_series, logical_type=NaturalLanguage)
 
     assert str_col == str_col_2
     assert str_col != str_col_diff_tags
+    assert str_col != diff_name_col
+    assert str_col != diff_dtype_col
 
     # Check columns with same logical types but different parameters
     ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
