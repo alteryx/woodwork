@@ -62,6 +62,21 @@ class DataColumn(object):
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
 
+    def __eq__(self, other, deep=False):
+        if self.name != other.name:
+            return False
+        if self.dtype != other.dtype:
+            return False
+        if self.semantic_tags != other.semantic_tags:
+            return False
+        if self.logical_type != other.logical_type:
+            return False
+
+        # Only check pandas series for equality
+        if isinstance(self._series, pd.Series) and isinstance(other.to_series(), pd.Series):
+            return self.to_series().equals(other.to_series())
+        return True
+
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""

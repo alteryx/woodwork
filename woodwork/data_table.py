@@ -93,6 +93,24 @@ class DataTable(object):
         if time_index:
             _update_time_index(self, time_index)
 
+    def __eq__(self, other, deep=True):
+        if self.name != other.name:
+            return False
+        if self.index != other.index:
+            return False
+        if self.time_index != other.time_index:
+            return False
+        if set(self.columns.keys()) != set(other.columns.keys()):
+            return False
+        for col_name in self.columns.keys():
+            if self[col_name] != other[col_name]:
+                return False
+
+        # Only check pandas DataFrames for equality
+        if isinstance(self.to_dataframe(), pd.DataFrame) and isinstance(other.to_dataframe(), pd.DataFrame):
+            return self.to_dataframe().equals(other.to_dataframe())
+        return True
+
     def __getitem__(self, key):
         if isinstance(key, list):
             if not all([isinstance(col, str) for col in key]):
