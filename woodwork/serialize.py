@@ -12,7 +12,7 @@ FORMATS = ['csv']
 
 
 def datatable_to_metadata(datatable):
-    ordered_columns = datatable.to_pandas().columns
+    ordered_columns = datatable.to_dataframe().columns
     dt_metadata = [
         {
             'name': col.name,
@@ -94,7 +94,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     basename = '.'.join([dt_name, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
-    df = datatable.to_pandas()
+    df = datatable.to_dataframe()
 
     if format == 'csv':
         df.to_csv(
