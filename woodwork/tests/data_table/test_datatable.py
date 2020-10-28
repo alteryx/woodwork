@@ -1016,34 +1016,6 @@ def test_timedelta_dtype_inference_on_init():
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
-def test_select_ltypes_warning(sample_df):
-    dt = DataTable(sample_df)
-    dt = dt.set_logical_types({
-        'full_name': FullName,
-        'email': EmailAddress,
-        'phone_number': PhoneNumber,
-        'age': Double,
-        'signup_date': Datetime,
-    })
-
-    warning = 'The following selectors were not present in your DataTable: ZIPCode'
-    with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select(ZIPCode)
-    assert len(dt_empty.columns) == 0
-
-    warning = 'The following selectors were not present in your DataTable: ZIPCode'
-    with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select(['ZIPCode', PhoneNumber])
-    assert len(dt_empty.columns) == 1
-
-    all_types = LogicalType.__subclasses__()
-    warning = 'The following selectors were not present in your DataTable: Categorical, CountryCode, Filepath, IPAddress, Integer, LatLong, NaturalLanguage, Ordinal, SubRegionCode, Timedelta, URL, ZIPCode'
-    with pytest.warns(UserWarning, match=warning):
-        dt_all_types = dt.select(all_types)
-    assert len(dt_all_types.columns) == len(dt.columns)
-    assert len(dt_all_types.to_dataframe().columns) == len(dt.to_dataframe().columns)
-
-
 def test_select_ltypes_strings(sample_df):
     dt = DataTable(sample_df)
     dt = dt.set_logical_types({
@@ -1200,29 +1172,6 @@ def test_select_semantic_tags(sample_df):
     assert 'id' in dt_common_tags.columns
     assert 'is_registered' in dt_common_tags.columns
     assert 'age' in dt_common_tags.columns
-
-
-def test_select_semantic_tags_warning(sample_df):
-    dt = DataTable(sample_df, name='dt_name')
-    dt = dt.set_semantic_tags({
-        'full_name': ['new_tag', 'tag2'],
-        'age': 'numeric',
-    })
-
-    warning = "The following selectors were not present in your DataTable: doesnt_exist"
-    with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select(['doesnt_exist'])
-    assert len(dt_empty.columns) == 0
-
-    warning = "The following selectors were not present in your DataTable: doesnt_exist"
-    with pytest.warns(UserWarning, match=warning):
-        dt_single = dt.select(['numeric', 'doesnt_exist'])
-    assert len(dt_single.columns) == 2
-
-    warning = "The following selectors were not present in your DataTable: category, doesnt_exist"
-    with pytest.warns(UserWarning, match=warning):
-        dt_single = dt.select(['numeric', 'doesnt_exist', 'category', 'tag2'])
-    assert len(dt_single.columns) == 3
 
 
 def test_pop(sample_df):
@@ -1670,37 +1619,6 @@ def test_select_list_inputs(sample_df):
     assert 'signup_date' in dt_common_tags.columns
 
 
-def test_select_warnings(sample_df):
-    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt = dt.set_logical_types({
-        'full_name': FullName,
-        'email': EmailAddress,
-        'phone_number': PhoneNumber,
-        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
-    })
-    dt = dt.set_semantic_tags({
-        'full_name': ['new_tag', 'tag2'],
-        'age': 'numeric',
-        'signup_date': 'date_of_birth',
-        'email': 'tag2'
-    })
-
-    warning = 'The following selectors were not present in your DataTable: doesnt_exist'
-    with pytest.warns(UserWarning, match=warning):
-        dt_empty = dt.select(['doesnt_exist'])
-    assert len(dt_empty.columns) == 0
-
-    warning = 'The following selectors were not present in your DataTable: category, doesnt_exist'
-    with pytest.warns(UserWarning, match=warning):
-        dt_multiple_unused = dt.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
-    assert len(dt_multiple_unused.columns) == 2
-
-    warning = 'The following selectors were not present in your DataTable: ZIPCode, doesnt_exist'
-    with pytest.warns(UserWarning, match=warning):
-        dt_unused_ltype = dt.select(['date_of_birth', 'doesnt_exist', ZIPCode, WholeNumber])
-    assert len(dt_unused_ltype.columns) == 3
-
-
 def test_select_instantiated():
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
 
@@ -1747,8 +1665,7 @@ def test_filter_cols(sample_df):
 def test_filter_cols_errors(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
 
-    with pytest.warns(UserWarning, match='The following selectors were not present in your DataTable: nothing'):
-        filter_no_matches = dt._filter_cols(include='nothing')
+    filter_no_matches = dt._filter_cols(include='nothing')
     assert filter_no_matches == []
 
 
@@ -2075,23 +1992,6 @@ def test_data_table_describe_with_include(sample_df):
         assert col_name in multi_params_df.columns
     multi_params_df['full_name'].equals(col_name_df['full_name'])
     multi_params_df['full_name'].equals(dt.describe()['full_name'])
-
-
-def test_data_table_describe_with_include_error(sample_df):
-    dt = DataTable(sample_df)
-    match = 'no columns matched the given include filters.'
-    warning = 'The following selectors were not present in your DataTable: '
-
-    with pytest.raises(ValueError, match=match):
-        with pytest.warns(UserWarning, match=warning + 'wrongname'):
-            dt.describe(include=['wrongname'])
-
-    with pytest.warns(UserWarning, match=warning + 'tag4'):
-        dt.describe(include=['email', 'tag4'])
-
-    with pytest.raises(ValueError, match=match):
-        with pytest.warns(UserWarning, match=warning + 'url'):
-            dt.describe(include=[URL])
 
 
 def test_data_table_handle_nans_for_mutual_info():

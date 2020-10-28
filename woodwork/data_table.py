@@ -462,8 +462,6 @@ class DataTable(object):
         tags_used = set()
         tags_in_dt = {tag for col in self.columns.values() for tag in col.semantic_tags}
 
-        unused_selectors = []
-
         cols_to_include = set()
 
         for selector in include:
@@ -472,8 +470,6 @@ class DataTable(object):
                     raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
                 if selector in ltypes_in_dt:
                     ltypes_used.add(selector)
-                else:
-                    unused_selectors.append(str(selector))
             elif isinstance(selector, str):
                 # If the str is a viable ltype, it'll take precedence
                 # but if it's not present, we'll check if it's a tag
@@ -485,14 +481,8 @@ class DataTable(object):
                     tags_used.add(selector)
                 elif col_names and selector in self.columns:
                     cols_to_include.add(selector)
-                else:
-                    unused_selectors.append(selector)
             else:
                 raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
-
-        if unused_selectors:
-            not_present_str = ', '.join(sorted(unused_selectors))
-            warnings.warn(f'The following selectors were not present in your DataTable: {not_present_str}')
 
         for col_name, col in self.columns.items():
             if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
