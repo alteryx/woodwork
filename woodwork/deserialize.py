@@ -49,7 +49,10 @@ def metadata_to_datatable(table_metadata, **kwargs):
     path = table_metadata['path']
     loading_info = table_metadata['loading_info']
     file = os.path.join(path, loading_info['location'])
+
     load_format = loading_info['type']
+    assert load_format in FORMATS
+
     kwargs = loading_info.get('params', {})
 
     if load_format == 'csv':
@@ -61,9 +64,6 @@ def metadata_to_datatable(table_metadata, **kwargs):
         )
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
-    else:
-        error = 'must be one of the following formats: {}'
-        raise ValueError(error.format(', '.join(FORMATS)))
 
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)
