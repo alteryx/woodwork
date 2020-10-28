@@ -1016,7 +1016,7 @@ def test_timedelta_dtype_inference_on_init():
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
-def test_select_ltypes_no_matching(sample_df):
+def test_select_ltypes_all(sample_df):
     dt = DataTable(sample_df)
     dt = dt.set_logical_types({
         'full_name': FullName,
@@ -1025,10 +1025,6 @@ def test_select_ltypes_no_matching(sample_df):
         'age': Double,
         'signup_date': Datetime,
     })
-
-    assert len(dt.select(ZIPCode).columns) == 0
-    assert len(dt.select(['ZIPCode', PhoneNumber]).columns) == 1
-
     all_types = LogicalType.__subclasses__()
     dt_all_types = dt.select(all_types)
     assert len(dt_all_types.columns) == len(dt.columns)
@@ -1636,6 +1632,30 @@ def test_select_list_inputs(sample_df):
     assert 'is_registered' in dt_common_tags.columns
     assert 'age' in dt_common_tags.columns
     assert 'signup_date' in dt_common_tags.columns
+
+
+def test_select_warnings(sample_df):
+    dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    dt = dt.set_logical_types({
+        'full_name': FullName,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'signup_date': Datetime(datetime_format='%Y-%m-%d'),
+    })
+    dt = dt.set_semantic_tags({
+        'full_name': ['new_tag', 'tag2'],
+        'age': 'numeric',
+        'signup_date': 'date_of_birth',
+        'email': 'tag2'
+    })
+
+    assert len(dt.select(['doesnt_exist']).columns) == 0
+
+    dt_multiple_unused = dt.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
+    assert len(dt_multiple_unused.columns) == 2
+
+    dt_unused_ltype = dt.select(['date_of_birth', 'doesnt_exist', ZIPCode, WholeNumber])
+    assert len(dt_unused_ltype.columns) == 3
 
 
 def test_select_instantiated():
