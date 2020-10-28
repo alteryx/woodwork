@@ -1016,7 +1016,7 @@ def test_timedelta_dtype_inference_on_init():
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
-def test_select_ltypes(sample_df):
+def test_select_ltypes_no_match_and_all(sample_df):
     dt = DataTable(sample_df)
     dt = dt.set_logical_types({
         'full_name': FullName,
@@ -1636,7 +1636,7 @@ def test_select_list_inputs(sample_df):
     assert 'signup_date' in dt_common_tags.columns
 
 
-def test_select_no_match(sample_df):
+def test_select_semantic_tags_no_match(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt = dt.set_logical_types({
         'full_name': FullName,
