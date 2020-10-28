@@ -7,7 +7,12 @@ import tempfile
 import dask.dataframe as dd
 
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
+from woodwork.utils import (
+    _get_ltype_class,
+    _get_specified_ltype_params,
+    _is_s3,
+    _is_url
+)
 
 SCHEMA_VERSION = '1.0.0'
 FORMATS = ['csv', 'pickle']
@@ -20,7 +25,7 @@ def datatable_to_metadata(datatable):
             'name': col.name,
             'ordinal': ordered_columns.get_loc(col.name),
             'logical_type': {
-                'parameters': _get_ltype_params(col.logical_type),
+                'parameters': _get_specified_ltype_params(col.logical_type),
                 'type': str(_get_ltype_class(col.logical_type))
             },
             'physical_type': {

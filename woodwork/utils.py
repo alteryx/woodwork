@@ -192,8 +192,9 @@ def _get_ltype_class(ltype):
     return ltype.__class__
 
 
-def _get_ltype_params(ltype):
+def _get_specified_ltype_params(ltype):
     if ltype in ww.logical_types.LogicalType.__subclasses__():
+        # Do not reveal parameters for an uninstantiated LogicalType
         return {}
     return ltype.__dict__
 
