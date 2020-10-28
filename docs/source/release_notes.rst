@@ -3,7 +3,7 @@
 Release Notes
 -------------
 **Future Release**
-  
+
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
     * Fixes
@@ -17,6 +17,7 @@ Release Notes
         * Modify ``to_pandas`` function to return DataFrame with correct index (:pr:`281`)
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
         * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
+        * Remove UserWarning when no matching columns found (:pr:`325`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
@@ -29,8 +30,8 @@ Release Notes
 
 **Breaking Changes**
 
-    * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``. 
-    * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``. 
+    * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
+    * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
 
 **v0.0.4** October 21, 2020
     * Enhancements
