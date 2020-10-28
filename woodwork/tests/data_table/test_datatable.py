@@ -1636,7 +1636,7 @@ def test_select_list_inputs(sample_df):
     assert 'signup_date' in dt_common_tags.columns
 
 
-def test_select_warnings(sample_df):
+def test_select_no_match(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt = dt.set_logical_types({
         'full_name': FullName,
