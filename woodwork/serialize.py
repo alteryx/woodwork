@@ -4,6 +4,8 @@ import os
 import tarfile
 import tempfile
 
+import dask.dataframe as dd
+
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
 
@@ -105,7 +107,12 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             compression=kwargs['compression'],
         )
     elif format == 'pickle':
-        df.to_pickle(file, **kwargs)
+        # Dask currently does not support to_pickle
+        if isinstance(df, dd.DataFrame):
+            msg = 'Cannot serialize Dask DataTable to pickle'
+            raise ValueError(msg)
+        else:
+            df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))

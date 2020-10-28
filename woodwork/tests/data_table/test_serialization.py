@@ -100,6 +100,21 @@ def test_to_csv(sample_df, tmpdir):
     assert dt == _dt
 
 
+def test_to_pickle(sample_df_pandas, tmpdir):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(str(tmpdir))
+    _dt = deserialize.read_datatable(str(tmpdir))
+
+    assert pandas_dt == _dt
+
+
+def test_to_pickle_errors_dask(sample_df_dask, tmpdir):
+    dask_dt = DataTable(sample_df_dask)
+    msg = 'Cannot serialize Dask DataTable to pickle'
+    with pytest.raises(ValueError, match=msg):
+        dask_dt.to_pickle(str(tmpdir))
+
+
 @pytest.fixture
 def s3_client():
     # TODO: Fix Moto tests needing to explicitly set permissions for objects
@@ -139,6 +154,14 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     assert dt == _dt
 
 
+def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL)
+    assert pandas_dt == _dt
+
+
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
@@ -153,6 +176,14 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
     assert dt == _dt
+
+
+def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+    assert pandas_dt == _dt
 
 
 def create_test_credentials(test_path):
@@ -226,7 +257,6 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 
 
 def test_deserialize_url_csv(sample_df):
-    # should fail til lwe update
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL)
@@ -235,7 +265,6 @@ def test_deserialize_url_csv(sample_df):
 
 
 def test_deserialize_url_csv_anon(sample_df):
-    # should fail til lwe update
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
