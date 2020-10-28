@@ -518,11 +518,13 @@ class DataTable(object):
 
     def describe(self, include=None):
         """Calculates statistics for data contained in DataTable.
-        Arguments:
+
+        Args:
             include (list[str or LogicalType], optional): filter for what columns to include in the
             statistics returned. Can be a list of columns, semantic tags, logical types, or a list
             combining any of the three. It follows the most broad specification. Favors logical types
-            then semantic tag then column name.
+            then semantic tag then column name. If matching columns are found, an empty DataFrame
+            will be returned.
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
@@ -536,8 +538,6 @@ class DataTable(object):
         }
         if include is not None:
             filtered_cols = self._filter_cols(include, col_names=True)
-            if filtered_cols == []:
-                raise ValueError('no columns matched the given include filters.')
             cols_to_include = [(k, v) for k, v in self.columns.items() if k in filtered_cols]
         else:
             cols_to_include = self.columns.items()
