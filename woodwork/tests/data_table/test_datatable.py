@@ -2093,6 +2093,23 @@ def test_mutual_info_sort(df_mi):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
 
 
+def test_data_table_describe_with_include_error(sample_df):
+    dt = DataTable(sample_df)
+    match = 'no columns matched the given include filters.'
+    warning = 'The following selectors were not present in your DataTable: '
+
+    with pytest.raises(ValueError, match=match):
+        with pytest.warns(UserWarning, match=warning + 'wrongname'):
+            dt.describe(include=['wrongname'])
+
+    with pytest.warns(UserWarning, match=warning + 'tag4'):
+        dt.describe(include=['email', 'tag4'])
+
+    with pytest.raises(ValueError, match=match):
+        with pytest.warns(UserWarning, match=warning + 'url'):
+            dt.describe(include=[URL])
+
+
 def test_make_index(sample_df):
     dt = DataTable(sample_df, index='new_index', make_index=True)
     assert dt.index == 'new_index'
