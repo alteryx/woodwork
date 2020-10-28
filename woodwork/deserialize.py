@@ -11,7 +11,7 @@ import pandas as pd
 from woodwork import DataTable
 from woodwork.logical_types import str_to_logical_type
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serialize import SCHEMA_VERSION
+from woodwork.serialize import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url
 
 

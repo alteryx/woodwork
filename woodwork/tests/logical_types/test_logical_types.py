@@ -16,6 +16,7 @@ def test_logical_eq():
     assert Boolean == Boolean
     assert Boolean() == Boolean()
     assert Categorical != Boolean
+    assert Datetime != Datetime()
     assert Datetime() == Datetime(datetime_format=None)
     assert Datetime() != Datetime(datetime_format='%Y-%m-%d')
 

@@ -188,7 +188,8 @@ def test_get_ltype_params():
     assert params_empty == {}
 
     params_class = _get_ltype_params(Datetime)
-    assert params_class == {'datetime_format': None}
+    # --> change in paradigm - an ininstantiated ltype will never have params
+    assert params_class == {}
 
     params_null = _get_ltype_params(Datetime())
     assert params_null == {'datetime_format': None}
