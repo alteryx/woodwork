@@ -1,10 +1,11 @@
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
 
 
-@pytest.fixture(params=['sample_df_pandas', 'sample_df_dask'])
+@pytest.fixture(params=['sample_df_pandas', 'sample_df_dask', 'sample_df_koalas'])
 def sample_df(request):
     return request.getfixturevalue(request.param)
 
@@ -27,7 +28,12 @@ def sample_df_dask(sample_df_pandas):
     return dd.from_pandas(sample_df_pandas, npartitions=2)
 
 
-@pytest.fixture(params=['sample_series_pandas', 'sample_series_dask'])
+@pytest.fixture()
+def sample_df_koalas(sample_df_pandas):
+    return ks.from_pandas(sample_df_pandas)
+
+
+@pytest.fixture(params=['sample_series_pandas', 'sample_series_dask', 'sample_series_koalas'])
 def sample_series(request):
     return request.getfixturevalue(request.param)
 
@@ -42,7 +48,12 @@ def sample_series_dask(sample_series_pandas):
     return dd.from_pandas(sample_series_pandas, npartitions=2)
 
 
-@pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask'])
+@pytest.fixture()
+def sample_series_koalas(sample_series_pandas):
+    return ks.from_pandas(sample_series_pandas)
+
+
+@pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask', 'sample_datetime_series_koalas'])
 def sample_datetime_series(request):
     return request.getfixturevalue(request.param)
 
@@ -55,6 +66,11 @@ def sample_datetime_series_pandas():
 @pytest.fixture()
 def sample_datetime_series_dask(sample_datetime_series_pandas):
     return dd.from_pandas(sample_datetime_series_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def sample_datetime_series_koalas(sample_datetime_series_pandas):
+    return ks.from_pandas(sample_datetime_series_pandas)
 
 
 @pytest.fixture()
@@ -72,7 +88,12 @@ def time_index_df_dask(time_index_df_pandas):
     return dd.from_pandas(time_index_df_pandas, npartitions=2)
 
 
-@pytest.fixture(params=['time_index_df_pandas', 'time_index_df_dask'])
+@pytest.fixture()
+def time_index_df_koalas(time_index_df_pandas):
+    return ks.from_pandas(time_index_df_pandas)
+
+
+@pytest.fixture(params=['time_index_df_pandas', 'time_index_df_dask', 'time_index_df_koalas'])
 def time_index_df(request):
     return request.getfixturevalue(request.param)
 
@@ -92,7 +113,12 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
     return dd.from_pandas(numeric_time_index_df_pandas, npartitions=2)
 
 
-@pytest.fixture(params=['numeric_time_index_df_pandas', 'numeric_time_index_df_dask'])
+@pytest.fixture()
+def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
+    return ks.from_pandas(numeric_time_index_df_pandas)
+
+
+@pytest.fixture(params=['numeric_time_index_df_pandas', 'numeric_time_index_df_dask', 'numeric_time_index_df_koalas'])
 def numeric_time_index_df(request):
     return request.getfixturevalue(request.param)
 
@@ -148,7 +174,12 @@ def describe_df_dask(describe_df_pandas):
     return dd.from_pandas(describe_df_pandas, npartitions=2)
 
 
-@pytest.fixture(params=['describe_df_pandas', 'describe_df_dask'])
+@pytest.fixture()
+def describe_df_koalas(describe_df_pandas):
+    return ks.from_pandas(describe_df_pandas)
+
+
+@pytest.fixture(params=['describe_df_pandas', 'describe_df_dask', 'describe_df_koalas'])
 def describe_df(request):
     return request.getfixturevalue(request.param)
 
@@ -169,7 +200,12 @@ def df_same_mi_dask(df_same_mi_pandas):
     return dd.from_pandas(df_same_mi_pandas, npartitions=2)
 
 
-@pytest.fixture(params=['df_same_mi_pandas', 'df_same_mi_dask'])
+@pytest.fixture()
+def df_same_mi_koalas(df_same_mi_pandas):
+    return ks.from_pandas(df_same_mi_pandas)
+
+
+@pytest.fixture(params=['df_same_mi_pandas', 'df_same_mi_dask', 'df_same_mi_koalas'])
 def df_same_mi(request):
     return request.getfixturevalue(request.param)
 
@@ -189,6 +225,11 @@ def df_mi_dask(df_mi_pandas):
     return dd.from_pandas(df_mi_pandas, npartitions=1)
 
 
-@pytest.fixture(params=['df_mi_pandas', 'df_mi_dask'])
+@pytest.fixture()
+def df_mi_koalas(df_mi_pandas):
+    return ks.from_pandas(df_mi_pandas)
+
+
+@pytest.fixture(params=['df_mi_pandas', 'df_mi_dask', 'df_mi_koalas'])
 def df_mi(request):
     return request.getfixturevalue(request.param)
