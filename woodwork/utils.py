@@ -194,8 +194,6 @@ def _get_ltype_class(ltype):
 
 def _get_ltype_params(ltype):
     if ltype in ww.logical_types.LogicalType.__subclasses__():
-        # --> if the ltype is uninstantiated, we don't care about its parameters
-        # so we should return the empty dict
         return {}
     return ltype.__dict__
 

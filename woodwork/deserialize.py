@@ -62,7 +62,6 @@ def metadata_to_datatable(table_metadata, **kwargs):
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
     else:
-        # --> test this
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
 
