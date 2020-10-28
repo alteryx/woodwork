@@ -770,7 +770,6 @@ class DataTable(object):
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
         serialize.write_datatable(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
-        # --> not sure that fastparquet shouldnt be in requirements.txt instead of test
         return self
 
 
@@ -788,7 +787,6 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
     if time_index:
         datetime_format = None
         logical_type = None
-        # somehow broken with time index and parquet??
         if logical_types is not None and time_index in logical_types:
             logical_type = logical_types[time_index]
             if _get_ltype_class(logical_types[time_index]) == Datetime:

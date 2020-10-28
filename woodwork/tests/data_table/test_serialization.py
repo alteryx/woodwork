@@ -118,6 +118,27 @@ def test_to_pickle_errors_dask(sample_df_dask, tmpdir):
         dask_dt.to_pickle(str(tmpdir))
 
 
+def test_to_parquet(sample_df, tmpdir):
+    xfail_not_pandas(sample_df)
+    dt = DataTable(sample_df)
+    dt.to_parquet(str(tmpdir))
+    _dt = deserialize.read_datatable(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
+
+
+def test_to_parquet_fastparquet(sample_df, tmpdir):
+    # fastparquet can't handle nullable dtypes like Int64, string, and boolean
+    xfail_not_pandas(sample_df)
+    dt = DataTable(sample_df)
+    dt.to_parquet(str(tmpdir), engine='fastparquet')
+    _dt = deserialize.read_datatable(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
+
+
 @pytest.fixture
 def s3_client():
     # TODO: Fix Moto tests needing to explicitly set permissions for objects
@@ -159,6 +180,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
 
 def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
     pandas_dt = DataTable(sample_df_pandas)
     pandas_dt.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
@@ -168,7 +190,19 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
     assert pandas_dt == _dt
 
 
+def test_serialize_s3_parquet(sample_df_pandas, s3_client, s3_bucket):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_parquet(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL)
+
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert pandas_dt == _dt
+
+
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
@@ -188,6 +222,17 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
 def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
     pandas_dt = DataTable(sample_df_pandas)
     pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert pandas_dt == _dt
+
+
+def test_serialize_s3_parquet_anon(sample_df_pandas, s3_client, s3_bucket):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
