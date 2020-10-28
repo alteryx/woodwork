@@ -789,9 +789,10 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         datetime_format = None
         logical_type = None
         # somehow broken with time index and parquet??
-        logical_type = logical_types[time_index]
-        if _get_ltype_class(logical_types[time_index]) == Datetime:
-            datetime_format = logical_types[time_index].datetime_format
+        if logical_types is not None and time_index in logical_types:
+            logical_type = logical_types[time_index]
+            if _get_ltype_class(logical_types[time_index]) == Datetime:
+                datetime_format = logical_types[time_index].datetime_format
 
         _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
 
