@@ -5,4 +5,3 @@ pytest-xdist==2.1.0
 boto3>=1.10.45
 moto[all]>=1.3.15
 smart-open>=1.8.4
-fastparquet>=0.1.6
