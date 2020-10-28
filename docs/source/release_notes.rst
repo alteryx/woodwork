@@ -3,7 +3,7 @@
 Release Notes
 -------------
 **Future Release**
-  
+
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
     * Fixes
@@ -23,14 +23,15 @@ Release Notes
         * Fix README.md badge with correct link (:pr:`314`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
+        * Add DockerHub credentials to CI testing environment (:pr:`326`)
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
 
-    * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``. 
-    * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``. 
+    * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
+    * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
 
 **v0.0.4** October 21, 2020
     * Enhancements
