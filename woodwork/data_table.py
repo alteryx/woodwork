@@ -761,6 +761,18 @@ class DataTable(object):
         '''
         serialize.write_datatable(self, path, format='pickle', compression=compression, profile_name=profile_name)
 
+    def to_parquet(self, path, engine='auto', compression=None, profile_name=None):
+        '''Write DataTable to disk in the parquet format, location specified by `path`.
+
+                path (str): location on disk to write to (will be created as a directory)
+                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
+        # --> not sure that fastparquet shouldnt be in requirements.txt instead of test
+        return self
+
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
@@ -776,10 +788,10 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
     if time_index:
         datetime_format = None
         logical_type = None
-        if logical_types is not None and time_index in logical_types:
-            logical_type = logical_types[time_index]
-            if _get_ltype_class(logical_types[time_index]) == Datetime:
-                datetime_format = logical_types[time_index].datetime_format
+        # somehow broken with time index and parquet??
+        logical_type = logical_types[time_index]
+        if _get_ltype_class(logical_types[time_index]) == Datetime:
+            datetime_format = logical_types[time_index].datetime_format
 
         _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
 

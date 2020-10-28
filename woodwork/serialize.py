@@ -15,7 +15,7 @@ from woodwork.utils import (
 )
 
 SCHEMA_VERSION = '1.0.0'
-FORMATS = ['csv', 'pickle']
+FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def datatable_to_metadata(datatable):
@@ -118,6 +118,21 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             raise ValueError(msg)
         else:
             df.to_pickle(file, **kwargs)
+    elif format == 'parquet':
+        # Serializing to parquet format raises an error when columns contain tuples.
+        # Columns containing tuples are mapped as dtype object.
+        # Issue is resolved by casting columns of dtype object to string.
+
+        # --> test latlong - probs not an issue when stil la string but may become one
+        # ints and bools dont work
+        # --> we should have both pyarrow and fastparquet installed bc only pyarrow works with nullable cols
+
+        # --> no columns shoud ever be object but maybe switching latlong will cause it to be so?
+
+        object_dtype_columns = list(df.select_dtypes('object').columns)
+        assert not object_dtype_columns
+
+        df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
