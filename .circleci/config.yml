@@ -7,7 +7,9 @@ executors:
         type: string
     docker:
       - image: circleci/python:<< parameters.image_tag >>
-
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
 commands:
   pkg_woodwork:
     steps:
@@ -121,6 +123,9 @@ jobs:
     working_directory: ~/woodwork
     docker:
       - image: busybox:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/woodwork/pull/}\`"
@@ -131,6 +136,7 @@ workflows:
     jobs:
       - build_docs:
           name: "build docs"
+          context: dockerhub
   test_all_python_versions:
     jobs:
       - install_dt:
@@ -138,6 +144,7 @@ workflows:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> install woodwork
+          context: dockerhub
       - unit_tests:
           matrix:
             parameters:
@@ -145,6 +152,7 @@ workflows:
           name: << matrix.image_tag >> unit tests
           requires:
             - << matrix.image_tag >> install woodwork
+          context: dockerhub
       - lint_test:
           matrix:
             parameters:
@@ -152,6 +160,7 @@ workflows:
           name: << matrix.image_tag >> lint test
           requires:
             - << matrix.image_tag >> install woodwork
+          context: dockerhub
       - release_notes_updated:
           name: "release notes updated"
           filters:
@@ -160,3 +169,4 @@ workflows:
                 - /^main?/
                 - /^v\d+\.\d+\.\d+$/
                 - /^dep-update-[a-f0-9]{7}$/
+          context: dockerhub
