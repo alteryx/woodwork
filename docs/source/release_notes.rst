@@ -8,6 +8,7 @@ Release Notes
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``to_dictionary`` method for getting a datatable's metadata (:pr:`294`)
         * Add ability to serialize datatable to csv and deserialize it back to a DataTable (:pr:`307`)
+        * Add ability to serialize datatable to pickle and deserialize it back to a DataTable (:pr:`324`)
     * Fixes
     * Changes
         * Support logical type inference from a Dask DataFrame (:pr:`248`)
