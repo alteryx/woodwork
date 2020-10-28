@@ -6,6 +6,7 @@ Release Notes
 
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
+        * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
     * Fixes
     * Changes
         * Support logical type inference from a Dask DataFrame (:pr:`248`)
