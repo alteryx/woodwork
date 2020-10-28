@@ -9,6 +9,7 @@ import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
 from woodwork import DataTable
 from woodwork.logical_types import Ordinal
+from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -97,6 +98,7 @@ def test_to_csv(sample_df, tmpdir):
 
     _dt = deserialize.read_datatable(str(tmpdir))
 
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
 
 
@@ -105,6 +107,7 @@ def test_to_pickle(sample_df_pandas, tmpdir):
     pandas_dt.to_pickle(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
 
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert pandas_dt == _dt
 
 
@@ -151,6 +154,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
 
 
@@ -159,6 +163,8 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
     pandas_dt.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL)
+
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert pandas_dt == _dt
 
 
@@ -175,6 +181,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
 
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
 
 
@@ -183,6 +190,8 @@ def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
     pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert pandas_dt == _dt
 
 
@@ -231,6 +240,7 @@ def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name='test')
 
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
 
 
@@ -261,6 +271,7 @@ def test_deserialize_url_csv(sample_df):
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL)
 
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
 
 
@@ -269,6 +280,7 @@ def test_deserialize_url_csv_anon(sample_df):
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
 
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
 
 
