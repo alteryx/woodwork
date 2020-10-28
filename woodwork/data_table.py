@@ -427,6 +427,7 @@ class DataTable(object):
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
         semantic tags are specified in the list of types and tags to include.
+        If matching columns are found, an empty DataTable will be returned.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): Logical
