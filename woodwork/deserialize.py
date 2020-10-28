@@ -49,8 +49,6 @@ def metadata_to_datatable(table_metadata, **kwargs):
     path = table_metadata['path']
     loading_info = table_metadata['loading_info']
 
-    load_format = loading_info['type']
-
     file = os.path.join(path, loading_info['location'])
 
     load_format = loading_info['type']
