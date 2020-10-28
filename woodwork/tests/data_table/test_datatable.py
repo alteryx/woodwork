@@ -1016,7 +1016,7 @@ def test_timedelta_dtype_inference_on_init():
     assert df_from_dt['delta_NA_specified'].dtype == 'timedelta64[ns]'
 
 
-def test_select_ltypes_all(sample_df):
+def test_select_ltypes(sample_df):
     dt = DataTable(sample_df)
     dt = dt.set_logical_types({
         'full_name': FullName,
@@ -1025,6 +1025,8 @@ def test_select_ltypes_all(sample_df):
         'age': Double,
         'signup_date': Datetime,
     })
+    assert len(dt.select(ZIPCode).columns) == 0
+    assert len(dt.select(['ZIPCode', PhoneNumber]).columns) == 1
     all_types = LogicalType.__subclasses__()
     dt_all_types = dt.select(all_types)
     assert len(dt_all_types.columns) == len(dt.columns)
