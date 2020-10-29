@@ -48,6 +48,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
 
     path = table_metadata['path']
     loading_info = table_metadata['loading_info']
+
     file = os.path.join(path, loading_info['location'])
 
     load_format = loading_info['type']
@@ -64,6 +65,8 @@ def metadata_to_datatable(table_metadata, **kwargs):
         )
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
+    elif load_format == 'parquet':
+        dataframe = pd.read_parquet(file, engine=kwargs['engine'])
 
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)

@@ -15,7 +15,7 @@ from woodwork.utils import (
 )
 
 SCHEMA_VERSION = '1.0.0'
-FORMATS = ['csv', 'pickle']
+FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def datatable_to_metadata(datatable):
@@ -118,6 +118,12 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             raise ValueError(msg)
         else:
             df.to_pickle(file, **kwargs)
+    elif format == 'parquet':
+        # Serializing to parquet format raises an error when columns have object dtype.
+        # We currently have no LogicalTypes with physical dtype 'object'
+        assert all(dtype != 'object' for dtype in df.dtypes)
+
+        df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))

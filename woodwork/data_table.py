@@ -757,9 +757,23 @@ class DataTable(object):
                 path (str) : Location on disk to write to (will be created as a directory)
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-
         '''
-        serialize.write_datatable(self, path, format='pickle', compression=compression, profile_name=profile_name)
+        serialize.write_datatable(self, path, format='pickle',
+                                  compression=compression, profile_name=profile_name)
+
+    def to_parquet(self, path, compression=None, profile_name=None):
+        '''Write DataTable to disk in the parquet format, location specified by `path`.
+
+        Note: As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
+        for serialization to parquet.
+
+                path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='parquet',
+                                  engine='pyarrow', compression=compression,
+                                  profile_name=profile_name)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
