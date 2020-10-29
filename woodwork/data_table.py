@@ -743,14 +743,10 @@ class DataTable(object):
                 engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-
-            Returns:
-                woodwork.DataTable
         '''
         serialize.write_datatable(self, path, format='csv', index=False,
                                   sep=sep, encoding=encoding, engine=engine,
                                   compression=compression, profile_name=profile_name)
-        return self
 
     def to_pickle(self, path, compression=None, profile_name=None):
         '''Write DataTable to disk in the pickle format, location specified by `path`.
@@ -762,11 +758,8 @@ class DataTable(object):
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
 
-            Returns:
-                woodwork.DataTable
         '''
         serialize.write_datatable(self, path, format='pickle', compression=compression, profile_name=profile_name)
-        return self
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
