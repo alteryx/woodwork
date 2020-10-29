@@ -128,17 +128,6 @@ def test_to_parquet(sample_df, tmpdir):
     assert dt == _dt
 
 
-def test_to_parquet_fastparquet(sample_df, tmpdir):
-    # fastparquet can't handle nullable dtypes like Int64, string, and boolean
-    xfail_not_pandas(sample_df)
-    dt = DataTable(sample_df)
-    dt.to_parquet(str(tmpdir), engine='fastparquet')
-    _dt = deserialize.read_datatable(str(tmpdir))
-
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert dt == _dt
-
-
 @pytest.fixture
 def s3_client():
     # TODO: Fix Moto tests needing to explicitly set permissions for objects
