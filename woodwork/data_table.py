@@ -757,7 +757,6 @@ class DataTable(object):
                 path (str) : Location on disk to write to (will be created as a directory)
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-
         '''
         serialize.write_datatable(self, path, format='pickle', compression=compression, profile_name=profile_name)
 
@@ -770,7 +769,6 @@ class DataTable(object):
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
         serialize.write_datatable(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
-        return self
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
