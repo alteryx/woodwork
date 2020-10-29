@@ -1,8 +1,22 @@
 <p align="center"><img width=50% src="https://woodwork-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
-
-[![codecov](https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP)](https://codecov.io/gh/FeatureLabs/woodwork)
-[![PyPI version](https://badge.fury.io/py/woodwork.svg?maxAge=2592000)](https://badge.fury.io/py/woodwork)
-[![Downloads](https://pepy.tech/badge/woodwork/month)](https://pepy.tech/project/woodwork/month)
+<p align="center">
+    <a href="https://codecov.io/gh/FeatureLabs/woodwork" target="_blank">
+        <img src="https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP" alt="Codecov" />
+    </a>
+    <a href="https://woodwork.alteryx.com/en/latest/?badge=stable" target="_blank">
+        <img src="https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable" alt="Documentation Status" />
+    </a>
+    <a href="https://badge.fury.io/py/woodwork" target="_blank">
+        <img src="https://badge.fury.io/py/woodwork.svg?maxAge=2592000" alt="PyPI Version" />
+    </a>
+    <a href="https://anaconda.org/conda-forge/woodwork" target="_blank">
+        <img src="https://anaconda.org/conda-forge/woodwork/badges/version.svg" alt="Anaconda Version" />
+    </a>
+    <a href="https://pepy.tech/project/woodwork" target="_blank">
+        <img src="https://pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
+    </a>
+</p>
+<hr>
 
 Woodwork provides you with a common DataTable object to use with Featuretools, EvalML, and general ML. A DataTable object contains the physical, logical, and semantic data types present in the data. In addition, it can store metadata about the data.
 
@@ -12,6 +26,12 @@ Install with pip:
 
 ```bash
 python -m pip install woodwork
+```
+
+or from the conda-forge channel on [conda](https://anaconda.org/conda-forge/woodwork):
+
+```bash
+conda install -c conda-forge woodwork
 ```
 
 ## Example
@@ -50,7 +70,7 @@ We now have created a Woodwork `DataTable` with the specified logical types assi
 If we wanted to do further analysis on only the columns in this table that have a logical type of `Boolean` or a semantic tag of `numeric` we can simply select those columns and access a dataframe containing just those columns:
 
 ```python
-filtered_df = dt.select(include=['Boolean', 'numeric']).to_pandas()
+filtered_df = dt.select(include=['Boolean', 'numeric']).to_dataframe()
 filtered_df
 ```
 

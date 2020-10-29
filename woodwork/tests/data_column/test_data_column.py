@@ -1,13 +1,12 @@
 import re
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
 
-import woodwork as ww
-from woodwork.data_column import DataColumn, infer_logical_type
+from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
-    Boolean,
     Categorical,
     CountryCode,
     Datetime,
@@ -16,15 +15,15 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     SubRegionCode,
-    Timedelta,
     WholeNumber,
     ZIPCode
 )
+from woodwork.tests.testing_utils import to_pandas
 
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.to_pandas() is sample_series
+    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series.astype('category')))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -84,165 +83,9 @@ def test_semantic_tag_errors(sample_series):
         DataColumn(sample_series, semantic_tags=['index', 1])
 
 
-def test_integer_inference():
-    series_list = [
-        pd.Series([-1, 2, 1]),
-        pd.Series([-1, 0, 5]),
-    ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Integer
-
-
-def test_whole_number_inference():
-    series_list = [
-        pd.Series([0, 1, 5]),
-        pd.Series([2, 3, 5]),
-    ]
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == WholeNumber
-
-
-def test_double_inference():
-    series_list = [
-        pd.Series([-1, 2.0, 1]),
-        pd.Series([1, np.nan, 1])
-    ]
-    dtypes = ['float', 'float32', 'float64', 'float_']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Double
-
-
-def test_boolean_inference():
-    series_list = [
-        pd.Series([True, False, True]),
-        pd.Series([True, False, np.nan]),
-    ]
-    dtypes = ['bool', 'boolean']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Boolean
-
-
-def test_datetime_inference():
-    series_list = [
-        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000']),
-        pd.Series(['3/11/2000', '3/12/2000', np.nan]),
-    ]
-    dtypes = ['object', 'string', 'datetime64[ns]']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Datetime
-
-
-def test_datetime_inference_with_format():
-    series_list = [
-        pd.Series(['3~11~2000', '3~12~2000', '3~13~2000']),
-        pd.Series(['3~11~2000', '3~12~2000', np.nan]),
-    ]
-    dtypes = ['object', 'string']
-
-    ww.config.set_option('datetime_format', '%m~%d~%Y')
-
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Datetime
-
-    ww.config.reset_option('datetime_format')
-
-
-def test_categorical_inference():
-    series_list = [
-        pd.Series(['a', 'b', 'a']),
-        pd.Series(['1', '2', '1']),
-        pd.Series(['a', 'b', np.nan]),
-        pd.Series([1, 2, 1])
-    ]
-    dtypes = ['object', 'string', 'category']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Categorical
-
-
-def test_timedelta_inference():
-    series_list = [
-        pd.Series(pd.to_timedelta(range(3), unit='s')),
-        pd.Series([pd.to_timedelta(1, unit='s'), np.nan])
-    ]
-    dtypes = ['timedelta64[ns]']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Timedelta
-
-
-def test_natural_language_inference():
-    series_list = [
-        pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown']),
-    ]
-    dtypes = ['object', 'string']
-    for series in series_list:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == NaturalLanguage
-
-
-def test_natural_language_inference_with_threshhold():
-    natural_language_series = pd.Series([
-        '01234567890123456789',
-        '01234567890123456789',
-        '01234567890123456789'])
-    category_series = pd.Series([
-        '0123456789012345678',
-        '0123456789012345678',
-        '0123456789012345678'])
-
-    dtypes = ['object', 'string']
-
-    ww.config.set_option('natural_language_threshold', 19)
-    for dtype in dtypes:
-        inferred_type = infer_logical_type(natural_language_series.astype(dtype))
-        assert inferred_type == NaturalLanguage
-        inferred_type = infer_logical_type(category_series.astype(dtype))
-        assert inferred_type == Categorical
-    ww.config.reset_option('natural_language_threshold')
-
-
-def test_pdna_inference():
-    series_list = [
-        pd.Series(['Mr. John Doe', pd.NA, 'James Brown']).astype('string'),
-        pd.Series([1, pd.NA, -2]).astype('Int64'),
-        pd.Series([1, pd.NA, 2]).astype('Int64'),
-        pd.Series([True, pd.NA, False]).astype('boolean'),
-    ]
-
-    expected_logical_types = [
-        NaturalLanguage,
-        Integer,
-        WholeNumber,
-        Boolean,
-    ]
-
-    for index, series in enumerate(series_list):
-        inferred_type = infer_logical_type(series)
-        assert inferred_type == expected_logical_types[index]
-
-
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = object) ' \
+    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = category) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
@@ -295,7 +138,7 @@ def test_adds_category_standard_tag():
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
-    logical_types = [Categorical, CountryCode, Ordinal, SubRegionCode, ZIPCode]
+    logical_types = [Categorical, CountryCode, Ordinal(order=(1, 2, 3)), SubRegionCode, ZIPCode]
     for logical_type in logical_types:
         data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
         assert data_col.semantic_tags == {'custom_tag', 'category'}
@@ -528,17 +371,126 @@ def test_set_as_time_index(sample_series):
     assert 'time_index' in data_col.semantic_tags
 
 
-def test_to_pandas_no_copy(sample_series):
+def test_to_series_no_copy(sample_series):
     data_col = DataColumn(sample_series)
-    series = data_col.to_pandas()
+    series = data_col.to_series()
 
-    assert series is sample_series
-    pd.testing.assert_series_equal(series, sample_series)
+    assert series is data_col._series
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
-def test_to_pandas_with_copy(sample_series):
+def test_to_series_with_copy(sample_series):
     data_col = DataColumn(sample_series)
-    series = data_col.to_pandas(copy=True)
+    series = data_col.to_series(copy=True)
 
-    assert series is not sample_series
-    pd.testing.assert_series_equal(series, sample_series)
+    assert series is not data_col._series
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
+
+
+def test_dtype_update_on_init(datetime_series):
+    dc = DataColumn(datetime_series,
+                    logical_type='DateTime')
+    assert dc._series.dtype == 'datetime64[ns]'
+
+
+def test_dtype_update_on_ltype_change():
+    dc = DataColumn(pd.Series([1, 2, 3]),
+                    logical_type='WholeNumber')
+    assert dc._series.dtype == 'Int64'
+    dc = dc.set_logical_type('Double')
+    assert dc._series.dtype == 'float64'
+
+
+def test_ordinal_requires_instance_on_init(sample_series):
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        DataColumn(sample_series, logical_type=Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        DataColumn(sample_series, logical_type="Ordinal")
+
+
+def test_ordinal_requires_instance_on_update(sample_series):
+    dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        dc.set_logical_type(Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        dc.set_logical_type("Ordinal")
+
+
+def test_ordinal_with_order(sample_series):
+    if isinstance(sample_series, dd.Series):
+        pytest.xfail('fails with dask - ordinal data validation not compatible')
+    ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
+    dc = DataColumn(sample_series, logical_type=ordinal_with_order)
+    assert isinstance(dc.logical_type, Ordinal)
+    assert dc.logical_type.order == ['a', 'b', 'c']
+
+    dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+    new_dc = dc.set_logical_type(ordinal_with_order)
+    assert isinstance(new_dc.logical_type, Ordinal)
+    assert new_dc.logical_type.order == ['a', 'b', 'c']
+
+
+def test_ordinal_with_incomplete_ranking(sample_series):
+    if isinstance(sample_series, dd.Series):
+        pytest.xfail('Fails with Dask - ordinal data validation not supported')
+    ordinal_incomplete_order = Ordinal(order=['a', 'b'])
+    error_msg = re.escape("Ordinal column sample_series contains values that are not "
+                          "present in the order values provided: ['c']")
+    with pytest.raises(ValueError, match=error_msg):
+        DataColumn(sample_series, logical_type=ordinal_incomplete_order)
+
+
+def test_ordinal_with_nan_values():
+    nan_series = pd.Series(['a', 'b', np.nan, 'a'])
+    ordinal_with_order = Ordinal(order=['a', 'b'])
+    dc = DataColumn(nan_series, logical_type=ordinal_with_order)
+    assert isinstance(dc.logical_type, Ordinal)
+    assert dc.logical_type.order == ['a', 'b']
+
+
+def test_data_column_equality(sample_series, sample_datetime_series):
+    # Check different parameters to DataColumn
+    str_col = DataColumn(sample_series, logical_type='Categorical')
+    str_col_2 = DataColumn(sample_series, logical_type=Categorical)
+    str_col_diff_tags = DataColumn(sample_series, logical_type=Categorical, semantic_tags={'test'})
+    diff_name_col = DataColumn(sample_datetime_series, logical_type=Categorical)
+    diff_dtype_col = DataColumn(sample_series, logical_type=NaturalLanguage)
+
+    assert str_col == str_col_2
+    assert str_col != str_col_diff_tags
+    assert str_col != diff_name_col
+    assert str_col != diff_dtype_col
+
+    # Check columns with same logical types but different parameters
+    ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
+    ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
+    ordinal_col_1 = DataColumn(sample_series, logical_type=ordinal_ltype_1)
+    ordinal_col_2 = DataColumn(sample_series, logical_type=ordinal_ltype_2)
+
+    assert str_col != ordinal_col_1
+    assert ordinal_col_1 != ordinal_col_2
+    assert ordinal_col_1 == ordinal_col_1
+
+    datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
+    datetime_col_format = DataColumn(sample_datetime_series, logical_type=datetime_ltype_instantiated)
+    datetime_col_param = DataColumn(sample_datetime_series, logical_type=Datetime(datetime_format=None))
+    datetime_col_instantiated = DataColumn(sample_datetime_series, logical_type=Datetime())
+    datetime_col = DataColumn(sample_datetime_series, logical_type=Datetime)
+
+    assert datetime_col != datetime_col_instantiated
+    assert datetime_col_instantiated != datetime_col_format
+    assert datetime_col_instantiated == datetime_col_param
+
+    # Check different underlying series
+    str_col = DataColumn(sample_series, logical_type='NaturalLanguage')
+    changed_series = sample_series.copy().replace(to_replace='a', value='test')
+    null_col = DataColumn(changed_series, logical_type='NaturalLanguage')
+
+    # We only check underlying data for equality with pandas dataframes
+    if isinstance(str_col.to_series(), pd.Series):
+        assert str_col != null_col
+    else:
+        assert str_col == null_col

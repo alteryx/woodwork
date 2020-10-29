@@ -14,13 +14,11 @@ DataTable
     DataTable.remove_semantic_tags
     DataTable.reset_semantic_tags
     DataTable.select
-    DataTable.select_ltypes
-    DataTable.select_semantic_tags
     DataTable.set_index
     DataTable.set_logical_types
     DataTable.set_semantic_tags
     DataTable.set_time_index
-    DataTable.to_pandas
+    DataTable.to_dataframe
     DataTable.describe
     DataTable.get_mutual_information
 
@@ -38,7 +36,7 @@ DataColumn
     DataColumn.reset_semantic_tags
     DataColumn.set_logical_type
     DataColumn.set_semantic_tags
-    DataColumn.to_pandas
+    DataColumn.to_series
 
 
 Logical Types
@@ -81,6 +79,8 @@ General Utils
     :nosignatures:
 
     list_logical_types
+    list_semantic_tags
+    read_csv
 
 Demo Data
 =========

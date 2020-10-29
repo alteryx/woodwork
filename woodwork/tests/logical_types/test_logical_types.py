@@ -3,8 +3,10 @@ import pytest
 from woodwork.logical_types import (
     Boolean,
     Categorical,
+    Datetime,
     FullName,
     LogicalType,
+    Ordinal,
     get_logical_types,
     str_to_logical_type
 )
@@ -14,6 +16,8 @@ def test_logical_eq():
     assert Boolean == Boolean
     assert Boolean() == Boolean()
     assert Categorical != Boolean
+    assert Datetime() == Datetime(datetime_format=None)
+    assert Datetime() != Datetime(datetime_format='%Y-%m-%d')
 
 
 def test_logical_repr():
@@ -21,6 +25,11 @@ def test_logical_repr():
     assert repr(Boolean) == 'Boolean'
     assert isinstance(repr(Categorical), str)
     assert repr(Categorical) == 'Categorical'
+
+
+def test_instantiated_type_str():
+    assert str(Categorical()) == 'Categorical'
+    assert str(Boolean()) == 'Boolean'
 
 
 def test_get_logical_types():
@@ -48,3 +57,21 @@ def test_str_to_logical_type():
     assert str_to_logical_type('bOoLeAn') == Boolean
     assert str_to_logical_type('full_NAME') == FullName
     assert str_to_logical_type('FullnamE') == FullName
+
+
+def test_ordinal_order_errors():
+    with pytest.raises(TypeError, match='Order values must be specified in a list or tuple'):
+        Ordinal(order='not_valid')
+
+    with pytest.raises(ValueError, match='Order values cannot contain duplicates'):
+        Ordinal(order=['a', 'b', 'b'])
+
+
+def test_ordinal_init_with_order():
+    order = ['bronze', 'silver', 'gold']
+    ordinal_from_list = Ordinal(order=order)
+    assert ordinal_from_list.order == order
+
+    order = ('bronze', 'silver', 'gold')
+    ordinal_from_tuple = Ordinal(order=order)
+    assert ordinal_from_tuple.order == order

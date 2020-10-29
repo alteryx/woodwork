@@ -1,5 +1,7 @@
 import warnings
 
+import dask.dataframe as dd
+import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.config import config
@@ -11,11 +13,16 @@ from woodwork.logical_types import (
     Integer,
     LogicalType,
     NaturalLanguage,
+    Ordinal,
     Timedelta,
     WholeNumber,
     str_to_logical_type
 )
-from woodwork.utils import _convert_input_to_set, col_is_datetime
+from woodwork.utils import (
+    _convert_input_to_set,
+    _get_ltype_class,
+    col_is_datetime
+)
 
 
 class DataColumn(object):
@@ -46,6 +53,7 @@ class DataColumn(object):
         if use_standard_tags:
             semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
         self._semantic_tags = semantic_tags
+        self._update_dtype()
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -53,6 +61,44 @@ class DataColumn(object):
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
+
+    def __eq__(self, other, deep=False):
+        if self.name != other.name:
+            return False
+        if self.dtype != other.dtype:
+            return False
+        if self.semantic_tags != other.semantic_tags:
+            return False
+        if self.logical_type != other.logical_type:
+            return False
+
+        # Only check pandas series for equality
+        if isinstance(self._series, pd.Series) and isinstance(other.to_series(), pd.Series):
+            return self.to_series().equals(other.to_series())
+        return True
+
+    def _update_dtype(self):
+        """Update the dtype of the underlying series to match the dtype corresponding
+        to the LogicalType for the column."""
+        if isinstance(self.logical_type, Ordinal):
+            self.logical_type._validate_data(self._series)
+        if self.logical_type.pandas_dtype != str(self._series.dtype):
+            # Update the underlying series
+            try:
+                if _get_ltype_class(self.logical_type) == Datetime:
+                    if isinstance(self._series, dd.Series):
+                        name = self._series.name
+                        self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                        self._series.name = name
+                    else:
+                        self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                else:
+                    self._series = self._series.astype(self.logical_type.pandas_dtype)
+            except TypeError:
+                error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
+                    f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                    f'logical type {self.logical_type}.'
+                raise TypeError(error_msg)
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
         """Update the logical type for the column and return a new DataColumn object.
@@ -79,10 +125,13 @@ class DataColumn(object):
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
-            if logical_type in LogicalType.__subclasses__():
+            if isinstance(logical_type, str):
+                logical_type = str_to_logical_type(logical_type)
+            ltype_class = _get_ltype_class(logical_type)
+            if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
+                raise TypeError("Must use an Ordinal instance with order values defined")
+            if ltype_class in LogicalType.__subclasses__():
                 return logical_type
-            elif isinstance(logical_type, str):
-                return str_to_logical_type(logical_type)
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.name}'")
         else:
@@ -196,7 +245,7 @@ class DataColumn(object):
     def _is_categorical(self):
         return 'category' in self.logical_type.standard_tags
 
-    def to_pandas(self, copy=False):
+    def to_series(self, copy=False):
         """Retrieves the DataColumn's underlying series.
 
         Note: Do not modify the series unless copy=True has been set to avoid unexpected behavior
@@ -208,7 +257,8 @@ class DataColumn(object):
                 Defaults to False.
 
         Returns:
-            pandas.Series: The underlying series of the DataColumn
+            Series: The underlying series of the DataColumn. Return type will depend on the type
+                of series used to create the DataColumn.
         """
         if copy:
             return self._series.copy()
@@ -251,13 +301,14 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
-    datetime_format = config.get_option('datetime_format')
+    if isinstance(series, dd.Series):
+        series = series.get_partition(0).compute()
     natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage
 
     if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series, datetime_format):
+        if col_is_datetime(series):
             inferred_type = Datetime
         else:
             inferred_type = Categorical

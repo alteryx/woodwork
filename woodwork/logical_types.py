@@ -1,4 +1,6 @@
-from woodwork.utils import camel_to_snake
+import pandas as pd
+
+from woodwork.utils import _get_ltype_params, camel_to_snake
 
 
 class ClassNameDescriptor(object):
@@ -21,7 +23,10 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     standard_tags = {}
 
     def __eq__(self, other, deep=False):
-        return isinstance(other, self.__class__)
+        return isinstance(other, self.__class__) and _get_ltype_params(other) == _get_ltype_params(self)
+
+    def __str__(self):
+        return str(self.__class__)
 
 
 class Boolean(LogicalType):
@@ -73,6 +78,9 @@ class CountryCode(LogicalType):
 class Datetime(LogicalType):
     """Represents Logical Types that contain date and time information.
 
+    Args:
+        datetime_format (str): Desired datetime format for data
+
     Examples:
         .. code-block:: python
 
@@ -81,6 +89,10 @@ class Datetime(LogicalType):
              "01/01/2000 08:30"]
     """
     pandas_dtype = 'datetime64[ns]'
+    datetime_format = None
+
+    def __init__(self, datetime_format=None):
+        self.datetime_format = datetime_format
 
 
 class Double(LogicalType):
@@ -199,6 +211,11 @@ class Ordinal(LogicalType):
     """Represents Logical Types that contain ordered discrete values.
     Has 'category' as a standard tag.
 
+    Args:
+        order (list or tuple): An list or tuple specifying the order of the ordinal
+            values from low to high. The underlying series cannot contain values that
+            are not present in the order values.
+
     Examples:
         .. code-block:: python
 
@@ -208,9 +225,22 @@ class Ordinal(LogicalType):
     pandas_dtype = 'category'
     standard_tags = {'category'}
 
-    def __init__(self, ranking=None):
-        # ranking can be used specify the ordering (lowest to highest)
-        pass
+    def __init__(self, order):
+        if not isinstance(order, (list, tuple)):
+            raise TypeError("Order values must be specified in a list or tuple")
+        if len(order) != len(set(order)):
+            raise ValueError("Order values cannot contain duplicates")
+        self.order = order
+
+    def _validate_data(self, series):
+        """Confirm the supplied series does not contain any values that are not
+        in the specified order values"""
+        if isinstance(series, pd.Series):
+            missing_order_vals = set(series.dropna().values).difference(self.order)
+            if missing_order_vals:
+                error_msg = f'Ordinal column {series.name} contains values that are not present ' \
+                    f'in the order values provided: {sorted(list(missing_order_vals))}'
+                raise ValueError(error_msg)
 
 
 class PhoneNumber(LogicalType):

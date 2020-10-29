@@ -12,7 +12,7 @@ setup(
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     license='BSD 3-clause',
-    version='0.0.2',
+    version='0.0.4',
     description='a two-dimensional data object with labeled axes and typing information',
     url='https://github.com/FeatureLabs/woodwork/',
     classifiers=[
@@ -30,6 +30,11 @@ setup(
     python_requires='>=3.6, <4',
     keywords='data science machine learning typing',
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'woodwork = woodwork.__main__:cli'
+        ]
+    },
     long_description=long_description,
     long_description_content_type='text/markdown'
 )
