@@ -2,6 +2,7 @@ import json
 import os
 
 import boto3
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -27,7 +28,7 @@ def xfail_not_pandas(dataframe):
 
 
 def test_to_dictionary(sample_df):
-    xfail_not_pandas(sample_df)
+    # xfail_not_pandas(sample_df)
     expected = {'schema_version': '1.0.0',
                 'name': 'test_data',
                 'index': 'id',
@@ -67,7 +68,9 @@ def test_to_dictionary(sample_df):
                               'ordinal': 6,
                               'logical_type': {'parameters': {}, 'type': 'Boolean'},
                               'physical_type': {'type': 'boolean'},
-                              'semantic_tags': []}]}
+                              'semantic_tags': []}],
+                'loading_info': {'table_type': 'dask' if isinstance(sample_df, dd.DataFrame) else 'pandas'}
+                }
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
