@@ -107,11 +107,14 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     format = format.lower()
 
     dt_name = datatable.name or 'data'
+    df = datatable.to_dataframe()
 
-    basename = '.'.join([dt_name, format])
+    if isinstance(df, dd.DataFrame) and format == 'csv':
+        basename = "{}-*.{}".format(dt_name, format)
+    else:
+        basename = '.'.join([dt_name, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
-    df = datatable.to_dataframe()
 
     if format == 'csv':
         df.to_csv(

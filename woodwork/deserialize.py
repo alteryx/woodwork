@@ -6,6 +6,7 @@ import warnings
 from itertools import zip_longest
 from pathlib import Path
 
+import dask.dataframe as dd
 import pandas as pd
 
 from woodwork import DataTable
@@ -55,9 +56,12 @@ def metadata_to_datatable(table_metadata, **kwargs):
     assert load_format in FORMATS
 
     kwargs = loading_info.get('params', {})
+    table_type = loading_info.get('table_type', 'pandas')
+
+    lib = dd if table_type == 'dask' else pd
 
     if load_format == 'csv':
-        dataframe = pd.read_csv(
+        dataframe = lib.read_csv(
             file,
             engine=kwargs['engine'],
             compression=kwargs['compression'],
@@ -66,7 +70,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
     elif load_format == 'parquet':
-        dataframe = pd.read_parquet(file, engine=kwargs['engine'])
+        dataframe = lib.read_parquet(file, engine=kwargs['engine'])
 
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)

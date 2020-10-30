@@ -1,3 +1,4 @@
+from woodwork.utils import _get_ltype_class, _get_ltype_params
 import json
 import os
 
@@ -11,6 +12,9 @@ import woodwork.serialize as serialize
 from woodwork import DataTable
 from woodwork.logical_types import Ordinal
 from woodwork.tests.testing_utils import to_pandas
+<< << << < HEAD
+== == == =
+>>>>>> > Get dask serialization working
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -27,8 +31,13 @@ def xfail_not_pandas(dataframe):
         pytest.xfail('fails with Dask - Dask serialization not yet implemented')
 
 
+def xfail_tmp_disappears(dataframe):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+    if not isinstance(dataframe, pd.DataFrame):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
+
+
 def test_to_dictionary(sample_df):
-    # xfail_not_pandas(sample_df)
     expected = {'schema_version': '1.0.0',
                 'name': 'test_data',
                 'index': 'id',
@@ -90,7 +99,8 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
 
 def test_to_csv(sample_df, tmpdir):
-    xfail_not_pandas(sample_df)
+    # --> determiine where should use these instead of the other xfail
+    xfail_tmp_disappears(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -319,6 +329,15 @@ def test_deserialize_url_csv_anon(sample_df):
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
+
+
+def test_deserialize_s3_csv_anon(sample_df):
+    xfail_not_pandas(sample_df)
+    dt = DataTable(sample_df, index='id')
+    _dt = deserialize.read_datatable(S3_URL)
 
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
     assert dt == _dt
