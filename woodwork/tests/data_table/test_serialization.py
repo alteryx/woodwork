@@ -26,6 +26,12 @@ def xfail_not_pandas(dataframe):
         pytest.xfail('fails with Dask - Dask serialization not yet implemented')
 
 
+def xfail_tmp_disappears(dataframe):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+    if not isinstance(dataframe, pd.DataFrame):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
+
+
 def test_to_dictionary(sample_df):
     xfail_not_pandas(sample_df)
     expected = {'schema_version': '1.0.0',
@@ -79,10 +85,9 @@ def test_to_dictionary(sample_df):
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
-    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
 
-    error = 'must be one of the following formats: csv'
+    error = 'must be one of the following formats: csv, pickle, parquet'
     with pytest.raises(ValueError, match=error):
         serialize.write_datatable(dt, str(tmpdir), format='test')
 
@@ -153,7 +158,7 @@ def make_public(s3_client, s3_bucket):
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -168,31 +173,32 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     assert dt == _dt
 
 
-def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
-    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-    pandas_dt = DataTable(sample_df_pandas)
-    pandas_dt.to_pickle(TEST_S3_URL)
+def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert pandas_dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
-def test_serialize_s3_parquet(sample_df_pandas, s3_client, s3_bucket):
-    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-    pandas_dt = DataTable(sample_df_pandas)
-    pandas_dt.to_parquet(TEST_S3_URL)
+def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert pandas_dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -208,25 +214,28 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     assert dt == _dt
 
 
-def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
-    pandas_dt = DataTable(sample_df_pandas)
-    pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
+def test_serialize_s3_pickle_anon(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert pandas_dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
-def test_serialize_s3_parquet_anon(sample_df_pandas, s3_client, s3_bucket):
-    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
-    pandas_dt = DataTable(sample_df_pandas)
-    pandas_dt.to_parquet(TEST_S3_URL, profile_name=False)
+def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert pandas_dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def create_test_credentials(test_path):
