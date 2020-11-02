@@ -26,6 +26,8 @@ def write_conda_recipe(version):
     with open(recipe_file_path, 'rb') as config_file:
         # Toss out the first line that declares the version since its not supported YAML syntax
         next(config_file)
+        next(config_file)
+
         config = yaml.safe_load(config_file)
         # Path to the woodwork repository on the docker container.  Since we are doing a local build this is
         # the target we are copying this directory to.
