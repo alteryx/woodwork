@@ -152,6 +152,7 @@ def make_public(s3_client, s3_bucket):
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     xfail_tmp_disappears(sample_df)
+
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -166,16 +167,14 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     assert dt == _dt
 
 
-def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
-
-    dt = DataTable(sample_df)
-    dt.to_pickle(TEST_S3_URL)
+def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-    assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    assert pandas_dt == _dt
 
 
 def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
@@ -192,6 +191,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     xfail_tmp_disappears(sample_df)
+
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -207,16 +207,14 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     assert dt == _dt
 
 
-def test_serialize_s3_pickle_anon(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
-
-    dt = DataTable(sample_df)
-    dt.to_pickle(TEST_S3_URL, profile_name=False)
+def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-    assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    assert pandas_dt == _dt
 
 
 def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
