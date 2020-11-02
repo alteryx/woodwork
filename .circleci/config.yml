@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  shellcheck: circleci/shellcheck@2.0.0
+
 executors:
   python:
     parameters:
@@ -18,18 +21,30 @@ commands:
           DT_VERSION=$(python setup.py --version)
           tar -zxvf "dist/woodwork-${DT_VERSION}.tar.gz"
           mv "woodwork-${DT_VERSION}" unpacked_sdist
+  install_dependencies:
+    steps:
+      - run: |
+          virtualenv venv
+          source venv/bin/activate
+          make installdeps
+  install_dependencies_test:
+    steps:
+      - run: |
+          virtualenv venv
+          source venv/bin/activate
+          make installdeps-test
   install_dependencies_dev:
     steps:
       - run: |
-            virtualenv test_python -q
-            source test_python/bin/activate
-            make installdeps
-            make installdeps-dev
-    build_pkg:
+          virtualenv venv
+          source venv/bin/activate
+          make installdeps
+          make installdeps-dev
+  build_pkg:
     steps:
       - run: |
             git clone https://github.com/conda-forge/woodwork-feedstock
-            source test_python/bin/activate
+            source venv/bin/activate
             mkdir woodwork-feedstock/woodwork
             cp -r `ls -A | grep -v "woodwork-feedstock"` ./woodwork-feedstock/woodwork/
             python .circleci/conda_config.py "$(python setup.py --version)"
@@ -51,12 +66,15 @@ commands:
 
 jobs:
   build_conda_pkg:
-    working_directory: ~/woodwork/
+    working_directory: ~/woodwork
     executor:
       name: python
-      python_version: "3.6"
+      image_tag: "3.7"
     steps:
       - checkout
+      - run : |
+          virtualenv venv
+          source venv/bin/activate
       - install_dependencies_test
       - setup_remote_docker:
           version: 19.03.12

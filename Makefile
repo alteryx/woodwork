@@ -26,7 +26,6 @@ testcoverage: lint
 installdeps:
 	pip install --upgrade pip
 	pip install -e .
-	pip install -r dev-requirements.txt
 
 .PHONY: installdeps-test
 installdeps-test:
