@@ -1,6 +1,7 @@
 import warnings
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -20,6 +21,7 @@ from woodwork.utils import (
     col_is_datetime
 )
 
+ks.set_option('compute.ops_on_diff_frames', True)
 
 class DataTable(object):
     def __init__(self, dataframe,
@@ -547,6 +549,8 @@ class DataTable(object):
 
         if isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
+        elif isinstance(self._dataframe, ks.DataFrame):
+            df = self._dataframe.to_pandas()
         else:
             df = self._dataframe
 
@@ -694,7 +698,9 @@ class DataTable(object):
         data = self._dataframe[valid_columns]
         if isinstance(data, dd.DataFrame):
             data = data.compute()
-
+        if isinstance(self._dataframe, ks.DataFrame):
+            data = data.to_pandas()
+        breakpoint()
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
             data = data.sample(nrows)
@@ -724,8 +730,8 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame)):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
+    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame, ks.DataFrame)):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')

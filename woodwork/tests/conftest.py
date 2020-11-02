@@ -191,7 +191,7 @@ def df_same_mi_pandas():
         'floats': pd.Series([1, None, 100, 1]),
         'nans': pd.Series([None, None, None, None]),
         'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
-        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'])
+        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03', '2020-01-04'])
     })
 
 
@@ -202,7 +202,9 @@ def df_same_mi_dask(df_same_mi_pandas):
 
 @pytest.fixture()
 def df_same_mi_koalas(df_same_mi_pandas):
-    return ks.from_pandas(df_same_mi_pandas)
+    df_same_mi_pandas['ints'] = df_same_mi_pandas['ints'].astype('float')
+    df_same_mi_pandas['nans'] = df_same_mi_pandas['nans'].astype('float')
+    return ks.DataFrame(df_same_mi_pandas)
 
 
 @pytest.fixture(params=['df_same_mi_pandas', 'df_same_mi_dask', 'df_same_mi_koalas'])

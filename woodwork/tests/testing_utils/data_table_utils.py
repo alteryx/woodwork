@@ -1,4 +1,5 @@
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 
 
@@ -35,5 +36,8 @@ def to_pandas(df):
 
     if isinstance(df, (dd.DataFrame, dd.Series)):
         pd_df = df.compute()
+
+    if isinstance(df, (ks.DataFrame, ks.Series)):
+        pd_df = df.to_pandas()
 
     return pd_df

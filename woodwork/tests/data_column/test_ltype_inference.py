@@ -13,7 +13,7 @@ from woodwork.logical_types import (
 
 
 def test_integer_inference(integers):
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    dtypes = ['int8', 'int16', 'int64', 'int']
     for series in integers:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -21,8 +21,8 @@ def test_integer_inference(integers):
 
 
 def test_whole_number_inference(whole_nums):
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
+    dtypes = ['int8', 'int16', 'int64',
+              'int']
     for series in whole_nums:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -30,7 +30,7 @@ def test_whole_number_inference(whole_nums):
 
 
 def test_double_inference(doubles):
-    dtypes = ['float', 'float32', 'float64', 'float_']
+    dtypes = ['float', 'float64']
     for series in doubles:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -46,7 +46,7 @@ def test_boolean_inference(bools):
 
 
 def test_datetime_inference(datetimes):
-    dtypes = ['object', 'string', 'datetime64[ns]']
+    dtypes = ['string']
     for series in datetimes:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -54,7 +54,7 @@ def test_datetime_inference(datetimes):
 
 
 def test_categorical_inference(categories):
-    dtypes = ['object', 'string', 'category']
+    dtypes = ['string']
     for series in categories:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -70,7 +70,7 @@ def test_timedelta_inference(timedeltas):
 
 
 def test_natural_language_inference(strings):
-    dtypes = ['object', 'string']
+    dtypes = ['string']
     for series in strings:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -78,7 +78,7 @@ def test_natural_language_inference(strings):
 
 
 def test_natural_language_inference_with_threshhold(long_strings):
-    dtypes = ['object', 'string']
+    dtypes = ['string']
 
     ww.config.set_option('natural_language_threshold', 19)
     for dtype in dtypes:

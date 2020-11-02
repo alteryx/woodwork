@@ -1,6 +1,7 @@
 import warnings
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -80,6 +81,8 @@ class DataColumn(object):
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""
+        if isinstance(self._series, ks.Series):
+            return
         if isinstance(self.logical_type, Ordinal):
             self.logical_type._validate_data(self._series)
         if self.logical_type.pandas_dtype != str(self._series.dtype):
@@ -90,6 +93,8 @@ class DataColumn(object):
                         name = self._series.name
                         self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
                         self._series.name = name
+                    elif isinstance(self._series, ks.Series):
+                        self._series = ks.to_datetime(self._series, format=self.logical_type.datetime_format)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
@@ -303,6 +308,8 @@ def infer_logical_type(series):
     """
     if isinstance(series, dd.Series):
         series = series.get_partition(0).compute()
+    if isinstance(series, ks.Series):
+        series = series.head(100000).to_pandas()
     natural_language_threshold = config.get_option('natural_language_threshold')
 
     inferred_type = NaturalLanguage

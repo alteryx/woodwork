@@ -1,6 +1,7 @@
 import re
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,7 +24,7 @@ from woodwork.tests.testing_utils import to_pandas
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series.astype('category')))
+    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series).astype('category'))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -420,8 +421,8 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if isinstance(sample_series, dd.Series):
-        pytest.xfail('fails with dask - ordinal data validation not compatible')
+    if isinstance(sample_series, (dd.Series, ks.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
@@ -434,8 +435,8 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if isinstance(sample_series, dd.Series):
-        pytest.xfail('Fails with Dask - ordinal data validation not supported')
+    if isinstance(sample_series, (dd.Series, ks.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")

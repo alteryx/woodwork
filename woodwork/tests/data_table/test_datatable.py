@@ -1,6 +1,7 @@
 import re
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -51,7 +52,7 @@ def test_datatable_init(sample_df):
     assert dt.name is None
     assert dt.index is None
     assert dt.time_index is None
-    assert isinstance(df, (pd.DataFrame, dd.DataFrame))
+    assert isinstance(df, (pd.DataFrame, dd.DataFrame, ks.DataFrame))
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
@@ -259,6 +260,8 @@ def test_check_time_index_errors(sample_df):
 
 
 def test_check_unique_column_names(sample_df):
+    if isinstance(sample_df, ks.DataFrame):
+        pytest.skip("Koalas enforces unique column names")
     duplicate_cols_df = sample_df.copy()
     if isinstance(sample_df, dd.DataFrame):
         duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
@@ -285,7 +288,11 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
-    sample_df['formatted_date'] = pd.Series(["2019~01~01", "2019~01~02", "2019~01~03"])
+    new_dates = ["2019~01~01", "2019~01~02", "2019~01~03", "2019~01~04"]
+    if isinstance(sample_df, dd.DataFrame):
+        sample_df['formatted_date'] = pd.Series(new_dates)
+    else:
+        sample_df['formatted_date'] = new_dates
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
     dt = DataTable(sample_df, logical_types={'formatted_date': ymd_format})
     returned_types = dt.types
@@ -1200,7 +1207,7 @@ def test_pop(sample_df):
     datacol = dt.pop('age')
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
-    assert to_pandas(datacol.to_series()).values == [33, 25, 33, 57]
+    assert all(to_pandas(datacol.to_series()).values == [33, 25, 33, 57])
     assert datacol.logical_type == WholeNumber
 
     assert 'age' not in dt.to_dataframe().columns
@@ -1337,23 +1344,26 @@ def test_setitem_invalid_input(sample_df):
 
 def test_setitem_different_name(sample_df):
     dt = DataTable(sample_df)
-
+    new_series = pd.Series([1, 2, 3, 4], name='wrong')
+    if isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
     warning = 'Key, id, does not match the name of the provided DataColumn, wrong.'\
         ' Changing DataColumn name to: id'
     with pytest.warns(UserWarning, match=warning):
-        dt['id'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong'),
-                              use_standard_tags=False)
+        dt['id'] = DataColumn(new_series, use_standard_tags=False)
 
     assert dt['id'].name == 'id'
     assert dt['id'].to_series().name == 'id'
     assert dt.to_dataframe()['id'].name == 'id'
     assert 'wrong' not in dt.columns
 
+    new_series2 = pd.Series([1, 2, 3, 4], name='wrong2')
+    if isinstance(sample_df, ks.DataFrame):
+        new_series2 = ks.Series(new_series2)
     warning = 'Key, new_col, does not match the name of the provided DataColumn, wrong2.'\
         ' Changing DataColumn name to: new_col'
     with pytest.warns(UserWarning, match=warning):
-        dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'),
-                                   use_standard_tags=False)
+        dt['new_col'] = DataColumn(new_series2, use_standard_tags=False)
     assert dt['new_col'].name == 'new_col'
     assert dt['new_col'].to_series().name == 'new_col'
     assert dt.to_dataframe()['new_col'].name == 'new_col'
@@ -2078,6 +2088,10 @@ def test_data_table_make_categorical_for_mutual_info():
 
 
 def test_data_table_get_mutual_information(df_same_mi, df_mi):
+    # Only test if df_same_mi and df_mi are same type
+    if type(df_same_mi) != type(df_mi):
+        return
+
     dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
@@ -2199,6 +2213,10 @@ def test_numeric_index_strings(time_index_df):
 
 
 def test_datatable_equality(sample_df, sample_series):
+    # Only test if sample_df and sample_series are from same library
+    # TODO: Clean this up - better parameterization
+    if sample_df.__module__.split('.')[0] != sample_series.__module__.split('.')[0]:
+        return
     dt_basic = DataTable(sample_df)
     dt_basic2 = DataTable(sample_df, copy_dataframe=True)
     dt_names = DataTable(sample_df, name='test')
