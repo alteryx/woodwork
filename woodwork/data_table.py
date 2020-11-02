@@ -404,8 +404,7 @@ class DataTable(object):
     def to_dataframe(self):
         """Retrieves the DataTable's underlying dataframe.
 
-        Note: Do not modify returned dataframe to avoid unexpected behavior unless copy_dataframe
-            has been set to true when initializing the datatable.
+        Note: Do not modify the returned dataframe directly to avoid unexpected behavior
 
         Returns:
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
