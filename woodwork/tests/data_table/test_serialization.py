@@ -298,24 +298,24 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
-def test_deserialize_url_csv(sample_df):
-    dt = DataTable(sample_df, index='id')
+def test_deserialize_url_csv(sample_df_pandas):
+    dt = DataTable(sample_df_pandas, index='id')
     _dt = deserialize.read_datatable(URL)
 
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
-def test_deserialize_url_csv_anon(sample_df):
-    dt = DataTable(sample_df, index='id')
+def test_deserialize_url_csv_anon(sample_df_pandas):
+    dt = DataTable(sample_df_pandas, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
 
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
-def test_deserialize_s3_csv(sample_df):
-    dt = DataTable(sample_df, index='id')
+def test_deserialize_s3_csv(sample_df_pandas):
+    dt = DataTable(sample_df_pandas, index='id')
     _dt = deserialize.read_datatable(S3_URL)
 
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
