@@ -58,7 +58,10 @@ def metadata_to_datatable(table_metadata, **kwargs):
     kwargs = loading_info.get('params', {})
     table_type = loading_info.get('table_type', 'pandas')
 
-    lib = dd if table_type == 'dask' else pd
+    if table_type == 'dask':
+        lib = dd
+    else:
+        lib = pd
 
     if load_format == 'csv':
         dataframe = lib.read_csv(
