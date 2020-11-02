@@ -4,11 +4,18 @@ import os
 import tarfile
 import tempfile
 
+import dask.dataframe as dd
+
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import _get_ltype_class, _get_ltype_params, _is_s3, _is_url
+from woodwork.utils import (
+    _get_ltype_class,
+    _get_specified_ltype_params,
+    _is_s3,
+    _is_url
+)
 
 SCHEMA_VERSION = '1.0.0'
-FORMATS = ['csv']
+FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def datatable_to_metadata(datatable):
@@ -18,7 +25,7 @@ def datatable_to_metadata(datatable):
             'name': col.name,
             'ordinal': ordered_columns.get_loc(col.name),
             'logical_type': {
-                'parameters': _get_ltype_params(col.logical_type),
+                'parameters': _get_specified_ltype_params(col.logical_type),
                 'type': str(_get_ltype_class(col.logical_type))
             },
             'physical_type': {
@@ -104,6 +111,18 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             encoding=kwargs['encoding'],
             compression=kwargs['compression'],
         )
+    elif format == 'pickle':
+        # Dask currently does not support to_pickle
+        if isinstance(df, dd.DataFrame):
+            msg = 'Cannot serialize Dask DataTable to pickle'
+            raise ValueError(msg)
+        df.to_pickle(file, **kwargs)
+    elif format == 'parquet':
+        # Serializing to parquet format raises an error when columns have object dtype.
+        # We currently have no LogicalTypes with physical dtype 'object'
+        assert all(dtype != 'object' for dtype in df.dtypes)
+
+        df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))

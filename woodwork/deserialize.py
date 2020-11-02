@@ -11,7 +11,7 @@ import pandas as pd
 from woodwork import DataTable
 from woodwork.logical_types import str_to_logical_type
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serialize import SCHEMA_VERSION
+from woodwork.serialize import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url
 
 
@@ -48,15 +48,25 @@ def metadata_to_datatable(table_metadata, **kwargs):
 
     path = table_metadata['path']
     loading_info = table_metadata['loading_info']
+
     file = os.path.join(path, loading_info['location'])
+
+    load_format = loading_info['type']
+    assert load_format in FORMATS
+
     kwargs = loading_info.get('params', {})
 
-    dataframe = pd.read_csv(
-        file,
-        engine=kwargs['engine'],
-        compression=kwargs['compression'],
-        encoding=kwargs['encoding'],
-    )
+    if load_format == 'csv':
+        dataframe = pd.read_csv(
+            file,
+            engine=kwargs['engine'],
+            compression=kwargs['compression'],
+            encoding=kwargs['encoding'],
+        )
+    elif load_format == 'pickle':
+        dataframe = pd.read_pickle(file, **kwargs)
+    elif load_format == 'parquet':
+        dataframe = pd.read_parquet(file, engine=kwargs['engine'])
 
     dtypes = {col['name']: col['physical_type']['type'] for col in table_metadata['metadata']}
     dataframe = dataframe.astype(dtypes)

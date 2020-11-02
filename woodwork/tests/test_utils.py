@@ -14,8 +14,8 @@ from woodwork.logical_types import (
 )
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_ltype_params,
     _get_mode,
+    _get_specified_ltype_params,
     _is_numeric_series,
     camel_to_snake,
     list_logical_types,
@@ -180,17 +180,17 @@ def test_is_numeric_datetime_series(time_index_df):
 
 
 def test_get_ltype_params():
-    params_empty_class = _get_ltype_params(Categorical)
+    params_empty_class = _get_specified_ltype_params(Categorical)
     assert params_empty_class == {}
-    params_empty = _get_ltype_params(Categorical())
+    params_empty = _get_specified_ltype_params(Categorical())
     assert params_empty == {}
 
-    params_class = _get_ltype_params(Datetime)
-    assert params_class == {'datetime_format': None}
+    params_class = _get_specified_ltype_params(Datetime)
+    assert params_class == {}
 
-    params_null = _get_ltype_params(Datetime())
+    params_null = _get_specified_ltype_params(Datetime())
     assert params_null == {'datetime_format': None}
 
     ymd = '%Y-%m-%d'
-    params_value = _get_ltype_params(Datetime(datetime_format=ymd))
+    params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}

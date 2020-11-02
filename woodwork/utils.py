@@ -198,9 +198,23 @@ def _get_ltype_class(ltype):
     return ltype.__class__
 
 
-def _get_ltype_params(ltype):
+def _get_specified_ltype_params(ltype):
+    '''
+    Gets a dictionary of a LogicalType's parameters.
+
+    Note: If the logical type has not been instantiated, no parameters have
+    been specified for the LogicalType, so no parameters will be returned
+    even if that LogicalType can have parameters set.
+
+    Args:
+        ltype (LogicalType): An instantiated or uninstantiated LogicalType
+
+    Returns:
+        dict: The LogicalType's specified parameters.
+    '''
     if ltype in ww.logical_types.LogicalType.__subclasses__():
-        return ltype().__dict__
+        # Do not reveal parameters for an uninstantiated LogicalType
+        return {}
     return ltype.__dict__
 
 
