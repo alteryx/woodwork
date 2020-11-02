@@ -22,7 +22,7 @@ def write_conda_recipe(version):
         None: Side effect of overwriting the existing meta.yaml in the feedstock
     """
 
-    recipe_file_path = os.path.join(os.path.join(os.path.join(os.getcwd(), 'woodwork-core-feedstock'), 'recipe'), 'meta.yaml')
+    recipe_file_path = os.path.join(os.path.join(os.path.join(os.getcwd(), 'woodwork-feedstock'), 'recipe'), 'meta.yaml')
     with open(recipe_file_path, 'rb') as config_file:
         # Toss out the first line that declares the version since its not supported YAML syntax
         next(config_file)
