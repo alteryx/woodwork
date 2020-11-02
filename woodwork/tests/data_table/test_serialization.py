@@ -26,12 +26,6 @@ def xfail_not_pandas(dataframe):
         pytest.xfail('fails with Dask - Dask serialization not yet implemented')
 
 
-def xfail_tmp_disappears(dataframe):
-    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
-    if not isinstance(dataframe, pd.DataFrame):
-        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
-
-
 def test_to_dictionary(sample_df):
     xfail_not_pandas(sample_df)
     expected = {'schema_version': '1.0.0',
@@ -158,7 +152,7 @@ def make_public(s3_client, s3_bucket):
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -174,7 +168,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
 
 def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
+    xfail_not_pandas(sample_df)
 
     dt = DataTable(sample_df)
     dt.to_pickle(TEST_S3_URL)
@@ -186,7 +180,7 @@ def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket):
 
 
 def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
+    xfail_not_pandas(sample_df)
 
     dt = DataTable(sample_df)
     dt.to_parquet(TEST_S3_URL)
@@ -198,7 +192,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
+    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -215,7 +209,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
 
 
 def test_serialize_s3_pickle_anon(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
+    xfail_not_pandas(sample_df)
 
     dt = DataTable(sample_df)
     dt.to_pickle(TEST_S3_URL, profile_name=False)
@@ -227,7 +221,7 @@ def test_serialize_s3_pickle_anon(sample_df, s3_client, s3_bucket):
 
 
 def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
+    xfail_not_pandas(sample_df)
 
     dt = DataTable(sample_df)
     dt.to_parquet(TEST_S3_URL, profile_name=False)
