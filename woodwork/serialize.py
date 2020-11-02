@@ -116,8 +116,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
         if isinstance(df, dd.DataFrame):
             msg = 'Cannot serialize Dask DataTable to pickle'
             raise ValueError(msg)
-        else:
-            df.to_pickle(file, **kwargs)
+        df.to_pickle(file, **kwargs)
     elif format == 'parquet':
         # Serializing to parquet format raises an error when columns have object dtype.
         # We currently have no LogicalTypes with physical dtype 'object'
