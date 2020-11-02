@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-- As a [user/developer], I wish I could use Woodwork to  [...]"]
+- As a [user/developer], I wish I could use Woodwork to ...
 
 #### Code Example
 
