@@ -45,6 +45,7 @@ class DataColumn(object):
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
         """
+        # --> need to set series in a way that converts extension arrays
         self._series = series
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
@@ -268,8 +269,13 @@ class DataColumn(object):
 
     @property
     def name(self):
+        # --> Extension arrays wont necessarily have name attrs so we need alternative
+        # maybe we provide optional param?
         """The name of the column"""
-        return self._series.name
+        if hasattr(self._series, 'name'):
+            return self._series.name
+        else:
+            return None
 
     @property
     def dtype(self):
