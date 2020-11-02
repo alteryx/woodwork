@@ -766,8 +766,9 @@ class DataTable(object):
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
-            Note: As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
-            for serialization to parquet.
+            Note:
+                As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
+                for serialization to parquet.
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
