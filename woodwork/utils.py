@@ -57,7 +57,7 @@ def col_is_datetime(col, datetime_format=None):
     return False
 
 
-def col_is_numeric_datetime(series, logical_type):
+def _is_numeric_series(series, logical_type):
     '''
     Determines whether a series supplied to the DataTable will be considered numeric
     for the purposes of determining if it can be a time_index.

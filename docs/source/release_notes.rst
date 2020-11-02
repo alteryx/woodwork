@@ -7,6 +7,7 @@ Release Notes
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
     * Fixes
+        * Catch non numeric time index at validation (:pr:`332`)
     * Changes
         * Support logical type inference from a Dask DataFrame (:pr:`248`)
         * Fix validation checks and ``make_index`` to work with Dask DataFrames (:pr:`260`)
