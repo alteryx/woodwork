@@ -22,6 +22,7 @@ Release Notes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
         * Fix README.md badge with correct link (:pr:`314`)
+        * Simplify issue templates to make them easier to use (:pr:`339`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
         * Add DockerHub credentials to CI testing environment (:pr:`326`)
