@@ -16,8 +16,8 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_params,
     _get_mode,
-    _is_numeric_series,
     camel_to_snake,
+    col_is_numeric_datetime,
     list_logical_types,
     list_semantic_tags
 )
@@ -156,29 +156,35 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
 
 
-def test_is_numeric_series():
+def test_is_numeric_datetime_series():
     df = pd.DataFrame({
         'strs': ['1', '2', '3'],
         'dates': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]'),
         'bools': [True, False, False],
-        'numerics': [9.9, 3.3, 4]
+        'numerics': [9.9, 3.3, 4],
+        'letters': ['a', 'b', 'c']
     })
 
-    assert _is_numeric_series(df['numerics'], None)
-    assert _is_numeric_series(df['numerics'], Double)
-    assert not _is_numeric_series(df['numerics'], Categorical)
+    assert col_is_numeric_datetime(df['numerics'], None)
+    assert col_is_numeric_datetime(df['numerics'], Double)
+    assert not col_is_numeric_datetime(df['numerics'], Categorical)
+    assert col_is_numeric_datetime(df['numerics'], Datetime)
 
-    assert not _is_numeric_series(df['strs'], None)
-    assert not _is_numeric_series(df['strs'], 'Categorical')
-    assert not _is_numeric_series(df['strs'], Categorical)
-    assert _is_numeric_series(df['strs'], Double)
-    assert _is_numeric_series(df['strs'], 'Double')
+    assert not col_is_numeric_datetime(df['strs'], None)
+    assert not col_is_numeric_datetime(df['strs'], 'Categorical')
+    assert not col_is_numeric_datetime(df['strs'], Categorical)
+    assert col_is_numeric_datetime(df['strs'], Double)
+    assert col_is_numeric_datetime(df['strs'], 'Double')
 
-    assert not _is_numeric_series(df['bools'], None)
-    assert not _is_numeric_series(df['bools'], 'Boolean')
+    assert not col_is_numeric_datetime(df['bools'], None)
+    assert not col_is_numeric_datetime(df['bools'], 'Boolean')
 
-    assert not _is_numeric_series(df['dates'], None)
-    assert not _is_numeric_series(df['dates'], Datetime)
+    assert not col_is_numeric_datetime(df['dates'], None)
+    assert not col_is_numeric_datetime(df['dates'], Datetime)
+
+    assert not col_is_numeric_datetime(df['letters'], None)
+    assert not col_is_numeric_datetime(df['letters'], Double)
+    assert not col_is_numeric_datetime(df['letters'], Categorical)
 
 
 def test_get_ltype_params():

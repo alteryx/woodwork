@@ -16,8 +16,8 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
     _get_mode,
-    _is_numeric_series,
-    col_is_datetime
+    col_is_datetime,
+    col_is_numeric_datetime
 )
 
 
@@ -775,7 +775,7 @@ def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=
         raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
-    if not (_is_numeric_series(dataframe[time_index], logical_type) or
+    if not (col_is_numeric_datetime(dataframe[time_index], logical_type) or
             col_is_datetime(dataframe[time_index], datetime_format=datetime_format)):
         raise TypeError('Time index column must contain datetime or numeric values')
 
