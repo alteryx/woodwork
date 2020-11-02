@@ -9,7 +9,7 @@ import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
 from woodwork import DataTable
 from woodwork.logical_types import Ordinal
-from woodwork.utils import _get_ltype_class, _get_ltype_params
+from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -59,7 +59,7 @@ def test_to_dictionary(sample_df):
                               'semantic_tags': ['category']},
                              {'name': 'signup_date',
                               'ordinal': 5,
-                              'logical_type': {'parameters': {'datetime_format': None},
+                              'logical_type': {'parameters': {},
                                                'type': 'Datetime'},
                               'physical_type': {'type': 'datetime64[ns]'},
                               'semantic_tags': []},
@@ -79,10 +79,9 @@ def test_to_dictionary(sample_df):
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
-    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
 
-    error = 'must be one of the following formats: csv'
+    error = 'must be one of the following formats: csv, pickle, parquet'
     with pytest.raises(ValueError, match=error):
         serialize.write_datatable(dt, str(tmpdir), format='test')
 
@@ -98,21 +97,34 @@ def test_to_csv(sample_df, tmpdir):
 
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
-    assert dt.name == _dt.name
-    assert dt.index == _dt.index
-    assert dt.time_index == _dt.time_index
-    assert dt.columns.keys() == _dt.columns.keys()
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
-    for col_name in dt.columns.keys():
-        col = dt[col_name]
-        _col = _dt[col_name]
 
-        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
-        assert col.semantic_tags == _col.semantic_tags
-        assert col.name == _col.name
-        assert col.dtype == _col.dtype
+def test_to_pickle(sample_df_pandas, tmpdir):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(str(tmpdir))
+    _dt = deserialize.read_datatable(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert pandas_dt == _dt
+
+
+def test_to_pickle_errors_dask(sample_df_dask, tmpdir):
+    dask_dt = DataTable(sample_df_dask)
+    msg = 'Cannot serialize Dask DataTable to pickle'
+    with pytest.raises(ValueError, match=msg):
+        dask_dt.to_pickle(str(tmpdir))
+
+
+def test_to_parquet(sample_df, tmpdir):
+    xfail_not_pandas(sample_df)
+    dt = DataTable(sample_df)
+    dt.to_parquet(str(tmpdir))
+    _dt = deserialize.read_datatable(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 @pytest.fixture
@@ -151,21 +163,32 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
-    assert dt.name == _dt.name
-    assert dt.index == _dt.index
-    assert dt.time_index == _dt.time_index
-    assert dt.columns.keys() == _dt.columns.keys()
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
-    for col_name in dt.columns.keys():
-        col = dt[col_name]
-        _col = _dt[col_name]
 
-        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
-        assert col.semantic_tags == _col.semantic_tags
-        assert col.name == _col.name
-        assert col.dtype == _col.dtype
+def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket):
+    xfail_not_pandas(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_pickle(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL)
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
+
+
+def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
+    xfail_not_pandas(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_parquet(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL)
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
@@ -181,21 +204,32 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
 
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
-    assert dt.name == _dt.name
-    assert dt.index == _dt.index
-    assert dt.time_index == _dt.time_index
-    assert dt.columns.keys() == _dt.columns.keys()
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
-    for col_name in dt.columns.keys():
-        col = dt[col_name]
-        _col = _dt[col_name]
 
-        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
-        assert col.semantic_tags == _col.semantic_tags
-        assert col.name == _col.name
-        assert col.dtype == _col.dtype
+def test_serialize_s3_pickle_anon(sample_df, s3_client, s3_bucket):
+    xfail_not_pandas(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_pickle(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
+
+
+def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
+    xfail_not_pandas(sample_df)
+
+    dt = DataTable(sample_df)
+    dt.to_parquet(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def create_test_credentials(test_path):
@@ -243,21 +277,8 @@ def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name='test')
 
-    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
-    assert dt.name == _dt.name
-    assert dt.index == _dt.index
-    assert dt.time_index == _dt.time_index
-    assert dt.columns.keys() == _dt.columns.keys()
-
-    for col_name in dt.columns.keys():
-        col = dt[col_name]
-        _col = _dt[col_name]
-
-        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
-        assert col.semantic_tags == _col.semantic_tags
-        assert col.name == _col.name
-        assert col.dtype == _col.dtype
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def test_serialize_url_csv(sample_df):
@@ -283,49 +304,21 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 
 
 def test_deserialize_url_csv(sample_df):
-    # should fail til lwe update
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL)
 
-    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
-    assert dt.name == _dt.name
-    assert dt.index == _dt.index
-    assert dt.time_index == _dt.time_index
-    assert dt.columns.keys() == _dt.columns.keys()
-
-    for col_name in dt.columns.keys():
-        col = dt[col_name]
-        _col = _dt[col_name]
-
-        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
-        assert col.semantic_tags == _col.semantic_tags
-        assert col.name == _col.name
-        assert col.dtype == _col.dtype
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def test_deserialize_url_csv_anon(sample_df):
-    # should fail til lwe update
     xfail_not_pandas(sample_df)
     dt = DataTable(sample_df, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(dt.to_dataframe(), _dt.to_dataframe())
-    assert dt.name == _dt.name
-    assert dt.index == _dt.index
-    assert dt.time_index == _dt.time_index
-    assert dt.columns.keys() == _dt.columns.keys()
-
-    for col_name in dt.columns.keys():
-        col = dt[col_name]
-        _col = _dt[col_name]
-
-        assert _get_ltype_class(col.logical_type) == _get_ltype_class(_col.logical_type)
-        assert _get_ltype_params(col.logical_type) == _get_ltype_params(_col.logical_type)
-        assert col.semantic_tags == _col.semantic_tags
-        assert col.name == _col.name
-        assert col.dtype == _col.dtype
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    assert dt == _dt
 
 
 def test_check_later_schema_version():
