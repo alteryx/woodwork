@@ -18,6 +18,7 @@ Release Notes
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
         * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
         * Remove UserWarning when no matching columns found (:pr:`325`)
+        * Remove ``to_copy`` parameter from ``to_dataframe`` and ``to_series`` (:pr:`338`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
