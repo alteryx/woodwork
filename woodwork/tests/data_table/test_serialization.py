@@ -2,6 +2,7 @@ import json
 import os
 
 import boto3
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -20,14 +21,13 @@ URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
 
 
-def xfail_not_pandas(dataframe):
-    # TODO: Allow serialization of non-pandas dataframes
+def xfail_tmp_disappears(dataframe):
+    # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
     if not isinstance(dataframe, pd.DataFrame):
-        pytest.xfail('fails with Dask - Dask serialization not yet implemented')
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
 
 
 def test_to_dictionary(sample_df):
-    xfail_not_pandas(sample_df)
     expected = {'schema_version': '1.0.0',
                 'name': 'test_data',
                 'index': 'id',
@@ -67,7 +67,9 @@ def test_to_dictionary(sample_df):
                               'ordinal': 6,
                               'logical_type': {'parameters': {}, 'type': 'Boolean'},
                               'physical_type': {'type': 'boolean'},
-                              'semantic_tags': []}]}
+                              'semantic_tags': []}],
+                'loading_info': {'table_type': 'dask' if isinstance(sample_df, dd.DataFrame) else 'pandas'}
+                }
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -87,17 +89,15 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
 
 def test_to_csv(sample_df, tmpdir):
-    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33, 57])})
     dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
-
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
@@ -106,7 +106,7 @@ def test_to_pickle(sample_df_pandas, tmpdir):
     pandas_dt.to_pickle(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert pandas_dt == _dt
 
 
@@ -118,12 +118,11 @@ def test_to_pickle_errors_dask(sample_df_dask, tmpdir):
 
 
 def test_to_parquet(sample_df, tmpdir):
-    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
     dt.to_parquet(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
@@ -152,7 +151,8 @@ def make_public(s3_client, s3_bucket):
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
+
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -163,36 +163,35 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
-def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
-
-    dt = DataTable(sample_df)
-    dt.to_pickle(TEST_S3_URL)
+def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    assert pandas_dt == _dt
 
 
 def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
 
     dt = DataTable(sample_df)
     dt.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
+
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
@@ -204,31 +203,29 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
 
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
-def test_serialize_s3_pickle_anon(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
-
-    dt = DataTable(sample_df)
-    dt.to_pickle(TEST_S3_URL, profile_name=False)
+def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
+    pandas_dt = DataTable(sample_df_pandas)
+    pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
-    assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    assert pandas_dt == _dt
 
 
 def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
 
     dt = DataTable(sample_df)
     dt.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
@@ -271,18 +268,17 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
-    xfail_not_pandas(sample_df)
+    xfail_tmp_disappears(sample_df)
     dt = DataTable(sample_df)
     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name='test')
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
 def test_serialize_url_csv(sample_df):
-    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
@@ -290,7 +286,6 @@ def test_serialize_url_csv(sample_df):
 
 
 def test_serialize_subdirs_not_removed(sample_df, tmpdir):
-    xfail_not_pandas(sample_df)
     dt = DataTable(sample_df)
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
@@ -303,21 +298,27 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
-def test_deserialize_url_csv(sample_df):
-    xfail_not_pandas(sample_df)
-    dt = DataTable(sample_df, index='id')
+def test_deserialize_url_csv(sample_df_pandas):
+    dt = DataTable(sample_df_pandas, index='id')
     _dt = deserialize.read_datatable(URL)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 
-def test_deserialize_url_csv_anon(sample_df):
-    xfail_not_pandas(sample_df)
-    dt = DataTable(sample_df, index='id')
+def test_deserialize_url_csv_anon(sample_df_pandas):
+    dt = DataTable(sample_df_pandas, index='id')
     _dt = deserialize.read_datatable(URL, profile_name=False)
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    assert dt == _dt
+
+
+def test_deserialize_s3_csv(sample_df_pandas):
+    dt = DataTable(sample_df_pandas, index='id')
+    _dt = deserialize.read_datatable(S3_URL)
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert dt == _dt
 
 

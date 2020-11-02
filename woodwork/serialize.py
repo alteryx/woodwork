@@ -19,7 +19,8 @@ FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def datatable_to_metadata(datatable):
-    ordered_columns = datatable.to_dataframe().columns
+    df = datatable.to_dataframe()
+    ordered_columns = df.columns
     dt_metadata = [
         {
             'name': col.name,
@@ -36,12 +37,21 @@ def datatable_to_metadata(datatable):
         for col in datatable.columns.values()
     ]
 
+    if isinstance(df, dd.DataFrame):
+        table_type = 'dask'
+    else:
+        table_type = 'pandas'
+
     return {
         'schema_version': SCHEMA_VERSION,
         'name': datatable.name,
         'index': datatable.index,
         'time_index': datatable.time_index,
-        'metadata': dt_metadata
+        'metadata': dt_metadata,
+        'loading_info': {
+            'table_type': table_type
+        }
+
     }
 
 
@@ -75,7 +85,7 @@ def dump_table(datatable, path, **kwargs):
     loading_info = write_table_data(datatable, path, **kwargs)
 
     metadata = datatable_to_metadata(datatable)
-    metadata['loading_info'] = loading_info
+    metadata['loading_info'].update(loading_info)
 
     file = os.path.join(path, 'table_metadata.json')
     with open(file, 'w') as file:
@@ -97,11 +107,14 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     format = format.lower()
 
     dt_name = datatable.name or 'data'
+    df = datatable.to_dataframe()
 
-    basename = '.'.join([dt_name, format])
+    if isinstance(df, dd.DataFrame) and format == 'csv':
+        basename = "{}-*.{}".format(dt_name, format)
+    else:
+        basename = '.'.join([dt_name, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
-    df = datatable.to_dataframe()
 
     if format == 'csv':
         df.to_csv(
