@@ -7,6 +7,4 @@ assignees: ''
 
 ---
 
-#### Documentation Problem
-
 [a description of what documentation you believe needs to be fixed/improved]
