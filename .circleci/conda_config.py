@@ -24,13 +24,11 @@ def write_conda_recipe(version):
 
     recipe_file_path = os.path.join(os.path.join(os.path.join(os.getcwd(), 'woodwork-feedstock'), 'recipe'), 'meta.yaml')
     with open(recipe_file_path, 'rb') as config_file:
-        # Toss out the first line that declares the version since its not supported YAML syntax
+        # Toss out the first line, second that declares the name, version since its not supported PyYAML syntax
         next(config_file)
         next(config_file)
 
         config = yaml.safe_load(config_file)
-        print(config)
-        print(config_file)
         # Path to the woodwork repository on the docker container.  Since we are doing a local build this is
         # the target we are copying this directory to.
         recipe_path = str(pathlib.Path('..', 'feedstock_root', 'woodwork'))
