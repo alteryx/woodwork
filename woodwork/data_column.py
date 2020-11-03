@@ -254,23 +254,15 @@ class DataColumn(object):
     def _is_categorical(self):
         return 'category' in self.logical_type.standard_tags
 
-    def to_series(self, copy=False):
+    def to_series(self):
         """Retrieves the DataColumn's underlying series.
 
-        Note: Do not modify the series unless copy=True has been set to avoid unexpected behavior
-
-        Args:
-            copy (bool): If set to True, returns a copy of the underlying series.
-                If False, will return a reference to the DataColumn's series, which,
-                if modified, can cause unexpected behavior in the DataColumn.
-                Defaults to False.
+        Note: Do not modify the returned series directly to avoid unexpected behavior
 
         Returns:
             Series: The underlying series of the DataColumn. Return type will depend on the type
                 of series used to create the DataColumn.
         """
-        if copy:
-            return self._series.copy()
         return self._series
 
     @property

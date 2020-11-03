@@ -80,6 +80,8 @@ def time_index_df_pandas():
         'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA],
         'ints': [1, 2, 3, 4],
         'strs': ['1', '2', '3', '4'],
+        'letters': ['a', 'b', 'c', 'd'],
+        'bools': [True, False, False, True]
     })
 
 

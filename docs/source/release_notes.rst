@@ -8,6 +8,7 @@ Release Notes
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
     * Fixes
+        * Catch non numeric time index at validation (:pr:`332`)
     * Changes
         * Support logical type inference from a Dask DataFrame (:pr:`248`)
         * Fix validation checks and ``make_index`` to work with Dask DataFrames (:pr:`260`)
@@ -19,12 +20,16 @@ Release Notes
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
         * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
         * Remove UserWarning when no matching columns found (:pr:`325`)
+        * Remove ``copy`` parameter from ``DataTable.to_dataframe`` and ``DataColumn.to_series`` (:pr:`338`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
         * Fix README.md badge with correct link (:pr:`314`)
+        * Simplify issue templates to make them easier to use (:pr:`339`)
+        * Remove extra output cell in Start notebook (:pr:`341`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
+        * Add DockerHub credentials to CI testing environment (:pr:`326`)
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
@@ -33,6 +38,7 @@ Release Notes
 
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
+    * ``copy`` is no longer a parameter of ``DataTable.to_dataframe`` or ``DataColumn.to_series``.
 
 **v0.0.4** October 21, 2020
     * Enhancements

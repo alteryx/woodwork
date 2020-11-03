@@ -63,17 +63,23 @@ def col_is_datetime(col, datetime_format=None):
 
 def _is_numeric_series(series, logical_type):
     '''
-    Determines whether a series supplied to the DataTable will be considered numeric.
+    Determines whether a series supplied to the DataTable will be considered numeric
+    for the purposes of determining if it can be a time_index.
 
     '''
+    # If column can't be made to be numeric, don't bother checking Logical Type
+    try:
+        pd.to_numeric(series, errors='raise')
+    except (ValueError, TypeError):
+        return False
+
     if logical_type is not None:
         if isinstance(logical_type, str):
             logical_type = ww.logical_types.str_to_logical_type(logical_type)
 
-        # Allow numeric columns to be interpreted as Datetimes
+        # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
         if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
-
     else:
         logical_type = ww.data_column.infer_logical_type(series)
 

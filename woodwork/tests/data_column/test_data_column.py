@@ -380,19 +380,11 @@ def test_set_as_time_index(sample_series):
     assert 'time_index' in data_col.semantic_tags
 
 
-def test_to_series_no_copy(sample_series):
+def test_to_series(sample_series):
     data_col = DataColumn(sample_series)
     series = data_col.to_series()
 
     assert series is data_col._series
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
-
-
-def test_to_series_with_copy(sample_series):
-    data_col = DataColumn(sample_series)
-    series = data_col.to_series(copy=True)
-
-    assert series is not data_col._series
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 

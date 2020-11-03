@@ -404,26 +404,17 @@ class DataTable(object):
         new_dt._update_columns(cols_to_update)
         return new_dt
 
-    def to_dataframe(self, copy=False):
+    def to_dataframe(self):
         """Retrieves the DataTable's underlying dataframe.
 
-        Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
-
-        Args:
-            copy (bool): If set to True, returns a copy of the underlying dataframe.
-                If False, will return a reference to the DataTable's dataframe, which,
-                if modified, can cause unexpected behavior in the DataTable.
-                Defaults to False.
+        Note: Do not modify the returned dataframe directly to avoid unexpected behavior
 
         Returns:
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
                 of dataframe used to create the DataTable.
         """
         if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
-            if copy:
-                return self._dataframe.copy()
-            else:
-                return self._dataframe
+            return self._dataframe
         else:
             return self._dataframe.set_index(self.index, drop=False)
 
