@@ -183,7 +183,7 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags)
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
             data_columns[dc.name] = dc
         return data_columns
 
