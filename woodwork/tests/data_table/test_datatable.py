@@ -2019,50 +2019,29 @@ def test_data_table_describe_with_include(sample_df):
     multi_params_df['full_name'].equals(dt.describe()['full_name'])
 
 
-valcts_df_pandas = pd.DataFrame({
-    'ints': pd.Series([1, 2, 3, 2]),
-    'categories1': pd.Series([1, 100, 1, 100, 200, 200, 200, 200, 3]),
-    'bools': pd.Series([True, False, True, False]),
-    'categories2': pd.Series(['test', 'test2', 'test2', 'test']),
-    'categories3': pd.Series(['test', 'test', 'test', np.nan]),
-})
-test_logical_types = {
-    'ints': Integer,
-    'categories1': Categorical,
-    'bools': Boolean,
-    'categories2': Categorical,
-    'categories3': Categorical,
-}
-valcts_df_dd = dd.from_pandas(valcts_df_pandas, npartitions=2)
-testdata = [
-    DataTable(valcts_df_pandas, logical_types=test_logical_types),
-    DataTable(valcts_df_dd, logical_types=test_logical_types)
-]
+def test_value_counts(categorical_pandas_dd_list):
+    for input_dt in categorical_pandas_dd_list:
+        val_cts = input_dt.value_counts()
+        for col in input_dt.columns:
+            if col in ['ints', 'bools']:
+                assert col not in val_cts
+            else:
+                assert col in val_cts
+        assert val_cts['categories1'] == [{'value': 200, 'count': 4}, {'value': 100, 'count': 2}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
+        assert val_cts['categories2'] == [{'value': np.nan, 'count': 5}, {'value': 'test2', 'count': 2}, {'value': 'test', 'count': 2}]
+        assert val_cts['categories3'] == [{'value': np.nan, 'count': 6}, {'value': 'test', 'count': 3}]
 
+        val_cts_descending = input_dt.value_counts(ascending=True)
+        for col, vals in val_cts_descending.items():
+            for i in range(len(vals)):
+                assert vals[i]['count'] == val_cts[col][-i - 1]['count']
 
-@pytest.mark.parametrize("input_dt", testdata)
-def test_value_counts(input_dt):
-    val_cts = input_dt.value_counts()
-    for col in input_dt.columns:
-        if col in ['ints', 'bools']:
-            assert col not in val_cts
-        else:
-            assert col in val_cts
-    assert val_cts['categories1'] == [{'value': 200, 'count': 4}, {'value': 100, 'count': 2}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
-    assert val_cts['categories2'] == [{'value': np.nan, 'count': 5}, {'value': 'test2', 'count': 2}, {'value': 'test', 'count': 2}]
-    assert val_cts['categories3'] == [{'value': np.nan, 'count': 6}, {'value': 'test', 'count': 3}]
+        val_cts_dropna = input_dt.value_counts(dropna=True)
+        assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
 
-    val_cts_descending = input_dt.value_counts(ascending=True)
-    for col, vals in val_cts_descending.items():
-        for i in range(len(vals)):
-            assert vals[i]['count'] == val_cts[col][-i - 1]['count']
-
-    val_cts_dropna = input_dt.value_counts(dropna=True)
-    assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
-
-    val_cts_2 = input_dt.value_counts(top_n=2)
-    for col in val_cts_2:
-        assert len(val_cts_2[col]) == 2
+        val_cts_2 = input_dt.value_counts(top_n=2)
+        for col in val_cts_2:
+            assert len(val_cts_2[col]) == 2
 
 
 def test_data_table_handle_nans_for_mutual_info():
