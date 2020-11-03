@@ -23,7 +23,6 @@ Release Notes
         * Remove UserWarning when no matching columns found (:pr:`325`)
         * Remove ``copy`` parameter from ``DataTable.to_dataframe`` and ``DataColumn.to_series`` (:pr:`338`)
         * Allow pandas ExtensionArrays as inputs to DataColumn (:pr:`343`)
-        * Support serialization of Dask DataFrames (:pr:`331`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
