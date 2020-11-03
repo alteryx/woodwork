@@ -1755,22 +1755,6 @@ def test_natural_language_inference_with_config_options():
     ww.config.reset_option('natural_language_threshold')
 
 
-def test_to_dataframe_copy(sample_df):
-    dt = DataTable(sample_df)
-
-    df_no_copy = dt.to_dataframe()
-    df_copy = dt.to_dataframe(copy=True)
-
-    assert df_no_copy is sample_df
-
-    assert df_no_copy is not df_copy
-
-    df_copy['test_col'] = pd.Series([1, 2, 3])
-    assert 'test_col' in df_copy.columns
-    assert 'test_col' not in df_no_copy.columns
-    assert 'test_col' not in dt.columns
-
-
 def test_describe_does_not_include_index(describe_df):
     dt = DataTable(describe_df, index='index_col')
     stats_df = dt.describe()
@@ -2046,7 +2030,7 @@ def test_data_table_handle_nans_for_mutual_info():
         'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
     })
     dt_nans = DataTable(df_nans)
-    formatted_df = dt_nans._handle_nans_for_mutual_info(dt_nans.to_dataframe(copy=True))
+    formatted_df = dt_nans._handle_nans_for_mutual_info(dt_nans.to_dataframe().copy())
 
     assert isinstance(formatted_df, pd.DataFrame)
 
@@ -2067,7 +2051,7 @@ def test_data_table_make_categorical_for_mutual_info():
         'categories': pd.Series(['test', 'test2', 'test2', 'test'])
     })
     dt = DataTable(df)
-    formatted_num_bins_df = dt._make_categorical_for_mutual_info(dt.to_dataframe(copy=True), num_bins=4)
+    formatted_num_bins_df = dt._make_categorical_for_mutual_info(dt.to_dataframe().copy(), num_bins=4)
 
     assert isinstance(formatted_num_bins_df, pd.DataFrame)
 
@@ -2090,7 +2074,7 @@ def test_data_table_get_mutual_information(df_same_mi, df_mi):
     assert mi_between_cols('floats', 'ints', mi) == 1.0
 
     dt = DataTable(df_mi)
-    original_df = dt.to_dataframe(copy=True)
+    original_df = dt.to_dataframe().copy()
     mi = dt.get_mutual_information()
     assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
