@@ -597,6 +597,39 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
+    def value_counts(self, ascending=False, top_n=10, dropna=False):
+        """Returns a list of dictionaries with counts for the most frequent values in each column (only
+            for DataColumns with `category` as a standard tag).
+
+
+        Args:
+            ascending (bool): Defines whether each list of values should be sorted most frequent
+                to least frequent value (False), or least frequent to most frequent value (True).
+                Defaults to False.
+
+            top_n (int): the number of top values to retrieve. Defaults to 10.
+
+            dropna (bool): determines whether to remove NaN values when finding frequency. Defaults
+                to False.
+
+        Returns:
+            top_list (list(dict)): a list of dictionaries for each categorical column with keys `count`
+                and `value`.
+        """
+        val_counts = {}
+        valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
+        data = self._dataframe[valid_cols]
+        if isinstance(data, dd.DataFrame):
+            data = data.compute()
+
+        for col in valid_cols:
+            frequencies = data[col].value_counts(ascending=ascending, dropna=dropna)
+            df = frequencies[:top_n].reset_index()
+            df.columns = ["value", "count"]
+            dt_list = list(df.to_dict(orient="index").values())
+            val_counts[col] = dt_list
+        return val_counts
+
     def _handle_nans_for_mutual_info(self, data):
         """
         Remove NaN values in the dataframe so that mutual information can be calculated

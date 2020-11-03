@@ -6,6 +6,7 @@ Release Notes
 
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
+        * Add ``value_counts()`` method to DataTable (:pr:`342`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
