@@ -23,6 +23,7 @@ from woodwork.utils import (
 
 ks.set_option('compute.ops_on_diff_frames', True)
 
+
 class DataTable(object):
     def __init__(self, dataframe,
                  name=None,
@@ -700,7 +701,7 @@ class DataTable(object):
             data = data.compute()
         if isinstance(self._dataframe, ks.DataFrame):
             data = data.to_pandas()
-        breakpoint()
+
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
             data = data.sample(nrows)
