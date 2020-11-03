@@ -2019,6 +2019,44 @@ def test_data_table_describe_with_include(sample_df):
     multi_params_df['full_name'].equals(dt.describe()['full_name'])
 
 
+def test_value_counts(sample_df):
+    df = pd.DataFrame({
+        'ints': pd.Series([1, 2, 3, 2]),
+        'categories1': pd.Series([1, 100, 1, 100, 200, 200, 200, 200, 3]),
+        'bools': pd.Series([True, False, True, False]),
+        'categories2': pd.Series(['test', 'test2', 'test2', 'test']),
+        'categories3': pd.Series(['test', 'test', 'test', np.nan]),
+    })
+    logical_types = {
+        'ints': Integer,
+        'categories1': Categorical,
+        'bools': Boolean,
+        'categories2': Categorical,
+        'categories3': Categorical,
+    }
+    dt_val_cts = DataTable(df, logical_types=logical_types)
+    val_cts = dt_val_cts.value_counts()
+    for col in df.columns:
+        if col in ['ints', 'bools']:
+            assert col not in val_cts
+        else:
+            assert col in val_cts
+            for val_info in val_cts[col]:
+                for k, v in val_info.items():
+                    assert k in ['value', 'count']
+                    if k == 'count':
+                        assert isinstance(v, int)
+    assert val_cts['categories3'][0] == {'count': 6, 'value': np.nan}
+
+    val_cts_descending = dt_val_cts.value_counts(ascending=True)
+    for col, vals in val_cts_descending.items():
+        for i in range(len(vals)):
+            assert vals[i]['count'] == val_cts[col][-i-1]['count']
+
+    val_cts_dropna = dt_val_cts.value_counts(dropna=True)
+    assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
+
+
 def test_data_table_handle_nans_for_mutual_info():
     df_nans = pd.DataFrame({
         'nans': pd.Series([None, None, None, None]),
