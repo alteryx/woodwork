@@ -2018,6 +2018,7 @@ def test_data_table_describe_with_include(sample_df):
     multi_params_df['full_name'].equals(col_name_df['full_name'])
     multi_params_df['full_name'].equals(dt.describe()['full_name'])
 
+
 valcts_df_pandas = pd.DataFrame({
     'ints': pd.Series([1, 2, 3, 2]),
     'categories1': pd.Series([1, 100, 1, 100, 200, 200, 200, 200, 3]),
@@ -2025,7 +2026,7 @@ valcts_df_pandas = pd.DataFrame({
     'categories2': pd.Series(['test', 'test2', 'test2', 'test']),
     'categories3': pd.Series(['test', 'test', 'test', np.nan]),
 })
-test_logical_types =  {
+test_logical_types = {
     'ints': Integer,
     'categories1': Categorical,
     'bools': Boolean,
