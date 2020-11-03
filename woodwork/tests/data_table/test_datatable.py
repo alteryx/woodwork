@@ -2168,6 +2168,10 @@ def test_numeric_index_strings(time_index_df):
     with pytest.raises(TypeError, match=error_msg):
         DataTable(time_index_df, time_index='ints', logical_types={'ints': 'Categorical'})
 
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        DataTable(time_index_df, time_index='letters', logical_types={'strs': 'Integer'})
+
     dt = DataTable(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
     date_col = dt['strs']
     assert dt.time_index == 'strs'

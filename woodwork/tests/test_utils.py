@@ -156,29 +156,27 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
 
 
-def test_is_numeric_series():
-    df = pd.DataFrame({
-        'strs': ['1', '2', '3'],
-        'dates': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]'),
-        'bools': [True, False, False],
-        'numerics': [9.9, 3.3, 4]
-    })
+def test_is_numeric_datetime_series(time_index_df):
+    assert _is_numeric_series(time_index_df['ints'], None)
+    assert _is_numeric_series(time_index_df['ints'], Double)
+    assert not _is_numeric_series(time_index_df['ints'], Categorical)
+    assert _is_numeric_series(time_index_df['ints'], Datetime)
 
-    assert _is_numeric_series(df['numerics'], None)
-    assert _is_numeric_series(df['numerics'], Double)
-    assert not _is_numeric_series(df['numerics'], Categorical)
+    assert not _is_numeric_series(time_index_df['strs'], None)
+    assert not _is_numeric_series(time_index_df['strs'], 'Categorical')
+    assert not _is_numeric_series(time_index_df['strs'], Categorical)
+    assert _is_numeric_series(time_index_df['strs'], Double)
+    assert _is_numeric_series(time_index_df['strs'], 'Double')
 
-    assert not _is_numeric_series(df['strs'], None)
-    assert not _is_numeric_series(df['strs'], 'Categorical')
-    assert not _is_numeric_series(df['strs'], Categorical)
-    assert _is_numeric_series(df['strs'], Double)
-    assert _is_numeric_series(df['strs'], 'Double')
+    assert not _is_numeric_series(time_index_df['bools'], None)
+    assert not _is_numeric_series(time_index_df['bools'], 'Boolean')
 
-    assert not _is_numeric_series(df['bools'], None)
-    assert not _is_numeric_series(df['bools'], 'Boolean')
+    assert not _is_numeric_series(time_index_df['times'], None)
+    assert not _is_numeric_series(time_index_df['times'], Datetime)
 
-    assert not _is_numeric_series(df['dates'], None)
-    assert not _is_numeric_series(df['dates'], Datetime)
+    assert not _is_numeric_series(time_index_df['letters'], None)
+    assert not _is_numeric_series(time_index_df['letters'], Double)
+    assert not _is_numeric_series(time_index_df['letters'], Categorical)
 
 
 def test_get_ltype_params():

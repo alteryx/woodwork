@@ -7,10 +7,7 @@ assignees: ''
 
 ---
 
-### Bug Title
-
 [A clear and concise description of what the bug is.]
-[this should explain **why** the current behaviour is a problem and why the expected output is a better solution.]
 
 #### Code Sample, a copy-pastable example to reproduce your bug.
 
@@ -18,4 +15,3 @@ assignees: ''
 # Your code here
 
 ```
-#### Expected Output
