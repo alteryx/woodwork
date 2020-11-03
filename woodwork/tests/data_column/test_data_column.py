@@ -52,10 +52,11 @@ def test_data_column_init_with_semantic_tags(sample_series):
 def test_data_column_init_with_extension_array():
     # --> maybe create fixture if it's possible to have dask extension
     # this works bc when you put it in a df it converts
-    extension_array = pd.Categorical([1, 2, 3, 2, 3, 3])
+    categorical_array = pd.Series([1, 2, 3], dtype='category')
+    extension_array = pd.Categorical([1, 2, 3])
     data_col = DataColumn(extension_array)
 
-    assert data_col.to_series().equals(extension_array)
+    assert data_col.to_series().equals(categorical_array)
 
     # --> check different names
     # check diffeerent types of arrays

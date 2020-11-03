@@ -46,7 +46,7 @@ class DataColumn(object):
                 on the inferred or specified logical type for the column. Defaults to True.
         """
         # --> need to set series in a way that converts extension arrays
-        self._series = series
+        self._series = self._get_series(series)
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         semantic_tags = _convert_input_to_set(semantic_tags)
@@ -123,6 +123,16 @@ class DataColumn(object):
             new_col._set_as_time_index()
 
         return new_col
+
+    def _get_series(self, series):
+        # --> doesnt need to be a method
+        if not (isinstance(series, pd.Series) or isinstance(series, dd.Series)):
+            # --> currently not going to try and covert a dask extenion array if that even exists??
+            # --> not sure if we want something more restrictive or if we're even always going o be able to turn into a serreis
+            if isinstance(series, pd.api.extensions.ExtensionArray):
+                return pd.Series(series)
+            raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
+        return series
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
