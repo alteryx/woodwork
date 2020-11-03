@@ -127,11 +127,15 @@ class DataColumn(object):
         return new_col
 
     def _set_series(self, series):
-        if not (isinstance(series, pd.Series) or isinstance(series, dd.Series)):
-            # pandas ExtensionArrays should be converted to pandas.Series
-            if not isinstance(series, pd.api.extensions.ExtensionArray):
-                raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
+        if not (isinstance(series, pd.Series) or isinstance(series, dd.Series) or isinstance(series, pd.api.extensions.ExtensionArray)):
+            raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
+
+        # pandas ExtensionArrays should be converted to pandas.Series
+        if isinstance(series, pd.api.extensions.ExtensionArray):
             series = pd.Series(series, dtype=series.dtype)
+
+        if self._assigned_name is not None and series.name is not None and self._assigned_name != series.name:
+            warnings.warn(f'Input series name does not match DataColumn name. Changing series name from {series.name} to {self._assigned_name}.')
 
         series.name = self._assigned_name or series.name
         self._series = series
