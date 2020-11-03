@@ -2056,6 +2056,10 @@ def test_value_counts(sample_df):
     val_cts_dropna = dt_val_cts.value_counts(dropna=True)
     assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
 
+    val_cts_2 = dt_val_cts.value_counts(num_x=2)
+    for col in val_cts_2:
+        assert len(val_cts_2[col]) == 2
+
 
 def test_data_table_handle_nans_for_mutual_info():
     df_nans = pd.DataFrame({
