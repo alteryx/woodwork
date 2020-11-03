@@ -63,12 +63,11 @@ def test_str_to_logical_type():
     datetime_with_format = str_to_logical_type('datetime', params={'datetime_format': ymd})
     assert datetime_with_format.__class__ == Datetime
     assert datetime_with_format.datetime_format == ymd
+    assert datetime_with_format == Datetime(datetime_format=ymd)
 
     datetime_no_format = str_to_logical_type('datetime', params={'datetime_format': None})
-    assert datetime_with_format.__class__ == Datetime
+    assert datetime_no_format.__class__ == Datetime
     assert datetime_no_format.datetime_format is None
-
-    assert datetime_with_format == Datetime(datetime_format=ymd)
     assert datetime_no_format == Datetime()
 
     # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated

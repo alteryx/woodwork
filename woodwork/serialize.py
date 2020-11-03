@@ -19,6 +19,9 @@ FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def datatable_to_metadata(datatable):
+    '''Gets the metadata for a DataTable, including typing information for each column
+    and loading information.
+    '''
     df = datatable.to_dataframe()
     ordered_columns = df.columns
     dt_metadata = [
@@ -82,6 +85,8 @@ def write_datatable(datatable, path, profile_name=None, **kwargs):
 
 
 def dump_table(datatable, path, **kwargs):
+    '''Writes datatable metadata to table_metadata.json at the specified path.
+    '''
     loading_info = write_table_data(datatable, path, **kwargs)
 
     metadata = datatable_to_metadata(datatable)
@@ -143,6 +148,8 @@ def write_table_data(datatable, path, format='csv', **kwargs):
 
 
 def create_archive(tmpdir):
+    '''When seralizing to an S3 URL, writes a tar archive.
+    '''
     file_name = "dt-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')

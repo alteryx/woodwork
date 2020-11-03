@@ -17,7 +17,10 @@ from woodwork.utils import (
     _get_mode,
     _get_specified_ltype_params,
     _is_numeric_series,
+    _is_s3,
+    _is_url,
     camel_to_snake,
+    import_or_raise,
     list_logical_types,
     list_semantic_tags
 )
@@ -194,3 +197,21 @@ def test_get_ltype_params():
     ymd = '%Y-%m-%d'
     params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
+
+
+def test_import_or_raise():
+    assert import_or_raise('pandas', 'Module pandas could not be found') == pd
+
+    error = 'Module nonexistent could not be found.'
+    with pytest.raises(ImportError, match=error):
+        import_or_raise('nonexistent', error)
+
+
+def test_is_url():
+    assert _is_url('https://www.google.com/')
+    assert not _is_url('google.com')
+
+
+def test_is_s3():
+    assert _is_s3('s3://test-bucket/test-key')
+    assert not _is_s3('https://woodwork-static.s3.amazonaws.com/')

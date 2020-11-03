@@ -135,6 +135,9 @@ def read_datatable(path, profile_name=None, **kwargs):
 
 
 def _check_schema_version(saved_version_str):
+    '''Warns users if the schema used to save their data is greater than the latest
+    supported schema or if it is an outdated schema that is no longer supported.
+    '''
     saved = saved_version_str.split('.')
     current = SCHEMA_VERSION.split('.')
 

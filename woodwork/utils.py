@@ -221,7 +221,7 @@ def _get_specified_ltype_params(ltype):
 def import_or_raise(library, error_msg):
     '''
     Attempts to import the requested library.  If the import fails, raises an
-    ImportErorr with the supplied
+    ImportError with the supplied error message.
 
     Args:
         library (str): the name of the library

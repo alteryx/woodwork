@@ -77,7 +77,7 @@ def test_to_dictionary(sample_df):
                    logical_types={'age': Ordinal(order=[25, 33, 57])})
     metadata = dt.to_dictionary()
 
-    assert metadata.__eq__(expected)
+    assert metadata == expected
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):

@@ -349,7 +349,6 @@ def str_to_logical_type(logical_str, params=None, raise_error=True):
         ltype = logical_types_dict[logical_str]
         if params:
             return ltype(**params)
-
         else:
             return ltype
     elif raise_error:
