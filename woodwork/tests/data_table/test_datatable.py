@@ -2051,7 +2051,7 @@ def test_value_counts(sample_df):
     val_cts_descending = dt_val_cts.value_counts(ascending=True)
     for col, vals in val_cts_descending.items():
         for i in range(len(vals)):
-            assert vals[i]['count'] == val_cts[col][-i-1]['count']
+            assert vals[i]['count'] == val_cts[col][-i - 1]['count']
 
     val_cts_dropna = dt_val_cts.value_counts(dropna=True)
     assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
