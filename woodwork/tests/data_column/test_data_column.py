@@ -76,31 +76,29 @@ def test_data_column_init_with_name(sample_series, sample_datetime_series):
 
 
 def test_data_column_init_with_extension_array():
-    # --> maybe create fixture if it's possible to have dask extension
-    # this works bc when you put it in a df it converts
-    # try to make a Dask series with extension get TypeError: Input must be a pandas DataFrame or Series
-    categorical_array = pd.Series([1, 2, 3], dtype='category')
+    series_categories = pd.Series([1, 2, 3], dtype='category')
+    extension_categories = pd.Categorical([1, 2, 3])
 
-    extension_array = pd.Categorical([1, 2, 3])
-
-    data_col = DataColumn(extension_array)
+    data_col = DataColumn(extension_categories)
     series = data_col.to_series()
-    assert series.equals(categorical_array)
+    assert series.equals(series_categories)
     assert series.name is None
     assert data_col.name is None
 
-# --> use diff type of extension
-    data_col_with_name = DataColumn(extension_array, name='extension')
-    assert data_col_with_name.to_series().name == 'extension'
+    series_ints = pd.Series([1, 2, None, 4], dtype='Int64')
+    extension_ints = pd.arrays.IntegerArray(np.array([1, 2, 3, 4], dtype="int64"), mask=np.array([False, False, True, False]))
+
+    data_col_with_name = DataColumn(extension_ints, name='extension')
+    series = data_col_with_name.to_series()
+    assert series.equals(series_ints)
+    assert series.name == 'extension'
     assert data_col_with_name.name == 'extension'
 
-    # --> check different names
-    # check diffeerent types of arrays
-    # check with diff ltypes that keep as categorical or try and switch ot other
-    # test with semantic tags
-    # check with name and without
+    series_strs = pd.Series([1, 2, None, 4], dtype='string')
 
-    # need to make sure different extension arrays can get recognized
+    data_col_different_ltype = DataColumn(extension_ints, logical_type='NaturalLanguage')
+    series = data_col_different_ltype.to_series()
+    assert series.equals(series_strs)
 
 
 def test_data_column_with_alternate_semantic_tags_input(sample_series):

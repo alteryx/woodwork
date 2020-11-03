@@ -34,7 +34,7 @@ class DataColumn(object):
         """Create a DataColumn.
 
         Args:
-            series (pd.Series): Series containing the data associated with the column.
+            series (pd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
@@ -128,8 +128,7 @@ class DataColumn(object):
 
     def _set_series(self, series):
         if not (isinstance(series, pd.Series) or isinstance(series, dd.Series)):
-            # --> currently not going to try and covert a dask extenion array if that even exists??
-            # --> not sure if we want something more restrictive or if we're even always going o be able to turn into a serreis
+            # pandas ExtensionArrays should be converted to pandas.Series
             if not isinstance(series, pd.api.extensions.ExtensionArray):
                 raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
             series = pd.Series(series, dtype=series.dtype)

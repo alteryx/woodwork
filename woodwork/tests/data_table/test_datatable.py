@@ -2220,14 +2220,3 @@ def test_datatable_equality(sample_df, sample_series):
     assert dt_with_ltypes != dt_time_index
     assert dt_with_ltypes == dt_numeric_time_index.set_logical_types({'full_name': Categorical})
     assert dt_with_ltypes != dt_numeric_time_index.set_logical_types({'full_name': Categorical()})
-
-
-def test_init_with_extension_arrays():
-    # --> use fixture
-    extension = pd.Categorical([1, 2, 3, 1, 2, 3])
-    df = pd.DataFrame({'ext': extension, '2': [1, 2, 3, 3, 4, 5]})
-    dt = DataTable(df)
-
-    assert len(dt.columns) == 2  # --> bad test bc itll break if we add more cols
-
-# --> do we need to be able to handle any extension type??? and infer it??
