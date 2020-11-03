@@ -34,7 +34,7 @@ class DataColumn(object):
         """Create a DataColumn.
 
         Args:
-            series (pd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
+            series (pd.Series or dd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
