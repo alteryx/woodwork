@@ -597,16 +597,17 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
-    def value_counts(self, ascending=False, num_x=10, dropna=False):
-        """Return a list for each categorical column of all values and their corresponding
-            frequencies.
+    def value_counts(self, ascending=False, top_n=10, dropna=False):
+        """Returns a list of dictionaries with counts for the most frequent values in each column (only
+            for DataColumns with `category` as a standard tag).
+
 
         Args:
             ascending (bool): Defines whether each list of values should be sorted most frequent
                 to least frequent value (False), or least frequent to most frequent value (True).
                 Defaults to False.
 
-            num_x (int): the number of top values to retrieve. Defaults to 10.
+            top_n (int): the number of top values to retrieve. Defaults to 10.
 
             dropna (bool): determines whether to remove NaN values when finding frequency. Defaults
                 to False.
@@ -623,7 +624,7 @@ class DataTable(object):
 
         for col in valid_cols:
             frequencies = data[col].value_counts(ascending=ascending, dropna=dropna)
-            df = frequencies[:num_x].reset_index()
+            df = frequencies[:top_n].reset_index()
             df.columns = ["value", "count"]
             dt_list = list(df.to_dict(orient="index").values())
             val_counts[col] = dt_list

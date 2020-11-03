@@ -2041,12 +2041,9 @@ def test_value_counts(sample_df):
             assert col not in val_cts
         else:
             assert col in val_cts
-            for val_info in val_cts[col]:
-                for k, v in val_info.items():
-                    assert k in ['value', 'count']
-                    if k == 'count':
-                        assert isinstance(v, int)
-    assert val_cts['categories3'][0] == {'count': 6, 'value': np.nan}
+    assert val_cts['categories1'] == [{'value': 200, 'count': 4}, {'value': 100, 'count': 2}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
+    assert val_cts['categories2'] == [{'value': np.nan, 'count': 5}, {'value': 'test2', 'count': 2}, {'value': 'test', 'count': 2}]
+    assert val_cts['categories3'] == [{'value': np.nan, 'count': 6}, {'value': 'test', 'count': 3}]
 
     val_cts_descending = dt_val_cts.value_counts(ascending=True)
     for col, vals in val_cts_descending.items():
@@ -2056,7 +2053,7 @@ def test_value_counts(sample_df):
     val_cts_dropna = dt_val_cts.value_counts(dropna=True)
     assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
 
-    val_cts_2 = dt_val_cts.value_counts(num_x=2)
+    val_cts_2 = dt_val_cts.value_counts(top_n=2)
     for col in val_cts_2:
         assert len(val_cts_2[col]) == 2
 
