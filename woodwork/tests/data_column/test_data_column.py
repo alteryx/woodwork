@@ -24,7 +24,10 @@ from woodwork.tests.testing_utils import to_pandas
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series).astype('category'))
+    # Koalas doesn't support category dtype
+    if not isinstance(sample_series, ks.Series):
+        sample_series = sample_series.astype('category')
+    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -86,7 +89,12 @@ def test_semantic_tag_errors(sample_series):
 
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = category) ' \
+    # Koalas doesn't support categorical
+    if isinstance(sample_series, ks.Series):
+        dtype = 'object'
+    else:
+        dtype = 'category'
+    assert data_col.__repr__() == f'<DataColumn: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 

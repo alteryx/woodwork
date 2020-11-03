@@ -20,6 +20,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
     type_string = ClassNameDescriptor()
     pandas_dtype = 'string'
+    backup_dtype = None
     standard_tags = {}
 
     def __eq__(self, other, deep=False):
@@ -53,6 +54,7 @@ class Categorical(LogicalType):
             [3, 1, 2]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
     def __init__(self, encoding=None):
@@ -72,6 +74,7 @@ class CountryCode(LogicalType):
             ["GB", "NZ", "DE"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
 
@@ -122,6 +125,7 @@ class Integer(LogicalType):
             [-54, 73, 11]
     """
     pandas_dtype = 'Int64'
+    backup_dtype = 'int64'
     standard_tags = {'numeric'}
 
 
@@ -223,6 +227,7 @@ class Ordinal(LogicalType):
             ["bronze", "silver", "gold"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
     def __init__(self, order):
@@ -268,6 +273,7 @@ class SubRegionCode(LogicalType):
             ["AU-NSW", "AU-TAS", "AU-QLD"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
 
@@ -309,6 +315,7 @@ class WholeNumber(LogicalType):
             [7, 135, 0]
     """
     pandas_dtype = 'Int64'
+    backup_dtype = 'int64'
     standard_tags = {'numeric'}
 
 
@@ -325,6 +332,7 @@ class ZIPCode(LogicalType):
              "10021"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
 

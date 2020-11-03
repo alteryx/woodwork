@@ -663,7 +663,7 @@ class DataTable(object):
                 data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
             # convert categories to integers
             new_col = data[col_name]
-            if new_col.dtype != 'category':
+            if str(new_col.dtype) != 'category':
                 new_col = new_col.astype('category')
             data[col_name] = new_col.cat.codes
         return data

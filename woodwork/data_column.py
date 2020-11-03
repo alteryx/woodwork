@@ -81,8 +81,8 @@ class DataColumn(object):
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""
-        if isinstance(self._series, ks.Series):
-            return
+        # if isinstance(self._series, ks.Series):
+        #     return
         if isinstance(self.logical_type, Ordinal):
             self.logical_type._validate_data(self._series)
         if self.logical_type.pandas_dtype != str(self._series.dtype):
@@ -99,11 +99,15 @@ class DataColumn(object):
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
                     self._series = self._series.astype(self.logical_type.pandas_dtype)
-            except TypeError:
-                error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
-                    f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
-                    f'logical type {self.logical_type}.'
-                raise TypeError(error_msg)
+            except (TypeError, ValueError):
+                # Try casing to backup dtype, if one exists
+                try:
+                    self._series = self._series.astype(self.logical_type.backup_dtype)
+                except (TypeError, ValueError):
+                    error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
+                        f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                        f'logical type {self.logical_type}.'
+                    raise TypeError(error_msg)
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
         """Update the logical type for the column and return a new DataColumn object.

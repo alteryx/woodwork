@@ -178,12 +178,7 @@ def dask_timedeltas(pandas_timedeltas):
     return [pd_to_dask(series) for series in pandas_timedeltas]
 
 
-@pytest.fixture
-def koalas_timedeltas(pandas_timedeltas):
-    return [pd_to_koalas(series) for series in pandas_timedeltas]
-
-
-@pytest.fixture(params=['pandas_timedeltas', 'dask_timedeltas', 'koalas_timedeltas'])
+@pytest.fixture(params=['pandas_timedeltas', 'dask_timedeltas'])
 def timedeltas(request):
     return request.getfixturevalue(request.param)
 
@@ -258,11 +253,6 @@ def dask_pdnas(pandas_pdnas):
     return [pd_to_dask(series) for series in pandas_pdnas]
 
 
-@pytest.fixture
-def koalas_pdnas(pandas_pdnas):
-    return [pd_to_koalas(series) for series in pandas_pdnas]
-
-
-@pytest.fixture(params=['pandas_pdnas', 'dask_pdnas', 'koalas_pdnas'])
+@pytest.fixture(params=['pandas_pdnas', 'dask_pdnas'])
 def pdnas(request):
     return request.getfixturevalue(request.param)
