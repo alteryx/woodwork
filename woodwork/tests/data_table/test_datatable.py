@@ -1372,30 +1372,43 @@ def test_setitem_different_name(sample_df):
 
 def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
+    new_series = pd.Series([1, 2, 3])
+    if isinstance(sample_df, ks.DataFrame):
+        dtype = 'int64'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'Int64'
 
-    new_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                         use_standard_tags=False)
+    new_col = DataColumn(new_series, use_standard_tags=False)
     dt['test_col2'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col2' in dt.columns
     assert dt['test_col2'].logical_type == WholeNumber
     assert dt['test_col2'].semantic_tags == set()
     assert 'test_col2' in updated_df.columns
-    assert updated_df['test_col2'].dtype == 'Int64'
+    assert updated_df['test_col2'].dtype == dtype
 
     # Standard tags and no logical type
-    new_col = DataColumn(pd.Series(['new', 'column', 'inserted'], dtype='string'),
-                         use_standard_tags=True)
+    new_series = pd.Series(['new', 'column', 'inserted'])
+    if isinstance(sample_df, ks.DataFrame):
+        dtype = 'object'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'category'
+    new_col = DataColumn(new_series, use_standard_tags=True)
     dt['test_col'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col' in dt.columns
     assert dt['test_col'].logical_type == Categorical
     assert dt['test_col'].semantic_tags == {'category'}
     assert 'test_col' in updated_df.columns
-    assert updated_df['test_col'].dtype == 'category'
+    assert updated_df['test_col'].dtype == dtype
 
     # Add with logical type and semantic tag
-    new_col = DataColumn(pd.Series([1, 2, 3]),
+    new_series = pd.Series([1, 2, 3])
+    if isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+    new_col = DataColumn(new_series,
                          logical_type=Double,
                          use_standard_tags=False,
                          semantic_tags={'test_tag'})
@@ -1415,8 +1428,13 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change to column no change in types
     original_col = dt['age']
-    overwrite_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                               use_standard_tags=True)
+    new_series = pd.Series([1, 2, 3])
+    if isinstance(sample_df, ks.DataFrame):
+        dtype = 'int64'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'Int64'
+    overwrite_col = DataColumn(new_series, use_standard_tags=True)
     dt['age'] = overwrite_col
     updated_df = dt.to_dataframe()
 
@@ -1424,12 +1442,18 @@ def test_setitem_overwrite_column(sample_df):
     assert dt['age'].logical_type == original_col.logical_type
     assert dt['age'].semantic_tags == original_col.semantic_tags
     assert 'age' in updated_df.columns
-    assert updated_df['age'].dtype == 'Int64'
+    assert updated_df['age'].dtype == dtype
     assert original_col.to_series() is not dt['age'].to_series()
 
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = dt['full_name']
-    overwrite_col = DataColumn(pd.Series([True, False, False], dtype='boolean'),
+    new_series = pd.Series([True, False, False])
+    if isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+        dtype = 'bool'
+    else:
+        dtype = 'boolean'
+    overwrite_col = DataColumn(new_series.astype(dtype),
                                use_standard_tags=False,
                                semantic_tags='test_tag')
     dt['full_name'] = overwrite_col
@@ -1439,7 +1463,7 @@ def test_setitem_overwrite_column(sample_df):
     assert dt['full_name'].logical_type == Boolean
     assert dt['full_name'].semantic_tags == {'test_tag'}
     assert 'full_name' in updated_df.columns
-    assert updated_df['full_name'].dtype == 'boolean'
+    assert updated_df['full_name'].dtype == dtype
     assert original_col.to_series() is not dt['full_name'].to_series()
 
 
