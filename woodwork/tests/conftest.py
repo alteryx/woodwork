@@ -4,11 +4,8 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Integer
-)
+from woodwork.logical_types import Boolean, Categorical, Integer
+
 
 @pytest.fixture(params=['sample_df_pandas', 'sample_df_dask'])
 def sample_df(request):
@@ -211,6 +208,8 @@ def categorical_df():
         'categories2': pd.Series(['test', 'test2', 'test2', 'test']),
         'categories3': pd.Series(['test', 'test', 'test', np.nan]),
     })
+
+
 @pytest.fixture()
 def categorical_log_types():
     return {
@@ -221,9 +220,11 @@ def categorical_log_types():
         'categories3': Categorical,
     }
 
+
 @pytest.fixture()
 def categorical_dd(categorical_df):
     return dd.from_pandas(categorical_df, npartitions=2)
+
 
 @pytest.fixture()
 def categorical_pandas_dd_list(categorical_df, categorical_dd, categorical_log_types):
