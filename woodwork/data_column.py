@@ -94,7 +94,9 @@ class DataColumn(object):
                         self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
                         self._series.name = name
                     elif isinstance(self._series, ks.Series):
-                        self._series = ks.to_datetime(self._series, format=self.logical_type.datetime_format)
+                        self._series = ks.Series(ks.to_datetime(self._series.to_numpy(),
+                                                                format=self.logical_type.datetime_format),
+                                                 name=self._series.name)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:

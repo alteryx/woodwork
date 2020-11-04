@@ -7,10 +7,10 @@ import pytest
 
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
-    import pyspark.sql as sql
+    from pyspark.sql import SparkSession
 
-    spark = sql.SparkSession.builder \
-        .master('local[2]') \
+    spark = SparkSession.builder \
+        .master("local[*]") \
         .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
         .config("spark.sql.shuffle.partitions", "2") \
         .getOrCreate()
