@@ -1338,8 +1338,7 @@ def test_setitem_invalid_input(sample_df):
 def test_setitem_different_name(sample_df):
     dt = DataTable(sample_df)
 
-    warning = 'Key, id, does not match the name of the provided DataColumn, wrong.'\
-        ' Changing DataColumn name to: id'
+    warning = 'Name mismatch betwen wrong and id. Changing DataColumn name to id'
     with pytest.warns(UserWarning, match=warning):
         dt['id'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong'),
                               use_standard_tags=False)
@@ -1349,8 +1348,7 @@ def test_setitem_different_name(sample_df):
     assert dt.to_dataframe()['id'].name == 'id'
     assert 'wrong' not in dt.columns
 
-    warning = 'Key, new_col, does not match the name of the provided DataColumn, wrong2.'\
-        ' Changing DataColumn name to: new_col'
+    warning = 'Name mismatch betwen wrong2 and new_col. Changing DataColumn name to new_col'
     with pytest.warns(UserWarning, match=warning):
         dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'),
                                    use_standard_tags=False)

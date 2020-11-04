@@ -66,13 +66,13 @@ def test_data_column_init_with_name(sample_series, sample_datetime_series):
     assert dc_use_series_name.name == name
     assert dc_use_series_name.to_series().name == name
 
-    warning = "Input series name does not match DataColumn name. Changing series name from sample_series to changed_name."
+    warning = 'Name mismatch betwen sample_series and changed_name. Changing DataColumn name to changed_name'
     with pytest.warns(UserWarning, match=warning):
         dc_use_input_name = DataColumn(sample_series, name=changed_name)
     assert dc_use_input_name.name == changed_name
     assert dc_use_input_name.to_series().name == changed_name
 
-    warning = "Input series name does not match DataColumn name. Changing series name from sample_datetime_series to changed_name."
+    warning = 'Name mismatch betwen sample_datetime_series and changed_name. Changing DataColumn name to changed_name'
     with pytest.warns(UserWarning, match=warning):
         dc_with_ltype_change = DataColumn(sample_datetime_series, name=changed_name)
     assert dc_with_ltype_change.name == changed_name
