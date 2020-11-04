@@ -144,7 +144,6 @@ class DataTable(object):
             warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
                           ColumnNameMismatchWarning)
             column._series.name = col_name
-            # --> add test with different name at init
             column._assigned_name = col_name
 
         self._dataframe[col_name] = column._series

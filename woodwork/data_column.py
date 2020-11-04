@@ -8,7 +8,7 @@ from woodwork.config import config
 from woodwork.exceptions import (
     ColumnNameMismatchWarning,
     DuplicateTagsWarning,
-    StandardTagRemovalWarning
+    StandardTagsRemovalWarning
 )
 from woodwork.logical_types import (
     Boolean,
@@ -248,8 +248,8 @@ class DataColumn(object):
             raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")
         standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self._logical_type.standard_tags)))
         if standard_tags_to_remove and self.use_standard_tags:
-            warnings.warn(StandardTagRemovalWarning().get_warning_message(standard_tags_to_remove, self.name),
-                          StandardTagRemovalWarning)
+            warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, self.name),
+                          StandardTagsRemovalWarning)
         new_tags = self._semantic_tags.difference(tags_to_remove)
         return DataColumn(series=self._series,
                           logical_type=self.logical_type,

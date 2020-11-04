@@ -1,6 +1,6 @@
 class ColumnNameMismatchWarning(UserWarning):
     def get_warning_message(self, lose_col, keep_col):
-        return f'Name mismatch betwen {lose_col} and {keep_col}. Changing DataColumn name to {keep_col}'
+        return f'Name mismatch between {lose_col} and {keep_col}. DataColumn and underlying series name are now {keep_col}'
 
 
 class DuplicateTagsWarning(UserWarning):
@@ -8,7 +8,7 @@ class DuplicateTagsWarning(UserWarning):
         return f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{name}'"
 
 
-class StandardTagRemovalWarning(UserWarning):
+class StandardTagsRemovalWarning(UserWarning):
     def get_warning_message(self, standard_tags_to_remove, name):
         return f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{name}'"
 
