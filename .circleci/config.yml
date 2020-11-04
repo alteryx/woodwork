@@ -43,12 +43,12 @@ jobs:
       - run : |
           virtualenv venv
           source venv/bin/activate
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install -e unpacked_sdist/
           python -m pip install -r unpacked_sdist/test-requirements.txt
-          sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
       - persist_to_workspace:
           root: ~/woodwork
           paths:
