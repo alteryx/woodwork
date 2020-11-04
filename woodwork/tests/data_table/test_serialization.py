@@ -262,7 +262,7 @@ def setup_test_profile(monkeypatch, tmpdir):
         os.remove(test_path_config)
     except OSError:
         pass
-    
+
     create_test_credentials(test_path)
     create_test_config(test_path_config)
     yield
