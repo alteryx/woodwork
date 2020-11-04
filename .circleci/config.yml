@@ -119,6 +119,9 @@ jobs:
       - install_dependencies_dev
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: |
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+      - run: |
           source test_python/bin/activate
           make -C docs/ html
       - run: ls docs/build/html
