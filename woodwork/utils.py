@@ -1,3 +1,4 @@
+import importlib
 import re
 from datetime import datetime
 
@@ -197,7 +198,52 @@ def _get_ltype_class(ltype):
     return ltype.__class__
 
 
-def _get_ltype_params(ltype):
+def _get_specified_ltype_params(ltype):
+    '''
+    Gets a dictionary of a LogicalType's parameters.
+
+    Note: If the logical type has not been instantiated, no parameters have
+    been specified for the LogicalType, so no parameters will be returned
+    even if that LogicalType can have parameters set.
+
+    Args:
+        ltype (LogicalType): An instantiated or uninstantiated LogicalType
+
+    Returns:
+        dict: The LogicalType's specified parameters.
+    '''
     if ltype in ww.logical_types.LogicalType.__subclasses__():
-        return ltype().__dict__
+        # Do not reveal parameters for an uninstantiated LogicalType
+        return {}
     return ltype.__dict__
+
+
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportError with the supplied error message.
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)
+
+
+def _is_s3(string):
+    '''
+    Checks if the given string is a s3 path.
+    Returns a boolean.
+    '''
+    return "s3://" in string
+
+
+def _is_url(string):
+    '''
+    Checks if the given string is an url path.
+    Returns a boolean.
+    '''
+    return 'http' in string

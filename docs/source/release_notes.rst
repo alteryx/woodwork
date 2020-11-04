@@ -7,6 +7,7 @@ Release Notes
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
+        * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
