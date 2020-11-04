@@ -142,6 +142,7 @@ class DataTable(object):
         if column.name is not None and column.name != col_name:
             warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
                           f' {column.name}. Changing DataColumn name to: {col_name}')
+            #   -->probably shouldn't just update the col sereis name here but the main name - add test to try and break this
             column._series.name = col_name
 
         self._dataframe[col_name] = column._series
