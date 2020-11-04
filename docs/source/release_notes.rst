@@ -7,6 +7,8 @@ Release Notes
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
+        * Add ``value_counts()`` method to DataTable (:pr:`342`)
+        * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
@@ -21,6 +23,7 @@ Release Notes
         * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
         * Remove UserWarning when no matching columns found (:pr:`325`)
         * Remove ``copy`` parameter from ``DataTable.to_dataframe`` and ``DataColumn.to_series`` (:pr:`338`)
+        * Allow pandas ExtensionArrays as inputs to DataColumn (:pr:`343`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
@@ -30,6 +33,7 @@ Release Notes
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
         * Add DockerHub credentials to CI testing environment (:pr:`326`)
+        * Fix removing files for serialization test (:pr:`350`)
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`

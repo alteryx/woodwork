@@ -1,6 +1,6 @@
 import pandas as pd
 
-from woodwork.utils import _get_ltype_params, camel_to_snake
+from woodwork.utils import _get_specified_ltype_params, camel_to_snake
 
 
 class ClassNameDescriptor(object):
@@ -24,7 +24,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     standard_tags = {}
 
     def __eq__(self, other, deep=False):
-        return isinstance(other, self.__class__) and _get_ltype_params(other) == _get_ltype_params(self)
+        return isinstance(other, self.__class__) and _get_specified_ltype_params(other) == _get_specified_ltype_params(self)
 
     def __str__(self):
         return str(self.__class__)
@@ -347,12 +347,17 @@ def get_logical_types():
     return logical_types
 
 
-def str_to_logical_type(logical_str, raise_error=True):
-    """Helper function for converting a string value to the corresponding logical type object"""
+def str_to_logical_type(logical_str, params=None, raise_error=True):
+    """Helper function for converting a string value to the corresponding logical type object.
+    If a dictionary of params for the logical type is provided, apply them."""
     logical_str = logical_str.lower()
     logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types().items()}
 
     if logical_str in logical_types_dict:
-        return logical_types_dict[logical_str]
+        ltype = logical_types_dict[logical_str]
+        if params:
+            return ltype(**params)
+        else:
+            return ltype
     elif raise_error:
         raise ValueError('String %s is not a valid logical type' % logical_str)

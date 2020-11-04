@@ -30,11 +30,12 @@ class DataColumn(object):
     def __init__(self, series,
                  logical_type=None,
                  semantic_tags=None,
-                 use_standard_tags=True):
+                 use_standard_tags=True,
+                 name=None):
         """Create a DataColumn.
 
         Args:
-            series (pd.Series): Series containing the data associated with the column.
+            series (pd.Series or dd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
@@ -45,8 +46,10 @@ class DataColumn(object):
                 (list or set) If multiple tags are being set, a list or set of strings can be passed.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
+            name (str, optional): Name of DataColumn. Will overwrite Series name, if it exists.
         """
-        self._series = series
+        self._assigned_name = name
+        self._set_series(series)
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         semantic_tags = _convert_input_to_set(semantic_tags)
@@ -133,6 +136,20 @@ class DataColumn(object):
             new_col._set_as_time_index()
 
         return new_col
+
+    def _set_series(self, series):
+        if not (isinstance(series, pd.Series) or isinstance(series, dd.Series) or isinstance(series, pd.api.extensions.ExtensionArray)):
+            raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
+
+        # pandas ExtensionArrays should be converted to pandas.Series
+        if isinstance(series, pd.api.extensions.ExtensionArray):
+            series = pd.Series(series, dtype=series.dtype)
+
+        if self._assigned_name is not None and series.name is not None and self._assigned_name != series.name:
+            warnings.warn(f'Input series name does not match DataColumn name. Changing series name from {series.name} to {self._assigned_name}.')
+
+        series.name = self._assigned_name or series.name
+        self._series = series
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
@@ -280,7 +297,7 @@ class DataColumn(object):
     @property
     def name(self):
         """The name of the column"""
-        return self._series.name
+        return self._assigned_name or self._series.name
 
     @property
     def dtype(self):

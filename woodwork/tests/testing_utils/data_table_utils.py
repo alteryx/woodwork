@@ -24,7 +24,7 @@ def mi_between_cols(col1, col2, df):
     return mi_series.iloc[0]
 
 
-def to_pandas(df):
+def to_pandas(df, index=None):
     '''
     Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
 
@@ -39,5 +39,8 @@ def to_pandas(df):
 
     if isinstance(df, (ks.DataFrame, ks.Series)):
         pd_df = df.to_pandas()
+
+    if index:
+        pd_df = pd_df.set_index(index, drop=False)
 
     return pd_df
