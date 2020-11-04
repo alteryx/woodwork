@@ -256,6 +256,9 @@ def setup_test_profile(monkeypatch, tmpdir):
 
     try:
         os.remove(test_path)
+    except OSError:
+        pass
+    try:
         os.remove(test_path_config)
     except OSError:
         pass
