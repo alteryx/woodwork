@@ -76,6 +76,8 @@ class DataTable(object):
             if isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
+            elif isinstance(self._dataframe, ks.DataFrame):
+                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
             else:
                 self._dataframe.insert(0, index, range(len(self._dataframe)))
 
@@ -621,6 +623,10 @@ class DataTable(object):
         for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
             series = column._series
+            if isinstance(series, dd.Series):
+                series = series.compute()
+            if isinstance(series, ks.Series):
+                series = series.to_pandas()
             ltype = column._logical_type
 
             if column._is_numeric():
@@ -687,6 +693,7 @@ class DataTable(object):
                                                       column._is_categorical() or
                                                       _get_ltype_class(column.logical_type) == Boolean)
                                                      )]
+
         data = self._dataframe[valid_columns]
         if isinstance(data, dd.DataFrame):
             data = data.compute()
@@ -810,6 +817,7 @@ def _update_time_index(data_table, time_index, old_time_index=None):
     """Add the `time_index` tag to the specified time_index column and remove the tag from the
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
+
     _check_time_index(data_table._dataframe, time_index)
     data_table.columns[time_index]._set_as_time_index()
     if old_time_index:

@@ -5,6 +5,19 @@ import pandas as pd
 import pytest
 
 
+@pytest.fixture(scope='session', autouse=True)
+def spark_session():
+    import pyspark.sql as sql
+
+    spark = sql.SparkSession.builder \
+        .master('local[2]') \
+        .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
+        .config("spark.sql.shuffle.partitions", "2") \
+        .getOrCreate()
+
+    return spark
+
+
 @pytest.fixture(params=['sample_df_pandas', 'sample_df_dask', 'sample_df_koalas'])
 def sample_df(request):
     return request.getfixturevalue(request.param)
@@ -117,6 +130,9 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 
 @pytest.fixture()
 def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
+    numeric_time_index_df_pandas['whole_numbers'] = numeric_time_index_df_pandas['whole_numbers'].astype('int64')
+    numeric_time_index_df_pandas['ints'] = numeric_time_index_df_pandas['ints'].astype('int64')
+    numeric_time_index_df_pandas['with_null'] = numeric_time_index_df_pandas['whole_numbers'].astype('float')
     return ks.from_pandas(numeric_time_index_df_pandas)
 
 
@@ -128,14 +144,14 @@ def numeric_time_index_df(request):
 @pytest.fixture()
 def describe_df_pandas():
     index_data = [0, 1, 2, 3, 4, 5, 6, 7]
-    boolean_data = [True, False, True, True, False, True, np.nan, True]
-    category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
+    boolean_data = [True, False, True, True, False, True, False, True]
+    category_data = ['red', 'blue', 'red', 'yellow', 'red', 'blue', 'red', 'yellow']
     datetime_data = pd.to_datetime(['2020-01-01',
                                     '2020-02-01',
                                     '2020-01-01 08:00',
                                     '2020-02-02 16:00',
                                     '2020-02-02 18:00',
-                                    pd.NaT,
+                                    '2020-02-02 20:00',
                                     '2020-02-01',
                                     '2020-01-02'])
     formatted_datetime_data = pd.Series(['2020~01~01',
@@ -143,10 +159,10 @@ def describe_df_pandas():
                                          '2020~03~01',
                                          '2020~02~02',
                                          '2020~03~02',
-                                         pd.NaT,
+                                         '2020~02~01',
                                          '2020~02~01',
                                          '2020~01~02'])
-    numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
+    numeric_data = pd.Series([10, 20, 17, 32, 10, 1, 56, 10])
     natural_language_data = [
         'This is a natural language sentence',
         'Duplicate sentence.',
@@ -154,7 +170,7 @@ def describe_df_pandas():
         'How about some symbols?!',
         'This entry contains two sentences. Second sentence.',
         'Duplicate sentence.',
-        np.nan,
+        'np.nan',
         'I am the last line',
     ]
     timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
@@ -178,7 +194,7 @@ def describe_df_dask(describe_df_pandas):
 
 @pytest.fixture()
 def describe_df_koalas(describe_df_pandas):
-    return ks.from_pandas(describe_df_pandas)
+    return ks.from_pandas(describe_df_pandas.drop(columns='timedelta_col'))
 
 
 @pytest.fixture(params=['describe_df_pandas', 'describe_df_dask', 'describe_df_koalas'])

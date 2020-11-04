@@ -67,6 +67,9 @@ def _is_numeric_series(series, logical_type):
     for the purposes of determining if it can be a time_index.
 
     '''
+    if isinstance(series, ks.Series):
+        series = series.to_pandas()
+
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
         pd.to_numeric(series, errors='raise')
