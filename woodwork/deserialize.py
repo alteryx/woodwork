@@ -11,6 +11,7 @@ import databricks.koalas as ks
 import pandas as pd
 
 from woodwork import DataTable
+from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import str_to_logical_type
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import FORMATS, SCHEMA_VERSION
@@ -143,22 +144,15 @@ def _check_schema_version(saved_version_str):
     saved = saved_version_str.split('.')
     current = SCHEMA_VERSION.split('.')
 
-    warning_text_upgrade = ('The schema version of the saved woodwork.DataTable '
-                            '%s is greater than the latest supported %s. '
-                            'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
-                            % (saved_version_str, SCHEMA_VERSION))
-
     for c_num, s_num in zip_longest(current, saved, fillvalue=0):
         if c_num > s_num:
             break
         elif c_num < s_num:
-            warnings.warn(warning_text_upgrade, UserWarning)
+            warnings.warn(UpgradeSchemaWarning().get_warning_message(saved_version_str, SCHEMA_VERSION),
+                          UpgradeSchemaWarning)
             break
 
-    warning_text_outdated = ('The schema version of the saved woodwork.DataTable '
-                             '%s is no longer supported by this version '
-                             'of woodwork. Attempting to load woodwork.DataTable ...'
-                             % (saved_version_str))
     # Check if saved has older major version.
     if current[0] > saved[0]:
-        warnings.warn(warning_text_outdated, UserWarning)
+        warnings.warn(OutdatedSchemaWarning().get_warning_message(saved_version_str),
+                      OutdatedSchemaWarning)

@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from woodwork.data_column import DataColumn
+from woodwork.exceptions import ColumnNameMismatchWarning, DuplicateTagsWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -70,14 +71,14 @@ def test_data_column_init_with_name(sample_series, sample_datetime_series):
     assert dc_use_series_name.name == name
     assert dc_use_series_name.to_series().name == name
 
-    warning = "Input series name does not match DataColumn name. Changing series name from sample_series to changed_name."
-    with pytest.warns(UserWarning, match=warning):
+    warning = 'Name mismatch between sample_series and changed_name. DataColumn and underlying series name are now changed_name'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
         dc_use_input_name = DataColumn(sample_series, name=changed_name)
     assert dc_use_input_name.name == changed_name
     assert dc_use_input_name.to_series().name == changed_name
 
-    warning = "Input series name does not match DataColumn name. Changing series name from sample_datetime_series to changed_name."
-    with pytest.warns(UserWarning, match=warning):
+    warning = 'Name mismatch between sample_datetime_series and changed_name. DataColumn and underlying series name are now changed_name'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
         dc_with_ltype_change = DataColumn(sample_datetime_series, name=changed_name)
     assert dc_with_ltype_change.name == changed_name
     assert dc_with_ltype_change.to_series().name == changed_name
@@ -239,7 +240,7 @@ def test_warns_on_setting_duplicate_tag(sample_series):
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
 
     expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(DuplicateTagsWarning) as record:
         data_col.add_semantic_tags(['first_tag', 'second_tag'])
     assert len(record) == 1
     assert record[0].message.args[0] == expected_message

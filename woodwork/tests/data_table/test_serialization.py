@@ -10,6 +10,7 @@ import pytest
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
 from woodwork import DataTable
+from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import Ordinal
 from woodwork.tests.testing_utils import to_pandas
 
@@ -354,7 +355,7 @@ def test_check_later_schema_version():
                             '%s is greater than the latest supported %s. '
                             'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
                             % (version_to_check, serialize.SCHEMA_VERSION))
-            with pytest.warns(UserWarning, match=warning_text):
+            with pytest.warns(UpgradeSchemaWarning, match=warning_text):
                 deserialize._check_schema_version(version_to_check)
         else:
             with pytest.warns(None) as record:
@@ -377,7 +378,7 @@ def test_earlier_schema_version():
                             '%s is no longer supported by this version '
                             'of woodwork. Attempting to load woodwork.DataTable ...'
                             % (version_to_check))
-            with pytest.warns(UserWarning, match=warning_text):
+            with pytest.warns(OutdatedSchemaWarning, match=warning_text):
                 deserialize._check_schema_version(version_to_check)
         else:
             with pytest.warns(None) as record:

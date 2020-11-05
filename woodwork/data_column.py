@@ -6,6 +6,11 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.config import config
+from woodwork.exceptions import (
+    ColumnNameMismatchWarning,
+    DuplicateTagsWarning,
+    StandardTagsRemovalWarning
+)
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -146,7 +151,8 @@ class DataColumn(object):
             series = pd.Series(series, dtype=series.dtype)
 
         if self._assigned_name is not None and series.name is not None and self._assigned_name != series.name:
-            warnings.warn(f'Input series name does not match DataColumn name. Changing series name from {series.name} to {self._assigned_name}.')
+            warnings.warn(ColumnNameMismatchWarning().get_warning_message(series.name, self._assigned_name),
+                          ColumnNameMismatchWarning)
 
         series.name = self._assigned_name or series.name
         self._series = series
@@ -206,7 +212,8 @@ class DataColumn(object):
         _validate_tags(new_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
-            warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
+            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, self.name),
+                          DuplicateTagsWarning)
         new_col_tags = self._semantic_tags.union(new_tags)
         new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
@@ -252,8 +259,8 @@ class DataColumn(object):
             raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")
         standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self._logical_type.standard_tags)))
         if standard_tags_to_remove and self.use_standard_tags:
-            warnings.warn(f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{self.name}'",
-                          UserWarning)
+            warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, self.name),
+                          StandardTagsRemovalWarning)
         new_tags = self._semantic_tags.difference(tags_to_remove)
         return DataColumn(series=self._series,
                           logical_type=self.logical_type,
