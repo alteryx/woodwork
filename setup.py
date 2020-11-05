@@ -6,6 +6,8 @@ dirname = path.abspath(path.dirname(__file__))
 with open(path.join(dirname, 'README.md')) as f:
     long_description = f.read()
 
+extras_require = {'dask': open('dask-requirements.txt').readlines()}
+extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='woodwork',
@@ -27,6 +29,7 @@ setup(
     install_requires=open('requirements.txt').readlines(),
     tests_require=open('test-requirements.txt').readlines(),
     python_requires='>=3.6, <4',
+    extras_require=extras_require,
     keywords='data science machine learning typing',
     include_package_data=True,
     entry_points={

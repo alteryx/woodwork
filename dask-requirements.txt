@@ -1,0 +1,1 @@
+dask[dataframe]>=2.30.0
