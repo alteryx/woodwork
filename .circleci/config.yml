@@ -74,6 +74,8 @@ jobs:
     parameters:
       image_tag:
         type: string
+      optional_libraries:
+        type: string
     executor:
       name: python
       image_tag: << parameters.image_tag >>
