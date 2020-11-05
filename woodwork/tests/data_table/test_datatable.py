@@ -16,6 +16,7 @@ from woodwork.data_table import (
     _check_unique_column_names,
     _validate_params
 )
+from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -1336,29 +1337,40 @@ def test_setitem_invalid_input(sample_df):
         dt['signup_date'] = DataColumn(pd.Series(['test text', 'file', 'False']))
 
 
-def test_setitem_different_name(sample_df):
+def test_setitem_different_name(sample_df, sample_series_dask, sample_series_pandas):
+    sample_series = sample_series_pandas
+    if isinstance(sample_df, dd.DataFrame):
+        sample_series = sample_series_dask
     dt = DataTable(sample_df)
 
-    warning = 'Key, id, does not match the name of the provided DataColumn, wrong.'\
-        ' Changing DataColumn name to: id'
-    with pytest.warns(UserWarning, match=warning):
-        dt['id'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong'),
+    warning = 'Name mismatch between sample_series and id. DataColumn and underlying series name are now id'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        dt['id'] = DataColumn(sample_series,
                               use_standard_tags=False)
 
     assert dt['id'].name == 'id'
     assert dt['id'].to_series().name == 'id'
     assert dt.to_dataframe()['id'].name == 'id'
-    assert 'wrong' not in dt.columns
+    assert 'sample_series' not in dt.columns
 
-    warning = 'Key, new_col, does not match the name of the provided DataColumn, wrong2.'\
-        ' Changing DataColumn name to: new_col'
-    with pytest.warns(UserWarning, match=warning):
-        dt['new_col'] = DataColumn(pd.Series([1, 2, 3], dtype='Int64', name='wrong2'),
+    warning = 'Name mismatch between sample_series and new_col. DataColumn and underlying series name are now new_col'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        dt['new_col'] = DataColumn(sample_series,
                                    use_standard_tags=False)
     assert dt['new_col'].name == 'new_col'
     assert dt['new_col'].to_series().name == 'new_col'
     assert dt.to_dataframe()['new_col'].name == 'new_col'
-    assert 'wrong2' not in dt.columns
+    assert 'sample_series' not in dt.columns
+
+    warning = 'Name mismatch between wrong and col_with_name. DataColumn and underlying series name are now col_with_name'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        dt['col_with_name'] = DataColumn(sample_series,
+                                         use_standard_tags=False, name='wrong')
+    assert dt['col_with_name'].name == 'col_with_name'
+    assert dt['col_with_name'].to_series().name == 'col_with_name'
+    assert dt.to_dataframe()['col_with_name'].name == 'col_with_name'
+    assert 'sample_series' not in dt.columns
+    assert 'wrong' not in dt.columns
 
 
 def test_setitem_new_column(sample_df):
