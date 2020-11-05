@@ -1,5 +1,6 @@
 import os
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -20,6 +21,7 @@ from woodwork.utils import (
     _is_s3,
     _is_url,
     camel_to_snake,
+    import_or_none,
     import_or_raise,
     list_logical_types,
     list_semantic_tags
@@ -205,6 +207,12 @@ def test_import_or_raise():
     error = 'Module nonexistent could not be found.'
     with pytest.raises(ImportError, match=error):
         import_or_raise('nonexistent', error)
+
+
+def test_import_or_none():
+    assert import_or_none('pandas') == pd
+    assert import_or_none('dask.dataframe') == dd
+    assert import_or_none('nonexistent') is None
 
 
 def test_is_url():

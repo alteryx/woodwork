@@ -1,6 +1,5 @@
 import warnings
 
-import dask.dataframe as dd
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -19,8 +18,11 @@ from woodwork.utils import (
     _get_ltype_class,
     _get_mode,
     _is_numeric_series,
-    col_is_datetime
+    col_is_datetime,
+    import_or_none
 )
+
+dd = import_or_none('dask.dataframe')
 
 
 class DataTable(object):
@@ -72,7 +74,7 @@ class DataTable(object):
             self._dataframe = dataframe
 
         if make_index:
-            if isinstance(self._dataframe, dd.DataFrame):
+            if dd and isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
             else:
@@ -545,7 +547,7 @@ class DataTable(object):
 
         results = {}
 
-        if isinstance(self._dataframe, dd.DataFrame):
+        if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
         else:
             df = self._dataframe
@@ -628,7 +630,7 @@ class DataTable(object):
         val_counts = {}
         valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
         data = self._dataframe[valid_cols]
-        if isinstance(data, dd.DataFrame):
+        if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
 
         for col in valid_cols:
@@ -725,7 +727,7 @@ class DataTable(object):
                                                       _get_ltype_class(column.logical_type) == Boolean)
                                                      )]
         data = self._dataframe[valid_columns]
-        if isinstance(data, dd.DataFrame):
+        if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
 
         # cut off data if necessary
@@ -814,7 +816,8 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame)):
+    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
+            isinstance(dataframe, pd.DataFrame)):
         raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
