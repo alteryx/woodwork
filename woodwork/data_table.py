@@ -546,7 +546,9 @@ class DataTable(object):
         if isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
         elif isinstance(self._dataframe, ks.DataFrame):
-            df = self._dataframe.to_pandas()
+            # Missing values in Koalas will be replaced with 'None' - change them to
+            # np.nan so stats are calculated properly
+            df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
         else:
             df = self._dataframe
 

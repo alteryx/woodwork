@@ -145,13 +145,13 @@ def numeric_time_index_df(request):
 def describe_df_pandas():
     index_data = [0, 1, 2, 3, 4, 5, 6, 7]
     boolean_data = [True, False, True, True, False, True, False, True]
-    category_data = ['red', 'blue', 'red', 'yellow', 'red', 'blue', 'red', 'yellow']
+    category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
     datetime_data = pd.to_datetime(['2020-01-01',
                                     '2020-02-01',
                                     '2020-01-01 08:00',
                                     '2020-02-02 16:00',
                                     '2020-02-02 18:00',
-                                    '2020-02-02 20:00',
+                                    pd.NaT,
                                     '2020-02-01',
                                     '2020-01-02'])
     formatted_datetime_data = pd.Series(['2020~01~01',
@@ -159,10 +159,10 @@ def describe_df_pandas():
                                          '2020~03~01',
                                          '2020~02~02',
                                          '2020~03~02',
-                                         '2020~02~01',
+                                         pd.NaT,
                                          '2020~02~01',
                                          '2020~01~02'])
-    numeric_data = pd.Series([10, 20, 17, 32, 10, 1, 56, 10])
+    numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
     natural_language_data = [
         'This is a natural language sentence',
         'Duplicate sentence.',
@@ -170,7 +170,7 @@ def describe_df_pandas():
         'How about some symbols?!',
         'This entry contains two sentences. Second sentence.',
         'Duplicate sentence.',
-        'np.nan',
+        np.nan,
         'I am the last line',
     ]
     timedelta_data = datetime_data - pd.Timestamp('2020-01-01')

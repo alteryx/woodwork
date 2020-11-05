@@ -1838,9 +1838,9 @@ def test_datatable_describe_method(describe_df):
             'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'category', 'custom_tag'},
-            'count': 8,
+            'count': 7,
             'nunique': 3,
-            'nan_count': 0,
+            'nan_count': 1,
             'mode': 'red'}, name='category_col')
         dt = DataTable(category_data, logical_types={'category_col': ltype}, semantic_tags={'category_col': 'custom_tag'})
         stats_df = dt.describe()
@@ -1879,13 +1879,13 @@ def test_datatable_describe_method(describe_df):
             'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
-            'count': 8,
-            'nunique': 7,
-            'nan_count': 0,
-            'mean': pd.Timestamp('2020-01-21 04:45:00'),
+            'count': 7,
+            'nunique': 6,
+            'nan_count': 1,
+            'mean': pd.Timestamp('2020-01-19 09:25:42.857142784'),
             'mode': pd.Timestamp('2020-02-01 00:00:00'),
             'min': pd.Timestamp('2020-01-01 00:00:00'),
-            'max': pd.Timestamp('2020-02-02 20:00:00')}, name='datetime_col')
+            'max': pd.Timestamp('2020-02-02 18:00:00')}, name='datetime_col')
         dt = DataTable(datetime_data, logical_types={'datetime_col': ltype}, semantic_tags={'datetime_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
@@ -1901,16 +1901,16 @@ def test_datatable_describe_method(describe_df):
                                                 '2020-03-01',
                                                 '2020-02-02',
                                                 '2020-03-02',
-                                                '2020-02-01',
+                                                pd.NaT,
                                                 '2020-02-01',
                                                 '2020-01-02'])
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
-            'count': 8,
+            'count': 7,
             'nunique': 6,
-            'nan_count': 0,
+            'nan_count': 1,
             'mean': converted_to_datetime.mean(),
             'mode': pd.to_datetime('2020-02-01'),
             'min': converted_to_datetime.min(),
@@ -1932,8 +1932,8 @@ def test_datatable_describe_method(describe_df):
                 'physical_type': ltype.pandas_dtype,
                 'logical_type': ltype,
                 'semantic_tags': {'custom_tag'},
-                'count': 8,
-                'nan_count': 0,
+                'count': 7,
+                'nan_count': 1,
                 'mode': pd.Timedelta('31days')}, name='col')
             df = pd.DataFrame({'col': timedelta_data})
             dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
@@ -1950,16 +1950,16 @@ def test_datatable_describe_method(describe_df):
             'physical_type': ltype.pandas_dtype,
             'logical_type': ltype,
             'semantic_tags': {'numeric', 'custom_tag'},
-            'count': 8,
+            'count': 7,
             'nunique': 6,
-            'nan_count': 0,
-            'mean': 19.5,
+            'nan_count': 1,
+            'mean': 20.857142857142858,
             'mode': 10,
-            'std': 17.35346815892596,
+            'std': 18.27957486220227,
             'min': 1,
             'first_quartile': 10,
-            'second_quartile': 13.5,
-            'third_quartile': 23,
+            'second_quartile': 17,
+            'third_quartile': 26,
             'max': 56}, name='numeric_col')
         dt = DataTable(numeric_data, logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = dt.describe()
@@ -1979,8 +1979,8 @@ def test_datatable_describe_method(describe_df):
             'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
-            'count': 8,
-            'nan_count': 0,
+            'count': 7,
+            'nan_count': 1,
             'mode': 'Duplicate sentence.'}, name='natural_language_col')
         dt = DataTable(natural_language_data,
                        logical_types={'natural_language_col': ltype},
@@ -2033,7 +2033,7 @@ def test_datatable_describe_with_no_semantic_tags(describe_df):
     assert stats_df['category_col']['nunique'] == 3
     # Make sure numeric stats were computed
     assert stats_df['numeric_col']['semantic_tags'] == set()
-    np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 19.5, 5)
+    np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 20.85714, 5)
 
 
 def test_data_table_describe_with_include(sample_df):
