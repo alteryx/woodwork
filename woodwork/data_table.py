@@ -2,6 +2,7 @@ import warnings
 
 import dask.dataframe as dd
 import databricks.koalas as ks
+import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -627,11 +628,21 @@ class DataTable(object):
         val_counts = {}
         valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
         data = self._dataframe[valid_cols]
+        is_ks = False
         if isinstance(data, dd.DataFrame):
             data = data.compute()
+        if isinstance(data, ks.DataFrame):
+            data = data.to_pandas()
+            is_ks = True
 
         for col in valid_cols:
-            frequencies = data[col].value_counts(ascending=ascending, dropna=dropna)
+            if dropna and is_ks:
+                # Koalas categorical columns will have missing values replaced with the string 'None'
+                # Replace them with np.nan so dropna work
+                datacol = data[col].replace(to_replace='None', value=np.nan)
+            else:
+                datacol = data[col]
+            frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
             df = frequencies[:top_n].reset_index()
             df.columns = ["value", "count"]
             dt_list = list(df.to_dict(orient="index").values())

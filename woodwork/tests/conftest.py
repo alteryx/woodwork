@@ -4,9 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import woodwork as ww
-from woodwork.logical_types import Boolean, Categorical, Integer
-
 
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
@@ -259,35 +256,26 @@ def df_mi(request):
 
 
 @pytest.fixture()
-def categorical_df():
+def categorical_df_pandas():
     return pd.DataFrame({
         'ints': pd.Series([1, 2, 3, 2]),
-        'categories1': pd.Series([1, 100, 1, 100, 200, 200, 200, 200, 3]),
+        'categories1': pd.Series([1, 100, 1, 100, 200, 200, 200, 200, 3, 100]),
         'bools': pd.Series([True, False, True, False]),
-        'categories2': pd.Series(['test', 'test2', 'test2', 'test']),
+        'categories2': pd.Series(['test', 'test', 'test2', 'test']),
         'categories3': pd.Series(['test', 'test', 'test', np.nan]),
     })
 
 
 @pytest.fixture()
-def categorical_log_types():
-    return {
-        'ints': Integer,
-        'categories1': Categorical,
-        'bools': Boolean,
-        'categories2': Categorical,
-        'categories3': Categorical,
-    }
+def categorical_df_dask(categorical_df_pandas):
+    return dd.from_pandas(categorical_df_pandas, npartitions=2)
 
 
 @pytest.fixture()
-def categorical_dd(categorical_df):
-    return dd.from_pandas(categorical_df, npartitions=2)
+def categorical_df_koalas(categorical_df_pandas):
+    return ks.from_pandas(categorical_df_pandas)
 
 
-@pytest.fixture()
-def categorical_pandas_dd_list(categorical_df, categorical_dd, categorical_log_types):
-    return [
-        ww.DataTable(categorical_df, logical_types=categorical_log_types),
-        ww.DataTable(categorical_dd, logical_types=categorical_log_types)
-    ]
+@pytest.fixture(params=['categorical_df_pandas', 'categorical_df_dask', 'categorical_df_koalas'])
+def categorical_df(request):
+    return request.getfixturevalue(request.param)

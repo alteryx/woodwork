@@ -54,7 +54,7 @@ def test_data_column_init_with_semantic_tags(sample_series):
 
 
 def test_data_column_init_wrong_series():
-    error = 'Series must be a pandas Series, Dask Series, or a pandas ExtensionArray'
+    error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray'
     with pytest.raises(TypeError, match=error):
         DataColumn([1, 2, 3, 4])
 

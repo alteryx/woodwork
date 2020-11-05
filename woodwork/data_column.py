@@ -138,8 +138,8 @@ class DataColumn(object):
         return new_col
 
     def _set_series(self, series):
-        if not (isinstance(series, pd.Series) or isinstance(series, dd.Series) or isinstance(series, pd.api.extensions.ExtensionArray)):
-            raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
+        if not (isinstance(series, (pd.Series, dd.Series, ks.Series)) or isinstance(series, pd.api.extensions.ExtensionArray)):
+            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')
 
         # pandas ExtensionArrays should be converted to pandas.Series
         if isinstance(series, pd.api.extensions.ExtensionArray):

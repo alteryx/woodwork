@@ -3,6 +3,7 @@ import os
 
 import boto3
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 import pytest
 
@@ -28,6 +29,23 @@ def xfail_tmp_disappears(dataframe):
 
 
 def test_to_dictionary(sample_df):
+    if isinstance(sample_df, dd.DataFrame):
+        table_type = 'dask'
+    elif isinstance(sample_df, ks.DataFrame):
+        table_type = 'koalas'
+    else:
+        table_type = 'pandas'
+
+    if isinstance(sample_df, ks.DataFrame):
+        int_val = 'int64'
+        cat_val = 'object'
+        string_val = 'object'
+        bool_val = 'bool'
+    else:
+        int_val = 'Int64'
+        cat_val = 'category'
+        string_val = 'string'
+        bool_val = 'boolean'
     expected = {'schema_version': '1.0.0',
                 'name': 'test_data',
                 'index': 'id',
@@ -35,27 +53,27 @@ def test_to_dictionary(sample_df):
                 'metadata': [{'name': 'id',
                               'ordinal': 0,
                               'logical_type': {'parameters': {}, 'type': 'WholeNumber'},
-                              'physical_type': {'type': 'Int64'},
+                              'physical_type': {'type': int_val},
                               'semantic_tags': ['index', 'tag1']},
                              {'name': 'full_name',
                               'ordinal': 1,
                               'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                              'physical_type': {'type': 'string'},
+                              'physical_type': {'type': string_val},
                               'semantic_tags': []},
                              {'name': 'email',
                               'ordinal': 2,
                               'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                              'physical_type': {'type': 'string'},
+                              'physical_type': {'type': string_val},
                               'semantic_tags': []},
                              {'name': 'phone_number',
                               'ordinal': 3,
                               'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                              'physical_type': {'type': 'string'},
+                              'physical_type': {'type': string_val},
                               'semantic_tags': []},
                              {'name': 'age',
                               'ordinal': 4,
                               'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
-                              'physical_type': {'type': 'category'},
+                              'physical_type': {'type': cat_val},
                               'semantic_tags': ['category']},
                              {'name': 'signup_date',
                               'ordinal': 5,
@@ -66,9 +84,9 @@ def test_to_dictionary(sample_df):
                              {'name': 'is_registered',
                               'ordinal': 6,
                               'logical_type': {'parameters': {}, 'type': 'Boolean'},
-                              'physical_type': {'type': 'boolean'},
+                              'physical_type': {'type': bool_val},
                               'semantic_tags': []}],
-                'loading_info': {'table_type': 'dask' if isinstance(sample_df, dd.DataFrame) else 'pandas'}
+                'loading_info': {'table_type': table_type}
                 }
     dt = DataTable(sample_df,
                    name='test_data',
@@ -94,10 +112,12 @@ def test_to_csv(sample_df, tmpdir):
                    index='id',
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33, 57])})
+
     dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index, sort_index=True),
+                                  to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
     assert dt == _dt
 
 
@@ -106,7 +126,8 @@ def test_to_pickle(sample_df_pandas, tmpdir):
     pandas_dt.to_pickle(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index),
+                                  to_pandas(_dt.to_dataframe(), index=_dt.index))
     assert pandas_dt == _dt
 
 
@@ -118,11 +139,11 @@ def test_to_pickle_errors_dask(sample_df_dask, tmpdir):
 
 
 def test_to_parquet(sample_df, tmpdir):
-    dt = DataTable(sample_df)
+    dt = DataTable(sample_df, index='id')
     dt.to_parquet(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
-
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
+                                  to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
     assert dt == _dt
 
 

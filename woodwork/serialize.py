@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import (
@@ -42,6 +43,8 @@ def datatable_to_metadata(datatable):
 
     if isinstance(df, dd.DataFrame):
         table_type = 'dask'
+    elif isinstance(df, ks.DataFrame):
+        table_type = 'koalas'
     else:
         table_type = 'pandas'
 
@@ -88,7 +91,6 @@ def dump_table(datatable, path, **kwargs):
     '''Writes datatable metadata to table_metadata.json at the specified path.
     '''
     loading_info = write_table_data(datatable, path, **kwargs)
-
     metadata = datatable_to_metadata(datatable)
     metadata['loading_info'].update(loading_info)
 
@@ -122,12 +124,18 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     file = os.path.join(path, location)
 
     if format == 'csv':
+        compression = kwargs['compression']
+        if isinstance(df, ks.DataFrame):
+            df = df.copy()
+            columns = list(df.select_dtypes('object').columns)
+            df[columns] = df[columns].astype(str)
+            compression = str(compression)
         df.to_csv(
             file,
             index=kwargs['index'],
             sep=kwargs['sep'],
             encoding=kwargs['encoding'],
-            compression=kwargs['compression'],
+            compression=compression
         )
     elif format == 'pickle':
         # Dask currently does not support to_pickle
@@ -136,10 +144,6 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             raise ValueError(msg)
         df.to_pickle(file, **kwargs)
     elif format == 'parquet':
-        # Serializing to parquet format raises an error when columns have object dtype.
-        # We currently have no LogicalTypes with physical dtype 'object'
-        assert all(dtype != 'object' for dtype in df.dtypes)
-
         df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
