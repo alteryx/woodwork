@@ -4,7 +4,6 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
-from dask.delayed import Delayed
 
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import (

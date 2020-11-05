@@ -1566,6 +1566,7 @@ def test_shape_dask(categorical_dd, categorical_log_types):
 
     assert (dt.shape[0].compute(), dt.shape[1]) == (len(dt.to_dataframe()), len(dt.columns))
 
+
 def test_select_invalid_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt = dt.set_logical_types({
