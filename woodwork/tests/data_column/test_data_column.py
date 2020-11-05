@@ -439,11 +439,12 @@ def test_to_series(sample_series):
 def test_shape(categorical_df):
     col = DataColumn(categorical_df['ints'])
     assert col.shape == (9,)
+    assert col.shape == col.to_series().shape
 
 
 def test_shape_dask(categorical_dd):
     col = DataColumn(categorical_dd['ints'])
-    assert isinstance(dt.shape[0], Delayed)
+    assert col.to_series().compute().shape == col.shape[0].compute()
 
 
 def test_dtype_update_on_init(datetime_series):
