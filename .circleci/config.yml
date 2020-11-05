@@ -32,6 +32,8 @@ jobs:
     parameters:
       image_tag:
         type: string
+      optional_libraries:
+        type: string
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -45,8 +47,22 @@ jobs:
           source venv/bin/activate
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e unpacked_sdist/
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - when:
+          condition:
+            equal: [ "optional", << parameters.optional_libraries >> ]
+          steps:
+            - run: |
+                source venv/bin/activate
+                python -m pip install -e unpacked_sdist/[dask]
+                python -m pip install -r unpacked_sdist/test-requirements.txt
+      - unless:
+          condition:
+            equal: ["optional", << parameters.optional_libraries >> ]
+          steps:
+            - run: |
+                source venv/bin/activate
+                python -m pip install -e unpacked_sdist/
+                python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
           root: ~/woodwork
           paths:
@@ -143,15 +159,17 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> install woodwork
+              optional_libraries: ["minimal", "optional"]
+          name: << matrix.image_tag >> install woodwork << matrix.optional_libraries >>
           context: dockerhub
       - unit_tests:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> unit tests
+              optional_libraries: ["minimal", "optional"]              
+          name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
-            - << matrix.image_tag >> install woodwork
+            - << matrix.image_tag >> install woodwork << matrix.optional_libraries >>
           context: dockerhub
       - lint_test:
           matrix:
@@ -159,7 +177,7 @@ workflows:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> lint test
           requires:
-            - << matrix.image_tag >> install woodwork
+            - << matrix.image_tag >> install woodwork optional
           context: dockerhub
       - release_notes_updated:
           name: "release notes updated"
