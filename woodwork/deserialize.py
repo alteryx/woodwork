@@ -59,14 +59,9 @@ def metadata_to_datatable(table_metadata, **kwargs):
     table_type = loading_info.get('table_type', 'pandas')
 
     if table_type == 'dask':
-        # --> not 100% sure this is the best move here
-        # --> also need to double check this works/is a goo dmsg - might want to suggest people pip install woodowrk[dask] instead
         DASK_ERR_MSG = (
-            "The dask library is required to deserialize this DataTable.\n"
-            "Install via pip:\n"
-            "    pip install dask[dataframe]\n"
-            "Install via conda:\n"
-            "    conda install dask[dataframe]"
+            'Cannot load Dask DataTable - unable to import Dask.\n'
+            'Consider doing a pip install with featuretools[dask] to install Dask with pip'
         )
         lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
     else:
