@@ -1,10 +1,10 @@
 import re
 
-import dask
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
+from dask.delayed import Delayed
 
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
@@ -443,7 +443,7 @@ def test_shape(categorical_df):
 
 def test_shape_dask(categorical_dd):
     col = DataColumn(categorical_dd['ints'])
-    assert dask.is_dask_collection(col.shape[0])
+    assert isinstance(dt.shape[0], Delayed)
 
 
 def test_dtype_update_on_init(datetime_series):
