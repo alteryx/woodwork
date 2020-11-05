@@ -436,6 +436,17 @@ def test_to_series(sample_series):
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
+def test_shape(categorical_df):
+    col = DataColumn(categorical_df['ints'])
+    assert col.shape == (9,)
+    assert col.shape == col.to_series().shape
+
+
+def test_shape_dask(categorical_dd):
+    col = DataColumn(categorical_dd['ints'])
+    assert col.to_series().compute().shape == col.shape[0].compute()
+
+
 def test_dtype_update_on_init(datetime_series):
     dc = DataColumn(datetime_series,
                     logical_type='DateTime')

@@ -10,6 +10,7 @@ DataTable
     :toctree: generated/
 
     DataTable
+    DataTable.shape
     DataTable.add_semantic_tags
     DataTable.remove_semantic_tags
     DataTable.reset_semantic_tags
@@ -35,6 +36,7 @@ DataColumn
     :toctree: generated/
 
     DataColumn
+    DataColumn.shape
     DataColumn.add_semantic_tags
     DataColumn.remove_semantic_tags
     DataColumn.reset_semantic_tags
