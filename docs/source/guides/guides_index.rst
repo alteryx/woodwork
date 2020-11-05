@@ -9,4 +9,4 @@ The guides below provide more detail on the functionality of Woodwork.
    understanding_types_and_tags
    setting_config_options
    statistical_insights
-   using_woodwork_with_dask
+   using_woodwork_with_dask_and_koalas
