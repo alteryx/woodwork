@@ -1,6 +1,5 @@
 import os
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -211,7 +210,6 @@ def test_import_or_raise():
 
 def test_import_or_none():
     assert import_or_none('pandas') == pd
-    assert import_or_none('dask.dataframe') == dd
     assert import_or_none('nonexistent') is None
 
 
