@@ -274,6 +274,12 @@ class DataColumn(object):
         return self._series
 
     @property
+    def shape(self):
+        """Returns a tuple representing the dimensionality of the DataTable. If Dask DataFrame, returns
+            a Dask `Delayed` object for the number of rows."""
+        return self._series.shape
+
+    @property
     def logical_type(self):
         """The logical type for the column"""
         return self._logical_type

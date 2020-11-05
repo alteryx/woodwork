@@ -1,5 +1,6 @@
 import re
 
+import dask
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -433,6 +434,16 @@ def test_to_series(sample_series):
 
     assert series is data_col._series
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
+
+
+def test_shape(categorical_df):
+    col = DataColumn(categorical_df['ints'])
+    assert col.shape == (9,)
+
+
+def test_shape_dask(categorical_dd):
+    col = DataColumn(categorical_dd['ints'])
+    assert dask.is_dask_collection(col.shape[0])
 
 
 def test_dtype_update_on_init(datetime_series):

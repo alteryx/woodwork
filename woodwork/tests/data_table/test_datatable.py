@@ -1,5 +1,6 @@
 import re
 
+import dask
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -1543,6 +1544,23 @@ def test_datatable_clear_time_index(sample_df):
     dt.time_index = None
     assert dt.time_index is None
     assert all(['time_index' not in col.semantic_tags for col in dt.columns.values()])
+
+
+def test_shape(categorical_df, categorical_log_types):
+    dt = ww.DataTable(categorical_df, logical_types=categorical_log_types)
+    assert dt.shape == (9, 5)
+
+    dt.pop('ints')
+    assert dt.shape == (9, 4)
+
+
+def test_shape_dask(categorical_dd, categorical_log_types):
+    dt = ww.DataTable(categorical_dd, logical_types=categorical_log_types)
+    assert dask.is_dask_collection(dt.shape[0])
+    assert dt.shape[1] == 5
+    dt.pop('bools')
+    assert dask.is_dask_collection(dt.shape[0])
+    assert dt.shape[1] == 4
 
 
 def test_select_invalid_inputs(sample_df):
