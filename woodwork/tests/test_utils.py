@@ -14,10 +14,13 @@ from woodwork.logical_types import (
 )
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_ltype_params,
     _get_mode,
+    _get_specified_ltype_params,
     _is_numeric_series,
+    _is_s3,
+    _is_url,
     camel_to_snake,
+    import_or_raise,
     list_logical_types,
     list_semantic_tags
 )
@@ -156,43 +159,59 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
 
 
-def test_is_numeric_series():
-    df = pd.DataFrame({
-        'strs': ['1', '2', '3'],
-        'dates': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]'),
-        'bools': [True, False, False],
-        'numerics': [9.9, 3.3, 4]
-    })
+def test_is_numeric_datetime_series(time_index_df):
+    assert _is_numeric_series(time_index_df['ints'], None)
+    assert _is_numeric_series(time_index_df['ints'], Double)
+    assert not _is_numeric_series(time_index_df['ints'], Categorical)
+    assert _is_numeric_series(time_index_df['ints'], Datetime)
 
-    assert _is_numeric_series(df['numerics'], None)
-    assert _is_numeric_series(df['numerics'], Double)
-    assert not _is_numeric_series(df['numerics'], Categorical)
+    assert not _is_numeric_series(time_index_df['strs'], None)
+    assert not _is_numeric_series(time_index_df['strs'], 'Categorical')
+    assert not _is_numeric_series(time_index_df['strs'], Categorical)
+    assert _is_numeric_series(time_index_df['strs'], Double)
+    assert _is_numeric_series(time_index_df['strs'], 'Double')
 
-    assert not _is_numeric_series(df['strs'], None)
-    assert not _is_numeric_series(df['strs'], 'Categorical')
-    assert not _is_numeric_series(df['strs'], Categorical)
-    assert _is_numeric_series(df['strs'], Double)
-    assert _is_numeric_series(df['strs'], 'Double')
+    assert not _is_numeric_series(time_index_df['bools'], None)
+    assert not _is_numeric_series(time_index_df['bools'], 'Boolean')
 
-    assert not _is_numeric_series(df['bools'], None)
-    assert not _is_numeric_series(df['bools'], 'Boolean')
+    assert not _is_numeric_series(time_index_df['times'], None)
+    assert not _is_numeric_series(time_index_df['times'], Datetime)
 
-    assert not _is_numeric_series(df['dates'], None)
-    assert not _is_numeric_series(df['dates'], Datetime)
+    assert not _is_numeric_series(time_index_df['letters'], None)
+    assert not _is_numeric_series(time_index_df['letters'], Double)
+    assert not _is_numeric_series(time_index_df['letters'], Categorical)
 
 
 def test_get_ltype_params():
-    params_empty_class = _get_ltype_params(Categorical)
+    params_empty_class = _get_specified_ltype_params(Categorical)
     assert params_empty_class == {}
-    params_empty = _get_ltype_params(Categorical())
+    params_empty = _get_specified_ltype_params(Categorical())
     assert params_empty == {}
 
-    params_class = _get_ltype_params(Datetime)
-    assert params_class == {'datetime_format': None}
+    params_class = _get_specified_ltype_params(Datetime)
+    assert params_class == {}
 
-    params_null = _get_ltype_params(Datetime())
+    params_null = _get_specified_ltype_params(Datetime())
     assert params_null == {'datetime_format': None}
 
     ymd = '%Y-%m-%d'
-    params_value = _get_ltype_params(Datetime(datetime_format=ymd))
+    params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
+
+
+def test_import_or_raise():
+    assert import_or_raise('pandas', 'Module pandas could not be found') == pd
+
+    error = 'Module nonexistent could not be found.'
+    with pytest.raises(ImportError, match=error):
+        import_or_raise('nonexistent', error)
+
+
+def test_is_url():
+    assert _is_url('https://www.google.com/')
+    assert not _is_url('google.com')
+
+
+def test_is_s3():
+    assert _is_s3('s3://test-bucket/test-key')
+    assert not _is_s3('https://woodwork-static.s3.amazonaws.com/')

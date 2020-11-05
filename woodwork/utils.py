@@ -1,3 +1,4 @@
+import importlib
 import re
 from datetime import datetime
 
@@ -59,17 +60,23 @@ def col_is_datetime(col, datetime_format=None):
 
 def _is_numeric_series(series, logical_type):
     '''
-    Determines whether a series supplied to the DataTable will be considered numeric.
+    Determines whether a series supplied to the DataTable will be considered numeric
+    for the purposes of determining if it can be a time_index.
 
     '''
+    # If column can't be made to be numeric, don't bother checking Logical Type
+    try:
+        pd.to_numeric(series, errors='raise')
+    except (ValueError, TypeError):
+        return False
+
     if logical_type is not None:
         if isinstance(logical_type, str):
             logical_type = ww.logical_types.str_to_logical_type(logical_type)
 
-        # Allow numeric columns to be interpreted as Datetimes
+        # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
         if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
-
     else:
         logical_type = ww.data_column.infer_logical_type(series)
 
@@ -191,7 +198,52 @@ def _get_ltype_class(ltype):
     return ltype.__class__
 
 
-def _get_ltype_params(ltype):
+def _get_specified_ltype_params(ltype):
+    '''
+    Gets a dictionary of a LogicalType's parameters.
+
+    Note: If the logical type has not been instantiated, no parameters have
+    been specified for the LogicalType, so no parameters will be returned
+    even if that LogicalType can have parameters set.
+
+    Args:
+        ltype (LogicalType): An instantiated or uninstantiated LogicalType
+
+    Returns:
+        dict: The LogicalType's specified parameters.
+    '''
     if ltype in ww.logical_types.LogicalType.__subclasses__():
-        return ltype().__dict__
+        # Do not reveal parameters for an uninstantiated LogicalType
+        return {}
     return ltype.__dict__
+
+
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportError with the supplied error message.
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)
+
+
+def _is_s3(string):
+    '''
+    Checks if the given string is a s3 path.
+    Returns a boolean.
+    '''
+    return "s3://" in string
+
+
+def _is_url(string):
+    '''
+    Checks if the given string is an url path.
+    Returns a boolean.
+    '''
+    return 'http' in string

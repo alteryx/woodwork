@@ -3,6 +3,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import woodwork as ww
+from woodwork.logical_types import Boolean, Categorical, Integer
+
 
 @pytest.fixture(params=['sample_df_pandas', 'sample_df_dask'])
 def sample_df(request):
@@ -64,6 +67,8 @@ def time_index_df_pandas():
         'times': ['2019-01-01', '2019-01-02', '2019-01-03', pd.NA],
         'ints': [1, 2, 3, 4],
         'strs': ['1', '2', '3', '4'],
+        'letters': ['a', 'b', 'c', 'd'],
+        'bools': [True, False, False, True]
     })
 
 
@@ -192,3 +197,38 @@ def df_mi_dask(df_mi_pandas):
 @pytest.fixture(params=['df_mi_pandas', 'df_mi_dask'])
 def df_mi(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def categorical_df():
+    return pd.DataFrame({
+        'ints': pd.Series([1, 2, 3, 2]),
+        'categories1': pd.Series([1, 100, 1, 100, 200, 200, 200, 200, 3]),
+        'bools': pd.Series([True, False, True, False]),
+        'categories2': pd.Series(['test', 'test2', 'test2', 'test']),
+        'categories3': pd.Series(['test', 'test', 'test', np.nan]),
+    })
+
+
+@pytest.fixture()
+def categorical_log_types():
+    return {
+        'ints': Integer,
+        'categories1': Categorical,
+        'bools': Boolean,
+        'categories2': Categorical,
+        'categories3': Categorical,
+    }
+
+
+@pytest.fixture()
+def categorical_dd(categorical_df):
+    return dd.from_pandas(categorical_df, npartitions=2)
+
+
+@pytest.fixture()
+def categorical_pandas_dd_list(categorical_df, categorical_dd, categorical_log_types):
+    return [
+        ww.DataTable(categorical_df, logical_types=categorical_log_types),
+        ww.DataTable(categorical_dd, logical_types=categorical_log_types)
+    ]

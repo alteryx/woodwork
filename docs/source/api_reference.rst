@@ -21,6 +21,10 @@ DataTable
     DataTable.to_dataframe
     DataTable.describe
     DataTable.get_mutual_information
+    DataTable.value_counts
+    DataTable.to_csv
+    DataTable.to_pickle
+    DataTable.to_parquet
 
 
 DataColumn

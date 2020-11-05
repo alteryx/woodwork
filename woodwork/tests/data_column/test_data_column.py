@@ -49,6 +49,62 @@ def test_data_column_init_with_semantic_tags(sample_series):
     assert data_col.semantic_tags == set(semantic_tags)
 
 
+def test_data_column_init_wrong_series():
+    error = 'Series must be a pandas Series, Dask Series, or a pandas ExtensionArray'
+    with pytest.raises(TypeError, match=error):
+        DataColumn([1, 2, 3, 4])
+
+    with pytest.raises(TypeError, match=error):
+        DataColumn(np.array([1, 2, 3, 4]))
+
+
+def test_data_column_init_with_name(sample_series, sample_datetime_series):
+    name = 'sample_series'
+    changed_name = 'changed_name'
+
+    dc_use_series_name = DataColumn(sample_series)
+    assert dc_use_series_name.name == name
+    assert dc_use_series_name.to_series().name == name
+
+    warning = "Input series name does not match DataColumn name. Changing series name from sample_series to changed_name."
+    with pytest.warns(UserWarning, match=warning):
+        dc_use_input_name = DataColumn(sample_series, name=changed_name)
+    assert dc_use_input_name.name == changed_name
+    assert dc_use_input_name.to_series().name == changed_name
+
+    warning = "Input series name does not match DataColumn name. Changing series name from sample_datetime_series to changed_name."
+    with pytest.warns(UserWarning, match=warning):
+        dc_with_ltype_change = DataColumn(sample_datetime_series, name=changed_name)
+    assert dc_with_ltype_change.name == changed_name
+    assert dc_with_ltype_change.to_series().name == changed_name
+
+
+def test_data_column_init_with_extension_array():
+    series_categories = pd.Series([1, 2, 3], dtype='category')
+    extension_categories = pd.Categorical([1, 2, 3])
+
+    data_col = DataColumn(extension_categories)
+    series = data_col.to_series()
+    assert series.equals(series_categories)
+    assert series.name is None
+    assert data_col.name is None
+
+    series_ints = pd.Series([1, 2, None, 4], dtype='Int64')
+    extension_ints = pd.arrays.IntegerArray(np.array([1, 2, 3, 4], dtype="int64"), mask=np.array([False, False, True, False]))
+
+    data_col_with_name = DataColumn(extension_ints, name='extension')
+    series = data_col_with_name.to_series()
+    assert series.equals(series_ints)
+    assert series.name == 'extension'
+    assert data_col_with_name.name == 'extension'
+
+    series_strs = pd.Series([1, 2, None, 4], dtype='string')
+
+    data_col_different_ltype = DataColumn(extension_ints, logical_type='NaturalLanguage')
+    series = data_col_different_ltype.to_series()
+    assert series.equals(series_strs)
+
+
 def test_data_column_with_alternate_semantic_tags_input(sample_series):
     semantic_tags = 'custom_tag'
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
@@ -371,19 +427,11 @@ def test_set_as_time_index(sample_series):
     assert 'time_index' in data_col.semantic_tags
 
 
-def test_to_series_no_copy(sample_series):
+def test_to_series(sample_series):
     data_col = DataColumn(sample_series)
     series = data_col.to_series()
 
     assert series is data_col._series
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
-
-
-def test_to_series_with_copy(sample_series):
-    data_col = DataColumn(sample_series)
-    series = data_col.to_series(copy=True)
-
-    assert series is not data_col._series
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 

@@ -4,6 +4,7 @@ import dask.dataframe as dd
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
+import woodwork.serialize as serialize
 from woodwork.data_column import DataColumn
 from woodwork.logical_types import (
     Boolean,
@@ -183,7 +184,7 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags)
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
             data_columns[dc.name] = dc
         return data_columns
 
@@ -401,26 +402,17 @@ class DataTable(object):
         new_dt._update_columns(cols_to_update)
         return new_dt
 
-    def to_dataframe(self, copy=False):
+    def to_dataframe(self):
         """Retrieves the DataTable's underlying dataframe.
 
-        Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
-
-        Args:
-            copy (bool): If set to True, returns a copy of the underlying dataframe.
-                If False, will return a reference to the DataTable's dataframe, which,
-                if modified, can cause unexpected behavior in the DataTable.
-                Defaults to False.
+        Note: Do not modify the returned dataframe directly to avoid unexpected behavior
 
         Returns:
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
                 of dataframe used to create the DataTable.
         """
         if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
-            if copy:
-                return self._dataframe.copy()
-            else:
-                return self._dataframe
+            return self._dataframe
         else:
             return self._dataframe.set_index(self.index, drop=False)
 
@@ -606,6 +598,39 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
+    def value_counts(self, ascending=False, top_n=10, dropna=False):
+        """Returns a list of dictionaries with counts for the most frequent values in each column (only
+            for DataColumns with `category` as a standard tag).
+
+
+        Args:
+            ascending (bool): Defines whether each list of values should be sorted most frequent
+                to least frequent value (False), or least frequent to most frequent value (True).
+                Defaults to False.
+
+            top_n (int): the number of top values to retrieve. Defaults to 10.
+
+            dropna (bool): determines whether to remove NaN values when finding frequency. Defaults
+                to False.
+
+        Returns:
+            top_list (list(dict)): a list of dictionaries for each categorical column with keys `count`
+                and `value`.
+        """
+        val_counts = {}
+        valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
+        data = self._dataframe[valid_cols]
+        if isinstance(data, dd.DataFrame):
+            data = data.compute()
+
+        for col in valid_cols:
+            frequencies = data[col].value_counts(ascending=ascending, dropna=dropna)
+            df = frequencies[:top_n].reset_index()
+            df.columns = ["value", "count"]
+            dt_list = list(df.to_dict(orient="index").values())
+            val_counts[col] = dt_list
+        return val_counts
+
     def _handle_nans_for_mutual_info(self, data):
         """
         Remove NaN values in the dataframe so that mutual information can be calculated
@@ -720,6 +745,63 @@ class DataTable(object):
         if not mutual_info:
             return mi
         return mi.sort_values('mutual_info', ascending=False)
+
+    def to_dictionary(self):
+        '''
+        Get a DataTable's metadata
+
+        Returns:
+            metadata (dict) : Description of :class:`.DataTable`.
+        '''
+        return serialize.datatable_to_metadata(self)
+
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
+        '''Write DataTable to disk in the CSV format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='csv', index=False,
+                                  sep=sep, encoding=encoding, engine=engine,
+                                  compression=compression, profile_name=profile_name)
+
+    def to_pickle(self, path, compression=None, profile_name=None):
+        '''Write DataTable to disk in the pickle format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='pickle',
+                                  compression=compression, profile_name=profile_name)
+
+    def to_parquet(self, path, compression=None, profile_name=None):
+        '''Write DataTable to disk in the parquet format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Note:
+                As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
+                for serialization to parquet.
+
+            Args:
+                path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='parquet',
+                                  engine='pyarrow', compression=compression,
+                                  profile_name=profile_name)
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
