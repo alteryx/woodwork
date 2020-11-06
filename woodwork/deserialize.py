@@ -60,8 +60,10 @@ def metadata_to_datatable(table_metadata, **kwargs):
 
     if table_type == 'dask':
         DASK_ERR_MSG = (
-            'Cannot load Dask DataTable - unable to import Dask.\n'
-            'Consider doing a pip install with featuretools[dask] to install Dask with pip'
+            'Cannot load Dask DataTable - unable to import Dask.\n\n'
+            'Please install with pip or conda:\n\n'
+            'python -m pip install "woodwork[dask]"\n\n'
+            'conda install dask'
         )
         lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
     else:
