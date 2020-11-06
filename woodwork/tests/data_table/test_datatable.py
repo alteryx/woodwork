@@ -3,7 +3,6 @@ import re
 import numpy as np
 import pandas as pd
 import pytest
-from dask.delayed import Delayed
 
 import woodwork as ww
 from woodwork import DataColumn, DataTable
@@ -46,6 +45,7 @@ from woodwork.tests.testing_utils import (
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
+dask_delayed = import_or_none('dask.delayed')
 
 
 def test_datatable_init(sample_df):
@@ -55,8 +55,8 @@ def test_datatable_init(sample_df):
     assert dt.name is None
     assert dt.index is None
     assert dt.time_index is None
-    if dd:
-        assert isinstance(df, (pd.DataFrame, dd.DataFrame))
+    if dd and isinstance(sample_df, dd.DataFrame):
+        assert isinstance(df, dd.DataFrame)
     else:
         assert isinstance(df, pd.DataFrame)
     assert set(dt.columns.keys()) == set(sample_df.columns)
@@ -1344,7 +1344,7 @@ def test_setitem_invalid_input(sample_df):
 
 def test_setitem_different_name(sample_df, sample_series_dask, sample_series_pandas):
     sample_series = sample_series_pandas
-    if isinstance(sample_df, dd.DataFrame):
+    if dd and isinstance(sample_df, dd.DataFrame):
         sample_series = sample_series_dask
     dt = DataTable(sample_df)
 
@@ -1574,11 +1574,11 @@ def test_shape(categorical_df, categorical_log_types):
 
 def test_shape_dask(categorical_dd, categorical_log_types):
     dt = ww.DataTable(categorical_dd, logical_types=categorical_log_types)
-    assert isinstance(dt.shape[0], Delayed)
+    assert isinstance(dt.shape[0], dask_delayed.Delayed)
     assert dt.shape[1] == 5
 
     dt.pop('bools')
-    assert isinstance(dt.shape[0], Delayed)
+    assert isinstance(dt.shape[0], dask_delayed.Delayed)
     assert dt.shape[1] == 4
 
     assert (dt.shape[0].compute(), dt.shape[1]) == (len(dt.to_dataframe()), len(dt.columns))
