@@ -212,6 +212,12 @@ class DataTable(object):
         return {dc.name: dc.semantic_tags for dc in self.columns.values()}
 
     @property
+    def shape(self):
+        """Returns a tuple representing the dimensionality of the DataTable. If Dask DataFrame, returns
+            a Dask `Delayed` object for the number of rows."""
+        return self._dataframe.shape
+
+    @property
     def index(self):
         """The index column for the table"""
         for column in self.columns.values():

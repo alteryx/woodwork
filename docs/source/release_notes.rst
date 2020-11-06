@@ -9,6 +9,7 @@ Release Notes
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
         * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
+        * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
