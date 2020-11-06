@@ -445,15 +445,15 @@ def test_to_series(sample_series):
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
-def test_shape(categorical_df):
-    col = DataColumn(categorical_df['ints'])
-    assert col.shape == (9,)
-    assert col.shape == col.to_series().shape
-
-
-def test_shape_dask(categorical_dd):
-    col = DataColumn(categorical_dd['ints'])
-    assert col.to_series().compute().shape == col.shape[0].compute()
+def test_shape(sample_series):
+    col = DataColumn(sample_series)
+    col_shape = col.shape
+    series_shape = col.to_series().shape
+    if isinstance(sample_series, dd.Series):
+        col_shape = (col_shape[0].compute(),)
+        series_shape = (series_shape[0].compute(),)
+    assert col_shape == (4,)
+    assert col_shape == series_shape
 
 
 def test_dtype_update_on_init(datetime_series):

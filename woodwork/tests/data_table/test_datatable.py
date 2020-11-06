@@ -1594,25 +1594,26 @@ def test_datatable_clear_time_index(sample_df):
     assert all(['time_index' not in col.semantic_tags for col in dt.columns.values()])
 
 
-def test_shape(categorical_df, categorical_log_types):
-    dt = ww.DataTable(categorical_df, logical_types=categorical_log_types)
-    assert dt.shape == (9, 5)
-    assert dt.shape == dt.to_dataframe().shape
+def test_shape(categorical_df):
+    dt = ww.DataTable(categorical_df)
+    dt_shape = dt.shape
+    df_shape = dt.to_dataframe().shape
+    if isinstance(categorical_df, dd.DataFrame):
+        assert isinstance(dt.shape[0], Delayed)
+        dt_shape = (dt_shape[0].compute(), dt_shape[1])
+        df_shape = (df_shape[0].compute(), df_shape[1])
+    assert dt_shape == (10, 5)
+    assert dt_shape == df_shape
 
     dt.pop('ints')
-    assert dt.shape == (9, 4)
-
-
-def test_shape_dask(categorical_dd, categorical_log_types):
-    dt = ww.DataTable(categorical_dd, logical_types=categorical_log_types)
-    assert isinstance(dt.shape[0], Delayed)
-    assert dt.shape[1] == 5
-
-    dt.pop('bools')
-    assert isinstance(dt.shape[0], Delayed)
-    assert dt.shape[1] == 4
-
-    assert (dt.shape[0].compute(), dt.shape[1]) == (len(dt.to_dataframe()), len(dt.columns))
+    dt_shape = dt.shape
+    df_shape = dt.to_dataframe().shape
+    if isinstance(categorical_df, dd.DataFrame):
+        assert isinstance(dt.shape[0], Delayed)
+        dt_shape = (dt_shape[0].compute(), dt_shape[1])
+        df_shape = (df_shape[0].compute(), df_shape[1])
+    assert dt_shape == (10, 4)
+    assert dt_shape == df_shape
 
 
 def test_select_invalid_inputs(sample_df):
