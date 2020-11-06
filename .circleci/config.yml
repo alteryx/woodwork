@@ -85,7 +85,10 @@ jobs:
           at: ~/woodwork
       - when:
           condition:
-            equal: [ "3.6", << parameters.image_tag >> ]
+            and:
+              - equal: [ "3.6", << parameters.image_tag >> ]
+              - equal: ["optional", << parameters.optional_libraries >>]
+
           steps:
             - run: |
                 source venv/bin/activate
@@ -99,7 +102,9 @@ jobs:
                 codecov --required
       - unless:
           condition:
-            equal: [ "3.6", << parameters.image_tag >> ]
+            and:
+              - equal: [ "3.6", << parameters.image_tag >> ]
+              - equal: ["optional", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
