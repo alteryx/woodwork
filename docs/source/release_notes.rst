@@ -8,6 +8,7 @@ Release Notes
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
         * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
+        * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
@@ -23,6 +24,7 @@ Release Notes
         * Remove UserWarning when no matching columns found (:pr:`325`)
         * Remove ``copy`` parameter from ``DataTable.to_dataframe`` and ``DataColumn.to_series`` (:pr:`338`)
         * Allow pandas ExtensionArrays as inputs to DataColumn (:pr:`343`)
+        * Move warnings to a separate exceptions file and call via UserWarning subclasses (:pr:`348`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)

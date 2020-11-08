@@ -6,6 +6,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 
 import woodwork.serialize as serialize
 from woodwork.data_column import DataColumn
+from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.logical_types import (
     Boolean,
     Datetime,
@@ -140,9 +141,10 @@ class DataTable(object):
             raise KeyError('Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.')
 
         if column.name is not None and column.name != col_name:
-            warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
-                          f' {column.name}. Changing DataColumn name to: {col_name}')
+            warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
+                          ColumnNameMismatchWarning)
             column._series.name = col_name
+            column._assigned_name = col_name
 
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
@@ -202,6 +204,12 @@ class DataTable(object):
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
         return {dc.name: dc.semantic_tags for dc in self.columns.values()}
+
+    @property
+    def shape(self):
+        """Returns a tuple representing the dimensionality of the DataTable. If Dask DataFrame, returns
+            a Dask `Delayed` object for the number of rows."""
+        return self._dataframe.shape
 
     @property
     def index(self):
