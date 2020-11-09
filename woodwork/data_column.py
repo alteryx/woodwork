@@ -23,9 +23,9 @@ from woodwork.logical_types import (
     str_to_logical_type
 )
 from woodwork.utils import (
-    _Indexer,
     _convert_input_to_set,
     _get_ltype_class,
+    _Indexer,
     col_is_datetime,
     import_or_none
 )
