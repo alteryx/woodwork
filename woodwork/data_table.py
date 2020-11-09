@@ -43,7 +43,7 @@ class DataTable(object):
         """Create DataTable
 
         Args:
-            dataframe (pd.DataFrame): Dataframe providing the data for the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
@@ -839,12 +839,16 @@ class DataTable(object):
 
 
 def _validate_dataframe(dataframe):
+    '''Check that the dataframe supplied during DataTable initialization is valid,
+    and convert numpy array to pandas DataFrame if necessary.'''
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
             isinstance(dataframe, (pd.DataFrame, np.ndarray, ks.DataFrame))):
         raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
 
-    # --> double check listing the columns like this is necessary
-    return pd.DataFrame(dataframe, columns=[str(i) for i in range(len(dataframe[0]))]) if isinstance(dataframe, np.ndarray) else dataframe
+    if isinstance(dataframe, np.ndarray):
+        dataframe = pd.DataFrame(dataframe)
+        dataframe.columns = dataframe.columns.astype(str)
+    return dataframe
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
@@ -871,6 +875,7 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
 
 
 def _check_unique_column_names(dataframe):
+    print('ahhhhhh')
     if not dataframe.columns.is_unique:
         raise IndexError('Dataframe cannot contain duplicate columns names')
 

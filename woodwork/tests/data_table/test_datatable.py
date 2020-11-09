@@ -13,6 +13,7 @@ from woodwork.data_table import (
     _check_semantic_tags,
     _check_time_index,
     _check_unique_column_names,
+    _validate_dataframe,
     _validate_params
 )
 from woodwork.exceptions import ColumnNameMismatchWarning
@@ -200,13 +201,26 @@ def test_datatable_init_with_semantic_tags(sample_df):
 def test_datatable_init_with_numpy(sample_df_pandas):
     numpy_df = sample_df_pandas.to_numpy()
 
-    dt = DataTable(numpy_df)
-
+    dt = DataTable(numpy_df, index='0')
     assert set(dt.columns.keys()) == {str(i) for i in range(len(numpy_df[0]))}
+    assert dt.index == '0'
+    assert dt['0'].logical_type == Categorical
+    assert dt['1'].logical_type == NaturalLanguage
+    assert dt['5'].logical_type == Datetime
 
-    # --> maybe pass in list of cols
-    # check with different ltypes
-    #
+    np_ints = np.array([[1, 0],
+                        [2, 4],
+                        [3, 6],
+                        [4, 1]])
+    dt = DataTable(np_ints)
+    assert dt['0'].logical_type == WholeNumber
+    assert dt['1'].logical_type == WholeNumber
+
+    dt = DataTable(np_ints, time_index='1', logical_types={'0': 'Double', '1': Datetime}, semantic_tags={'1': 'numeric_datetime'})
+    assert dt['0'].logical_type == Double
+    assert dt['0'].semantic_tags == {'numeric'}
+    assert dt['1'].logical_type == Datetime
+    assert dt['1'].semantic_tags == {'numeric_datetime', 'time_index'}
 
 
 def test_datatable_adds_standard_semantic_tags(sample_df):
@@ -224,13 +238,7 @@ def test_datatable_adds_standard_semantic_tags(sample_df):
 def test_validate_params_errors(sample_df):
     error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame, numpy.ndarray'
     with pytest.raises(TypeError, match=error_message):
-        _validate_params(dataframe=pd.Series(),
-                         name=None,
-                         index=None,
-                         time_index=None,
-                         logical_types=None,
-                         semantic_tags=None,
-                         make_index=False)
+        _validate_dataframe(dataframe=pd.Series())
 
     error_message = 'DataTable name must be a string'
     with pytest.raises(TypeError, match=error_message):
