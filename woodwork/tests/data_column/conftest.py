@@ -51,7 +51,7 @@ def whole_nums(request):
 def pandas_doubles():
     return [
         pd.Series([-1, 2.5, 1, 7]),
-        pd.Series([1.5, 1, np.nan, 3])
+        pd.Series([1.5, np.nan, 1, 3])
     ]
 
 

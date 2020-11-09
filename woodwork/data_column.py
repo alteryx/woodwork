@@ -358,7 +358,7 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        if series.nunique() < numeric_categorical_threshold:
+        if _is_numeric_categorical(series, numeric_categorical_threshold):
             inferred_type = Categorical
         else:
             if any(series.dropna() < 0):
@@ -367,7 +367,7 @@ def infer_logical_type(series):
                 inferred_type = WholeNumber
 
     elif pdtypes.is_float_dtype(series.dtype):
-        inferred_type = Categorical if series.nunique() < numeric_categorical_threshold else Double
+        inferred_type = Categorical if _is_numeric_categorical(series, numeric_categorical_threshold) else Double
 
     elif col_is_datetime(series):
         inferred_type = Datetime
@@ -376,3 +376,7 @@ def infer_logical_type(series):
         inferred_type = Timedelta
 
     return inferred_type
+
+
+def _is_numeric_categorical(series, threshold):
+    return threshold != -1 and series.nunique() < threshold
