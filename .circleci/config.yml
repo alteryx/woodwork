@@ -52,7 +52,6 @@ jobs:
             equal: [ "optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
-                source venv/bin/activate
                 python -m pip install -e unpacked_sdist/[dask]
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - unless:
@@ -60,7 +59,6 @@ jobs:
             equal: ["optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
-                source venv/bin/activate
                 python -m pip install -e unpacked_sdist/
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
@@ -88,7 +86,6 @@ jobs:
             and:
               - equal: [ "3.6", << parameters.image_tag >> ]
               - equal: ["optional", << parameters.optional_libraries >>]
-
           steps:
             - run: |
                 source venv/bin/activate
