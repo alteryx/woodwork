@@ -1,5 +1,6 @@
 CONFIG_DEFAULTS = {
     'natural_language_threshold': 10,
+    'categorical_ints_threshold': 10,
 }
 
 

@@ -13,28 +13,34 @@ from woodwork.logical_types import (
 
 
 def test_integer_inference(integers):
+    ww.config.set_option('categorical_ints_threshold', 3)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
     for series in integers:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Integer
+    ww.config.reset_option('categorical_ints_threshold')
 
 
 def test_whole_number_inference(whole_nums):
+    ww.config.set_option('categorical_ints_threshold', 3)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
               'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
     for series in whole_nums:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == WholeNumber
+    ww.config.reset_option('categorical_ints_threshold')
 
 
 def test_double_inference(doubles):
+    ww.config.set_option('categorical_ints_threshold', 3)
     dtypes = ['float', 'float32', 'float64', 'float_']
     for series in doubles:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Double
+    ww.config.reset_option('categorical_ints_threshold')
 
 
 def test_boolean_inference(bools):
@@ -56,6 +62,31 @@ def test_datetime_inference(datetimes):
 def test_categorical_inference(categories):
     dtypes = ['object', 'string', 'category']
     for series in categories:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+
+
+def test_categorical_integers_inference(integers):
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    for series in integers:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+
+
+def test_categorical_whole_number_inference(whole_nums):
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
+              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
+    for series in whole_nums:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+
+
+def test_categorical_double_inference(doubles):
+    dtypes = ['float', 'float32', 'float64', 'float_']
+    for series in doubles:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Categorical
