@@ -23,6 +23,7 @@ from woodwork.logical_types import (
     str_to_logical_type
 )
 from woodwork.utils import (
+    _Indexer,
     _convert_input_to_set,
     _get_ltype_class,
     col_is_datetime,
@@ -109,6 +110,23 @@ class DataColumn(object):
                     f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
                     f'logical type {self.logical_type}.'
                 raise TypeError(error_msg)
+
+    @property
+    def iloc(self):
+        """Purely integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
+
+        Allowed inputs are:
+            - An integer, e.g. ``5``.
+            - A list or array of integers, e.g. ``[4, 3, 0]``.
+            - A slice object with ints, e.g. ``1:7``.
+            - A boolean array.
+            - A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value."""
+        return _Indexer(self, self._series)
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
         """Update the logical type for the column and return a new DataColumn object.

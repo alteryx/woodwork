@@ -261,3 +261,50 @@ def _is_url(string):
     Returns a boolean.
     '''
     return 'http' in string
+
+
+class _Indexer:
+    def __init__(self, ww_data, pd_data):
+        if not isinstance(pd_data, (pd.Series, pd.DataFrame)):
+            raise TypeError("iloc is only supported for data coming from pandas")
+        self.ww_data = ww_data
+        self.pd_data = pd_data
+
+    def __getitem__(self, key):
+        selection = self.pd_data.iloc[key]
+        if isinstance(selection, pd.Series):
+            col_name = selection.name
+            if isinstance(self.ww_data, ww.DataTable):
+                logical_type = self.ww_data.logical_types.get(col_name, None)
+                semantic_tags = self.ww_data.semantic_tags.get(col_name, None)
+                name = self.ww_data.name or None
+            else:
+                logical_type = self.ww_data.logical_type or None
+                semantic_tags = self.ww_data.semantic_tags or None
+                name = self.ww_data.name or None
+            return ww.DataColumn(selection,
+                                 logical_type=logical_type,
+                                 semantic_tags=semantic_tags,
+                                 use_standard_tags=self.ww_data.use_standard_tags,
+                                 name=name)
+
+        elif isinstance(selection, pd.DataFrame):
+            cols = selection.columns
+            new_index = self.ww_data.index if self.ww_data.index in cols else None
+            new_time_index = self.ww_data.time_index if self.ww_data.time_index in cols else None
+            new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
+                                 in self.ww_data.semantic_tags.items() if col_name in cols}
+            new_logical_types = {col_name: logical_type for col_name, logical_type
+                                 in self.ww_data.logical_types.items() if col_name in cols}
+            if new_index:
+                new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+            if new_time_index:
+                new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+            return ww.DataTable(selection,
+                                name=self.ww_data.name,
+                                index=new_index,
+                                time_index=new_time_index,
+                                semantic_tags=new_semantic_tags,
+                                logical_types=new_logical_types,
+                                copy_dataframe=True,
+                                use_standard_tags=self.ww_data.use_standard_tags)

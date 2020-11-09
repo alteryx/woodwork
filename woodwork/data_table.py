@@ -14,6 +14,7 @@ from woodwork.logical_types import (
     str_to_logical_type
 )
 from woodwork.utils import (
+    _Indexer,
     _convert_input_to_set,
     _get_ltype_class,
     _get_mode,
@@ -518,6 +519,23 @@ class DataTable(object):
                          logical_types=new_logical_types,
                          copy_dataframe=False,
                          use_standard_tags=self.use_standard_tags)
+
+    @property
+    def iloc(self):
+        """Purely integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
+
+        Allowed inputs are:
+            - An integer, e.g. ``5``.
+            - A list or array of integers, e.g. ``[4, 3, 0]``.
+            - A slice object with ints, e.g. ``1:7``.
+            - A boolean array.
+            - A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value."""
+        return _Indexer(self, self._dataframe)
 
     def describe(self, include=None):
         """Calculates statistics for data contained in DataTable.

@@ -1236,6 +1236,42 @@ def test_pop_error(sample_df):
         dt.pop("missing")
 
 
+def test_iloc(sample_df_pandas):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'signup_date': {'secondary_time_index'},
+    }
+    logical_types = {
+        'full_name': Categorical,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+    }
+    dt = DataTable(sample_df_pandas, logical_types=logical_types, semantic_tags=semantic_tags)
+    sliced = dt.iloc[1:3, 1:3]
+    assert sliced.shape == (2, 2)
+
+    assert sliced.semantic_tags == {'full_name': {'category', 'tag1'}, 'email': {'tag2'}}
+    assert sliced.logical_types == {'full_name': Categorical, 'email': EmailAddress}
+    assert sliced.index is None
+
+    dt_no_std_tags = DataTable(sample_df_pandas, logical_types=logical_types, use_standard_tags=False)
+    sliced = dt_no_std_tags.iloc[:, [0, 5]]
+    assert sliced.semantic_tags == {'id': set(), 'signup_date': set()}
+    assert sliced.logical_types == {'id': WholeNumber, 'signup_date': Datetime}
+    assert sliced.index is None
+
+    dt_with_index = DataTable(sample_df_pandas, index='id')
+    assert dt_with_index.iloc[:, [0, 5]].index == 'id'
+    assert dt_with_index.iloc[:, [1, 2]].index is None
+
+    dt_with_time_index = DataTable(sample_df_pandas, time_index='signup_date')
+    assert dt_with_time_index.iloc[:, [0, 5]].time_index == 'signup_date'
+    assert dt_with_time_index.iloc[:, [1, 2]].index is None
+
+
 def test_getitem(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
