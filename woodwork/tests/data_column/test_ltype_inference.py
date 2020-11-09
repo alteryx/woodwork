@@ -62,7 +62,6 @@ def test_categorical_inference(categories):
 
 
 def test_categorical_integers_inference(integers):
-    # --> make better default threshold
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
     for series in integers:

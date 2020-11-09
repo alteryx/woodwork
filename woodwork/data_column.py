@@ -358,7 +358,6 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        # --> should this be inclusive?
         if series.nunique() < numeric_categorical_threshold:
             inferred_type = Categorical
         else:

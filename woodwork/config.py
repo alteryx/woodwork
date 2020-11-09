@@ -1,6 +1,6 @@
 CONFIG_DEFAULTS = {
     'natural_language_threshold': 10,
-    'numeric_categorical_threshold': -1,  # --> determine what to have here
+    'numeric_categorical_threshold': -1,
 }
 
 
