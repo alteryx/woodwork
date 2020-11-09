@@ -44,7 +44,6 @@ jobs:
       - pkg_woodwork
       - run : |
           virtualenv venv
-          source venv/bin/activate
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
       - when:
@@ -52,6 +51,7 @@ jobs:
             equal: [ "optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
+                source venv/bin/activate
                 python -m pip install -e unpacked_sdist/[dask]
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - unless:
@@ -59,6 +59,7 @@ jobs:
             equal: ["optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
+                source venv/bin/activate
                 python -m pip install -e unpacked_sdist/
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
