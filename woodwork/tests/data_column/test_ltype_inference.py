@@ -61,6 +61,37 @@ def test_categorical_inference(categories):
             assert inferred_type == Categorical
 
 
+def test_categorical_integers_inference(integers):
+    ww.config.set_option('numeric_categorical_threshold', 10)
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    for series in integers:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+    ww.config.reset_option('numeric_categorical_threshold')
+
+
+def test_categorical_whole_number_inference(whole_nums):
+    ww.config.set_option('numeric_categorical_threshold', 10)
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
+              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
+    for series in whole_nums:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+    ww.config.reset_option('numeric_categorical_threshold')
+
+
+def test_categorical_double_inference(doubles):
+    ww.config.set_option('numeric_categorical_threshold', 10)
+    dtypes = ['float', 'float32', 'float64', 'float_']
+    for series in doubles:
+        for dtype in dtypes:
+            inferred_type = infer_logical_type(series.astype(dtype))
+            assert inferred_type == Categorical
+    ww.config.reset_option('numeric_categorical_threshold')
+
+
 def test_timedelta_inference(timedeltas):
     dtypes = ['timedelta64[ns]']
     for series in timedeltas:

@@ -10,6 +10,7 @@ Release Notes
         * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
         * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
         * Add ``iloc`` method to DataTable and DataColumn (:pr:`365`)
+        * Add ``numeric_categorical_threshold`` config value to allow inferring numeric columns as Categorical (:pr:`363`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
