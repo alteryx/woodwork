@@ -843,7 +843,8 @@ def _validate_dataframe(dataframe):
             isinstance(dataframe, (pd.DataFrame, np.ndarray, ks.DataFrame))):
         raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
 
-    return pd.DataFrame(dataframe) if isinstance(dataframe, np.ndarray) else dataframe
+    # --> double check listing the columns like this is necessary
+    return pd.DataFrame(dataframe, columns=[str(i) for i in range(len(dataframe[0]))]) if isinstance(dataframe, np.ndarray) else dataframe
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):

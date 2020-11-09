@@ -202,7 +202,7 @@ def test_datatable_init_with_numpy(sample_df_pandas):
 
     dt = DataTable(numpy_df)
 
-    assert len(dt.columns) == len(nump_df)
+    assert set(dt.columns.keys()) == {str(i) for i in range(len(numpy_df[0]))}
 
     # --> maybe pass in list of cols
     # check with different ltypes
@@ -222,7 +222,7 @@ def test_datatable_adds_standard_semantic_tags(sample_df):
 
 
 def test_validate_params_errors(sample_df):
-    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame'
+    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame, numpy.ndarray'
     with pytest.raises(TypeError, match=error_message):
         _validate_params(dataframe=pd.Series(),
                          name=None,
