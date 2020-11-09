@@ -197,6 +197,18 @@ def test_datatable_init_with_semantic_tags(sample_df):
     assert 'custom_tag' in id_semantic_tags
 
 
+def test_datatable_init_with_numpy(sample_df_pandas):
+    numpy_df = sample_df_pandas.to_numpy()
+
+    dt = DataTable(numpy_df)
+
+    assert len(dt.columns) == len(nump_df)
+
+    # --> maybe pass in list of cols
+    # check with different ltypes
+    #
+
+
 def test_datatable_adds_standard_semantic_tags(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',

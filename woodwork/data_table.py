@@ -71,6 +71,7 @@ class DataTable(object):
                 present in the ``dataframe``. Defaults to False.
         """
         # Check that inputs are valid
+        dataframe = _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
 
         if copy_dataframe:
@@ -91,6 +92,7 @@ class DataTable(object):
         self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
+        # --> maybe allow inputted set of columns?
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
@@ -836,11 +838,16 @@ class DataTable(object):
                                   profile_name=profile_name)
 
 
+def _validate_dataframe(dataframe):
+    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
+            isinstance(dataframe, (pd.DataFrame, np.ndarray, ks.DataFrame))):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
+
+    return pd.DataFrame(dataframe) if isinstance(dataframe, np.ndarray) else dataframe
+
+
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not (dd and isinstance(dataframe, dd.DataFrame) or
-            isinstance(dataframe, (pd.DataFrame, ks.DataFrame))):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
