@@ -276,6 +276,31 @@ class DataTable(object):
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
 
+    def rename(self, cols_to_rename):
+        """Renames columns in a DataTable
+
+        Args:
+            cols_to_rename (dict[str -> str]): A dictionary mapping columns whose names
+            we'd like cho change to the name to which we'd like to change them.
+
+        Returns: --> double check we dont want to mutate table here
+            woodwork.DataTable: DataTable with the specified columns renamed.
+
+        Note:
+            Index and time index columns cannot be renamed.
+        """
+        # --> double check that the error types are good
+        # --> double check it matches the pandas defn
+        for old_name, new_name in cols_to_rename.items():
+            if not isinstance(old_name, str):
+                raise TypeError(f'Column to rename must be a string. {old_name} is not a string.')
+            if not isinstance(new_name, str):
+                raise TypeError(f'New column name must be a string. {new_name} is not a string.')
+            if old_name not in self.columns:
+                raise KeyError(f'Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.')
+            if new_name in self.columns:
+                raise ValueError(f'The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to.')
+
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
         tag to the column and clears the tag from any previously set index column.

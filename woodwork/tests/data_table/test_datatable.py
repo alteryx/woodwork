@@ -2383,3 +2383,37 @@ def test_datatable_equality(sample_df, sample_series):
     assert dt_with_ltypes != dt_time_index
     assert dt_with_ltypes == dt_numeric_time_index.set_logical_types({'full_name': Categorical})
     assert dt_with_ltypes != dt_numeric_time_index.set_logical_types({'full_name': Categorical()})
+
+
+def test_datatable_rename(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+
+    error = 'Column to rename must be a string. 1 is not a string.'
+    with pytest.raises(TypeError, match=error):
+        dt.rename({1: 'test'})
+
+    error = 'New column name must be a string. 1 is not a string.'
+    with pytest.raises(TypeError, match=error):
+        dt.rename({'age': 1})
+
+    error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
+    with pytest.raises(KeyError, match=error):
+        dt.rename({'not_present': 'test'})
+
+    # --> not sure we actually want this
+    error = 'Cannot rename index or time index columns such as id.'
+    with pytest.raises(KeyError, match=error):
+        dt.rename({'id': 'test', 'age': 'test'})
+
+    error = 'The column email is already present in the DataTable. Please choose another name to rename age to.'
+    with pytest.raises(ValueError, match=error):
+        dt.rename({'age': 'email'})
+
+    dt_renamed = dt.rename({'age': 'birthday', 'full_name': 'name'})
+    assert 'age' not in dt_renamed.columns
+    assert 'full_name' not in dt_renamed.columns
+    assert {'birthday', 'name'} in dt_renamed.columns
+
+    # --> check equality of the columns not inlcuding name
+    # birthday =
+    # assert birthday == dt[]
