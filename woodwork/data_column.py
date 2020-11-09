@@ -1,6 +1,5 @@
 import warnings
 
-import dask.dataframe as dd
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -26,8 +25,11 @@ from woodwork.logical_types import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
-    col_is_datetime
+    col_is_datetime,
+    import_or_none
 )
+
+dd = import_or_none('dask.dataframe')
 
 
 class DataColumn(object):
@@ -94,7 +96,7 @@ class DataColumn(object):
             # Update the underlying series
             try:
                 if _get_ltype_class(self.logical_type) == Datetime:
-                    if isinstance(self._series, dd.Series):
+                    if dd and isinstance(self._series, dd.Series):
                         name = self._series.name
                         self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
                         self._series.name = name
@@ -132,7 +134,9 @@ class DataColumn(object):
         return new_col
 
     def _set_series(self, series):
-        if not (isinstance(series, pd.Series) or isinstance(series, dd.Series) or isinstance(series, pd.api.extensions.ExtensionArray)):
+        if not (isinstance(series, pd.Series) or
+                (dd and isinstance(series, dd.Series)) or
+                isinstance(series, pd.api.extensions.ExtensionArray)):
             raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
 
         # pandas ExtensionArrays should be converted to pandas.Series
@@ -323,7 +327,7 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
-    if isinstance(series, dd.Series):
+    if dd and isinstance(series, dd.Series):
         series = series.get_partition(0).compute()
     natural_language_threshold = config.get_option('natural_language_threshold')
 

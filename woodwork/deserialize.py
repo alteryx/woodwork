@@ -6,7 +6,6 @@ import warnings
 from itertools import zip_longest
 from pathlib import Path
 
-import dask.dataframe as dd
 import pandas as pd
 
 from woodwork import DataTable
@@ -14,7 +13,7 @@ from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import str_to_logical_type
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import FORMATS, SCHEMA_VERSION
-from woodwork.utils import _is_s3, _is_url
+from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
 def read_table_metadata(path):
@@ -60,7 +59,13 @@ def metadata_to_datatable(table_metadata, **kwargs):
     table_type = loading_info.get('table_type', 'pandas')
 
     if table_type == 'dask':
-        lib = dd
+        DASK_ERR_MSG = (
+            'Cannot load Dask DataTable - unable to import Dask.\n\n'
+            'Please install with pip or conda:\n\n'
+            'python -m pip install "woodwork[dask]"\n\n'
+            'conda install dask'
+        )
+        lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
     else:
         lib = pd
 

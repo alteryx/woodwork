@@ -4,15 +4,16 @@ import os
 import tarfile
 import tempfile
 
-import dask.dataframe as dd
-
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import (
     _get_ltype_class,
     _get_specified_ltype_params,
     _is_s3,
-    _is_url
+    _is_url,
+    import_or_none
 )
+
+dd = import_or_none('dask.dataframe')
 
 SCHEMA_VERSION = '1.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -40,7 +41,7 @@ def datatable_to_metadata(datatable):
         for col in datatable.columns.values()
     ]
 
-    if isinstance(df, dd.DataFrame):
+    if dd and isinstance(df, dd.DataFrame):
         table_type = 'dask'
     else:
         table_type = 'pandas'
@@ -114,7 +115,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     dt_name = datatable.name or 'data'
     df = datatable.to_dataframe()
 
-    if isinstance(df, dd.DataFrame) and format == 'csv':
+    if dd and isinstance(df, dd.DataFrame) and format == 'csv':
         basename = "{}-*.{}".format(dt_name, format)
     else:
         basename = '.'.join([dt_name, format])
@@ -131,7 +132,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
         )
     elif format == 'pickle':
         # Dask currently does not support to_pickle
-        if isinstance(df, dd.DataFrame):
+        if dd and isinstance(df, dd.DataFrame):
             msg = 'Cannot serialize Dask DataTable to pickle'
             raise ValueError(msg)
         df.to_pickle(file, **kwargs)

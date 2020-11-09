@@ -1,5 +1,8 @@
-import dask.dataframe as dd
 import pandas as pd
+
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
 
 
 def validate_subset_dt(subset_dt, dt):
@@ -33,7 +36,7 @@ def to_pandas(df, index=None):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         return df
 
-    if isinstance(df, (dd.DataFrame, dd.Series)):
+    if dd and isinstance(df, (dd.DataFrame, dd.Series)):
         pd_df = df.compute()
 
     if index:
