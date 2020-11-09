@@ -116,6 +116,7 @@ def test_indexer_class(sample_df_pandas, sample_df_dask):
     pd.testing.assert_frame_equal(ind.pd_data, sample_df_pandas)
     # more thorough testing of selection in test_datatable and test_datacolumn
     pd.testing.assert_frame_equal(ind[1:2].to_dataframe(), sample_df_pandas.iloc[1:2])
+    assert ind[0, 0] is None
 
 
 def test_read_csv_no_params(sample_df_pandas, tmpdir):

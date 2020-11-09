@@ -1257,6 +1257,17 @@ def test_iloc(sample_df_pandas):
     assert sliced.logical_types == {'full_name': Categorical, 'email': EmailAddress}
     assert sliced.index is None
 
+    sliced_series_row = dt.iloc[1]
+    assert list(sliced_series_row.to_series().index) == ['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered']
+    assert sliced_series_row.logical_type == NaturalLanguage
+    assert sliced_series_row.semantic_tags == set()
+    assert sliced_series_row.name == 1
+
+    sliced_series_col = dt.iloc[:, 1]
+    assert sliced_series_col.logical_type == Categorical
+    assert sliced_series_col.semantic_tags == {'tag1', 'category'}
+    assert sliced_series_col.name == 'full_name'
+
     dt_no_std_tags = DataTable(sample_df_pandas, logical_types=logical_types, use_standard_tags=False)
     sliced = dt_no_std_tags.iloc[:, [0, 5]]
     assert sliced.semantic_tags == {'id': set(), 'signup_date': set()}
