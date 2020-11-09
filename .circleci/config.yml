@@ -44,6 +44,7 @@ jobs:
       - pkg_woodwork
       - run : |
           virtualenv venv
+          source venv/bin/activate
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
       - when:
