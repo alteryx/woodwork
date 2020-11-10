@@ -55,11 +55,12 @@ def test_iloc_data_column(sample_series_pandas):
 
 def test_iloc_indices_column(sample_df_pandas):
     dt_indices = DataTable(sample_df_pandas, index='id', time_index='signup_date')
-    sliced_index = dt_indices.iloc[:,0]
+    sliced_index = dt_indices.iloc[:, 0]
     assert sliced_index.semantic_tags == {'numeric'}
 
-    sliced_time_index = dt_indices.iloc[:,5]
+    sliced_time_index = dt_indices.iloc[:, 5]
     assert sliced_time_index.semantic_tags == set()
+
 
 def test_iloc_with_properties(sample_df_pandas):
     semantic_tags = {
