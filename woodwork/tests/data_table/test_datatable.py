@@ -2388,6 +2388,10 @@ def test_datatable_equality(sample_df, sample_series):
 def test_datatable_rename_errors(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
 
+    error = 'New columns names must be unique from one another.'
+    with pytest.raises(ValueError, match=error):
+        dt.rename({'age': 'test', 'full_name': 'test'})
+
     error = 'Column to rename must be a string. 1 is not a string.'
     with pytest.raises(KeyError, match=error):
         dt.rename({1: 'test'})
@@ -2403,19 +2407,20 @@ def test_datatable_rename_errors(sample_df):
     # --> not sure we actually want this
     error = 'Cannot rename index or time index columns such as id.'
     with pytest.raises(KeyError, match=error):
-        dt.rename({'id': 'test', 'age': 'test'})
+        dt.rename({'id': 'test', 'age': 'test2'})
 
-    error = 'The column email is already present in the DataTable. Please choose another name to rename age to.'
+    error = 'The column email is already present in the DataTable. Please choose another name to rename age to or also rename age.'
     with pytest.raises(ValueError, match=error):
         dt.rename({'age': 'email'})
 
 
 def test_datatable_rename(sample_df):
-    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    dt = DataTable(sample_df, index='id', time_index='signup_date', copy_dataframe=True)
+    original_df = to_pandas(dt.to_dataframe())
     dt_renamed = dt.rename({'age': 'birthday'})
     old_df = to_pandas(dt.to_dataframe())
-    new_df = to_pandas(dt_renamed.to_dataframe())
 
+    new_df = to_pandas(dt_renamed.to_dataframe())
     assert 'age' not in dt_renamed.columns
     assert 'birthday' in dt_renamed.columns
     assert 'age' not in new_df.columns
@@ -2427,3 +2432,12 @@ def test_datatable_rename(sample_df):
     assert old_col.logical_type == new_col.logical_type
     assert old_col.semantic_tags == new_col.semantic_tags
     assert old_col.dtype == new_col.dtype
+
+    # Confirm underlying data of original datatable hasn't changed
+    assert original_df.equals(old_df)
+
+    dt_swapped_names = dt.rename({'age': 'full_name', 'full_name': 'age'})
+    new_df = to_pandas(dt_swapped_names.to_dataframe())
+
+    pd.testing.assert_series_equal(old_df['age'], new_df['full_name'], check_names=False)
+    pd.testing.assert_series_equal(old_df['full_name'], new_df['age'], check_names=False)

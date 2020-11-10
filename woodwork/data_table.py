@@ -292,7 +292,6 @@ class DataTable(object):
         # --> double check it matches the pandas defn
         if len(cols_to_rename) != len(set(cols_to_rename.values())):
             raise ValueError('New columns names must be unique from one another.')
-        # if any([new_col in self.columns and  for new_col in cols_to_rename.values()]):
 
         for old_name, new_name in cols_to_rename.items():
             if not isinstance(old_name, str):
@@ -301,8 +300,8 @@ class DataTable(object):
                 raise ValueError(f"New column name must be a string. {new_name} is not a string.")
             if old_name not in self.columns:
                 raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
-            if new_name in self.columns:
-                raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to.")
+            if new_name in self.columns and new_name not in cols_to_rename.keys():
+                raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
             # --> might not be necessary
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
@@ -314,6 +313,7 @@ class DataTable(object):
             col._series.name = new_name
             col._assigned_name = new_name
             updated_cols[new_name] = col
+        print(new_dt.types)
 
         new_dt._update_columns(updated_cols)
 
