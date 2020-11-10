@@ -1,6 +1,5 @@
 import warnings
 
-import dask.dataframe as dd
 import databricks.koalas as ks
 import numpy as np
 import pandas as pd
@@ -21,9 +20,11 @@ from woodwork.utils import (
     _get_ltype_class,
     _get_mode,
     _is_numeric_series,
-    col_is_datetime
+    col_is_datetime,
+    import_or_none
 )
 
+dd = import_or_none('dask.dataframe')
 ks.set_option('compute.ops_on_diff_frames', True)
 
 
@@ -76,7 +77,7 @@ class DataTable(object):
             self._dataframe = dataframe
 
         if make_index:
-            if isinstance(self._dataframe, dd.DataFrame):
+            if dd and isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
             elif isinstance(self._dataframe, ks.DataFrame):
@@ -551,7 +552,7 @@ class DataTable(object):
 
         results = {}
 
-        if isinstance(self._dataframe, dd.DataFrame):
+        if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
         elif isinstance(self._dataframe, ks.DataFrame):
             # Missing values in Koalas will be replaced with 'None' - change them to
@@ -639,7 +640,7 @@ class DataTable(object):
         valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
         data = self._dataframe[valid_cols]
         is_ks = False
-        if isinstance(data, dd.DataFrame):
+        if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
         if isinstance(data, ks.DataFrame):
             data = data.to_pandas()
@@ -750,7 +751,7 @@ class DataTable(object):
                                                      )]
 
         data = self._dataframe[valid_columns]
-        if isinstance(data, dd.DataFrame):
+        if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
         if isinstance(self._dataframe, ks.DataFrame):
             data = data.to_pandas()
@@ -841,7 +842,8 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame, ks.DataFrame)):
+    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
+            isinstance(dataframe, (pd.DataFrame, ks.DataFrame)):
         raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):

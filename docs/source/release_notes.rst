@@ -10,6 +10,7 @@ Release Notes
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
         * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
         * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
+        * Add ``numeric_categorical_threshold`` config value to allow inferring numeric columns as Categorical (:pr:`363`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
@@ -26,6 +27,7 @@ Release Notes
         * Remove ``copy`` parameter from ``DataTable.to_dataframe`` and ``DataColumn.to_series`` (:pr:`338`)
         * Allow pandas ExtensionArrays as inputs to DataColumn (:pr:`343`)
         * Move warnings to a separate exceptions file and call via UserWarning subclasses (:pr:`348`)
+        * Make Dask an optional dependency installable with woodwork[dask] (:pr:`357`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)

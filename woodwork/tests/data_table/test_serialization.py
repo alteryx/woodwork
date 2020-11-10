@@ -2,7 +2,6 @@ import json
 import os
 
 import boto3
-import dask.dataframe as dd
 import databricks.koalas as ks
 import pandas as pd
 import pytest
@@ -13,6 +12,9 @@ from woodwork import DataTable
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import Ordinal
 from woodwork.tests.testing_utils import to_pandas
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -30,7 +32,7 @@ def xfail_tmp_disappears(dataframe):
 
 
 def test_to_dictionary(sample_df):
-    if isinstance(sample_df, dd.DataFrame):
+    if dd and isinstance(sample_df, dd.DataFrame):
         table_type = 'dask'
     elif isinstance(sample_df, ks.DataFrame):
         table_type = 'koalas'

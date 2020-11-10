@@ -1,6 +1,9 @@
-import dask.dataframe as dd
 import databricks.koalas as ks
 import pandas as pd
+
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
 
 
 def validate_subset_dt(subset_dt, dt):
@@ -34,7 +37,7 @@ def to_pandas(df, index=None, sort_index=False):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         return df
 
-    if isinstance(df, (dd.DataFrame, dd.Series)):
+    if dd and isinstance(df, (dd.DataFrame, dd.Series)):
         pd_df = df.compute()
 
     if isinstance(df, (ks.DataFrame, ks.Series)):

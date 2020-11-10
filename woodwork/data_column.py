@@ -1,6 +1,6 @@
 import warnings
 
-import dask.dataframe as dd
+
 import databricks.koalas as ks
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -27,8 +27,11 @@ from woodwork.logical_types import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
-    col_is_datetime
+    col_is_datetime,
+    import_or_none
 )
+
+dd = import_or_none('dask.dataframe')
 
 
 class DataColumn(object):
@@ -95,7 +98,7 @@ class DataColumn(object):
             # Update the underlying series
             try:
                 if _get_ltype_class(self.logical_type) == Datetime:
-                    if isinstance(self._series, dd.Series):
+                    if dd and isinstance(self._series, dd.Series):
                         name = self._series.name
                         self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
                         self._series.name = name
@@ -141,7 +144,9 @@ class DataColumn(object):
         return new_col
 
     def _set_series(self, series):
-        if not (isinstance(series, (pd.Series, dd.Series, ks.Series)) or isinstance(series, pd.api.extensions.ExtensionArray)):
+        if not (isinstance(series, (pd.Series, ks.Series) or
+                (dd and isinstance(series, dd.Series)) or
+                isinstance(series, pd.api.extensions.ExtensionArray)):
             raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')
 
         # pandas ExtensionArrays should be converted to pandas.Series
@@ -332,11 +337,12 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
-    if isinstance(series, dd.Series):
+    if dd and isinstance(series, dd.Series):
         series = series.get_partition(0).compute()
     if isinstance(series, ks.Series):
         series = series.head(100000).to_pandas()
     natural_language_threshold = config.get_option('natural_language_threshold')
+    numeric_categorical_threshold = config.get_option('numeric_categorical_threshold')
 
     inferred_type = NaturalLanguage
 
@@ -364,13 +370,16 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        if any(series.dropna() < 0):
-            inferred_type = Integer
+        if _is_numeric_categorical(series, numeric_categorical_threshold):
+            inferred_type = Categorical
         else:
-            inferred_type = WholeNumber
+            if any(series.dropna() < 0):
+                inferred_type = Integer
+            else:
+                inferred_type = WholeNumber
 
     elif pdtypes.is_float_dtype(series.dtype):
-        inferred_type = Double
+        inferred_type = Categorical if _is_numeric_categorical(series, numeric_categorical_threshold) else Double
 
     elif col_is_datetime(series):
         inferred_type = Datetime
@@ -379,3 +388,7 @@ def infer_logical_type(series):
         inferred_type = Timedelta
 
     return inferred_type
+
+
+def _is_numeric_categorical(series, threshold):
+    return threshold != -1 and series.nunique() < threshold

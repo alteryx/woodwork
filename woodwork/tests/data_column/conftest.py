@@ -1,4 +1,4 @@
-import dask.dataframe as dd
+
 import databricks.koalas as ks
 import numpy as np
 import pandas as pd
@@ -6,6 +6,7 @@ import pytest
 
 
 def pd_to_dask(series):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(series, npartitions=2)
 
 

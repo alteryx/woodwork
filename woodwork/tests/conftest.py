@@ -1,4 +1,3 @@
-import dask.dataframe as dd
 import databricks.koalas as ks
 import numpy as np
 import pandas as pd
@@ -38,6 +37,7 @@ def sample_df_pandas():
 
 @pytest.fixture()
 def sample_df_dask(sample_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(sample_df_pandas, npartitions=2)
 
 
@@ -58,6 +58,7 @@ def sample_series_pandas():
 
 @pytest.fixture()
 def sample_series_dask(sample_series_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(sample_series_pandas, npartitions=2)
 
 
@@ -78,6 +79,7 @@ def sample_datetime_series_pandas():
 
 @pytest.fixture()
 def sample_datetime_series_dask(sample_datetime_series_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(sample_datetime_series_pandas, npartitions=2)
 
 
@@ -100,6 +102,7 @@ def time_index_df_pandas():
 
 @pytest.fixture()
 def time_index_df_dask(time_index_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(time_index_df_pandas, npartitions=2)
 
 
@@ -125,6 +128,7 @@ def numeric_time_index_df_pandas():
 
 @pytest.fixture()
 def numeric_time_index_df_dask(numeric_time_index_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(numeric_time_index_df_pandas, npartitions=2)
 
 
@@ -189,6 +193,7 @@ def describe_df_pandas():
 
 @pytest.fixture()
 def describe_df_dask(describe_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(describe_df_pandas, npartitions=2)
 
 
@@ -215,6 +220,7 @@ def df_same_mi_pandas():
 
 @pytest.fixture()
 def df_same_mi_dask(df_same_mi_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(df_same_mi_pandas, npartitions=2)
 
 
@@ -242,6 +248,7 @@ def df_mi_pandas():
 
 @pytest.fixture()
 def df_mi_dask(df_mi_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(df_mi_pandas, npartitions=1)
 
 
@@ -268,6 +275,7 @@ def categorical_df_pandas():
 
 @pytest.fixture()
 def categorical_df_dask(categorical_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(categorical_df_pandas, npartitions=2)
 
 

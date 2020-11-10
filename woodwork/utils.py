@@ -240,6 +240,20 @@ def import_or_raise(library, error_msg):
         raise ImportError(error_msg)
 
 
+def import_or_none(library):
+    '''
+    Attemps to import the requested library.
+
+    Args:
+        library (str): the name of the library
+    Returns: the library if it is installed, else None
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        return None
+
+
 def _is_s3(string):
     '''
     Checks if the given string is a s3 path.

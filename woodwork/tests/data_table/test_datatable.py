@@ -1,11 +1,10 @@
 import re
 
-import dask.dataframe as dd
 import databricks.koalas as ks
+
 import numpy as np
 import pandas as pd
 import pytest
-from dask.delayed import Delayed
 
 import woodwork as ww
 from woodwork import DataColumn, DataTable
@@ -45,6 +44,10 @@ from woodwork.tests.testing_utils import (
     to_pandas,
     validate_subset_dt
 )
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
+dask_delayed = import_or_none('dask.delayed')
 
 
 def test_datatable_init(sample_df):
@@ -54,7 +57,10 @@ def test_datatable_init(sample_df):
     assert dt.name is None
     assert dt.index is None
     assert dt.time_index is None
-    assert isinstance(df, (pd.DataFrame, dd.DataFrame, ks.DataFrame))
+    if dd and isinstance(sample_df, dd.DataFrame):
+        assert isinstance(df, dd.DataFrame)
+    else:
+        assert isinstance(df, (pd.DataFrame, ks.DataFrame))
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
@@ -265,7 +271,7 @@ def test_check_unique_column_names(sample_df):
     if isinstance(sample_df, ks.DataFrame):
         pytest.skip("Koalas enforces unique column names")
     duplicate_cols_df = sample_df.copy()
-    if isinstance(sample_df, dd.DataFrame):
+    if dd and isinstance(sample_df, dd.DataFrame):
         duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
     else:
         duplicate_cols_df.insert(0, 'age', [18, 21, 65, 43], allow_duplicates=True)
