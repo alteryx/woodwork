@@ -274,6 +274,9 @@ class _Indexer:
         selection = self.pd_data.iloc[key]
         if isinstance(selection, pd.Series):
             col_name = selection.name
+            if isinstance(self.ww_data, ww.DataTable) and set(selection.index) == set(self.ww_data.columns):
+                # return selection as series if series of one row.
+                return selection
             if isinstance(self.ww_data, ww.DataTable):
                 logical_type = self.ww_data.logical_types.get(col_name, None)
                 semantic_tags = self.ww_data.semantic_tags.get(col_name, None)
@@ -287,7 +290,6 @@ class _Indexer:
                                  semantic_tags=semantic_tags,
                                  use_standard_tags=self.ww_data.use_standard_tags,
                                  name=name)
-
         elif isinstance(selection, pd.DataFrame):
             cols = selection.columns
             new_index = self.ww_data.index if self.ww_data.index in cols else None
@@ -308,3 +310,6 @@ class _Indexer:
                                 logical_types=new_logical_types,
                                 copy_dataframe=True,
                                 use_standard_tags=self.ww_data.use_standard_tags)
+        else:
+            # singular value
+            return selection

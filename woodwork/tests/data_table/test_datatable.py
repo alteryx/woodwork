@@ -1258,9 +1258,8 @@ def test_iloc(sample_df_pandas):
     assert sliced.index is None
 
     sliced_series_row = dt.iloc[1]
-    assert list(sliced_series_row.to_series().index) == ['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered']
-    assert sliced_series_row.logical_type == NaturalLanguage
-    assert sliced_series_row.semantic_tags == set()
+    assert isinstance(sliced_series_row, pd.Series)
+    assert set(sliced_series_row.index) == set(['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered'])
     assert sliced_series_row.name == 1
 
     sliced_series_col = dt.iloc[:, 1]
