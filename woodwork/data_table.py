@@ -679,7 +679,7 @@ class DataTable(object):
         for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
             series = column._series
-            if isinstance(series, dd.Series):
+            if dd and isinstance(series, dd.Series):
                 series = series.compute()
             if isinstance(series, ks.Series):
                 series = series.to_pandas()

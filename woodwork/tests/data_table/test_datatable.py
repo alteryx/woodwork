@@ -296,7 +296,7 @@ def test_check_logical_types_errors(sample_df):
 
 def test_datatable_types(sample_df):
     new_dates = ["2019~01~01", "2019~01~02", "2019~01~03", "2019~01~04"]
-    if isinstance(sample_df, dd.DataFrame):
+    if dd and isinstance(sample_df, dd.DataFrame):
         sample_df['formatted_date'] = pd.Series(new_dates)
     else:
         sample_df['formatted_date'] = new_dates
@@ -1603,7 +1603,7 @@ def test_shape(categorical_df):
     dt = ww.DataTable(categorical_df)
     dt_shape = dt.shape
     df_shape = dt.to_dataframe().shape
-    if isinstance(categorical_df, dd.DataFrame):
+    if dd and isinstance(categorical_df, dd.DataFrame):
         assert isinstance(dt.shape[0], dask_delayed.Delayed)
         dt_shape = (dt_shape[0].compute(), dt_shape[1])
         df_shape = (df_shape[0].compute(), df_shape[1])
@@ -1613,7 +1613,7 @@ def test_shape(categorical_df):
     dt.pop('ints')
     dt_shape = dt.shape
     df_shape = dt.to_dataframe().shape
-    if isinstance(categorical_df, dd.DataFrame):
+    if dd and isinstance(categorical_df, dd.DataFrame):
         assert isinstance(dt.shape[0], dask_delayed.Delayed)
         dt_shape = (dt_shape[0].compute(), dt_shape[1])
         df_shape = (df_shape[0].compute(), df_shape[1])

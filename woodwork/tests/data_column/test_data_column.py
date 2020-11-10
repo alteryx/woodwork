@@ -451,7 +451,7 @@ def test_shape(sample_series):
     col = DataColumn(sample_series)
     col_shape = col.shape
     series_shape = col.to_series().shape
-    if isinstance(sample_series, dd.Series):
+    if dd and isinstance(sample_series, dd.Series):
         col_shape = (col_shape[0].compute(),)
         series_shape = (series_shape[0].compute(),)
     assert col_shape == (4,)
