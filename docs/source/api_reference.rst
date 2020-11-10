@@ -27,6 +27,7 @@ DataTable
     DataTable.to_csv
     DataTable.to_pickle
     DataTable.to_parquet
+    DataTable.rename
 
 
 DataColumn

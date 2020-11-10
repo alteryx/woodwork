@@ -282,14 +282,12 @@ class DataTable(object):
             cols_to_rename (dict[str -> str]): A dictionary mapping columns whose names
             we'd like cho change to the name to which we'd like to change them.
 
-        Returns: --> double check we dont want to mutate table here or maybe we allow inplace param?
+        Returns:
             woodwork.DataTable: DataTable with the specified columns renamed.
 
         Note:
             Index and time index columns cannot be renamed.
         """
-        # --> double check that the error types are good
-        # --> double check it matches the pandas defn
         if len(cols_to_rename) != len(set(cols_to_rename.values())):
             raise ValueError('New columns names must be unique from one another.')
 
@@ -302,18 +300,15 @@ class DataTable(object):
                 raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
             if new_name in self.columns and new_name not in cols_to_rename.keys():
                 raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
-            # --> might not be necessary
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
         new_dt = self[list(self.columns.keys())]
         updated_cols = {}
         for old_name, new_name in cols_to_rename.items():
             col = new_dt.pop(old_name)
-            # --> see if there's a better way to consolidate places where we do similar things
             col._series.name = new_name
             col._assigned_name = new_name
             updated_cols[new_name] = col
-        print(new_dt.types)
 
         new_dt._update_columns(updated_cols)
 

@@ -2404,7 +2404,6 @@ def test_datatable_rename_errors(sample_df):
     with pytest.raises(KeyError, match=error):
         dt.rename({'not_present': 'test'})
 
-    # --> not sure we actually want this
     error = 'Cannot rename index or time index columns such as id.'
     with pytest.raises(KeyError, match=error):
         dt.rename({'id': 'test', 'age': 'test2'})
