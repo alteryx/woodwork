@@ -430,24 +430,6 @@ def test_set_as_time_index(sample_series):
     assert 'time_index' in data_col.semantic_tags
 
 
-def test_iloc(sample_series_pandas):
-    semantic_tags = ['tag1', 'tag2']
-    logical_type = Categorical
-    dcol = DataColumn(sample_series_pandas, logical_type=logical_type, semantic_tags=semantic_tags)
-    sliced = dcol.iloc[:]
-    assert sliced.name == "sample_series"
-    assert sliced.logical_type == logical_type
-    assert sliced.semantic_tags == {'category', 'tag1', 'tag2'}
-
-    assert dcol.iloc[0] == 'a'
-
-    dcol_no_std_tags = DataColumn(sample_series_pandas, use_standard_tags=False)
-    sliced = dcol_no_std_tags.iloc[:]
-    assert sliced.name
-    assert sliced.logical_type == logical_type
-    assert sliced.semantic_tags == set()
-
-
 def test_to_series(sample_series):
     data_col = DataColumn(sample_series)
     series = data_col.to_series()

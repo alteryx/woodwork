@@ -9,6 +9,7 @@ from woodwork.exceptions import (
     DuplicateTagsWarning,
     StandardTagsRemovalWarning
 )
+from woodwork.indexers import _iLocIndexer
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -25,7 +26,6 @@ from woodwork.logical_types import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
-    _Indexer,
     col_is_datetime,
     import_or_none
 )
@@ -126,7 +126,7 @@ class DataColumn(object):
             or Panel) and that returns valid output for indexing (one of the above).
             This is useful in method chains, when you don't have a reference to the
             calling object, but would like to base your selection on some value."""
-        return _Indexer(self, self._series)
+        return _iLocIndexer(self)
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
         """Update the logical type for the column and return a new DataColumn object.

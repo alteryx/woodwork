@@ -16,7 +16,6 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
     _get_specified_ltype_params,
-    _Indexer,
     _is_numeric_series,
     _is_s3,
     _is_url,
@@ -105,18 +104,6 @@ def test_get_mode():
             assert mode is None
         else:
             assert mode == answer
-
-
-def test_indexer_class(sample_df_pandas, sample_df_dask):
-    dt_dask = ww.DataTable(sample_df_dask)
-    with pytest.raises(TypeError, match="iloc is only supported for data coming from pandas"):
-        _Indexer(dt_dask, sample_df_dask)
-    dt_pd = ww.DataTable(sample_df_pandas)
-    ind = _Indexer(dt_pd, sample_df_pandas)
-    pd.testing.assert_frame_equal(ind.pd_data, sample_df_pandas)
-    # more thorough testing of selection in test_datatable and test_datacolumn
-    pd.testing.assert_frame_equal(ind[1:2].to_dataframe(), sample_df_pandas.iloc[1:2])
-    assert ind[0, 0] == 0
 
 
 def test_read_csv_no_params(sample_df_pandas, tmpdir):
