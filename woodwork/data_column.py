@@ -1,6 +1,5 @@
 import warnings
 
-
 import databricks.koalas as ks
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -144,7 +143,7 @@ class DataColumn(object):
         return new_col
 
     def _set_series(self, series):
-        if not (isinstance(series, (pd.Series, ks.Series) or
+        if not (isinstance(series, (pd.Series, ks.Series)) or
                 (dd and isinstance(series, dd.Series)) or
                 isinstance(series, pd.api.extensions.ExtensionArray)):
             raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')

@@ -100,6 +100,8 @@ def test_categorical_inference(categories):
 def test_categorical_integers_inference(integers):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    if isinstance(integers[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
     for series in integers:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -111,6 +113,8 @@ def test_categorical_whole_number_inference(whole_nums):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
               'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
+    if isinstance(whole_nums[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
     for series in whole_nums:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
@@ -121,6 +125,8 @@ def test_categorical_whole_number_inference(whole_nums):
 def test_categorical_double_inference(doubles):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['float', 'float32', 'float64', 'float_']
+    if isinstance(doubles[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
     for series in doubles:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))

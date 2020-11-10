@@ -1,7 +1,6 @@
 import re
 
 import databricks.koalas as ks
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -1605,7 +1604,7 @@ def test_shape(categorical_df):
     dt_shape = dt.shape
     df_shape = dt.to_dataframe().shape
     if isinstance(categorical_df, dd.DataFrame):
-        assert isinstance(dt.shape[0], Delayed)
+        assert isinstance(dt.shape[0], dask_delayed.Delayed)
         dt_shape = (dt_shape[0].compute(), dt_shape[1])
         df_shape = (df_shape[0].compute(), df_shape[1])
     assert dt_shape == (10, 5)
@@ -1615,7 +1614,7 @@ def test_shape(categorical_df):
     dt_shape = dt.shape
     df_shape = dt.to_dataframe().shape
     if isinstance(categorical_df, dd.DataFrame):
-        assert isinstance(dt.shape[0], Delayed)
+        assert isinstance(dt.shape[0], dask_delayed.Delayed)
         dt_shape = (dt_shape[0].compute(), dt_shape[1])
         df_shape = (df_shape[0].compute(), df_shape[1])
     assert dt_shape == (10, 4)

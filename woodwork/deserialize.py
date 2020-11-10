@@ -6,7 +6,6 @@ import warnings
 from itertools import zip_longest
 from pathlib import Path
 
-
 import databricks.koalas as ks
 import pandas as pd
 

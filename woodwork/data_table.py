@@ -842,8 +842,8 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
-            isinstance(dataframe, (pd.DataFrame, ks.DataFrame)):
+    if not (dd and isinstance(dataframe, dd.DataFrame) or
+            isinstance(dataframe, (pd.DataFrame, ks.DataFrame))):
         raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
