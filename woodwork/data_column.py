@@ -1,7 +1,6 @@
 import warnings
 
 import pandas as pd
-import pandas.api.types as pdtypes
 
 from woodwork.config import config
 from woodwork.exceptions import (
@@ -10,22 +9,15 @@ from woodwork.exceptions import (
     StandardTagsRemovalWarning
 )
 from woodwork.logical_types import (
-    Boolean,
-    Categorical,
     Datetime,
-    Double,
-    Integer,
     LogicalType,
     NaturalLanguage,
     Ordinal,
-    Timedelta,
-    WholeNumber,
     str_to_logical_type
 )
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
-    col_is_datetime,
     import_or_none
 )
 
@@ -329,54 +321,9 @@ def infer_logical_type(series):
     """
     if dd and isinstance(series, dd.Series):
         series = series.get_partition(0).compute()
-    natural_language_threshold = config.get_option('natural_language_threshold')
-    numeric_categorical_threshold = config.get_option('numeric_categorical_threshold')
 
-    inferred_type = NaturalLanguage
+    for logical_type, func in config.get_option('inference_functions').items():
+        if func(series):
+            return str_to_logical_type(logical_type)
 
-    if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series):
-            inferred_type = Datetime
-        else:
-            inferred_type = Categorical
-
-            # heuristics to predict this some other than categorical
-            sample = series.sample(min(10000, len(series)))
-
-            # catch cases where object dtype cannot be interpreted as a string
-            try:
-                avg_length = sample.str.len().mean()
-                if avg_length > natural_language_threshold:
-                    inferred_type = NaturalLanguage
-            except AttributeError:
-                pass
-
-    elif pdtypes.is_bool_dtype(series.dtype):
-        inferred_type = Boolean
-
-    elif pdtypes.is_categorical_dtype(series.dtype):
-        inferred_type = Categorical
-
-    elif pdtypes.is_integer_dtype(series.dtype):
-        if _is_numeric_categorical(series, numeric_categorical_threshold):
-            inferred_type = Categorical
-        else:
-            if any(series.dropna() < 0):
-                inferred_type = Integer
-            else:
-                inferred_type = WholeNumber
-
-    elif pdtypes.is_float_dtype(series.dtype):
-        inferred_type = Categorical if _is_numeric_categorical(series, numeric_categorical_threshold) else Double
-
-    elif col_is_datetime(series):
-        inferred_type = Datetime
-
-    elif pdtypes.is_timedelta64_dtype(series.dtype):
-        inferred_type = Timedelta
-
-    return inferred_type
-
-
-def _is_numeric_categorical(series, threshold):
-    return threshold != -1 and series.nunique() < threshold
+    return NaturalLanguage

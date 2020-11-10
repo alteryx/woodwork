@@ -1,3 +1,5 @@
+import pandas as pd
+
 import woodwork as ww
 from woodwork.data_column import infer_logical_type
 from woodwork.logical_types import (
@@ -8,6 +10,7 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage,
     Timedelta,
+    URL,
     WholeNumber
 )
 
@@ -131,3 +134,33 @@ def test_pdna_inference(pdnas):
     for index, series in enumerate(pdnas):
         inferred_type = infer_logical_type(series)
         assert inferred_type == expected_logical_types[index]
+
+
+def test_override_inference_function(sample_series):
+    assert infer_logical_type(sample_series) == Categorical
+
+    def new_categorical_func(series):
+        return False
+
+    ww.config.set_inference_function('Categorical', new_categorical_func)
+    assert infer_logical_type(sample_series) == NaturalLanguage
+    ww.config.reset_option('inference_functions')
+
+
+def test_new_inference_function():
+    url_series = pd.Series([
+        'https://google.com',
+        'https://example.com',
+        'https://github.com',
+    ])
+
+    def url_func(series):
+        if all(series.str.startswith('https://')):
+            return True
+        return False
+
+    assert infer_logical_type(url_series) == NaturalLanguage
+    ww.config.set_inference_function('URL', url_func)
+    assert infer_logical_type(url_series) == URL
+    ww.config.reset_option('inference_functions')
+    
