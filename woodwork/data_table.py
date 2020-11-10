@@ -280,7 +280,7 @@ class DataTable(object):
 
         Args:
             cols_to_rename (dict[str -> str]): A dictionary mapping columns whose names
-            we'd like cho change to the name to which we'd like to change them.
+                we'd like to change to the name to which we'd like to change them.
 
         Returns:
             woodwork.DataTable: DataTable with the specified columns renamed.

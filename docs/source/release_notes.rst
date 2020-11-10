@@ -22,6 +22,8 @@ Release Notes
         * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
         * Add ``iloc`` method to DataTable and DataColumn (:pr:`365`)
         * Add ``numeric_categorical_threshold`` config value to allow inferring numeric columns as Categorical (:pr:`363`)
+        * Add ability to initialize DataTable with numpy array (:pr:`367`)
+        * Add ``rename`` method to DataTable (:pr:`367`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
