@@ -2385,15 +2385,15 @@ def test_datatable_equality(sample_df, sample_series):
     assert dt_with_ltypes != dt_numeric_time_index.set_logical_types({'full_name': Categorical()})
 
 
-def test_datatable_rename(sample_df):
+def test_datatable_rename_errors(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
 
     error = 'Column to rename must be a string. 1 is not a string.'
-    with pytest.raises(TypeError, match=error):
+    with pytest.raises(KeyError, match=error):
         dt.rename({1: 'test'})
 
     error = 'New column name must be a string. 1 is not a string.'
-    with pytest.raises(TypeError, match=error):
+    with pytest.raises(ValueError, match=error):
         dt.rename({'age': 1})
 
     error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
@@ -2409,11 +2409,21 @@ def test_datatable_rename(sample_df):
     with pytest.raises(ValueError, match=error):
         dt.rename({'age': 'email'})
 
-    dt_renamed = dt.rename({'age': 'birthday', 'full_name': 'name'})
-    assert 'age' not in dt_renamed.columns
-    assert 'full_name' not in dt_renamed.columns
-    assert {'birthday', 'name'} in dt_renamed.columns
 
-    # --> check equality of the columns not inlcuding name
-    # birthday =
-    # assert birthday == dt[]
+def test_datatable_rename(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    dt_renamed = dt.rename({'age': 'birthday'})
+    old_df = to_pandas(dt.to_dataframe())
+    new_df = to_pandas(dt_renamed.to_dataframe())
+
+    assert 'age' not in dt_renamed.columns
+    assert 'birthday' in dt_renamed.columns
+    assert 'age' not in new_df.columns
+    assert 'birthday' in new_df.columns
+    pd.testing.assert_series_equal(old_df['age'], new_df['birthday'], check_names=False)
+    old_col = dt['age']
+    new_col = dt_renamed['birthday']
+    pd.testing.assert_series_equal(to_pandas(old_col.to_series()), to_pandas(new_col.to_series()), check_names=False)
+    assert old_col.logical_type == new_col.logical_type
+    assert old_col.semantic_tags == new_col.semantic_tags
+    assert old_col.dtype == new_col.dtype
