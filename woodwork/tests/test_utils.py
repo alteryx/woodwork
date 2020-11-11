@@ -19,6 +19,7 @@ from woodwork.utils import (
     _is_numeric_series,
     _is_s3,
     _is_url,
+    _new_dt_including,
     camel_to_snake,
     import_or_none,
     import_or_raise,
@@ -198,6 +199,15 @@ def test_get_ltype_params():
     ymd = '%Y-%m-%d'
     params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
+
+
+def test_new_dt_including(sample_df_pandas):
+    # more thorough testing for this exists in indexer testing and new_dt_from_cols testing
+    dt = ww.DataTable(sample_df_pandas)
+    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
+    for col in new_dt.columns:
+        assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
+        assert new_dt.logical_types[col] == new_dt.logical_types[col]
 
 
 def test_import_or_raise():

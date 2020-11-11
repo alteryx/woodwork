@@ -6,6 +6,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 import woodwork.serialize as serialize
 from woodwork.data_column import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
+from woodwork.indexers import _iLocIndexer
 from woodwork.logical_types import (
     Boolean,
     Datetime,
@@ -18,6 +19,7 @@ from woodwork.utils import (
     _get_ltype_class,
     _get_mode,
     _is_numeric_series,
+    _new_dt_including,
     col_is_datetime,
     import_or_none
 )
@@ -497,27 +499,25 @@ class DataTable(object):
         """Creates a new DataTable from a list of column names, retaining all types,
         indices, and name of original DataTable"""
         assert all([col_name in self.columns for col_name in cols_to_include])
+        return _new_dt_including(self, self._dataframe.loc[:, cols_to_include])
 
-        new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
-                             in self.semantic_tags.items() if col_name in cols_to_include}
-        new_logical_types = {col_name: logical_type for col_name, logical_type
-                             in self.logical_types.items() if col_name in cols_to_include}
-        new_index = self.index if self.index in cols_to_include else None
-        new_time_index = self.time_index if self.time_index in cols_to_include else None
-        # Remove 'index' or 'time_index' from semantic tags, if present as those can't be set directly during init
-        if new_index:
-            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
-        if new_time_index:
-            new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+    @property
+    def iloc(self):
+        """Purely integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
 
-        return DataTable(self._dataframe.loc[:, cols_to_include],
-                         name=self.name,
-                         index=new_index,
-                         time_index=new_time_index,
-                         semantic_tags=new_semantic_tags,
-                         logical_types=new_logical_types,
-                         copy_dataframe=False,
-                         use_standard_tags=self.use_standard_tags)
+        Allowed inputs are:
+            An integer, e.g. ``5``.
+            A list or array of integers, e.g. ``[4, 3, 0]``.
+            A slice object with ints, e.g. ``1:7``.
+            A boolean array.
+            A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value.
+        """
+        return _iLocIndexer(self)
 
     def describe(self, include=None):
         """Calculates statistics for data contained in DataTable.

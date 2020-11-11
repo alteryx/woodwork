@@ -15,6 +15,7 @@ DataTable
     DataTable.remove_semantic_tags
     DataTable.reset_semantic_tags
     DataTable.select
+    DataTable.iloc
     DataTable.set_index
     DataTable.set_logical_types
     DataTable.set_semantic_tags
@@ -37,6 +38,7 @@ DataColumn
 
     DataColumn
     DataColumn.shape
+    DataColumn.iloc
     DataColumn.add_semantic_tags
     DataColumn.remove_semantic_tags
     DataColumn.reset_semantic_tags
