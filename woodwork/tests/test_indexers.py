@@ -14,7 +14,7 @@ from woodwork.logical_types import (
 )
 
 
-def test_iLocIndexer_clas_error(sample_df_dask, sample_series_dask):
+def test_iLocIndexer_class_error(sample_df_dask, sample_series_dask):
     dt_dask = ww.DataTable(sample_df_dask)
     with pytest.raises(TypeError, match="iloc is only supported for DataFrames coming from pandas"):
         _iLocIndexer(dt_dask)
