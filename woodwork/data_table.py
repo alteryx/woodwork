@@ -302,15 +302,21 @@ class DataTable(object):
                 raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
-        new_dt = self[list(self.columns.keys())]
+
+        old_all_cols = list(self.columns.keys())
+        new_dt = self[old_all_cols]
         updated_cols = {}
         for old_name, new_name in columns.items():
             col = new_dt.pop(old_name)
+
             col._series.name = new_name
             col._assigned_name = new_name
             updated_cols[new_name] = col
 
         new_dt._update_columns(updated_cols)
+        # Reorder columns to match the original order
+        new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
+        new_dt._dataframe = new_dt._dataframe[new_all_cols]
 
         return new_dt
 

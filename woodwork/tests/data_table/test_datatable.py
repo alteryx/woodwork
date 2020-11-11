@@ -2414,17 +2414,19 @@ def test_datatable_rename_errors(sample_df):
 
 
 def test_datatable_rename(sample_df):
-    dt = DataTable(sample_df, index='id', time_index='signup_date', copy_dataframe=True)
-    original_df = to_pandas(dt.to_dataframe())
-    dt_renamed = dt.rename({'age': 'birthday'})
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
     old_df = to_pandas(dt.to_dataframe())
 
+    dt_renamed = dt.rename({'age': 'birthday'})
     new_df = to_pandas(dt_renamed.to_dataframe())
+
     assert 'age' not in dt_renamed.columns
     assert 'birthday' in dt_renamed.columns
     assert 'age' not in new_df.columns
     assert 'birthday' in new_df.columns
+    assert old_df.columns.get_loc('age') == new_df.columns.get_loc('birthday')
     pd.testing.assert_series_equal(old_df['age'], new_df['birthday'], check_names=False)
+
     old_col = dt['age']
     new_col = dt_renamed['birthday']
     pd.testing.assert_series_equal(to_pandas(old_col.to_series()), to_pandas(new_col.to_series()), check_names=False)
@@ -2433,10 +2435,13 @@ def test_datatable_rename(sample_df):
     assert old_col.dtype == new_col.dtype
 
     # Confirm underlying data of original datatable hasn't changed
-    assert original_df.equals(old_df)
+    assert to_pandas(sample_df).equals(old_df)
 
     dt_swapped_names = dt.rename({'age': 'full_name', 'full_name': 'age'})
     new_df = to_pandas(dt_swapped_names.to_dataframe())
 
     pd.testing.assert_series_equal(old_df['age'], new_df['full_name'], check_names=False)
     pd.testing.assert_series_equal(old_df['full_name'], new_df['age'], check_names=False)
+
+    assert old_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
+    assert old_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
