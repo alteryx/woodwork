@@ -218,6 +218,40 @@ def _get_specified_ltype_params(ltype):
     return ltype.__dict__
 
 
+def _new_dt_including(orig_data, new_data, cols):
+    '''
+    Creates a new DataTable with specified data and columns
+
+    Args:
+        orig_data (DataTable): DataTable with desired information
+
+        new_data (DataFrame): subset of original DataTable
+
+        cols (list[str]): cols included (that have been verified if necessary)
+
+    Returns:
+        DataTable: New DataTable with attributes from original DataTable but data from new DataTable
+    '''
+    new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
+                         in orig_data.semantic_tags.items() if col_name in cols}
+    new_logical_types = {col_name: logical_type for col_name, logical_type
+                         in orig_data.logical_types.items() if col_name in cols}
+    new_index = orig_data.index if orig_data.index in cols else None
+    new_time_index = orig_data.time_index if orig_data.time_index in cols else None
+    if new_index:
+        new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+    if new_time_index:
+        new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+    return ww.DataTable(new_data,
+                        name=orig_data.name,
+                        index=new_index,
+                        time_index=new_time_index,
+                        semantic_tags=new_semantic_tags,
+                        logical_types=new_logical_types,
+                        copy_dataframe=True,
+                        use_standard_tags=orig_data.use_standard_tags)
+
+
 def import_or_raise(library, error_msg):
     '''
     Attempts to import the requested library.  If the import fails, raises an
@@ -261,24 +295,3 @@ def _is_url(string):
     Returns a boolean.
     '''
     return 'http' in string
-
-
-def _new_dt_including(orig_data, new_data, cols):
-    new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
-                         in orig_data.semantic_tags.items() if col_name in cols}
-    new_logical_types = {col_name: logical_type for col_name, logical_type
-                         in orig_data.logical_types.items() if col_name in cols}
-    new_index = orig_data.index if orig_data.index in cols else None
-    new_time_index = orig_data.time_index if orig_data.time_index in cols else None
-    if new_index:
-        new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
-    if new_time_index:
-        new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
-    return ww.DataTable(new_data,
-                        name=orig_data.name,
-                        index=new_index,
-                        time_index=new_time_index,
-                        semantic_tags=new_semantic_tags,
-                        logical_types=new_logical_types,
-                        copy_dataframe=True,
-                        use_standard_tags=orig_data.use_standard_tags)
