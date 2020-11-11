@@ -665,7 +665,7 @@ class DataTable(object):
         Remove NaN values in the dataframe so that mutual information can be calculated
 
         Args:
-            data (pd.DataFrame): dataframe to use for caculating mutual information
+            data (pd.DataFrame): dataframe to use for calculating mutual information
 
         Returns:
             pd.DataFrame: data with fully null columns removed and nans filled in
@@ -678,11 +678,7 @@ class DataTable(object):
         # replace or remove null values
         for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
-            series = column._series
-            if dd and isinstance(series, dd.Series):
-                series = series.compute()
-            if isinstance(series, ks.Series):
-                series = series.to_pandas()
+            series = data[column_name]
             ltype = column._logical_type
 
             if column._is_numeric():
