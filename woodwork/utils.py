@@ -223,7 +223,7 @@ def _new_dt_including(datatable, new_data, cols):
     Creates a new DataTable with specified data and columns
 
     Args:
-        oridatatableg_data (DataTable): DataTable with desired information
+        datatable (DataTable): DataTable with desired information
 
         new_data (DataFrame): subset of original DataTable
 
