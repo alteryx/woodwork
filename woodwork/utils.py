@@ -225,6 +225,38 @@ def _get_specified_ltype_params(ltype):
     return ltype.__dict__
 
 
+def _new_dt_including(datatable, new_data):
+    '''
+    Creates a new DataTable with specified data and columns
+
+    Args:
+        datatable (DataTable): DataTable with desired information
+
+        new_data (DataFrame): subset of original DataTable
+    Returns:
+        DataTable: New DataTable with attributes from original DataTable but data from new DataTable
+    '''
+    cols = new_data.columns
+    new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
+                         in datatable.semantic_tags.items() if col_name in cols}
+    new_logical_types = {col_name: logical_type for col_name, logical_type
+                         in datatable.logical_types.items() if col_name in cols}
+    new_index = datatable.index if datatable.index in cols else None
+    new_time_index = datatable.time_index if datatable.time_index in cols else None
+    if new_index:
+        new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+    if new_time_index:
+        new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+    return ww.DataTable(new_data,
+                        name=datatable.name,
+                        index=new_index,
+                        time_index=new_time_index,
+                        semantic_tags=new_semantic_tags,
+                        logical_types=new_logical_types,
+                        copy_dataframe=True,
+                        use_standard_tags=datatable.use_standard_tags)
+
+
 def import_or_raise(library, error_msg):
     '''
     Attempts to import the requested library.  If the import fails, raises an
