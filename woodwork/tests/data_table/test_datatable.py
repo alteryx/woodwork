@@ -2415,7 +2415,7 @@ def test_datatable_rename_errors(sample_df):
 
 def test_datatable_rename(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
-    old_df = to_pandas(dt.to_dataframe())
+    old_df = to_pandas(dt.to_dataframe()).copy()
 
     dt_renamed = dt.rename({'age': 'birthday'})
     new_df = to_pandas(dt_renamed.to_dataframe())
