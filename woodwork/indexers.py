@@ -30,8 +30,7 @@ class _iLocIndexer:
                 logical_type = self.ww_data.logical_type or None
                 semantic_tags = self.ww_data.semantic_tags or None
             if semantic_tags is not None:
-                semantic_tags.discard('index')
-                semantic_tags.discard('time_index')
+                semantic_tags = semantic_tags - {'index'} - {'time_index'}
             name = self.ww_data.name
             return ww.DataColumn(selection,
                                  logical_type=logical_type,

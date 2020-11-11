@@ -28,7 +28,6 @@ def test_iLocIndexer_class(sample_df_pandas):
     dt_pd = ww.DataTable(sample_df_pandas)
     ind = _iLocIndexer(dt_pd)
     pd.testing.assert_frame_equal(ind.underlying_data, sample_df_pandas)
-    # more thorough testing of selection in test_datatable and test_datacolumn
     pd.testing.assert_frame_equal(ind[1:2].to_dataframe(), sample_df_pandas.iloc[1:2])
     assert ind[0, 0] == 0
 
@@ -107,7 +106,7 @@ def test_iloc_dimensionality(sample_df_pandas):
 
     sliced_series_row = dt.iloc[1]
     assert isinstance(sliced_series_row, pd.Series)
-    assert set(sliced_series_row.index) == set(['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered'])
+    assert set(sliced_series_row.index) == set(sample_df_pandas.columns)
     assert sliced_series_row.name == 1
 
     sliced_series_col = dt.iloc[:, 1]
