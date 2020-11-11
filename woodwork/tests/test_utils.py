@@ -204,7 +204,7 @@ def test_get_ltype_params():
 def test_new_dt_including(sample_df_pandas):
     # more thorough testing for this exists in indexer testing and new_dt_from_cols testing
     dt = ww.DataTable(sample_df_pandas)
-    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4], cols=['full_name', 'email', 'phone_number'])
+    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
     for col in new_dt.columns:
         assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
         assert new_dt.logical_types[col] == new_dt.logical_types[col]

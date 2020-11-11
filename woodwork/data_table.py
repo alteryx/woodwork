@@ -499,7 +499,7 @@ class DataTable(object):
         """Creates a new DataTable from a list of column names, retaining all types,
         indices, and name of original DataTable"""
         assert all([col_name in self.columns for col_name in cols_to_include])
-        return _new_dt_including(self, self._dataframe.loc[:, cols_to_include], cols_to_include)
+        return _new_dt_including(self, self._dataframe.loc[:, cols_to_include])
 
     @property
     def iloc(self):

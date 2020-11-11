@@ -218,7 +218,7 @@ def _get_specified_ltype_params(ltype):
     return ltype.__dict__
 
 
-def _new_dt_including(datatable, new_data, cols):
+def _new_dt_including(datatable, new_data):
     '''
     Creates a new DataTable with specified data and columns
 
@@ -226,12 +226,10 @@ def _new_dt_including(datatable, new_data, cols):
         datatable (DataTable): DataTable with desired information
 
         new_data (DataFrame): subset of original DataTable
-
-        cols (list[str]): cols included (that have been verified if necessary)
-
     Returns:
         DataTable: New DataTable with attributes from original DataTable but data from new DataTable
     '''
+    cols = new_data.columns
     new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
                          in datatable.semantic_tags.items() if col_name in cols}
     new_logical_types = {col_name: logical_type for col_name, logical_type

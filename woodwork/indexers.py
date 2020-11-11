@@ -39,8 +39,7 @@ class _iLocIndexer:
                                  use_standard_tags=self.ww_data.use_standard_tags,
                                  name=name)
         elif isinstance(selection, pd.DataFrame):
-            cols = selection.columns
-            return _new_dt_including(self.ww_data, selection, cols)
+            return _new_dt_including(self.ww_data, selection)
         else:
             # singular value
             return selection
