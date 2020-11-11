@@ -275,11 +275,11 @@ class DataTable(object):
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
 
-    def rename(self, cols_to_rename):
+    def rename(self, columns):
         """Renames columns in a DataTable
 
         Args:
-            cols_to_rename (dict[str -> str]): A dictionary mapping columns whose names
+            columns (dict[str -> str]): A dictionary mapping columns whose names
                 we'd like to change to the name to which we'd like to change them.
 
         Returns:
@@ -288,23 +288,23 @@ class DataTable(object):
         Note:
             Index and time index columns cannot be renamed.
         """
-        if len(cols_to_rename) != len(set(cols_to_rename.values())):
+        if len(columns) != len(set(columns.values())):
             raise ValueError('New columns names must be unique from one another.')
 
-        for old_name, new_name in cols_to_rename.items():
+        for old_name, new_name in columns.items():
             if not isinstance(old_name, str):
                 raise KeyError(f"Column to rename must be a string. {old_name} is not a string.")
             if not isinstance(new_name, str):
                 raise ValueError(f"New column name must be a string. {new_name} is not a string.")
             if old_name not in self.columns:
                 raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
-            if new_name in self.columns and new_name not in cols_to_rename.keys():
+            if new_name in self.columns and new_name not in columns.keys():
                 raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
         new_dt = self[list(self.columns.keys())]
         updated_cols = {}
-        for old_name, new_name in cols_to_rename.items():
+        for old_name, new_name in columns.items():
             col = new_dt.pop(old_name)
             col._series.name = new_name
             col._assigned_name = new_name
