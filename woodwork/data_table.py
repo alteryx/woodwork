@@ -886,7 +886,6 @@ class DataTable(object):
 def _validate_dataframe(dataframe):
     '''Check that the dataframe supplied during DataTable initialization is valid,
     and convert numpy array to pandas DataFrame if necessary.'''
-    # --> feels like we have a similar check in dc as well maybe we can finall standardize this ??
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
             (ks and isinstance(dataframe, ks.DataFrame)) or
             isinstance(dataframe, (pd.DataFrame, np.ndarray))):

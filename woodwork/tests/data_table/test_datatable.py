@@ -58,7 +58,6 @@ def test_datatable_init(sample_df):
     assert dt.index is None
     assert dt.time_index is None
 
-    # --> this set of checks feels ridiculous
     if dd and isinstance(sample_df, dd.DataFrame):
         assert isinstance(df, dd.DataFrame)
     elif ks and isinstance(sample_df, ks.DataFrame):

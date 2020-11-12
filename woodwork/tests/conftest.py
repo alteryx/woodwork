@@ -7,7 +7,6 @@ from woodwork.utils import import_or_none
 
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
-    # --> not sure about this - might want to skip?
     pyspark = import_or_none('pyspark.sql')
 
     if pyspark:

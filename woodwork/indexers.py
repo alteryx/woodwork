@@ -21,7 +21,6 @@ class _iLocIndexer:
 
     def __getitem__(self, key):
         selection = self.underlying_data.iloc[key]
-        # --> double check format here is standard with rest
         if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
             col_name = selection.name
             if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
