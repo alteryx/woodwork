@@ -72,7 +72,6 @@ Logical Types
     SubRegionCode
     Timedelta
     URL
-    WholeNumber
     ZIPCode
 
 .. currentmodule:: woodwork.utils

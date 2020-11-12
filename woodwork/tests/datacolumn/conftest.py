@@ -38,30 +38,6 @@ def integers(request):
     return request.getfixturevalue(request.param)
 
 
-# WholeNumber Inference Fixtures
-@pytest.fixture
-def pandas_whole_nums():
-    return [
-        pd.Series([0, 1, 5, 7]),
-        pd.Series([2, 3, 5, 3]),
-    ]
-
-
-@pytest.fixture
-def dask_whole_nums(pandas_whole_nums):
-    return [pd_to_dask(series) for series in pandas_whole_nums]
-
-
-@pytest.fixture
-def koalas_whole_nums(pandas_whole_nums):
-    return [pd_to_koalas(series) for series in pandas_whole_nums]
-
-
-@pytest.fixture(params=['pandas_whole_nums', 'dask_whole_nums', 'koalas_whole_nums'])
-def whole_nums(request):
-    return request.getfixturevalue(request.param)
-
-
 # Double Inference Fixtures
 @pytest.fixture
 def pandas_doubles():
@@ -243,7 +219,6 @@ def long_strings(request):
 def pandas_pdnas():
     return [
         pd.Series(['Mr. John Doe', pd.NA, 'James Brown', 'Ms. Paige Turner']).astype('string'),
-        pd.Series([-1, pd.NA, 2, 3]).astype('Int64'),
         pd.Series([1, pd.NA, 2, 3]).astype('Int64'),
         pd.Series([True, pd.NA, False, True]).astype('boolean'),
     ]

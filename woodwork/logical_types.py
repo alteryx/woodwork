@@ -304,21 +304,6 @@ class URL(LogicalType):
     pandas_dtype = 'string'
 
 
-class WholeNumber(LogicalType):
-    """Represents Logical Types that contain natural numbers, including zero (0).
-    Has 'numeric' as a standard tag.
-
-    Examples:
-        .. code-block:: python
-
-            [3, 30, 56]
-            [7, 135, 0]
-    """
-    pandas_dtype = 'Int64'
-    backup_dtype = 'int64'
-    standard_tags = {'numeric'}
-
-
 class ZIPCode(LogicalType):
     """Represents Logical Types that contain a series of postal codes used by
     the US Postal Service for representing a group of addresses.

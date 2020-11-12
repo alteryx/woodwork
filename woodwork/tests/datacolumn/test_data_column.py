@@ -15,7 +15,6 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     SubRegionCode,
-    WholeNumber,
     ZIPCode
 )
 from woodwork.tests.testing_utils import to_pandas
@@ -196,7 +195,7 @@ def test_adds_numeric_standard_tag():
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
-    logical_types = [Integer, Double, WholeNumber]
+    logical_types = [Integer, Double]
     for logical_type in logical_types:
         data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
         assert data_col.semantic_tags == {'custom_tag', 'numeric'}
@@ -466,7 +465,7 @@ def test_dtype_update_on_init(datetime_series):
 
 def test_dtype_update_on_ltype_change():
     dc = DataColumn(pd.Series([1, 2, 3]),
-                    logical_type='WholeNumber')
+                    logical_type='Integer')
     assert dc._series.dtype == 'Int64'
     dc = dc.set_logical_type('Double')
     assert dc._series.dtype == 'float64'

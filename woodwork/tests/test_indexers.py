@@ -9,8 +9,8 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     EmailAddress,
-    PhoneNumber,
-    WholeNumber
+    Integer,
+    PhoneNumber
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -97,7 +97,7 @@ def test_iloc_with_properties(sample_df):
     dt_no_std_tags = DataTable(sample_df, logical_types=logical_types, use_standard_tags=False)
     sliced = dt_no_std_tags.iloc[:, [0, 5]]
     assert sliced.semantic_tags == {'id': set(), 'signup_date': set()}
-    assert sliced.logical_types == {'id': WholeNumber, 'signup_date': Datetime}
+    assert sliced.logical_types == {'id': Integer, 'signup_date': Datetime}
     assert sliced.index is None
 
 

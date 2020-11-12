@@ -35,7 +35,6 @@ from woodwork.logical_types import (
     PhoneNumber,
     SubRegionCode,
     Timedelta,
-    WholeNumber,
     ZIPCode
 )
 from woodwork.tests.testing_utils import (
@@ -111,7 +110,7 @@ def test_datatable_with_numeric_time_index(time_index_df):
     dt = DataTable(time_index_df, time_index='ints')
     date_col = dt['ints']
     assert dt.time_index == 'ints'
-    assert date_col.logical_type == WholeNumber
+    assert date_col.logical_type == Integer
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
@@ -158,17 +157,17 @@ def test_datatable_init_with_logical_types(sample_df):
 def test_datatable_init_with_string_logical_types(sample_df):
     logical_types = {
         'full_name': 'natural_language',
-        'age': 'whole_number'
+        'age': 'Double'
     }
     dt = DataTable(sample_df,
                    name='datatable',
                    logical_types=logical_types)
     assert dt.columns['full_name'].logical_type == NaturalLanguage
-    assert dt.columns['age'].logical_type == WholeNumber
+    assert dt.columns['age'].logical_type == Double
 
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'age': 'WholeNumber',
+        'age': 'Integer',
         'signup_date': 'Datetime'
     }
     dt = DataTable(sample_df,
@@ -176,7 +175,7 @@ def test_datatable_init_with_string_logical_types(sample_df):
                    logical_types=logical_types,
                    time_index='signup_date')
     assert dt.columns['full_name'].logical_type == NaturalLanguage
-    assert dt.columns['age'].logical_type == WholeNumber
+    assert dt.columns['age'].logical_type == Integer
     assert dt.time_index == 'signup_date'
 
 
@@ -210,8 +209,8 @@ def test_datatable_init_with_numpy(sample_df_pandas):
                         [3, 6],
                         [4, 1]])
     dt = DataTable(np_ints)
-    assert dt['0'].logical_type == WholeNumber
-    assert dt['1'].logical_type == WholeNumber
+    assert dt['0'].logical_type == Integer
+    assert dt['1'].logical_type == Integer
 
     dt = DataTable(np_ints, time_index='1', logical_types={'0': 'Double', '1': Datetime}, semantic_tags={'1': 'numeric_datetime'})
     assert dt['0'].logical_type == Double
@@ -225,7 +224,7 @@ def test_datatable_adds_standard_semantic_tags(sample_df):
                    name='datatable',
                    logical_types={
                        'id': Categorical,
-                       'age': WholeNumber,
+                       'age': Integer,
                    })
 
     assert dt.semantic_tags['id'] == {'category'}
@@ -328,11 +327,11 @@ def test_datatable_types(sample_df):
     assert len(returned_types.index) == len(sample_df.columns)
     assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
-        'id': WholeNumber,
+        'id': Integer,
         'full_name': NaturalLanguage,
         'email': NaturalLanguage,
         'phone_number': NaturalLanguage,
-        'age': WholeNumber,
+        'age': Integer,
         'signup_date': Datetime,
         'is_registered': Boolean,
         'formatted_date': ymd_format
@@ -352,11 +351,11 @@ def test_datatable_ltypes(sample_df):
     assert len(returned_types.index) == len(sample_df.columns)
     assert all([issubclass(logical_type, LogicalType) for logical_type in returned_types.values])
     correct_logical_types = {
-        'id': WholeNumber,
+        'id': Integer,
         'full_name': NaturalLanguage,
         'email': NaturalLanguage,
         'phone_number': NaturalLanguage,
-        'age': WholeNumber,
+        'age': Integer,
         'signup_date': Datetime,
         'is_registered': Boolean
     }
@@ -437,7 +436,7 @@ def test_set_logical_types(sample_df):
     assert dt.columns['full_name'].logical_type == NaturalLanguage
     assert dt.columns['email'].logical_type == NaturalLanguage
     assert dt.columns['phone_number'].logical_type == NaturalLanguage
-    assert dt.columns['age'].logical_type == WholeNumber
+    assert dt.columns['age'].logical_type == Integer
     assert dt.columns['signup_date'].logical_type == Datetime
     original_name_column = dt.columns['full_name']
 
@@ -799,7 +798,7 @@ def test_sets_boolean_dtype_on_update():
     series = pd.Series([0, 1, 0], name=column_name)
     series = series.astype('object')
     ltypes = {
-        column_name: WholeNumber,
+        column_name: Integer,
     }
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
     dt = dt.set_logical_types({column_name: Boolean})
@@ -817,7 +816,7 @@ def test_sets_int64_dtype_on_init():
         pd.Series([1, pd.NA, 3], name=column_name),
     ]
 
-    logical_types = [Integer, WholeNumber]
+    logical_types = [Integer]
     for series in series_list:
         series = series.astype('object')
         for logical_type in logical_types:
@@ -834,10 +833,7 @@ def test_sets_int64_dtype_on_update():
     column_name = 'test_series'
     series = pd.Series([1.0, 2.0, 1.0], name=column_name)
     series = series.astype('object')
-    logical_types = [
-        Integer,
-        WholeNumber,
-    ]
+    logical_types = [Integer]
 
     for logical_type in logical_types:
         ltypes = {
@@ -875,7 +871,7 @@ def test_sets_float64_dtype_on_update():
     series = pd.Series([0, 1, 0], name=column_name)
     series = series.astype('object')
     ltypes = {
-        column_name: WholeNumber,
+        column_name: Integer,
     }
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
     dt = dt.set_logical_types({column_name: Double})
@@ -947,10 +943,10 @@ def test_invalid_dtype_casting():
     # Cannot cast invalid strings to whole numbers
     series = pd.Series(['1', 'two', '3'], name=column_name)
     ltypes = {
-        column_name: WholeNumber,
+        column_name: Integer,
     }
     err_msg = 'Error converting datatype for column test_series from type object to type ' \
-        'Int64. Please confirm the underlying data is consistent with logical type WholeNumber.'
+        'Int64. Please confirm the underlying data is consistent with logical type Integer.'
     with pytest.raises(TypeError, match=err_msg):
         DataTable(pd.DataFrame(series), logical_types=ltypes)
 
@@ -1135,7 +1131,7 @@ def test_select_ltypes_table(sample_df):
     assert dt_no_indices.index is None
     assert dt_no_indices.time_index is None
 
-    dt_with_indices = dt.select(['Datetime', 'WholeNumber'])
+    dt_with_indices = dt.select(['Datetime', 'Integer'])
     assert dt_with_indices.index == 'id'
     assert dt_with_indices.time_index == 'signup_date'
 
@@ -1225,14 +1221,14 @@ def test_select_semantic_tags(sample_df):
 def test_pop(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
-                   logical_types={'age': WholeNumber},
+                   logical_types={'age': Integer},
                    semantic_tags={'age': 'custom_tag'},
                    use_standard_tags=True)
     datacol = dt.pop('age')
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
     assert all(to_pandas(datacol.to_series()).values == [33, 25, 33, 57])
-    assert datacol.logical_type == WholeNumber
+    assert datacol.logical_type == Integer
 
     assert 'age' not in dt.to_dataframe().columns
     assert 'age' not in dt.columns
@@ -1252,7 +1248,7 @@ def test_pop_index(sample_df):
 def test_pop_error(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
-                   logical_types={'age': WholeNumber},
+                   logical_types={'age': Integer},
                    semantic_tags={'age': 'custom_tag'},
                    use_standard_tags=True)
 
@@ -1263,13 +1259,13 @@ def test_pop_error(sample_df):
 def test_getitem(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
-                   logical_types={'age': WholeNumber},
+                   logical_types={'age': Integer},
                    semantic_tags={'age': 'custom_tag'},
                    use_standard_tags=True)
 
     data_col = dt['age']
     assert isinstance(data_col, DataColumn)
-    assert data_col.logical_type == WholeNumber
+    assert data_col.logical_type == Integer
     assert data_col.semantic_tags == {'numeric', 'custom_tag'}
 
 
@@ -1420,7 +1416,7 @@ def test_setitem_new_column(sample_df):
     dt['test_col2'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col2' in dt.columns
-    assert dt['test_col2'].logical_type == WholeNumber
+    assert dt['test_col2'].logical_type == Integer
     assert dt['test_col2'].semantic_tags == set()
     assert 'test_col2' in updated_df.columns
     assert updated_df['test_col2'].dtype == dtype
@@ -1678,7 +1674,7 @@ def test_select_single_inputs(sample_df):
     assert len(dt_ltype_string.columns) == 1
     assert 'full_name' in dt_ltype_string.columns
 
-    dt_ltype_obj = dt.select(WholeNumber)
+    dt_ltype_obj = dt.select(Integer)
     assert len(dt_ltype_obj.columns) == 2
     assert 'age' in dt_ltype_obj.columns
     assert 'id' in dt_ltype_obj.columns
@@ -1715,7 +1711,7 @@ def test_select_list_inputs(sample_df):
     assert 'email' in dt_just_strings.columns
     assert 'is_registered' in dt_just_strings.columns
 
-    dt_mixed_selectors = dt.select([FullName, 'index', 'time_index', WholeNumber])
+    dt_mixed_selectors = dt.select([FullName, 'index', 'time_index', Integer])
     assert len(dt_mixed_selectors.columns) == 4
     assert 'id' in dt_mixed_selectors.columns
     assert 'full_name' in dt_mixed_selectors.columns
@@ -1749,7 +1745,7 @@ def test_select_semantic_tags_no_match(sample_df):
     dt_multiple_unused = dt.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
     assert len(dt_multiple_unused.columns) == 2
 
-    dt_unused_ltype = dt.select(['date_of_birth', 'doesnt_exist', ZIPCode, WholeNumber])
+    dt_unused_ltype = dt.select(['date_of_birth', 'doesnt_exist', ZIPCode, Integer])
     assert len(dt_unused_ltype.columns) == 3
 
 
@@ -1864,7 +1860,7 @@ def test_datatable_describe_method(describe_df):
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
-    numeric_ltypes = [Double, Integer, WholeNumber]
+    numeric_ltypes = [Double, Integer]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
                                LatLong, PhoneNumber, URL]
 
@@ -2079,7 +2075,7 @@ def test_datatable_describe_with_no_semantic_tags(describe_df):
 
     logical_types = {
         'category_col': Categorical,
-        'numeric_col': WholeNumber,
+        'numeric_col': Integer,
     }
 
     dt = DataTable(df, logical_types=logical_types, use_standard_tags=False)
@@ -2286,10 +2282,10 @@ def test_make_index(sample_df):
 
 
 def test_numeric_time_index_dtypes(numeric_time_index_df):
-    dt = DataTable(numeric_time_index_df, time_index='whole_numbers')
-    date_col = dt['whole_numbers']
-    assert dt.time_index == 'whole_numbers'
-    assert date_col.logical_type == WholeNumber
+    dt = DataTable(numeric_time_index_df, time_index='ints')
+    date_col = dt['ints']
+    assert dt.time_index == 'ints'
+    assert date_col.logical_type == Integer
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     dt = dt.set_time_index('floats')
@@ -2298,19 +2294,13 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
     assert date_col.logical_type == Double
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
-    dt = dt.set_time_index('ints')
-    date_col = dt['ints']
-    assert dt.time_index == 'ints'
-    assert date_col.logical_type == Integer
-    assert date_col.semantic_tags == {'time_index', 'numeric'}
-
     dt = dt.set_time_index('with_null')
     date_col = dt['with_null']
     assert dt.time_index == 'with_null'
     if ks and isinstance(numeric_time_index_df, ks.DataFrame):
         ltype = Double
     else:
-        ltype = WholeNumber
+        ltype = Integer
     assert date_col.logical_type == ltype
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 

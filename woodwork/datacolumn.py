@@ -20,7 +20,6 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     Timedelta,
-    WholeNumber,
     str_to_logical_type
 )
 from woodwork.utils import (
@@ -391,10 +390,7 @@ def infer_logical_type(series):
         if _is_numeric_categorical(series, numeric_categorical_threshold):
             inferred_type = Categorical
         else:
-            if any(series.dropna() < 0):
-                inferred_type = Integer
-            else:
-                inferred_type = WholeNumber
+            inferred_type = Integer
 
     elif pdtypes.is_float_dtype(series.dtype):
         inferred_type = Categorical if _is_numeric_categorical(series, numeric_categorical_threshold) else Double

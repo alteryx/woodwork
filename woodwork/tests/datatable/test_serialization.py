@@ -55,7 +55,7 @@ def test_to_dictionary(sample_df):
                 'time_index': None,
                 'metadata': [{'name': 'id',
                               'ordinal': 0,
-                              'logical_type': {'parameters': {}, 'type': 'WholeNumber'},
+                              'logical_type': {'parameters': {}, 'type': 'Integer'},
                               'physical_type': {'type': int_val},
                               'semantic_tags': ['index', 'tag1']},
                              {'name': 'full_name',
