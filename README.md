@@ -43,7 +43,7 @@ import woodwork as ww
 
 data = ww.demo.load_retail(nrows=100, return_dataframe=True)
 dt = ww.DataTable(data, name='retail')
-dt.set_logical_types({
+dt.set_types(logical_types={
     'quantity': 'Double',
     'customer_name': 'Categorical',
     'country': 'Categorical'
