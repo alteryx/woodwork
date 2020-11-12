@@ -548,6 +548,40 @@ def test_set_semantic_tags_with_time_index(sample_df):
     assert dt.columns['signup_date'].semantic_tags == {'new_tag'}
 
 
+def test_set_types_combined(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    assert dt['signup_date'].semantic_tags == set(['time_index'])
+    assert dt['signup_date'].logical_type == Datetime
+    assert dt['age'].semantic_tags == set(['numeric'])
+    assert dt['age'].logical_type == WholeNumber
+    assert dt['is_registered'].semantic_tags == set()
+    assert dt['is_registered'].logical_type == Boolean
+    assert dt['email'].logical_type == NaturalLanguage
+    assert dt['phone_number'].logical_type == NaturalLanguage
+
+    semantic_tags = {
+        'signup_date': ['test1'],
+        'age': [],
+        'is_registered': 'test2'
+    }
+
+    logical_types = {
+        'email': 'EmailAddress',
+        'phone_number': PhoneNumber,
+        'age': 'Double'
+    }
+
+    dt = dt.set_types(logical_types=logical_types, semantic_tags=semantic_tags)
+    assert dt['signup_date'].semantic_tags == set(['test1', 'time_index'])
+    assert dt['signup_date'].logical_type == Datetime
+    assert dt['age'].semantic_tags == set(['numeric'])
+    assert dt['age'].logical_type == Double
+    assert dt['is_registered'].semantic_tags == set(['test2'])
+    assert dt['is_registered'].logical_type == Boolean
+    assert dt['email'].logical_type == EmailAddress
+    assert dt['phone_number'].logical_type == PhoneNumber
+
+
 def test_add_semantic_tags(sample_df):
     semantic_tags = {
         'full_name': 'tag1',
