@@ -22,6 +22,10 @@ Release Notes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
+    
+**Breaking Changes**
+    * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
+    * The ``DataTable.set_logical_types`` method was removed. ``DataTable.set_types`` can be used instead.
 
 **Breaking Changes**
     * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
