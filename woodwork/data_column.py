@@ -1,5 +1,6 @@
 import warnings
 
+import databricks.koalas as ks
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -101,11 +102,19 @@ class DataColumn(object):
                         name = self._series.name
                         self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
                         self._series.name = name
+                    elif isinstance(self._series, ks.Series):
+                        self._series = ks.Series(ks.to_datetime(self._series.to_numpy(),
+                                                                format=self.logical_type.datetime_format),
+                                                 name=self._series.name)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
-                    self._series = self._series.astype(self.logical_type.pandas_dtype)
-            except TypeError:
+                    if isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
+                        new_dtype = self.logical_type.backup_dtype
+                    else:
+                        new_dtype = self.logical_type.pandas_dtype
+                    self._series = self._series.astype(new_dtype)
+            except (TypeError, ValueError):
                 error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
                     f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
                     f'logical type {self.logical_type}.'
@@ -153,10 +162,10 @@ class DataColumn(object):
         return new_col
 
     def _set_series(self, series):
-        if not (isinstance(series, pd.Series) or
+        if not (isinstance(series, (pd.Series, ks.Series)) or
                 (dd and isinstance(series, dd.Series)) or
                 isinstance(series, pd.api.extensions.ExtensionArray)):
-            raise TypeError('Series must be a pandas Series, Dask Series, or a pandas ExtensionArray')
+            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')
 
         # pandas ExtensionArrays should be converted to pandas.Series
         if isinstance(series, pd.api.extensions.ExtensionArray):
@@ -348,6 +357,8 @@ def infer_logical_type(series):
     """
     if dd and isinstance(series, dd.Series):
         series = series.get_partition(0).compute()
+    if isinstance(series, ks.Series):
+        series = series.head(100000).to_pandas()
     natural_language_threshold = config.get_option('natural_language_threshold')
     numeric_categorical_threshold = config.get_option('numeric_categorical_threshold')
 

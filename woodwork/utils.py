@@ -2,6 +2,7 @@ import importlib
 import re
 from datetime import datetime
 
+import databricks.koalas as ks
 import pandas as pd
 
 import woodwork as ww
@@ -37,12 +38,15 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column."""
+    if isinstance(col, ks.Series):
+        col = col.to_pandas()
+
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.head(1), datetime))):
         return True
 
     # if it can be casted to numeric, it's not a datetime
-    dropped_na = col.dropna()
+    dropped_na = col.mask(col.eq('None')).dropna()
     try:
         pd.to_numeric(dropped_na, errors='raise')
     except (ValueError, TypeError):
@@ -64,6 +68,9 @@ def _is_numeric_series(series, logical_type):
     for the purposes of determining if it can be a time_index.
 
     '''
+    if isinstance(series, ks.Series):
+        series = series.to_pandas()
+
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
         pd.to_numeric(series, errors='raise')

@@ -1,5 +1,7 @@
 import warnings
 
+import databricks.koalas as ks
+import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -25,6 +27,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none('dask.dataframe')
+ks.set_option('compute.ops_on_diff_frames', True)
 
 
 class DataTable(object):
@@ -40,7 +43,7 @@ class DataTable(object):
         """Create DataTable
 
         Args:
-            dataframe (pd.DataFrame): Dataframe providing the data for the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
@@ -68,6 +71,7 @@ class DataTable(object):
                 present in the ``dataframe``. Defaults to False.
         """
         # Check that inputs are valid
+        dataframe = _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
 
         if copy_dataframe:
@@ -79,6 +83,8 @@ class DataTable(object):
             if dd and isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
+            elif isinstance(self._dataframe, ks.DataFrame):
+                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
             else:
                 self._dataframe.insert(0, index, range(len(self._dataframe)))
 
@@ -268,6 +274,51 @@ class DataTable(object):
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
+
+    def rename(self, columns):
+        """Renames columns in a DataTable
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping columns whose names
+                we'd like to change to the name to which we'd like to change them.
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified columns renamed.
+
+        Note:
+            Index and time index columns cannot be renamed.
+        """
+        if len(columns) != len(set(columns.values())):
+            raise ValueError('New columns names must be unique from one another.')
+
+        for old_name, new_name in columns.items():
+            if not isinstance(old_name, str):
+                raise KeyError(f"Column to rename must be a string. {old_name} is not a string.")
+            if not isinstance(new_name, str):
+                raise ValueError(f"New column name must be a string. {new_name} is not a string.")
+            if old_name not in self.columns:
+                raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
+            if new_name in self.columns and new_name not in columns.keys():
+                raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
+            if old_name == self.index or old_name == self.time_index:
+                raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
+
+        old_all_cols = list(self.columns.keys())
+        new_dt = self[old_all_cols]
+        updated_cols = {}
+        for old_name, new_name in columns.items():
+            col = new_dt.pop(old_name)
+
+            col._series.name = new_name
+            col._assigned_name = new_name
+            updated_cols[new_name] = col
+
+        new_dt._update_columns(updated_cols)
+        # Reorder columns to match the original order
+        new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
+        new_dt._dataframe = new_dt._dataframe[new_all_cols]
+
+        return new_dt
 
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
@@ -549,6 +600,10 @@ class DataTable(object):
 
         if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
+        elif isinstance(self._dataframe, ks.DataFrame):
+            # Missing values in Koalas will be replaced with 'None' - change them to
+            # np.nan so stats are calculated properly
+            df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
         else:
             df = self._dataframe
 
@@ -630,11 +685,21 @@ class DataTable(object):
         val_counts = {}
         valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
         data = self._dataframe[valid_cols]
+        is_ks = False
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
+        if isinstance(data, ks.DataFrame):
+            data = data.to_pandas()
+            is_ks = True
 
         for col in valid_cols:
-            frequencies = data[col].value_counts(ascending=ascending, dropna=dropna)
+            if dropna and is_ks:
+                # Koalas categorical columns will have missing values replaced with the string 'None'
+                # Replace them with np.nan so dropna work
+                datacol = data[col].replace(to_replace='None', value=np.nan)
+            else:
+                datacol = data[col]
+            frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
             df = frequencies[:top_n].reset_index()
             df.columns = ["value", "count"]
             dt_list = list(df.to_dict(orient="index").values())
@@ -646,7 +711,7 @@ class DataTable(object):
         Remove NaN values in the dataframe so that mutual information can be calculated
 
         Args:
-            data (pd.DataFrame): dataframe to use for caculating mutual information
+            data (pd.DataFrame): dataframe to use for calculating mutual information
 
         Returns:
             pd.DataFrame: data with fully null columns removed and nans filled in
@@ -659,7 +724,7 @@ class DataTable(object):
         # replace or remove null values
         for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
-            series = column._series
+            series = data[column_name]
             ltype = column._logical_type
 
             if column._is_numeric():
@@ -693,7 +758,7 @@ class DataTable(object):
                 data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
             # convert categories to integers
             new_col = data[col_name]
-            if new_col.dtype != 'category':
+            if str(new_col.dtype) != 'category':
                 new_col = new_col.astype('category')
             data[col_name] = new_col.cat.codes
         return data
@@ -726,9 +791,12 @@ class DataTable(object):
                                                       column._is_categorical() or
                                                       _get_ltype_class(column.logical_type) == Boolean)
                                                      )]
+
         data = self._dataframe[valid_columns]
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
+        if isinstance(self._dataframe, ks.DataFrame):
+            data = data.to_pandas()
 
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
@@ -814,11 +882,21 @@ class DataTable(object):
                                   profile_name=profile_name)
 
 
+def _validate_dataframe(dataframe):
+    '''Check that the dataframe supplied during DataTable initialization is valid,
+    and convert numpy array to pandas DataFrame if necessary.'''
+    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
+            isinstance(dataframe, (pd.DataFrame, np.ndarray, ks.DataFrame))):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
+
+    if isinstance(dataframe, np.ndarray):
+        dataframe = pd.DataFrame(dataframe)
+        dataframe.columns = dataframe.columns.astype(str)
+    return dataframe
+
+
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
-            isinstance(dataframe, pd.DataFrame)):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
@@ -905,6 +983,7 @@ def _update_time_index(data_table, time_index, old_time_index=None):
     """Add the `time_index` tag to the specified time_index column and remove the tag from the
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
+
     _check_time_index(data_table._dataframe, time_index)
     data_table.columns[time_index]._set_as_time_index()
     if old_time_index:

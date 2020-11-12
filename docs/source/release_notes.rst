@@ -4,6 +4,8 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
+        * Add ability to initialize DataTable with numpy array (:pr:`367`)
     * Fixes
     * Changes
         * Lower moto test requirement for serialization/desertization (:pr:`376`)
@@ -11,10 +13,9 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.5** November 11, 2020
-
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
@@ -22,6 +23,7 @@ Release Notes
         * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
         * Add ``iloc`` method to DataTable and DataColumn (:pr:`365`)
         * Add ``numeric_categorical_threshold`` config value to allow inferring numeric columns as Categorical (:pr:`363`)
+        * Add ``rename`` method to DataTable (:pr:`367`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
@@ -54,7 +56,6 @@ Release Notes
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
-
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
     * ``copy`` is no longer a parameter of ``DataTable.to_dataframe`` or ``DataColumn.to_series``.
