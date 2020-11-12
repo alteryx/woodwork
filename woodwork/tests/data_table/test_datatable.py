@@ -13,6 +13,7 @@ from woodwork.data_table import (
     _check_semantic_tags,
     _check_time_index,
     _check_unique_column_names,
+    _validate_dataframe,
     _validate_params
 )
 from woodwork.exceptions import ColumnNameMismatchWarning
@@ -197,6 +198,31 @@ def test_datatable_init_with_semantic_tags(sample_df):
     assert 'custom_tag' in id_semantic_tags
 
 
+def test_datatable_init_with_numpy(sample_df_pandas):
+    numpy_df = sample_df_pandas.to_numpy()
+
+    dt = DataTable(numpy_df, index='0')
+    assert set(dt.columns.keys()) == {str(i) for i in range(len(numpy_df[0]))}
+    assert dt.index == '0'
+    assert dt['0'].logical_type == Categorical
+    assert dt['1'].logical_type == NaturalLanguage
+    assert dt['5'].logical_type == Datetime
+
+    np_ints = np.array([[1, 0],
+                        [2, 4],
+                        [3, 6],
+                        [4, 1]])
+    dt = DataTable(np_ints)
+    assert dt['0'].logical_type == WholeNumber
+    assert dt['1'].logical_type == WholeNumber
+
+    dt = DataTable(np_ints, time_index='1', logical_types={'0': 'Double', '1': Datetime}, semantic_tags={'1': 'numeric_datetime'})
+    assert dt['0'].logical_type == Double
+    assert dt['0'].semantic_tags == {'numeric'}
+    assert dt['1'].logical_type == Datetime
+    assert dt['1'].semantic_tags == {'numeric_datetime', 'time_index'}
+
+
 def test_datatable_adds_standard_semantic_tags(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
@@ -210,15 +236,9 @@ def test_datatable_adds_standard_semantic_tags(sample_df):
 
 
 def test_validate_params_errors(sample_df):
-    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame'
+    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray'
     with pytest.raises(TypeError, match=error_message):
-        _validate_params(dataframe=pd.Series(),
-                         name=None,
-                         index=None,
-                         time_index=None,
-                         logical_types=None,
-                         semantic_tags=None,
-                         make_index=False)
+        _validate_dataframe(dataframe=pd.Series())
 
     error_message = 'DataTable name must be a string'
     with pytest.raises(TypeError, match=error_message):
@@ -2363,3 +2383,65 @@ def test_datatable_equality(sample_df, sample_series):
     assert dt_with_ltypes != dt_time_index
     assert dt_with_ltypes == dt_numeric_time_index.set_logical_types({'full_name': Categorical})
     assert dt_with_ltypes != dt_numeric_time_index.set_logical_types({'full_name': Categorical()})
+
+
+def test_datatable_rename_errors(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+
+    error = 'New columns names must be unique from one another.'
+    with pytest.raises(ValueError, match=error):
+        dt.rename({'age': 'test', 'full_name': 'test'})
+
+    error = 'Column to rename must be a string. 1 is not a string.'
+    with pytest.raises(KeyError, match=error):
+        dt.rename({1: 'test'})
+
+    error = 'New column name must be a string. 1 is not a string.'
+    with pytest.raises(ValueError, match=error):
+        dt.rename({'age': 1})
+
+    error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
+    with pytest.raises(KeyError, match=error):
+        dt.rename({'not_present': 'test'})
+
+    error = 'Cannot rename index or time index columns such as id.'
+    with pytest.raises(KeyError, match=error):
+        dt.rename({'id': 'test', 'age': 'test2'})
+
+    error = 'The column email is already present in the DataTable. Please choose another name to rename age to or also rename age.'
+    with pytest.raises(ValueError, match=error):
+        dt.rename({'age': 'email'})
+
+
+def test_datatable_rename(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    original_df = to_pandas(dt.to_dataframe()).copy()
+
+    dt_renamed = dt.rename({'age': 'birthday'})
+    new_df = to_pandas(dt_renamed.to_dataframe())
+
+    # Confirm underlying data of original datatable hasn't changed
+    assert to_pandas(dt.to_dataframe()).equals(original_df)
+
+    assert 'age' not in dt_renamed.columns
+    assert 'birthday' in dt_renamed.columns
+    assert 'age' not in new_df.columns
+    assert 'birthday' in new_df.columns
+    assert original_df.columns.get_loc('age') == new_df.columns.get_loc('birthday')
+    pd.testing.assert_series_equal(original_df['age'], new_df['birthday'], check_names=False)
+
+    old_col = dt['age']
+    new_col = dt_renamed['birthday']
+    pd.testing.assert_series_equal(to_pandas(old_col.to_series()), to_pandas(new_col.to_series()), check_names=False)
+    assert old_col.logical_type == new_col.logical_type
+    assert old_col.semantic_tags == new_col.semantic_tags
+    assert old_col.dtype == new_col.dtype
+
+    dt_swapped_names = dt.rename({'age': 'full_name', 'full_name': 'age'})
+    new_df = to_pandas(dt_swapped_names.to_dataframe())
+
+    pd.testing.assert_series_equal(original_df['age'], new_df['full_name'], check_names=False)
+    pd.testing.assert_series_equal(original_df['full_name'], new_df['age'], check_names=False)
+
+    assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
+    assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')

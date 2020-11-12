@@ -43,7 +43,7 @@ class DataTable(object):
         """Create DataTable
 
         Args:
-            dataframe (pd.DataFrame): Dataframe providing the data for the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
@@ -71,6 +71,7 @@ class DataTable(object):
                 present in the ``dataframe``. Defaults to False.
         """
         # Check that inputs are valid
+        dataframe = _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
 
         if copy_dataframe:
@@ -273,6 +274,51 @@ class DataTable(object):
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
+
+    def rename(self, columns):
+        """Renames columns in a DataTable
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping columns whose names
+                we'd like to change to the name to which we'd like to change them.
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified columns renamed.
+
+        Note:
+            Index and time index columns cannot be renamed.
+        """
+        if len(columns) != len(set(columns.values())):
+            raise ValueError('New columns names must be unique from one another.')
+
+        for old_name, new_name in columns.items():
+            if not isinstance(old_name, str):
+                raise KeyError(f"Column to rename must be a string. {old_name} is not a string.")
+            if not isinstance(new_name, str):
+                raise ValueError(f"New column name must be a string. {new_name} is not a string.")
+            if old_name not in self.columns:
+                raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
+            if new_name in self.columns and new_name not in columns.keys():
+                raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
+            if old_name == self.index or old_name == self.time_index:
+                raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
+
+        old_all_cols = list(self.columns.keys())
+        new_dt = self[old_all_cols]
+        updated_cols = {}
+        for old_name, new_name in columns.items():
+            col = new_dt.pop(old_name)
+
+            col._series.name = new_name
+            col._assigned_name = new_name
+            updated_cols[new_name] = col
+
+        new_dt._update_columns(updated_cols)
+        # Reorder columns to match the original order
+        new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
+        new_dt._dataframe = new_dt._dataframe[new_all_cols]
+
+        return new_dt
 
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
@@ -836,11 +882,21 @@ class DataTable(object):
                                   profile_name=profile_name)
 
 
+def _validate_dataframe(dataframe):
+    '''Check that the dataframe supplied during DataTable initialization is valid,
+    and convert numpy array to pandas DataFrame if necessary.'''
+    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
+            isinstance(dataframe, (pd.DataFrame, np.ndarray, ks.DataFrame))):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
+
+    if isinstance(dataframe, np.ndarray):
+        dataframe = pd.DataFrame(dataframe)
+        dataframe.columns = dataframe.columns.astype(str)
+    return dataframe
+
+
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not (dd and isinstance(dataframe, dd.DataFrame) or
-            isinstance(dataframe, (pd.DataFrame, ks.DataFrame))):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
