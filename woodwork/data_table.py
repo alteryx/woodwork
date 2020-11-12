@@ -43,7 +43,7 @@ class DataTable(object):
         """Create DataTable
 
         Args:
-            dataframe (pd.DataFrame, dd.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
