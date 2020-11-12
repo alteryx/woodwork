@@ -407,25 +407,6 @@ class DataTable(object):
         _check_semantic_tags(self._dataframe, semantic_tags)
         return self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
 
-    def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        # --> to remove
-        """Update the semantic tags for any column names in the provided semantic_tags
-        dictionary. Replaces the existing semantic tags with the new values. Also replaces
-        any updated columns with new DataColumn objects and returns a new DataTable object.
-
-        Args:
-            semantic_tags (dict): A dictionary defining the new semantic_tags for the
-                specified columns.
-            retain_index_tags (bool, optional): If True, will retain any index or
-                time_index semantic tags set on the column. If False, will replace all
-                semantic tags. Defaults to True.
-
-        Returns:
-            woodwork.DataTable: DataTable with the specified semantic tags set
-        """
-        _check_semantic_tags(self._dataframe, semantic_tags)
-        return self._update_cols_and_get_new_dt('set_semantic_tags', semantic_tags, retain_index_tags)
-
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
         return a new DataTable. The default values will be either an empty set or a set

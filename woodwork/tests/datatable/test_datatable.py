@@ -512,7 +512,7 @@ def test_set_semantic_tags(sample_df):
         'full_name': ['new_tag'],
         'age': 'numeric',
     }
-    new_dt = dt.set_semantic_tags(new_tags)
+    new_dt = dt.set_types(semantic_tags=new_tags)
     # Verify original tags were not changed
     assert dt.columns['full_name'].semantic_tags == {'tag1'}
     assert dt.columns['age'].semantic_tags == {'numeric', 'age'}
@@ -529,9 +529,9 @@ def test_set_semantic_tags_with_index(sample_df):
     new_tags = {
         'id': 'new_tag',
     }
-    dt = dt.set_semantic_tags(new_tags)
+    dt = dt.set_types(semantic_tags=new_tags)
     assert dt.columns['id'].semantic_tags == {'index', 'new_tag'}
-    dt = dt.set_semantic_tags(new_tags, retain_index_tags=False)
+    dt = dt.set_types(semantic_tags=new_tags, retain_index_tags=False)
     assert dt.columns['id'].semantic_tags == {'new_tag'}
 
 
@@ -542,9 +542,9 @@ def test_set_semantic_tags_with_time_index(sample_df):
     new_tags = {
         'signup_date': 'new_tag',
     }
-    dt = dt.set_semantic_tags(new_tags)
+    dt = dt.set_types(semantic_tags=new_tags)
     assert dt.columns['signup_date'].semantic_tags == {'time_index', 'new_tag'}
-    dt = dt.set_semantic_tags(new_tags, retain_index_tags=False)
+    dt = dt.set_types(semantic_tags=new_tags, retain_index_tags=False)
     assert dt.columns['signup_date'].semantic_tags == {'new_tag'}
 
 
@@ -1122,7 +1122,7 @@ def test_select_ltypes_table(sample_df):
         'age': Double,
         'signup_date': Datetime,
     })
-    dt.set_semantic_tags({
+    dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
@@ -1154,7 +1154,7 @@ def test_new_dt_from_columns(sample_df):
         'age': Double,
         'signup_date': Datetime,
     })
-    dt.set_semantic_tags({
+    dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
@@ -1179,7 +1179,7 @@ def test_new_dt_from_columns(sample_df):
 
 def test_select_semantic_tags(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', name='dt_name')
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': 'tag1',
         'email': ['tag2'],
         'age': ['numeric', 'tag2'],
@@ -1643,7 +1643,7 @@ def test_select_invalid_inputs(sample_df):
         'age': Double,
         'signup_date': Datetime,
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
@@ -1664,7 +1664,7 @@ def test_select_single_inputs(sample_df):
         'phone_number': PhoneNumber,
         'signup_date': Datetime(datetime_format='%Y-%m-%d')
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
         'signup_date': 'date_of_birth'
@@ -1696,7 +1696,7 @@ def test_select_list_inputs(sample_df):
         'phone_number': PhoneNumber,
         'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
         'signup_date': 'date_of_birth',
@@ -1733,7 +1733,7 @@ def test_select_semantic_tags_no_match(sample_df):
         'phone_number': PhoneNumber,
         'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
         'signup_date': 'date_of_birth',
