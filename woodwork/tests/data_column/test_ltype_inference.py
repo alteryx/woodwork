@@ -1,4 +1,3 @@
-import databricks.koalas as ks
 
 import woodwork as ww
 from woodwork.data_column import infer_logical_type
@@ -12,6 +11,7 @@ from woodwork.logical_types import (
     Timedelta,
     WholeNumber
 )
+from woodwork.utils import import_or_none
 
 UNSUPPORTED_KOALAS_DTYPES = [
     'int32',
@@ -29,6 +29,8 @@ UNSUPPORTED_KOALAS_DTYPES = [
     'category',
 ]
 
+ks = import_or_none('databricks.koalas')
+
 
 def get_koalas_dtypes(dtypes):
     return [dtype for dtype in dtypes if dtype not in UNSUPPORTED_KOALAS_DTYPES]
@@ -36,7 +38,7 @@ def get_koalas_dtypes(dtypes):
 
 def test_integer_inference(integers):
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    if isinstance(integers[0], ks.Series):
+    if ks and isinstance(integers[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in integers:
@@ -48,7 +50,7 @@ def test_integer_inference(integers):
 def test_whole_number_inference(whole_nums):
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
               'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
-    if isinstance(whole_nums[0], ks.Series):
+    if ks and isinstance(whole_nums[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in whole_nums:
@@ -59,7 +61,7 @@ def test_whole_number_inference(whole_nums):
 
 def test_double_inference(doubles):
     dtypes = ['float', 'float32', 'float64', 'float_']
-    if isinstance(doubles[0], ks.Series):
+    if ks and isinstance(doubles[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in doubles:
@@ -78,7 +80,7 @@ def test_boolean_inference(bools):
 
 def test_datetime_inference(datetimes):
     dtypes = ['object', 'string', 'datetime64[ns]']
-    if isinstance(datetimes[0], ks.Series):
+    if ks and isinstance(datetimes[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in datetimes:
@@ -89,7 +91,7 @@ def test_datetime_inference(datetimes):
 
 def test_categorical_inference(categories):
     dtypes = ['object', 'string', 'category']
-    if isinstance(categories[0], ks.Series):
+    if ks and isinstance(categories[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
     for series in categories:
         for dtype in dtypes:
@@ -100,7 +102,7 @@ def test_categorical_inference(categories):
 def test_categorical_integers_inference(integers):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    if isinstance(integers[0], ks.Series):
+    if ks and isinstance(integers[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
     for series in integers:
         for dtype in dtypes:
@@ -113,7 +115,7 @@ def test_categorical_whole_number_inference(whole_nums):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
               'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
-    if isinstance(whole_nums[0], ks.Series):
+    if ks and isinstance(whole_nums[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
     for series in whole_nums:
         for dtype in dtypes:
@@ -125,7 +127,7 @@ def test_categorical_whole_number_inference(whole_nums):
 def test_categorical_double_inference(doubles):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['float', 'float32', 'float64', 'float_']
-    if isinstance(doubles[0], ks.Series):
+    if ks and isinstance(doubles[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
     for series in doubles:
         for dtype in dtypes:
@@ -144,7 +146,7 @@ def test_timedelta_inference(timedeltas):
 
 def test_natural_language_inference(strings):
     dtypes = ['object', 'string']
-    if isinstance(strings[0], ks.Series):
+    if ks and isinstance(strings[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in strings:
@@ -155,7 +157,7 @@ def test_natural_language_inference(strings):
 
 def test_natural_language_inference_with_threshhold(long_strings):
     dtypes = ['object', 'string']
-    if isinstance(long_strings[0], ks.Series):
+    if ks and isinstance(long_strings[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
     ww.config.set_option('natural_language_threshold', 19)

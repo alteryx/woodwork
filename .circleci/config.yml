@@ -54,6 +54,7 @@ jobs:
             - run: |
                 source venv/bin/activate
                 python -m pip install -e unpacked_sdist/[dask]
+                python -m pip install -e unpacked_sdist/[koalas]
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - unless:
           condition:

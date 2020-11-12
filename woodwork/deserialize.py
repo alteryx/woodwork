@@ -6,7 +6,6 @@ import warnings
 from itertools import zip_longest
 from pathlib import Path
 
-import databricks.koalas as ks
 import pandas as pd
 
 from woodwork import DataTable
@@ -69,7 +68,14 @@ def metadata_to_datatable(table_metadata, **kwargs):
         )
         lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
     elif table_type == 'koalas':
-        lib = ks
+        KOALAS_ERR_MSG = (
+            'Cannot load Koalas DataTable - unable to import Koalas.\n\n'
+            'Please install with pip or conda:\n\n'
+            'python -m pip install "woodwork[koalas]"\n\n'
+            'conda install koalas\n\n'
+            'conda install pyspark'
+        )
+        lib = import_or_raise('databricks.koalas', KOALAS_ERR_MSG)
         compression = str(compression)
     else:
         lib = pd

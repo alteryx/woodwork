@@ -1,6 +1,5 @@
 import warnings
 
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
@@ -27,7 +26,9 @@ from woodwork.utils import (
 )
 
 dd = import_or_none('dask.dataframe')
-ks.set_option('compute.ops_on_diff_frames', True)
+ks = import_or_none('databricks.koalas')
+if ks:
+    ks.set_option('compute.ops_on_diff_frames', True)
 
 
 class DataTable(object):
@@ -83,7 +84,7 @@ class DataTable(object):
             if dd and isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
-            elif isinstance(self._dataframe, ks.DataFrame):
+            elif ks and isinstance(self._dataframe, ks.DataFrame):
                 self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
             else:
                 self._dataframe.insert(0, index, range(len(self._dataframe)))
@@ -600,7 +601,7 @@ class DataTable(object):
 
         if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
-        elif isinstance(self._dataframe, ks.DataFrame):
+        elif ks and isinstance(self._dataframe, ks.DataFrame):
             # Missing values in Koalas will be replaced with 'None' - change them to
             # np.nan so stats are calculated properly
             df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
@@ -688,7 +689,7 @@ class DataTable(object):
         is_ks = False
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
-        if isinstance(data, ks.DataFrame):
+        if ks and isinstance(data, ks.DataFrame):
             data = data.to_pandas()
             is_ks = True
 
@@ -795,7 +796,7 @@ class DataTable(object):
         data = self._dataframe[valid_columns]
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
-        if isinstance(self._dataframe, ks.DataFrame):
+        if ks and isinstance(self._dataframe, ks.DataFrame):
             data = data.to_pandas()
 
         # cut off data if necessary
@@ -886,7 +887,8 @@ def _validate_dataframe(dataframe):
     '''Check that the dataframe supplied during DataTable initialization is valid,
     and convert numpy array to pandas DataFrame if necessary.'''
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
-            isinstance(dataframe, (pd.DataFrame, np.ndarray, ks.DataFrame))):
+            (ks and isinstance(dataframe, ks.DataFrame)) or
+            isinstance(dataframe, (pd.DataFrame, np.ndarray))):
         raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
 
     if isinstance(dataframe, np.ndarray):

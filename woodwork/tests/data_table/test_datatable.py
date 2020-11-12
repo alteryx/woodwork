@@ -1,6 +1,5 @@
 import re
 
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -48,6 +47,7 @@ from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 dask_delayed = import_or_none('dask.delayed')
+ks = import_or_none('databricks.koalas')
 
 
 def test_datatable_init(sample_df):
@@ -57,10 +57,7 @@ def test_datatable_init(sample_df):
     assert dt.name is None
     assert dt.index is None
     assert dt.time_index is None
-    if dd and isinstance(sample_df, dd.DataFrame):
-        assert isinstance(df, dd.DataFrame)
-    else:
-        assert isinstance(df, (pd.DataFrame, ks.DataFrame))
+
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
@@ -287,7 +284,7 @@ def test_check_time_index_errors(sample_df):
 
 
 def test_check_unique_column_names(sample_df):
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         pytest.skip("Koalas enforces unique column names")
     duplicate_cols_df = sample_df.copy()
     if dd and isinstance(sample_df, dd.DataFrame):
@@ -1373,7 +1370,7 @@ def test_setitem_different_name(sample_df):
     dt = DataTable(sample_df)
 
     new_series = pd.Series([1, 2, 3, 4], name='wrong')
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
     warning = 'Name mismatch between wrong and id. DataColumn and underlying series name are now id'
@@ -1387,7 +1384,7 @@ def test_setitem_different_name(sample_df):
     assert 'wrong' not in dt.columns
 
     new_series2 = pd.Series([1, 2, 3, 4], name='wrong2')
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         new_series2 = ks.Series(new_series2)
 
     warning = 'Name mismatch between wrong2 and new_col. DataColumn and underlying series name are now new_col'
@@ -1413,7 +1410,7 @@ def test_setitem_different_name(sample_df):
 def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
     new_series = pd.Series([1, 2, 3])
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         dtype = 'int64'
         new_series = ks.Series(new_series)
     else:
@@ -1430,7 +1427,7 @@ def test_setitem_new_column(sample_df):
 
     # Standard tags and no logical type
     new_series = pd.Series(['new', 'column', 'inserted'])
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         dtype = 'object'
         new_series = ks.Series(new_series)
     else:
@@ -1446,7 +1443,7 @@ def test_setitem_new_column(sample_df):
 
     # Add with logical type and semantic tag
     new_series = pd.Series([1, 2, 3])
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
     new_col = DataColumn(new_series,
                          logical_type=Double,
@@ -1469,7 +1466,7 @@ def test_setitem_overwrite_column(sample_df):
     # Change to column no change in types
     original_col = dt['age']
     new_series = pd.Series([1, 2, 3])
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         dtype = 'int64'
         new_series = ks.Series(new_series)
     else:
@@ -1488,7 +1485,7 @@ def test_setitem_overwrite_column(sample_df):
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = dt['full_name']
     new_series = pd.Series([True, False, False])
-    if isinstance(sample_df, ks.DataFrame):
+    if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
         dtype = 'bool'
     else:
@@ -1890,7 +1887,7 @@ def test_datatable_describe_method(describe_df):
 
     # Test categorical columns
     category_data = describe_df[['category_col']]
-    if isinstance(category_data, ks.DataFrame):
+    if ks and isinstance(category_data, ks.DataFrame):
         expected_dtype = 'object'
     else:
         expected_dtype = 'category'
@@ -1913,7 +1910,7 @@ def test_datatable_describe_method(describe_df):
 
     # Test boolean columns
     boolean_data = describe_df[['boolean_col']]
-    if isinstance(category_data, ks.DataFrame):
+    if ks and isinstance(category_data, ks.DataFrame):
         expected_dtype = 'bool'
     else:
         expected_dtype = 'boolean'
@@ -1987,7 +1984,7 @@ def test_datatable_describe_method(describe_df):
         pd.testing.assert_series_equal(expected_vals, stats_df['formatted_datetime_col'].dropna())
 
     # Test timedelta columns - Skip for Koalas
-    if not isinstance(describe_df, ks.DataFrame):
+    if not (ks and isinstance(describe_df, ks.DataFrame)):
         timedelta_data = describe_df['timedelta_col']
         for ltype in timedelta_ltypes:
             expected_vals = pd.Series({
@@ -2032,7 +2029,7 @@ def test_datatable_describe_method(describe_df):
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
-    if isinstance(category_data, ks.DataFrame):
+    if ks and isinstance(category_data, ks.DataFrame):
         expected_dtype = 'object'
     else:
         expected_dtype = 'string'
@@ -2146,7 +2143,7 @@ def test_value_counts(categorical_df):
     expected_cat1 = [{'value': 200, 'count': 4}, {'value': 100, 'count': 3}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
     # Koalas converts numeric categories to strings, so we need to update the expected values for this
     # Koalas will result in `None` instead of `np.nan` in categorical columns
-    if isinstance(categorical_df, ks.DataFrame):
+    if ks and isinstance(categorical_df, ks.DataFrame):
         updated_results = []
         for items in expected_cat1:
             updated_results.append({k: (str(v) if k == 'value' else v) for k, v in items.items()})
@@ -2310,7 +2307,7 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
     dt = dt.set_time_index('with_null')
     date_col = dt['with_null']
     assert dt.time_index == 'with_null'
-    if isinstance(numeric_time_index_df, ks.DataFrame):
+    if ks and isinstance(numeric_time_index_df, ks.DataFrame):
         ltype = Double
     else:
         ltype = WholeNumber
