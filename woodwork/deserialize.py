@@ -72,7 +72,8 @@ def metadata_to_datatable(table_metadata, **kwargs):
             'Cannot load Koalas DataTable - unable to import Koalas.\n\n'
             'Please install with pip or conda:\n\n'
             'python -m pip install "woodwork[koalas]"\n\n'
-            'conda install koalas'
+            'conda install koalas\n\n'
+            'conda install pyspark'
         )
         lib = import_or_raise('databricks.koalas', KOALAS_ERR_MSG)
         compression = str(compression)
