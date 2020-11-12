@@ -9,6 +9,7 @@ Release Notes
     * Fixes
     * Changes
         * Lower moto test requirement for serialization/deserialization (:pr:`376`)
+        * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
     * Documentation Changes
     * Testing Changes
 
