@@ -1,10 +1,10 @@
-import databricks.koalas as ks
 import pandas as pd
 
 import woodwork as ww
 from woodwork.utils import _new_dt_including, import_or_none
 
 dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 class _iLocIndexer:
@@ -21,7 +21,8 @@ class _iLocIndexer:
 
     def __getitem__(self, key):
         selection = self.underlying_data.iloc[key]
-        if isinstance(selection, (pd.Series, ks.Series)):
+        # --> double check format here is standard with rest
+        if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
             col_name = selection.name
             if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
                 # return selection as series if series of one row.
@@ -40,7 +41,7 @@ class _iLocIndexer:
                                  semantic_tags=semantic_tags,
                                  use_standard_tags=self.ww_data.use_standard_tags,
                                  name=name)
-        elif isinstance(selection, (pd.DataFrame, ks.DataFrame)):
+        elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
             return _new_dt_including(self.ww_data, selection)
         else:
             # singular value

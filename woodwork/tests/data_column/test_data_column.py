@@ -1,6 +1,5 @@
 import re
 
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,12 +22,13 @@ from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support category dtype
-    if not isinstance(sample_series, ks.Series):
+    if not (ks and isinstance(sample_series, ks.Series)):
         sample_series = sample_series.astype('category')
     pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series))
     assert data_col.name == sample_series.name
@@ -149,7 +149,7 @@ def test_semantic_tag_errors(sample_series):
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support categorical
-    if isinstance(sample_series, ks.Series):
+    if ks and isinstance(sample_series, ks.Series):
         dtype = 'object'
     else:
         dtype = 'category'
@@ -491,7 +491,7 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if isinstance(sample_series, ks.Series) or (dd and isinstance(sample_series, dd.Series)):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
@@ -506,7 +506,7 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if isinstance(sample_series, ks.Series) or (dd and isinstance(sample_series, dd.Series)):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
 
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])

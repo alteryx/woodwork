@@ -1,20 +1,23 @@
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.utils import import_or_none
+
 
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
-    from pyspark.sql import SparkSession
+    # --> not sure about this - might want to skip?
+    pyspark = import_or_none('pyspark.sql')
 
-    spark = SparkSession.builder \
-        .master("local[*]") \
-        .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
-        .config("spark.sql.shuffle.partitions", "2") \
-        .getOrCreate()
+    if pyspark:
+        spark = pyspark.SparkSession.builder \
+            .master("local[*]") \
+            .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
+            .config("spark.sql.shuffle.partitions", "2") \
+            .getOrCreate()
 
-    return spark
+        return spark
 
 
 @pytest.fixture(params=['sample_df_pandas', 'sample_df_dask', 'sample_df_koalas'])
@@ -43,6 +46,7 @@ def sample_df_dask(sample_df_pandas):
 
 @pytest.fixture()
 def sample_df_koalas(sample_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(sample_df_pandas)
 
 
@@ -64,6 +68,7 @@ def sample_series_dask(sample_series_pandas):
 
 @pytest.fixture()
 def sample_series_koalas(sample_series_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(sample_series_pandas)
 
 
@@ -85,6 +90,7 @@ def sample_datetime_series_dask(sample_datetime_series_pandas):
 
 @pytest.fixture()
 def sample_datetime_series_koalas(sample_datetime_series_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(sample_datetime_series_pandas)
 
 
@@ -108,6 +114,7 @@ def time_index_df_dask(time_index_df_pandas):
 
 @pytest.fixture()
 def time_index_df_koalas(time_index_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(time_index_df_pandas)
 
 
@@ -134,6 +141,7 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 
 @pytest.fixture()
 def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     numeric_time_index_df_pandas['whole_numbers'] = numeric_time_index_df_pandas['whole_numbers'].astype('int64')
     numeric_time_index_df_pandas['ints'] = numeric_time_index_df_pandas['ints'].astype('int64')
     numeric_time_index_df_pandas['with_null'] = numeric_time_index_df_pandas['whole_numbers'].astype('float')
@@ -199,6 +207,7 @@ def describe_df_dask(describe_df_pandas):
 
 @pytest.fixture()
 def describe_df_koalas(describe_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(describe_df_pandas.drop(columns='timedelta_col'))
 
 
@@ -226,6 +235,7 @@ def df_same_mi_dask(df_same_mi_pandas):
 
 @pytest.fixture()
 def df_same_mi_koalas(df_same_mi_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     df_same_mi_pandas['ints'] = df_same_mi_pandas['ints'].astype('float')
     df_same_mi_pandas['nans'] = df_same_mi_pandas['nans'].astype('float')
     return ks.DataFrame(df_same_mi_pandas)
@@ -254,6 +264,7 @@ def df_mi_dask(df_mi_pandas):
 
 @pytest.fixture()
 def df_mi_koalas(df_mi_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(df_mi_pandas)
 
 
@@ -281,6 +292,7 @@ def categorical_df_dask(categorical_df_pandas):
 
 @pytest.fixture()
 def categorical_df_koalas(categorical_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(categorical_df_pandas)
 
 

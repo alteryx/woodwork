@@ -4,8 +4,6 @@ import os
 import tarfile
 import tempfile
 
-import databricks.koalas as ks
-
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import (
     _get_ltype_class,
@@ -16,6 +14,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 SCHEMA_VERSION = '1.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -45,7 +44,7 @@ def datatable_to_metadata(datatable):
 
     if dd and isinstance(df, dd.DataFrame):
         table_type = 'dask'
-    elif isinstance(df, ks.DataFrame):
+    elif ks and isinstance(df, ks.DataFrame):
         table_type = 'koalas'
     else:
         table_type = 'pandas'
@@ -127,7 +126,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
 
     if format == 'csv':
         compression = kwargs['compression']
-        if isinstance(df, ks.DataFrame):
+        if ks and isinstance(df, ks.DataFrame):
             df = df.copy()
             columns = list(df.select_dtypes('object').columns)
             df[columns] = df[columns].astype(str)

@@ -1,5 +1,4 @@
 
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,6 +10,7 @@ def pd_to_dask(series):
 
 
 def pd_to_koalas(series):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(series)
 
 
