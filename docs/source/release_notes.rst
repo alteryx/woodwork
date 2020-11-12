@@ -8,12 +8,12 @@ Release Notes
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
     * Fixes
     * Changes
+        * Lower moto test requirement for serialization/deserialization (:pr:`376`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`thehomebrewnerd`
-
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.5** November 11, 2020
     * Enhancements
