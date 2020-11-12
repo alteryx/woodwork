@@ -12,11 +12,15 @@ Release Notes
     * Changes
         * Lower moto test requirement for serialization/deserialization (:pr:`376`)
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
+        * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
+
+**Breaking Changes**
+    * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
 
 **v0.0.5** November 11, 2020
     * Enhancements
