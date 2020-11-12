@@ -58,12 +58,6 @@ def test_datatable_init(sample_df):
     assert dt.index is None
     assert dt.time_index is None
 
-    if dd and isinstance(sample_df, dd.DataFrame):
-        assert isinstance(df, dd.DataFrame)
-    elif ks and isinstance(sample_df, ks.DataFrame):
-        assert isinstance(df, ks.DataFrame)
-    else:
-        assert isinstance(df, pd.DataFrame)
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))

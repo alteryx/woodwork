@@ -7,6 +7,23 @@ import pandas as pd
 import woodwork as ww
 
 
+def import_or_none(library):
+    '''
+    Attemps to import the requested library.
+
+    Args:
+        library (str): the name of the library
+    Returns: the library if it is installed, else None
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        return None
+
+
+ks = import_or_none('databricks.koalas')
+
+
 def camel_to_snake(s):
     s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
@@ -37,8 +54,6 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column."""
-    ks = import_or_none('databricks.koalas')
-
     if ks and isinstance(col, ks.Series):
         col = col.to_pandas()
 
@@ -69,8 +84,6 @@ def _is_numeric_series(series, logical_type):
     for the purposes of determining if it can be a time_index.
 
     '''
-    ks = import_or_none('databricks.koalas')
-
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
 
@@ -273,20 +286,6 @@ def import_or_raise(library, error_msg):
         return importlib.import_module(library)
     except ImportError:
         raise ImportError(error_msg)
-
-
-def import_or_none(library):
-    '''
-    Attemps to import the requested library.
-
-    Args:
-        library (str): the name of the library
-    Returns: the library if it is installed, else None
-    '''
-    try:
-        return importlib.import_module(library)
-    except ImportError:
-        return None
 
 
 def _is_s3(string):
