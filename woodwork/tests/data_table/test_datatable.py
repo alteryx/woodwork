@@ -1,5 +1,6 @@
 import re
 
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -58,7 +59,7 @@ def test_datatable_init(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         assert isinstance(df, dd.DataFrame)
     else:
-        assert isinstance(df, pd.DataFrame)
+        assert isinstance(df, (pd.DataFrame, ks.DataFrame))
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
@@ -266,6 +267,8 @@ def test_check_time_index_errors(sample_df):
 
 
 def test_check_unique_column_names(sample_df):
+    if isinstance(sample_df, ks.DataFrame):
+        pytest.skip("Koalas enforces unique column names")
     duplicate_cols_df = sample_df.copy()
     if dd and isinstance(sample_df, dd.DataFrame):
         duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
@@ -292,7 +295,11 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
-    sample_df['formatted_date'] = pd.Series(["2019~01~01", "2019~01~02", "2019~01~03"])
+    new_dates = ["2019~01~01", "2019~01~02", "2019~01~03", "2019~01~04"]
+    if dd and isinstance(sample_df, dd.DataFrame):
+        sample_df['formatted_date'] = pd.Series(new_dates)
+    else:
+        sample_df['formatted_date'] = new_dates
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
     dt = DataTable(sample_df, logical_types={'formatted_date': ymd_format})
     returned_types = dt.types
@@ -1207,7 +1214,7 @@ def test_pop(sample_df):
     datacol = dt.pop('age')
     assert isinstance(datacol, DataColumn)
     assert 'custom_tag' in datacol.semantic_tags
-    assert to_pandas(datacol.to_series()).values == [33, 25, 33, 57]
+    assert all(to_pandas(datacol.to_series()).values == [33, 25, 33, 57])
     assert datacol.logical_type == WholeNumber
 
     assert 'age' not in dt.to_dataframe().columns
@@ -1342,68 +1349,86 @@ def test_setitem_invalid_input(sample_df):
         dt['signup_date'] = DataColumn(pd.Series(['test text', 'file', 'False']))
 
 
-def test_setitem_different_name(sample_df, sample_series_dask, sample_series_pandas):
-    sample_series = sample_series_pandas
-    if dd and isinstance(sample_df, dd.DataFrame):
-        sample_series = sample_series_dask
+def test_setitem_different_name(sample_df):
     dt = DataTable(sample_df)
 
-    warning = 'Name mismatch between sample_series and id. DataColumn and underlying series name are now id'
+    new_series = pd.Series([1, 2, 3, 4], name='wrong')
+    if isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    warning = 'Name mismatch between wrong and id. DataColumn and underlying series name are now id'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        dt['id'] = DataColumn(sample_series,
+        dt['id'] = DataColumn(new_series,
                               use_standard_tags=False)
 
     assert dt['id'].name == 'id'
     assert dt['id'].to_series().name == 'id'
     assert dt.to_dataframe()['id'].name == 'id'
-    assert 'sample_series' not in dt.columns
+    assert 'wrong' not in dt.columns
 
-    warning = 'Name mismatch between sample_series and new_col. DataColumn and underlying series name are now new_col'
+    new_series2 = pd.Series([1, 2, 3, 4], name='wrong2')
+    if isinstance(sample_df, ks.DataFrame):
+        new_series2 = ks.Series(new_series2)
+
+    warning = 'Name mismatch between wrong2 and new_col. DataColumn and underlying series name are now new_col'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        dt['new_col'] = DataColumn(sample_series,
+        dt['new_col'] = DataColumn(new_series2,
                                    use_standard_tags=False)
+
     assert dt['new_col'].name == 'new_col'
     assert dt['new_col'].to_series().name == 'new_col'
     assert dt.to_dataframe()['new_col'].name == 'new_col'
-    assert 'sample_series' not in dt.columns
+    assert 'wrong2' not in dt.columns
 
     warning = 'Name mismatch between wrong and col_with_name. DataColumn and underlying series name are now col_with_name'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        dt['col_with_name'] = DataColumn(sample_series,
+        dt['col_with_name'] = DataColumn(new_series,
                                          use_standard_tags=False, name='wrong')
     assert dt['col_with_name'].name == 'col_with_name'
     assert dt['col_with_name'].to_series().name == 'col_with_name'
     assert dt.to_dataframe()['col_with_name'].name == 'col_with_name'
-    assert 'sample_series' not in dt.columns
     assert 'wrong' not in dt.columns
 
 
 def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
+    new_series = pd.Series([1, 2, 3])
+    if isinstance(sample_df, ks.DataFrame):
+        dtype = 'int64'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'Int64'
 
-    new_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                         use_standard_tags=False)
+    new_col = DataColumn(new_series, use_standard_tags=False)
     dt['test_col2'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col2' in dt.columns
     assert dt['test_col2'].logical_type == WholeNumber
     assert dt['test_col2'].semantic_tags == set()
     assert 'test_col2' in updated_df.columns
-    assert updated_df['test_col2'].dtype == 'Int64'
+    assert updated_df['test_col2'].dtype == dtype
 
     # Standard tags and no logical type
-    new_col = DataColumn(pd.Series(['new', 'column', 'inserted'], dtype='string'),
-                         use_standard_tags=True)
+    new_series = pd.Series(['new', 'column', 'inserted'])
+    if isinstance(sample_df, ks.DataFrame):
+        dtype = 'object'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'category'
+    new_col = DataColumn(new_series, use_standard_tags=True)
     dt['test_col'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col' in dt.columns
     assert dt['test_col'].logical_type == Categorical
     assert dt['test_col'].semantic_tags == {'category'}
     assert 'test_col' in updated_df.columns
-    assert updated_df['test_col'].dtype == 'category'
+    assert updated_df['test_col'].dtype == dtype
 
     # Add with logical type and semantic tag
-    new_col = DataColumn(pd.Series([1, 2, 3]),
+    new_series = pd.Series([1, 2, 3])
+    if isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+    new_col = DataColumn(new_series,
                          logical_type=Double,
                          use_standard_tags=False,
                          semantic_tags={'test_tag'})
@@ -1423,8 +1448,13 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change to column no change in types
     original_col = dt['age']
-    overwrite_col = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                               use_standard_tags=True)
+    new_series = pd.Series([1, 2, 3])
+    if isinstance(sample_df, ks.DataFrame):
+        dtype = 'int64'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'Int64'
+    overwrite_col = DataColumn(new_series, use_standard_tags=True)
     dt['age'] = overwrite_col
     updated_df = dt.to_dataframe()
 
@@ -1432,12 +1462,18 @@ def test_setitem_overwrite_column(sample_df):
     assert dt['age'].logical_type == original_col.logical_type
     assert dt['age'].semantic_tags == original_col.semantic_tags
     assert 'age' in updated_df.columns
-    assert updated_df['age'].dtype == 'Int64'
+    assert updated_df['age'].dtype == dtype
     assert original_col.to_series() is not dt['age'].to_series()
 
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = dt['full_name']
-    overwrite_col = DataColumn(pd.Series([True, False, False], dtype='boolean'),
+    new_series = pd.Series([True, False, False])
+    if isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+        dtype = 'bool'
+    else:
+        dtype = 'boolean'
+    overwrite_col = DataColumn(new_series.astype(dtype),
                                use_standard_tags=False,
                                semantic_tags='test_tag')
     dt['full_name'] = overwrite_col
@@ -1447,7 +1483,7 @@ def test_setitem_overwrite_column(sample_df):
     assert dt['full_name'].logical_type == Boolean
     assert dt['full_name'].semantic_tags == {'test_tag'}
     assert 'full_name' in updated_df.columns
-    assert updated_df['full_name'].dtype == 'boolean'
+    assert updated_df['full_name'].dtype == dtype
     assert original_col.to_series() is not dt['full_name'].to_series()
 
 
@@ -1563,25 +1599,26 @@ def test_datatable_clear_time_index(sample_df):
     assert all(['time_index' not in col.semantic_tags for col in dt.columns.values()])
 
 
-def test_shape(categorical_df, categorical_log_types):
-    dt = ww.DataTable(categorical_df, logical_types=categorical_log_types)
-    assert dt.shape == (9, 5)
-    assert dt.shape == dt.to_dataframe().shape
+def test_shape(categorical_df):
+    dt = ww.DataTable(categorical_df)
+    dt_shape = dt.shape
+    df_shape = dt.to_dataframe().shape
+    if dd and isinstance(categorical_df, dd.DataFrame):
+        assert isinstance(dt.shape[0], dask_delayed.Delayed)
+        dt_shape = (dt_shape[0].compute(), dt_shape[1])
+        df_shape = (df_shape[0].compute(), df_shape[1])
+    assert dt_shape == (10, 5)
+    assert dt_shape == df_shape
 
     dt.pop('ints')
-    assert dt.shape == (9, 4)
-
-
-def test_shape_dask(categorical_dd, categorical_log_types):
-    dt = ww.DataTable(categorical_dd, logical_types=categorical_log_types)
-    assert isinstance(dt.shape[0], dask_delayed.Delayed)
-    assert dt.shape[1] == 5
-
-    dt.pop('bools')
-    assert isinstance(dt.shape[0], dask_delayed.Delayed)
-    assert dt.shape[1] == 4
-
-    assert (dt.shape[0].compute(), dt.shape[1]) == (len(dt.to_dataframe()), len(dt.columns))
+    dt_shape = dt.shape
+    df_shape = dt.to_dataframe().shape
+    if dd and isinstance(categorical_df, dd.DataFrame):
+        assert isinstance(dt.shape[0], dask_delayed.Delayed)
+        dt_shape = (dt_shape[0].compute(), dt_shape[1])
+        df_shape = (df_shape[0].compute(), df_shape[1])
+    assert dt_shape == (10, 4)
+    assert dt_shape == df_shape
 
 
 def test_select_invalid_inputs(sample_df):
@@ -1832,47 +1869,53 @@ def test_datatable_describe_method(describe_df):
                       'num_false']
 
     # Test categorical columns
-    category_data = describe_df['category_col']
+    category_data = describe_df[['category_col']]
+    if isinstance(category_data, ks.DataFrame):
+        expected_dtype = 'object'
+    else:
+        expected_dtype = 'category'
+
     for ltype in categorical_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'category', 'custom_tag'},
             'count': 7,
             'nunique': 3,
             'nan_count': 1,
-            'mode': 'red'}, name='col')
-        df = pd.DataFrame({'col': category_data})
-        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+            'mode': 'red'}, name='category_col')
+        dt = DataTable(category_data, logical_types={'category_col': ltype}, semantic_tags={'category_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'col'}
+        assert set(stats_df.columns) == {'category_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+        pd.testing.assert_series_equal(expected_vals, stats_df['category_col'].dropna())
 
     # Test boolean columns
-    boolean_data = describe_df['boolean_col']
+    boolean_data = describe_df[['boolean_col']]
+    if isinstance(category_data, ks.DataFrame):
+        expected_dtype = 'bool'
+    else:
+        expected_dtype = 'boolean'
     for ltype in boolean_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
-            'count': 7,
-            'nan_count': 1,
+            'count': 8,
+            'nan_count': 0,
             'mode': True,
             'num_true': 5,
-            'num_false': 2}, name='col')
-        expected_vals.name = 'col'
-        df = pd.DataFrame({'col': boolean_data})
-        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+            'num_false': 3}, name='boolean_col')
+        dt = DataTable(boolean_data, logical_types={'boolean_col': ltype}, semantic_tags={'boolean_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'col'}
+        assert set(stats_df.columns) == {'boolean_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+        pd.testing.assert_series_equal(expected_vals, stats_df['boolean_col'].dropna())
 
     # Test datetime columns
-    datetime_data = describe_df['datetime_col']
+    datetime_data = describe_df[['datetime_col']]
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1884,17 +1927,16 @@ def test_datatable_describe_method(describe_df):
             'mean': pd.Timestamp('2020-01-19 09:25:42.857142784'),
             'mode': pd.Timestamp('2020-02-01 00:00:00'),
             'min': pd.Timestamp('2020-01-01 00:00:00'),
-            'max': pd.Timestamp('2020-02-02 18:00:00')}, name='col')
-        df = pd.DataFrame({'col': datetime_data})
-        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+            'max': pd.Timestamp('2020-02-02 18:00:00')}, name='datetime_col')
+        dt = DataTable(datetime_data, logical_types={'datetime_col': ltype}, semantic_tags={'datetime_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'col'}
+        assert set(stats_df.columns) == {'datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+        pd.testing.assert_series_equal(expected_vals, stats_df['datetime_col'].dropna())
 
     # Test formatted datetime columns
-    formatted_datetime_data = describe_df['formatted_datetime_col']
+    formatted_datetime_data = describe_df[['formatted_datetime_col']]
     for ltype in formatted_datetime_ltypes:
         converted_to_datetime = pd.to_datetime(['2020-01-01',
                                                 '2020-02-01',
@@ -1914,35 +1956,37 @@ def test_datatable_describe_method(describe_df):
             'mean': converted_to_datetime.mean(),
             'mode': pd.to_datetime('2020-02-01'),
             'min': converted_to_datetime.min(),
-            'max': converted_to_datetime.max()}, name='formatted_col')
-        df = pd.DataFrame({'formatted_col': formatted_datetime_data})
-        dt = DataTable(df, logical_types={'formatted_col': ltype}, semantic_tags={'formatted_col': 'custom_tag'})
+            'max': converted_to_datetime.max()}, name='formatted_datetime_col')
+        dt = DataTable(formatted_datetime_data,
+                       logical_types={'formatted_datetime_col': ltype},
+                       semantic_tags={'formatted_datetime_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'formatted_col'}
+        assert set(stats_df.columns) == {'formatted_datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['formatted_col'].dropna())
+        pd.testing.assert_series_equal(expected_vals, stats_df['formatted_datetime_col'].dropna())
 
-    # Test timedelta columns
-    timedelta_data = describe_df['timedelta_col']
-    for ltype in timedelta_ltypes:
-        expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
-            'logical_type': ltype,
-            'semantic_tags': {'custom_tag'},
-            'count': 7,
-            'nan_count': 1,
-            'mode': pd.Timedelta('31days')}, name='col')
-        df = pd.DataFrame({'col': timedelta_data})
-        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
-        stats_df = dt.describe()
-        assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'col'}
-        assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+    # Test timedelta columns - Skip for Koalas
+    if not isinstance(describe_df, ks.DataFrame):
+        timedelta_data = describe_df['timedelta_col']
+        for ltype in timedelta_ltypes:
+            expected_vals = pd.Series({
+                'physical_type': ltype.pandas_dtype,
+                'logical_type': ltype,
+                'semantic_tags': {'custom_tag'},
+                'count': 7,
+                'nan_count': 1,
+                'mode': pd.Timedelta('31days')}, name='col')
+            df = pd.DataFrame({'col': timedelta_data})
+            dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+            stats_df = dt.describe()
+            assert isinstance(stats_df, pd.DataFrame)
+            assert set(stats_df.columns) == {'col'}
+            assert stats_df.index.tolist() == expected_index
+            pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
 
     # Test numeric columns
-    numeric_data = describe_df['numeric_col']
+    numeric_data = describe_df[['numeric_col']]
     for ltype in numeric_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.pandas_dtype,
@@ -1951,39 +1995,43 @@ def test_datatable_describe_method(describe_df):
             'count': 7,
             'nunique': 6,
             'nan_count': 1,
-            'mean': numeric_data.mean(),
+            'mean': 20.857142857142858,
             'mode': 10,
-            'std': numeric_data.std(),
+            'std': 18.27957486220227,
             'min': 1,
             'first_quartile': 10,
             'second_quartile': 17,
             'third_quartile': 26,
-            'max': 56}, name='col')
-        df = pd.DataFrame({'col': numeric_data})
-        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+            'max': 56}, name='numeric_col')
+        dt = DataTable(numeric_data, logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'col'}
+        assert set(stats_df.columns) == {'numeric_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+        pd.testing.assert_series_equal(expected_vals, stats_df['numeric_col'].dropna(), check_exact=False)
 
     # Test natural language columns
-    natural_language_data = describe_df['natural_language_col']
+    natural_language_data = describe_df[['natural_language_col']]
+    if isinstance(category_data, ks.DataFrame):
+        expected_dtype = 'object'
+    else:
+        expected_dtype = 'string'
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
-            'mode': 'Duplicate sentence.'}, name='col')
-        df = pd.DataFrame({'col': natural_language_data})
-        dt = DataTable(df, logical_types={'col': ltype}, semantic_tags={'col': 'custom_tag'})
+            'mode': 'Duplicate sentence.'}, name='natural_language_col')
+        dt = DataTable(natural_language_data,
+                       logical_types={'natural_language_col': ltype},
+                       semantic_tags={'natural_language_col': 'custom_tag'})
         stats_df = dt.describe()
         assert isinstance(stats_df, pd.DataFrame)
-        assert set(stats_df.columns) == {'col'}
+        assert set(stats_df.columns) == {'natural_language_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+        pd.testing.assert_series_equal(expected_vals, stats_df['natural_language_col'].dropna())
 
 
 def test_datatable_describe_with_improper_tags(describe_df):
@@ -2058,29 +2106,48 @@ def test_data_table_describe_with_include(sample_df):
     multi_params_df['full_name'].equals(dt.describe()['full_name'])
 
 
-def test_value_counts(categorical_pandas_dd_list):
-    for input_dt in categorical_pandas_dd_list:
-        val_cts = input_dt.value_counts()
-        for col in input_dt.columns:
-            if col in ['ints', 'bools']:
-                assert col not in val_cts
-            else:
-                assert col in val_cts
-        assert val_cts['categories1'] == [{'value': 200, 'count': 4}, {'value': 100, 'count': 2}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
-        assert val_cts['categories2'] == [{'value': np.nan, 'count': 5}, {'value': 'test2', 'count': 2}, {'value': 'test', 'count': 2}]
-        assert val_cts['categories3'] == [{'value': np.nan, 'count': 6}, {'value': 'test', 'count': 3}]
+def test_value_counts(categorical_df):
+    logical_types = {
+        'ints': Integer,
+        'categories1': Categorical,
+        'bools': Boolean,
+        'categories2': Categorical,
+        'categories3': Categorical,
+    }
+    dt = DataTable(categorical_df, logical_types=logical_types)
+    val_cts = dt.value_counts()
+    for col in dt.columns:
+        if col in ['ints', 'bools']:
+            assert col not in val_cts
+        else:
+            assert col in val_cts
 
-        val_cts_descending = input_dt.value_counts(ascending=True)
-        for col, vals in val_cts_descending.items():
-            for i in range(len(vals)):
-                assert vals[i]['count'] == val_cts[col][-i - 1]['count']
+    none_val = np.nan
+    expected_cat1 = [{'value': 200, 'count': 4}, {'value': 100, 'count': 3}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
+    # Koalas converts numeric categories to strings, so we need to update the expected values for this
+    # Koalas will result in `None` instead of `np.nan` in categorical columns
+    if isinstance(categorical_df, ks.DataFrame):
+        updated_results = []
+        for items in expected_cat1:
+            updated_results.append({k: (str(v) if k == 'value' else v) for k, v in items.items()})
+        expected_cat1 = updated_results
+        none_val = 'None'
 
-        val_cts_dropna = input_dt.value_counts(dropna=True)
-        assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
+    assert val_cts['categories1'] == expected_cat1
+    assert val_cts['categories2'] == [{'value': none_val, 'count': 6}, {'value': 'test', 'count': 3}, {'value': 'test2', 'count': 1}]
+    assert val_cts['categories3'] == [{'value': none_val, 'count': 7}, {'value': 'test', 'count': 3}]
 
-        val_cts_2 = input_dt.value_counts(top_n=2)
-        for col in val_cts_2:
-            assert len(val_cts_2[col]) == 2
+    val_cts_descending = dt.value_counts(ascending=True)
+    for col, vals in val_cts_descending.items():
+        for i in range(len(vals)):
+            assert vals[i]['count'] == val_cts[col][-i - 1]['count']
+
+    val_cts_dropna = dt.value_counts(dropna=True)
+    assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
+
+    val_cts_2 = dt.value_counts(top_n=2)
+    for col in val_cts_2:
+        assert len(val_cts_2[col]) == 2
 
 
 def test_data_table_handle_nans_for_mutual_info():
@@ -2126,6 +2193,10 @@ def test_data_table_make_categorical_for_mutual_info():
 
 
 def test_data_table_get_mutual_information(df_same_mi, df_mi):
+    # Only test if df_same_mi and df_mi are same type
+    if type(df_same_mi) != type(df_mi):
+        return
+
     dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
     mi = dt_same_mi.get_mutual_information()
@@ -2219,7 +2290,11 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
     dt = dt.set_time_index('with_null')
     date_col = dt['with_null']
     assert dt.time_index == 'with_null'
-    assert date_col.logical_type == WholeNumber
+    if isinstance(numeric_time_index_df, ks.DataFrame):
+        ltype = Double
+    else:
+        ltype = WholeNumber
+    assert date_col.logical_type == ltype
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
@@ -2251,6 +2326,10 @@ def test_numeric_index_strings(time_index_df):
 
 
 def test_datatable_equality(sample_df, sample_series):
+    # Only test if sample_df and sample_series are from same library
+    # TODO: Clean this up - better parameterization
+    if sample_df.__module__.split('.')[0] != sample_series.__module__.split('.')[0]:
+        return
     dt_basic = DataTable(sample_df)
     dt_basic2 = DataTable(sample_df, copy_dataframe=True)
     dt_names = DataTable(sample_df, name='test')

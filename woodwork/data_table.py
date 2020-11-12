@@ -1,5 +1,7 @@
 import warnings
 
+import databricks.koalas as ks
+import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
@@ -25,6 +27,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none('dask.dataframe')
+ks.set_option('compute.ops_on_diff_frames', True)
 
 
 class DataTable(object):
@@ -79,6 +82,8 @@ class DataTable(object):
             if dd and isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
+            elif isinstance(self._dataframe, ks.DataFrame):
+                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
             else:
                 self._dataframe.insert(0, index, range(len(self._dataframe)))
 
@@ -549,6 +554,10 @@ class DataTable(object):
 
         if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
+        elif isinstance(self._dataframe, ks.DataFrame):
+            # Missing values in Koalas will be replaced with 'None' - change them to
+            # np.nan so stats are calculated properly
+            df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
         else:
             df = self._dataframe
 
@@ -630,11 +639,21 @@ class DataTable(object):
         val_counts = {}
         valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
         data = self._dataframe[valid_cols]
+        is_ks = False
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
+        if isinstance(data, ks.DataFrame):
+            data = data.to_pandas()
+            is_ks = True
 
         for col in valid_cols:
-            frequencies = data[col].value_counts(ascending=ascending, dropna=dropna)
+            if dropna and is_ks:
+                # Koalas categorical columns will have missing values replaced with the string 'None'
+                # Replace them with np.nan so dropna work
+                datacol = data[col].replace(to_replace='None', value=np.nan)
+            else:
+                datacol = data[col]
+            frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
             df = frequencies[:top_n].reset_index()
             df.columns = ["value", "count"]
             dt_list = list(df.to_dict(orient="index").values())
@@ -646,7 +665,7 @@ class DataTable(object):
         Remove NaN values in the dataframe so that mutual information can be calculated
 
         Args:
-            data (pd.DataFrame): dataframe to use for caculating mutual information
+            data (pd.DataFrame): dataframe to use for calculating mutual information
 
         Returns:
             pd.DataFrame: data with fully null columns removed and nans filled in
@@ -659,7 +678,7 @@ class DataTable(object):
         # replace or remove null values
         for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
-            series = column._series
+            series = data[column_name]
             ltype = column._logical_type
 
             if column._is_numeric():
@@ -693,7 +712,7 @@ class DataTable(object):
                 data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
             # convert categories to integers
             new_col = data[col_name]
-            if new_col.dtype != 'category':
+            if str(new_col.dtype) != 'category':
                 new_col = new_col.astype('category')
             data[col_name] = new_col.cat.codes
         return data
@@ -726,9 +745,12 @@ class DataTable(object):
                                                       column._is_categorical() or
                                                       _get_ltype_class(column.logical_type) == Boolean)
                                                      )]
+
         data = self._dataframe[valid_columns]
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
+        if isinstance(self._dataframe, ks.DataFrame):
+            data = data.to_pandas()
 
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
@@ -816,9 +838,9 @@ class DataTable(object):
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
-            isinstance(dataframe, pd.DataFrame)):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
+    if not (dd and isinstance(dataframe, dd.DataFrame) or
+            isinstance(dataframe, (pd.DataFrame, ks.DataFrame))):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
@@ -905,6 +927,7 @@ def _update_time_index(data_table, time_index, old_time_index=None):
     """Add the `time_index` tag to the specified time_index column and remove the tag from the
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
+
     _check_time_index(data_table._dataframe, time_index)
     data_table.columns[time_index]._set_as_time_index()
     if old_time_index:

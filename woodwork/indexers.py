@@ -1,7 +1,10 @@
+import databricks.koalas as ks
 import pandas as pd
 
 import woodwork as ww
-from woodwork.utils import _new_dt_including
+from woodwork.utils import _new_dt_including, import_or_none
+
+dd = import_or_none('dask.dataframe')
 
 
 class _iLocIndexer:
@@ -9,18 +12,18 @@ class _iLocIndexer:
         self.ww_data = ww_data
         if isinstance(ww_data, ww.DataTable):
             self.underlying_data = ww_data._dataframe
-            if not isinstance(self.underlying_data, pd.DataFrame):
-                raise TypeError("iloc is only supported for DataFrames coming from pandas")
+            if dd and isinstance(self.underlying_data, dd.DataFrame):
+                raise TypeError("iloc is not supported for Dask DataTables")
         elif isinstance(ww_data, ww.DataColumn):
             self.underlying_data = ww_data._series
-            if not isinstance(self.underlying_data, pd.Series):
-                raise TypeError("iloc is only supported for DataColumns coming from pandas")
+            if dd and isinstance(self.underlying_data, dd.Series):
+                raise TypeError("iloc is not supported for Dask DataColumns")
 
     def __getitem__(self, key):
         selection = self.underlying_data.iloc[key]
-        if isinstance(selection, pd.Series):
+        if isinstance(selection, (pd.Series, ks.Series)):
             col_name = selection.name
-            if isinstance(self.ww_data, ww.DataTable) and set(selection.index) == set(self.ww_data.columns):
+            if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
                 # return selection as series if series of one row.
                 return selection
             if isinstance(self.ww_data, ww.DataTable):
@@ -37,7 +40,7 @@ class _iLocIndexer:
                                  semantic_tags=semantic_tags,
                                  use_standard_tags=self.ww_data.use_standard_tags,
                                  name=name)
-        elif isinstance(selection, pd.DataFrame):
+        elif isinstance(selection, (pd.DataFrame, ks.DataFrame)):
             return _new_dt_including(self.ww_data, selection)
         else:
             # singular value

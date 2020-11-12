@@ -2,18 +2,19 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
+        * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 
 **v0.0.5** November 11, 2020
-
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
@@ -53,7 +54,6 @@ Release Notes
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
-
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
     * ``copy`` is no longer a parameter of ``DataTable.to_dataframe`` or ``DataColumn.to_series``.
@@ -83,7 +83,7 @@ Release Notes
         * Add automated process to check latest dependencies. (:pr:`268`)
         * Add test for setting a time index with specified string logical type (:pr:`279`)
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020

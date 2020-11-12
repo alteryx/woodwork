@@ -1,5 +1,6 @@
 import re
 
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -26,7 +27,10 @@ dd = import_or_none('dask.dataframe')
 
 def test_data_column_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series.astype('category')))
+    # Koalas doesn't support category dtype
+    if not isinstance(sample_series, ks.Series):
+        sample_series = sample_series.astype('category')
+    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
@@ -53,7 +57,7 @@ def test_data_column_init_with_semantic_tags(sample_series):
 
 
 def test_data_column_init_wrong_series():
-    error = 'Series must be a pandas Series, Dask Series, or a pandas ExtensionArray'
+    error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray'
     with pytest.raises(TypeError, match=error):
         DataColumn([1, 2, 3, 4])
 
@@ -144,7 +148,12 @@ def test_semantic_tag_errors(sample_series):
 
 def test_data_column_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = category) ' \
+    # Koalas doesn't support categorical
+    if isinstance(sample_series, ks.Series):
+        dtype = 'object'
+    else:
+        dtype = 'category'
+    assert data_col.__repr__() == f'<DataColumn: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
@@ -438,15 +447,15 @@ def test_to_series(sample_series):
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
-def test_shape(categorical_df):
-    col = DataColumn(categorical_df['ints'])
-    assert col.shape == (9,)
-    assert col.shape == col.to_series().shape
-
-
-def test_shape_dask(categorical_dd):
-    col = DataColumn(categorical_dd['ints'])
-    assert col.to_series().compute().shape == col.shape[0].compute()
+def test_shape(sample_series):
+    col = DataColumn(sample_series)
+    col_shape = col.shape
+    series_shape = col.to_series().shape
+    if dd and isinstance(sample_series, dd.Series):
+        col_shape = (col_shape[0].compute(),)
+        series_shape = (series_shape[0].compute(),)
+    assert col_shape == (4,)
+    assert col_shape == series_shape
 
 
 def test_dtype_update_on_init(datetime_series):
@@ -482,8 +491,9 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if dd and isinstance(sample_series, dd.Series):
-        pytest.xfail('fails with dask - ordinal data validation not compatible')
+    if isinstance(sample_series, ks.Series) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
+
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
@@ -496,8 +506,9 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if dd and isinstance(sample_series, dd.Series):
-        pytest.xfail('Fails with Dask - ordinal data validation not supported')
+    if isinstance(sample_series, ks.Series) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
+
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")
