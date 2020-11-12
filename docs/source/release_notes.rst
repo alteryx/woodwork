@@ -2,15 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
+        * Lower moto test requirement for serialization/desertization (:pr:`376`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 **v0.0.5** November 11, 2020
 
@@ -83,7 +84,7 @@ Release Notes
         * Add automated process to check latest dependencies. (:pr:`268`)
         * Add test for setting a time index with specified string logical type (:pr:`279`)
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
