@@ -348,15 +348,17 @@ class DataTable(object):
         _update_time_index(new_dt, time_index, self.time_index)
         return new_dt
 
-    def set_types_and_tags(self, types, retain_index_tags=True):
+    def set_types_and_tags(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         # --> not sure this name covers tags obviously?
         """Update the logical type and semantic tags for any columns names in the provided types
         dictionary. Replaces existing columns with new DataColumn objects and returns a new
         DataTable object.
 
         Args:
-            types (dict[str -> tuple]): A dictionary defining the new logical types and semantic
-            tags for the specified columns.
+            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+                specified columns.
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
+                specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
                 semantic tags set on the column. If False, will replace all semantic tags. Defaults to
                 True.
@@ -364,7 +366,17 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: DataTable with updated logical types and specified semantic tags set.
         """
-        pass
+        if logical_types is not None:
+            _check_logical_types(self._dataframe, logical_types)
+        if semantic_tags is not None:
+            _check_semantic_tags(self._dataframe, semantic_tags)
+        logical_types = logical_types or {}
+        semantic_tags = semantic_tags or {}
+
+        # --> not ideal. see if we can update this
+        new_dt = self._update_cols_and_get_new_dt('set_logical_type', logical_types, retain_index_tags)
+        new_dt = new_dt._update_cols_and_get_new_dt('set_semantic_tags', semantic_tags, retain_index_tags)
+        return new_dt
 
     def set_logical_types(self, logical_types, retain_index_tags=True):
         # --> to remove
