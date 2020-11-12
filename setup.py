@@ -6,7 +6,8 @@ dirname = path.abspath(path.dirname(__file__))
 with open(path.join(dirname, 'README.md')) as f:
     long_description = f.read()
 
-extras_require = {'dask': open('dask-requirements.txt').readlines()}
+extras_require = {'dask': open('dask-requirements.txt').readlines(),
+                  'koalas': open('koalas-requirements.txt').readlines()}
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
