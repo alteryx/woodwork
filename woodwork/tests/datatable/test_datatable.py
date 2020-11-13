@@ -6,7 +6,7 @@ import pytest
 
 import woodwork as ww
 from woodwork import DataColumn, DataTable
-from woodwork.data_table import (
+from woodwork.datatable import (
     _check_index,
     _check_logical_types,
     _check_semantic_tags,
@@ -2095,7 +2095,7 @@ def test_datatable_describe_with_no_semantic_tags(describe_df):
     np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 20.85714, 5)
 
 
-def test_data_table_describe_with_include(sample_df):
+def test_datatable_describe_with_include(sample_df):
     semantic_tags = {
         'full_name': 'tag1',
         'email': ['tag2'],
@@ -2167,7 +2167,7 @@ def test_value_counts(categorical_df):
         assert len(val_cts_2[col]) == 2
 
 
-def test_data_table_handle_nans_for_mutual_info():
+def test_datatable_handle_nans_for_mutual_info():
     df_nans = pd.DataFrame({
         'nans': pd.Series([None, None, None, None]),
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
@@ -2191,7 +2191,7 @@ def test_data_table_handle_nans_for_mutual_info():
     assert formatted_df['str_no_nan'].equals(pd.Series(['test', 'test2', 'test2', 'test'], dtype='category'))
 
 
-def test_data_table_make_categorical_for_mutual_info():
+def test_datatable_make_categorical_for_mutual_info():
     df = pd.DataFrame({
         'ints1': pd.Series([1, 2, 3, 2]),
         'ints2': pd.Series([1, 100, 1, 100]),
@@ -2209,7 +2209,7 @@ def test_data_table_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
-def test_data_table_get_mutual_information(df_same_mi, df_mi):
+def test_datatable_get_mutual_information(df_same_mi, df_mi):
     # Only test if df_same_mi and df_mi are same type
     if type(df_same_mi) != type(df_mi):
         return
@@ -2270,7 +2270,7 @@ def test_mutual_info_sort(df_mi):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
 
 
-def test_data_table_describe_with_no_match(sample_df):
+def test_datatable_describe_with_no_match(sample_df):
     dt = DataTable(sample_df)
     df = dt.describe(include=['wrongname'])
     assert df.empty

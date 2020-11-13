@@ -5,7 +5,7 @@ API Reference
 DataTable
 =========
 
-.. currentmodule:: woodwork.data_table
+.. currentmodule:: woodwork.datatable
 .. autosummary::
     :toctree: generated/
 

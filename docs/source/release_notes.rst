@@ -187,7 +187,7 @@ Release Notes
     * Add dataframe attribute to DataTable (:pr:`39`)
     * Update ReadME with minor usage details (:pr:`37`)
     * Add License (:pr:`34`)
-    * Rename from datatables to data_tables (:pr:`4`)
+    * Rename from datatables to datatables (:pr:`4`)
     * Add Logical Types, DataTable, DataColumn (:pr:`3`)
     * Add Makefile, setup.py, requirements.txt (:pr:`2`)
     * Initial Release (:pr:`1`)

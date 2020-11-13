@@ -971,22 +971,22 @@ def _check_semantic_tags(dataframe, semantic_tags):
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
-def _update_index(data_table, index, old_index=None):
+def _update_index(datatable, index, old_index=None):
     """Add the `index` tag to the specified index column and remove the tag from the
     old_index column, if specified. Also checks that the specified index column
     can be used as an index."""
-    _check_index(data_table._dataframe, index)
-    data_table.columns[index]._set_as_index()
+    _check_index(datatable._dataframe, index)
+    datatable.columns[index]._set_as_index()
     if old_index:
-        data_table._update_columns({old_index: data_table.columns[old_index].remove_semantic_tags('index')})
+        datatable._update_columns({old_index: datatable.columns[old_index].remove_semantic_tags('index')})
 
 
-def _update_time_index(data_table, time_index, old_time_index=None):
+def _update_time_index(datatable, time_index, old_time_index=None):
     """Add the `time_index` tag to the specified time_index column and remove the tag from the
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
 
-    _check_time_index(data_table._dataframe, time_index)
-    data_table.columns[time_index]._set_as_time_index()
+    _check_time_index(datatable._dataframe, time_index)
+    datatable.columns[time_index]._set_as_time_index()
     if old_time_index:
-        data_table._update_columns({old_time_index: data_table.columns[old_time_index].remove_semantic_tags('time_index')})
+        datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
