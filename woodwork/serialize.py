@@ -16,7 +16,7 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '1.0.0'
+SCHEMA_VERSION = '2.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
