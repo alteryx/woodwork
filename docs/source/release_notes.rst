@@ -7,6 +7,7 @@ Release Notes
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
     * Fixes
+        * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
     * Changes
         * Lower moto test requirement for serialization/deserialization (:pr:`376`)
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
@@ -14,7 +15,7 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
 
 **v0.0.5** November 11, 2020
     * Enhancements
