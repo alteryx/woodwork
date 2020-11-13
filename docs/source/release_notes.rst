@@ -8,6 +8,7 @@ Release Notes
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
+        * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
     * Changes
         * Lower moto test requirement for serialization/deserialization (:pr:`376`)
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
