@@ -101,7 +101,7 @@ def _is_numeric_series(series, logical_type):
         if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
-        logical_type = ww.data_column.infer_logical_type(series)
+        logical_type = ww.datacolumn.infer_logical_type(series)
 
     return 'numeric' in logical_type.standard_tags
 

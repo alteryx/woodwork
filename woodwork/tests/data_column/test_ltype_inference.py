@@ -1,6 +1,6 @@
 
 import woodwork as ww
-from woodwork.data_column import infer_logical_type
+from woodwork.datacolumn import infer_logical_type
 from woodwork.logical_types import (
     Boolean,
     Categorical,
