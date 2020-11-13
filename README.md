@@ -54,7 +54,7 @@ dt.types
 ```
                 Physical Type     Logical Type Semantic Tag(s)
 Data Column
-order_id                Int64      WholeNumber       {numeric}
+order_id                Int64          Integer       {numeric}
 product_id           category      Categorical      {category}
 description            string  NaturalLanguage              {}
 quantity              float64           Double       {numeric}

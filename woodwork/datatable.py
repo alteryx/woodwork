@@ -768,8 +768,7 @@ class DataTable(object):
         """
         Calculates mutual information between all pairs of columns in the DataTable
         that support mutual information. Logical Types that support mutual information are
-        as follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode,
-        WholeNumber, and ZIPCode
+        as follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode, and ZIPCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting

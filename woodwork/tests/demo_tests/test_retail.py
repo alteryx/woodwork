@@ -9,8 +9,8 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
-    NaturalLanguage,
-    WholeNumber
+    Integer,
+    NaturalLanguage
 )
 
 
@@ -42,7 +42,7 @@ def test_load_retail_datatable():
         'order_id': Categorical,
         'product_id': Categorical,
         'description': NaturalLanguage,
-        'quantity': WholeNumber,
+        'quantity': Integer,
         'order_date': Datetime,
         'unit_price': Double,
         'customer_name': Categorical,

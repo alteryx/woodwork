@@ -8,8 +8,7 @@ from woodwork.logical_types import (
     Double,
     Integer,
     NaturalLanguage,
-    Timedelta,
-    WholeNumber
+    Timedelta
 )
 from woodwork.utils import import_or_none
 
@@ -45,18 +44,6 @@ def test_integer_inference(integers):
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Integer
-
-
-def test_whole_number_inference(whole_nums):
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
-    if ks and isinstance(whole_nums[0], ks.Series):
-        dtypes = get_koalas_dtypes(dtypes)
-
-    for series in whole_nums:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == WholeNumber
 
 
 def test_double_inference(doubles):
@@ -105,19 +92,6 @@ def test_categorical_integers_inference(integers):
     if ks and isinstance(integers[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
     for series in integers:
-        for dtype in dtypes:
-            inferred_type = infer_logical_type(series.astype(dtype))
-            assert inferred_type == Categorical
-    ww.config.reset_option('numeric_categorical_threshold')
-
-
-def test_categorical_whole_number_inference(whole_nums):
-    ww.config.set_option('numeric_categorical_threshold', 10)
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'uint8',
-              'uint16', 'uint32', 'uint64', 'intp', 'uintp', 'int', 'Int64']
-    if ks and isinstance(whole_nums[0], ks.Series):
-        dtypes = get_koalas_dtypes(dtypes)
-    for series in whole_nums:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))
             assert inferred_type == Categorical
@@ -173,7 +147,6 @@ def test_pdna_inference(pdnas):
     expected_logical_types = [
         NaturalLanguage,
         Integer,
-        WholeNumber,
         Boolean,
     ]
 
