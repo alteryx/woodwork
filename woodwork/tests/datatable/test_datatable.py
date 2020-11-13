@@ -9,6 +9,7 @@ from woodwork import DataColumn, DataTable
 from woodwork.datatable import (
     _check_index,
     _check_logical_types,
+    _check_metadata,
     _check_semantic_tags,
     _check_time_index,
     _check_unique_column_names,
@@ -235,6 +236,7 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
+                         metadata=None,
                          semantic_tags=None,
                          make_index=False)
 
@@ -300,6 +302,16 @@ def test_check_logical_types_errors(sample_df):
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
+
+
+def test_check_metadata_errors():
+    error_message = 'Metadata keys must be strings.'
+    with pytest.raises(KeyError, match=error_message):
+        _check_metadata({1: "test"})
+
+    error_message = 'Metadata values must be json serializable.'
+    with pytest.raises(ValueError, match=error_message):
+        _check_metadata({'dtype': pd.BooleanDtype})
 
 
 def test_datatable_types(sample_df):
@@ -2495,11 +2507,41 @@ def test_datatable_rename(sample_df):
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
-
-def test_datatable_sizeof(sample_df):
     dt = DataTable(sample_df)
     if isinstance(sample_df, pd.DataFrame):
         expected_size = 1069
     else:
         expected_size = 32
     assert dt.__sizeof__() == expected_size
+
+
+def test_datatable_metadata(sample_df):
+    metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
+
+    dt = DataTable(sample_df)
+    assert dt.metadata == {}
+
+    dt.set_metadata(metadata)
+    assert dt.metadata == metadata
+
+    dt = DataTable(sample_df, time_index='signup_date', metadata=metadata)
+    assert dt.metadata == metadata
+
+    dt.set_metadata({'date_created': '1/1/19', 'created_by': 'user1'})
+    assert dt.metadata['date_created'] == '1/1/19'
+    assert dt.metadata['created_by'] == 'user1'
+
+    dt.remove_metadata('created_by')
+    assert 'created_by' not in dt.metadata
+
+    dt.set_metadata({'number': 1012034})
+    assert dt.metadata['number'] == 1012034
+
+    # The list of metadata fields to remove can contain fields that aren't present
+    dt.remove_metadata(['number', 'secondary_time_index', 'not present'])
+    assert 'number' not in dt.metadata
+    assert 'secondary_time_index' not in dt.metadata
+
+
+def test_datatable_metadata_immutable(sample_df):
+    pass

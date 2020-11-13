@@ -1,3 +1,4 @@
+import json
 import warnings
 
 import numpy as np
@@ -59,9 +60,9 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
+            metadata (dict, optional): Dictionary of metadata related to the DataTable.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
-            make_index (bool, optional): If True, will create a new unique, numeric index column with the
                 name specified by ``index`` and will add the new index column to the supplied DataFrame.
                 If True, the name specified in ``index`` cannot match an existing column name in
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
@@ -69,7 +70,7 @@ class DataTable(object):
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
-        _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
+        _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index)
 
         self._dataframe = dataframe
 
@@ -98,6 +99,8 @@ class DataTable(object):
 
         if time_index:
             _update_time_index(self, time_index)
+
+        self._metadata = metadata or {}
 
     def __eq__(self, other, deep=True):
         if self.name != other.name:
@@ -257,6 +260,11 @@ class DataTable(object):
             self.columns[name] = column
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
+
+    @property
+    def metadata(self):
+        # --> should we make this immutable? copy.depcopy?
+        return self._metadata.copy()
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -435,6 +443,20 @@ class DataTable(object):
         if not columns:
             columns = self.columns.keys()
         return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
+
+    def set_metadata(self, metadata):
+        # --> write better docstrings
+        """Merges existing metadata with new metadata, overwriting if necessary
+        """
+        _check_metadata(metadata)
+        self._metadata = {**self.metadata, **metadata}
+
+    def remove_metadata(self, metadata_fields_to_remove):
+        """Removes specified fields from metadata - list or value
+        """
+        if isinstance(metadata_fields_to_remove, str):
+            metadata_fields_to_remove = [metadata_fields_to_remove]
+        self._metadata = {key: value for key, value in self._metadata.items() if key not in metadata_fields_to_remove}
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
         """Helper method that can be used for updating columns by calling the column method
@@ -935,7 +957,7 @@ def _validate_dataframe(dataframe):
     return dataframe
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
+def _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
@@ -944,6 +966,8 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
+    if metadata:
+        _check_metadata(metadata)
     if time_index:
         datetime_format = None
         logical_type = None
@@ -1007,6 +1031,17 @@ def _check_semantic_tags(dataframe, semantic_tags):
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_metadata(metadata):
+    if not all([isinstance(key, str) for key in metadata.keys()]):
+        raise KeyError('Metadata keys must be strings.')
+
+    try:
+        [json.dumps(value) for value in metadata.values()]
+    # --> onyl way to get value error i think is if we disallow nans, which maybe we want?
+    except (TypeError):
+        raise ValueError('Metadata values must be json serializable.')
 
 
 def _update_index(datatable, index, old_index=None):
