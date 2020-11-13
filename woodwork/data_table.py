@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 import woodwork.serialize as serialize
-from woodwork.data_column import DataColumn
+from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
 from woodwork.logical_types import (
@@ -187,7 +187,7 @@ class DataTable(object):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
-        data_columns = {}
+        datacolumns = {}
         for name in column_names:
             if logical_types and name in logical_types:
                 logical_type = logical_types[name]
@@ -198,8 +198,8 @@ class DataTable(object):
             else:
                 semantic_tag = None
             dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
-            data_columns[dc.name] = dc
-        return data_columns
+            datacolumns[dc.name] = dc
+        return datacolumns
 
     @property
     def logical_types(self):

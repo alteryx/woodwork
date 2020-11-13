@@ -38,7 +38,7 @@ def test_iLocIndexer_class(sample_df):
     assert ind[0, 0] == 0
 
 
-def test_iloc_data_column(sample_series):
+def test_iloc_datacolumn(sample_series):
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('iloc is not supported with Dask inputs')
     semantic_tags = ['tag1', 'tag2']

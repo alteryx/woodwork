@@ -33,7 +33,7 @@ DataTable
 DataColumn
 ==========
 
-.. currentmodule:: woodwork.data_column
+.. currentmodule:: woodwork.datacolumn
 .. autosummary::
     :toctree: generated/
 

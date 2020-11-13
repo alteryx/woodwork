@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.data_column import DataColumn
+from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning, DuplicateTagsWarning
 from woodwork.logical_types import (
     Categorical,
@@ -25,7 +25,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-def test_data_column_init(sample_series):
+def test_datacolumn_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support category dtype
     if not (ks and isinstance(sample_series, ks.Series)):
@@ -36,7 +36,7 @@ def test_data_column_init(sample_series):
     assert data_col.semantic_tags == set()
 
 
-def test_data_column_init_with_logical_type(sample_series):
+def test_datacolumn_init_with_logical_type(sample_series):
     data_col = DataColumn(sample_series, NaturalLanguage)
     assert data_col.logical_type == NaturalLanguage
     assert data_col.semantic_tags == set()
@@ -50,13 +50,13 @@ def test_data_column_init_with_logical_type(sample_series):
     assert data_col.semantic_tags == set()
 
 
-def test_data_column_init_with_semantic_tags(sample_series):
+def test_datacolumn_init_with_semantic_tags(sample_series):
     semantic_tags = ['tag1', 'tag2']
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == set(semantic_tags)
 
 
-def test_data_column_init_wrong_series():
+def test_datacolumn_init_wrong_series():
     error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray'
     with pytest.raises(TypeError, match=error):
         DataColumn([1, 2, 3, 4])
@@ -65,7 +65,7 @@ def test_data_column_init_wrong_series():
         DataColumn(np.array([1, 2, 3, 4]))
 
 
-def test_data_column_init_with_name(sample_series, sample_datetime_series):
+def test_datacolumn_init_with_name(sample_series, sample_datetime_series):
     name = 'sample_series'
     changed_name = 'changed_name'
 
@@ -86,7 +86,7 @@ def test_data_column_init_with_name(sample_series, sample_datetime_series):
     assert dc_with_ltype_change.to_series().name == changed_name
 
 
-def test_data_column_init_with_extension_array():
+def test_datacolumn_init_with_extension_array():
     series_categories = pd.Series([1, 2, 3], dtype='category')
     extension_categories = pd.Categorical([1, 2, 3])
 
@@ -112,7 +112,7 @@ def test_data_column_init_with_extension_array():
     assert series.equals(series_strs)
 
 
-def test_data_column_with_alternate_semantic_tags_input(sample_series):
+def test_datacolumn_with_alternate_semantic_tags_input(sample_series):
     semantic_tags = 'custom_tag'
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == {'custom_tag'}
@@ -146,7 +146,7 @@ def test_semantic_tag_errors(sample_series):
         DataColumn(sample_series, semantic_tags=['index', 1])
 
 
-def test_data_column_repr(sample_series):
+def test_datacolumn_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support categorical
     if ks and isinstance(sample_series, ks.Series):
@@ -524,7 +524,7 @@ def test_ordinal_with_nan_values():
     assert dc.logical_type.order == ['a', 'b']
 
 
-def test_data_column_equality(sample_series, sample_datetime_series):
+def test_datacolumn_equality(sample_series, sample_datetime_series):
     # Check different parameters to DataColumn
     str_col = DataColumn(sample_series, logical_type='Categorical')
     str_col_2 = DataColumn(sample_series, logical_type=Categorical)
