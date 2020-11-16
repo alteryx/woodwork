@@ -15,7 +15,7 @@ Release Notes
         * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
     * Documentation Changes
     * Testing Changes
-        * Add pyarrow, dask, koalas, to automated dependency checks (:pr:`388`)
+        * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
