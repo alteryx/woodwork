@@ -374,7 +374,7 @@ class DataTable(object):
         new_dt = self._new_dt_from_cols(self.columns)
         cols_to_update = {}
         for col_name, col in new_dt.columns.items():
-            if col_name in logical_types or col_name in semantic_tags:
+            if col_name not in logical_types and col_name not in semantic_tags:
                 continue
             if col_name in logical_types:
                 col = col.set_logical_type(logical_types[col_name], retain_index_tags)
