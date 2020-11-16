@@ -38,5 +38,5 @@ installdeps-dev:
 
 .PHONY: checkdeps
 checkdeps:
-	$(eval allow_list='numpy|pandas|scikit|click')
+	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark|koalas')
 	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
