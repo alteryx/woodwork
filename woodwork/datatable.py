@@ -764,7 +764,7 @@ class DataTable(object):
             data[col_name] = new_col.cat.codes
         return data
 
-    def get_mutual_information(self, num_bins=10, nrows=None):
+    def mutual_information(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataTable
         that support mutual information. Logical Types that support mutual information are
