@@ -19,7 +19,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_datatable_schema_2.0.0.tar"
+TEST_FILE = "test_serialization_data_datatable_schema_3.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -49,7 +49,7 @@ def test_to_dictionary(sample_df):
         cat_val = 'category'
         string_val = 'string'
         bool_val = 'boolean'
-    expected = {'schema_version': '2.0.0',
+    expected = {'schema_version': '3.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -90,14 +90,15 @@ def test_to_dictionary(sample_df):
                                      'physical_type': {'type': bool_val},
                                      'semantic_tags': []}],
                 'loading_info': {'table_type': table_type},
-                'table_metadata': {}
-
+                'table_metadata': {'date_created': '11/16/20'}
                 }
+
     dt = DataTable(sample_df,
                    name='test_data',
                    index='id',
                    semantic_tags={'id': 'tag1'},
-                   logical_types={'age': Ordinal(order=[25, 33, 57])})
+                   logical_types={'age': Ordinal(order=[25, 33, 57])},
+                   metadata={'date_created': '11/16/20'})
     metadata = dt.to_dictionary()
 
     assert metadata == expected
@@ -318,12 +319,12 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     dt = DataTable(sample_df)
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
-    with open(str(write_path.join('table_metadata.json')), 'w') as f:
+    with open(str(write_path.join('table_description.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
     compression = None
     serialize.write_datatable(dt, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
     assert os.path.exists(str(test_dir))
-    with open(str(write_path.join('table_metadata.json')), 'r') as f:
+    with open(str(write_path.join('table_description.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 

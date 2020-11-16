@@ -16,17 +16,17 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '2.0.0'
+SCHEMA_VERSION = '3.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
-def datatable_to_metadata(datatable):
-    '''Gets the metadata for a DataTable, including typing information for each column
+def datatable_to_description(datatable):
+    '''Gets the description for a DataTable, including typing information for each column
     and loading information.
     '''
     df = datatable.to_dataframe()
     ordered_columns = df.columns
-    dt_metadata = [
+    column_metadata = [
         {
             'name': col.name,
             'ordinal': ordered_columns.get_loc(col.name),
@@ -54,7 +54,7 @@ def datatable_to_metadata(datatable):
         'name': datatable.name,
         'index': datatable.index,
         'time_index': datatable.time_index,
-        'column_metadata': dt_metadata,
+        'column_metadata': column_metadata,
         'loading_info': {
             'table_type': table_type
         },
@@ -67,7 +67,7 @@ def write_datatable(datatable, path, profile_name=None, **kwargs):
 
     Args:
     datatable (DataTable) : Instance of :class:`.DataTable`.
-    path (str) : Location on disk to write datatable data and metadata.
+    path (str) : Location on disk to write datatable data and description.
     profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
     kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
@@ -89,15 +89,15 @@ def write_datatable(datatable, path, profile_name=None, **kwargs):
 
 
 def dump_table(datatable, path, **kwargs):
-    '''Writes datatable metadata to table_metadata.json at the specified path.
+    '''Writes datatable description to table_description.json at the specified path.
     '''
     loading_info = write_table_data(datatable, path, **kwargs)
-    metadata = datatable_to_metadata(datatable)
-    metadata['loading_info'].update(loading_info)
+    description = datatable_to_description(datatable)
+    description['loading_info'].update(loading_info)
 
-    file = os.path.join(path, 'table_metadata.json')
+    file = os.path.join(path, 'table_description.json')
     with open(file, 'w') as file:
-        json.dump(metadata, file)
+        json.dump(description, file)
 
 
 def write_table_data(datatable, path, format='csv', **kwargs):
@@ -158,7 +158,7 @@ def create_archive(tmpdir):
     file_name = "dt-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')
-    tar.add(str(tmpdir) + '/table_metadata.json', arcname='/table_metadata.json')
+    tar.add(str(tmpdir) + '/table_description.json', arcname='/table_description.json')
     tar.add(str(tmpdir) + '/data', arcname='/data')
     tar.close()
     return file_path

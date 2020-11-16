@@ -16,39 +16,39 @@ from woodwork.serialize import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
-def read_table_metadata(path):
-    '''Read DataTable metadata from disk, S3 path, or URL.
+def read_table_description(path):
+    '''Read DataTable description from disk, S3 path, or URL.
 
         Args:
-            path (str): Location on disk, S3 path, or URL to read `table_metadata.json`.
+            path (str): Location on disk, S3 path, or URL to read `table_description.json`.
 
         Returns:
-            metadata (dict) : Metadata for :class:`.Datatable`.
+            description (dict) : Description for :class:`.Datatable`.
     '''
 
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
-    file = os.path.join(path, 'table_metadata.json')
+    file = os.path.join(path, 'table_description.json')
     with open(file, 'r') as file:
-        metadata = json.load(file)
-    metadata['path'] = path
-    return metadata
+        description = json.load(file)
+    description['path'] = path
+    return description
 
 
-def metadata_to_datatable(table_metadata, **kwargs):
-    '''Deserialize DataTable from table metadata.
+def description_to_datatable(table_description, **kwargs):
+    '''Deserialize DataTable from table description.
 
     Args:
-        table_metadata (dict) : Metadata of a :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_metadata`
+        table_description (dict) : Description of a :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_description`
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
         datatable (woodwork.DataTable) : Instance of :class:`.DataTable`.
     '''
-    _check_schema_version(table_metadata['schema_version'])
+    _check_schema_version(table_description['schema_version'])
 
-    path = table_metadata['path']
-    loading_info = table_metadata['loading_info']
+    path = table_description['path']
+    loading_info = table_description['loading_info']
 
     file = os.path.join(path, loading_info['location'])
 
@@ -94,7 +94,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
 
     logical_types = {}
     semantic_tags = {}
-    for col in table_metadata['column_metadata']:
+    for col in table_description['column_metadata']:
         col_name = col['name']
 
         ltype_metadata = col['logical_type']
@@ -111,20 +111,20 @@ def metadata_to_datatable(table_metadata, **kwargs):
         semantic_tags[col_name] = tags
 
     return DataTable(dataframe,
-                     name=table_metadata.get('name'),
-                     index=table_metadata.get('index'),
-                     time_index=table_metadata.get('time_index'),
+                     name=table_description.get('name'),
+                     index=table_description.get('index'),
+                     time_index=table_description.get('time_index'),
                      logical_types=logical_types,
                      semantic_tags=semantic_tags,
                      use_standard_tags=False,
-                     metadata=table_metadata.get('table_metadata'))
+                     metadata=table_description.get('table_metadata'))
 
 
 def read_datatable(path, profile_name=None, **kwargs):
     '''Read DataTable from disk, S3 path, or URL.
 
         Args:
-            path (str): Directory on disk, S3 path, or URL to read `table_metadata.json`.
+            path (str): Directory on disk, S3 path, or URL to read `table_description.json`.
             profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
@@ -142,11 +142,11 @@ def read_datatable(path, profile_name=None, **kwargs):
             with tarfile.open(str(file_path)) as tar:
                 tar.extractall(path=tmpdir)
 
-            table_metadata = read_table_metadata(tmpdir)
-            return metadata_to_datatable(table_metadata, **kwargs)
+            table_description = read_table_description(tmpdir)
+            return description_to_datatable(table_description, **kwargs)
     else:
-        table_metadata = read_table_metadata(path)
-        return metadata_to_datatable(table_metadata, **kwargs)
+        table_description = read_table_description(path)
+        return description_to_datatable(table_description, **kwargs)
 
 
 def _check_schema_version(saved_version_str):

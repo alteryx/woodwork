@@ -887,12 +887,12 @@ class DataTable(object):
 
     def to_dictionary(self):
         '''
-        Get a DataTable's metadata
+        Get a DataTable's description
 
         Returns:
-            metadata (dict) : Description of :class:`.DataTable`.
+            description (dict) : Description of :class:`.DataTable`.
         '''
-        return serialize.datatable_to_metadata(self)
+        return serialize.datatable_to_description(self)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
         '''Write DataTable to disk in the CSV format, location specified by `path`.
