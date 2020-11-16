@@ -341,23 +341,41 @@ class DataTable(object):
         _update_time_index(new_dt, time_index, self.time_index)
         return new_dt
 
-    def set_logical_types(self, logical_types, retain_index_tags=True):
-        """Update the logical type for any columns names in the provided logical_types
+    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
+        """Update the logical type and semantic tags for any columns names in the provided types
         dictionary. Replaces existing columns with new DataColumn objects and returns a new
         DataTable object.
 
         Args:
-            logical_types (dict[str -> str/list/set]): A dictionary defining the new logical types for the
+            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+                specified columns.
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
-                semantic tags set on the column. If false, will clear all semantic tags. Defaults to
+                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
                 True.
 
         Returns:
-            woodwork.DataTable: DataTable with updated logical types
+            woodwork.DataTable: DataTable with updated logical types and specified semantic tags set.
         """
+        logical_types = logical_types or {}
         _check_logical_types(self._dataframe, logical_types)
-        new_dt = self._update_cols_and_get_new_dt('set_logical_type', logical_types, retain_index_tags)
+
+        semantic_tags = semantic_tags or {}
+        _check_semantic_tags(self._dataframe, semantic_tags)
+
+        new_dt = self._new_dt_from_cols(self.columns)
+        cols_to_update = {}
+        for col_name, col in new_dt.columns.items():
+            if col_name not in logical_types and col_name not in semantic_tags:
+                continue
+            if col_name in logical_types:
+                col = col.set_logical_type(logical_types[col_name], retain_index_tags)
+            if col_name in semantic_tags:
+                col = col.set_semantic_tags(semantic_tags[col_name], retain_index_tags)
+            cols_to_update[col_name] = col
+
+        new_dt._update_columns(cols_to_update)
         return new_dt
 
     def add_semantic_tags(self, semantic_tags):
@@ -388,24 +406,6 @@ class DataTable(object):
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         return self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
-
-    def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        """Update the semantic tags for any column names in the provided semantic_tags
-        dictionary. Replaces the existing semantic tags with the new values. Also replaces
-        any updated columns with new DataColumn objects and returns a new DataTable object.
-
-        Args:
-            semantic_tags (dict): A dictionary defining the new semantic_tags for the
-                specified columns.
-            retain_index_tags (bool, optional): If True, will retain any index or
-                time_index semantic tags set on the column. If False, will replace all
-                semantic tags. Defaults to True.
-
-        Returns:
-            woodwork.DataTable: DataTable with the specified semantic tags set
-        """
-        _check_semantic_tags(self._dataframe, semantic_tags)
-        return self._update_cols_and_get_new_dt('set_semantic_tags', semantic_tags, retain_index_tags)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and

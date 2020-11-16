@@ -15,6 +15,7 @@ Release Notes
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
         * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
         * Updates to LogicalTypes to support Koalas 1.4.0 (:pr:`393`)
+        * Replace ``set_logical_types`` and ``set_semantic_tags`` with just ``set_types`` (:pr:`379`)
         * Remove ``copy_dataframe`` parameter from init of DataTable (:pr:`398`)
     * Documentation Changes
     * Testing Changes
@@ -22,8 +23,10 @@ Release Notes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
-
+    
 **Breaking Changes**
+    * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
+    * The ``DataTable.set_logical_types`` method was removed. ``DataTable.set_types`` can be used instead.
     * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
     * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
     * The ``copy_dataframe`` parameter was removed from DataTable initialization.
