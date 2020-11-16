@@ -1,3 +1,4 @@
+import copy
 import json
 import warnings
 
@@ -60,7 +61,7 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
-            metadata (dict, optional): Dictionary of metadata related to the DataTable.
+            metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
                 name specified by ``index`` and will add the new index column to the supplied DataFrame.
@@ -263,8 +264,8 @@ class DataTable(object):
 
     @property
     def metadata(self):
-        # --> should we make this immutable? copy.depcopy?
-        return self._metadata.copy()
+        """A deep copy of the dictionary of the DataTable's use supplied metadata."""
+        return copy.deepcopy(self._metadata)
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -445,14 +446,20 @@ class DataTable(object):
         return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
 
     def set_metadata(self, metadata):
-        # --> write better docstrings
-        """Merges existing metadata with new metadata, overwriting if necessary
+        """Merges existing metadata with new metadata, overwriting if necessary.
+
+        Args:
+            metadata (dict): Metadata to be added to the DataTable. Must be json serializazble.
         """
         _check_metadata(metadata)
         self._metadata = {**self.metadata, **metadata}
 
     def remove_metadata(self, metadata_fields_to_remove):
-        """Removes specified fields from metadata - list or value
+        """Removes specified fields from metadata.
+
+        Args:
+            metadata_fields_to_remove (list[str]): List of metadata fields to remove from DataTable.metadata.
+                Will ignore any fields that are not present.
         """
         if isinstance(metadata_fields_to_remove, str):
             metadata_fields_to_remove = [metadata_fields_to_remove]
@@ -1039,7 +1046,6 @@ def _check_metadata(metadata):
 
     try:
         [json.dumps(value) for value in metadata.values()]
-    # --> onyl way to get value error i think is if we disallow nans, which maybe we want?
     except (TypeError):
         raise ValueError('Metadata values must be json serializable.')
 

@@ -2550,7 +2550,8 @@ def test_datatable_metadata_immutable(sample_df):
     assert dt.metadata == original_metadata
 
     changed_metadata = dt.metadata
-    changed_metadata['extra_field'] = 'test'
+    changed_metadata['extra_field'] = ['test', 'list']
+    assert 'extra_field' not in dt.metadata
 
-    assert dt.metadata != changed_metadata
-    assert dt.metadata == original_metadata
+    changed_metadata['secondary_time_index']['email'] = 'age'
+    assert dt.metadata['secondary_time_index'] == {'is_registered': 'age'}
