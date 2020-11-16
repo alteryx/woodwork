@@ -38,7 +38,6 @@ class DataTable(object):
                  time_index=None,
                  semantic_tags=None,
                  logical_types=None,
-                 copy_dataframe=False,
                  use_standard_tags=True,
                  make_index=False):
         """Create DataTable
@@ -60,9 +59,6 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
-            copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
-                prior to creating the DataTable. Defaults to False, which results in using a
-                reference to the input dataframe.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             make_index (bool, optional): If True, will create a new unique, numeric index column with the
@@ -75,10 +71,7 @@ class DataTable(object):
         dataframe = _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
 
-        if copy_dataframe:
-            self._dataframe = dataframe.copy()
-        else:
-            self._dataframe = dataframe
+        self._dataframe = dataframe
 
         if make_index:
             if dd and isinstance(self._dataframe, dd.DataFrame):
