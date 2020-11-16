@@ -264,7 +264,7 @@ class DataTable(object):
 
     @property
     def metadata(self):
-        """A deep copy of the dictionary of the DataTable's use supplied metadata."""
+        """A deep copy of the dictionary of the DataTable's user supplied metadata."""
         return copy.deepcopy(self._metadata)
 
     def pop(self, column_name):

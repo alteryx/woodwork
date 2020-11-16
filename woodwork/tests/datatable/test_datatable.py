@@ -2527,20 +2527,19 @@ def test_datatable_metadata(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', metadata=metadata)
     assert dt.metadata == metadata
 
-    dt.set_metadata({'date_created': '1/1/19', 'created_by': 'user1'})
-    assert dt.metadata['date_created'] == '1/1/19'
-    assert dt.metadata['created_by'] == 'user1'
+    new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
+    dt.set_metadata(new_data)
+    assert dt.metadata == {**metadata, **new_data}
 
     dt.remove_metadata('created_by')
-    assert 'created_by' not in dt.metadata
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
 
     dt.set_metadata({'number': 1012034})
-    assert dt.metadata['number'] == 1012034
+    assert dt.metadata == {'number': 1012034, 'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
 
     # The list of metadata fields to remove can contain fields that aren't present
     dt.remove_metadata(['number', 'secondary_time_index', 'not present'])
-    assert 'number' not in dt.metadata
-    assert 'secondary_time_index' not in dt.metadata
+    assert dt.metadata == {'date_created': '1/1/19'}
 
 
 def test_datatable_metadata_immutable(sample_df):
@@ -2548,6 +2547,7 @@ def test_datatable_metadata_immutable(sample_df):
 
     dt = DataTable(sample_df, time_index='signup_date', metadata=original_metadata)
     assert dt.metadata == original_metadata
+    assert dt.metadata is not original_metadata
 
     changed_metadata = dt.metadata
     changed_metadata['extra_field'] = ['test', 'list']
