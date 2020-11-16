@@ -553,7 +553,7 @@ def test_set_types_combined(sample_df):
     assert dt['signup_date'].semantic_tags == set(['time_index'])
     assert dt['signup_date'].logical_type == Datetime
     assert dt['age'].semantic_tags == set(['numeric'])
-    assert dt['age'].logical_type == WholeNumber
+    assert dt['age'].logical_type == Integer
     assert dt['is_registered'].semantic_tags == set()
     assert dt['is_registered'].logical_type == Boolean
     assert dt['email'].logical_type == NaturalLanguage
@@ -974,7 +974,7 @@ def test_invalid_dtype_casting():
     with pytest.raises(TypeError, match=re.escape(err_msg)):
         dt.set_types(logical_types={column_name: Double})
 
-    # Cannot cast invalid strings to whole numbers
+    # Cannot cast invalid strings to integers
     series = pd.Series(['1', 'two', '3'], name=column_name)
     ltypes = {
         column_name: Integer,
