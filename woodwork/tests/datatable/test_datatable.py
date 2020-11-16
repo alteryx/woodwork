@@ -62,14 +62,6 @@ def test_datatable_init(sample_df):
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
 
 
-def test_datatable_copy_param(sample_df):
-    dt_with_copy = DataTable(sample_df, copy_dataframe=True)
-    assert sample_df is not dt_with_copy.to_dataframe()
-
-    dt_no_copy = DataTable(sample_df)
-    assert sample_df is dt_no_copy.to_dataframe()
-
-
 def test_datatable_init_with_name_and_index_vals(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
@@ -2338,7 +2330,7 @@ def test_datatable_equality(sample_df, sample_series):
     if sample_df.__module__.split('.')[0] != sample_series.__module__.split('.')[0]:
         return
     dt_basic = DataTable(sample_df)
-    dt_basic2 = DataTable(sample_df, copy_dataframe=True)
+    dt_basic2 = DataTable(sample_df.copy())
     dt_names = DataTable(sample_df, name='test')
 
     assert dt_basic != dt_names
