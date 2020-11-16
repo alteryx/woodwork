@@ -425,7 +425,7 @@ def test_set_logical_types(sample_df):
     }
     dt = DataTable(sample_df, semantic_tags=semantic_tags, use_standard_tags=True)
 
-    new_dt = dt.set_logical_types({
+    new_dt = dt.set_types(logical_types={
         'full_name': Categorical,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
@@ -465,11 +465,11 @@ def test_set_logical_types_invalid_data(sample_df):
     dt = DataTable(sample_df)
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday']")
     with pytest.raises(LookupError, match=error_message):
-        dt.set_logical_types({'birthday': Double})
+        dt.set_types(logical_types={'birthday': Double})
 
     error_message = "Invalid logical type specified for 'age'"
     with pytest.raises(TypeError, match=error_message):
-        dt.set_logical_types({'age': int})
+        dt.set_types(logical_types={'age': int})
 
 
 def test_semantic_tags_during_init(sample_df):
@@ -512,7 +512,7 @@ def test_set_semantic_tags(sample_df):
         'full_name': ['new_tag'],
         'age': 'numeric',
     }
-    new_dt = dt.set_semantic_tags(new_tags)
+    new_dt = dt.set_types(semantic_tags=new_tags)
     # Verify original tags were not changed
     assert dt.columns['full_name'].semantic_tags == {'tag1'}
     assert dt.columns['age'].semantic_tags == {'numeric', 'age'}
@@ -529,9 +529,9 @@ def test_set_semantic_tags_with_index(sample_df):
     new_tags = {
         'id': 'new_tag',
     }
-    dt = dt.set_semantic_tags(new_tags)
+    dt = dt.set_types(semantic_tags=new_tags)
     assert dt.columns['id'].semantic_tags == {'index', 'new_tag'}
-    dt = dt.set_semantic_tags(new_tags, retain_index_tags=False)
+    dt = dt.set_types(semantic_tags=new_tags, retain_index_tags=False)
     assert dt.columns['id'].semantic_tags == {'new_tag'}
 
 
@@ -542,10 +542,44 @@ def test_set_semantic_tags_with_time_index(sample_df):
     new_tags = {
         'signup_date': 'new_tag',
     }
-    dt = dt.set_semantic_tags(new_tags)
+    dt = dt.set_types(semantic_tags=new_tags)
     assert dt.columns['signup_date'].semantic_tags == {'time_index', 'new_tag'}
-    dt = dt.set_semantic_tags(new_tags, retain_index_tags=False)
+    dt = dt.set_types(semantic_tags=new_tags, retain_index_tags=False)
     assert dt.columns['signup_date'].semantic_tags == {'new_tag'}
+
+
+def test_set_types_combined(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    assert dt['signup_date'].semantic_tags == set(['time_index'])
+    assert dt['signup_date'].logical_type == Datetime
+    assert dt['age'].semantic_tags == set(['numeric'])
+    assert dt['age'].logical_type == Integer
+    assert dt['is_registered'].semantic_tags == set()
+    assert dt['is_registered'].logical_type == Boolean
+    assert dt['email'].logical_type == NaturalLanguage
+    assert dt['phone_number'].logical_type == NaturalLanguage
+
+    semantic_tags = {
+        'signup_date': ['test1'],
+        'age': [],
+        'is_registered': 'test2'
+    }
+
+    logical_types = {
+        'email': 'EmailAddress',
+        'phone_number': PhoneNumber,
+        'age': 'Double'
+    }
+
+    dt = dt.set_types(logical_types=logical_types, semantic_tags=semantic_tags)
+    assert dt['signup_date'].semantic_tags == set(['test1', 'time_index'])
+    assert dt['signup_date'].logical_type == Datetime
+    assert dt['age'].semantic_tags == set(['numeric'])
+    assert dt['age'].logical_type == Double
+    assert dt['is_registered'].semantic_tags == set(['test2'])
+    assert dt['is_registered'].logical_type == Boolean
+    assert dt['email'].logical_type == EmailAddress
+    assert dt['phone_number'].logical_type == PhoneNumber
 
 
 def test_add_semantic_tags(sample_df):
@@ -710,7 +744,7 @@ def test_sets_category_dtype_on_update():
             column_name: NaturalLanguage,
         }
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
-        dt = dt.set_logical_types({column_name: logical_type})
+        dt = dt.set_types(logical_types={column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
@@ -766,7 +800,7 @@ def test_sets_string_dtype_on_update():
             column_name: Categorical,
         }
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
-        dt = dt.set_logical_types({column_name: logical_type})
+        dt = dt.set_types(logical_types={column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
@@ -801,7 +835,7 @@ def test_sets_boolean_dtype_on_update():
         column_name: Integer,
     }
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
-    dt = dt.set_logical_types({column_name: Boolean})
+    dt = dt.set_types(logical_types={column_name: Boolean})
     assert dt.columns[column_name].logical_type == Boolean
     assert dt.columns[column_name].dtype == Boolean.pandas_dtype
     assert dt.to_dataframe()[column_name].dtype == Boolean.pandas_dtype
@@ -840,7 +874,7 @@ def test_sets_int64_dtype_on_update():
             column_name: Double,
         }
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
-        dt = dt.set_logical_types({column_name: logical_type})
+        dt = dt.set_types(logical_types={column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
@@ -874,7 +908,7 @@ def test_sets_float64_dtype_on_update():
         column_name: Integer,
     }
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
-    dt = dt.set_logical_types({column_name: Double})
+    dt = dt.set_types(logical_types={column_name: Double})
     assert dt.columns[column_name].logical_type == Double
     assert dt.columns[column_name].dtype == Double.pandas_dtype
     assert dt.to_dataframe()[column_name].dtype == Double.pandas_dtype
@@ -910,7 +944,7 @@ def test_sets_datetime_dtype_on_update():
         column_name: NaturalLanguage,
     }
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
-    dt = dt.set_logical_types({column_name: Datetime})
+    dt = dt.set_types(logical_types={column_name: Datetime})
     assert dt.columns[column_name].logical_type == Datetime
     assert dt.columns[column_name].dtype == Datetime.pandas_dtype
     assert dt.to_dataframe()[column_name].dtype == Datetime.pandas_dtype
@@ -938,9 +972,9 @@ def test_invalid_dtype_casting():
     err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
         'float64. Please confirm the underlying data is consistent with logical type Double.'
     with pytest.raises(TypeError, match=re.escape(err_msg)):
-        dt.set_logical_types({column_name: Double})
+        dt.set_types(logical_types={column_name: Double})
 
-    # Cannot cast invalid strings to whole numbers
+    # Cannot cast invalid strings to integers
     series = pd.Series(['1', 'two', '3'], name=column_name)
     ltypes = {
         column_name: Integer,
@@ -1045,7 +1079,7 @@ def test_timedelta_dtype_inference_on_init():
 
 def test_select_ltypes_no_match_and_all(sample_df):
     dt = DataTable(sample_df)
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
@@ -1062,7 +1096,7 @@ def test_select_ltypes_no_match_and_all(sample_df):
 
 def test_select_ltypes_strings(sample_df):
     dt = DataTable(sample_df)
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
@@ -1081,7 +1115,7 @@ def test_select_ltypes_strings(sample_df):
 
 def test_select_ltypes_objects(sample_df):
     dt = DataTable(sample_df)
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
@@ -1100,7 +1134,7 @@ def test_select_ltypes_objects(sample_df):
 
 def test_select_ltypes_mixed(sample_df):
     dt = DataTable(sample_df)
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
@@ -1115,14 +1149,14 @@ def test_select_ltypes_mixed(sample_df):
 
 def test_select_ltypes_table(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id')
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
         'signup_date': Datetime,
     })
-    dt.set_semantic_tags({
+    dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
@@ -1147,14 +1181,14 @@ def test_select_ltypes_table(sample_df):
 
 def test_new_dt_from_columns(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
         'signup_date': Datetime,
     })
-    dt.set_semantic_tags({
+    dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
@@ -1179,7 +1213,7 @@ def test_new_dt_from_columns(sample_df):
 
 def test_select_semantic_tags(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', name='dt_name')
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': 'tag1',
         'email': ['tag2'],
         'age': ['numeric', 'tag2'],
@@ -1636,14 +1670,14 @@ def test_shape(categorical_df):
 
 def test_select_invalid_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'age': Double,
         'signup_date': Datetime,
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
@@ -1658,13 +1692,13 @@ def test_select_invalid_inputs(sample_df):
 
 def test_select_single_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'signup_date': Datetime(datetime_format='%Y-%m-%d')
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
         'signup_date': 'date_of_birth'
@@ -1690,13 +1724,13 @@ def test_select_single_inputs(sample_df):
 
 def test_select_list_inputs(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
         'signup_date': 'date_of_birth',
@@ -1727,13 +1761,13 @@ def test_select_list_inputs(sample_df):
 
 def test_select_semantic_tags_no_match(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    dt = dt.set_logical_types({
+    dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
         'phone_number': PhoneNumber,
         'signup_date': Datetime(datetime_format='%Y-%m-%d'),
     })
-    dt = dt.set_semantic_tags({
+    dt = dt.set_types(semantic_tags={
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
         'signup_date': 'date_of_birth',
@@ -1826,7 +1860,7 @@ def test_datetime_inference_with_format_param():
     })
     dt = DataTable(df)
 
-    dt = dt.set_logical_types({'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
+    dt = dt.set_types(logical_types={'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
     dt.time_index = 'mdy_special'
     assert isinstance(dt['mdy_special'].logical_type, Datetime)
     assert dt.time_index == 'mdy_special'
@@ -2368,8 +2402,8 @@ def test_datatable_equality(sample_df, sample_series):
 
     dt_with_ltypes = DataTable(sample_df, time_index='id', logical_types={'full_name': 'categorical'})
     assert dt_with_ltypes != dt_time_index
-    assert dt_with_ltypes == dt_numeric_time_index.set_logical_types({'full_name': Categorical})
-    assert dt_with_ltypes != dt_numeric_time_index.set_logical_types({'full_name': Categorical()})
+    assert dt_with_ltypes == dt_numeric_time_index.set_types(logical_types={'full_name': Categorical})
+    assert dt_with_ltypes != dt_numeric_time_index.set_types(logical_types={'full_name': Categorical()})
 
 
 def test_datatable_rename_errors(sample_df):
