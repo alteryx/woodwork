@@ -192,9 +192,6 @@ def read_csv(filepath=None,
         logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
             the dataframe to the LogicalType for the column. LogicalTypes will be inferred
             for any columns not present in the dictionary.
-        copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
-            prior to creating the DataTable. Defaults to False, which results in using a
-            reference to the input dataframe.
         use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
             on the inferred or specified logical type for the column. Defaults to True.
         **kwargs: Additional keyword arguments to pass to the underlying ``pandas.read_csv`` function. For more

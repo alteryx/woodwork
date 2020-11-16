@@ -15,6 +15,7 @@ Release Notes
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
         * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
         * Updates to LogicalTypes to support Koalas 1.4.0 (:pr:`393`)
+        * Remove ``copy_dataframe`` parameter from init of DataTable (:pr:`398`)
     * Documentation Changes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
@@ -25,6 +26,7 @@ Release Notes
 **Breaking Changes**
     * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
     * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
+    * The ``copy_dataframe`` parameter was removed from DataTable initialization.
 
 **v0.0.5** November 11, 2020
     * Enhancements
