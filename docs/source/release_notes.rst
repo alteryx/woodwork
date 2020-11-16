@@ -9,6 +9,7 @@ Release Notes
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
         * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
+        * Rename ``get_mutual_information`` ``mutual_information`` (:pr:`390`)
     * Changes
         * Lower moto test requirement for serialization/deserialization (:pr:`376`)
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
@@ -22,6 +23,7 @@ Release Notes
 
 **Breaking Changes**
     * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
+    * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
 
 **v0.0.5** November 11, 2020
     * Enhancements

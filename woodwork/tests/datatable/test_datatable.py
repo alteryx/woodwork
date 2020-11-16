@@ -2205,14 +2205,14 @@ def test_datatable_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
 
 
-def test_datatable_get_mutual_information(df_same_mi, df_mi):
+def test_datatable_mutual_information(df_same_mi, df_mi):
     # Only test if df_same_mi and df_mi are same type
     if type(df_same_mi) != type(df_mi):
         return
 
     dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
 
-    mi = dt_same_mi.get_mutual_information()
+    mi = dt_same_mi.mutual_information()
 
     cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
     assert 'nans' not in cols_used
@@ -2223,20 +2223,20 @@ def test_datatable_get_mutual_information(df_same_mi, df_mi):
 
     dt = DataTable(df_mi)
     original_df = dt.to_dataframe().copy()
-    mi = dt.get_mutual_information()
+    mi = dt.mutual_information()
     assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
 
-    mi_many_rows = dt.get_mutual_information(nrows=100000)
+    mi_many_rows = dt.mutual_information(nrows=100000)
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
-    mi = dt.get_mutual_information(nrows=1)
+    mi = dt.mutual_information(nrows=1)
     assert mi.shape[0] == 6
     assert (mi['mutual_info'] == 1.0).all()
 
-    mi = dt.get_mutual_information(num_bins=2)
+    mi = dt.mutual_information(num_bins=2)
     assert mi.shape[0] == 6
     np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
@@ -2248,19 +2248,19 @@ def test_datatable_get_mutual_information(df_same_mi, df_mi):
 
 def test_mutual_info_does_not_include_index(sample_df):
     dt = DataTable(sample_df, index='id')
-    mi = dt.get_mutual_information()
+    mi = dt.mutual_information()
     assert 'id' not in mi['column_1'].values
 
 
 def test_mutual_info_returns_empty_df_properly(sample_df):
     dt = DataTable(sample_df.copy()[['id', 'age']], index='id')
-    mi = dt.get_mutual_information()
+    mi = dt.mutual_information()
     assert mi.empty
 
 
 def test_mutual_info_sort(df_mi):
     dt = DataTable(df_mi)
-    mi = dt.get_mutual_information()
+    mi = dt.mutual_information()
 
     for i in range(len(mi['mutual_info']) - 1):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]

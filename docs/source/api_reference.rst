@@ -22,7 +22,7 @@ DataTable
     DataTable.set_time_index
     DataTable.to_dataframe
     DataTable.describe
-    DataTable.get_mutual_information
+    DataTable.mutual_information
     DataTable.value_counts
     DataTable.to_csv
     DataTable.to_pickle
