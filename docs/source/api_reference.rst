@@ -17,8 +17,7 @@ DataTable
     DataTable.select
     DataTable.iloc
     DataTable.set_index
-    DataTable.set_logical_types
-    DataTable.set_semantic_tags
+    DataTable.set_types
     DataTable.set_time_index
     DataTable.to_dataframe
     DataTable.describe
