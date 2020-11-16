@@ -21,7 +21,7 @@ jobs:
         make checkdeps OUTPUT_PATH=woodwork/tests/latest_dependencies.txt
         cat woodwork/tests/latest_dependencies.txt
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v3
+      uses: FeatureLabs/create-pull-request@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: Update latest dependencies
