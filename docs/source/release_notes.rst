@@ -16,7 +16,7 @@ Release Notes
         * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
         * Updates to LogicalTypes to support Koalas 1.4.0 (:pr:`393`)
         * Replace ``set_logical_types`` and ``set_semantic_tags`` with just ``set_types`` (:pr:`379`)
-        * Remove ``copy_dataframe`` parameter from init of DataTable (:pr:`398`)
+        * Remove ``copy_dataframe`` parameter from DataTable initialization (:pr:`398`)
     * Documentation Changes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
