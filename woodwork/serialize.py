@@ -54,11 +54,11 @@ def datatable_to_metadata(datatable):
         'name': datatable.name,
         'index': datatable.index,
         'time_index': datatable.time_index,
-        'metadata': dt_metadata,
+        'column_metadata': dt_metadata,
         'loading_info': {
             'table_type': table_type
-        }
-
+        },
+        'table_metadata': datatable.metadata
     }
 
 

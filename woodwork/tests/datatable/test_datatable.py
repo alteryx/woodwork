@@ -2544,4 +2544,13 @@ def test_datatable_metadata(sample_df):
 
 
 def test_datatable_metadata_immutable(sample_df):
-    pass
+    original_metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
+
+    dt = DataTable(sample_df, time_index='signup_date', metadata=original_metadata)
+    assert dt.metadata == original_metadata
+
+    changed_metadata = dt.metadata
+    changed_metadata['extra_field'] = 'test'
+
+    assert dt.metadata != changed_metadata
+    assert dt.metadata == original_metadata

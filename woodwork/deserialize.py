@@ -94,7 +94,7 @@ def metadata_to_datatable(table_metadata, **kwargs):
 
     logical_types = {}
     semantic_tags = {}
-    for col in table_metadata['metadata']:
+    for col in table_metadata['column_metadata']:
         col_name = col['name']
 
         ltype_metadata = col['logical_type']
@@ -116,7 +116,8 @@ def metadata_to_datatable(table_metadata, **kwargs):
                      time_index=table_metadata.get('time_index'),
                      logical_types=logical_types,
                      semantic_tags=semantic_tags,
-                     use_standard_tags=False)
+                     use_standard_tags=False,
+                     metadata=table_metadata.get('table_metadata'))
 
 
 def read_datatable(path, profile_name=None, **kwargs):
