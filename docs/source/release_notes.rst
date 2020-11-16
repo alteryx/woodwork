@@ -22,6 +22,7 @@ Release Notes
 
 **Breaking Changes**
     * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
+    * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
 
 **v0.0.5** November 11, 2020
     * Enhancements
