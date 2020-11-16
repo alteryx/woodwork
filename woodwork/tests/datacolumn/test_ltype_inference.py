@@ -21,11 +21,13 @@ UNSUPPORTED_KOALAS_DTYPES = [
     'uint32',
     'uint64',
     'uintp',
-    'float32',
+    'float32',  # compatible starting with 1.4.0
     'float_',
     'object',
-    'datetime64[ns]',
+    'datetime64[ns]',  # compatible starting with 1.4.0
     'category',
+    'string',
+    'boolean',
 ]
 
 ks = import_or_none('databricks.koalas')
@@ -59,6 +61,8 @@ def test_double_inference(doubles):
 
 def test_boolean_inference(bools):
     dtypes = ['bool', 'boolean']
+    if ks and isinstance(bools[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
     for series in bools:
         for dtype in dtypes:
             inferred_type = infer_logical_type(series.astype(dtype))

@@ -14,6 +14,7 @@ Release Notes
         * Lower moto test requirement for serialization/deserialization (:pr:`376`)
         * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
         * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
+        * Updates to LogicalTypes to support Koalas 1.4.0 (:pr:`393`)
     * Documentation Changes
     * Testing Changes
 

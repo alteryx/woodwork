@@ -40,6 +40,7 @@ class Boolean(LogicalType):
             [0, 1, 1]
     """
     pandas_dtype = 'boolean'
+    backup_dtype = 'bool'
 
 
 class Categorical(LogicalType):
@@ -54,7 +55,7 @@ class Categorical(LogicalType):
             [3, 1, 2]
     """
     pandas_dtype = 'category'
-    backup_dtype = 'string'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
     def __init__(self, encoding=None):
@@ -74,7 +75,7 @@ class CountryCode(LogicalType):
             ["GB", "NZ", "DE"]
     """
     pandas_dtype = 'category'
-    backup_dtype = 'string'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
 
@@ -140,6 +141,7 @@ class EmailAddress(LogicalType):
              "team@example.com"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class Filepath(LogicalType):
@@ -154,6 +156,7 @@ class Filepath(LogicalType):
              "/tmp"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class FullName(LogicalType):
@@ -168,6 +171,7 @@ class FullName(LogicalType):
              "James Brown"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class IPAddress(LogicalType):
@@ -182,6 +186,7 @@ class IPAddress(LogicalType):
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class LatLong(LogicalType):
@@ -195,6 +200,7 @@ class LatLong(LogicalType):
              (-45.031705, 168.659506)]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class NaturalLanguage(LogicalType):
@@ -209,6 +215,7 @@ class NaturalLanguage(LogicalType):
              "When will humans go to mars?"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class Ordinal(LogicalType):
@@ -227,7 +234,7 @@ class Ordinal(LogicalType):
             ["bronze", "silver", "gold"]
     """
     pandas_dtype = 'category'
-    backup_dtype = 'string'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
     def __init__(self, order):
@@ -260,6 +267,7 @@ class PhoneNumber(LogicalType):
              "5551235495"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class SubRegionCode(LogicalType):
@@ -273,7 +281,7 @@ class SubRegionCode(LogicalType):
             ["AU-NSW", "AU-TAS", "AU-QLD"]
     """
     pandas_dtype = 'category'
-    backup_dtype = 'string'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
 
@@ -302,6 +310,7 @@ class URL(LogicalType):
              "example.com"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class ZIPCode(LogicalType):
@@ -317,7 +326,7 @@ class ZIPCode(LogicalType):
              "10021"]
     """
     pandas_dtype = 'category'
-    backup_dtype = 'string'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
 
