@@ -2503,6 +2503,8 @@ def test_datatable_rename(sample_df):
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
+
+def test_datatable_sizeof(sample_df):
     dt = DataTable(sample_df)
     if isinstance(sample_df, pd.DataFrame):
         expected_size = 1069
