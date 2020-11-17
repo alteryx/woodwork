@@ -782,7 +782,7 @@ class DataTable(object):
             Mutual information values are between 0 (no mutual information) and 1
             (perfect correlation).
         """
-        # We only want Numeric, Categorical,Datetime, and Boolean columns
+        # We only want Numeric, Categorical, Datetime, and Boolean columns
         # And we don't want the index column
         valid_columns = [col_name for col_name, column
                          in self.columns.items() if (col_name != self.index and
