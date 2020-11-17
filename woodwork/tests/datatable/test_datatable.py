@@ -305,13 +305,9 @@ def test_check_logical_types_errors(sample_df):
 
 
 def test_check_metadata_errors():
-    error_message = 'Metadata keys must be strings.'
+    error_message = 'Metadata must be a dictionary.'
     with pytest.raises(KeyError, match=error_message):
-        _check_metadata({1: "test"})
-
-    error_message = 'Metadata values must be json serializable.'
-    with pytest.raises(ValueError, match=error_message):
-        _check_metadata({'dtype': pd.BooleanDtype})
+        _check_metadata('test')
 
 
 def test_datatable_types(sample_df):
@@ -2521,37 +2517,22 @@ def test_datatable_metadata(sample_df):
     dt = DataTable(sample_df)
     assert dt.metadata == {}
 
-    dt.set_metadata(metadata)
+    dt.metadata = metadata
     assert dt.metadata == metadata
 
     dt = DataTable(sample_df, time_index='signup_date', metadata=metadata)
     assert dt.metadata == metadata
 
     new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
-    dt.set_metadata(new_data)
-    assert dt.metadata == {**metadata, **new_data}
+    dt.metadata = {**metadata, **new_data}
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19',
+                           'created_by': 'user1'}
 
-    dt.remove_metadata('created_by')
+    dt.metadata.pop('created_by')
     assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
 
-    dt.set_metadata({'number': 1012034})
-    assert dt.metadata == {'number': 1012034, 'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
-
-    # The list of metadata fields to remove can contain fields that aren't present
-    dt.remove_metadata(['number', 'secondary_time_index', 'not present'])
-    assert dt.metadata == {'date_created': '1/1/19'}
-
-
-def test_datatable_metadata_immutable(sample_df):
-    original_metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
-
-    dt = DataTable(sample_df, time_index='signup_date', metadata=original_metadata)
-    assert dt.metadata == original_metadata
-    assert dt.metadata is not original_metadata
-
-    changed_metadata = dt.metadata
-    changed_metadata['extra_field'] = ['test', 'list']
-    assert 'extra_field' not in dt.metadata
-
-    changed_metadata['secondary_time_index']['email'] = 'age'
-    assert dt.metadata['secondary_time_index'] == {'is_registered': 'age'}
+    dt.metadata['number'] = 1012034
+    assert dt.metadata == {'number': 1012034,
+                           'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19'}

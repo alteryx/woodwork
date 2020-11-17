@@ -1,4 +1,3 @@
-import copy
 import json
 import warnings
 
@@ -40,6 +39,7 @@ class DataTable(object):
                  time_index=None,
                  semantic_tags=None,
                  logical_types=None,
+                 metadata=None,
                  use_standard_tags=True,
                  make_index=False):
         """Create DataTable
@@ -101,7 +101,7 @@ class DataTable(object):
         if time_index:
             _update_time_index(self, time_index)
 
-        self._metadata = metadata or {}
+        self.metadata = metadata or {}
 
     def __eq__(self, other, deep=True):
         if self.name != other.name:
@@ -261,11 +261,6 @@ class DataTable(object):
             self.columns[name] = column
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
-
-    @property
-    def metadata(self):
-        """A deep copy of the dictionary of the DataTable's user supplied metadata."""
-        return copy.deepcopy(self._metadata)
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -444,26 +439,6 @@ class DataTable(object):
         if not columns:
             columns = self.columns.keys()
         return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
-
-    def set_metadata(self, metadata):
-        """Merges existing metadata with new metadata, overwriting if necessary.
-
-        Args:
-            metadata (dict): Metadata to be added to the DataTable. Must be json serializazble.
-        """
-        _check_metadata(metadata)
-        self._metadata = {**self.metadata, **metadata}
-
-    def remove_metadata(self, metadata_fields_to_remove):
-        """Removes specified fields from metadata.
-
-        Args:
-            metadata_fields_to_remove (list[str]): List of metadata fields to remove from DataTable.metadata.
-                Will ignore any fields that are not present.
-        """
-        if isinstance(metadata_fields_to_remove, str):
-            metadata_fields_to_remove = [metadata_fields_to_remove]
-        self._metadata = {key: value for key, value in self._metadata.items() if key not in metadata_fields_to_remove}
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
         """Helper method that can be used for updating columns by calling the column method
@@ -1041,13 +1016,8 @@ def _check_semantic_tags(dataframe, semantic_tags):
 
 
 def _check_metadata(metadata):
-    if not all([isinstance(key, str) for key in metadata.keys()]):
-        raise KeyError('Metadata keys must be strings.')
-
-    try:
-        [json.dumps(value) for value in metadata.values()]
-    except (TypeError):
-        raise ValueError('Metadata values must be json serializable.')
+    if not isinstance(metadata, dict):
+        raise TypeError('Metadata must be a dictionary.')
 
 
 def _update_index(datatable, index, old_index=None):
