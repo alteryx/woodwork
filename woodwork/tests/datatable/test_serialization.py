@@ -107,7 +107,7 @@ def test_to_dictionary(sample_df):
 def test_unserializable_table(sample_df, tmpdir):
     dt = DataTable(sample_df, metadata={'not_serializable': sample_df['is_registered'].dtype})
 
-    error = "DataTable is not json serializable: Object of type 'dtype' is not JSON serializable"
+    error = "DataTable is not json serializable: Object of type \'dtype\' is not JSON serializable"
     with pytest.raises(TypeError, match=error):
         dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
 
