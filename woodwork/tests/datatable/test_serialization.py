@@ -99,9 +99,17 @@ def test_to_dictionary(sample_df):
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33, 57])},
                    metadata={'date_created': '11/16/20'})
-    metadata = dt.to_dictionary()
+    description = dt.to_dictionary()
 
-    assert metadata == expected
+    assert description == expected
+
+
+def test_unserializable_table(sample_df, tmpdir):
+    dt = DataTable(sample_df, metadata={'not_serializable': sample_df['is_registered'].dtype})
+
+    error = "DataTable is not json serializable: Object of type 'dtype' is not JSON serializable"
+    with pytest.raises(TypeError, match=error):
+        dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):

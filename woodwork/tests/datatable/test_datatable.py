@@ -306,7 +306,7 @@ def test_check_logical_types_errors(sample_df):
 
 def test_check_metadata_errors():
     error_message = 'Metadata must be a dictionary.'
-    with pytest.raises(KeyError, match=error_message):
+    with pytest.raises(TypeError, match=error_message):
         _check_metadata('test')
 
 

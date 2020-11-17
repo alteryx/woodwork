@@ -95,9 +95,12 @@ def dump_table(datatable, path, **kwargs):
     description = datatable_to_description(datatable)
     description['loading_info'].update(loading_info)
 
-    file = os.path.join(path, 'table_description.json')
-    with open(file, 'w') as file:
-        json.dump(description, file)
+    try:
+        file = os.path.join(path, 'table_description.json')
+        with open(file, 'w') as file:
+            json.dump(description, file)
+    except TypeError as e:
+        raise TypeError(('DataTable is not json serializable: ' + e.args[0]))
 
 
 def write_table_data(datatable, path, format='csv', **kwargs):
