@@ -153,6 +153,9 @@ class DataTable(object):
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
 
+    def __sizeof__(self):
+        return sum([item.__sizeof__() for item in dir(self)]) + self._dataframe.__sizeof__()
+
     @property
     def types(self):
         """Dataframe containing the physical dtypes, logical types and semantic
