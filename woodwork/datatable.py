@@ -154,7 +154,7 @@ class DataTable(object):
         self._update_columns({col_name: column})
 
     def __sizeof__(self):
-        return sum([item.__sizeof__() for item in dir(self)]) + self._dataframe.__sizeof__()
+        return self._dataframe.__sizeof__()
 
     @property
     def types(self):

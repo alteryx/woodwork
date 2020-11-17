@@ -2463,7 +2463,7 @@ def test_datatable_rename(sample_df):
 def test_datatable_sizeof(sample_df):
     dt = DataTable(sample_df)
     if isinstance(sample_df, pd.DataFrame):
-        expected_size = 4967
+        expected_size = 1069
     else:
-        expected_size = 3930
+        expected_size = 32
     assert dt.__sizeof__() == expected_size

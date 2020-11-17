@@ -17,7 +17,7 @@ Release Notes
         * Updates to LogicalTypes to support Koalas 1.4.0 (:pr:`393`)
         * Replace ``set_logical_types`` and ``set_semantic_tags`` with just ``set_types`` (:pr:`379`)
         * Remove ``copy_dataframe`` parameter from DataTable initialization (:pr:`398`)
-        * Implement ``DataTable.__sizeof__`` to return size of DataTable and underlying dataframe (:pr:`401`)
+        * Implement ``DataTable.__sizeof__`` to return size of the underlying dataframe (:pr:`401`)
     * Documentation Changes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
