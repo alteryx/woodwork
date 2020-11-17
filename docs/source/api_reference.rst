@@ -22,6 +22,7 @@ DataTable
     DataTable.to_dataframe
     DataTable.describe
     DataTable.mutual_information
+    DataTable.mutual_information_dict
     DataTable.value_counts
     DataTable.to_csv
     DataTable.to_pickle
