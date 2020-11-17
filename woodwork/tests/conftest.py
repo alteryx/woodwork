@@ -249,7 +249,7 @@ def df_mi_pandas():
         'bools': pd.Series([True, False, True]),
         'strs2': pd.Series(['bye', 'hi', 'bye']),
         'strs': pd.Series(['hi', 'hi', 'hi']),
-        'dates': pd.Series(['2020-01-01', '2019-01-02', '2020-08-03', '1997-01-04'])
+        'dates': pd.Series(['2020-01-01', '2019-01-02', '1997-01-04'])
     })
 
 
