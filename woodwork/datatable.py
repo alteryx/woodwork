@@ -760,25 +760,7 @@ class DataTable(object):
             data[col_name] = new_col.cat.codes
         return data
 
-    def mutual_information(self, num_bins=10, nrows=None):
-        """
-        Calculates mutual information between all pairs of columns in the DataTable that
-        support mutual information. Logical Types that support mutual information are as
-        follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode, and ZIPCode
-
-        Args:
-            num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
-            nrows (int): The number of rows to sample for when determining mutual info.
-                If specified, samples the desired number of rows from the data.
-                Defaults to using all rows.
-
-        Returns:
-            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
-            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
-            Mutual information values are between 0 (no mutual information) and 1
-            (perfect correlation).
-        """
+    def _mutual_information(self, num_bins=10, nrows=None):
         # We only want Numeric, Categorical, and Boolean columns
         # And we don't want the index column
         valid_columns = [col_name for col_name, column
@@ -815,10 +797,51 @@ class DataTable(object):
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
-        mi = pd.DataFrame(mutual_info)
-        if not mutual_info:
-            return mi
-        return mi.sort_values('mutual_info', ascending=False)
+        mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
+        return mutual_info
+
+    def mutual_information(self, num_bins=10, nrows=None):
+        """
+        Calculates mutual information between all pairs of columns in the DataTable that
+        support mutual information. Logical Types that support mutual information are as
+        follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode, and ZIPCode
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining mutual info.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect correlation).
+        """
+        mutual_info = self._mutual_information(num_bins, nrows)
+        return pd.DataFrame(mutual_info)
+
+    def mutual_information_dict(self, num_bins=10, nrows=None):
+        """
+        Calculates mutual information between all pairs of columns in the DataTable that
+        support mutual information. Logical Types that support mutual information are as
+        follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode, and ZIPCode
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining mutual info.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+
+        Returns:
+            list(dict): A list containing dictionaries that have keys `column_1`,
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect correlation).
+        """
+        return self._mutual_information(num_bins, nrows)
 
     def to_dictionary(self):
         '''
