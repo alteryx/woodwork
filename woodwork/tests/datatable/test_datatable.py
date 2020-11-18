@@ -2534,6 +2534,7 @@ def test_datatable_update_dataframe(sample_df):
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt.to_dataframe()[col]))
         assert dt.columns[col]._series.dtype == dt.to_dataframe()[col].dtype
 
+
 def test_datatable_update_dataframe_different_num_cols(sample_df):
     new_df = sample_df.copy().drop(columns='age')
     dt = DataTable(sample_df)

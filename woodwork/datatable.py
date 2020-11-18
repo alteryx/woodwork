@@ -514,7 +514,7 @@ class DataTable(object):
         for column in self.columns.keys():
             self.columns[column]._set_series(new_df[column])
             self.columns[column]._update_dtype()
-        
+
         # Make sure dataframe dtypes match columns
         self._update_columns(self.columns)
 
