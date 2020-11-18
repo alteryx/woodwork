@@ -817,7 +817,7 @@ class DataTable(object):
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
             Mutual information values are between 0 (no mutual information) and 1
-            (perfect correlation).
+            (perfect dependency).
         """
         mutual_info = self._mutual_information(num_bins, nrows)
         return pd.DataFrame(mutual_info)
@@ -839,7 +839,7 @@ class DataTable(object):
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
             Mutual information values are between 0 (no mutual information) and 1
-            (perfect correlation).
+            (perfect dependency).
         """
         return self._mutual_information(num_bins, nrows)
 
