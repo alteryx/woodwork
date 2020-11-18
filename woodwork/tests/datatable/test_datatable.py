@@ -2567,3 +2567,22 @@ def test_datatable_metadata(sample_df):
     assert dt.metadata == {'number': 1012034,
                            'secondary_time_index': {'is_registered': 'age'},
                            'date_created': '1/1/19'}
+
+
+def test_datatable_column_order_after_rename(sample_df_pandas):
+    # Since rename removes a column to rename it, its location in the dt.columns dictionary
+    # changes, so we have to check that we aren't relying on the columns dictionary
+    dt = DataTable(sample_df_pandas, index='id', semantic_tags={'full_name': 'test'})
+    assert dt.iloc[:, 1].name == 'full_name'
+    assert dt.index == 'id'
+
+    renamed_dt = dt.rename({'full_name': 'renamed_col'})
+    assert renamed_dt.iloc[:, 1].name == 'renamed_col'
+
+    changed_index_dt = renamed_dt.set_index('renamed_col')
+    assert changed_index_dt.iloc[:, 1].name == 'renamed_col'
+    assert changed_index_dt.index == 'renamed_col'
+
+    reset_tags_dt = renamed_dt.reset_semantic_tags(columns='renamed_col')
+    assert reset_tags_dt.iloc[:, 1].name == 'renamed_col'
+    assert reset_tags_dt['renamed_col'].semantic_tags == set()

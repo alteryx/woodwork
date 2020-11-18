@@ -315,6 +315,8 @@ class DataTable(object):
             col._assigned_name = new_name
             updated_cols[new_name] = col
 
+        # --> not necessarily ideal that rename, keeps the order the sasme but changes the order in the dictionary
+        # which forces us away from using self.columns when order matters
         new_dt._update_columns(updated_cols)
         # Reorder columns to match the original order
         new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
@@ -334,7 +336,7 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: DataTable with the specified index column set.
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_index(new_dt, index, self.index)
         return new_dt
 
@@ -345,7 +347,7 @@ class DataTable(object):
         Args:
             time_index (str): The name of the column to set as the time index.
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_time_index(new_dt, time_index, self.time_index)
         return new_dt
 
@@ -372,7 +374,7 @@ class DataTable(object):
         semantic_tags = semantic_tags or {}
         _check_semantic_tags(self._dataframe, semantic_tags)
 
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
         for col_name, col in new_dt.columns.items():
             if col_name not in logical_types and col_name not in semantic_tags:
@@ -438,7 +440,7 @@ class DataTable(object):
             raise LookupError("Input contains columns that are not present in "
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
-            columns = self.columns.keys()
+            columns = self._dataframe.columns
         return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
@@ -456,7 +458,7 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: A new DataTable with updated columns
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
         if isinstance(new_values, dict):
             for name, tags in new_values.items():
