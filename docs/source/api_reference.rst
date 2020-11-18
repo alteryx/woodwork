@@ -21,6 +21,7 @@ DataTable
     DataTable.set_time_index
     DataTable.to_dataframe
     DataTable.describe
+    DataTable.describe_dict
     DataTable.mutual_information
     DataTable.value_counts
     DataTable.to_csv
