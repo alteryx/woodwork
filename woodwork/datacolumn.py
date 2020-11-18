@@ -1,10 +1,15 @@
 import warnings
 
-import dask.dataframe as dd
 import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.config import config
+from woodwork.exceptions import (
+    ColumnNameMismatchWarning,
+    DuplicateTagsWarning,
+    StandardTagsRemovalWarning
+)
+from woodwork.indexers import _iLocIndexer
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -15,25 +20,29 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     Timedelta,
-    WholeNumber,
     str_to_logical_type
 )
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
-    col_is_datetime
+    col_is_datetime,
+    import_or_none
 )
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 class DataColumn(object):
     def __init__(self, series,
                  logical_type=None,
                  semantic_tags=None,
-                 use_standard_tags=True):
+                 use_standard_tags=True,
+                 name=None):
         """Create a DataColumn.
 
         Args:
-            series (pd.Series): Series containing the data associated with the column.
+            series (pd.Series or dd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
@@ -44,8 +53,10 @@ class DataColumn(object):
                 (list or set) If multiple tags are being set, a list or set of strings can be passed.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
+            name (str, optional): Name of DataColumn. Will overwrite Series name, if it exists.
         """
-        self._series = series
+        self._assigned_name = name
+        self._set_series(series)
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         semantic_tags = _convert_input_to_set(semantic_tags)
@@ -86,19 +97,45 @@ class DataColumn(object):
             # Update the underlying series
             try:
                 if _get_ltype_class(self.logical_type) == Datetime:
-                    if isinstance(self._series, dd.Series):
+                    if dd and isinstance(self._series, dd.Series):
                         name = self._series.name
                         self._series = dd.to_datetime(self._series, format=self.logical_type.datetime_format)
                         self._series.name = name
+                    elif ks and isinstance(self._series, ks.Series):
+                        self._series = ks.Series(ks.to_datetime(self._series.to_numpy(),
+                                                                format=self.logical_type.datetime_format),
+                                                 name=self._series.name)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
-                    self._series = self._series.astype(self.logical_type.pandas_dtype)
-            except TypeError:
+                    if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
+                        new_dtype = self.logical_type.backup_dtype
+                    else:
+                        new_dtype = self.logical_type.pandas_dtype
+                    self._series = self._series.astype(new_dtype)
+            except (TypeError, ValueError):
                 error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
                     f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
                     f'logical type {self.logical_type}.'
                 raise TypeError(error_msg)
+
+    @property
+    def iloc(self):
+        """Purely integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
+
+        Allowed inputs are:
+            An integer, e.g. ``5``.
+            A list or array of integers, e.g. ``[4, 3, 0]``.
+            A slice object with ints, e.g. ``1:7``.
+            A boolean array.
+            A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value.
+        """
+        return _iLocIndexer(self)
 
     def set_logical_type(self, logical_type, retain_index_tags=True):
         """Update the logical type for the column and return a new DataColumn object.
@@ -122,6 +159,23 @@ class DataColumn(object):
             new_col._set_as_time_index()
 
         return new_col
+
+    def _set_series(self, series):
+        if not ((dd and isinstance(series, dd.Series)) or
+                (ks and isinstance(series, ks.Series)) or
+                isinstance(series, (pd.Series, pd.api.extensions.ExtensionArray))):
+            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')
+
+        # pandas ExtensionArrays should be converted to pandas.Series
+        if isinstance(series, pd.api.extensions.ExtensionArray):
+            series = pd.Series(series, dtype=series.dtype)
+
+        if self._assigned_name is not None and series.name is not None and self._assigned_name != series.name:
+            warnings.warn(ColumnNameMismatchWarning().get_warning_message(series.name, self._assigned_name),
+                          ColumnNameMismatchWarning)
+
+        series.name = self._assigned_name or series.name
+        self._series = series
 
     def _parse_logical_type(self, logical_type):
         if logical_type:
@@ -178,7 +232,8 @@ class DataColumn(object):
         _validate_tags(new_tags)
         duplicate_tags = sorted(list(self._semantic_tags.intersection(new_tags)))
         if duplicate_tags:
-            warnings.warn(f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{self.name}'", UserWarning)
+            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, self.name),
+                          DuplicateTagsWarning)
         new_col_tags = self._semantic_tags.union(new_tags)
         new_col = DataColumn(series=self._series,
                              logical_type=self.logical_type,
@@ -224,8 +279,8 @@ class DataColumn(object):
             raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self.name}'")
         standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self._logical_type.standard_tags)))
         if standard_tags_to_remove and self.use_standard_tags:
-            warnings.warn(f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{self.name}'",
-                          UserWarning)
+            warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, self.name),
+                          StandardTagsRemovalWarning)
         new_tags = self._semantic_tags.difference(tags_to_remove)
         return DataColumn(series=self._series,
                           logical_type=self.logical_type,
@@ -245,24 +300,22 @@ class DataColumn(object):
     def _is_categorical(self):
         return 'category' in self.logical_type.standard_tags
 
-    def to_series(self, copy=False):
+    def to_series(self):
         """Retrieves the DataColumn's underlying series.
 
-        Note: Do not modify the series unless copy=True has been set to avoid unexpected behavior
-
-        Args:
-            copy (bool): If set to True, returns a copy of the underlying series.
-                If False, will return a reference to the DataColumn's series, which,
-                if modified, can cause unexpected behavior in the DataColumn.
-                Defaults to False.
+        Note: Do not modify the returned series directly to avoid unexpected behavior
 
         Returns:
             Series: The underlying series of the DataColumn. Return type will depend on the type
                 of series used to create the DataColumn.
         """
-        if copy:
-            return self._series.copy()
         return self._series
+
+    @property
+    def shape(self):
+        """Returns a tuple representing the dimensionality of the DataTable. If Dask DataFrame, returns
+            a Dask `Delayed` object for the number of rows."""
+        return self._series.shape
 
     @property
     def logical_type(self):
@@ -277,7 +330,7 @@ class DataColumn(object):
     @property
     def name(self):
         """The name of the column"""
-        return self._series.name
+        return self._assigned_name or self._series.name
 
     @property
     def dtype(self):
@@ -301,9 +354,12 @@ def infer_logical_type(series):
     Args:
         series (pd.Series): Input Series
     """
-    if isinstance(series, dd.Series):
+    if dd and isinstance(series, dd.Series):
         series = series.get_partition(0).compute()
+    if ks and isinstance(series, ks.Series):
+        series = series.head(100000).to_pandas()
     natural_language_threshold = config.get_option('natural_language_threshold')
+    numeric_categorical_threshold = config.get_option('numeric_categorical_threshold')
 
     inferred_type = NaturalLanguage
 
@@ -331,13 +387,13 @@ def infer_logical_type(series):
         inferred_type = Categorical
 
     elif pdtypes.is_integer_dtype(series.dtype):
-        if any(series.dropna() < 0):
-            inferred_type = Integer
+        if _is_numeric_categorical(series, numeric_categorical_threshold):
+            inferred_type = Categorical
         else:
-            inferred_type = WholeNumber
+            inferred_type = Integer
 
     elif pdtypes.is_float_dtype(series.dtype):
-        inferred_type = Double
+        inferred_type = Categorical if _is_numeric_categorical(series, numeric_categorical_threshold) else Double
 
     elif col_is_datetime(series):
         inferred_type = Datetime
@@ -346,3 +402,7 @@ def infer_logical_type(series):
         inferred_type = Timedelta
 
     return inferred_type
+
+
+def _is_numeric_categorical(series, threshold):
+    return threshold != -1 and series.nunique() < threshold

@@ -1,11 +1,11 @@
 import re
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.data_column import DataColumn
+from woodwork.datacolumn import DataColumn
+from woodwork.exceptions import ColumnNameMismatchWarning, DuplicateTagsWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -15,21 +15,27 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     SubRegionCode,
-    WholeNumber,
     ZIPCode
 )
 from woodwork.tests.testing_utils import to_pandas
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
-def test_data_column_init(sample_series):
+def test_datacolumn_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series.astype('category')))
+    # Koalas doesn't support category dtype
+    if not (ks and isinstance(sample_series, ks.Series)):
+        sample_series = sample_series.astype('category')
+    pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
     assert data_col.semantic_tags == set()
 
 
-def test_data_column_init_with_logical_type(sample_series):
+def test_datacolumn_init_with_logical_type(sample_series):
     data_col = DataColumn(sample_series, NaturalLanguage)
     assert data_col.logical_type == NaturalLanguage
     assert data_col.semantic_tags == set()
@@ -43,13 +49,69 @@ def test_data_column_init_with_logical_type(sample_series):
     assert data_col.semantic_tags == set()
 
 
-def test_data_column_init_with_semantic_tags(sample_series):
+def test_datacolumn_init_with_semantic_tags(sample_series):
     semantic_tags = ['tag1', 'tag2']
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == set(semantic_tags)
 
 
-def test_data_column_with_alternate_semantic_tags_input(sample_series):
+def test_datacolumn_init_wrong_series():
+    error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray'
+    with pytest.raises(TypeError, match=error):
+        DataColumn([1, 2, 3, 4])
+
+    with pytest.raises(TypeError, match=error):
+        DataColumn(np.array([1, 2, 3, 4]))
+
+
+def test_datacolumn_init_with_name(sample_series, sample_datetime_series):
+    name = 'sample_series'
+    changed_name = 'changed_name'
+
+    dc_use_series_name = DataColumn(sample_series)
+    assert dc_use_series_name.name == name
+    assert dc_use_series_name.to_series().name == name
+
+    warning = 'Name mismatch between sample_series and changed_name. DataColumn and underlying series name are now changed_name'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        dc_use_input_name = DataColumn(sample_series, name=changed_name)
+    assert dc_use_input_name.name == changed_name
+    assert dc_use_input_name.to_series().name == changed_name
+
+    warning = 'Name mismatch between sample_datetime_series and changed_name. DataColumn and underlying series name are now changed_name'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        dc_with_ltype_change = DataColumn(sample_datetime_series, name=changed_name)
+    assert dc_with_ltype_change.name == changed_name
+    assert dc_with_ltype_change.to_series().name == changed_name
+
+
+def test_datacolumn_init_with_extension_array():
+    series_categories = pd.Series([1, 2, 3], dtype='category')
+    extension_categories = pd.Categorical([1, 2, 3])
+
+    data_col = DataColumn(extension_categories)
+    series = data_col.to_series()
+    assert series.equals(series_categories)
+    assert series.name is None
+    assert data_col.name is None
+
+    series_ints = pd.Series([1, 2, None, 4], dtype='Int64')
+    extension_ints = pd.arrays.IntegerArray(np.array([1, 2, 3, 4], dtype="int64"), mask=np.array([False, False, True, False]))
+
+    data_col_with_name = DataColumn(extension_ints, name='extension')
+    series = data_col_with_name.to_series()
+    assert series.equals(series_ints)
+    assert series.name == 'extension'
+    assert data_col_with_name.name == 'extension'
+
+    series_strs = pd.Series([1, 2, None, 4], dtype='string')
+
+    data_col_different_ltype = DataColumn(extension_ints, logical_type='NaturalLanguage')
+    series = data_col_different_ltype.to_series()
+    assert series.equals(series_strs)
+
+
+def test_datacolumn_with_alternate_semantic_tags_input(sample_series):
     semantic_tags = 'custom_tag'
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
     assert data_col.semantic_tags == {'custom_tag'}
@@ -83,9 +145,14 @@ def test_semantic_tag_errors(sample_series):
         DataColumn(sample_series, semantic_tags=['index', 1])
 
 
-def test_data_column_repr(sample_series):
+def test_datacolumn_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
-    assert data_col.__repr__() == '<DataColumn: sample_series (Physical Type = category) ' \
+    # Koalas doesn't support categorical
+    if ks and isinstance(sample_series, ks.Series):
+        dtype = 'object'
+    else:
+        dtype = 'category'
+    assert data_col.__repr__() == f'<DataColumn: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
@@ -128,7 +195,7 @@ def test_adds_numeric_standard_tag():
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
-    logical_types = [Integer, Double, WholeNumber]
+    logical_types = [Integer, Double]
     for logical_type in logical_types:
         data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
         assert data_col.semantic_tags == {'custom_tag', 'numeric'}
@@ -174,7 +241,7 @@ def test_warns_on_setting_duplicate_tag(sample_series):
     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
 
     expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(DuplicateTagsWarning) as record:
         data_col.add_semantic_tags(['first_tag', 'second_tag'])
     assert len(record) == 1
     assert record[0].message.args[0] == expected_message
@@ -371,7 +438,7 @@ def test_set_as_time_index(sample_series):
     assert 'time_index' in data_col.semantic_tags
 
 
-def test_to_series_no_copy(sample_series):
+def test_to_series(sample_series):
     data_col = DataColumn(sample_series)
     series = data_col.to_series()
 
@@ -379,12 +446,15 @@ def test_to_series_no_copy(sample_series):
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
 
 
-def test_to_series_with_copy(sample_series):
-    data_col = DataColumn(sample_series)
-    series = data_col.to_series(copy=True)
-
-    assert series is not data_col._series
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
+def test_shape(sample_series):
+    col = DataColumn(sample_series)
+    col_shape = col.shape
+    series_shape = col.to_series().shape
+    if dd and isinstance(sample_series, dd.Series):
+        col_shape = (col_shape[0].compute(),)
+        series_shape = (series_shape[0].compute(),)
+    assert col_shape == (4,)
+    assert col_shape == series_shape
 
 
 def test_dtype_update_on_init(datetime_series):
@@ -395,7 +465,7 @@ def test_dtype_update_on_init(datetime_series):
 
 def test_dtype_update_on_ltype_change():
     dc = DataColumn(pd.Series([1, 2, 3]),
-                    logical_type='WholeNumber')
+                    logical_type='Integer')
     assert dc._series.dtype == 'Int64'
     dc = dc.set_logical_type('Double')
     assert dc._series.dtype == 'float64'
@@ -420,8 +490,9 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if isinstance(sample_series, dd.Series):
-        pytest.xfail('fails with dask - ordinal data validation not compatible')
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
+
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
@@ -434,8 +505,9 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if isinstance(sample_series, dd.Series):
-        pytest.xfail('Fails with Dask - ordinal data validation not supported')
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
+
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")
@@ -451,7 +523,7 @@ def test_ordinal_with_nan_values():
     assert dc.logical_type.order == ['a', 'b']
 
 
-def test_data_column_equality(sample_series, sample_datetime_series):
+def test_datacolumn_equality(sample_series, sample_datetime_series):
     # Check different parameters to DataColumn
     str_col = DataColumn(sample_series, logical_type='Categorical')
     str_col_2 = DataColumn(sample_series, logical_type=Categorical)

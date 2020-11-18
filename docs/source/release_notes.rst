@@ -3,9 +3,47 @@
 Release Notes
 -------------
 **Future Release**
+    * Enhancements
+        * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
+        * Add ability to initialize DataTable with numpy array (:pr:`367`)
+        * Add ``mutual_information_dict`` method to DataTable (:pr:`404`)
+    * Fixes
+        * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
+        * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
+        * Rename ``get_mutual_information`` ``mutual_information`` (:pr:`390`)
+    * Changes
+        * Lower moto test requirement for serialization/deserialization (:pr:`376`)
+        * Make Koalas an optional dependency installable with woodwork[koalas] (:pr:`378`)
+        * Remove WholeNumber LogicalType from Woodwork (:pr:`380`)
+        * Updates to LogicalTypes to support Koalas 1.4.0 (:pr:`393`)
+        * Replace ``set_logical_types`` and ``set_semantic_tags`` with just ``set_types`` (:pr:`379`)
+        * Remove ``copy_dataframe`` parameter from DataTable initialization (:pr:`398`)
+        * Implement ``DataTable.__sizeof__`` to return size of the underlying dataframe (:pr:`401`)
+        * Include Datetime columns in mutual info calculation (:pr:`399`)
+    * Documentation Changes
+    * Testing Changes
+        * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
+        * Use new version of pull request Github Action (:pr:`394`)
 
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
+
+**Breaking Changes**
+    * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
+    * The ``DataTable.set_logical_types`` method was removed. ``DataTable.set_types`` can be used instead.
+    * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
+    * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
+    * The ``copy_dataframe`` parameter was removed from DataTable initialization.
+
+**v0.0.5** November 11, 2020
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
+        * Add ``value_counts()`` method to DataTable (:pr:`342`)
+        * Support serialization and deserialization of DataTables via csv, pickle, or parquet (:pr:`293`)
+        * Add ``shape`` property to DataTable and DataColumn (:pr:`358`)
+        * Add ``iloc`` method to DataTable and DataColumn (:pr:`365`)
+        * Add ``numeric_categorical_threshold`` config value to allow inferring numeric columns as Categorical (:pr:`363`)
+        * Add ``rename`` method to DataTable (:pr:`367`)
     * Fixes
         * Catch non numeric time index at validation (:pr:`332`)
     * Changes
@@ -19,21 +57,28 @@ Release Notes
         * Rename ``DataColumn.to_pandas`` method to ``DataColumn.to_series`` (:pr:`311`)
         * Rename ``DataTable.to_pandas`` method to ``DataTable.to_dataframe`` (:pr:`319`)
         * Remove UserWarning when no matching columns found (:pr:`325`)
+        * Remove ``copy`` parameter from ``DataTable.to_dataframe`` and ``DataColumn.to_series`` (:pr:`338`)
+        * Allow pandas ExtensionArrays as inputs to DataColumn (:pr:`343`)
+        * Move warnings to a separate exceptions file and call via UserWarning subclasses (:pr:`348`)
+        * Make Dask an optional dependency installable with woodwork[dask] (:pr:`357`)
     * Documentation Changes
         * Create a guide for using Woodwork with Dask (:pr:`304`)
         * Add conda install instructions (:pr:`305`, :pr:`309`)
         * Fix README.md badge with correct link (:pr:`314`)
+        * Simplify issue templates to make them easier to use (:pr:`339`)
+        * Remove extra output cell in Start notebook (:pr:`341`)
     * Testing Changes
         * Parameterize numeric time index tests (:pr:`288`)
         * Add DockerHub credentials to CI testing environment (:pr:`326`)
+        * Fix removing files for serialization test (:pr:`350`)
 
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
-
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
+    * ``copy`` is no longer a parameter of ``DataTable.to_dataframe`` or ``DataColumn.to_series``.
 
 **v0.0.4** October 21, 2020
     * Enhancements
@@ -60,7 +105,7 @@ Release Notes
         * Add automated process to check latest dependencies. (:pr:`268`)
         * Add test for setting a time index with specified string logical type (:pr:`279`)
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.3** October 9, 2020
@@ -160,7 +205,7 @@ Thanks to the following people for contributing to this release:
     * Add dataframe attribute to DataTable (:pr:`39`)
     * Update ReadME with minor usage details (:pr:`37`)
     * Add License (:pr:`34`)
-    * Rename from datatables to data_tables (:pr:`4`)
+    * Rename from datatables to datatables (:pr:`4`)
     * Add Logical Types, DataTable, DataColumn (:pr:`3`)
     * Add Makefile, setup.py, requirements.txt (:pr:`2`)
     * Initial Release (:pr:`1`)

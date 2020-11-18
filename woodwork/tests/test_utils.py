@@ -14,10 +14,15 @@ from woodwork.logical_types import (
 )
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_ltype_params,
     _get_mode,
+    _get_specified_ltype_params,
     _is_numeric_series,
+    _is_s3,
+    _is_url,
+    _new_dt_including,
     camel_to_snake,
+    import_or_none,
+    import_or_raise,
     list_logical_types,
     list_semantic_tags
 )
@@ -180,17 +185,49 @@ def test_is_numeric_datetime_series(time_index_df):
 
 
 def test_get_ltype_params():
-    params_empty_class = _get_ltype_params(Categorical)
+    params_empty_class = _get_specified_ltype_params(Categorical)
     assert params_empty_class == {}
-    params_empty = _get_ltype_params(Categorical())
+    params_empty = _get_specified_ltype_params(Categorical())
     assert params_empty == {}
 
-    params_class = _get_ltype_params(Datetime)
-    assert params_class == {'datetime_format': None}
+    params_class = _get_specified_ltype_params(Datetime)
+    assert params_class == {}
 
-    params_null = _get_ltype_params(Datetime())
+    params_null = _get_specified_ltype_params(Datetime())
     assert params_null == {'datetime_format': None}
 
     ymd = '%Y-%m-%d'
-    params_value = _get_ltype_params(Datetime(datetime_format=ymd))
+    params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
+
+
+def test_new_dt_including(sample_df_pandas):
+    # more thorough testing for this exists in indexer testing and new_dt_from_cols testing
+    dt = ww.DataTable(sample_df_pandas)
+    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
+    for col in new_dt.columns:
+        assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
+        assert new_dt.logical_types[col] == new_dt.logical_types[col]
+
+
+def test_import_or_raise():
+    assert import_or_raise('pandas', 'Module pandas could not be found') == pd
+
+    error = 'Module nonexistent could not be found.'
+    with pytest.raises(ImportError, match=error):
+        import_or_raise('nonexistent', error)
+
+
+def test_import_or_none():
+    assert import_or_none('pandas') == pd
+    assert import_or_none('nonexistent') is None
+
+
+def test_is_url():
+    assert _is_url('https://www.google.com/')
+    assert not _is_url('google.com')
+
+
+def test_is_s3():
+    assert _is_s3('s3://test-bucket/test-key')
+    assert not _is_s3('https://woodwork-static.s3.amazonaws.com/')

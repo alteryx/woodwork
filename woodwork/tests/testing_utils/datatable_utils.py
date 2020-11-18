@@ -1,5 +1,9 @@
-import dask.dataframe as dd
 import pandas as pd
+
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 def validate_subset_dt(subset_dt, dt):
@@ -23,7 +27,7 @@ def mi_between_cols(col1, col2, df):
     return mi_series.iloc[0]
 
 
-def to_pandas(df):
+def to_pandas(df, index=None, sort_index=False):
     '''
     Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
 
@@ -33,7 +37,15 @@ def to_pandas(df):
     if isinstance(df, (pd.DataFrame, pd.Series)):
         return df
 
-    if isinstance(df, (dd.DataFrame, dd.Series)):
+    if dd and isinstance(df, (dd.DataFrame, dd.Series)):
         pd_df = df.compute()
+
+    if ks and isinstance(df, (ks.DataFrame, ks.Series)):
+        pd_df = df.to_pandas()
+
+    if index:
+        pd_df = pd_df.set_index(index, drop=False)
+    if sort_index:
+        pd_df = pd_df.sort_index()
 
     return pd_df

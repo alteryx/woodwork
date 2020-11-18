@@ -1,10 +1,13 @@
 import warnings
 
-import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
-from woodwork.data_column import DataColumn
+import woodwork.serialize as serialize
+from woodwork.datacolumn import DataColumn
+from woodwork.exceptions import ColumnNameMismatchWarning
+from woodwork.indexers import _iLocIndexer
 from woodwork.logical_types import (
     Boolean,
     Datetime,
@@ -17,8 +20,15 @@ from woodwork.utils import (
     _get_ltype_class,
     _get_mode,
     _is_numeric_series,
-    col_is_datetime
+    _new_dt_including,
+    col_is_datetime,
+    import_or_none
 )
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
+if ks:
+    ks.set_option('compute.ops_on_diff_frames', True)
 
 
 class DataTable(object):
@@ -28,13 +38,12 @@ class DataTable(object):
                  time_index=None,
                  semantic_tags=None,
                  logical_types=None,
-                 copy_dataframe=False,
                  use_standard_tags=True,
                  make_index=False):
         """Create DataTable
 
         Args:
-            dataframe (pd.DataFrame): Dataframe providing the data for the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
@@ -50,9 +59,6 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
-            copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
-                prior to creating the DataTable. Defaults to False, which results in using a
-                reference to the input dataframe.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             make_index (bool, optional): If True, will create a new unique, numeric index column with the
@@ -62,17 +68,17 @@ class DataTable(object):
                 present in the ``dataframe``. Defaults to False.
         """
         # Check that inputs are valid
+        dataframe = _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
 
-        if copy_dataframe:
-            self._dataframe = dataframe.copy()
-        else:
-            self._dataframe = dataframe
+        self._dataframe = dataframe
 
         if make_index:
-            if isinstance(self._dataframe, dd.DataFrame):
+            if dd and isinstance(self._dataframe, dd.DataFrame):
                 self._dataframe[index] = 1
                 self._dataframe[index] = self._dataframe[index].cumsum() - 1
+            elif ks and isinstance(self._dataframe, ks.DataFrame):
+                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
             else:
                 self._dataframe.insert(0, index, range(len(self._dataframe)))
 
@@ -139,12 +145,16 @@ class DataTable(object):
             raise KeyError('Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.')
 
         if column.name is not None and column.name != col_name:
-            warnings.warn(f'Key, {col_name}, does not match the name of the provided DataColumn,'
-                          f' {column.name}. Changing DataColumn name to: {col_name}')
+            warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
+                          ColumnNameMismatchWarning)
             column._series.name = col_name
+            column._assigned_name = col_name
 
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
+
+    def __sizeof__(self):
+        return self._dataframe.__sizeof__()
 
     @property
     def types(self):
@@ -173,7 +183,7 @@ class DataTable(object):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
-        data_columns = {}
+        datacolumns = {}
         for name in column_names:
             if logical_types and name in logical_types:
                 logical_type = logical_types[name]
@@ -183,9 +193,9 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags)
-            data_columns[dc.name] = dc
-        return data_columns
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
+            datacolumns[dc.name] = dc
+        return datacolumns
 
     @property
     def logical_types(self):
@@ -201,6 +211,12 @@ class DataTable(object):
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
         return {dc.name: dc.semantic_tags for dc in self.columns.values()}
+
+    @property
+    def shape(self):
+        """Returns a tuple representing the dimensionality of the DataTable. If Dask DataFrame, returns
+            a Dask `Delayed` object for the number of rows."""
+        return self._dataframe.shape
 
     @property
     def index(self):
@@ -256,6 +272,51 @@ class DataTable(object):
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
 
+    def rename(self, columns):
+        """Renames columns in a DataTable
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping columns whose names
+                we'd like to change to the name to which we'd like to change them.
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified columns renamed.
+
+        Note:
+            Index and time index columns cannot be renamed.
+        """
+        if len(columns) != len(set(columns.values())):
+            raise ValueError('New columns names must be unique from one another.')
+
+        for old_name, new_name in columns.items():
+            if not isinstance(old_name, str):
+                raise KeyError(f"Column to rename must be a string. {old_name} is not a string.")
+            if not isinstance(new_name, str):
+                raise ValueError(f"New column name must be a string. {new_name} is not a string.")
+            if old_name not in self.columns:
+                raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
+            if new_name in self.columns and new_name not in columns.keys():
+                raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
+            if old_name == self.index or old_name == self.time_index:
+                raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
+
+        old_all_cols = list(self.columns.keys())
+        new_dt = self[old_all_cols]
+        updated_cols = {}
+        for old_name, new_name in columns.items():
+            col = new_dt.pop(old_name)
+
+            col._series.name = new_name
+            col._assigned_name = new_name
+            updated_cols[new_name] = col
+
+        new_dt._update_columns(updated_cols)
+        # Reorder columns to match the original order
+        new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
+        new_dt._dataframe = new_dt._dataframe[new_all_cols]
+
+        return new_dt
+
     def set_index(self, index):
         """Set the index column and return a new DataTable. Adds the 'index' semantic
         tag to the column and clears the tag from any previously set index column.
@@ -283,23 +344,41 @@ class DataTable(object):
         _update_time_index(new_dt, time_index, self.time_index)
         return new_dt
 
-    def set_logical_types(self, logical_types, retain_index_tags=True):
-        """Update the logical type for any columns names in the provided logical_types
+    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
+        """Update the logical type and semantic tags for any columns names in the provided types
         dictionary. Replaces existing columns with new DataColumn objects and returns a new
         DataTable object.
 
         Args:
-            logical_types (dict[str -> str/list/set]): A dictionary defining the new logical types for the
+            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+                specified columns.
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
-                semantic tags set on the column. If false, will clear all semantic tags. Defaults to
+                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
                 True.
 
         Returns:
-            woodwork.DataTable: DataTable with updated logical types
+            woodwork.DataTable: DataTable with updated logical types and specified semantic tags set.
         """
+        logical_types = logical_types or {}
         _check_logical_types(self._dataframe, logical_types)
-        new_dt = self._update_cols_and_get_new_dt('set_logical_type', logical_types, retain_index_tags)
+
+        semantic_tags = semantic_tags or {}
+        _check_semantic_tags(self._dataframe, semantic_tags)
+
+        new_dt = self._new_dt_from_cols(self.columns)
+        cols_to_update = {}
+        for col_name, col in new_dt.columns.items():
+            if col_name not in logical_types and col_name not in semantic_tags:
+                continue
+            if col_name in logical_types:
+                col = col.set_logical_type(logical_types[col_name], retain_index_tags)
+            if col_name in semantic_tags:
+                col = col.set_semantic_tags(semantic_tags[col_name], retain_index_tags)
+            cols_to_update[col_name] = col
+
+        new_dt._update_columns(cols_to_update)
         return new_dt
 
     def add_semantic_tags(self, semantic_tags):
@@ -330,24 +409,6 @@ class DataTable(object):
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         return self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
-
-    def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
-        """Update the semantic tags for any column names in the provided semantic_tags
-        dictionary. Replaces the existing semantic tags with the new values. Also replaces
-        any updated columns with new DataColumn objects and returns a new DataTable object.
-
-        Args:
-            semantic_tags (dict): A dictionary defining the new semantic_tags for the
-                specified columns.
-            retain_index_tags (bool, optional): If True, will retain any index or
-                time_index semantic tags set on the column. If False, will replace all
-                semantic tags. Defaults to True.
-
-        Returns:
-            woodwork.DataTable: DataTable with the specified semantic tags set
-        """
-        _check_semantic_tags(self._dataframe, semantic_tags)
-        return self._update_cols_and_get_new_dt('set_semantic_tags', semantic_tags, retain_index_tags)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
@@ -401,26 +462,17 @@ class DataTable(object):
         new_dt._update_columns(cols_to_update)
         return new_dt
 
-    def to_dataframe(self, copy=False):
+    def to_dataframe(self):
         """Retrieves the DataTable's underlying dataframe.
 
-        Note: Do not modify the dataframe unless copy=True has been set to avoid unexpected behavior
-
-        Args:
-            copy (bool): If set to True, returns a copy of the underlying dataframe.
-                If False, will return a reference to the DataTable's dataframe, which,
-                if modified, can cause unexpected behavior in the DataTable.
-                Defaults to False.
+        Note: Do not modify the returned dataframe directly to avoid unexpected behavior
 
         Returns:
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
                 of dataframe used to create the DataTable.
         """
         if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
-            if copy:
-                return self._dataframe.copy()
-            else:
-                return self._dataframe
+            return self._dataframe
         else:
             return self._dataframe.set_index(self.index, drop=False)
 
@@ -495,27 +547,25 @@ class DataTable(object):
         """Creates a new DataTable from a list of column names, retaining all types,
         indices, and name of original DataTable"""
         assert all([col_name in self.columns for col_name in cols_to_include])
+        return _new_dt_including(self, self._dataframe.loc[:, cols_to_include])
 
-        new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
-                             in self.semantic_tags.items() if col_name in cols_to_include}
-        new_logical_types = {col_name: logical_type for col_name, logical_type
-                             in self.logical_types.items() if col_name in cols_to_include}
-        new_index = self.index if self.index in cols_to_include else None
-        new_time_index = self.time_index if self.time_index in cols_to_include else None
-        # Remove 'index' or 'time_index' from semantic tags, if present as those can't be set directly during init
-        if new_index:
-            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
-        if new_time_index:
-            new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+    @property
+    def iloc(self):
+        """Purely integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
 
-        return DataTable(self._dataframe.loc[:, cols_to_include],
-                         name=self.name,
-                         index=new_index,
-                         time_index=new_time_index,
-                         semantic_tags=new_semantic_tags,
-                         logical_types=new_logical_types,
-                         copy_dataframe=False,
-                         use_standard_tags=self.use_standard_tags)
+        Allowed inputs are:
+            An integer, e.g. ``5``.
+            A list or array of integers, e.g. ``[4, 3, 0]``.
+            A slice object with ints, e.g. ``1:7``.
+            A boolean array.
+            A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value.
+        """
+        return _iLocIndexer(self)
 
     def describe(self, include=None):
         """Calculates statistics for data contained in DataTable.
@@ -545,8 +595,12 @@ class DataTable(object):
 
         results = {}
 
-        if isinstance(self._dataframe, dd.DataFrame):
+        if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
+        elif ks and isinstance(self._dataframe, ks.DataFrame):
+            # Missing values in Koalas will be replaced with 'None' - change them to
+            # np.nan so stats are calculated properly
+            df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
         else:
             df = self._dataframe
 
@@ -606,12 +660,55 @@ class DataTable(object):
         ]
         return pd.DataFrame(results).reindex(index_order)
 
+    def value_counts(self, ascending=False, top_n=10, dropna=False):
+        """Returns a list of dictionaries with counts for the most frequent values in each column (only
+            for DataColumns with `category` as a standard tag).
+
+
+        Args:
+            ascending (bool): Defines whether each list of values should be sorted most frequent
+                to least frequent value (False), or least frequent to most frequent value (True).
+                Defaults to False.
+
+            top_n (int): the number of top values to retrieve. Defaults to 10.
+
+            dropna (bool): determines whether to remove NaN values when finding frequency. Defaults
+                to False.
+
+        Returns:
+            top_list (list(dict)): a list of dictionaries for each categorical column with keys `count`
+                and `value`.
+        """
+        val_counts = {}
+        valid_cols = [col for col, column in self.columns.items() if column._is_categorical()]
+        data = self._dataframe[valid_cols]
+        is_ks = False
+        if dd and isinstance(data, dd.DataFrame):
+            data = data.compute()
+        if ks and isinstance(data, ks.DataFrame):
+            data = data.to_pandas()
+            is_ks = True
+
+        for col in valid_cols:
+            if dropna and is_ks:
+                # Koalas categorical columns will have missing values replaced with the string 'None'
+                # Replace them with np.nan so dropna work
+                datacol = data[col].replace(to_replace='None', value=np.nan)
+            else:
+                datacol = data[col]
+            frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
+            df = frequencies[:top_n].reset_index()
+            df.columns = ["value", "count"]
+            dt_list = list(df.to_dict(orient="index").values())
+            val_counts[col] = dt_list
+        return val_counts
+
     def _handle_nans_for_mutual_info(self, data):
         """
         Remove NaN values in the dataframe so that mutual information can be calculated
 
         Args:
-            data (pd.DataFrame): dataframe to use for caculating mutual information
+            data (pd.DataFrame): dataframe to use for calculating mutual information
 
         Returns:
             pd.DataFrame: data with fully null columns removed and nans filled in
@@ -624,7 +721,7 @@ class DataTable(object):
         # replace or remove null values
         for column_name in data.columns[data.isnull().any()]:
             column = self[column_name]
-            series = column._series
+            series = data[column_name]
             ltype = column._logical_type
 
             if column._is_numeric():
@@ -656,19 +753,22 @@ class DataTable(object):
             if self[col_name]._is_numeric():
                 # bin numeric features to make categories
                 data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
+            # Convert Datetimes to total seconds - an integer - and bin
+            if _get_ltype_class(self[col_name].logical_type) == Datetime:
+                data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
             # convert categories to integers
             new_col = data[col_name]
-            if new_col.dtype != 'category':
+            if str(new_col.dtype) != 'category':
                 new_col = new_col.astype('category')
             data[col_name] = new_col.cat.codes
         return data
 
-    def get_mutual_information(self, num_bins=10, nrows=None):
+    def mutual_information_dict(self, num_bins=10, nrows=None):
         """
-        Calculates mutual information between all pairs of columns in the DataTable
-        that support mutual information. Logical Types that support mutual information are
-        as follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode,
-        WholeNumber, and ZIPCode
+        Calculates mutual information between all pairs of columns in the DataTable that
+        support mutual information. Logical Types that support mutual information are as
+        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
+        SubRegionCode, and ZIPCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -678,10 +778,10 @@ class DataTable(object):
                 Defaults to using all rows.
 
         Returns:
-            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
+            list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
             Mutual information values are between 0 (no mutual information) and 1
-            (perfect correlation).
+            (perfect dependency).
         """
         # We only want Numeric, Categorical, and Boolean columns
         # And we don't want the index column
@@ -689,11 +789,15 @@ class DataTable(object):
                          in self.columns.items() if (col_name != self.index and
                                                      (column._is_numeric() or
                                                       column._is_categorical() or
-                                                      _get_ltype_class(column.logical_type) == Boolean)
+                                                      _get_ltype_class(column.logical_type) == Boolean or
+                                                      _get_ltype_class(column.logical_type) == Datetime)
                                                      )]
+
         data = self._dataframe[valid_columns]
-        if isinstance(data, dd.DataFrame):
+        if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
+        if ks and isinstance(self._dataframe, ks.DataFrame):
+            data = data.to_pandas()
 
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
@@ -716,16 +820,106 @@ class DataTable(object):
                     mutual_info.append(
                         {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                     )
-        mi = pd.DataFrame(mutual_info)
-        if not mutual_info:
-            return mi
-        return mi.sort_values('mutual_info', ascending=False)
+        mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
+        return mutual_info
+
+    def mutual_information(self, num_bins=10, nrows=None):
+        """
+        Calculates mutual information between all pairs of columns in the DataTable that
+        support mutual information. Logical Types that support mutual information are as
+        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
+        SubRegionCode, and ZIPCode
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining mutual info.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect dependency).
+        """
+        mutual_info = self.mutual_information_dict(num_bins, nrows)
+        return pd.DataFrame(mutual_info)
+
+    def to_dictionary(self):
+        '''
+        Get a DataTable's metadata
+
+        Returns:
+            metadata (dict) : Description of :class:`.DataTable`.
+        '''
+        return serialize.datatable_to_metadata(self)
+
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
+        '''Write DataTable to disk in the CSV format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='csv', index=False,
+                                  sep=sep, encoding=encoding, engine=engine,
+                                  compression=compression, profile_name=profile_name)
+
+    def to_pickle(self, path, compression=None, profile_name=None):
+        '''Write DataTable to disk in the pickle format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='pickle',
+                                  compression=compression, profile_name=profile_name)
+
+    def to_parquet(self, path, compression=None, profile_name=None):
+        '''Write DataTable to disk in the parquet format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
+
+            Note:
+                As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
+                for serialization to parquet.
+
+            Args:
+                path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+        '''
+        serialize.write_datatable(self, path, format='parquet',
+                                  engine='pyarrow', compression=compression,
+                                  profile_name=profile_name)
+
+
+def _validate_dataframe(dataframe):
+    '''Check that the dataframe supplied during DataTable initialization is valid,
+    and convert numpy array to pandas DataFrame if necessary.'''
+    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
+            (ks and isinstance(dataframe, ks.DataFrame)) or
+            isinstance(dataframe, (pd.DataFrame, np.ndarray))):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
+
+    if isinstance(dataframe, np.ndarray):
+        dataframe = pd.DataFrame(dataframe)
+        dataframe.columns = dataframe.columns.astype(str)
+    return dataframe
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
-    if not isinstance(dataframe, (pd.DataFrame, dd.DataFrame)):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame')
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
@@ -798,21 +992,22 @@ def _check_semantic_tags(dataframe, semantic_tags):
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
-def _update_index(data_table, index, old_index=None):
+def _update_index(datatable, index, old_index=None):
     """Add the `index` tag to the specified index column and remove the tag from the
     old_index column, if specified. Also checks that the specified index column
     can be used as an index."""
-    _check_index(data_table._dataframe, index)
-    data_table.columns[index]._set_as_index()
+    _check_index(datatable._dataframe, index)
+    datatable.columns[index]._set_as_index()
     if old_index:
-        data_table._update_columns({old_index: data_table.columns[old_index].remove_semantic_tags('index')})
+        datatable._update_columns({old_index: datatable.columns[old_index].remove_semantic_tags('index')})
 
 
-def _update_time_index(data_table, time_index, old_time_index=None):
+def _update_time_index(datatable, time_index, old_time_index=None):
     """Add the `time_index` tag to the specified time_index column and remove the tag from the
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
-    _check_time_index(data_table._dataframe, time_index)
-    data_table.columns[time_index]._set_as_time_index()
+
+    _check_time_index(datatable._dataframe, time_index)
+    datatable.columns[time_index]._set_as_time_index()
     if old_time_index:
-        data_table._update_columns({old_time_index: data_table.columns[old_time_index].remove_semantic_tags('time_index')})
+        datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})

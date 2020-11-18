@@ -1,6 +1,6 @@
 import pandas as pd
 
-from woodwork.utils import _get_ltype_params, camel_to_snake
+from woodwork.utils import _get_specified_ltype_params, camel_to_snake
 
 
 class ClassNameDescriptor(object):
@@ -20,10 +20,11 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
     type_string = ClassNameDescriptor()
     pandas_dtype = 'string'
+    backup_dtype = None
     standard_tags = {}
 
     def __eq__(self, other, deep=False):
-        return isinstance(other, self.__class__) and _get_ltype_params(other) == _get_ltype_params(self)
+        return isinstance(other, self.__class__) and _get_specified_ltype_params(other) == _get_specified_ltype_params(self)
 
     def __str__(self):
         return str(self.__class__)
@@ -39,6 +40,7 @@ class Boolean(LogicalType):
             [0, 1, 1]
     """
     pandas_dtype = 'boolean'
+    backup_dtype = 'bool'
 
 
 class Categorical(LogicalType):
@@ -53,6 +55,7 @@ class Categorical(LogicalType):
             [3, 1, 2]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
     def __init__(self, encoding=None):
@@ -72,6 +75,7 @@ class CountryCode(LogicalType):
             ["GB", "NZ", "DE"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
 
@@ -122,6 +126,7 @@ class Integer(LogicalType):
             [-54, 73, 11]
     """
     pandas_dtype = 'Int64'
+    backup_dtype = 'int64'
     standard_tags = {'numeric'}
 
 
@@ -136,6 +141,7 @@ class EmailAddress(LogicalType):
              "team@example.com"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class Filepath(LogicalType):
@@ -150,6 +156,7 @@ class Filepath(LogicalType):
              "/tmp"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class FullName(LogicalType):
@@ -164,6 +171,7 @@ class FullName(LogicalType):
              "James Brown"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class IPAddress(LogicalType):
@@ -178,6 +186,7 @@ class IPAddress(LogicalType):
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class LatLong(LogicalType):
@@ -191,6 +200,7 @@ class LatLong(LogicalType):
              (-45.031705, 168.659506)]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class NaturalLanguage(LogicalType):
@@ -205,6 +215,7 @@ class NaturalLanguage(LogicalType):
              "When will humans go to mars?"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class Ordinal(LogicalType):
@@ -223,6 +234,7 @@ class Ordinal(LogicalType):
             ["bronze", "silver", "gold"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
     def __init__(self, order):
@@ -255,6 +267,7 @@ class PhoneNumber(LogicalType):
              "5551235495"]
     """
     pandas_dtype = 'string'
+    backup_dtype = 'str'
 
 
 class SubRegionCode(LogicalType):
@@ -268,6 +281,7 @@ class SubRegionCode(LogicalType):
             ["AU-NSW", "AU-TAS", "AU-QLD"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
 
@@ -296,20 +310,7 @@ class URL(LogicalType):
              "example.com"]
     """
     pandas_dtype = 'string'
-
-
-class WholeNumber(LogicalType):
-    """Represents Logical Types that contain natural numbers, including zero (0).
-    Has 'numeric' as a standard tag.
-
-    Examples:
-        .. code-block:: python
-
-            [3, 30, 56]
-            [7, 135, 0]
-    """
-    pandas_dtype = 'Int64'
-    standard_tags = {'numeric'}
+    backup_dtype = 'str'
 
 
 class ZIPCode(LogicalType):
@@ -325,6 +326,7 @@ class ZIPCode(LogicalType):
              "10021"]
     """
     pandas_dtype = 'category'
+    backup_dtype = 'str'
     standard_tags = {'category'}
 
 
@@ -339,12 +341,17 @@ def get_logical_types():
     return logical_types
 
 
-def str_to_logical_type(logical_str, raise_error=True):
-    """Helper function for converting a string value to the corresponding logical type object"""
+def str_to_logical_type(logical_str, params=None, raise_error=True):
+    """Helper function for converting a string value to the corresponding logical type object.
+    If a dictionary of params for the logical type is provided, apply them."""
     logical_str = logical_str.lower()
     logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types().items()}
 
     if logical_str in logical_types_dict:
-        return logical_types_dict[logical_str]
+        ltype = logical_types_dict[logical_str]
+        if params:
+            return ltype(**params)
+        else:
+            return ltype
     elif raise_error:
         raise ValueError('String %s is not a valid logical type' % logical_str)

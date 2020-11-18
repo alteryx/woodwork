@@ -1,9 +1,27 @@
+import importlib
 import re
 from datetime import datetime
 
 import pandas as pd
 
 import woodwork as ww
+
+
+def import_or_none(library):
+    '''
+    Attemps to import the requested library.
+
+    Args:
+        library (str): the name of the library
+    Returns: the library if it is installed, else None
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        return None
+
+
+ks = import_or_none('databricks.koalas')
 
 
 def camel_to_snake(s):
@@ -36,12 +54,15 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column."""
+    if ks and isinstance(col, ks.Series):
+        col = col.to_pandas()
+
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.head(1), datetime))):
         return True
 
     # if it can be casted to numeric, it's not a datetime
-    dropped_na = col.dropna()
+    dropped_na = col.mask(col.eq('None')).dropna()
     try:
         pd.to_numeric(dropped_na, errors='raise')
     except (ValueError, TypeError):
@@ -63,6 +84,9 @@ def _is_numeric_series(series, logical_type):
     for the purposes of determining if it can be a time_index.
 
     '''
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
         pd.to_numeric(series, errors='raise')
@@ -77,7 +101,7 @@ def _is_numeric_series(series, logical_type):
         if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
-        logical_type = ww.data_column.infer_logical_type(series)
+        logical_type = ww.datacolumn.infer_logical_type(series)
 
     return 'numeric' in logical_type.standard_tags
 
@@ -126,7 +150,7 @@ def list_semantic_tags():
          for tag in sem_tags]
     )
     tags_df = tags_df.append(
-        pd.DataFrame([['index', False, [ww.logical_types.str_to_logical_type(tag) for tag in ['integer', 'wholenumber', 'double', 'categorical', 'datetime']]],
+        pd.DataFrame([['index', False, [ww.logical_types.str_to_logical_type(tag) for tag in ['integer', 'double', 'categorical', 'datetime']]],
                       ['time_index', False, [ww.logical_types.str_to_logical_type('datetime')]],
                       ['date_of_birth', False, [ww.logical_types.str_to_logical_type('datetime')]]
                       ], columns=tags_df.columns), ignore_index=True)
@@ -147,7 +171,6 @@ def read_csv(filepath=None,
              time_index=None,
              semantic_tags=None,
              logical_types=None,
-             copy_dataframe=False,
              use_standard_tags=True,
              **kwargs):
     """Read data from the specified CSV file and return a Woodwork DataTable
@@ -169,9 +192,6 @@ def read_csv(filepath=None,
         logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
             the dataframe to the LogicalType for the column. LogicalTypes will be inferred
             for any columns not present in the dictionary.
-        copy_dataframe (bool, optional): If True, a copy of the input dataframe will be made
-            prior to creating the DataTable. Defaults to False, which results in using a
-            reference to the input dataframe.
         use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
             on the inferred or specified logical type for the column. Defaults to True.
         **kwargs: Additional keyword arguments to pass to the underlying ``pandas.read_csv`` function. For more
@@ -187,7 +207,6 @@ def read_csv(filepath=None,
                         time_index=time_index,
                         semantic_tags=semantic_tags,
                         logical_types=logical_types,
-                        copy_dataframe=copy_dataframe,
                         use_standard_tags=use_standard_tags)
 
 
@@ -197,7 +216,83 @@ def _get_ltype_class(ltype):
     return ltype.__class__
 
 
-def _get_ltype_params(ltype):
+def _get_specified_ltype_params(ltype):
+    '''
+    Gets a dictionary of a LogicalType's parameters.
+
+    Note: If the logical type has not been instantiated, no parameters have
+    been specified for the LogicalType, so no parameters will be returned
+    even if that LogicalType can have parameters set.
+
+    Args:
+        ltype (LogicalType): An instantiated or uninstantiated LogicalType
+
+    Returns:
+        dict: The LogicalType's specified parameters.
+    '''
     if ltype in ww.logical_types.LogicalType.__subclasses__():
-        return ltype().__dict__
+        # Do not reveal parameters for an uninstantiated LogicalType
+        return {}
     return ltype.__dict__
+
+
+def _new_dt_including(datatable, new_data):
+    '''
+    Creates a new DataTable with specified data and columns
+
+    Args:
+        datatable (DataTable): DataTable with desired information
+
+        new_data (DataFrame): subset of original DataTable
+    Returns:
+        DataTable: New DataTable with attributes from original DataTable but data from new DataTable
+    '''
+    cols = new_data.columns
+    new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
+                         in datatable.semantic_tags.items() if col_name in cols}
+    new_logical_types = {col_name: logical_type for col_name, logical_type
+                         in datatable.logical_types.items() if col_name in cols}
+    new_index = datatable.index if datatable.index in cols else None
+    new_time_index = datatable.time_index if datatable.time_index in cols else None
+    if new_index:
+        new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+    if new_time_index:
+        new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+    return ww.DataTable(new_data,
+                        name=datatable.name,
+                        index=new_index,
+                        time_index=new_time_index,
+                        semantic_tags=new_semantic_tags,
+                        logical_types=new_logical_types,
+                        use_standard_tags=datatable.use_standard_tags)
+
+
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportError with the supplied error message.
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)
+
+
+def _is_s3(string):
+    '''
+    Checks if the given string is a s3 path.
+    Returns a boolean.
+    '''
+    return "s3://" in string
+
+
+def _is_url(string):
+    '''
+    Checks if the given string is an url path.
+    Returns a boolean.
+    '''
+    return 'http' in string

@@ -1,11 +1,17 @@
-import dask.dataframe as dd
+
 import numpy as np
 import pandas as pd
 import pytest
 
 
 def pd_to_dask(series):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
     return dd.from_pandas(series, npartitions=2)
+
+
+def pd_to_koalas(series):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(series)
 
 
 # Integer Inference Fixtures
@@ -22,27 +28,13 @@ def dask_integers(pandas_integers):
     return [pd_to_dask(series) for series in pandas_integers]
 
 
-@pytest.fixture(params=['pandas_integers', 'dask_integers'])
+@pytest.fixture
+def koalas_integers(pandas_integers):
+    return [pd_to_koalas(series) for series in pandas_integers]
+
+
+@pytest.fixture(params=['pandas_integers', 'dask_integers', 'koalas_integers'])
 def integers(request):
-    return request.getfixturevalue(request.param)
-
-
-# WholeNumber Inference Fixtures
-@pytest.fixture
-def pandas_whole_nums():
-    return [
-        pd.Series([0, 1, 5, 7]),
-        pd.Series([2, 3, 5, 3]),
-    ]
-
-
-@pytest.fixture
-def dask_whole_nums(pandas_whole_nums):
-    return [pd_to_dask(series) for series in pandas_whole_nums]
-
-
-@pytest.fixture(params=['pandas_whole_nums', 'dask_whole_nums'])
-def whole_nums(request):
     return request.getfixturevalue(request.param)
 
 
@@ -60,7 +52,12 @@ def dask_doubles(pandas_doubles):
     return [pd_to_dask(series) for series in pandas_doubles]
 
 
-@pytest.fixture(params=['pandas_doubles', 'dask_doubles'])
+@pytest.fixture
+def koalas_doubles(pandas_doubles):
+    return [pd_to_koalas(series) for series in pandas_doubles]
+
+
+@pytest.fixture(params=['pandas_doubles', 'dask_doubles', 'koalas_doubles'])
 def doubles(request):
     return request.getfixturevalue(request.param)
 
@@ -79,7 +76,12 @@ def dask_bools(pandas_bools):
     return [pd_to_dask(series) for series in pandas_bools]
 
 
-@pytest.fixture(params=['pandas_bools', 'dask_bools'])
+@pytest.fixture
+def koalas_bools(pandas_bools):
+    return [pd_to_koalas(series) for series in pandas_bools]
+
+
+@pytest.fixture(params=['pandas_bools', 'dask_bools', 'koalas_bools'])
 def bools(request):
     return request.getfixturevalue(request.param)
 
@@ -98,7 +100,12 @@ def dask_datetimes(pandas_datetimes):
     return [pd_to_dask(series) for series in pandas_datetimes]
 
 
-@pytest.fixture(params=['pandas_datetimes', 'dask_datetimes'])
+@pytest.fixture
+def koalas_datetimes(pandas_datetimes):
+    return [pd_to_koalas(series) for series in pandas_datetimes]
+
+
+@pytest.fixture(params=['pandas_datetimes', 'dask_datetimes', 'koalas_datetimes'])
 def datetimes(request):
     return request.getfixturevalue(request.param)
 
@@ -124,7 +131,12 @@ def dask_categories(pandas_categories):
     return [pd_to_dask(series) for series in pandas_categories]
 
 
-@pytest.fixture(params=['pandas_categories', 'dask_categories'])
+@pytest.fixture
+def koalas_categories(pandas_categories):
+    return [pd_to_koalas(series) for series in pandas_categories]
+
+
+@pytest.fixture(params=['pandas_categories', 'dask_categories', 'koalas_categories'])
 def categories(request):
     return request.getfixturevalue(request.param)
 
@@ -161,7 +173,12 @@ def dask_strings(pandas_strings):
     return [pd_to_dask(series) for series in pandas_strings]
 
 
-@pytest.fixture(params=['pandas_strings', 'dask_strings'])
+@pytest.fixture
+def koalas_strings(pandas_strings):
+    return [pd_to_koalas(series) for series in pandas_strings]
+
+
+@pytest.fixture(params=['pandas_strings', 'dask_strings', 'koalas_strings'])
 def strings(request):
     return request.getfixturevalue(request.param)
 
@@ -187,7 +204,12 @@ def dask_long_strings(pandas_long_strings):
     return [pd_to_dask(series) for series in pandas_long_strings]
 
 
-@pytest.fixture(params=['pandas_long_strings', 'dask_long_strings'])
+@pytest.fixture
+def koalas_long_strings(pandas_long_strings):
+    return [pd_to_koalas(series) for series in pandas_long_strings]
+
+
+@pytest.fixture(params=['pandas_long_strings', 'dask_long_strings', 'koalas_long_strings'])
 def long_strings(request):
     return request.getfixturevalue(request.param)
 
@@ -197,7 +219,6 @@ def long_strings(request):
 def pandas_pdnas():
     return [
         pd.Series(['Mr. John Doe', pd.NA, 'James Brown', 'Ms. Paige Turner']).astype('string'),
-        pd.Series([-1, pd.NA, 2, 3]).astype('Int64'),
         pd.Series([1, pd.NA, 2, 3]).astype('Int64'),
         pd.Series([True, pd.NA, False, True]).astype('boolean'),
     ]

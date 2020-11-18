@@ -5,32 +5,41 @@ API Reference
 DataTable
 =========
 
-.. currentmodule:: woodwork.data_table
+.. currentmodule:: woodwork.datatable
 .. autosummary::
     :toctree: generated/
 
     DataTable
+    DataTable.shape
     DataTable.add_semantic_tags
     DataTable.remove_semantic_tags
     DataTable.reset_semantic_tags
     DataTable.select
+    DataTable.iloc
     DataTable.set_index
-    DataTable.set_logical_types
-    DataTable.set_semantic_tags
+    DataTable.set_types
     DataTable.set_time_index
     DataTable.to_dataframe
     DataTable.describe
-    DataTable.get_mutual_information
+    DataTable.mutual_information
+    DataTable.mutual_information_dict
+    DataTable.value_counts
+    DataTable.to_csv
+    DataTable.to_pickle
+    DataTable.to_parquet
+    DataTable.rename
 
 
 DataColumn
 ==========
 
-.. currentmodule:: woodwork.data_column
+.. currentmodule:: woodwork.datacolumn
 .. autosummary::
     :toctree: generated/
 
     DataColumn
+    DataColumn.shape
+    DataColumn.iloc
     DataColumn.add_semantic_tags
     DataColumn.remove_semantic_tags
     DataColumn.reset_semantic_tags
@@ -63,7 +72,6 @@ Logical Types
     SubRegionCode
     Timedelta
     URL
-    WholeNumber
     ZIPCode
 
 .. currentmodule:: woodwork.utils
