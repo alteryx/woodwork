@@ -843,7 +843,7 @@ class DataTable(object):
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        mutual_info = self._mutual_information(num_bins, nrows)
+        mutual_info = self.mutual_information_dict(num_bins, nrows)
         return pd.DataFrame(mutual_info)
 
     def to_dictionary(self):
