@@ -220,7 +220,6 @@ def df_same_mi_pandas():
         'floats': pd.Series([1, None, 100, 1]),
         'nans': pd.Series([None, None, None, None]),
         'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test']),
-        'date': pd.Series(['2020-01-01', '2020-01-02', '2020-01-03', '2020-01-04'])
     })
 
 
@@ -249,7 +248,8 @@ def df_mi_pandas():
         'ints': pd.Series([1, 2, 3]),
         'bools': pd.Series([True, False, True]),
         'strs2': pd.Series(['bye', 'hi', 'bye']),
-        'strs': pd.Series(['hi', 'hi', 'hi'])
+        'strs': pd.Series(['hi', 'hi', 'hi']),
+        'dates': pd.Series(['2020-01-01', '2019-01-02', '1997-01-04'])
     })
 
 

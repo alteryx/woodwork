@@ -2242,7 +2242,8 @@ def test_datatable_make_categorical_for_mutual_info():
         'ints1': pd.Series([1, 2, 3, 2]),
         'ints2': pd.Series([1, 100, 1, 100]),
         'bools': pd.Series([True, False, True, False]),
-        'categories': pd.Series(['test', 'test2', 'test2', 'test'])
+        'categories': pd.Series(['test', 'test2', 'test2', 'test']),
+        'dates': pd.Series(['2020-01-01', '2019-01-02', '2020-08-03', '1997-01-04'])
     })
     dt = DataTable(df)
     formatted_num_bins_df = dt._make_categorical_for_mutual_info(dt.to_dataframe().copy(), num_bins=4)
@@ -2253,44 +2254,47 @@ def test_datatable_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['ints2'].equals(pd.Series([0, 1, 0, 1], dtype='int8'))
     assert formatted_num_bins_df['bools'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
+    assert formatted_num_bins_df['dates'].equals(pd.Series([2, 1, 3, 0], dtype='int8'))
 
 
-def test_datatable_mutual_information(df_same_mi, df_mi):
-    # Only test if df_same_mi and df_mi are same type
-    if type(df_same_mi) != type(df_mi):
-        return
-
-    dt_same_mi = DataTable(df_same_mi, logical_types={'date': Datetime(datetime_format='%Y-%m-%d')})
+def test_datatable_same_mutual_information(df_same_mi):
+    dt_same_mi = DataTable(df_same_mi)
 
     mi = dt_same_mi.mutual_information()
 
     cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
     assert 'nans' not in cols_used
     assert 'nat_lang' not in cols_used
-    assert 'date' not in cols_used
     assert mi.shape[0] == 1
     assert mi_between_cols('floats', 'ints', mi) == 1.0
 
-    dt = DataTable(df_mi)
+
+def test_datatable_mutual_information(df_mi):
+    dt = DataTable(df_mi, logical_types={'dates': Datetime(datetime_format='%Y-%m-%d')})
     original_df = dt.to_dataframe().copy()
     mi = dt.mutual_information()
-    assert mi.shape[0] == 6
+    assert mi.shape[0] == 10
+
     np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 1.0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'bools', mi), 0.734, 3)
 
     mi_many_rows = dt.mutual_information(nrows=100000)
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = dt.mutual_information(nrows=1)
-    assert mi.shape[0] == 6
+    assert mi.shape[0] == 10
     assert (mi['mutual_info'] == 1.0).all()
 
     mi = dt.mutual_information(num_bins=2)
-    assert mi.shape[0] == 6
+    assert mi.shape[0] == 10
     np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
     np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'strs', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), .274, 3)
 
     # Confirm that none of this changed the DataTable's underlying df
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(original_df))
