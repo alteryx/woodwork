@@ -753,6 +753,9 @@ class DataTable(object):
             if self[col_name]._is_numeric():
                 # bin numeric features to make categories
                 data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
+            # Convert Datetimes to total seconds - an integer - and bin
+            if _get_ltype_class(self[col_name].logical_type) == Datetime:
+                data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
             # convert categories to integers
             new_col = data[col_name]
             if str(new_col.dtype) != 'category':
@@ -760,14 +763,39 @@ class DataTable(object):
             data[col_name] = new_col.cat.codes
         return data
 
+<<<<<<< HEAD
     def _mutual_information(self, num_bins=10, nrows=None):
         # We only want Numeric, Categorical, and Boolean columns
+=======
+    def mutual_information(self, num_bins=10, nrows=None):
+        """
+        Calculates mutual information between all pairs of columns in the DataTable that
+        support mutual information. Logical Types that support mutual information are as
+        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
+        SubRegionCode, and ZIPCode
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining mutual info.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect correlation).
+        """
+        # We only want Numeric, Categorical, Datetime, and Boolean columns
+>>>>>>> 05456368daefce77c3a02ecc9de8b7f2b0d50e46
         # And we don't want the index column
         valid_columns = [col_name for col_name, column
                          in self.columns.items() if (col_name != self.index and
                                                      (column._is_numeric() or
                                                       column._is_categorical() or
-                                                      _get_ltype_class(column.logical_type) == Boolean)
+                                                      _get_ltype_class(column.logical_type) == Boolean or
+                                                      _get_ltype_class(column.logical_type) == Datetime)
                                                      )]
 
         data = self._dataframe[valid_columns]
@@ -804,7 +832,8 @@ class DataTable(object):
         """
         Calculates mutual information between all pairs of columns in the DataTable that
         support mutual information. Logical Types that support mutual information are as
-        follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode, and ZIPCode
+        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
+        SubRegionCode, and ZIPCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -826,7 +855,8 @@ class DataTable(object):
         """
         Calculates mutual information between all pairs of columns in the DataTable that
         support mutual information. Logical Types that support mutual information are as
-        follows:  Boolean, Categorical, CountryCode, Double, Integer, Ordinal, SubRegionCode, and ZIPCode
+        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
+        SubRegionCode, and ZIPCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
