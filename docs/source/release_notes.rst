@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
+        * Add ``describe_dict`` method to DataTable (:pr:`405`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
         * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
@@ -25,7 +26,7 @@ Release Notes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
-    
+
 **Breaking Changes**
     * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
     * The ``DataTable.set_logical_types`` method was removed. ``DataTable.set_types`` can be used instead.
