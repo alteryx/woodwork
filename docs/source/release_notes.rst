@@ -22,6 +22,7 @@ Release Notes
         * Remove ``copy_dataframe`` parameter from DataTable initialization (:pr:`398`)
         * Implement ``DataTable.__sizeof__`` to return size of the underlying dataframe (:pr:`401`)
         * Include Datetime columns in mutual info calculation (:pr:`399`)
+        * Maintain column order on DataTable operations (:pr:`406`)
     * Documentation Changes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
