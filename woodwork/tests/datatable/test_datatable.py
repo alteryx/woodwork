@@ -1360,6 +1360,19 @@ def test_datatable_getitem_list_input(sample_df):
     assert new_dt.index is None
     assert new_dt.time_index is None
 
+    # Test that reversed column order reverses resulting column order
+    columns = list(reversed(list(dt.columns.keys())))
+    new_dt = dt[columns]
+
+    assert new_dt is not dt
+    assert new_dt.to_dataframe() is not df
+    assert all(df.columns[::-1] == new_dt.to_dataframe().columns)
+    assert all(dt.types.index[::-1] == new_dt.types.index)
+    assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+    assert set(new_dt.columns.keys()) == set(dt.columns.keys())
+    assert new_dt.index == 'id'
+    assert new_dt.time_index == 'signup_date'
+
 
 def test_datatable_getitem_list_warnings(sample_df):
     # Test regular columns
@@ -1800,6 +1813,15 @@ def test_select_instantiated():
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         dt.select(ymd_format)
+
+
+def test_select_maintain_order(sample_df):
+    dt = DataTable(sample_df, logical_types={col_name: 'NaturalLanguage' for col_name in sample_df.columns})
+    new_dt = dt.select('NaturalLanguage')
+
+    assert all(dt.to_dataframe().columns == new_dt.to_dataframe().columns)
+    assert all(dt.types.index == new_dt.types.index)
+    assert all(new_dt.to_dataframe().columns == new_dt.types.index)
 
 
 def test_filter_cols(sample_df):
@@ -2502,6 +2524,12 @@ def test_datatable_rename(sample_df):
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
+
+    # Swap names back and confirm that order of columns is the same as the original
+    dt_swapped_back = dt.rename({'age': 'full_name', 'full_name': 'age'})
+    assert all(original_df.columns == dt_swapped_back.to_dataframe().columns)
+    assert all(dt.types.index == dt_swapped_back.types.index)
+    assert all(dt_swapped_back.to_dataframe().columns == dt_swapped_back.types.index)
 
 
 def test_datatable_sizeof(sample_df):
