@@ -2503,3 +2503,43 @@ def test_datatable_sizeof(sample_df):
     else:
         expected_size = 32
     assert dt.__sizeof__() == expected_size
+
+
+def test_datatable_update_dataframe(sample_df):
+    new_df = sample_df.copy().tail(2)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        new_df = dd.from_pandas(new_df, npartitions=1)
+
+    dt = DataTable(sample_df,
+                   index='id',
+                   time_index='signup_date',
+                   logical_types={'full_name': 'FullName'},
+                   semantic_tags={'phone_number': 'custom_tag'})
+    original_types = dt.types
+
+    dt.update_dataframe(new_df)
+    assert len(dt.to_dataframe()) == 2
+    assert dt.index == 'id'
+    assert dt.time_index == 'signup_date'
+    pd.testing.assert_frame_equal(original_types, dt.types)
+    # new_df does not have updated dtypes, so ignore during check
+    pd.testing.assert_frame_equal(to_pandas(new_df.set_index('id', drop=False)),
+                                  to_pandas(dt.to_dataframe(), index='id'),
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+
+def test_datatable_update_dataframe_different_num_cols(sample_df):
+    new_df = sample_df.copy().drop(columns='age')
+    dt = DataTable(sample_df)
+    error_msg = 'Updated dataframe contains 6 columns, expecting 7'
+    with pytest.raises(ValueError, match=error_msg):
+        dt.update_dataframe(new_df)
+
+
+def test_datatable_update_dataframe_missing_col(sample_df):
+    new_df = sample_df.copy().rename(columns={'age': 'old_age'})
+    dt = DataTable(sample_df)
+    error_msg = 'Updated dataframe is missing new age column'
+    with pytest.raises(ValueError, match=error_msg):
+        dt.update_dataframe(new_df)

@@ -29,6 +29,7 @@ DataTable
     DataTable.to_pickle
     DataTable.to_parquet
     DataTable.rename
+    DataTable.update_data
 
 
 DataColumn

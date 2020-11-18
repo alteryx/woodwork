@@ -493,6 +493,44 @@ class DataTable(object):
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
 
+    def update_dataframe(self, new_df, already_sorted=False):
+        '''Update DataTable's dataframe with new data, making sure the new DataFrame dtypes are updated.
+
+        Args:
+            new_df (DataFrame): DataFrame containing the new data
+        '''
+        if len(new_df.columns) != len(self.columns):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(new_df.columns),
+                                                                                          len(self.columns)))
+        for column in self.columns.keys():
+            if column not in new_df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(column))
+
+        # Make sure column ordering matches existing ordering
+        new_df = new_df[[column for column in self.columns.keys()]]
+        self._dataframe = new_df
+        semantic_tags = self.semantic_tags.copy()
+        index = self.index
+        time_index = self.time_index
+        if index:
+            _check_index(new_df, index)
+            semantic_tags[index] = semantic_tags[index].difference({'index'})
+        if time_index:
+            _check_time_index(new_df, time_index)
+            semantic_tags[time_index] = semantic_tags[time_index].difference({'time_index'})
+
+        self.columns = self._create_columns(self._dataframe.columns,
+                                            self.logical_types,
+                                            semantic_tags,
+                                            self.use_standard_tags)
+        self._update_columns(self.columns)
+
+        if index:
+            _update_index(self, index)
+
+        if time_index:
+            _update_time_index(self, time_index)
+
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
         then semantic tag then column name.
