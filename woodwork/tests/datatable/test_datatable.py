@@ -9,6 +9,7 @@ from woodwork import DataColumn, DataTable
 from woodwork.datatable import (
     _check_index,
     _check_logical_types,
+    _check_metadata,
     _check_semantic_tags,
     _check_time_index,
     _check_unique_column_names,
@@ -235,6 +236,7 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
+                         metadata=None,
                          semantic_tags=None,
                          make_index=False)
 
@@ -300,6 +302,12 @@ def test_check_logical_types_errors(sample_df):
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
+
+
+def test_check_metadata_errors():
+    error_message = 'Metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=error_message):
+        _check_metadata('test')
 
 
 def test_datatable_types(sample_df):
@@ -2549,3 +2557,30 @@ def test_datatable_update_dataframe_missing_col(sample_df):
     error_msg = 'Updated dataframe is missing new age column'
     with pytest.raises(ValueError, match=error_msg):
         dt.update_dataframe(new_df)
+
+
+def test_datatable_metadata(sample_df):
+    metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
+
+    dt = DataTable(sample_df)
+    assert dt.metadata == {}
+
+    dt.metadata = metadata
+    assert dt.metadata == metadata
+
+    dt = DataTable(sample_df, time_index='signup_date', metadata=metadata)
+    assert dt.metadata == metadata
+
+    new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
+    dt.metadata = {**metadata, **new_data}
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19',
+                           'created_by': 'user1'}
+
+    dt.metadata.pop('created_by')
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
+
+    dt.metadata['number'] = 1012034
+    assert dt.metadata == {'number': 1012034,
+                           'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19'}

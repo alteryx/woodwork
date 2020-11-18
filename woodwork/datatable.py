@@ -38,6 +38,7 @@ class DataTable(object):
                  time_index=None,
                  semantic_tags=None,
                  logical_types=None,
+                 metadata=None,
                  use_standard_tags=True,
                  make_index=False):
         """Create DataTable
@@ -59,9 +60,9 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
+            metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
-            make_index (bool, optional): If True, will create a new unique, numeric index column with the
                 name specified by ``index`` and will add the new index column to the supplied DataFrame.
                 If True, the name specified in ``index`` cannot match an existing column name in
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
@@ -69,7 +70,7 @@ class DataTable(object):
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
-        _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
+        _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index)
 
         self._dataframe = dataframe
 
@@ -98,6 +99,8 @@ class DataTable(object):
 
         if time_index:
             _update_time_index(self, time_index)
+
+        self.metadata = metadata or {}
 
     def __eq__(self, other, deep=True):
         if self.name != other.name:
@@ -890,12 +893,12 @@ class DataTable(object):
 
     def to_dictionary(self):
         '''
-        Get a DataTable's metadata
+        Get a DataTable's description
 
         Returns:
-            metadata (dict) : Description of :class:`.DataTable`.
+            description (dict) : Description of :class:`.DataTable`.
         '''
-        return serialize.datatable_to_metadata(self)
+        return serialize.datatable_to_description(self)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
         '''Write DataTable to disk in the CSV format, location specified by `path`.
@@ -960,7 +963,7 @@ def _validate_dataframe(dataframe):
     return dataframe
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
+def _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index):
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
@@ -969,6 +972,8 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
+    if metadata:
+        _check_metadata(metadata)
     if time_index:
         datetime_format = None
         logical_type = None
@@ -1032,6 +1037,11 @@ def _check_semantic_tags(dataframe, semantic_tags):
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_metadata(metadata):
+    if not isinstance(metadata, dict):
+        raise TypeError('Metadata must be a dictionary.')
 
 
 def _update_index(datatable, index, old_index=None):
