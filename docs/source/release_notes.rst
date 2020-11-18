@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
+        * Add ``describe_dict`` method to DataTable (:pr:`405`)
         * Add ``mutual_information_dict`` method to DataTable (:pr:`404`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)

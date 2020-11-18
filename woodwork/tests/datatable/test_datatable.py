@@ -1870,6 +1870,30 @@ def test_natural_language_inference_with_config_options():
     ww.config.reset_option('natural_language_threshold')
 
 
+def test_describe_dict(describe_df):
+    dt = DataTable(describe_df, index='index_col')
+    stats_dict = dt.describe_dict()
+    index_order = ['physical_type',
+                   'logical_type',
+                   'semantic_tags',
+                   'count',
+                   'nunique',
+                   'nan_count',
+                   'mean',
+                   'mode',
+                   'std',
+                   'min',
+                   'first_quartile',
+                   'second_quartile',
+                   'third_quartile',
+                   'max',
+                   'num_true',
+                   'num_false']
+    stats_dict_to_df = pd.DataFrame(stats_dict).reindex(index_order)
+    stats_df = dt.describe()
+    pd.testing.assert_frame_equal(stats_df, stats_dict_to_df)
+
+
 def test_describe_does_not_include_index(describe_df):
     dt = DataTable(describe_df, index='index_col')
     stats_df = dt.describe()

@@ -567,7 +567,7 @@ class DataTable(object):
         """
         return _iLocIndexer(self)
 
-    def describe(self, include=None):
+    def describe_dict(self, include=None):
         """Calculates statistics for data contained in DataTable.
 
         Args:
@@ -578,9 +578,9 @@ class DataTable(object):
             will be returned.
 
         Returns:
-            pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
-            DataTable that just containing the logical types, semantic tags, or column names specified
-            in ``include``.
+            dict[str -> dict]: A dictionary with a key for each column in the data or for each column
+            matching the logical types, semantic tags or column names specified in ``include``, paired
+            with a value containing a dictionary containing relevant statistics for that column.
         """
         agg_stats_to_calculate = {
             'category': ["count", "nunique"],
@@ -639,7 +639,24 @@ class DataTable(object):
             values["logical_type"] = logical_type
             values["semantic_tags"] = semantic_tags
             results[column_name] = values
+        return results
 
+    def describe(self, include=None):
+        """Calculates statistics for data contained in DataTable.
+
+        Args:
+            include (list[str or LogicalType], optional): filter for what columns to include in the
+            statistics returned. Can be a list of columns, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name. If no matching columns are found, an empty DataFrame
+            will be returned.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
+            DataTable that contains the logical types, semantic tags, or column names specified
+            in ``include``.
+        """
+        results = self.describe_dict(include=include)
         index_order = [
             'physical_type',
             'logical_type',
