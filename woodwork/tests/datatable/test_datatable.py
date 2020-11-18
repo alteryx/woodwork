@@ -2320,6 +2320,14 @@ def test_mutual_info_sort(df_mi):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
 
 
+def test_mutual_info_dict(df_mi):
+    dt = DataTable(df_mi)
+    mi_dict = dt.mutual_information_dict()
+    mi = dt.mutual_information()
+
+    pd.testing.assert_frame_equal(pd.DataFrame(mi_dict), mi)
+
+
 def test_datatable_describe_with_no_match(sample_df):
     dt = DataTable(sample_df)
     df = dt.describe(include=['wrongname'])
