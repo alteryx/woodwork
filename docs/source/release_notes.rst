@@ -24,6 +24,7 @@ Release Notes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
         * Use new version of pull request Github Action (:pr:`394`)
+        * Add conda CI test to check build latest package (:pr:`388`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
