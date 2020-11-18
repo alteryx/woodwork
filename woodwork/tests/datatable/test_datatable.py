@@ -2522,12 +2522,17 @@ def test_datatable_update_dataframe(sample_df):
     assert dt.index == 'id'
     assert dt.time_index == 'signup_date'
     pd.testing.assert_frame_equal(original_types, dt.types)
+
     # new_df does not have updated dtypes, so ignore during check
     pd.testing.assert_frame_equal(to_pandas(new_df.set_index('id', drop=False)),
                                   to_pandas(dt.to_dataframe(), index='id'),
                                   check_dtype=False,
                                   check_index_type=False)
 
+    # confirm that DataColumn series matches corresponding dataframe column
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt.to_dataframe()[col]))
+        assert dt.columns[col]._series.dtype == dt.to_dataframe()[col].dtype
 
 def test_datatable_update_dataframe_different_num_cols(sample_df):
     new_df = sample_df.copy().drop(columns='age')

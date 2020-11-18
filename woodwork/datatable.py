@@ -509,27 +509,14 @@ class DataTable(object):
         # Make sure column ordering matches existing ordering
         new_df = new_df[[column for column in self.columns.keys()]]
         self._dataframe = new_df
-        semantic_tags = self.semantic_tags.copy()
-        index = self.index
-        time_index = self.time_index
 
-        # Remove `index` and `time_index` from semantic tags as they can't be passed directly to create columns
-        if index:
-            semantic_tags[index] = semantic_tags[index].difference({'index'})
-        if time_index:
-            semantic_tags[time_index] = semantic_tags[time_index].difference({'time_index'})
-
-        self.columns = self._create_columns(self._dataframe.columns,
-                                            self.logical_types,
-                                            semantic_tags,
-                                            self.use_standard_tags)
+        # Update column series and dtype
+        for column in self.columns.keys():
+            self.columns[column]._set_series(new_df[column])
+            self.columns[column]._update_dtype()
+        
+        # Make sure dataframe dtypes match columns
         self._update_columns(self.columns)
-
-        if index:
-            _update_index(self, index)
-
-        if time_index:
-            _update_time_index(self, time_index)
 
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
