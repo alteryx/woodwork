@@ -512,11 +512,11 @@ class DataTable(object):
         semantic_tags = self.semantic_tags.copy()
         index = self.index
         time_index = self.time_index
+
+        # Remove `index` and `time_index` from semantic tags as they can't be passed directly to create columns
         if index:
-            _check_index(new_df, index)
             semantic_tags[index] = semantic_tags[index].difference({'index'})
         if time_index:
-            _check_time_index(new_df, time_index)
             semantic_tags[time_index] = semantic_tags[time_index].difference({'time_index'})
 
         self.columns = self._create_columns(self._dataframe.columns,
