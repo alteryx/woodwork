@@ -2526,7 +2526,8 @@ def test_datatable_rename(sample_df):
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
     # Swap names back and confirm that order of columns is the same as the original
-    dt_swapped_back = dt.rename({'age': 'full_name', 'full_name': 'age'})
+    dt_swapped_back = dt_swapped_names.rename({'age': 'full_name', 'full_name': 'age'})
+    # --> maybe make util helper
     assert all(original_df.columns == dt_swapped_back.to_dataframe().columns)
     assert all(dt.types.index == dt_swapped_back.types.index)
     assert all(dt_swapped_back.to_dataframe().columns == dt_swapped_back.types.index)

@@ -164,7 +164,9 @@ class DataTable(object):
         """Dataframe containing the physical dtypes, logical types and semantic
         tags for the table"""
         typing_info = {}
-        for dc in self.columns.values():
+        # Access column names from underlying data to maintain column order
+        for col_name in self._dataframe.columns:
+            dc = self[col_name]
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
@@ -303,8 +305,8 @@ class DataTable(object):
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
 
-        old_all_cols = list(self.columns.keys())
-        new_dt = self[old_all_cols]
+        old_all_cols = list(self._dataframe.columns)
+        new_dt = self._new_dt_from_cols(old_all_cols)
         updated_cols = {}
         for old_name, new_name in columns.items():
             col = new_dt.pop(old_name)
@@ -544,11 +546,13 @@ class DataTable(object):
             if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
                 cols_to_include.add(col_name)
 
-        return list(cols_to_include)
+        # Maintain column order by using underlying data
+        return [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
-        indices, and name of original DataTable"""
+        indices, and name of original DataTable. Resulting DataTable's column order will
+        follow the order used in cols_to_include."""
         assert all([col_name in self.columns for col_name in cols_to_include])
         return _new_dt_including(self, self._dataframe.loc[:, cols_to_include])
 
