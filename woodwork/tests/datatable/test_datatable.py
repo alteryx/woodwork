@@ -39,6 +39,7 @@ from woodwork.logical_types import (
     ZIPCode
 )
 from woodwork.tests.testing_utils import (
+    check_column_order,
     mi_between_cols,
     to_pandas,
     validate_subset_dt
@@ -1819,9 +1820,7 @@ def test_select_maintain_order(sample_df):
     dt = DataTable(sample_df, logical_types={col_name: 'NaturalLanguage' for col_name in sample_df.columns})
     new_dt = dt.select('NaturalLanguage')
 
-    assert all(dt.to_dataframe().columns == new_dt.to_dataframe().columns)
-    assert all(dt.types.index == new_dt.types.index)
-    assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+    check_column_order(dt, new_dt)
 
 
 def test_filter_cols(sample_df):
@@ -2527,10 +2526,7 @@ def test_datatable_rename(sample_df):
 
     # Swap names back and confirm that order of columns is the same as the original
     dt_swapped_back = dt_swapped_names.rename({'age': 'full_name', 'full_name': 'age'})
-    # --> maybe make util helper
-    assert all(original_df.columns == dt_swapped_back.to_dataframe().columns)
-    assert all(dt.types.index == dt_swapped_back.types.index)
-    assert all(dt_swapped_back.to_dataframe().columns == dt_swapped_back.types.index)
+    check_column_order(dt, dt_swapped_back)
 
 
 def test_datatable_sizeof(sample_df):
@@ -2580,9 +2576,9 @@ def test_datatable_column_order_after_rename(sample_df_pandas):
     assert renamed_dt.iloc[:, 1].name == 'renamed_col'
 
     changed_index_dt = renamed_dt.set_index('renamed_col')
-    assert changed_index_dt.iloc[:, 1].name == 'renamed_col'
     assert changed_index_dt.index == 'renamed_col'
+    check_column_order(renamed_dt, changed_index_dt)
 
     reset_tags_dt = renamed_dt.reset_semantic_tags(columns='renamed_col')
-    assert reset_tags_dt.iloc[:, 1].name == 'renamed_col'
     assert reset_tags_dt['renamed_col'].semantic_tags == set()
+    check_column_order(renamed_dt, reset_tags_dt)

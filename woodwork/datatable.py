@@ -315,10 +315,8 @@ class DataTable(object):
             col._assigned_name = new_name
             updated_cols[new_name] = col
 
-        # --> not necessarily ideal that rename, keeps the order the sasme but changes the order in the dictionary
-        # which forces us away from using self.columns when order matters
         new_dt._update_columns(updated_cols)
-        # Reorder columns to match the original order
+        # Make sure we maintain relative order of columns including new names
         new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
         new_dt._dataframe = new_dt._dataframe[new_all_cols]
 
