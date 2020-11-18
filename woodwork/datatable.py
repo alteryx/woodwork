@@ -578,8 +578,8 @@ class DataTable(object):
             will be returned.
 
         Returns:
-            dict[str -> dict]: A Dictionary with a key for each column in the data or the each column
-            containing the logical types, semantic tags, or column names specified in ``include``, paired
+            dict[str -> dict]: A dictionary with a key for each column in the data or for each column
+            matching the logical types, semantic tags or column names specified in ``include``, paired
             with a value containing a dictionary containing relevant statistics for that column.
         """
         agg_stats_to_calculate = {
@@ -653,10 +653,10 @@ class DataTable(object):
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
-            DataTable that just containing the logical types, semantic tags, or column names specified
+            DataTable that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = self._describe(include=include)
+        results = self.describe_dict(include=include)
         index_order = [
             'physical_type',
             'logical_type',
