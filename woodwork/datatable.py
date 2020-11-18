@@ -507,7 +507,7 @@ class DataTable(object):
                 raise ValueError("Updated dataframe is missing new {} column".format(column))
 
         # Make sure column ordering matches existing ordering
-        new_df = new_df[[column for column in self.columns.keys()]]
+        new_df = new_df[[column for column in self._dataframe.columns]]
         self._dataframe = new_df
 
         # Update column series and dtype
