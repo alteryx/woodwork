@@ -499,7 +499,7 @@ class DataTable(object):
         Args:
             new_df (DataFrame): DataFrame containing the new data
         '''
-        if self.make_index:
+        if self.make_index and self.index not in new_df.columns:
             new_df = _make_index(new_df, self.index)
 
         if len(new_df.columns) != len(self.columns):
@@ -508,6 +508,12 @@ class DataTable(object):
         for column in self.columns.keys():
             if column not in new_df.columns:
                 raise ValueError("Updated dataframe is missing new {} column".format(column))
+
+        if self.index:
+            _check_index(new_df, self.index)
+
+        if self.time_index:
+            _check_time_index(new_df, self.time_index)
 
         # Make sure column ordering matches existing ordering
         new_df = new_df[[column for column in self._dataframe.columns]]
