@@ -2594,6 +2594,7 @@ def test_datatable_update_dataframe_with_make_index(sample_df):
     dt.update_dataframe(dt._dataframe.head(1))
     assert len(dt._dataframe) == 1
 
+
 def test_datatable_update_dataframe_different_num_cols(sample_df):
     new_df = sample_df.copy().drop(columns='age')
     dt = DataTable(sample_df)
