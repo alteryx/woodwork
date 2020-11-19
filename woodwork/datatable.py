@@ -493,11 +493,14 @@ class DataTable(object):
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
 
-    def update_dataframe(self, new_df, already_sorted=False):
-        '''Update DataTable's dataframe with new data, making sure the new DataFrame dtypes are updated.
+    def update_dataframe(self, new_df):
+        '''Replace the DataTable's dataframe with a new dataframe, making sure the new dataframe dtypes are updated.
+        If the original DataTable was created with ``make_index=True``, an index column will be added to the updated
+        data if it is not present.
 
         Args:
-            new_df (DataFrame): DataFrame containing the new data
+            new_df (DataFrame): Dataframe containing the new data. The same columns present in the original data should
+                also be present in the new dataframe.
         '''
         if self.make_index and self.index not in new_df.columns:
             new_df = _make_index(new_df, self.index)
