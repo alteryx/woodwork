@@ -74,14 +74,9 @@ class DataTable(object):
 
         self._dataframe = dataframe
 
-        if make_index:
-            if dd and isinstance(self._dataframe, dd.DataFrame):
-                self._dataframe[index] = 1
-                self._dataframe[index] = self._dataframe[index].cumsum() - 1
-            elif ks and isinstance(self._dataframe, ks.DataFrame):
-                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
-            else:
-                self._dataframe.insert(0, index, range(len(self._dataframe)))
+        self.make_index = make_index or None
+        if self.make_index:
+            self._dataframe = _make_index(self._dataframe, index)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -504,6 +499,9 @@ class DataTable(object):
         Args:
             new_df (DataFrame): DataFrame containing the new data
         '''
+        if self.make_index:
+            new_df = _make_index(new_df, self.index)
+
         if len(new_df.columns) != len(self.columns):
             raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(new_df.columns),
                                                                                           len(self.columns)))
@@ -1067,3 +1065,15 @@ def _update_time_index(datatable, time_index, old_time_index=None):
     datatable.columns[time_index]._set_as_time_index()
     if old_time_index:
         datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
+
+
+def _make_index(dataframe, index):
+    if dd and isinstance(dataframe, dd.DataFrame):
+        dataframe[index] = 1
+        dataframe[index] = dataframe[index].cumsum() - 1
+    elif ks and isinstance(dataframe, ks.DataFrame):
+        dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
+    else:
+        dataframe.insert(0, index, range(len(dataframe)))
+
+    return dataframe
