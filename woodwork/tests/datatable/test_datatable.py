@@ -832,6 +832,8 @@ def test_sets_category_dtype_on_update():
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
 
+# --> remove and maybe make own 'sets object dtype on init`
+
 
 def test_sets_string_dtype_on_init():
     column_name = 'test_series'
@@ -846,7 +848,6 @@ def test_sets_string_dtype_on_init():
         Filepath,
         FullName,
         IPAddress,
-        LatLong,
         NaturalLanguage,
         PhoneNumber,
         URL,
@@ -863,6 +864,8 @@ def test_sets_string_dtype_on_init():
             assert dt.columns[column_name].dtype == logical_type.pandas_dtype
             assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
 
+        # LatLong,  # --> remove and maybe make separate test
+
 
 def test_sets_string_dtype_on_update():
     column_name = 'test_series'
@@ -872,7 +875,6 @@ def test_sets_string_dtype_on_update():
         Filepath,
         FullName,
         IPAddress,
-        LatLong,
         NaturalLanguage,
         PhoneNumber,
         URL,
@@ -2047,8 +2049,9 @@ def test_datatable_describe_method(describe_df):
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
     numeric_ltypes = [Double, Integer]
+    # --> removed latlong but determine how to handle in describe - make sure it gets tested at some point
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
-                               LatLong, PhoneNumber, URL]
+                               PhoneNumber, URL]
 
     expected_index = ['physical_type',
                       'logical_type',

@@ -199,8 +199,8 @@ class LatLong(LogicalType):
              (40.423599, -86.921162)),
              (-45.031705, 168.659506)]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    # --> change to object --> not sure that backup dtype can be object - check what ks looks like
+    pandas_dtype = 'object'
 
 
 class NaturalLanguage(LogicalType):

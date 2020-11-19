@@ -773,6 +773,7 @@ class DataTable(object):
             elif _get_ltype_class(logical_type) == Datetime:
                 agg_stats = agg_stats_to_calculate[Datetime]
             else:
+                # --> latlong should just do count and nans i think
                 agg_stats = ["count"]
             values = series.agg(agg_stats).to_dict()
 

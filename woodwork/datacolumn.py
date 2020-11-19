@@ -119,6 +119,10 @@ class DataColumn(object):
                                                  name=self._series.name)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
+                # --> if it's a LatLong, convert to be of format tuple(str, str) with object type
+                # actually first see what happens if you just convert it to an object
+                # determine how to handle input os '(1,2)' since it gets interpreted as a string
+                # might be able to leave, but could be nice to handle
                 else:
                     if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
                         new_dtype = self.logical_type.backup_dtype

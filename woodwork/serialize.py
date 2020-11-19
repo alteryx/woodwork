@@ -103,6 +103,7 @@ def dump_table(datatable, path, **kwargs):
         with open(file, 'w') as file:
             json.dump(description, file)
     except TypeError as e:
+        # We're removing single quotes to get consistency between python versions
         raise TypeError('DataTable is not json serializable: ' + e.args[0].replace("'", ""))
 
 
@@ -151,6 +152,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             raise ValueError(msg)
         df.to_pickle(file, **kwargs)
     elif format == 'parquet':
+        # -->convert latlong column to string
         df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'

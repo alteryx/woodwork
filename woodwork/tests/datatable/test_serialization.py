@@ -162,6 +162,7 @@ def test_to_pickle(sample_df, tmpdir):
         assert dt == _dt
 
 
+# --> add test_to_parquet_with_latlong and make sure to do in koalas as well
 def test_to_parquet(sample_df, tmpdir):
     dt = DataTable(sample_df, index='id')
     dt.to_parquet(str(tmpdir))

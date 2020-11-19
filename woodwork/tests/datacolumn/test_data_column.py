@@ -569,6 +569,11 @@ def test_ordinal_with_nan_values():
     assert dc.logical_type.order == ['a', 'b']
 
 
+def test_latlong_tuple(latlong_series):
+    # --> add to conftest and test the ability to access individual columns
+    pass
+
+
 def test_datacolumn_equality(sample_series, sample_datetime_series):
     # Check different parameters to DataColumn
     str_col = DataColumn(sample_series, logical_type='Categorical')
