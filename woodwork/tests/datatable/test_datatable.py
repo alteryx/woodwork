@@ -39,6 +39,7 @@ from woodwork.logical_types import (
     ZIPCode
 )
 from woodwork.tests.testing_utils import (
+    check_column_order,
     mi_between_cols,
     to_pandas,
     validate_subset_dt
@@ -1360,6 +1361,19 @@ def test_datatable_getitem_list_input(sample_df):
     assert new_dt.index is None
     assert new_dt.time_index is None
 
+    # Test that reversed column order reverses resulting column order
+    columns = list(reversed(list(dt.columns.keys())))
+    new_dt = dt[columns]
+
+    assert new_dt is not dt
+    assert new_dt.to_dataframe() is not df
+    assert all(df.columns[::-1] == new_dt.to_dataframe().columns)
+    assert all(dt.types.index[::-1] == new_dt.types.index)
+    assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+    assert set(new_dt.columns.keys()) == set(dt.columns.keys())
+    assert new_dt.index == 'id'
+    assert new_dt.time_index == 'signup_date'
+
 
 def test_datatable_getitem_list_warnings(sample_df):
     # Test regular columns
@@ -1800,6 +1814,13 @@ def test_select_instantiated():
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         dt.select(ymd_format)
+
+
+def test_select_maintain_order(sample_df):
+    dt = DataTable(sample_df, logical_types={col_name: 'NaturalLanguage' for col_name in sample_df.columns})
+    new_dt = dt.select('NaturalLanguage')
+
+    check_column_order(dt, new_dt)
 
 
 def test_filter_cols(sample_df):
@@ -2503,6 +2524,10 @@ def test_datatable_rename(sample_df):
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
+    # Swap names back and confirm that order of columns is the same as the original
+    dt_swapped_back = dt_swapped_names.rename({'age': 'full_name', 'full_name': 'age'})
+    check_column_order(dt, dt_swapped_back)
+
 
 def test_datatable_sizeof(sample_df):
     dt = DataTable(sample_df)
@@ -2584,3 +2609,22 @@ def test_datatable_metadata(sample_df):
     assert dt.metadata == {'number': 1012034,
                            'secondary_time_index': {'is_registered': 'age'},
                            'date_created': '1/1/19'}
+
+
+def test_datatable_column_order_after_rename(sample_df_pandas):
+    # Since rename removes a column to rename it, its location in the dt.columns dictionary
+    # changes, so we have to check that we aren't relying on the columns dictionary
+    dt = DataTable(sample_df_pandas, index='id', semantic_tags={'full_name': 'test'})
+    assert dt.iloc[:, 1].name == 'full_name'
+    assert dt.index == 'id'
+
+    renamed_dt = dt.rename({'full_name': 'renamed_col'})
+    assert renamed_dt.iloc[:, 1].name == 'renamed_col'
+
+    changed_index_dt = renamed_dt.set_index('renamed_col')
+    assert changed_index_dt.index == 'renamed_col'
+    check_column_order(renamed_dt, changed_index_dt)
+
+    reset_tags_dt = renamed_dt.reset_semantic_tags(columns='renamed_col')
+    assert reset_tags_dt['renamed_col'].semantic_tags == set()
+    check_column_order(renamed_dt, reset_tags_dt)

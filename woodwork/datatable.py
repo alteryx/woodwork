@@ -164,7 +164,9 @@ class DataTable(object):
         """Dataframe containing the physical dtypes, logical types and semantic
         tags for the table"""
         typing_info = {}
-        for dc in self.columns.values():
+        # Access column names from underlying data to maintain column order
+        for col_name in self._dataframe.columns:
+            dc = self[col_name]
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
@@ -303,8 +305,8 @@ class DataTable(object):
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
 
-        old_all_cols = list(self.columns.keys())
-        new_dt = self[old_all_cols]
+        old_all_cols = list(self._dataframe.columns)
+        new_dt = self._new_dt_from_cols(old_all_cols)
         updated_cols = {}
         for old_name, new_name in columns.items():
             col = new_dt.pop(old_name)
@@ -314,7 +316,7 @@ class DataTable(object):
             updated_cols[new_name] = col
 
         new_dt._update_columns(updated_cols)
-        # Reorder columns to match the original order
+        # Make sure we maintain relative order of columns including new names
         new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
         new_dt._dataframe = new_dt._dataframe[new_all_cols]
 
@@ -332,7 +334,7 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: DataTable with the specified index column set.
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_index(new_dt, index, self.index)
         return new_dt
 
@@ -343,7 +345,7 @@ class DataTable(object):
         Args:
             time_index (str): The name of the column to set as the time index.
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_time_index(new_dt, time_index, self.time_index)
         return new_dt
 
@@ -370,7 +372,7 @@ class DataTable(object):
         semantic_tags = semantic_tags or {}
         _check_semantic_tags(self._dataframe, semantic_tags)
 
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
         for col_name, col in new_dt.columns.items():
             if col_name not in logical_types and col_name not in semantic_tags:
@@ -436,7 +438,7 @@ class DataTable(object):
             raise LookupError("Input contains columns that are not present in "
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
-            columns = self.columns.keys()
+            columns = self._dataframe.columns
         return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
@@ -454,7 +456,7 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: A new DataTable with updated columns
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
         if isinstance(new_values, dict):
             for name, tags in new_values.items():
@@ -569,11 +571,13 @@ class DataTable(object):
             if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
                 cols_to_include.add(col_name)
 
-        return list(cols_to_include)
+        # Maintain column order by using underlying data
+        return [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
-        indices, and name of original DataTable"""
+        indices, and name of original DataTable. Resulting DataTable's column order will
+        follow the order used in cols_to_include."""
         assert all([col_name in self.columns for col_name in cols_to_include])
         return _new_dt_including(self, self._dataframe.loc[:, cols_to_include])
 

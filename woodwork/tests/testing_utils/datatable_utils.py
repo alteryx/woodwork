@@ -49,3 +49,12 @@ def to_pandas(df, index=None, sort_index=False):
         pd_df = pd_df.sort_index()
 
     return pd_df
+
+
+def check_column_order(dt, new_dt):
+    # confirm maintained underlying DataFrame column order
+    assert all(dt.to_dataframe().columns == new_dt.to_dataframe().columns)
+    # confirm maintained types DataFrame index order
+    assert all(dt.types.index == new_dt.types.index)
+    # Confirm types df matches column order
+    assert all(new_dt.to_dataframe().columns == new_dt.types.index)
