@@ -74,14 +74,9 @@ class DataTable(object):
 
         self._dataframe = dataframe
 
-        if make_index:
-            if dd and isinstance(self._dataframe, dd.DataFrame):
-                self._dataframe[index] = 1
-                self._dataframe[index] = self._dataframe[index].cumsum() - 1
-            elif ks and isinstance(self._dataframe, ks.DataFrame):
-                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
-            else:
-                self._dataframe.insert(0, index, range(len(self._dataframe)))
+        self.make_index = make_index or None
+        if self.make_index:
+            self._dataframe = _make_index(self._dataframe, index)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -497,6 +492,43 @@ class DataTable(object):
         """
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
+
+    def update_dataframe(self, new_df):
+        '''Replace the DataTable's dataframe with a new dataframe, making sure the new dataframe dtypes are updated.
+        If the original DataTable was created with ``make_index=True``, an index column will be added to the updated
+        data if it is not present.
+
+        Args:
+            new_df (DataFrame): Dataframe containing the new data. The same columns present in the original data should
+                also be present in the new dataframe.
+        '''
+        if self.make_index and self.index not in new_df.columns:
+            new_df = _make_index(new_df, self.index)
+
+        if len(new_df.columns) != len(self.columns):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(new_df.columns),
+                                                                                          len(self.columns)))
+        for column in self.columns.keys():
+            if column not in new_df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(column))
+
+        if self.index:
+            _check_index(new_df, self.index)
+
+        if self.time_index:
+            _check_time_index(new_df, self.time_index)
+
+        # Make sure column ordering matches existing ordering
+        new_df = new_df[[column for column in self._dataframe.columns]]
+        self._dataframe = new_df
+
+        # Update column series and dtype
+        for column in self.columns.keys():
+            self.columns[column]._set_series(new_df[column])
+            self.columns[column]._update_dtype()
+
+        # Make sure dataframe dtypes match columns
+        self._update_columns(self.columns)
 
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
@@ -1042,3 +1074,15 @@ def _update_time_index(datatable, time_index, old_time_index=None):
     datatable.columns[time_index]._set_as_time_index()
     if old_time_index:
         datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
+
+
+def _make_index(dataframe, index):
+    if dd and isinstance(dataframe, dd.DataFrame):
+        dataframe[index] = 1
+        dataframe[index] = dataframe[index].cumsum() - 1
+    elif ks and isinstance(dataframe, ks.DataFrame):
+        dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
+    else:
+        dataframe.insert(0, index, range(len(dataframe)))
+
+    return dataframe
