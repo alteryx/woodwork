@@ -17,6 +17,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
+    LatLong,
     LogicalType,
     NaturalLanguage,
     Ordinal,
@@ -123,6 +124,12 @@ class DataColumn(object):
                 # actually first see what happens if you just convert it to an object
                 # determine how to handle input os '(1,2)' since it gets interpreted as a string
                 # might be able to leave, but could be nice to handle
+                # formats to handle:
+                # (1,2)
+                # ('1','2')
+                # '(1,2)'
+                # '1,2'
+                # ('1,2,3', '1,2,3')
                 else:
                     if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
                         new_dtype = self.logical_type.backup_dtype

@@ -232,3 +232,29 @@ def dask_pdnas(pandas_pdnas):
 @pytest.fixture(params=['pandas_pdnas', 'dask_pdnas'])
 def pdnas(request):
     return request.getfixturevalue(request.param)
+
+# LatLong Fixtures for testing access to latlong values
+@pytest.fixture
+def pandas_latlongs():
+    return [
+        pd.Series([(1, 2), (3, 4)]).astype('object'),
+        pd.Series([('1', '2'), ('3', '4')]).astype('object'),
+        pd.Series([('1,2,3', '2,3,4'), ('3,4,5', '4,5,6')]).astype('object'),  # --> not sure this is correct
+        pd.Series(['(1, 2)', '(3, 4)']),  # --> determine if we want to
+        pd.Series(['1, 2', '3, 4']),  # --> determine if we want to
+    ]
+
+
+@pytest.fixture
+def dask_latlongs(pandas_latlongs):
+    return [pd_to_dask(series) for series in pandas_latlongs]
+
+
+@pytest.fixture
+def koalas_latlongs(pandas_latlongs):
+    return [pd_to_koalas(series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)) for series in pandas_latlongs]
+
+
+@pytest.fixture(params=['pandas_latlongs', 'dask_latlongs', 'koalas_latlongs'])
+def latlongs(request):
+    return request.getfixturevalue(request.param)
