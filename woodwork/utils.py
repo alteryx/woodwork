@@ -304,44 +304,43 @@ def _to_latlong(series):
     Assume column has same format for whole column
     # --> consider only having _reformat_latlong be in this fild
     '''
-    if ks and isinstance(series, ks.Series):
-        series = series.to_pandas()
-    elif dd and isisntance(series, dd.Series):
-        series = series.compute()
+    # determine best way to get first value that's not a null value
+    if dd and isinstance(series, dd.Series):
+        latlong_format = series.compute().iloc[0]
+    else:
+        latlong_format = series.iloc[0]
 
-    reformat_fn = _get_latlong_reformatter(series.iloc[0])
+    reformat_fn = _get_latlong_reformatter(latlong_format)
 
-    # Determine format
-    # get out lat and long values
-    # apply format to all values
-    series.apply(lambda latlong: reformat_fn(latlong))
-    # convert back to original series type
-
-    pass
-    return series
+    return series.apply(lambda latlong: reformat_fn(latlong) if latlong else latlong)
 
 
 def _get_latlong_reformatter(latlong):
-    # will ve slower if we dont determine the format ahead of time
-
     if isinstance(latlong, (tuple, list)):
         # confirm its length two and get 0 and 1 indices
         if len(latlong) != 2:
             raise ValueError(f'LatLong values must have exactly two values. {latlong} does not have two values.')
-        return (lambda latlong_tuple: (string(latlong_tuple[0]), string(latlong_tuple[1])))
+        return (lambda latlong_tuple: (str(latlong_tuple[0]), str(latlong_tuple[1])))
     elif isinstance(latlong, str):
         # if it has brackets, remove those
         if latlong[0] == '(' or latlong[0] == '[':
-            latlong = latlong[1:-1]
-
-        split_latlong = latlong.split(',')
-        if len(split_latlong) != 2:
-            # the middle comma should be the thing that splits the latlongs??? not sure about this
-            if len(split_latlong) % 2:
-                raise ValueError(f'Latitude and Longitude values in LatLong must match. {latlong} does not match.')
-            midpoint = len(split_latlong) // 2
-            return (lambda latlong_tuple: (",".join(latlong_tuple[:midpoint]), ",".join(latlong_tuple[midpoint:])))
-
+            return tuple_reformatter
         else:
-            # if there's onyl one then we can use either side!
-            return (lambda latlong_tuple: (latlong_tuple[0], latlong_tuple[1]))
+            return without_brackets_reformatter
+
+
+def tuple_reformatter(latlong):
+    # Tuple of format (a, b) where a and b can be anything of matching formats
+    # relies on comma separators
+    split_latlong = latlong[1:-1].split(',')
+    midpoint = len(split_latlong) // 2
+
+    return ','.join(split_latlong[:midpoint]), ','.join(split_latlong[midpoint:])
+
+
+def without_brackets_reformatter(latlong):
+    # --> see if we can find a better way to avoid repetition
+    split_latlong = latlong.split(',')
+    midpoint = len(split_latlong) // 2
+
+    return ','.join(split_latlong[:midpoint]), ','.join(split_latlong[midpoint:])
