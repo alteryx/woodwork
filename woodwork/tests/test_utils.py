@@ -20,12 +20,16 @@ from woodwork.utils import (
     _is_s3,
     _is_url,
     _new_dt_including,
+    _to_latlong,
     camel_to_snake,
     import_or_none,
     import_or_raise,
     list_logical_types,
     list_semantic_tags
 )
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 def test_camel_to_snake():
@@ -231,3 +235,18 @@ def test_is_url():
 def test_is_s3():
     assert _is_s3('s3://test-bucket/test-key')
     assert not _is_s3('https://woodwork-static.s3.amazonaws.com/')
+
+
+def test_to_latlong(latlongs):
+    for series in latlongs:
+        series = _to_latlong(series, logical_type=LatLong)
+
+        if dd and isinstance(series, dd.Series):
+            series = series.compute()
+
+        if ks and isinstance(series, ks.Series):
+            series = series.to_pandas()
+
+        latitutde, longitude = series.iloc[0]
+        assert latitutde == '1'
+        assert longitude == '2'

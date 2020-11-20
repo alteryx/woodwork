@@ -27,6 +27,7 @@ from woodwork.logical_types import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
+    _to_latlong,
     col_is_datetime,
     import_or_none
 )
@@ -130,6 +131,8 @@ class DataColumn(object):
                 # '(1,2)'
                 # '1,2'
                 # ('1,2,3', '1,2,3')
+                elif _get_ltype_class(self.logical_type) == LatLong:
+                    self._series = _to_latlong(self._series)
                 else:
                     if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
                         new_dtype = self.logical_type.backup_dtype

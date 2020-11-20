@@ -22,6 +22,7 @@ def import_or_none(library):
 
 
 ks = import_or_none('databricks.koalas')
+dd = import_or_none('dask.dataframe')
 
 
 def camel_to_snake(s):
@@ -296,3 +297,51 @@ def _is_url(string):
     Returns a boolean.
     '''
     return 'http' in string
+
+
+def _to_latlong(series):
+    '''
+    Assume column has same format for whole column
+    # --> consider only having _reformat_latlong be in this fild
+    '''
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+    elif dd and isisntance(series, dd.Series):
+        series = series.compute()
+
+    reformat_fn = _get_latlong_reformatter(series.iloc[0])
+
+    # Determine format
+    # get out lat and long values
+    # apply format to all values
+    series.apply(lambda latlong: reformat_fn(latlong))
+    # convert back to original series type
+
+    pass
+    return series
+
+
+def _get_latlong_reformatter(latlong):
+    # will ve slower if we dont determine the format ahead of time
+
+    if isinstance(latlong, (tuple, list)):
+        # confirm its length two and get 0 and 1 indices
+        if len(latlong) != 2:
+            raise ValueError(f'LatLong values must have exactly two values. {latlong} does not have two values.')
+        return (lambda latlong_tuple: (string(latlong_tuple[0]), string(latlong_tuple[1])))
+    elif isinstance(latlong, str):
+        # if it has brackets, remove those
+        if latlong[0] == '(' or latlong[0] == '[':
+            latlong = latlong[1:-1]
+
+        split_latlong = latlong.split(',')
+        if len(split_latlong) != 2:
+            # the middle comma should be the thing that splits the latlongs??? not sure about this
+            if len(split_latlong) % 2:
+                raise ValueError(f'Latitude and Longitude values in LatLong must match. {latlong} does not match.')
+            midpoint = len(split_latlong) // 2
+            return (lambda latlong_tuple: (",".join(latlong_tuple[:midpoint]), ",".join(latlong_tuple[midpoint:])))
+
+        else:
+            # if there's onyl one then we can use either side!
+            return (lambda latlong_tuple: (latlong_tuple[0], latlong_tuple[1]))

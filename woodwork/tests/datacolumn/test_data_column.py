@@ -551,16 +551,6 @@ def test_ordinal_with_order(sample_series):
     assert new_dc.logical_type.order == ['a', 'b', 'c']
 
 
-def test_latlongs(latlongs):
-    for series in latlongs:
-        dc = DataColumn(series, logical_type=LatLong)
-        assert dc.logical_type == LatLong
-        # --> check that data matches expected
-        # a, b = dc.iloc[0]
-        # assert a == '1'
-        # assert b == '2'
-
-
 def test_ordinal_with_incomplete_ranking(sample_series):
     if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
