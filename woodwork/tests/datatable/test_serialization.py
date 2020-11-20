@@ -147,6 +147,22 @@ def test_to_csv(sample_df, tmpdir):
     assert dt == _dt
 
 
+def test_to_csv_with_latlong(latlong_df, tmpdir):
+    dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
+    dt.to_csv(str(tmpdir))
+    _dt = deserialize.read_datatable(str(tmpdir))
+
+    print(dt.to_dataframe().iloc[:, 0])
+    print(dt.to_dataframe())
+    print(_dt.to_dataframe().iloc[:, 0])
+    print(_dt.to_dataframe())
+
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
+                                  to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
+    assert dt == _dt
+    # --> should do same checks after that the values in latlong are tuplpes as expected
+
+
 def test_to_pickle(sample_df, tmpdir):
     dt = DataTable(sample_df)
     if not isinstance(sample_df, pd.DataFrame):
@@ -170,6 +186,16 @@ def test_to_parquet(sample_df, tmpdir):
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
                                   to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
     assert dt == _dt
+
+
+def test_to_parquet_with_latlong(latlong_df, tmpdir):
+    dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
+    dt.to_parquet(str(tmpdir))
+    _dt = deserialize.read_datatable(str(tmpdir))
+    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
+                                  to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
+    assert dt == _dt
+    # --> should do same checks after that the values in latlong are tuplpes as expected
 
 
 @pytest.fixture

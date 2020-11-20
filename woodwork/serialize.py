@@ -6,6 +6,7 @@ import tempfile
 
 import pandas as pd
 
+from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import (
     _get_ltype_class,
@@ -152,7 +153,14 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             raise ValueError(msg)
         df.to_pickle(file, **kwargs)
     elif format == 'parquet':
-        # -->convert latlong column to string
+        # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
+        # an error in parquet format
+        # --> is it better to convert to list so that we can deserialize easier?
+        if ks and not isinstance(df, ks.DataFrame):
+            latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+            # --> if we always convert to string then we always need to do the full conversion at deserialization
+            df[latlong_columns] = df[latlong_columns].astype(str)
+
         df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
