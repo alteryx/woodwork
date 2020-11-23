@@ -21,7 +21,7 @@ from woodwork.utils import (
     _is_s3,
     _is_url,
     _new_dt_including,
-    _to_latlong,
+    _reformat_to_latlong,
     camel_to_snake,
     import_or_none,
     import_or_raise,
@@ -238,16 +238,61 @@ def test_is_s3():
     assert not _is_s3('https://woodwork-static.s3.amazonaws.com/')
 
 
-def test_to_latlong(latlongs):
-    for series in latlongs:
-        series = _to_latlong(series, logical_type=LatLong)
+def test_reformat_to_latlong_errors():
+    error = 'LatLongs must either be a tuple, a list, or a string representation of a tuple'
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong({1, 2, 3})
 
-        if dd and isinstance(series, dd.Series):
-            series = series.compute()
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong('{1, 2, 3}')
 
-        if ks and isinstance(series, ks.Series):
-            series = series.to_pandas()
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong("This is text")
 
-        latitutde, longitude = series.iloc[0]
-        assert latitutde == '1'
-        assert longitude == '2'
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong("'(1,2)'")
+
+    error = 'LatLong values must have exactly two values. \(1, 2, 3\) does not have two values.'
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong((1, 2, 3))
+
+    error = "LatLong values must have exactly two values. \(1, 2, 3\) does not have two values."
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong('(1, 2, 3)')
+
+
+def test_reformat_to_latlong():
+    simple_latlong = ('1', '2')
+
+    assert _reformat_to_latlong((1, 2)) == simple_latlong
+    assert _reformat_to_latlong(('1', '2')) == simple_latlong
+    assert _reformat_to_latlong('(1,2)') == simple_latlong
+
+    # Check non-standard tuple formats
+    assert _reformat_to_latlong([1, 2]) == simple_latlong
+    assert _reformat_to_latlong(['1', '2']) == simple_latlong
+    assert _reformat_to_latlong('[1, 2]') == simple_latlong
+    assert _reformat_to_latlong('1, 2') == simple_latlong
+
+    nested_tuples = ('(1, 2, 3)', '(3, 4, 5)')
+    assert _reformat_to_latlong(((1, 2, 3), (3, 4, 5))) == nested_tuples
+    assert _reformat_to_latlong(('(1, 2, 3)', (3, 4, 5))) == nested_tuples
+
+    assert _reformat_to_latlong("'a  ','  b'") == ('a', 'b')
+
+    assert _reformat_to_latlong(None) is None
+
+
+def test_reformat_to_latlong_list():
+    # --> implement for list
+    simple_latlong = ['1', '2']
+
+    assert _reformat_to_latlong((1, 2), use_list=True) == simple_latlong
+    assert _reformat_to_latlong(('1', '2'), use_list=True) == simple_latlong
+    assert _reformat_to_latlong('(1,2)', use_list=True) == simple_latlong
+
+    # Check non-standard tuple formats
+    assert _reformat_to_latlong([1, 2], use_list=True) == simple_latlong
+    assert _reformat_to_latlong(['1', '2'], use_list=True) == simple_latlong
+    assert _reformat_to_latlong('[1, 2]', use_list=True) == simple_latlong
+    assert _reformat_to_latlong('1, 2', use_list=True) == simple_latlong

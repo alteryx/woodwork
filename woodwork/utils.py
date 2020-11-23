@@ -1,3 +1,5 @@
+
+import ast
 import importlib
 import re
 from datetime import datetime
@@ -299,50 +301,28 @@ def _is_url(string):
     return 'http' in string
 
 
-def _to_latlong(series):
-    '''
-    Assume column has same format for whole column
-    # --> consider only having _reformat_latlong be in this fild
-    '''
-    # determine best way to get first value that's not a null value
-    if dd and isinstance(series, dd.Series):
-        latlong_format = series.compute().iloc[0]
-    else:
-        latlong_format = series.iloc[0]
+def _reformat_to_latlong(latlong, use_list=False):
+    """Reformats LatLong columns to be tuples of strings. 
+    """
+    if latlong is None:
+        return latlong
 
-    reformat_fn = _get_latlong_reformatter(latlong_format)
+    # --> this'll mean that if you have another separator if twon't work but will hopefully stop us from trying to evaluate unecessary things
+    if isinstance(latlong, str) and ',' in latlong:
+        try:
+            latlong = ast.literal_eval(latlong)
+        except ValueError:
+            latlong = None
 
-    return series.apply(lambda latlong: reformat_fn(latlong) if latlong else latlong)
-
-
-def _get_latlong_reformatter(latlong):
     if isinstance(latlong, (tuple, list)):
-        # confirm its length two and get 0 and 1 indices
         if len(latlong) != 2:
             raise ValueError(f'LatLong values must have exactly two values. {latlong} does not have two values.')
-        return (lambda latlong_tuple: (str(latlong_tuple[0]), str(latlong_tuple[1])))
-    elif isinstance(latlong, str):
-        # if it has brackets, remove those
-        if latlong[0] == '(' or latlong[0] == '[':
-            return tuple_reformatter
-        else:
-            return without_brackets_reformatter
-    else:
-        raise ValueError(f'LatLongs must either be a tuple or a string representation of a tuple')
 
+        latlong = str(latlong[0]).strip(), str(latlong[1]).strip()
 
-def tuple_reformatter(latlong):
-    # Tuple of format (a, b) where a and b can be anything of matching formats
-    # relies on comma separators
-    split_latlong = latlong[1:-1].split(',')
-    midpoint = len(split_latlong) // 2
+        if use_list:
+            latlong = list(latlong)
 
-    return ','.join(split_latlong[:midpoint]), ','.join(split_latlong[midpoint:])
+        return latlong
 
-
-def without_brackets_reformatter(latlong):
-    # --> see if we can find a better way to avoid repetition
-    split_latlong = latlong.split(',')
-    midpoint = len(split_latlong) // 2
-
-    return ','.join(split_latlong[:midpoint]), ','.join(split_latlong[midpoint:])
+    raise ValueError('LatLongs must either be a tuple, a list, or a string representation of a tuple')

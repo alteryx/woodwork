@@ -398,3 +398,31 @@ def latlong_df_koalas(latlong_df_pandas):
 @pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_koalas'])
 def latlong_df(request):
     return request.getfixturevalue(request.param)
+
+
+# LatLong Fixtures for testing access to latlong values
+# --> dont need both
+@pytest.fixture
+def pandas_latlongs():
+    return [
+        pd.Series([(1, 2), (3, 4)]),
+        pd.Series([('1', '2'), ('3', '4')]),
+        # pd.Series([('1,2,3', '2,3,4'), ('3,4,5', '4,5,6')]),  # --> find better way to test
+        pd.Series(['(1, 2)', '(3, 4)']),  # --> determine if we want to
+        pd.Series(['1, 2', '3, 4']),  # --> determine if we want to
+    ]
+
+
+@pytest.fixture
+def dask_latlongs(pandas_latlongs):
+    return [pd_to_dask(series) for series in pandas_latlongs]
+
+
+@pytest.fixture
+def koalas_latlongs(pandas_latlongs):
+    return [pd_to_koalas(series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)) for series in pandas_latlongs]
+
+
+@pytest.fixture(params=['pandas_latlongs', 'dask_latlongs', 'koalas_latlongs'])
+def latlongs(request):
+    return request.getfixturevalue(request.param)

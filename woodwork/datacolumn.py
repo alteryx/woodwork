@@ -27,7 +27,7 @@ from woodwork.logical_types import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
-    _to_latlong,
+    _reformat_to_latlong,
     col_is_datetime,
     import_or_none
 )
@@ -121,18 +121,9 @@ class DataColumn(object):
                                                  name=self._series.name)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
-                # --> if it's a LatLong, convert to be of format tuple(str, str) with object type
-                # actually first see what happens if you just convert it to an object
-                # determine how to handle input os '(1,2)' since it gets interpreted as a string
-                # might be able to leave, but could be nice to handle
-                # formats to handle:
-                # (1,2)
-                # ('1','2')
-                # '(1,2)'
-                # '1,2'
-                # ('1,2,3', '1,2,3')
                 elif _get_ltype_class(self.logical_type) == LatLong:
-                    self._series = _to_latlong(self._series)
+                    # Reformat LatLong columns to be a length two tuple (or list for Dask) of strings
+                    self._series = self._series.apply(reformat_to_latlong, use_list=isinstance(self._series, dd.Series))
                 else:
                     if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
                         new_dtype = self.logical_type.backup_dtype
