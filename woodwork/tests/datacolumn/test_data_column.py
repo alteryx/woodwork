@@ -569,6 +569,19 @@ def test_ordinal_with_nan_values():
     assert dc.logical_type.order == ['a', 'b']
 
 
+def test_latlong_formatting(latlongs):
+    expected_series = latlongs[0].copy()
+    expected_dc = DataColumn(expected_series, logical_type='LatLong')
+
+    for series in latlongs:
+        dc = DataColumn(series, logical_type='LatLong')
+        print(expected_series)
+        print(dc._series)
+        pd.testing.assert_series_equal(to_pandas(dc.to_series()), to_pandas(expected_series))
+
+        assert dc == expected_dc
+
+
 def test_datacolumn_equality(sample_series, sample_datetime_series):
     # Check different parameters to DataColumn
     str_col = DataColumn(sample_series, logical_type='Categorical')

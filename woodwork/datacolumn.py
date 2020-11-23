@@ -113,9 +113,10 @@ class DataColumn(object):
                 # --> can't use apply here bc we dont know the meta info
                 formatted_series = self._series.compute().apply(_reformat_to_latlong)
                 self._series = dd.from_pandas(formatted_series, npartitions=self._series.npartitions)
-
-            if ks and isinstance(self._series, ks.Series):
-                self._series = self._series.apply(_reformat_to_latlong, use_list=True)
+            elif ks and isinstance(self._series, ks.Series):
+                #  --> issue with user defined fns (UDF) so we convert to pandas
+                formatted_series = self._series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+                self._series = ks.from_pandas(formatted_series)
             else:
                 self._series = self._series.apply(_reformat_to_latlong)
 
