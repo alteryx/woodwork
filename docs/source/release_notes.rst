@@ -28,6 +28,7 @@ Release Notes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
         * Use new version of pull request Github Action (:pr:`394`)
+        * Improve parameterization for ``test_datatable_equality`` (:pr:`409`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`

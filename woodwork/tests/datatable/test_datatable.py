@@ -2423,11 +2423,8 @@ def test_numeric_index_strings(time_index_df):
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-def test_datatable_equality(sample_df, sample_series):
-    # Only test if sample_df and sample_series are from same library
-    # TODO: Clean this up - better parameterization
-    if sample_df.__module__.split('.')[0] != sample_series.__module__.split('.')[0]:
-        return
+def test_datatable_equality(sample_combos):
+    sample_df, sample_series = sample_combos
     dt_basic = DataTable(sample_df)
     dt_basic2 = DataTable(sample_df.copy())
     dt_names = DataTable(sample_df, name='test')
