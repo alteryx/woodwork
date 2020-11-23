@@ -2655,3 +2655,52 @@ def test_datatable_column_order_after_rename(sample_df_pandas):
     reset_tags_dt = renamed_dt.reset_semantic_tags(columns='renamed_col')
     assert reset_tags_dt['renamed_col'].semantic_tags == set()
     check_column_order(renamed_dt, reset_tags_dt)
+
+
+def test_datatable_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    dt = DataTable(sample_unsorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date')
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
+                                  to_pandas(dt._dataframe))
+
+    dt = DataTable(sample_unsorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date',
+                   already_sorted=True)
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe))
+
+
+def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    index = 'id'
+    time_index = 'signup_date'
+    sorted_df = sample_unsorted_df.sort_values([time_index, index])
+    dt = DataTable(sorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date',
+                   already_sorted=True)
+
+    dt.update_dataframe(sample_unsorted_df, already_sorted=False)
+    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe))
+
+    dt.update_dataframe(sample_unsorted_df, already_sorted=True)
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
