@@ -12,7 +12,6 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
-    LatLong,
     NaturalLanguage,
     Ordinal,
     SubRegionCode,

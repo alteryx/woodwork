@@ -17,7 +17,7 @@ from woodwork.datatable import (
     _validate_params
 )
 from woodwork.exceptions import ColumnNameMismatchWarning
-from woodwork.logical_types import (
+from woodwork.logical_types import (  # LatLong, --> make sure we test
     URL,
     Boolean,
     Categorical,
@@ -29,7 +29,6 @@ from woodwork.logical_types import (
     FullName,
     Integer,
     IPAddress,
-    LatLong,
     LogicalType,
     NaturalLanguage,
     Ordinal,

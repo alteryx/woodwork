@@ -9,6 +9,7 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
+    LatLong,
     LogicalType,
     str_to_logical_type
 )

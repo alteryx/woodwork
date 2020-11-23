@@ -327,6 +327,8 @@ def _get_latlong_reformatter(latlong):
             return tuple_reformatter
         else:
             return without_brackets_reformatter
+    else:
+        raise ValueError(f'LatLongs must either be a tuple or a string representation of a tuple')
 
 
 def tuple_reformatter(latlong):

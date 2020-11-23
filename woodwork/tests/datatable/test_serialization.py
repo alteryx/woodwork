@@ -152,11 +152,6 @@ def test_to_csv_with_latlong(latlong_df, tmpdir):
     dt.to_csv(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
 
-    print(dt.to_dataframe().iloc[:, 0])
-    print(dt.to_dataframe())
-    print(_dt.to_dataframe().iloc[:, 0])
-    print(_dt.to_dataframe())
-
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
                                   to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
     assert dt == _dt

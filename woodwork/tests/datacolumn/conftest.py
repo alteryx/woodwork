@@ -233,13 +233,14 @@ def dask_pdnas(pandas_pdnas):
 def pdnas(request):
     return request.getfixturevalue(request.param)
 
+
 # LatLong Fixtures for testing access to latlong values
 @pytest.fixture
 def pandas_latlongs():
     return [
         pd.Series([(1, 2), (3, 4)]),
         pd.Series([('1', '2'), ('3', '4')]),
-        pd.Series([('1,2,3', '2,3,4'), ('3,4,5', '4,5,6')]),  # --> not sure this is correct
+        # pd.Series([('1,2,3', '2,3,4'), ('3,4,5', '4,5,6')]),  # --> find better way to test
         pd.Series(['(1, 2)', '(3, 4)']),  # --> determine if we want to
         pd.Series(['1, 2', '3, 4']),  # --> determine if we want to
     ]
