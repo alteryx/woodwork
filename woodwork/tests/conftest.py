@@ -19,6 +19,13 @@ def spark_session():
         return spark
 
 
+@pytest.fixture(params=[('sample_df_pandas', 'sample_series_pandas'),
+                        ('sample_df_dask', 'sample_series_dask'),
+                        ('sample_df_koalas', 'sample_series_koalas')])
+def sample_combos(request):
+    return (request.getfixturevalue(request.param[0]), request.getfixturevalue(request.param[1]))
+
+
 @pytest.fixture(params=['sample_df_pandas', 'sample_df_dask', 'sample_df_koalas'])
 def sample_df(request):
     return request.getfixturevalue(request.param)
