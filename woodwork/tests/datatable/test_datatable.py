@@ -2424,7 +2424,7 @@ def test_numeric_index_strings(time_index_df):
 
 
 def test_datatable_equality(sample_combos):
-    sample_df, sample_series =sample_combos
+    sample_df, sample_series = sample_combos
     dt_basic = DataTable(sample_df)
     dt_basic2 = DataTable(sample_df.copy())
     dt_names = DataTable(sample_df, name='test')
