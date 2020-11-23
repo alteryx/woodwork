@@ -107,6 +107,18 @@ class DataColumn(object):
         to the LogicalType for the column."""
         if isinstance(self.logical_type, Ordinal):
             self.logical_type._validate_data(self._series)
+        elif _get_ltype_class(self.logical_type) == LatLong:
+            # Reformat LatLong columns to be a length two tuple (or list for Dask) of strings
+            if dd and isinstance(self._series, dd.Series):
+                # --> can't use apply here bc we dont know the meta info
+                formatted_series = self._series.compute().apply(_reformat_to_latlong)
+                self._series = dd.from_pandas(formatted_series, npartitions=self._series.npartitions)
+
+            if ks and isinstance(self._series, ks.Series):
+                self._series = self._series.apply(_reformat_to_latlong, use_list=True)
+            else:
+                self._series = self._series.apply(_reformat_to_latlong)
+
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series
             try:
@@ -121,9 +133,6 @@ class DataColumn(object):
                                                  name=self._series.name)
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
-                elif _get_ltype_class(self.logical_type) == LatLong:
-                    # Reformat LatLong columns to be a length two tuple (or list for Dask) of strings
-                    self._series = self._series.apply(reformat_to_latlong, use_list=isinstance(self._series, dd.Series))
                 else:
                     if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
                         new_dtype = self.logical_type.backup_dtype

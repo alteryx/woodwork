@@ -1,4 +1,5 @@
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -9,7 +10,6 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
-    LatLong,
     LogicalType,
     str_to_logical_type
 )
@@ -252,11 +252,11 @@ def test_reformat_to_latlong_errors():
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong("'(1,2)'")
 
-    error = 'LatLong values must have exactly two values. \(1, 2, 3\) does not have two values.'
+    error = re.escape('LatLong values must have exactly two values. (1, 2, 3) does not have two values.')
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong((1, 2, 3))
 
-    error = "LatLong values must have exactly two values. \(1, 2, 3\) does not have two values."
+    error = re.escape("LatLong values must have exactly two values. (1, 2, 3) does not have two values.")
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong('(1, 2, 3)')
 
@@ -284,14 +284,12 @@ def test_reformat_to_latlong():
 
 
 def test_reformat_to_latlong_list():
-    # --> implement for list
     simple_latlong = ['1', '2']
 
     assert _reformat_to_latlong((1, 2), use_list=True) == simple_latlong
     assert _reformat_to_latlong(('1', '2'), use_list=True) == simple_latlong
     assert _reformat_to_latlong('(1,2)', use_list=True) == simple_latlong
 
-    # Check non-standard tuple formats
     assert _reformat_to_latlong([1, 2], use_list=True) == simple_latlong
     assert _reformat_to_latlong(['1', '2'], use_list=True) == simple_latlong
     assert _reformat_to_latlong('[1, 2]', use_list=True) == simple_latlong

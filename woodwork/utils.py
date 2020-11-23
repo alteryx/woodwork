@@ -302,7 +302,7 @@ def _is_url(string):
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of strings. 
+    """Reformats LatLong columns to be tuples of strings.
     """
     if latlong is None:
         return latlong

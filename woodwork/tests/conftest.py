@@ -377,9 +377,11 @@ def latlong_df_pandas():
     return pd.DataFrame({
         'tuple_ints': pd.Series([(1, 2), (3, 4)]),
         'tuple_strings': pd.Series([('1', '2'), ('3', '4')]),
-        'nested_tuple': pd.Series([('1,2,3', '2,3,4'), ('3,4,5', '4,5,6')]),  # --> not sure this is correct
-        'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),  # --> determine if we want to
-        'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),  # --> determine if we want to
+        'nested_tuple': pd.Series([('1,2,3', '2,3,4'), ('3,4,5', '4,5,6')]),
+        'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),
+        'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),
+        'list_strings': pd.Series([['1', '2'], ['3', '4']]),
+        'combo_tuple_types': pd.Series([[1, 2], '(3, 4)']),
     })
 
 
