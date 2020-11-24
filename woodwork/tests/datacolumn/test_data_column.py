@@ -575,8 +575,6 @@ def test_latlong_formatting(latlongs):
 
     for series in latlongs:
         dc = DataColumn(series, logical_type='LatLong')
-        print(expected_series)
-        print(dc._series)
         pd.testing.assert_series_equal(to_pandas(dc.to_series()), to_pandas(expected_series))
 
         assert dc == expected_dc

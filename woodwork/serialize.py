@@ -104,7 +104,6 @@ def dump_table(datatable, path, **kwargs):
         with open(file, 'w') as file:
             json.dump(description, file)
     except TypeError as e:
-        # We're removing single quotes to get consistency between python versions
         raise TypeError('DataTable is not json serializable: ' + e.args[0].replace("'", ""))
 
 
