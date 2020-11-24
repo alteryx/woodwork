@@ -190,16 +190,20 @@ class IPAddress(LogicalType):
 
 
 class LatLong(LogicalType):
-    """Represents Logical Types that contain latitude and longitude values
+    """Represents Logical Types that contain latitude and longitude values.
+
+    Note:
+        LatLong values will be converted to be stored with the object dtypes as a
+        tuple of strings (or a lsit of strings for Koalas DataTables)
+        and must contain only two values.
 
     Examples:
         .. code-block:: python
 
-            [(33.670914, -117.841501),
-             (40.423599, -86.921162)),
-             (-45.031705, 168.659506)]
+            [('33.670914', '-117.841501'),
+             ('40.423599', '-86.921162'),
+             ('-45.031705', '168.659506')]
     """
-    # --> change to object --> not sure that backup dtype can be object - check what ks looks like
     pandas_dtype = 'object'
 
 
