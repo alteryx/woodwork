@@ -17,7 +17,7 @@ from woodwork.datatable import (
     _validate_params
 )
 from woodwork.exceptions import ColumnNameMismatchWarning
-from woodwork.logical_types import (  # LatLong, --> make sure we test
+from woodwork.logical_types import (
     URL,
     Boolean,
     Categorical,
@@ -29,6 +29,7 @@ from woodwork.logical_types import (  # LatLong, --> make sure we test
     FullName,
     Integer,
     IPAddress,
+    LatLong,
     LogicalType,
     NaturalLanguage,
     Ordinal,
@@ -831,7 +832,50 @@ def test_sets_category_dtype_on_update():
         assert dt.columns[column_name].dtype == logical_type.pandas_dtype
         assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
 
-# --> remove and maybe make own 'sets object dtype on init`
+
+def test_sets_object_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([('1', '2'), None], name=column_name),
+        pd.Series([['1', '2'], ['3', '4']], name=column_name),
+        pd.Series([(1, 2), (3, 4)], name=column_name),
+        pd.Series([[1, 2], None], name=column_name),
+        pd.Series(['(1, 2)', '(3, 4)'], name=column_name),
+        pd.Series(['1, 2', '3, 4'], name=column_name),
+        pd.Series(['[1, 2]', None], name=column_name)
+    ]
+
+    for series in series_list:
+        ltypes = {
+            column_name: LatLong,
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+        assert dt.columns[column_name].logical_type == LatLong
+        assert dt.columns[column_name].dtype == LatLong.pandas_dtype
+        assert dt.to_dataframe()[column_name].dtype == LatLong.pandas_dtype
+
+
+def test_sets_object_dtype_on_update():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([('1', '2'), None], name=column_name),
+        pd.Series([['1', '2'], ['3', '4']], name=column_name),
+        pd.Series([(1, 2), (3, 4)], name=column_name),
+        pd.Series([[1, 2], None], name=column_name),
+        pd.Series(['(1, 2)', '(3, 4)'], name=column_name),
+        pd.Series(['1, 2', '3, 4'], name=column_name),
+        pd.Series(['[1, 2]', None], name=column_name)
+    ]
+
+    for series in series_list:
+        ltypes = {
+            column_name: NaturalLanguage
+        }
+        dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
+        dt = dt.set_types(logical_types={column_name: LatLong})
+        assert dt.columns[column_name].logical_type == LatLong
+        assert dt.columns[column_name].dtype == LatLong.pandas_dtype
+        assert dt.to_dataframe()[column_name].dtype == LatLong.pandas_dtype
 
 
 def test_sets_string_dtype_on_init():
@@ -862,8 +906,6 @@ def test_sets_string_dtype_on_init():
             assert dt.columns[column_name].logical_type == logical_type
             assert dt.columns[column_name].dtype == logical_type.pandas_dtype
             assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
-
-        # LatLong,  # --> remove and maybe make separate test
 
 
 def test_sets_string_dtype_on_update():

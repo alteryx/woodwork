@@ -304,15 +304,16 @@ def _is_url(string):
 def _reformat_to_latlong(latlong, use_list=False):
     """Reformats LatLong columns to be tuples of strings.
     """
-    if latlong is None:
+    # Since we can have list inputs here pd.isnull will not have a relevant truth value for lists
+    if not isinstance(latlong, list) and pd.isnull(latlong):
         return latlong
 
-    # --> this'll mean that if you have another separator if twon't work but will hopefully stop us from trying to evaluate unecessary things
-    if isinstance(latlong, str) and ',' in latlong:
+    # --> maybe we should have more criteria necessary before calling literal_eval
+    if isinstance(latlong, str):
         try:
             latlong = ast.literal_eval(latlong)
         except ValueError:
-            latlong = None
+            pass
 
     if isinstance(latlong, (tuple, list)):
         if len(latlong) != 2:
