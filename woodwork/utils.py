@@ -325,4 +325,4 @@ def _reformat_to_latlong(latlong, use_list=False):
 
         return latlong
 
-    raise ValueError('LatLongs must either be a tuple, a list, or a string representation of a tuple')
+    raise ValueError(f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')

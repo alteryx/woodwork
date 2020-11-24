@@ -154,11 +154,10 @@ def write_table_data(datatable, path, format='csv', **kwargs):
         df.to_pickle(file, **kwargs)
     elif format == 'parquet':
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
-        # an error in parquet format
-        # --> is it better to convert to list so that we can deserialize easier?
+        # an error in parquet format.
         if ks and not isinstance(df, ks.DataFrame):
+            df = df.copy()
             latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
-            # --> if we always convert to string then we always need to do the full conversion at deserialization
             df[latlong_columns] = df[latlong_columns].astype(str)
 
         df.to_parquet(file, **kwargs)
