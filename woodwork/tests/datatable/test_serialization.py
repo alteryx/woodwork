@@ -148,8 +148,8 @@ def test_to_csv(sample_df, tmpdir):
 
 
 def test_to_csv_with_latlong(latlong_df, tmpdir):
-    dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
-    dt.to_csv(str(tmpdir))
+    dt = DataTable(latlong_df, index='tuple_ints', logical_types={col: 'LatLong' for col in latlong_df.columns})
+    dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     _dt = deserialize.read_datatable(str(tmpdir))
 
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),

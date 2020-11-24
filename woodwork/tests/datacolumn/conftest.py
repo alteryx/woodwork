@@ -235,17 +235,16 @@ def pdnas(request):
 
 
 # LatLong Fixtures for testing access to latlong values
-# --> dont need both
 @pytest.fixture
 def pandas_latlongs():
     return [
-        # pd.Series([('1', '2'), ('3', '4')]),
+        pd.Series([('1', '2'), ('3', '4')]),
         pd.Series([['1', '2'], ['3', '4']]),
-        # pd.Series([(1, 2), (3, 4)]),
+        pd.Series([(1, 2), (3, 4)]),
         pd.Series([[1, 2], [3, 4]]),
-        # pd.Series(['(1, 2)', '(3, 4)']),
-        # pd.Series(['1, 2', '3, 4']),
-        # pd.Series(['[1, 2]', '[3, 4]'])
+        pd.Series(['(1, 2)', '(3, 4)']),
+        pd.Series(['1, 2', '3, 4']),
+        pd.Series(['[1, 2]', '[3, 4]'])
     ]
 
 

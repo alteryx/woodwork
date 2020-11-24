@@ -91,8 +91,6 @@ def description_to_datatable(table_description, **kwargs):
     elif load_format == 'parquet':
         dataframe = lib.read_parquet(file, engine=kwargs['engine'])
 
-    # --> since parquet and csv will have converted object cols (incl latlong) to string, we need to handle latlong specifically
-
     logical_types = {}
     semantic_tags = {}
     column_descriptions = {}
