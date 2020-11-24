@@ -2090,7 +2090,6 @@ def test_datatable_describe_method(describe_df):
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
     numeric_ltypes = [Double, Integer]
-    # --> removed latlong but determine how to handle in describe - make sure it gets tested at some point
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
                                PhoneNumber, URL]
 

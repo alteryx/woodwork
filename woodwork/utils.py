@@ -308,7 +308,6 @@ def _reformat_to_latlong(latlong, use_list=False):
     if not isinstance(latlong, list) and pd.isnull(latlong):
         return latlong
 
-    # --> maybe we should have more criteria necessary before calling literal_eval
     if isinstance(latlong, str):
         try:
             latlong = ast.literal_eval(latlong)

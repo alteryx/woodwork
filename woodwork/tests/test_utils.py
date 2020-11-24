@@ -251,7 +251,6 @@ def test_reformat_to_latlong_errors():
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong("This is text")
 
-    # --> this error message is misleading and makes me think we shoud try allowing this case? not sure how/when it'd arise though
     error = re.escape("LatLongs must either be a tuple, a list, or a string representation of a tuple. (1,2) does not fit the criteria.")
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong("'(1,2)'")
