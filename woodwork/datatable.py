@@ -792,8 +792,13 @@ class DataTable(object):
                 values["second_quartile"] = quant_values[1]
                 values["third_quartile"] = quant_values[2]
 
+            mode = _get_mode(series)
+            # The format of the mode should match its format in the DataTable
+            if ks and isinstance(self._dataframe, ks.DataFrame) and series.name in latlong_columns:
+                mode = list(mode)
+
             values["nan_count"] = series.isna().sum()
-            values["mode"] = _get_mode(series)
+            values["mode"] = mode
             values["physical_type"] = column.dtype
             values["logical_type"] = logical_type
             values["semantic_tags"] = semantic_tags

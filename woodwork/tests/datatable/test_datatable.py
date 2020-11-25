@@ -2280,13 +2280,14 @@ def test_datatable_describe_method(describe_df):
     latlong_data = describe_df[['latlong_col']]
     expected_dtype = 'object'
     for ltype in latlong_ltypes:
+        mode = ['0', '0'] if ks and isinstance(describe_df, ks.DataFrame) else ('0', '0')
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
-            'mode': ('0', '0')}, name='latlong_col')
+            'mode': mode}, name='latlong_col')
         dt = DataTable(latlong_data,
                        logical_types={'latlong_col': ltype},
                        semantic_tags={'latlong_col': 'custom_tag'})
