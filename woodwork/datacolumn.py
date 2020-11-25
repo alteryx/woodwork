@@ -110,8 +110,10 @@ class DataColumn(object):
         elif _get_ltype_class(self.logical_type) == LatLong:
             # Reformat LatLong columns to be a length two tuple (or list for Dask) of strings
             if dd and isinstance(self._series, dd.Series):
-                formatted_series = self._series.compute().apply(_reformat_to_latlong)
-                self._series = dd.from_pandas(formatted_series, npartitions=self._series.npartitions)
+                name = self._series.name
+                meta = (self._series, tuple([str, str]))
+                self._series = self._series.apply(_reformat_to_latlong, meta=meta)
+                self._series.name = name
             elif ks and isinstance(self._series, ks.Series):
                 formatted_series = self._series.to_pandas().apply(_reformat_to_latlong, use_list=True)
                 self._series = ks.from_pandas(formatted_series)

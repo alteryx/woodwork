@@ -571,10 +571,10 @@ def test_ordinal_with_nan_values():
 
 def test_latlong_formatting(latlongs):
     expected_series = latlongs[0].copy()
-    expected_dc = DataColumn(expected_series, logical_type='LatLong')
+    expected_dc = DataColumn(expected_series, logical_type='LatLong', name='test_series')
 
     for series in latlongs:
-        dc = DataColumn(series, logical_type='LatLong')
+        dc = DataColumn(series, logical_type='LatLong', name='test_series')
         pd.testing.assert_series_equal(to_pandas(dc.to_series()), to_pandas(expected_series))
 
         assert dc == expected_dc
