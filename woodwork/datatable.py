@@ -12,6 +12,7 @@ from woodwork.logical_types import (
     Boolean,
     Datetime,
     Double,
+    LatLong,
     LogicalType,
     str_to_logical_type
 )
@@ -754,6 +755,11 @@ class DataTable(object):
             # Missing values in Koalas will be replaced with 'None' - change them to
             # np.nan so stats are calculated properly
             df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
+
+            # Any LatLong columns will be using lists, which we must convert
+            # back to tuples so we can calculate the mode, which requires hashable values
+            latlong_columns = [col_name for col_name, col in self.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+            df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
         else:
             df = self._dataframe
 

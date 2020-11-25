@@ -2092,6 +2092,7 @@ def test_datatable_describe_method(describe_df):
     numeric_ltypes = [Double, Integer]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
                                PhoneNumber, URL]
+    latlong_ltypes = [LatLong]
 
     expected_index = ['physical_type',
                       'logical_type',
@@ -2274,6 +2275,26 @@ def test_datatable_describe_method(describe_df):
         assert set(stats_df.columns) == {'natural_language_col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['natural_language_col'].dropna())
+
+    # Test latlong columns
+    latlong_data = describe_df[['latlong_col']]
+    expected_dtype = 'object'
+    for ltype in latlong_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': expected_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nan_count': 1,
+            'mode': ('0', '0')}, name='latlong_col')
+        dt = DataTable(latlong_data,
+                       logical_types={'latlong_col': ltype},
+                       semantic_tags={'latlong_col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'latlong_col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['latlong_col'].dropna())
 
 
 def test_datatable_describe_with_improper_tags(describe_df):

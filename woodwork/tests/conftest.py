@@ -219,6 +219,14 @@ def describe_df_pandas():
         np.nan,
         'I am the last line',
     ]
+    latlong_data = [('0', '0'),
+                    ('1', '1'),
+                    ('2', '2'),
+                    ('3', '3'),
+                    ('4', '4'),
+                    ('5', '5'),
+                    ('6', '6'),
+                    None]
     timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
 
     return pd.DataFrame({
@@ -230,6 +238,7 @@ def describe_df_pandas():
         'numeric_col': numeric_data,
         'natural_language_col': natural_language_data,
         'timedelta_col': timedelta_data,
+        'latlong_col': latlong_data,
     })
 
 
@@ -242,7 +251,9 @@ def describe_df_dask(describe_df_pandas):
 @pytest.fixture()
 def describe_df_koalas(describe_df_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(describe_df_pandas.drop(columns='timedelta_col'))
+    return ks.from_pandas(describe_df_pandas
+                          .applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup)
+                          .drop(columns='timedelta_col'))
 
 
 @pytest.fixture(params=['describe_df_pandas', 'describe_df_dask', 'describe_df_koalas'])
