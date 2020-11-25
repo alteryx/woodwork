@@ -16,7 +16,7 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '3.0.0'
+SCHEMA_VERSION = '4.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
@@ -37,7 +37,8 @@ def datatable_to_description(datatable):
             'physical_type': {
                 'type': str(col.dtype)
             },
-            'semantic_tags': sorted(list(col.semantic_tags))
+            'semantic_tags': sorted(list(col.semantic_tags)),
+            'description': col.description
         }
         for col in datatable.columns.values()
     ]

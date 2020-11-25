@@ -2652,3 +2652,13 @@ def test_datatable_column_order_after_rename(sample_df_pandas):
     reset_tags_dt = renamed_dt.reset_semantic_tags(columns='renamed_col')
     assert reset_tags_dt['renamed_col'].semantic_tags == set()
     check_column_order(renamed_dt, reset_tags_dt)
+
+
+def test_datatable_init_with_col_descriptions(sample_df):
+    descriptions = {
+        'age': 'age of the user',
+        'signup_date': 'date of account creation'
+    }
+    dt = DataTable(sample_df, column_descriptions=descriptions)
+    for name, column in dt.columns.items():
+        assert column.description == descriptions.get(name)

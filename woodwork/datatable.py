@@ -40,7 +40,8 @@ class DataTable(object):
                  logical_types=None,
                  metadata=None,
                  use_standard_tags=True,
-                 make_index=False):
+                 make_index=False,
+                 column_descriptions=None):
         """Create DataTable
 
         Args:
@@ -63,10 +64,12 @@ class DataTable(object):
             metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
+            make_index (bool, optional): If True, will create a new unique, numeric index column with the
                 name specified by ``index`` and will add the new index column to the supplied DataFrame.
                 If True, the name specified in ``index`` cannot match an existing column name in
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
                 present in the ``dataframe``. Defaults to False.
+            column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
@@ -85,7 +88,8 @@ class DataTable(object):
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
-                                            use_standard_tags)
+                                            use_standard_tags,
+                                            column_descriptions)
         if index:
             _update_index(self, index)
 
@@ -179,7 +183,8 @@ class DataTable(object):
                         column_names,
                         logical_types,
                         semantic_tags,
-                        use_standard_tags):
+                        use_standard_tags,
+                        column_descriptions):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
@@ -193,7 +198,11 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
+            if column_descriptions:
+                description = column_descriptions.get(name)
+            else:
+                description = None
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description)
             datacolumns[dc.name] = dc
         return datacolumns
 

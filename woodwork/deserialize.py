@@ -25,7 +25,6 @@ def read_table_description(path):
         Returns:
             description (dict) : Description for :class:`.Datatable`.
     '''
-
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'table_description.json')
@@ -94,6 +93,7 @@ def description_to_datatable(table_description, **kwargs):
 
     logical_types = {}
     semantic_tags = {}
+    column_descriptions = {}
     for col in table_description['column_metadata']:
         col_name = col['name']
 
@@ -109,6 +109,7 @@ def description_to_datatable(table_description, **kwargs):
 
         logical_types[col_name] = ltype
         semantic_tags[col_name] = tags
+        column_descriptions[col_name] = col['description']
 
     return DataTable(dataframe,
                      name=table_description.get('name'),
@@ -117,7 +118,8 @@ def description_to_datatable(table_description, **kwargs):
                      logical_types=logical_types,
                      semantic_tags=semantic_tags,
                      use_standard_tags=False,
-                     metadata=table_description.get('table_metadata'))
+                     metadata=table_description.get('table_metadata'),
+                     column_descriptions=column_descriptions)
 
 
 def read_datatable(path, profile_name=None, **kwargs):
