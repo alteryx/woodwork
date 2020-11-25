@@ -154,10 +154,9 @@ def write_table_data(datatable, path, format='csv', **kwargs):
     elif format == 'parquet':
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
-        if ks and not isinstance(df, ks.DataFrame):
-            df = df.copy()
-            latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
-            df[latlong_columns] = df[latlong_columns].astype(str)
+        df = df.copy()
+        latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+        df[latlong_columns] = df[latlong_columns].astype(str)
 
         df.to_parquet(file, **kwargs)
     else:
