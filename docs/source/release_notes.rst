@@ -10,6 +10,7 @@ Release Notes
         * Add ``mutual_information_dict`` method to DataTable (:pr:`404`)
         * Add ``metadata`` to DataTable for user-defined metadata (:pr:`392`)
         * Add ``update_dataframe`` method to DataTable to update underlying DataFrame (:pr:`407`)
+        * Add ``description`` attribute to DataColumn (:pr:`416`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
         * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
