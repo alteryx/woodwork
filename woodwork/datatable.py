@@ -154,6 +154,9 @@ class DataTable(object):
     def __sizeof__(self):
         return self._dataframe.__sizeof__()
 
+    def __len__(self):
+        return self._dataframe.__len__()
+
     @property
     def types(self):
         """Dataframe containing the physical dtypes, logical types and semantic

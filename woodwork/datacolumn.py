@@ -88,6 +88,9 @@ class DataColumn(object):
             return self.to_series().equals(other.to_series())
         return True
 
+    def __len__(self):
+        return self._series.__len__()
+
     def _update_dtype(self):
         """Update the dtype of the underlying series to match the dtype corresponding
         to the LogicalType for the column."""
