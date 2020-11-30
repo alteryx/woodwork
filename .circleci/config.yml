@@ -98,7 +98,7 @@ jobs:
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
-                pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
+                python -m pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
                 codecov --required
@@ -113,7 +113,8 @@ jobs:
                 sudo apt install -y openjdk-11-jre-headless
                 JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
                 cd unpacked_sdist
-                pytest woodwork/ -n 2
+                python -m pip check
+                python -m pytest woodwork/ -n 2
 
   lint_test:
     working_directory: ~/woodwork
