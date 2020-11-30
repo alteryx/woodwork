@@ -529,7 +529,7 @@ class DataTable(object):
             new_df (DataFrame): Dataframe containing the new data. The same columns present in the original data should
                 also be present in the new dataframe.
             already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
-                index. If False, will sort the dataframe first on the time_index and then on the index (pandas input
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
         '''
         if self.make_index and self.index not in new_df.columns:
