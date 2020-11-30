@@ -11,6 +11,7 @@ Release Notes
         * Add ``metadata`` to DataTable for user-defined metadata (:pr:`392`)
         * Add ``update_dataframe`` method to DataTable to update underlying DataFrame (:pr:`407`)
         * Sort dataframe if ``time_index`` is specified, bypass sorting with ``already_sorted`` parameter. (:pr:`410`)
+        * Add ``description`` attribute to DataColumn (:pr:`416`)
         * Implement ``DataColumn.__len__`` and ``DataTable.__len__`` (:pr:`415`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)

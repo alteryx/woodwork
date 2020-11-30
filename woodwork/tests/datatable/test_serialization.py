@@ -19,7 +19,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_datatable_schema_3.0.0.tar"
+TEST_FILE = "test_serialization_data_datatable_schema_4.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -49,7 +49,7 @@ def test_to_dictionary(sample_df):
         cat_val = 'category'
         string_val = 'string'
         bool_val = 'boolean'
-    expected = {'schema_version': '3.0.0',
+    expected = {'schema_version': '4.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -57,38 +57,45 @@ def test_to_dictionary(sample_df):
                                      'ordinal': 0,
                                      'logical_type': {'parameters': {}, 'type': 'Integer'},
                                      'physical_type': {'type': int_val},
-                                     'semantic_tags': ['index', 'tag1']},
+                                     'semantic_tags': ['index', 'tag1'],
+                                     'description': None},
                                     {'name': 'full_name',
                                      'ordinal': 1,
                                      'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                      'physical_type': {'type': string_val},
-                                     'semantic_tags': []},
+                                     'semantic_tags': [],
+                                     'description': None},
                                     {'name': 'email',
                                      'ordinal': 2,
                                      'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                      'physical_type': {'type': string_val},
-                                     'semantic_tags': []},
+                                     'semantic_tags': [],
+                                     'description': None},
                                     {'name': 'phone_number',
                                      'ordinal': 3,
                                      'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                      'physical_type': {'type': string_val},
-                                     'semantic_tags': []},
+                                     'semantic_tags': [],
+                                     'description': None},
                                     {'name': 'age',
                                      'ordinal': 4,
                                      'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
                                      'physical_type': {'type': cat_val},
-                                     'semantic_tags': ['category']},
+                                     'semantic_tags': ['category'],
+                                     'description': 'age of the user'},
                                     {'name': 'signup_date',
                                      'ordinal': 5,
                                      'logical_type': {'parameters': {},
                                                       'type': 'Datetime'},
                                      'physical_type': {'type': 'datetime64[ns]'},
-                                     'semantic_tags': []},
+                                     'semantic_tags': [],
+                                     'description': 'original signup date'},
                                     {'name': 'is_registered',
                                      'ordinal': 6,
                                      'logical_type': {'parameters': {}, 'type': 'Boolean'},
                                      'physical_type': {'type': bool_val},
-                                     'semantic_tags': []}],
+                                     'semantic_tags': [],
+                                     'description': None}],
                 'loading_info': {'table_type': table_type},
                 'table_metadata': {'date_created': '11/16/20'}
                 }
@@ -98,7 +105,10 @@ def test_to_dictionary(sample_df):
                    index='id',
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33, 57])},
-                   metadata={'date_created': '11/16/20'})
+                   metadata={'date_created': '11/16/20'},
+                   column_descriptions={'signup_date': 'original signup date',
+                                        'age': 'age of the user'})
+
     description = dt.to_dictionary()
 
     assert description == expected
@@ -125,7 +135,9 @@ def test_to_csv(sample_df, tmpdir):
                    name='test_data',
                    index='id',
                    semantic_tags={'id': 'tag1'},
-                   logical_types={'age': Ordinal(order=[25, 33, 57])})
+                   logical_types={'age': Ordinal(order=[25, 33, 57])},
+                   column_descriptions={'signup_date': 'original signup date',
+                                        'age': 'age of the user'})
 
     dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     _dt = deserialize.read_datatable(str(tmpdir))

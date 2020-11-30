@@ -41,6 +41,7 @@ class DataTable(object):
                  metadata=None,
                  use_standard_tags=True,
                  make_index=False,
+                 column_descriptions=None,
                  already_sorted=False):
         """Create DataTable
 
@@ -64,17 +65,20 @@ class DataTable(object):
             metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
+            make_index (bool, optional): If True, will create a new unique, numeric index column with the
                 name specified by ``index`` and will add the new index column to the supplied DataFrame.
                 If True, the name specified in ``index`` cannot match an existing column name in
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
                 present in the ``dataframe``. Defaults to False.
+            column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
             already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas input
                 only). Defaults to False.
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
-        _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index)
+        _validate_params(dataframe, name, index, time_index, logical_types,
+                         metadata, semantic_tags, make_index, column_descriptions)
 
         self._dataframe = dataframe
 
@@ -89,7 +93,8 @@ class DataTable(object):
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
-                                            use_standard_tags)
+                                            use_standard_tags,
+                                            column_descriptions)
         if index:
             _update_index(self, index)
 
@@ -187,7 +192,8 @@ class DataTable(object):
                         column_names,
                         logical_types,
                         semantic_tags,
-                        use_standard_tags):
+                        use_standard_tags,
+                        column_descriptions):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
@@ -201,7 +207,11 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
+            if column_descriptions:
+                description = column_descriptions.get(name)
+            else:
+                description = None
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description)
             datacolumns[dc.name] = dc
         return datacolumns
 
@@ -995,7 +1005,8 @@ def _validate_dataframe(dataframe):
     return dataframe
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index):
+def _validate_params(dataframe, name, index, time_index, logical_types,
+                     metadata, semantic_tags, make_index, column_descriptions):
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
@@ -1018,6 +1029,9 @@ def _validate_params(dataframe, name, index, time_index, logical_types, metadata
 
     if semantic_tags:
         _check_semantic_tags(dataframe, semantic_tags)
+
+    if column_descriptions:
+        _check_column_descriptions(dataframe, column_descriptions)
 
 
 def _check_unique_column_names(dataframe):
@@ -1068,6 +1082,15 @@ def _check_semantic_tags(dataframe, semantic_tags):
     cols_not_found = set(semantic_tags.keys()).difference(set(dataframe.columns))
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
+                          f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_column_descriptions(dataframe, column_descriptions):
+    if not isinstance(column_descriptions, dict):
+        raise TypeError('column_descriptions must be a dictionary')
+    cols_not_found = set(column_descriptions.keys()).difference(set(dataframe.columns))
+    if cols_not_found:
+        raise LookupError('column_descriptions contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 

@@ -239,7 +239,8 @@ def test_validate_params_errors(sample_df):
                          logical_types=None,
                          metadata=None,
                          semantic_tags=None,
-                         make_index=False)
+                         make_index=False,
+                         column_descriptions=None)
 
 
 def test_check_index_errors(sample_df):
@@ -2706,3 +2707,27 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=True)
     pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
+
+
+def test_datatable_init_with_col_descriptions(sample_df):
+    descriptions = {
+        'age': 'age of the user',
+        'signup_date': 'date of account creation'
+    }
+    dt = DataTable(sample_df, column_descriptions=descriptions)
+    for name, column in dt.columns.items():
+        assert column.description == descriptions.get(name)
+
+
+def test_datatable_col_descriptions_warnings(sample_df):
+    err_msg = 'column_descriptions must be a dictionary'
+    with pytest.raises(TypeError, match=err_msg):
+        DataTable(sample_df, column_descriptions=34)
+
+    descriptions = {
+        'invalid_col': 'not a valid column',
+        'signup_date': 'date of account creation'
+    }
+    err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        DataTable(sample_df, column_descriptions=descriptions)
