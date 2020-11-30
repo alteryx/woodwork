@@ -41,7 +41,8 @@ class DataTable(object):
                  metadata=None,
                  use_standard_tags=True,
                  make_index=False,
-                 column_descriptions=None):
+                 column_descriptions=None,
+                 already_sorted=False):
         """Create DataTable
 
         Args:
@@ -70,6 +71,9 @@ class DataTable(object):
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
                 present in the ``dataframe``. Defaults to False.
             column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
+            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
@@ -99,6 +103,7 @@ class DataTable(object):
 
         if time_index:
             _update_time_index(self, time_index)
+            self._sort_columns(already_sorted)
 
         self.metadata = metadata or {}
 
@@ -270,6 +275,15 @@ class DataTable(object):
             self.columns[name] = column
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
+
+    def _sort_columns(self, already_sorted):
+        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+            already_sorted = True  # Skip sorting for Dask and Koalas input
+        if not already_sorted:
+            sort_cols = [self.time_index, self.index]
+            if not self.index:
+                sort_cols = [self.time_index]
+            self._dataframe = self._dataframe.sort_values(sort_cols)
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -506,7 +520,7 @@ class DataTable(object):
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
 
-    def update_dataframe(self, new_df):
+    def update_dataframe(self, new_df, already_sorted=False):
         '''Replace the DataTable's dataframe with a new dataframe, making sure the new dataframe dtypes are updated.
         If the original DataTable was created with ``make_index=True``, an index column will be added to the updated
         data if it is not present.
@@ -514,6 +528,9 @@ class DataTable(object):
         Args:
             new_df (DataFrame): Dataframe containing the new data. The same columns present in the original data should
                 also be present in the new dataframe.
+            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
         '''
         if self.make_index and self.index not in new_df.columns:
             new_df = _make_index(new_df, self.index)
@@ -528,12 +545,13 @@ class DataTable(object):
         if self.index:
             _check_index(new_df, self.index)
 
-        if self.time_index:
-            _check_time_index(new_df, self.time_index)
-
         # Make sure column ordering matches existing ordering
         new_df = new_df[[column for column in self._dataframe.columns]]
         self._dataframe = new_df
+
+        if self.time_index:
+            _check_time_index(new_df, self.time_index)
+            self._sort_columns(already_sorted)
 
         # Update column series and dtype
         for column in self.columns.keys():

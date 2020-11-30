@@ -56,6 +56,36 @@ def sample_df_koalas(sample_df_pandas):
     return ks.from_pandas(sample_df_pandas)
 
 
+@pytest.fixture(params=['sample_unsorted_df_pandas', 'sample_unsorted_df_dask', 'sample_unsorted_df_koalas'])
+def sample_unsorted_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def sample_unsorted_df_pandas():
+    return pd.DataFrame({
+        'id': [3, 1, 2, 0],
+        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
+        'age': [33, 25, 33, 57],
+        'signup_date': pd.to_datetime(['2020-09-01', '2020-08-01', '2020-08-02', '2020-09-01']),
+        'is_registered': [True, False, True, True],
+    })
+
+
+@pytest.fixture()
+def sample_unsorted_df_dask(sample_unsorted_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(sample_unsorted_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def sample_unsorted_df_koalas(sample_unsorted_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(sample_unsorted_df_pandas)
+
+
 @pytest.fixture(params=['sample_series_pandas', 'sample_series_dask', 'sample_series_koalas'])
 def sample_series(request):
     return request.getfixturevalue(request.param)
