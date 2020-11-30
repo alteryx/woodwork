@@ -54,7 +54,9 @@ jobs:
             - run: |
                 source venv/bin/activate
                 python -m pip install -e unpacked_sdist/[dask]
+                python -m pip check
                 python -m pip install -e unpacked_sdist/[koalas]
+                python -m pip check
       - unless:
           condition:
             equal: ["optional", << parameters.optional_libraries >> ]
@@ -97,7 +99,6 @@ jobs:
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
-                python -m pip check
                 python -m pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
@@ -114,15 +115,12 @@ jobs:
                 sudo apt install -y openjdk-11-jre-headless
                 JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
                 cd unpacked_sdist
-                python -m pip check
                 python -m pytest woodwork/ -n 2
 
   pip_check:
     working_directory: ~/woodwork
     parameters:
       image_tag:
-        type: string
-      optional_libraries:
         type: string
     executor:
       name: python
@@ -221,10 +219,9 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-              optional_libraries: ["minimal", "optional"]
           name: << matrix.image_tag >> pip check
           requires:
-            - << matrix.image_tag >> install << matrix.optional_libraries >>
+            - << matrix.image_tag >> install minimal
           context: dockerhub
       - release_notes_updated:
           name: "release notes updated"
