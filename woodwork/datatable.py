@@ -73,7 +73,8 @@ class DataTable(object):
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
-        _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index)
+        _validate_params(dataframe, name, index, time_index, logical_types,
+                         metadata, semantic_tags, make_index, column_descriptions)
 
         self._dataframe = dataframe
 
@@ -983,7 +984,8 @@ def _validate_dataframe(dataframe):
     return dataframe
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types, metadata, semantic_tags, make_index):
+def _validate_params(dataframe, name, index, time_index, logical_types,
+                     metadata, semantic_tags, make_index, column_descriptions):
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
@@ -1006,6 +1008,9 @@ def _validate_params(dataframe, name, index, time_index, logical_types, metadata
 
     if semantic_tags:
         _check_semantic_tags(dataframe, semantic_tags)
+
+    if column_descriptions:
+        _check_column_descriptions(dataframe, column_descriptions)
 
 
 def _check_unique_column_names(dataframe):
@@ -1056,6 +1061,15 @@ def _check_semantic_tags(dataframe, semantic_tags):
     cols_not_found = set(semantic_tags.keys()).difference(set(dataframe.columns))
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
+                          f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_column_descriptions(dataframe, column_descriptions):
+    if not isinstance(column_descriptions, dict):
+        raise TypeError('column_descriptions must be a dictionary')
+    cols_not_found = set(column_descriptions.keys()).difference(set(dataframe.columns))
+    if cols_not_found:
+        raise LookupError('column_descriptions contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
