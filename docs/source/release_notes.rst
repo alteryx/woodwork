@@ -12,6 +12,7 @@ Release Notes
         * Add ``update_dataframe`` method to DataTable to update underlying DataFrame (:pr:`407`)
         * Add ``description`` attribute to DataColumn (:pr:`416`)
         * Implement ``DataColumn.__len__`` and ``DataTable.__len__`` (:pr:`415`)
+        * Migrate CI tests to github actions (:pr:`417`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
         * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
