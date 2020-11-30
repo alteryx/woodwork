@@ -2536,6 +2536,11 @@ def test_datatable_sizeof(sample_df):
     assert dt.__sizeof__() == expected_size
 
 
+def test_datatable_len(sample_df):
+    dt = DataTable(sample_df)
+    assert len(dt) == len(sample_df) == 4
+
+
 def test_datatable_update_dataframe(sample_df):
     new_df = sample_df.copy().tail(2).reset_index(drop=True)
     if dd and isinstance(sample_df, dd.DataFrame):
