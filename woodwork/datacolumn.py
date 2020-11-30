@@ -38,7 +38,8 @@ class DataColumn(object):
                  logical_type=None,
                  semantic_tags=None,
                  use_standard_tags=True,
-                 name=None):
+                 name=None,
+                 description=None):
         """Create a DataColumn.
 
         Args:
@@ -54,6 +55,7 @@ class DataColumn(object):
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             name (str, optional): Name of DataColumn. Will overwrite Series name, if it exists.
+            description (str, optional): Optional text describing the contents of the column
         """
         self._assigned_name = name
         self._set_series(series)
@@ -65,6 +67,10 @@ class DataColumn(object):
             semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
         self._semantic_tags = semantic_tags
         self._update_dtype()
+
+        if description and not isinstance(description, str):
+            raise TypeError("Column description must be a string")
+        self.description = description
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -81,6 +87,8 @@ class DataColumn(object):
         if self.semantic_tags != other.semantic_tags:
             return False
         if self.logical_type != other.logical_type:
+            return False
+        if self.description != other.description:
             return False
 
         # Only check pandas series for equality
