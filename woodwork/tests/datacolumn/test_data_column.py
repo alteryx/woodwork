@@ -145,6 +145,22 @@ def test_semantic_tag_errors(sample_series):
         DataColumn(sample_series, semantic_tags=['index', 1])
 
 
+def test_datacolumn_description(sample_series):
+    column_description = "custom description"
+    data_col = DataColumn(sample_series, description=column_description)
+    assert data_col.description == column_description
+
+    new_description = "updated description text"
+    data_col.description = new_description
+    assert data_col.description == new_description
+
+
+def test_datacolumn_description_error(sample_series):
+    err_msg = "Column description must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        DataColumn(sample_series, description=123)
+
+
 def test_datacolumn_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support categorical
@@ -457,6 +473,11 @@ def test_shape(sample_series):
     assert col_shape == series_shape
 
 
+def test_len(sample_series):
+    col = DataColumn(sample_series)
+    assert len(col) == len(sample_series) == 4
+
+
 def test_dtype_update_on_init(datetime_series):
     dc = DataColumn(datetime_series,
                     logical_type='DateTime')
@@ -530,11 +551,13 @@ def test_datacolumn_equality(sample_series, sample_datetime_series):
     str_col_diff_tags = DataColumn(sample_series, logical_type=Categorical, semantic_tags={'test'})
     diff_name_col = DataColumn(sample_datetime_series, logical_type=Categorical)
     diff_dtype_col = DataColumn(sample_series, logical_type=NaturalLanguage)
+    diff_description_col = DataColumn(sample_series, logical_type='Categorical', description='description')
 
     assert str_col == str_col_2
     assert str_col != str_col_diff_tags
     assert str_col != diff_name_col
     assert str_col != diff_dtype_col
+    assert str_col != diff_description_col
 
     # Check columns with same logical types but different parameters
     ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])

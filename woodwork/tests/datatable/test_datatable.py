@@ -9,6 +9,7 @@ from woodwork import DataColumn, DataTable
 from woodwork.datatable import (
     _check_index,
     _check_logical_types,
+    _check_metadata,
     _check_semantic_tags,
     _check_time_index,
     _check_unique_column_names,
@@ -38,6 +39,7 @@ from woodwork.logical_types import (
     ZIPCode
 )
 from woodwork.tests.testing_utils import (
+    check_column_order,
     mi_between_cols,
     to_pandas,
     validate_subset_dt
@@ -235,8 +237,10 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
+                         metadata=None,
                          semantic_tags=None,
-                         make_index=False)
+                         make_index=False,
+                         column_descriptions=None)
 
 
 def test_check_index_errors(sample_df):
@@ -300,6 +304,12 @@ def test_check_logical_types_errors(sample_df):
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
+
+
+def test_check_metadata_errors():
+    error_message = 'Metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=error_message):
+        _check_metadata('test')
 
 
 def test_datatable_types(sample_df):
@@ -1352,6 +1362,19 @@ def test_datatable_getitem_list_input(sample_df):
     assert new_dt.index is None
     assert new_dt.time_index is None
 
+    # Test that reversed column order reverses resulting column order
+    columns = list(reversed(list(dt.columns.keys())))
+    new_dt = dt[columns]
+
+    assert new_dt is not dt
+    assert new_dt.to_dataframe() is not df
+    assert all(df.columns[::-1] == new_dt.to_dataframe().columns)
+    assert all(dt.types.index[::-1] == new_dt.types.index)
+    assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+    assert set(new_dt.columns.keys()) == set(dt.columns.keys())
+    assert new_dt.index == 'id'
+    assert new_dt.time_index == 'signup_date'
+
 
 def test_datatable_getitem_list_warnings(sample_df):
     # Test regular columns
@@ -1794,6 +1817,13 @@ def test_select_instantiated():
         dt.select(ymd_format)
 
 
+def test_select_maintain_order(sample_df):
+    dt = DataTable(sample_df, logical_types={col_name: 'NaturalLanguage' for col_name in sample_df.columns})
+    new_dt = dt.select('NaturalLanguage')
+
+    check_column_order(dt, new_dt)
+
+
 def test_filter_cols(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
 
@@ -1868,6 +1898,30 @@ def test_natural_language_inference_with_config_options():
     dt = DataTable(dataframe, name='dt_name')
     assert dt.columns['values'].logical_type == NaturalLanguage
     ww.config.reset_option('natural_language_threshold')
+
+
+def test_describe_dict(describe_df):
+    dt = DataTable(describe_df, index='index_col')
+    stats_dict = dt.describe_dict()
+    index_order = ['physical_type',
+                   'logical_type',
+                   'semantic_tags',
+                   'count',
+                   'nunique',
+                   'nan_count',
+                   'mean',
+                   'mode',
+                   'std',
+                   'min',
+                   'first_quartile',
+                   'second_quartile',
+                   'third_quartile',
+                   'max',
+                   'num_true',
+                   'num_false']
+    stats_dict_to_df = pd.DataFrame(stats_dict).reindex(index_order)
+    stats_df = dt.describe()
+    pd.testing.assert_frame_equal(stats_df, stats_dict_to_df)
 
 
 def test_describe_does_not_include_index(describe_df):
@@ -2370,11 +2424,8 @@ def test_numeric_index_strings(time_index_df):
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-def test_datatable_equality(sample_df, sample_series):
-    # Only test if sample_df and sample_series are from same library
-    # TODO: Clean this up - better parameterization
-    if sample_df.__module__.split('.')[0] != sample_series.__module__.split('.')[0]:
-        return
+def test_datatable_equality(sample_combos):
+    sample_df, sample_series = sample_combos
     dt_basic = DataTable(sample_df)
     dt_basic2 = DataTable(sample_df.copy())
     dt_names = DataTable(sample_df, name='test')
@@ -2471,6 +2522,10 @@ def test_datatable_rename(sample_df):
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
+    # Swap names back and confirm that order of columns is the same as the original
+    dt_swapped_back = dt_swapped_names.rename({'age': 'full_name', 'full_name': 'age'})
+    check_column_order(dt, dt_swapped_back)
+
 
 def test_datatable_sizeof(sample_df):
     dt = DataTable(sample_df)
@@ -2479,3 +2534,200 @@ def test_datatable_sizeof(sample_df):
     else:
         expected_size = 32
     assert dt.__sizeof__() == expected_size
+
+
+def test_datatable_len(sample_df):
+    dt = DataTable(sample_df)
+    assert len(dt) == len(sample_df) == 4
+
+
+def test_datatable_update_dataframe(sample_df):
+    new_df = sample_df.copy().tail(2).reset_index(drop=True)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        new_df = dd.from_pandas(new_df, npartitions=1)
+
+    dt = DataTable(sample_df,
+                   index='id',
+                   time_index='signup_date',
+                   logical_types={'full_name': 'FullName'},
+                   semantic_tags={'phone_number': 'custom_tag'})
+    original_types = dt.types
+
+    dt.update_dataframe(new_df)
+    assert len(dt._dataframe) == 2
+    assert dt.index == 'id'
+    assert dt.time_index == 'signup_date'
+    pd.testing.assert_frame_equal(original_types, dt.types)
+
+    # new_df does not have updated dtypes, so ignore during check
+    pd.testing.assert_frame_equal(to_pandas(new_df),
+                                  to_pandas(dt._dataframe),
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+    # confirm that DataColumn series matches corresponding dataframe column
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
+        assert dt.columns[col]._series.dtype == dt._dataframe[col].dtype
+
+
+def test_datatable_update_dataframe_with_make_index(sample_df):
+    new_df = sample_df.copy().tail(2).reset_index(drop=True)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        new_df = dd.from_pandas(new_df, npartitions=1)
+
+    dt = DataTable(sample_df,
+                   index='new_index',
+                   make_index=True,
+                   logical_types={'full_name': 'FullName'},
+                   semantic_tags={'phone_number': 'custom_tag'})
+    original_types = dt.types
+
+    dt.update_dataframe(new_df)
+    assert len(dt._dataframe) == 2
+    assert dt.index == 'new_index'
+    pd.testing.assert_frame_equal(original_types, dt.types)
+
+    # confirm that DataColumn series matches corresponding dataframe column
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
+        assert dt.columns[col]._series.dtype == dt._dataframe[col].dtype
+
+    # confirm that we can update using current dataframe without error
+    dt.update_dataframe(dt._dataframe.head(1))
+    assert len(dt._dataframe) == 1
+
+
+def test_datatable_update_dataframe_different_num_cols(sample_df):
+    new_df = sample_df.copy().drop(columns='age')
+    dt = DataTable(sample_df)
+    error_msg = 'Updated dataframe contains 6 columns, expecting 7'
+    with pytest.raises(ValueError, match=error_msg):
+        dt.update_dataframe(new_df)
+
+
+def test_datatable_update_dataframe_missing_col(sample_df):
+    new_df = sample_df.copy().rename(columns={'age': 'old_age'})
+    dt = DataTable(sample_df)
+    error_msg = 'Updated dataframe is missing new age column'
+    with pytest.raises(ValueError, match=error_msg):
+        dt.update_dataframe(new_df)
+
+
+def test_datatable_metadata(sample_df):
+    metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
+
+    dt = DataTable(sample_df)
+    assert dt.metadata == {}
+
+    dt.metadata = metadata
+    assert dt.metadata == metadata
+
+    dt = DataTable(sample_df, time_index='signup_date', metadata=metadata)
+    assert dt.metadata == metadata
+
+    new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
+    dt.metadata = {**metadata, **new_data}
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19',
+                           'created_by': 'user1'}
+
+    dt.metadata.pop('created_by')
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
+
+    dt.metadata['number'] = 1012034
+    assert dt.metadata == {'number': 1012034,
+                           'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19'}
+
+
+def test_datatable_column_order_after_rename(sample_df_pandas):
+    # Since rename removes a column to rename it, its location in the dt.columns dictionary
+    # changes, so we have to check that we aren't relying on the columns dictionary
+    dt = DataTable(sample_df_pandas, index='id', semantic_tags={'full_name': 'test'})
+    assert dt.iloc[:, 1].name == 'full_name'
+    assert dt.index == 'id'
+
+    renamed_dt = dt.rename({'full_name': 'renamed_col'})
+    assert renamed_dt.iloc[:, 1].name == 'renamed_col'
+
+    changed_index_dt = renamed_dt.set_index('renamed_col')
+    assert changed_index_dt.index == 'renamed_col'
+    check_column_order(renamed_dt, changed_index_dt)
+
+    reset_tags_dt = renamed_dt.reset_semantic_tags(columns='renamed_col')
+    assert reset_tags_dt['renamed_col'].semantic_tags == set()
+    check_column_order(renamed_dt, reset_tags_dt)
+
+
+def test_datatable_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    dt = DataTable(sample_unsorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date')
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
+                                  to_pandas(dt._dataframe))
+
+    dt = DataTable(sample_unsorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date',
+                   already_sorted=True)
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe))
+
+
+def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    index = 'id'
+    time_index = 'signup_date'
+    sorted_df = sample_unsorted_df.sort_values([time_index, index])
+    dt = DataTable(sorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date',
+                   already_sorted=True)
+
+    dt.update_dataframe(sample_unsorted_df, already_sorted=False)
+    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe))
+
+    dt.update_dataframe(sample_unsorted_df, already_sorted=True)
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
+
+
+def test_datatable_init_with_col_descriptions(sample_df):
+    descriptions = {
+        'age': 'age of the user',
+        'signup_date': 'date of account creation'
+    }
+    dt = DataTable(sample_df, column_descriptions=descriptions)
+    for name, column in dt.columns.items():
+        assert column.description == descriptions.get(name)
+
+
+def test_datatable_col_descriptions_warnings(sample_df):
+    err_msg = 'column_descriptions must be a dictionary'
+    with pytest.raises(TypeError, match=err_msg):
+        DataTable(sample_df, column_descriptions=34)
+
+    descriptions = {
+        'invalid_col': 'not a valid column',
+        'signup_date': 'date of account creation'
+    }
+    err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        DataTable(sample_df, column_descriptions=descriptions)

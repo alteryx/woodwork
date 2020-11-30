@@ -38,8 +38,11 @@ class DataTable(object):
                  time_index=None,
                  semantic_tags=None,
                  logical_types=None,
+                 metadata=None,
                  use_standard_tags=True,
-                 make_index=False):
+                 make_index=False,
+                 column_descriptions=None,
+                 already_sorted=False):
         """Create DataTable
 
         Args:
@@ -59,6 +62,7 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
+            metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             make_index (bool, optional): If True, will create a new unique, numeric index column with the
@@ -66,21 +70,21 @@ class DataTable(object):
                 If True, the name specified in ``index`` cannot match an existing column name in
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
                 present in the ``dataframe``. Defaults to False.
+            column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
+            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
-        _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index)
+        _validate_params(dataframe, name, index, time_index, logical_types,
+                         metadata, semantic_tags, make_index, column_descriptions)
 
         self._dataframe = dataframe
 
-        if make_index:
-            if dd and isinstance(self._dataframe, dd.DataFrame):
-                self._dataframe[index] = 1
-                self._dataframe[index] = self._dataframe[index].cumsum() - 1
-            elif ks and isinstance(self._dataframe, ks.DataFrame):
-                self._dataframe = self._dataframe.koalas.attach_id_column('distributed-sequence', index)
-            else:
-                self._dataframe.insert(0, index, range(len(self._dataframe)))
+        self.make_index = make_index or None
+        if self.make_index:
+            self._dataframe = _make_index(self._dataframe, index)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -89,7 +93,8 @@ class DataTable(object):
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
                                             semantic_tags,
-                                            use_standard_tags)
+                                            use_standard_tags,
+                                            column_descriptions)
         if index:
             _update_index(self, index)
 
@@ -98,6 +103,9 @@ class DataTable(object):
 
         if time_index:
             _update_time_index(self, time_index)
+            self._sort_columns(already_sorted)
+
+        self.metadata = metadata or {}
 
     def __eq__(self, other, deep=True):
         if self.name != other.name:
@@ -156,12 +164,17 @@ class DataTable(object):
     def __sizeof__(self):
         return self._dataframe.__sizeof__()
 
+    def __len__(self):
+        return self._dataframe.__len__()
+
     @property
     def types(self):
         """Dataframe containing the physical dtypes, logical types and semantic
         tags for the table"""
         typing_info = {}
-        for dc in self.columns.values():
+        # Access column names from underlying data to maintain column order
+        for col_name in self._dataframe.columns:
+            dc = self[col_name]
             typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
@@ -179,7 +192,8 @@ class DataTable(object):
                         column_names,
                         logical_types,
                         semantic_tags,
-                        use_standard_tags):
+                        use_standard_tags,
+                        column_descriptions):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
@@ -193,7 +207,11 @@ class DataTable(object):
                 semantic_tag = semantic_tags[name]
             else:
                 semantic_tag = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name)
+            if column_descriptions:
+                description = column_descriptions.get(name)
+            else:
+                description = None
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description)
             datacolumns[dc.name] = dc
         return datacolumns
 
@@ -258,6 +276,15 @@ class DataTable(object):
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
 
+    def _sort_columns(self, already_sorted):
+        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+            already_sorted = True  # Skip sorting for Dask and Koalas input
+        if not already_sorted:
+            sort_cols = [self.time_index, self.index]
+            if not self.index:
+                sort_cols = [self.time_index]
+            self._dataframe = self._dataframe.sort_values(sort_cols)
+
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
 
@@ -300,8 +327,8 @@ class DataTable(object):
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
 
-        old_all_cols = list(self.columns.keys())
-        new_dt = self[old_all_cols]
+        old_all_cols = list(self._dataframe.columns)
+        new_dt = self._new_dt_from_cols(old_all_cols)
         updated_cols = {}
         for old_name, new_name in columns.items():
             col = new_dt.pop(old_name)
@@ -311,7 +338,7 @@ class DataTable(object):
             updated_cols[new_name] = col
 
         new_dt._update_columns(updated_cols)
-        # Reorder columns to match the original order
+        # Make sure we maintain relative order of columns including new names
         new_all_cols = [name if name not in columns else columns[name] for name in old_all_cols]
         new_dt._dataframe = new_dt._dataframe[new_all_cols]
 
@@ -329,7 +356,7 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: DataTable with the specified index column set.
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_index(new_dt, index, self.index)
         return new_dt
 
@@ -340,7 +367,7 @@ class DataTable(object):
         Args:
             time_index (str): The name of the column to set as the time index.
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_time_index(new_dt, time_index, self.time_index)
         return new_dt
 
@@ -367,7 +394,7 @@ class DataTable(object):
         semantic_tags = semantic_tags or {}
         _check_semantic_tags(self._dataframe, semantic_tags)
 
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
         for col_name, col in new_dt.columns.items():
             if col_name not in logical_types and col_name not in semantic_tags:
@@ -433,7 +460,7 @@ class DataTable(object):
             raise LookupError("Input contains columns that are not present in "
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
-            columns = self.columns.keys()
+            columns = self._dataframe.columns
         return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
@@ -451,7 +478,7 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: A new DataTable with updated columns
         """
-        new_dt = self._new_dt_from_cols(self.columns)
+        new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
         if isinstance(new_values, dict):
             for name, tags in new_values.items():
@@ -492,6 +519,47 @@ class DataTable(object):
         """
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
+
+    def update_dataframe(self, new_df, already_sorted=False):
+        '''Replace the DataTable's dataframe with a new dataframe, making sure the new dataframe dtypes are updated.
+        If the original DataTable was created with ``make_index=True``, an index column will be added to the updated
+        data if it is not present.
+
+        Args:
+            new_df (DataFrame): Dataframe containing the new data. The same columns present in the original data should
+                also be present in the new dataframe.
+            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
+        '''
+        if self.make_index and self.index not in new_df.columns:
+            new_df = _make_index(new_df, self.index)
+
+        if len(new_df.columns) != len(self.columns):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(new_df.columns),
+                                                                                          len(self.columns)))
+        for column in self.columns.keys():
+            if column not in new_df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(column))
+
+        if self.index:
+            _check_index(new_df, self.index)
+
+        # Make sure column ordering matches existing ordering
+        new_df = new_df[[column for column in self._dataframe.columns]]
+        self._dataframe = new_df
+
+        if self.time_index:
+            _check_time_index(new_df, self.time_index)
+            self._sort_columns(already_sorted)
+
+        # Update column series and dtype
+        for column in self.columns.keys():
+            self.columns[column]._set_series(new_df[column])
+            self.columns[column]._update_dtype()
+
+        # Make sure dataframe dtypes match columns
+        self._update_columns(self.columns)
 
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
@@ -541,11 +609,13 @@ class DataTable(object):
             if _get_ltype_class(col.logical_type) in ltypes_used or col.semantic_tags.intersection(tags_used):
                 cols_to_include.add(col_name)
 
-        return list(cols_to_include)
+        # Maintain column order by using underlying data
+        return [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
-        indices, and name of original DataTable"""
+        indices, and name of original DataTable. Resulting DataTable's column order will
+        follow the order used in cols_to_include."""
         assert all([col_name in self.columns for col_name in cols_to_include])
         return _new_dt_including(self, self._dataframe.loc[:, cols_to_include])
 
@@ -567,7 +637,7 @@ class DataTable(object):
         """
         return _iLocIndexer(self)
 
-    def describe(self, include=None):
+    def describe_dict(self, include=None):
         """Calculates statistics for data contained in DataTable.
 
         Args:
@@ -578,9 +648,9 @@ class DataTable(object):
             will be returned.
 
         Returns:
-            pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
-            DataTable that just containing the logical types, semantic tags, or column names specified
-            in ``include``.
+            dict[str -> dict]: A dictionary with a key for each column in the data or for each column
+            matching the logical types, semantic tags or column names specified in ``include``, paired
+            with a value containing a dictionary containing relevant statistics for that column.
         """
         agg_stats_to_calculate = {
             'category': ["count", "nunique"],
@@ -639,7 +709,24 @@ class DataTable(object):
             values["logical_type"] = logical_type
             values["semantic_tags"] = semantic_tags
             results[column_name] = values
+        return results
 
+    def describe(self, include=None):
+        """Calculates statistics for data contained in DataTable.
+
+        Args:
+            include (list[str or LogicalType], optional): filter for what columns to include in the
+            statistics returned. Can be a list of columns, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name. If no matching columns are found, an empty DataFrame
+            will be returned.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
+            DataTable that contains the logical types, semantic tags, or column names specified
+            in ``include``.
+        """
+        results = self.describe_dict(include=include)
         index_order = [
             'physical_type',
             'logical_type',
@@ -848,12 +935,12 @@ class DataTable(object):
 
     def to_dictionary(self):
         '''
-        Get a DataTable's metadata
+        Get a DataTable's description
 
         Returns:
-            metadata (dict) : Description of :class:`.DataTable`.
+            description (dict) : Description of :class:`.DataTable`.
         '''
-        return serialize.datatable_to_metadata(self)
+        return serialize.datatable_to_description(self)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
         '''Write DataTable to disk in the CSV format, location specified by `path`.
@@ -918,7 +1005,8 @@ def _validate_dataframe(dataframe):
     return dataframe
 
 
-def _validate_params(dataframe, name, index, time_index, logical_types, semantic_tags, make_index):
+def _validate_params(dataframe, name, index, time_index, logical_types,
+                     metadata, semantic_tags, make_index, column_descriptions):
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
@@ -927,6 +1015,8 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
         _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
+    if metadata:
+        _check_metadata(metadata)
     if time_index:
         datetime_format = None
         logical_type = None
@@ -939,6 +1029,9 @@ def _validate_params(dataframe, name, index, time_index, logical_types, semantic
 
     if semantic_tags:
         _check_semantic_tags(dataframe, semantic_tags)
+
+    if column_descriptions:
+        _check_column_descriptions(dataframe, column_descriptions)
 
 
 def _check_unique_column_names(dataframe):
@@ -992,6 +1085,20 @@ def _check_semantic_tags(dataframe, semantic_tags):
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
+def _check_column_descriptions(dataframe, column_descriptions):
+    if not isinstance(column_descriptions, dict):
+        raise TypeError('column_descriptions must be a dictionary')
+    cols_not_found = set(column_descriptions.keys()).difference(set(dataframe.columns))
+    if cols_not_found:
+        raise LookupError('column_descriptions contains columns that are not present in '
+                          f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_metadata(metadata):
+    if not isinstance(metadata, dict):
+        raise TypeError('Metadata must be a dictionary.')
+
+
 def _update_index(datatable, index, old_index=None):
     """Add the `index` tag to the specified index column and remove the tag from the
     old_index column, if specified. Also checks that the specified index column
@@ -1011,3 +1118,15 @@ def _update_time_index(datatable, time_index, old_time_index=None):
     datatable.columns[time_index]._set_as_time_index()
     if old_time_index:
         datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
+
+
+def _make_index(dataframe, index):
+    if dd and isinstance(dataframe, dd.DataFrame):
+        dataframe[index] = 1
+        dataframe[index] = dataframe[index].cumsum() - 1
+    elif ks and isinstance(dataframe, ks.DataFrame):
+        dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
+    else:
+        dataframe.insert(0, index, range(len(dataframe)))
+
+    return dataframe
