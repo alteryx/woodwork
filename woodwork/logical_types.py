@@ -194,7 +194,7 @@ class LatLong(LogicalType):
 
     Note:
         LatLong values will be converted to be stored with the object dtypes as a
-        tuple of strings (or a lsit of strings for Koalas DataTables)
+        tuple of strings (or a list of strings for Koalas DataTables)
         and must contain only two values.
 
     Examples:
