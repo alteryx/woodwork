@@ -8,7 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Add CI to check pip dependencies are compatible
+        * Add CI to check pip dependencies are compatible (:pr:`419`)
 
 Thanks to the following people for contributing to this release:
     :user:`gsheni`
