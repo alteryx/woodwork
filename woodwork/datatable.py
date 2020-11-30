@@ -72,7 +72,7 @@ class DataTable(object):
                 present in the ``dataframe``. Defaults to False.
             column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
             already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
-                index. If False, will sort the dataframe first on the time_index and then on the index (pandas input
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
         """
         # Check that inputs are valid
