@@ -457,6 +457,11 @@ def test_shape(sample_series):
     assert col_shape == series_shape
 
 
+def test_len(sample_series):
+    col = DataColumn(sample_series)
+    assert len(col) == len(sample_series) == 4
+
+
 def test_dtype_update_on_init(datetime_series):
     dc = DataColumn(datetime_series,
                     logical_type='DateTime')
