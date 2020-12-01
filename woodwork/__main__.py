@@ -10,12 +10,12 @@ def cli():
 
 @click.command(name='list-logical-types')
 def list_ltypes():
-    print(ww.utils.list_logical_types())
+    print(ww.list_logical_types())
 
 
 @click.command(name='list-semantic-tags')
 def list_stags():
-    print(ww.utils.list_semantic_tags())
+    print(ww.list_semantic_tags())
 
 
 cli.add_command(list_ltypes)

@@ -5,13 +5,8 @@ import tarfile
 import tempfile
 
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import (
-    _get_ltype_class,
-    _get_specified_ltype_params,
-    _is_s3,
-    _is_url,
-    import_or_none
-)
+from woodwork.type_system.utils import _get_specified_ltype_params, _get_ltype_class
+from woodwork.utils import _is_s3, _is_url, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')

@@ -5,26 +5,23 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import (
-    Categorical,
-    Datetime,
-    Double,
-    LogicalType,
+from woodwork.type_system.logical_types import Categorical, Datetime, Double
+from woodwork.type_system.utils import (
+    _get_specified_ltype_params,
+    _is_numeric_series,
+    list_logical_types,
+    list_semantic_tags,
     str_to_logical_type
 )
 from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
-    _get_specified_ltype_params,
-    _is_numeric_series,
     _is_s3,
     _is_url,
     _new_dt_including,
     camel_to_snake,
     import_or_none,
-    import_or_raise,
-    list_logical_types,
-    list_semantic_tags
+    import_or_raise
 )
 
 
@@ -64,7 +61,7 @@ def test_convert_input_to_set():
 
 
 def test_list_logical_types():
-    all_ltypes = LogicalType.__subclasses__()
+    all_ltypes = ww.type_sys.registered_types
 
     df = list_logical_types()
 

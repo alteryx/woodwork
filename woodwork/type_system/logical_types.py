@@ -1,6 +1,7 @@
 import pandas as pd
 
-from woodwork.utils import _get_specified_ltype_params, camel_to_snake
+from woodwork.type_system.utils import _get_specified_ltype_params
+from woodwork.utils import camel_to_snake
 
 
 class ClassNameDescriptor(object):
@@ -328,30 +329,3 @@ class ZIPCode(LogicalType):
     pandas_dtype = 'category'
     backup_dtype = 'str'
     standard_tags = {'category'}
-
-
-def get_logical_types():
-    """Returns a dictionary of logical type name strings and logical type classes"""
-    # Get snake case strings
-    logical_types = {logical_type.type_string: logical_type for logical_type in LogicalType.__subclasses__()}
-    # Add class name strings
-    class_name_dict = {logical_type.__name__: logical_type for logical_type in LogicalType.__subclasses__()}
-    logical_types.update(class_name_dict)
-
-    return logical_types
-
-
-def str_to_logical_type(logical_str, params=None, raise_error=True):
-    """Helper function for converting a string value to the corresponding logical type object.
-    If a dictionary of params for the logical type is provided, apply them."""
-    logical_str = logical_str.lower()
-    logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types().items()}
-
-    if logical_str in logical_types_dict:
-        ltype = logical_types_dict[logical_str]
-        if params:
-            return ltype(**params)
-        else:
-            return ltype
-    elif raise_error:
-        raise ValueError('String %s is not a valid logical type' % logical_str)

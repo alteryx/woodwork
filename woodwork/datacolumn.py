@@ -1,31 +1,18 @@
 import warnings
 
 import pandas as pd
-import pandas.api.types as pdtypes
 
-from woodwork.config import config
+import woodwork as ww
 from woodwork.exceptions import (
     ColumnNameMismatchWarning,
     DuplicateTagsWarning,
     StandardTagsRemovalWarning
 )
 from woodwork.indexers import _iLocIndexer
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Datetime,
-    Double,
-    Integer,
-    LogicalType,
-    NaturalLanguage,
-    Ordinal,
-    Timedelta,
-    str_to_logical_type
-)
+from woodwork.type_system.logical_types import Datetime, Ordinal
+from woodwork.type_system.utils import _get_ltype_class, str_to_logical_type
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_ltype_class,
-    col_is_datetime,
     import_or_none
 )
 
@@ -195,12 +182,12 @@ class DataColumn(object):
             ltype_class = _get_ltype_class(logical_type)
             if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
                 raise TypeError("Must use an Ordinal instance with order values defined")
-            if ltype_class in LogicalType.__subclasses__():
+            if ltype_class in ww.type_sys.registered_types:
                 return logical_type
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.name}'")
         else:
-            return infer_logical_type(self._series)
+            return ww.type_sys.infer_logical_type(self._series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Replace current semantic tags with new values and return a new DataColumn object.
@@ -357,63 +344,3 @@ def _validate_tags(semantic_tags):
     if 'time_index' in semantic_tags:
         raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
                          "use DataTable.set_time_index() instead.")
-
-
-def infer_logical_type(series):
-    """Infer logical type for a dataframe column
-
-    Args:
-        series (pd.Series): Input Series
-    """
-    if dd and isinstance(series, dd.Series):
-        series = series.get_partition(0).compute()
-    if ks and isinstance(series, ks.Series):
-        series = series.head(100000).to_pandas()
-    natural_language_threshold = config.get_option('natural_language_threshold')
-    numeric_categorical_threshold = config.get_option('numeric_categorical_threshold')
-
-    inferred_type = NaturalLanguage
-
-    if pdtypes.is_string_dtype(series.dtype):
-        if col_is_datetime(series):
-            inferred_type = Datetime
-        else:
-            inferred_type = Categorical
-
-            # heuristics to predict this some other than categorical
-            sample = series.sample(min(10000, len(series)))
-
-            # catch cases where object dtype cannot be interpreted as a string
-            try:
-                avg_length = sample.str.len().mean()
-                if avg_length > natural_language_threshold:
-                    inferred_type = NaturalLanguage
-            except AttributeError:
-                pass
-
-    elif pdtypes.is_bool_dtype(series.dtype):
-        inferred_type = Boolean
-
-    elif pdtypes.is_categorical_dtype(series.dtype):
-        inferred_type = Categorical
-
-    elif pdtypes.is_integer_dtype(series.dtype):
-        if _is_numeric_categorical(series, numeric_categorical_threshold):
-            inferred_type = Categorical
-        else:
-            inferred_type = Integer
-
-    elif pdtypes.is_float_dtype(series.dtype):
-        inferred_type = Categorical if _is_numeric_categorical(series, numeric_categorical_threshold) else Double
-
-    elif col_is_datetime(series):
-        inferred_type = Datetime
-
-    elif pdtypes.is_timedelta64_dtype(series.dtype):
-        inferred_type = Timedelta
-
-    return inferred_type
-
-
-def _is_numeric_categorical(series, threshold):
-    return threshold != -1 and series.nunique() < threshold
