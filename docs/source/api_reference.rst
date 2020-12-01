@@ -53,7 +53,7 @@ DataColumn
 Logical Types
 =============
 
-.. currentmodule:: woodwork.logical_types
+.. currentmodule:: woodwork.type_system.logical_types
 .. autosummary::
     :toctree: generated/
 
@@ -76,10 +76,22 @@ Logical Types
     URL
     ZIPCode
 
-.. currentmodule:: woodwork.utils
-
 Utils
 =====
+
+.. currentmodule:: woodwork.type_system.utils
+
+Type Utils
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    list_logical_types
+    list_semantic_tags
+
+.. currentmodule:: woodwork.utils
 
 General Utils
 ~~~~~~~~~~~~~
@@ -88,8 +100,6 @@ General Utils
     :toctree: generated
     :nosignatures:
 
-    list_logical_types
-    list_semantic_tags
     read_csv
 
 Demo Data
