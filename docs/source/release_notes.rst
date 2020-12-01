@@ -6,11 +6,11 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        Update links to use alteryx org Github URL (:pr:`423`)
+        * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
     * Testing Changes
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`gsheni`
 
 **v0.0.6 November 30, 2020**
