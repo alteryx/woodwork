@@ -108,10 +108,10 @@ class DataColumn(object):
         if isinstance(self.logical_type, Ordinal):
             self.logical_type._validate_data(self._series)
         elif _get_ltype_class(self.logical_type) == LatLong:
-            # Reformat LatLong columns to be a length two tuple (or list for Koalas) of strings
+            # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
             if dd and isinstance(self._series, dd.Series):
                 name = self._series.name
-                meta = (self._series, tuple([str, str]))
+                meta = (self._series, tuple([float, float]))
                 self._series = self._series.apply(_reformat_to_latlong, meta=meta)
                 self._series.name = name
             elif ks and isinstance(self._series, ks.Series):

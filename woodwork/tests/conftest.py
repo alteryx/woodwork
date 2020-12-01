@@ -219,14 +219,14 @@ def describe_df_pandas():
         np.nan,
         'I am the last line',
     ]
-    latlong_data = [('0', '0'),
-                    ('1', '1'),
-                    ('2', '2'),
-                    ('3', '3'),
-                    ('4', '4'),
-                    ('5', '5'),
-                    ('6', '6'),
-                    None]
+    latlong_data = [(0, 0),
+                    (1, 1),
+                    (2, 2),
+                    (3, 3),
+                    (0, 0),
+                    (np.nan, np.nan),
+                    (np.nan, 6),
+                    np.nan]
     timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
 
     return pd.DataFrame({
@@ -252,7 +252,7 @@ def describe_df_dask(describe_df_pandas):
 def describe_df_koalas(describe_df_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
     return ks.from_pandas(describe_df_pandas
-                          .applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup)
+                          .applymap(lambda tup: [None if pd.isnull(elt) else elt for elt in tup] if isinstance(tup, tuple) else tup)
                           .drop(columns='timedelta_col'))
 
 
@@ -388,11 +388,12 @@ def latlong_df_pandas():
     return pd.DataFrame({
         'tuple_ints': pd.Series([(1, 2), (3, 4)]),
         'tuple_strings': pd.Series([('1', '2'), ('3', '4')]),
-        'nested_tuple': pd.Series([('(1, 2, 3)', '(2, 3, 4)'), ('(3, 4, 5)', '(4, 5, 6)')]),
         'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),
         'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),
         'list_strings': pd.Series([['1', '2'], ['3', '4']]),
         'combo_tuple_types': pd.Series(['[1, 2]', '(3, 4)']),
+        'null_value': pd.Series([np.nan, (3, 4)]),
+        'null_latitude': pd.Series([(np.nan, 2.0), (3.0, 4.0)]),
     })
 
 

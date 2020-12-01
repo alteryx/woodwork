@@ -4,6 +4,7 @@ import importlib
 import re
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 
 import woodwork as ww
@@ -302,14 +303,20 @@ def _is_url(string):
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of strings.
+    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null lat or long values.
     """
-    # Since we can have list inputs here pd.isnull will not have a relevant truth value for lists
-    if not isinstance(latlong, list) and pd.isnull(latlong):
-        return latlong
+    if _is_null_latlong(latlong):
+        return np.nan
 
     if isinstance(latlong, str):
         try:
+            # Serialized latlong columns from csv or parquet will be strings, so null values will be
+            # read as the string 'nan' in pandas and Dask and 'NaN' in Koalas
+            # neither of which which is interpretable as a null value
+            if 'nan' in latlong:
+                latlong = latlong.replace('nan', 'None')
+            if 'NaN' in latlong:
+                latlong = latlong.replace('NaN', 'None')
             latlong = ast.literal_eval(latlong)
         except ValueError:
             pass
@@ -318,11 +325,30 @@ def _reformat_to_latlong(latlong, use_list=False):
         if len(latlong) != 2:
             raise ValueError(f'LatLong values must have exactly two values. {latlong} does not have two values.')
 
-        latlong = str(latlong[0]).strip(), str(latlong[1]).strip()
-
+        latlong = _to_latlong_float(latlong[0]), _to_latlong_float(latlong[1])
         if use_list:
             latlong = list(latlong)
-
         return latlong
 
     raise ValueError(f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
+
+
+def _to_latlong_float(val):
+    '''
+    Attempts to convert a value to a float, propogating null values.
+    '''
+    if _is_null_latlong(val):
+        return np.nan
+
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        raise ValueError(f'Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {val} cannot be converted to a float.')
+
+
+def _is_null_latlong(val):
+    if isinstance(val, str):
+        return val == 'None' or val == 'nan' or val == 'NaN'
+
+    # Since we can have list inputs here pd.isnull will not have a relevant truth value for lists
+    return not isinstance(val, list) and pd.isnull(val)

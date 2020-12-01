@@ -17,11 +17,13 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
     _get_specified_ltype_params,
+    _is_null_latlong,
     _is_numeric_series,
     _is_s3,
     _is_url,
     _new_dt_including,
     _reformat_to_latlong,
+    _to_latlong_float,
     camel_to_snake,
     import_or_none,
     import_or_raise,
@@ -263,9 +265,13 @@ def test_reformat_to_latlong_errors():
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong('(1, 2, 3)')
 
+    error = re.escape("Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by 41deg52\'54\" N cannot be converted to a float.")
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong(('41deg52\'54\" N', '21deg22\'54\" W'))
+
 
 def test_reformat_to_latlong():
-    simple_latlong = ('1', '2')
+    simple_latlong = (1, 2)
 
     assert _reformat_to_latlong((1, 2)) == simple_latlong
     assert _reformat_to_latlong(('1', '2')) == simple_latlong
@@ -277,17 +283,17 @@ def test_reformat_to_latlong():
     assert _reformat_to_latlong('[1, 2]') == simple_latlong
     assert _reformat_to_latlong('1, 2') == simple_latlong
 
-    nested_tuples = ('(1, 2, 3)', '(3, 4, 5)')
-    assert _reformat_to_latlong(((1, 2, 3), (3, 4, 5))) == nested_tuples
-    assert _reformat_to_latlong(('(1, 2, 3)', (3, 4, 5))) == nested_tuples
+    assert _reformat_to_latlong(None) is np.nan
+    assert _reformat_to_latlong((1, np.nan)) == (1, np.nan)
+    assert _reformat_to_latlong((np.nan, '1')) == (np.nan, 1)
 
-    assert _reformat_to_latlong("'a  ','  b'") == ('a', 'b')
-
-    assert _reformat_to_latlong(None) is None
+    # This is how csv and parquet will deserialize
+    assert _reformat_to_latlong('(1, nan)') == (1, np.nan)
+    assert _reformat_to_latlong('(NaN, 9)') == (np.nan, 9)
 
 
 def test_reformat_to_latlong_list():
-    simple_latlong = ['1', '2']
+    simple_latlong = [1, 2]
 
     assert _reformat_to_latlong((1, 2), use_list=True) == simple_latlong
     assert _reformat_to_latlong(('1', '2'), use_list=True) == simple_latlong
@@ -297,3 +303,37 @@ def test_reformat_to_latlong_list():
     assert _reformat_to_latlong(['1', '2'], use_list=True) == simple_latlong
     assert _reformat_to_latlong('[1, 2]', use_list=True) == simple_latlong
     assert _reformat_to_latlong('1, 2', use_list=True) == simple_latlong
+
+    assert _reformat_to_latlong((1, np.nan), use_list=True) == [1, np.nan]
+    assert _reformat_to_latlong((np.nan, '1'), use_list=True) == [np.nan, 1]
+
+    # This is how csv and parquet will deserialize
+    assert _reformat_to_latlong('[1, nan]', use_list=True) == [1, np.nan]
+    assert _reformat_to_latlong('[1, NaN]', use_list=True) == [1, np.nan]
+
+
+def test_to_latlong_float():
+    assert _to_latlong_float(4) == 4.0
+    assert _to_latlong_float('2.2') == 2.2
+
+    assert _to_latlong_float(None) is np.nan
+    assert _to_latlong_float(np.nan) is np.nan
+    assert _to_latlong_float(pd.NA) is np.nan
+
+    error = re.escape('Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by [1, 2, 3] cannot be converted to a float.')
+    with pytest.raises(ValueError, match=error):
+        _to_latlong_float([1, 2, 3])
+
+
+def test_is_null_latlong():
+    assert _is_null_latlong(None)
+    assert _is_null_latlong(np.nan)
+    assert _is_null_latlong(pd.NA)
+    assert _is_null_latlong('None')
+    assert _is_null_latlong('nan')
+    assert _is_null_latlong('NaN')
+
+    assert not _is_null_latlong([None, 1, 3])
+    assert not _is_null_latlong('none')
+    assert not _is_null_latlong(0)
+    assert not _is_null_latlong(False)
