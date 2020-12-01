@@ -17,7 +17,7 @@ setup(
     license='BSD 3-clause',
     version='0.0.6',
     description='a two-dimensional data object with labeled axes and typing information',
-    url='https://github.com/FeatureLabs/woodwork/',
+    url='https://github.com/alteryx/woodwork/',
     classifiers=[
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',

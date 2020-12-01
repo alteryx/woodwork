@@ -10,7 +10,7 @@ Whether you are a novice or experienced software developer, all contributions an
 * You can run the following steps to clone the code, create a separate virtual environment, and install woodwork in editable mode.
 
   ```bash
-  git clone https://github.com/FeatureLabs/woodwork.git
+  git clone https://github.com/alteryx/woodwork.git
   cd woodwork
   python -m venv venv
   source venv/bin/activate

@@ -99,7 +99,7 @@ html_theme = "pydata_sphinx_theme"
 # documentation.
 #
 html_theme_options = {
-    "github_url": "https://github.com/FeatureLabs/woodwork",
+    "github_url": "https://github.com/alteryx/woodwork",
     "twitter_url": "https://twitter.com/alteryx?lang=en",
 }
 
@@ -207,8 +207,8 @@ epub_exclude_files = ['search.html']
 
 # If woodwork is open-sourced: replace github specific style.css
 extlinks = {
-    'issue': ('https://github.com/Featurelabs/woodwork/issues/%s', '#'),
-    'pr': ('https://github.com/Featurelabs/woodwork/pull/%s', '#'),
+    'issue': ('https://github.com/alteryx/woodwork/issues/%s', '#'),
+    'pr': ('https://github.com/alteryx/woodwork/pull/%s', '#'),
     'user': ('https://github.com/%s', '@')
 }
 
