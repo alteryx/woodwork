@@ -3,16 +3,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.type_system.inference_functions import (
+    categorical_func,
+    double_func,
+    integer_func
+)
 from woodwork.type_system.logical_types import (
     Categorical,
     CountryCode,
     Double,
     Integer
-)
-from woodwork.type_system.inference_functions import (
-    categorical_func,
-    double_func,
-    integer_func
 )
 
 
