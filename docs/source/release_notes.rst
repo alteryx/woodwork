@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
     * Testing Changes
 
