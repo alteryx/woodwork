@@ -11,7 +11,7 @@ from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
 from woodwork.type_system.logical_types import Boolean, Datetime, Double
 from woodwork.type_system.utils import (
-    _get_ltype_class, 
+    _get_ltype_class,
     _is_numeric_series,
     col_is_datetime,
     str_to_logical_type

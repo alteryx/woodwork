@@ -11,10 +11,7 @@ from woodwork.exceptions import (
 from woodwork.indexers import _iLocIndexer
 from woodwork.type_system.logical_types import Datetime, Ordinal
 from woodwork.type_system.utils import _get_ltype_class, str_to_logical_type
-from woodwork.utils import (
-    _convert_input_to_set,
-    import_or_none
-)
+from woodwork.utils import _convert_input_to_set, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
