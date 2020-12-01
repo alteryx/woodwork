@@ -3,6 +3,18 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.type_system.logical_types import (
+    Categorical,
+    CountryCode,
+    Double,
+    Integer
+)
+from woodwork.type_system.inference_functions import (
+    categorical_func,
+    double_func,
+    integer_func
+)
+
 
 def pd_to_dask(series):
     dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
@@ -108,11 +120,6 @@ def koalas_datetimes(pandas_datetimes):
 @pytest.fixture(params=['pandas_datetimes', 'dask_datetimes', 'koalas_datetimes'])
 def datetimes(request):
     return request.getfixturevalue(request.param)
-
-
-@pytest.fixture()
-def datetime_series(datetimes):
-    return datetimes[1]
 
 
 # Categorical Inference Fixtures
@@ -232,3 +239,18 @@ def dask_pdnas(pandas_pdnas):
 @pytest.fixture(params=['pandas_pdnas', 'dask_pdnas'])
 def pdnas(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def default_inference_functions():
+    return {
+        Double: double_func,
+        Integer: integer_func,
+        Categorical: categorical_func,
+        CountryCode: None,
+    }
+
+
+@pytest.fixture
+def default_relationships():
+    return [(Double, Integer), (Categorical, CountryCode)]

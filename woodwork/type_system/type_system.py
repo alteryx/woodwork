@@ -86,7 +86,7 @@ class TypeSystem(object):
         self.inference_functions.pop(logical_type)
 
         # If the removed type had children we need to update them
-        children = self._get_children()
+        children = self._get_children(logical_type)
         if children:
             parent = self._get_parent(logical_type)
             for child in children:
