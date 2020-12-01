@@ -570,7 +570,12 @@ def test_ordinal_with_nan_values():
 
 
 def test_latlong_formatting(latlongs):
-    expected_series = pd.Series([[1, 2], [3, 4]]) if isinstance(latlongs[0], ks.Series) else pd.Series([(1, 2), (3, 4)])
+    expected_series = pd.Series([(1, 2), (3, 4)])
+    if ks and isinstance(latlongs[0], ks.Series):
+        expected_series = ks.Series([[1, 2], [3, 4]])
+    elif dd and isinstance(latlongs[0], dd.Series):
+        expected_series = dd.from_pandas(expected_series, npartitions=2)
+
     expected_dc = DataColumn(expected_series, logical_type='LatLong', name='test_series')
 
     for series in latlongs:

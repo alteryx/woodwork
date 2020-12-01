@@ -204,7 +204,7 @@ class LatLong(LogicalType):
 
             [(33.670914, -117.841501),
              (40.423599, -86.921162),
-             (-45.031705, np.nan)]
+             (-45.031705, nan)]
     """
     pandas_dtype = 'object'
 

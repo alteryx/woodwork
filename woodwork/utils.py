@@ -303,7 +303,7 @@ def _is_url(string):
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null lat or long values.
+    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values.
     """
     if _is_null_latlong(latlong):
         return np.nan
@@ -350,5 +350,5 @@ def _is_null_latlong(val):
     if isinstance(val, str):
         return val == 'None' or val == 'nan' or val == 'NaN'
 
-    # Since we can have list inputs here pd.isnull will not have a relevant truth value for lists
+    # Since we can have list inputs here, pd.isnull will not have a relevant truth value for lists
     return not isinstance(val, list) and pd.isnull(val)
