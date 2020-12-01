@@ -2,7 +2,7 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
@@ -10,7 +10,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 **v0.0.6 November 30, 2020**
     * Enhancements
