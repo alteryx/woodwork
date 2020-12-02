@@ -155,8 +155,8 @@ class DataTable(object):
         if column.name is not None and column.name != col_name:
             warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
                           ColumnNameMismatchWarning)
-            column._series.name = col_name
-            column._assigned_name = col_name
+        column._series.name = col_name
+        column._assigned_name = col_name
 
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
