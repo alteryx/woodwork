@@ -345,12 +345,22 @@ def test_datatable_types(sample_df):
         assert isinstance(tag, str)
 
 
-def test_datatable_repr(sample_df):
-    dt = DataTable(sample_df)
+def test_empty_datatable_repr(empty_df):
+    dt = DataTable(empty_df)
+    assert repr(dt) == 'Empty DataTable'
+
+
+def test_datatable_repr(small_df):
+    dt = DataTable(small_df)
 
     dt_repr = repr(dt)
-    assert isinstance(dt_repr, str)
+    expected_repr = 'Data Column     sample_datetime_series\nPhysical Type           datetime64[ns]\nLogical Type                  Datetime\nSemantic Tag(s)                     []\n0                           2020-09-01\n1                           2020-09-01\n2                           2020-09-01\n3                           2020-09-01'
 
+    assert dt_repr == expected_repr
+
+
+def test_datatable_typing_info(sample_df):
+    dt = DataTable(sample_df)
     typing_info_df = dt._get_typing_info(include_names_col=True)
 
     assert isinstance(typing_info_df, pd.DataFrame)

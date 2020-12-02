@@ -170,6 +170,9 @@ class DataTable(object):
     def __repr__(self):
         '''A representation of a DataTable containing typing information and a preview of the data.
         '''
+        if len(self._dataframe.index) == 0 and len(self._dataframe.columns) == 0:
+            return "Empty DataTable"
+
         typing_info = pd.MultiIndex.from_frame(self._get_typing_info(include_names_col=True))
 
         data = self._dataframe.head(5)
@@ -181,6 +184,8 @@ class DataTable(object):
 
     @property
     def types(self):
+        """Dataframe containing the physical dtypes, logical types and semantic
+        tags for the table"""
         return self._get_typing_info()
 
     def _get_typing_info(self, include_names_col=False):
