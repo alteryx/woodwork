@@ -113,7 +113,7 @@ class TypeSystem(object):
         set to the parent of the removed type.
 
         Args:
-            logical_type (LogicalType): The new LogicalType to remove.
+            logical_type (LogicalType): The LogicalType to remove.
         """
         if isinstance(logical_type, str):
             logical_type = str_to_logical_type(logical_type)
