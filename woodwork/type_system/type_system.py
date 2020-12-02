@@ -73,7 +73,7 @@ class TypeSystem(object):
     def __init__(self, inference_functions=None, relationships=None, default_type=None):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
-        
+
         Args:
             inference_functions (dict[LogicalType->func], optional): Dictionary mapping LogicalTypes
                 to their corresponding type inference functions. If None, only the default LogicalType
@@ -94,7 +94,7 @@ class TypeSystem(object):
     def add_type(self, logical_type, inference_function=None, parent=None):
         """Add a new LogicalType to the TypeSystem, optionally specifying the corresponding inference function and a
         parent type.
-        
+
         Args:
             logical_type (LogicalType): The new LogicalType to add.
             inference_function (func, optional): The inference function to use for inferring the given LogicalType.
@@ -111,7 +111,7 @@ class TypeSystem(object):
     def remove_type(self, logical_type):
         """Remove a logical type from the TypeSystem. Any children of the remove type will have their parent
         set to the parent of the removed type.
-        
+
         Args:
             logical_type (LogicalType): The new LogicalType to remove.
         """
@@ -134,7 +134,7 @@ class TypeSystem(object):
 
     def update_inference_function(self, logical_type, inference_function):
         """Update the inference function for the specified LogicalType.
-        
+
         Args:
             logical_type (LogicalType): The LogicalType for which to update the inference function.
             inference_function (func): The new inference function to use. Can be set to None to skip
@@ -194,7 +194,7 @@ class TypeSystem(object):
 
     def infer_logical_type(self, series):
         """Infer the logical type for the given series
-        
+
         Args:
             series (pandas.Series): The series for which to infer the LogicalType.
         """
