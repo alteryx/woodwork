@@ -1,3 +1,5 @@
+import pandas as pd
+
 from woodwork.type_system.inference_functions import (
     categorical_func,
     double_func,
@@ -8,7 +10,8 @@ from woodwork.type_system.logical_types import (
     CountryCode,
     Double,
     Integer,
-    Ordinal
+    Ordinal,
+    SubRegionCode
 )
 from woodwork.type_system.type_system import TypeSystem
 
@@ -90,25 +93,82 @@ def test_get_children(default_inference_functions, default_relationships):
     assert set(children) == {CountryCode, Ordinal}
 
 
-def test_get_parent():
-    pass
+def test_get_parent(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships)
+    assert type_sys._get_parent(CountryCode) == Categorical
 
 
-def test_get_depth():
-    pass
+def test_get_depth(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships)
+    type_sys.add_type(Ordinal, parent=CountryCode)
+    assert type_sys._get_depth(Categorical) == 0
+    assert type_sys._get_depth(CountryCode) == 1
+    assert type_sys._get_depth(Ordinal) == 2
 
 
-def test_update_inference_function():
-    pass
+def test_update_inference_function(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships)
+    assert type_sys.inference_functions[Double] is double_func
+    type_sys.update_inference_function(Double, integer_func)
+    assert type_sys.inference_functions[Double] is integer_func
 
 
-def test_update_relationship():
-    pass
+def test_update_relationship_no_children(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships)
+    type_sys.update_relationship(CountryCode, Integer)
+    assert len(type_sys.relationships) == 2
+    assert (Integer, CountryCode) in type_sys.relationships
+    assert type_sys._get_parent(CountryCode) == Integer
 
 
-def test_inference_multiple_matches_same_depth():
-    pass
+def test_update_relationship_with_children(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships)
+    type_sys.add_type(SubRegionCode, parent=CountryCode)
+    type_sys.update_relationship(CountryCode, Integer)
+    assert len(type_sys.relationships) == 3
+    assert (Integer, CountryCode) in type_sys.relationships
+    assert (CountryCode, SubRegionCode) in type_sys.relationships
+    assert type_sys._get_children(CountryCode) == [SubRegionCode]
 
 
-def test_inference_multiple_matches_different_depths():
-    pass
+def test_inference_multiple_matches_same_depth(default_relationships):
+    def always_true(series):
+        return True
+    inference_functions = {
+        Categorical: always_true,
+        Double: always_true,
+        Integer: always_true,
+        CountryCode: always_true,
+    }
+    type_sys = TypeSystem(inference_functions=inference_functions,
+                          relationships=default_relationships)
+    type_sys.update_inference_function(Integer, always_true)
+    type_sys.update_inference_function(CountryCode, always_true)
+    inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
+    # Should match CountryCode - same depth as Integer, but CountryCode parent
+    # (Categorical) is tried and found first
+    assert inferred_type == CountryCode
+
+
+def test_inference_multiple_matches_different_depths(default_relationships):
+    def always_true(series):
+        return True
+    inference_functions = {
+        Categorical: always_true,
+        Double: always_true,
+        Integer: always_true,
+        CountryCode: always_true,
+    }
+    type_sys = TypeSystem(inference_functions=inference_functions,
+                          relationships=default_relationships)
+    type_sys.update_inference_function(Integer, always_true)
+    type_sys.update_inference_function(CountryCode, always_true)
+    type_sys.add_type(SubRegionCode, inference_function=always_true, parent=CountryCode)
+    inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
+    # Should match SubRegionCode as it is the deepest match
+    assert inferred_type == SubRegionCode

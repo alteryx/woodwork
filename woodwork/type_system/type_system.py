@@ -157,6 +157,7 @@ class TypeSystem(object):
             return type_matches
 
         type_matches = get_inference_matches(self.root_types, series)
+
         if len(type_matches) == 0:
             # If no matches, set type to NaturalLanguage
             return NaturalLanguage
@@ -170,8 +171,10 @@ class TypeSystem(object):
             best_match = type_matches[0]
             best_depth = self._get_depth(best_match)
             for logical_type in type_matches[1:]:
-                if self._get_depth(logical_type) > best_depth:
+                ltype_depth = self._get_depth(logical_type)
+                if ltype_depth > best_depth:
                     best_match = logical_type
+                    best_depth = ltype_depth
             return best_match
 
 
