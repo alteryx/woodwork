@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from woodwork.type_system.inference_functions import (
     categorical_func,
@@ -26,6 +27,26 @@ def test_type_system_init(default_inference_functions, default_relationships):
     assert len(type_sys.relationships) == 2
     assert type_sys.relationships[0] == (Double, Integer)
     assert type_sys.relationships[1] == (Categorical, CountryCode)
+
+
+def test_type_system_default_type(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships,
+                          default_type=SubRegionCode)
+    assert type_sys.default_type == SubRegionCode
+    type_sys.update_inference_function(Categorical, None)
+    test_series = pd.Series(['a', 'b', 'c'])
+    assert type_sys.infer_logical_type(test_series) == SubRegionCode
+    assert SubRegionCode in type_sys.registered_types
+
+
+def test_type_system_default_type_remove_error(default_inference_functions, default_relationships):
+    type_sys = TypeSystem(inference_functions=default_inference_functions,
+                          relationships=default_relationships,
+                          default_type=SubRegionCode)
+    error_msg = "Default LogicalType cannot be removed"
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.remove_type(SubRegionCode)
 
 
 def test_type_system_registered_types(default_inference_functions, default_relationships):

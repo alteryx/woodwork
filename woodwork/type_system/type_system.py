@@ -69,10 +69,13 @@ DEFAULT_RELATIONSHIPS = [
 
 
 class TypeSystem(object):
-    def __init__(self, inference_functions=None, relationships=None):
+    def __init__(self, inference_functions=None, relationships=None, default_type=None):
         """Add all default logical types and inference functions"""
         self.inference_functions = inference_functions or {}
         self.relationships = relationships or []
+        self.default_type = default_type or NaturalLanguage
+        if self.default_type not in self.inference_functions:
+            self.inference_functions[self.default_type] = None
 
     def add_type(self, logical_type, inference_function=None, parent=None):
         """Register a new LogicalType"""
@@ -83,6 +86,8 @@ class TypeSystem(object):
     def remove_type(self, logical_type):
         """Remove a logical type completely"""
         # Remove the inference function
+        if logical_type == self.default_type:
+            raise ValueError("Default LogicalType cannot be removed")
         self.inference_functions.pop(logical_type)
 
         # If the removed type had children we need to update them
@@ -160,7 +165,7 @@ class TypeSystem(object):
 
         if len(type_matches) == 0:
             # If no matches, set type to NaturalLanguage
-            return NaturalLanguage
+            return self.default_type
         elif len(type_matches) == 1:
             # If we match only one type, return it
             return type_matches[0]
