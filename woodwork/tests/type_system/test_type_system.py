@@ -48,6 +48,8 @@ def test_type_system_default_type_remove_error(default_inference_functions, defa
     error_msg = "Default LogicalType cannot be removed"
     with pytest.raises(ValueError, match=error_msg):
         type_sys.remove_type(SubRegionCode)
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.remove_type('SubRegionCode')
 
 
 def test_type_system_registered_types(type_sys):
@@ -86,6 +88,10 @@ def test_remove_type_no_children(type_sys):
     assert len(type_sys.inference_functions) == 4
     assert Integer not in type_sys.inference_functions.keys()
     assert len(type_sys.relationships) == 1
+    type_sys.remove_type('CountryCode')
+    assert len(type_sys.inference_functions) == 3
+    assert CountryCode not in type_sys.inference_functions.keys()
+    assert len(type_sys.relationships) == 0
 
 
 def test_remove_type_with_children(type_sys):
@@ -121,10 +127,19 @@ def test_update_inference_function(type_sys):
     assert type_sys.inference_functions[Double] is double_func
     type_sys.update_inference_function(Double, integer_func)
     assert type_sys.inference_functions[Double] is integer_func
+    type_sys.update_inference_function('CountryCode', integer_func)
+    assert type_sys.inference_functions[CountryCode] is integer_func
 
 
 def test_update_relationship_no_children(type_sys):
     type_sys.update_relationship(CountryCode, Integer)
+    assert len(type_sys.relationships) == 2
+    assert (Integer, CountryCode) in type_sys.relationships
+    assert type_sys._get_parent(CountryCode) == Integer
+
+
+def test_update_relationship_string_input(type_sys):
+    type_sys.update_relationship('CountryCode', 'Integer')
     assert len(type_sys.relationships) == 2
     assert (Integer, CountryCode) in type_sys.relationships
     assert type_sys._get_parent(CountryCode) == Integer

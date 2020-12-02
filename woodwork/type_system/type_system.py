@@ -26,6 +26,7 @@ from .logical_types import (
     Timedelta,
     ZIPCode
 )
+from .utils import str_to_logical_type
 
 from woodwork.utils import import_or_none
 
@@ -79,12 +80,16 @@ class TypeSystem(object):
 
     def add_type(self, logical_type, inference_function=None, parent=None):
         """Register a new LogicalType"""
+        if isinstance(parent, str):
+            parent = str_to_logical_type(parent)
         self.update_inference_function(logical_type, inference_function)
         if parent:
             self.update_relationship(logical_type, parent)
 
     def remove_type(self, logical_type):
         """Remove a logical type completely"""
+        if isinstance(logical_type, str):
+            logical_type = str_to_logical_type(logical_type)
         # Remove the inference function
         if logical_type == self.default_type:
             raise ValueError("Default LogicalType cannot be removed")
@@ -102,10 +107,16 @@ class TypeSystem(object):
 
     def update_inference_function(self, logical_type, inference_function):
         """Update the inference function for the specified LogicalType"""
+        if isinstance(logical_type, str):
+            logical_type = str_to_logical_type(logical_type)
         self.inference_functions[logical_type] = inference_function
 
     def update_relationship(self, logical_type, parent):
         """Add or update a relationship."""
+        if isinstance(logical_type, str):
+            logical_type = str_to_logical_type(logical_type)
+        if isinstance(parent, str):
+            parent = str_to_logical_type(parent)
         # If the logical_type already has a parent, remove that from the list
         self.relationships = [rel for rel in self.relationships if rel[1] != logical_type]
         # Add the new/updated relationship
