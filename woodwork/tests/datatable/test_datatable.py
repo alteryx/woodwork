@@ -1462,7 +1462,7 @@ def test_setitem_new_column(sample_df):
         dtype = 'Int64'
 
     new_col = DataColumn(new_series, use_standard_tags=False)
-    assert new_col.name == None
+    assert new_col.name is None
 
     dt['test_col2'] = new_col
     updated_df = dt.to_dataframe()
