@@ -241,29 +241,19 @@ def test_is_s3():
 
 
 def test_reformat_to_latlong_errors():
-    error = re.escape('LatLongs must either be a tuple, a list, or a string representation of a tuple. {1, 2, 3} does not fit the criteria.')
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong({1, 2, 3})
-
-    error = re.escape('LatLongs must either be a tuple, a list, or a string representation of a tuple. {1, 2, 3} does not fit the criteria.')
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong('{1, 2, 3}')
-
-    error = re.escape('LatLongs must either be a tuple, a list, or a string representation of a tuple. This is text does not fit the criteria.')
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong("This is text")
+    for latlong in [{1, 2, 3}, '{1, 2, 3}', 'This is text']:
+        error = (f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
+        with pytest.raises(ValueError, match=error):
+            _reformat_to_latlong(latlong)
 
     error = re.escape("LatLongs must either be a tuple, a list, or a string representation of a tuple. (1,2) does not fit the criteria.")
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong("'(1,2)'")
 
-    error = re.escape('LatLong values must have exactly two values. (1, 2, 3) does not have two values.')
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong((1, 2, 3))
-
-    error = re.escape("LatLong values must have exactly two values. (1, 2, 3) does not have two values.")
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong('(1, 2, 3)')
+    for latlong in [(1, 2, 3), '(1, 2, 3)']:
+        error = re.escape("LatLong values must have exactly two values. (1, 2, 3) does not have two values.")
+        with pytest.raises(ValueError, match=error):
+            _reformat_to_latlong(latlong)
 
     error = re.escape("Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by 41deg52\'54\" N cannot be converted to a float.")
     with pytest.raises(ValueError, match=error):
