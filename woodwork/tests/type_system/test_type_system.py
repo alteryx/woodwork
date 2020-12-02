@@ -11,6 +11,7 @@ from woodwork.type_system.logical_types import (
     CountryCode,
     Double,
     Integer,
+    NaturalLanguage,
     Ordinal,
     SubRegionCode
 )
@@ -20,7 +21,7 @@ from woodwork.type_system.type_system import TypeSystem
 def test_type_system_init(default_inference_functions, default_relationships):
     type_sys = TypeSystem(inference_functions=default_inference_functions,
                           relationships=default_relationships)
-    assert len(type_sys.inference_functions) == 4
+    assert len(type_sys.inference_functions) == 5
     assert type_sys.inference_functions[Double] is double_func
     assert type_sys.inference_functions[Integer] is integer_func
     assert type_sys.inference_functions[Categorical] is categorical_func
@@ -49,18 +50,14 @@ def test_type_system_default_type_remove_error(default_inference_functions, defa
         type_sys.remove_type(SubRegionCode)
 
 
-def test_type_system_registered_types(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_type_system_registered_types(type_sys):
     assert isinstance(type_sys.registered_types, list)
-    assert set(type_sys.registered_types) == {Double, Integer, Categorical, CountryCode}
+    assert set(type_sys.registered_types) == {Double, Integer, Categorical, CountryCode, NaturalLanguage}
 
 
-def test_type_system_root_types(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_type_system_root_types(type_sys):
     assert isinstance(type_sys.root_types, list)
-    assert set(type_sys.root_types) == {Double, Categorical}
+    assert set(type_sys.root_types) == {Double, Categorical, NaturalLanguage}
 
 
 def test_add_type_without_parent():
@@ -84,29 +81,23 @@ def test_add_type_with_parent():
     assert type_sys.relationships[0] == (Double, Integer)
 
 
-def test_remove_type_no_children(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_remove_type_no_children(type_sys):
     type_sys.remove_type(Integer)
-    assert len(type_sys.inference_functions) == 3
+    assert len(type_sys.inference_functions) == 4
     assert Integer not in type_sys.inference_functions.keys()
     assert len(type_sys.relationships) == 1
 
 
-def test_remove_type_with_children(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_remove_type_with_children(type_sys):
     type_sys.remove_type(Double)
-    assert len(type_sys.inference_functions) == 3
+    assert len(type_sys.inference_functions) == 4
     assert Double not in type_sys.inference_functions.keys()
     assert len(type_sys.relationships) == 2
     assert (None, Integer) in type_sys.relationships
     assert Integer in type_sys.root_types
 
 
-def test_get_children(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_get_children(type_sys):
     type_sys.add_type(Ordinal, parent=Categorical)
     children = type_sys._get_children(Categorical)
     assert isinstance(children, list)
@@ -114,41 +105,32 @@ def test_get_children(default_inference_functions, default_relationships):
     assert set(children) == {CountryCode, Ordinal}
 
 
-def test_get_parent(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_get_parent(type_sys):
     assert type_sys._get_parent(CountryCode) == Categorical
+    assert type_sys._get_parent(Integer) == Double
 
 
-def test_get_depth(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_get_depth(type_sys):
     type_sys.add_type(Ordinal, parent=CountryCode)
     assert type_sys._get_depth(Categorical) == 0
     assert type_sys._get_depth(CountryCode) == 1
     assert type_sys._get_depth(Ordinal) == 2
 
 
-def test_update_inference_function(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_update_inference_function(type_sys):
     assert type_sys.inference_functions[Double] is double_func
     type_sys.update_inference_function(Double, integer_func)
     assert type_sys.inference_functions[Double] is integer_func
 
 
-def test_update_relationship_no_children(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_update_relationship_no_children(type_sys):
     type_sys.update_relationship(CountryCode, Integer)
     assert len(type_sys.relationships) == 2
     assert (Integer, CountryCode) in type_sys.relationships
     assert type_sys._get_parent(CountryCode) == Integer
 
 
-def test_update_relationship_with_children(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+def test_update_relationship_with_children(type_sys):
     type_sys.add_type(SubRegionCode, parent=CountryCode)
     type_sys.update_relationship(CountryCode, Integer)
     assert len(type_sys.relationships) == 3
@@ -167,7 +149,8 @@ def test_inference_multiple_matches_same_depth(default_relationships):
         CountryCode: always_true,
     }
     type_sys = TypeSystem(inference_functions=inference_functions,
-                          relationships=default_relationships)
+                          relationships=default_relationships,
+                          default_type=NaturalLanguage)
     type_sys.update_inference_function(Integer, always_true)
     type_sys.update_inference_function(CountryCode, always_true)
     inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
@@ -186,7 +169,8 @@ def test_inference_multiple_matches_different_depths(default_relationships):
         CountryCode: always_true,
     }
     type_sys = TypeSystem(inference_functions=inference_functions,
-                          relationships=default_relationships)
+                          relationships=default_relationships,
+                          default_type=NaturalLanguage)
     type_sys.update_inference_function(Integer, always_true)
     type_sys.update_inference_function(CountryCode, always_true)
     type_sys.add_type(SubRegionCode, inference_function=always_true, parent=CountryCode)

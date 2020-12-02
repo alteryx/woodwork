@@ -12,8 +12,10 @@ from woodwork.type_system.logical_types import (
     Categorical,
     CountryCode,
     Double,
-    Integer
+    Integer,
+    NaturalLanguage
 )
+from woodwork.type_system.type_system import TypeSystem
 
 
 def pd_to_dask(series):
@@ -254,3 +256,10 @@ def default_inference_functions():
 @pytest.fixture
 def default_relationships():
     return [(Double, Integer), (Categorical, CountryCode)]
+
+
+@pytest.fixture
+def type_sys(default_inference_functions, default_relationships):
+    return TypeSystem(inference_functions=default_inference_functions,
+                      relationships=default_relationships,
+                      default_type=NaturalLanguage)
