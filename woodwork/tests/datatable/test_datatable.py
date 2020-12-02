@@ -342,7 +342,45 @@ def test_datatable_types(sample_df):
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
-        assert isinstance(tag, set)
+        assert isinstance(tag, str)
+
+
+def test_datatable_repr(sample_df):
+    dt = DataTable(sample_df)
+
+    dt_repr = repr(dt)
+    assert isinstance(dt_repr, str)
+
+    typing_info_df = dt._get_typing_info(include_names_col=True)
+
+    assert isinstance(typing_info_df, pd.DataFrame)
+    assert 'Data Column' in typing_info_df.columns
+    assert 'Physical Type' in typing_info_df.columns
+    assert 'Logical Type' in typing_info_df.columns
+    assert 'Semantic Tag(s)' in typing_info_df.columns
+    assert typing_info_df.shape[1] == 4
+    assert typing_info_df.iloc[:, 0].name == 'Data Column'
+
+    assert len(typing_info_df.index) == len(sample_df.columns)
+    assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean,
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(typing_info_df['Logical Type'])
+    for tag in typing_info_df['Semantic Tag(s)']:
+        assert isinstance(tag, str)
+
+    correct_column_names = pd.Series(list(sample_df.columns),
+                                     index=list(sample_df.columns))
+    assert typing_info_df['Data Column'].equals(correct_column_names)
 
 
 def test_datatable_ltypes(sample_df):
