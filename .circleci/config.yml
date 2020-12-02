@@ -158,7 +158,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/woodwork/pull/}\`"
+      - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/alteryx/woodwork/pull/}\`"
 
 workflows:
   version: 2
@@ -180,7 +180,7 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-              optional_libraries: ["minimal", "optional"]              
+              optional_libraries: ["minimal", "optional"]
           name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
             - << matrix.image_tag >> install woodwork << matrix.optional_libraries >>

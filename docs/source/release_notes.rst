@@ -7,11 +7,12 @@ Release Notes
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
     * Fixes
     * Changes
+        * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.0.6 November 30, 2020**
     * Enhancements

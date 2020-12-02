@@ -5,7 +5,7 @@
 Before starting the release process, verify the following:
 
 * All work required for this release has been completed and the team is ready to release.
-* [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/FeatureLabs/woodwork?branch=main).
+* [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/alteryx/woodwork?branch=main).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-datatables/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/) looks correct, and the [release notes](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 * Get agreement on the version number to use for the release.
@@ -50,7 +50,7 @@ If you'd like to create a development release, which won't be deployed to pypi a
     .. Thanks to the following people for contributing to this release:
     ```
 
-An example can be found here: <https://github.com/FeatureLabs/woodwork/pull/158>
+An example can be found here: <https://github.com/alteryx/woodwork/pull/158>
 
 Checklist before merging:
 
@@ -63,7 +63,7 @@ After merging, verify again that ReadtheDocs "latest" is correct.
 
 ## 2. Create Github Release
 
-After the release pull request has been merged into the `main` branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/woodwork/releases/tag/v0.0.2)
+After the release pull request has been merged into the `main` branch, it is time draft the github release. [Example release](https://github.com/alteryx/woodwork/releases/tag/v0.0.2)
 
 * The target should be the `main` branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
