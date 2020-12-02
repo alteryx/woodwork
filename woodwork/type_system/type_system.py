@@ -71,7 +71,20 @@ DEFAULT_RELATIONSHIPS = [
 
 class TypeSystem(object):
     def __init__(self, inference_functions=None, relationships=None, default_type=None):
-        """Add all default logical types and inference functions"""
+        """Create a new TypeSystem object. LogicalTypes that are present in the keys of
+        the inference_functions dictionary will be considered registered LogicalTypes.
+        
+        Args:
+            inference_functions (dict[LogicalType->func], optional): Dictionary mapping LogicalTypes
+                to their corresponding type inference functions. If None, only the default LogicalType
+                will be registered without an inference function.
+            relationships (list, optional): List of two-tuples specifying parent-child relationships
+                between logical types. The first element should be the parent LogicalType. The second
+                element should be the child LogicalType. If not specified, will default to an empty list
+                indicating all types should be considered root types with no children.
+            default_type (LogicalType, optional): The default LogicalType to use if no inference matches are
+                found. If not specified, will default to the built-in NaturalLanguage LogicalType.
+        """
         self.inference_functions = inference_functions or {}
         self.relationships = relationships or []
         self.default_type = default_type or NaturalLanguage
@@ -79,7 +92,16 @@ class TypeSystem(object):
             self.inference_functions[self.default_type] = None
 
     def add_type(self, logical_type, inference_function=None, parent=None):
-        """Register a new LogicalType"""
+        """Add a new LogicalType to the TypeSystem, optionally specifying the corresponding inference function and a
+        parent type.
+        
+        Args:
+            logical_type (LogicalType): The new LogicalType to add.
+            inference_function (func, optional): The inference function to use for inferring the given LogicalType.
+                Defaults to None. If not specified, this LogicalType will never be inferred.
+            parent (LogicalType, optional): The parent LogicalType, if applicable. Defaults to None. If not specified,
+                this type will be considered a root type with no parent.
+        """
         if isinstance(parent, str):
             parent = str_to_logical_type(parent)
         self.update_inference_function(logical_type, inference_function)
@@ -87,7 +109,12 @@ class TypeSystem(object):
             self.update_relationship(logical_type, parent)
 
     def remove_type(self, logical_type):
-        """Remove a logical type completely"""
+        """Remove a logical type from the TypeSystem. Any children of the remove type will have their parent
+        set to the parent of the removed type.
+        
+        Args:
+            logical_type (LogicalType): The new LogicalType to remove.
+        """
         if isinstance(logical_type, str):
             logical_type = str_to_logical_type(logical_type)
         # Remove the inference function
@@ -106,13 +133,26 @@ class TypeSystem(object):
         self.relationships = [rel for rel in self.relationships if logical_type not in rel]
 
     def update_inference_function(self, logical_type, inference_function):
-        """Update the inference function for the specified LogicalType"""
+        """Update the inference function for the specified LogicalType.
+        
+        Args:
+            logical_type (LogicalType): The LogicalType for which to update the inference function.
+            inference_function (func): The new inference function to use. Can be set to None to skip
+                type inference for the specified LogicalType.
+        """
         if isinstance(logical_type, str):
             logical_type = str_to_logical_type(logical_type)
         self.inference_functions[logical_type] = inference_function
 
     def update_relationship(self, logical_type, parent):
-        """Add or update a relationship."""
+        """Add or update a relationship. If the specified LogicalType exists in the relationship graph,
+        its parent will be updated. If the specified LogicalType does not exist in relationships, the
+        relationship will be added.
+
+        Args:
+            logical_type (LogicalType): The LogicalType for which to update the parent value.
+            parent (LogicalType): The new parent to set for the specified LogicalType.
+        """
         if isinstance(logical_type, str):
             logical_type = str_to_logical_type(logical_type)
         if isinstance(parent, str):
@@ -124,12 +164,12 @@ class TypeSystem(object):
 
     @property
     def registered_types(self):
-        """List of all registered types"""
+        """Returns a list of all registered types"""
         return list(self.inference_functions.keys())
 
     @property
     def root_types(self):
-        """List of all types that do not have a parent type"""
+        """Returns a list of all registered types that do not have a parent type"""
         return [ltype for ltype in self.registered_types if self._get_parent(ltype) is None]
 
     def _get_children(self, logical_type):
@@ -137,7 +177,7 @@ class TypeSystem(object):
         return [rel[1] for rel in self.relationships if rel[0] == logical_type]
 
     def _get_parent(self, logical_type):
-        """Get parent for the given logical type"""
+        """Get the parent type for the given logical type"""
         for relationship in self.relationships:
             if relationship[1] == logical_type:
                 return relationship[0]
@@ -153,7 +193,11 @@ class TypeSystem(object):
         return depth
 
     def infer_logical_type(self, series):
-        """Infer the logical type for the given series"""
+        """Infer the logical type for the given series
+        
+        Args:
+            series (pandas.Series): The series for which to infer the LogicalType.
+        """
 
         # Bring Dask or Koalas data into memory for inference
         if dd and isinstance(series, dd.Series):
