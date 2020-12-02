@@ -5,13 +5,14 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Update DataColumn name when using setitem on column with no name (:pr:`426`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`tamargrey`
 
 **v0.0.6 November 30, 2020**
     * Enhancements

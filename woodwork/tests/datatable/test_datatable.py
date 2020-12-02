@@ -1462,16 +1462,20 @@ def test_setitem_new_column(sample_df):
         dtype = 'Int64'
 
     new_col = DataColumn(new_series, use_standard_tags=False)
+    assert new_col.name is None
+
     dt['test_col2'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col2' in dt.columns
     assert dt['test_col2'].logical_type == Integer
     assert dt['test_col2'].semantic_tags == set()
+    assert dt['test_col2'].name == 'test_col2'
+    assert dt['test_col2']._series.name == 'test_col2'
     assert 'test_col2' in updated_df.columns
     assert updated_df['test_col2'].dtype == dtype
 
     # Standard tags and no logical type
-    new_series = pd.Series(['new', 'column', 'inserted'])
+    new_series = pd.Series(['new', 'column', 'inserted'], name='test_col')
     if ks and isinstance(sample_df, ks.DataFrame):
         dtype = 'object'
         new_series = ks.Series(new_series)
@@ -1483,6 +1487,8 @@ def test_setitem_new_column(sample_df):
     assert 'test_col' in dt.columns
     assert dt['test_col'].logical_type == Categorical
     assert dt['test_col'].semantic_tags == {'category'}
+    assert dt['test_col'].name == 'test_col'
+    assert dt['test_col']._series.name == 'test_col'
     assert 'test_col' in updated_df.columns
     assert updated_df['test_col'].dtype == dtype
 
@@ -1499,6 +1505,8 @@ def test_setitem_new_column(sample_df):
     assert 'test_col3' in dt.columns
     assert dt['test_col3'].logical_type == Double
     assert dt['test_col3'].semantic_tags == {'test_tag'}
+    assert dt['test_col3'].name == 'test_col3'
+    assert dt['test_col3']._series.name == 'test_col3'
     assert 'test_col3' in updated_df.columns
     assert updated_df['test_col3'].dtype == 'float'
 
