@@ -6,13 +6,14 @@ Release Notes
     * Enhancements
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
     * Fixes
+        * Update DataColumn name when using setitem on column with no name (:pr:`426`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.6 November 30, 2020**
     * Enhancements
