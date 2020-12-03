@@ -250,6 +250,7 @@ def default_inference_functions():
         Integer: integer_func,
         Categorical: categorical_func,
         CountryCode: None,
+        NaturalLanguage: None,
     }
 
 

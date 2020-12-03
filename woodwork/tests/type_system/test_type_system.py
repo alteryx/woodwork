@@ -232,3 +232,14 @@ def test_inference_multiple_matches_different_depths(default_relationships):
     inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
     # Should match SubRegionCode as it is the deepest match
     assert inferred_type == SubRegionCode
+
+
+def test_reset_defaults(type_sys, default_inference_functions, default_relationships):
+    type_sys.update_inference_function('Integer', None)
+    type_sys.update_relationship(CountryCode, parent=NaturalLanguage)
+    type_sys.default_type = Categorical
+    type_sys.reset_defaults()
+
+    assert type_sys.inference_functions == default_inference_functions
+    assert type_sys.relationships == default_relationships
+    assert type_sys.default_type == NaturalLanguage
