@@ -19,6 +19,7 @@ from .logical_types import (
     Integer,
     IPAddress,
     LatLong,
+    LogicalType,
     NaturalLanguage,
     Ordinal,
     PhoneNumber,
@@ -104,6 +105,9 @@ class TypeSystem(object):
         """
         if isinstance(parent, str):
             parent = str_to_logical_type(parent)
+        self._validate_type_input(logical_type=logical_type,
+                                  inference_function=inference_function,
+                                  parent=parent)
         self.update_inference_function(logical_type, inference_function)
         if parent:
             self.update_relationship(logical_type, parent)
@@ -117,6 +121,7 @@ class TypeSystem(object):
         """
         if isinstance(logical_type, str):
             logical_type = str_to_logical_type(logical_type)
+        self._validate_type_input(logical_type=logical_type)
         # Remove the inference function
         if logical_type == self.default_type:
             raise ValueError("Default LogicalType cannot be removed")
@@ -142,6 +147,7 @@ class TypeSystem(object):
         """
         if isinstance(logical_type, str):
             logical_type = str_to_logical_type(logical_type)
+        self._validate_type_input(logical_type=logical_type, inference_function=inference_function)
         self.inference_functions[logical_type] = inference_function
 
     def update_relationship(self, logical_type, parent):
@@ -157,6 +163,7 @@ class TypeSystem(object):
             logical_type = str_to_logical_type(logical_type)
         if isinstance(parent, str):
             parent = str_to_logical_type(parent)
+        self._validate_type_input(logical_type=logical_type, parent=parent)
         # If the logical_type already has a parent, remove that from the list
         self.relationships = [rel for rel in self.relationships if rel[1] != logical_type]
         # Add the new/updated relationship
@@ -191,6 +198,16 @@ class TypeSystem(object):
             depth = depth + 1
             parent = self._get_parent(parent)
         return depth
+
+    def _validate_type_input(self, logical_type=None, inference_function=None, parent=None):
+        if logical_type and logical_type not in LogicalType.__subclasses__():
+            raise TypeError('logical_type must be a valid LogicalType')
+
+        if inference_function and not callable(inference_function):
+            raise TypeError('inference_function must be a function')
+
+        if parent and parent not in self.registered_types:
+            raise ValueError('parent must be a valid LogicalType')
 
     def infer_logical_type(self, series):
         """Infer the logical type for the given series

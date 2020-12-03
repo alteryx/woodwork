@@ -30,6 +30,46 @@ def test_type_system_init(default_inference_functions, default_relationships):
     assert type_sys.relationships[1] == (Categorical, CountryCode)
 
 
+def test_add_type_validation_errors(type_sys):
+    error_msg = 'logical_type must be a valid LogicalType'
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.add_type(logical_type=1)
+
+    error_msg = 'inference_function must be a function'
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.add_type(logical_type=Ordinal, inference_function='not a function')
+
+    error_msg = 'parent must be a valid LogicalType'
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.add_type(logical_type=Ordinal, parent=1)
+
+
+def test_remove_type_validation_errors(type_sys):
+    error_msg = 'logical_type must be a valid LogicalType'
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.add_type(logical_type=1)
+
+
+def test_update_inference_function_validation_errors(type_sys):
+    error_msg = 'logical_type must be a valid LogicalType'
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.update_inference_function(logical_type=1, inference_function=None)
+
+    error_msg = 'inference_function must be a function'
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.update_inference_function(logical_type=Ordinal, inference_function='not a function')
+
+
+def test_update_relationship_validation_errors(type_sys):
+    error_msg = 'logical_type must be a valid LogicalType'
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.update_relationship(logical_type=1, parent=Ordinal)
+
+    error_msg = 'parent must be a valid LogicalType'
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.update_relationship(logical_type=Ordinal, parent=1)
+
+
 def test_type_system_default_type(default_inference_functions, default_relationships):
     type_sys = TypeSystem(inference_functions=default_inference_functions,
                           relationships=default_relationships,
