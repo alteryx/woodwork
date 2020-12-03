@@ -105,7 +105,8 @@ def list_logical_types():
           'type_string': ltype.type_string,
           'description': ltype.__doc__,
           'physical_type': ltype.pandas_dtype,
-          'standard_tags': ltype.standard_tags}
+          'standard_tags': ltype.standard_tags,
+          'parent_type': ww.type_sys._get_parent(ltype)}
             for ltype in ww.type_sys.registered_types]
     )
 

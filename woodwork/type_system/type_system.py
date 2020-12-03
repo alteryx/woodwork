@@ -223,7 +223,12 @@ class TypeSystem(object):
             series = series.head(100000).to_pandas()
 
         def get_inference_matches(types_to_check, series, type_matches=[]):
-            check_next = []
+            # Since NaturalLangue isn't inferred by default, make sure to check
+            # any children of NaturalLanguage, otherwise they never get evaluated
+            if NaturalLanguage in types_to_check:
+                check_next = self._get_children(NaturalLanguage)
+            else:
+                check_next = []
             for logical_type in types_to_check:
                 inference_func = self.inference_functions.get(logical_type)
                 if inference_func and inference_func(series):
