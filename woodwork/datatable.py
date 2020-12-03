@@ -170,17 +170,16 @@ class DataTable(object):
     def __repr__(self):
         '''A representation of a DataTable containing typing information and a preview of the data.
         '''
-        if len(self._dataframe.index) == 0 and len(self._dataframe.columns) == 0:
-            return "Empty DataTable"
+        return repr(self._get_repr_dataframe())
 
-        typing_info = pd.MultiIndex.from_frame(self._get_typing_info(include_names_col=True))
+    def _repr_html_(self):
+        '''An HTML representation of a DataTable for display in Jupyter Notebooks.
+        '''
+        dt_repr = self._get_repr_dataframe()
+        if isinstance(dt_repr, str):
+            return dt_repr
 
-        data = self._dataframe.head(5)
-        if not isinstance(data, pd.DataFrame):
-            data = data.to_pandas()
-        data.columns = typing_info
-
-        return repr(data)
+        return dt_repr.to_html()
 
     @property
     def types(self):
@@ -213,6 +212,19 @@ class DataTable(object):
                                     dtype="object")
         df.index.name = index
         return df
+
+    def _get_repr_dataframe(self):
+        if len(self._dataframe.index) == 0 and len(self._dataframe.columns) == 0:
+            return "Empty DataTable"
+
+        typing_info = pd.MultiIndex.from_frame(self._get_typing_info(include_names_col=True))
+
+        data = self._dataframe.head(5)
+        if not isinstance(data, pd.DataFrame):
+            data = data.to_pandas()
+        data.columns = typing_info
+
+        return data
 
     @property
     def ltypes(self):
