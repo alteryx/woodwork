@@ -345,21 +345,7 @@ def test_datatable_types(sample_df):
         assert isinstance(tag, str)
 
 
-def test_empty_datatable_repr(empty_df):
-    dt = DataTable(empty_df)
-    assert repr(dt) == 'Empty DataTable'
-
-
-def test_datatable_repr(small_df):
-    dt = DataTable(small_df)
-
-    dt_repr = repr(dt)
-    expected_repr = 'Data Column     sample_datetime_series\nPhysical Type           datetime64[ns]\nLogical Type                  Datetime\nSemantic Tag(s)                     []\n0                           2020-09-01\n1                           2020-09-01\n2                           2020-09-01\n3                           2020-09-01'
-
-    assert dt_repr == expected_repr
-
-
-def test_datatable_typing_info(sample_df):
+def test_datatable_typing_info_with_col_names(sample_df):
     dt = DataTable(sample_df)
     typing_info_df = dt._get_typing_info(include_names_col=True)
 
@@ -391,6 +377,45 @@ def test_datatable_typing_info(sample_df):
     correct_column_names = pd.Series(list(sample_df.columns),
                                      index=list(sample_df.columns))
     assert typing_info_df['Data Column'].equals(correct_column_names)
+
+
+def test_datatable_repr_df(sample_df):
+    dt = DataTable(sample_df, index='id', logical_types={'email': 'EmailAddress'}, semantic_tags={'signup_date': 'birthdat'})
+
+    repr_df = dt._get_repr_dataframe()
+    assert isinstance(repr_df, pd.DataFrame)
+    assert isinstance(repr_df.columns, pd.MultiIndex)
+
+    for i in range(len(repr_df.columns)):
+        name, dtype, logical_type, tags = repr_df.columns[i]
+        dc = dt[name]
+
+        # confirm the order is the same
+        assert dt._dataframe.columns[i] == name
+
+        # confirm the rest of the attributes match up
+        assert dc.dtype == dtype
+        assert dc.logical_type == logical_type
+        assert str(list(dc.semantic_tags)) == tags
+
+
+def test_datatable_repr(small_df):
+    dt = DataTable(small_df)
+
+    dt_repr = repr(dt)
+    expected_repr = 'Data Column     sample_datetime_series\nPhysical Type           datetime64[ns]\nLogical Type                  Datetime\nSemantic Tag(s)                     []\n0                           2020-09-01\n1                           2020-09-01\n2                           2020-09-01\n3                           2020-09-01'
+    assert dt_repr == expected_repr
+
+    dt_html_repr = dt._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr>\n      <th>Data Column</th>\n      <th>sample_datetime_series</th>\n    </tr>\n    <tr>\n      <th>Physical Type</th>\n      <th>datetime64[ns]</th>\n    </tr>\n    <tr>\n      <th>Logical Type</th>\n      <th>Datetime</th>\n    </tr>\n    <tr>\n      <th>Semantic Tag(s)</th>\n      <th>[]</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>2020-09-01</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>2020-09-01</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>2020-09-01</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>2020-09-01</td>\n    </tr>\n  </tbody>\n</table>'
+    assert dt_html_repr == expected_repr
+
+
+def test_datatable_repr_empty(empty_df):
+    dt = DataTable(empty_df)
+    assert repr(dt) == 'Empty DataTable'
+
+    assert dt._repr_html_() == 'Empty DataTable'
 
 
 def test_datatable_ltypes(sample_df):

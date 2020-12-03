@@ -168,12 +168,17 @@ class DataTable(object):
         return self._dataframe.__len__()
 
     def __repr__(self):
-        '''A representation of a DataTable containing typing information and a preview of the data.
+        '''A string representation of a DataTable containing typing information and a preview of the data.
         '''
-        return repr(self._get_repr_dataframe())
+        dt_repr = self._get_repr_dataframe()
+        if isinstance(dt_repr, str):
+            return dt_repr
+
+        return repr(dt_repr)
 
     def _repr_html_(self):
-        '''An HTML representation of a DataTable for display in Jupyter Notebooks.
+        '''An HTML representation of a DataTable for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data.
         '''
         dt_repr = self._get_repr_dataframe()
         if isinstance(dt_repr, str):
