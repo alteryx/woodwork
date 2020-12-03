@@ -379,15 +379,19 @@ def test_datatable_typing_info_with_col_names(sample_df):
     assert typing_info_df['Data Column'].equals(correct_column_names)
 
 
-def test_datatable_repr_df(sample_df):
+def test_datatable_head(sample_df):
     dt = DataTable(sample_df, index='id', logical_types={'email': 'EmailAddress'}, semantic_tags={'signup_date': 'birthdat'})
 
-    repr_df = dt._get_repr_dataframe()
-    assert isinstance(repr_df, pd.DataFrame)
-    assert isinstance(repr_df.columns, pd.MultiIndex)
+    head = dt.head()
+    assert isinstance(head, pd.DataFrame)
+    assert isinstance(head.columns, pd.MultiIndex)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        assert len(head) == 2
+    else:
+        assert len(head) == 4
 
-    for i in range(len(repr_df.columns)):
-        name, dtype, logical_type, tags = repr_df.columns[i]
+    for i in range(len(head.columns)):
+        name, dtype, logical_type, tags = head.columns[i]
         dc = dt[name]
 
         # confirm the order is the same
@@ -398,16 +402,20 @@ def test_datatable_repr_df(sample_df):
         assert dc.logical_type == logical_type
         assert str(list(dc.semantic_tags)) == tags
 
+    shorter_head = dt.head(1)
+    assert len(shorter_head) == 1
+    assert head.columns.equals(shorter_head.columns)
+
 
 def test_datatable_repr(small_df):
     dt = DataTable(small_df)
 
     dt_repr = repr(dt)
-    expected_repr = 'Data Column     sample_datetime_series\nPhysical Type           datetime64[ns]\nLogical Type                  Datetime\nSemantic Tag(s)                     []\n0                           2020-09-01\n1                           2020-09-01\n2                           2020-09-01\n3                           2020-09-01'
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nData Column                                                        \nsample_datetime_series  datetime64[ns]     Datetime              []'
     assert dt_repr == expected_repr
 
     dt_html_repr = dt._repr_html_()
-    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr>\n      <th>Data Column</th>\n      <th>sample_datetime_series</th>\n    </tr>\n    <tr>\n      <th>Physical Type</th>\n      <th>datetime64[ns]</th>\n    </tr>\n    <tr>\n      <th>Logical Type</th>\n      <th>Datetime</th>\n    </tr>\n    <tr>\n      <th>Semantic Tag(s)</th>\n      <th>[]</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>2020-09-01</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>2020-09-01</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>2020-09-01</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>2020-09-01</td>\n    </tr>\n  </tbody>\n</table>'
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Data Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
     assert dt_html_repr == expected_repr
 
 

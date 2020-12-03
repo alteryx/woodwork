@@ -170,7 +170,7 @@ class DataTable(object):
     def __repr__(self):
         '''A string representation of a DataTable containing typing information and a preview of the data.
         '''
-        dt_repr = self._get_repr_dataframe()
+        dt_repr = self._get_typing_info()
         if isinstance(dt_repr, str):
             return dt_repr
 
@@ -180,7 +180,7 @@ class DataTable(object):
         '''An HTML representation of a DataTable for IPython.display in Jupyter Notebooks
         containing typing information and a preview of the data.
         '''
-        dt_repr = self._get_repr_dataframe()
+        dt_repr = self._get_typing_info()
         if isinstance(dt_repr, str):
             return dt_repr
 
@@ -192,11 +192,39 @@ class DataTable(object):
         tags for the table"""
         return self._get_typing_info()
 
+    def head(self, n=5):
+        '''Shows the first n rows of the DataTable along with typing information.
+
+        Note:
+            This will bring data into memory for Dask or Koalas DataTables.
+
+        Args:
+            n (int): number of rows to return. Defaults to 5.
+
+        Returns:
+            DataFrame with the top n rows where the column headers contain
+        each DataColumn's typing information.
+        '''
+
+        typing_info = self._get_typing_info(include_names_col=True)
+        if isinstance(typing_info, str):
+            return typing_info
+
+        data = self._dataframe.head(n)
+        if not isinstance(data, pd.DataFrame):
+            data = data.to_pandas()
+        data.columns = pd.MultiIndex.from_frame(typing_info)
+
+        return data
+
     def _get_typing_info(self, include_names_col=False):
         '''Creates a DataFrame that contains the typing information for a DataTable,
         optionally including the Data Column names as a column in addition to being
         the index.
         '''
+        if len(self._dataframe.index) == 0 and len(self._dataframe.columns) == 0:
+            return "Empty DataTable"
+
         typing_info = {}
         # Access column names from underlying data to maintain column order
         for col_name in self._dataframe.columns:
@@ -217,19 +245,6 @@ class DataTable(object):
                                     dtype="object")
         df.index.name = index
         return df
-
-    def _get_repr_dataframe(self):
-        if len(self._dataframe.index) == 0 and len(self._dataframe.columns) == 0:
-            return "Empty DataTable"
-
-        typing_info = pd.MultiIndex.from_frame(self._get_typing_info(include_names_col=True))
-
-        data = self._dataframe.head(5)
-        if not isinstance(data, pd.DataFrame):
-            data = data.to_pandas()
-        data.columns = typing_info
-
-        return data
 
     @property
     def ltypes(self):
