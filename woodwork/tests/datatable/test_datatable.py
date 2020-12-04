@@ -1638,6 +1638,23 @@ def test_setitem_overwrite_column(sample_df):
     assert original_col.to_series() is not dt['full_name'].to_series()
 
 
+def test_setitem_with_differnt_types(sample_df_pandas):
+    dt = DataTable(sample_df_pandas)
+
+    dt['np_array_col'] = DataColumn(np.array([1, 3, 4, 5]))
+    assert 'np_array_col' in dt.columns
+    assert 'np_array_col' in dt._dataframe.columns
+    assert dt['np_array_col'].name == 'np_array_col'
+    assert isinstance(dt['np_array_col']._series, pd.Series)
+
+    dt['extension_col'] = DataColumn(pd.Categorical(['a', 'b', 'c', 'd']), logical_type='ZipCode', name='extension_col')
+    assert 'extension_col' in dt.columns
+    assert 'extension_col' in dt._dataframe.columns
+    assert dt['extension_col'].name == 'extension_col'
+    assert isinstance(dt['extension_col']._series, pd.Series)
+    assert dt['extension_col'].logical_type == ZIPCode
+
+
 def test_set_index(sample_df):
     # Test setting index with set_index()
     dt = DataTable(sample_df)
