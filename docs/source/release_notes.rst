@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Add ``__repr__`` to DataTable (:pr:`425`)
+        * Allow initializing DataColumn with numpy array (:pr:`430`)
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
     * Changes

@@ -1,5 +1,6 @@
 import warnings
 
+import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -43,7 +44,7 @@ class DataColumn(object):
         """Create a DataColumn.
 
         Args:
-            series (pd.Series or dd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
+            series (pd.Series or dd.Series or numpy.ndarray or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
@@ -174,11 +175,11 @@ class DataColumn(object):
     def _set_series(self, series):
         if not ((dd and isinstance(series, dd.Series)) or
                 (ks and isinstance(series, ks.Series)) or
-                isinstance(series, (pd.Series, pd.api.extensions.ExtensionArray))):
-            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')
+                isinstance(series, (pd.Series, pd.api.extensions.ExtensionArray, np.ndarray))):
+            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, numpy.ndarray, or pandas.ExtensionArray')
 
-        # pandas ExtensionArrays should be converted to pandas.Series
-        if isinstance(series, pd.api.extensions.ExtensionArray):
+        # pandas ExtensionArrays or numpy arrays should be converted to pandas.Series
+        if isinstance(series, (pd.api.extensions.ExtensionArray, np.ndarray)):
             series = pd.Series(series, dtype=series.dtype)
 
         if self._assigned_name is not None and series.name is not None and self._assigned_name != series.name:
