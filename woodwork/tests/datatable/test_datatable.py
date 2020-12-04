@@ -342,7 +342,88 @@ def test_datatable_types(sample_df):
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
-        assert isinstance(tag, set)
+        assert isinstance(tag, str)
+
+
+def test_datatable_typing_info_with_col_names(sample_df):
+    dt = DataTable(sample_df)
+    typing_info_df = dt._get_typing_info(include_names_col=True)
+
+    assert isinstance(typing_info_df, pd.DataFrame)
+    assert 'Data Column' in typing_info_df.columns
+    assert 'Physical Type' in typing_info_df.columns
+    assert 'Logical Type' in typing_info_df.columns
+    assert 'Semantic Tag(s)' in typing_info_df.columns
+    assert typing_info_df.shape[1] == 4
+    assert typing_info_df.iloc[:, 0].name == 'Data Column'
+
+    assert len(typing_info_df.index) == len(sample_df.columns)
+    assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean,
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(typing_info_df['Logical Type'])
+    for tag in typing_info_df['Semantic Tag(s)']:
+        assert isinstance(tag, str)
+
+    correct_column_names = pd.Series(list(sample_df.columns),
+                                     index=list(sample_df.columns))
+    assert typing_info_df['Data Column'].equals(correct_column_names)
+
+
+def test_datatable_head(sample_df):
+    dt = DataTable(sample_df, index='id', logical_types={'email': 'EmailAddress'}, semantic_tags={'signup_date': 'birthdat'})
+
+    head = dt.head()
+    assert isinstance(head, pd.DataFrame)
+    assert isinstance(head.columns, pd.MultiIndex)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        assert len(head) == 2
+    else:
+        assert len(head) == 4
+
+    for i in range(len(head.columns)):
+        name, dtype, logical_type, tags = head.columns[i]
+        dc = dt[name]
+
+        # confirm the order is the same
+        assert dt._dataframe.columns[i] == name
+
+        # confirm the rest of the attributes match up
+        assert dc.dtype == dtype
+        assert dc.logical_type == logical_type
+        assert str(list(dc.semantic_tags)) == tags
+
+    shorter_head = dt.head(1)
+    assert len(shorter_head) == 1
+    assert head.columns.equals(shorter_head.columns)
+
+
+def test_datatable_repr(small_df):
+    dt = DataTable(small_df)
+
+    dt_repr = repr(dt)
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nData Column                                                        \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    assert dt_repr == expected_repr
+
+    dt_html_repr = dt._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Data Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    assert dt_html_repr == expected_repr
+
+
+def test_datatable_repr_empty(empty_df):
+    dt = DataTable(empty_df)
+    assert repr(dt) == 'Empty DataTable'
+
+    assert dt._repr_html_() == 'Empty DataTable'
 
 
 def test_datatable_ltypes(sample_df):
