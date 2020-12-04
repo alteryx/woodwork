@@ -197,7 +197,9 @@ class LatLong(LogicalType):
         tuple of floats (or a list of floats for Koalas DataTables)
         and must contain only two values.
 
-        Null latitude or longitude values will be stored as np.nan.
+        Null latitude or longitude values will be stored as np.nan, and
+        a fully null LatLong (np.nan, np.nan) will be stored as just a
+        single nan.
 
     Examples:
         .. code-block:: python

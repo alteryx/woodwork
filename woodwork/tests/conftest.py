@@ -396,6 +396,7 @@ def latlong_df_pandas():
         'combo_tuple_types': pd.Series(['[1, 2]', '(3, 4)']),
         'null_value': pd.Series([np.nan, (3, 4)]),
         'null_latitude': pd.Series([(np.nan, 2.0), (3.0, 4.0)]),
+        'both_null': pd.Series([(np.nan, np.nan), (3.0, 4.0)]),
     })
 
 

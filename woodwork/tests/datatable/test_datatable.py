@@ -2263,8 +2263,8 @@ def test_datatable_describe_method(describe_df):
             'physical_type': expected_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
-            'count': 7,
-            'nan_count': 1,
+            'count': 6,
+            'nan_count': 2,
             'mode': mode}, name='latlong_col')
         dt = DataTable(latlong_data,
                        logical_types={'latlong_col': ltype},

@@ -325,10 +325,15 @@ def _reformat_to_latlong(latlong, use_list=False):
         if len(latlong) != 2:
             raise ValueError(f'LatLong values must have exactly two values. {latlong} does not have two values.')
 
-        latlong = _to_latlong_float(latlong[0]), _to_latlong_float(latlong[1])
+        latitude, longitude = map(_to_latlong_float, latlong)
+
+        # (np.nan, np.nan) should be counted as a single null value
+        if pd.isnull(latitude) and pd.isnull(longitude):
+            return np.nan
+
         if use_list:
-            latlong = list(latlong)
-        return latlong
+            return [latitude, longitude]
+        return (latitude, longitude)
 
     raise ValueError(f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
 
