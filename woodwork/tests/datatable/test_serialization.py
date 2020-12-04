@@ -147,21 +147,19 @@ def test_to_csv(sample_df, tmpdir):
     assert dt == _dt
 
 
-def test_to_pickle(sample_df_pandas, tmpdir):
-    pandas_dt = DataTable(sample_df_pandas)
-    pandas_dt.to_pickle(str(tmpdir))
-    _dt = deserialize.read_datatable(str(tmpdir))
+def test_to_pickle(sample_df, tmpdir):
+    dt = DataTable(sample_df)
+    if not isinstance(sample_df, pd.DataFrame):
+        msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            dt.to_pickle(str(tmpdir))
+    else:
+        dt.to_pickle(str(tmpdir))
+        _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index),
-                                  to_pandas(_dt.to_dataframe(), index=_dt.index))
-    assert pandas_dt == _dt
-
-
-def test_to_pickle_errors_dask(sample_df_dask, tmpdir):
-    dask_dt = DataTable(sample_df_dask)
-    msg = 'Cannot serialize Dask DataTable to pickle'
-    with pytest.raises(ValueError, match=msg):
-        dask_dt.to_pickle(str(tmpdir))
+        pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index),
+                                      to_pandas(_dt.to_dataframe(), index=_dt.index))
+        assert dt == _dt
 
 
 def test_to_parquet(sample_df, tmpdir):
