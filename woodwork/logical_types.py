@@ -190,17 +190,25 @@ class IPAddress(LogicalType):
 
 
 class LatLong(LogicalType):
-    """Represents Logical Types that contain latitude and longitude values
+    """Represents Logical Types that contain latitude and longitude values in decimal degrees.
+
+    Note:
+        LatLong values will be stored with the object dtype as a
+        tuple of floats (or a list of floats for Koalas DataTables)
+        and must contain only two values.
+
+        Null latitude or longitude values will be stored as np.nan, and
+        a fully null LatLong (np.nan, np.nan) will be stored as just a
+        single nan.
 
     Examples:
         .. code-block:: python
 
             [(33.670914, -117.841501),
-             (40.423599, -86.921162)),
-             (-45.031705, 168.659506)]
+             (40.423599, -86.921162),
+             (-45.031705, nan)]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    pandas_dtype = 'object'
 
 
 class NaturalLanguage(LogicalType):

@@ -1,7 +1,7 @@
 <p align="center"><img width=50% src="https://woodwork-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
 <p align="center">
-    <a href="https://codecov.io/gh/FeatureLabs/woodwork" target="_blank">
-        <img src="https://codecov.io/gh/FeatureLabs/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP" alt="Codecov" />
+    <a href="https://codecov.io/gh/alteryx/woodwork" target="_blank">
+        <img src="https://codecov.io/gh/alteryx/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP" alt="Codecov" />
     </a>
     <a href="https://woodwork.alteryx.com/en/latest/?badge=stable" target="_blank">
         <img src="https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable" alt="Documentation Status" />
@@ -48,21 +48,21 @@ dt.set_types(logical_types={
     'customer_name': 'Categorical',
     'country': 'Categorical'
 })
-dt.types
+dt
 ```
 
 ```
                 Physical Type     Logical Type Semantic Tag(s)
 Data Column
-order_id                Int64          Integer       {numeric}
-product_id           category      Categorical      {category}
-description            string  NaturalLanguage              {}
-quantity              float64           Double       {numeric}
-order_date     datetime64[ns]         Datetime              {}
-unit_price            float64           Double       {numeric}
-customer_name        category      Categorical      {category}
-country              category      Categorical      {category}
-total                 float64           Double       {numeric}
+order_id                Int64          Integer       [numeric]
+product_id           category      Categorical      [category]
+description            string  NaturalLanguage              []
+quantity              float64           Double       [numeric]
+order_date     datetime64[ns]         Datetime              []
+unit_price            float64           Double       [numeric]
+customer_name        category      Categorical      [category]
+country              category      Categorical      [category]
+total                 float64           Double       [numeric]
 ```
 
 We now have created a Woodwork `DataTable` with the specified logical types assigned. For columns that did not have a specified logical type value, Woodwork has automatically inferred the logical type based on the underlying data. Additionally, Woodwork has automatically assigned semantic tags to some of the columns, based on the inferred or assigned logical type.

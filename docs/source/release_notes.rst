@@ -4,12 +4,31 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add ``__repr__`` to DataTable (:pr:`425`)
+        * Allow initializing DataColumn with numpy array (:pr:`430`)
+        * Add ``drop`` to DataTable (:pr:`434`)
+    * Fixes
+        * Update DataColumn name when using setitem on column with no name (:pr:`426`)
+        * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
+    * Changes
+        * Update links to use alteryx org Github URL (:pr:`423`)
+    * Documentation Changes
+        * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
+    * Testing Changes
+        * Fix missing test coverage (:pr:`436`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`tamargrey`
+
+**v0.0.6 November 30, 2020**
+    * Enhancements
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
         * Add ``describe_dict`` method to DataTable (:pr:`405`)
         * Add ``mutual_information_dict`` method to DataTable (:pr:`404`)
         * Add ``metadata`` to DataTable for user-defined metadata (:pr:`392`)
         * Add ``update_dataframe`` method to DataTable to update underlying DataFrame (:pr:`407`)
+        * Sort dataframe if ``time_index`` is specified, bypass sorting with ``already_sorted`` parameter. (:pr:`410`)
         * Add ``description`` attribute to DataColumn (:pr:`416`)
         * Implement ``DataColumn.__len__`` and ``DataTable.__len__`` (:pr:`415`)
         * Migrate CI tests to github actions (:pr:`417`)
@@ -27,14 +46,13 @@ Release Notes
         * Implement ``DataTable.__sizeof__`` to return size of the underlying dataframe (:pr:`401`)
         * Include Datetime columns in mutual info calculation (:pr:`399`)
         * Maintain column order on DataTable operations (:pr:`406`)
-    * Documentation Changes
     * Testing Changes
         * Add pyarrow, dask, and koalas to automated dependency checks (:pr:`388`)
         * Use new version of pull request Github Action (:pr:`394`)
         * Improve parameterization for ``test_datatable_equality`` (:pr:`409`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
+    :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
@@ -43,7 +61,7 @@ Release Notes
     * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
     * The ``copy_dataframe`` parameter was removed from DataTable initialization.
 
-**v0.0.5** November 11, 2020
+**v0.0.5 November 11, 2020**
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
@@ -88,7 +106,7 @@ Release Notes
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
     * ``copy`` is no longer a parameter of ``DataTable.to_dataframe`` or ``DataColumn.to_series``.
 
-**v0.0.4** October 21, 2020
+**v0.0.4 October 21, 2020**
     * Enhancements
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
@@ -116,7 +134,7 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.3** October 9, 2020
+**v0.0.3 October 9, 2020**
     * Enhancements
         * Implement setitem on DataTable to create/overwrite an existing DataColumn (:pr:`165`)
         * Add ``to_pandas`` method to DataColumn to access the underlying series (:pr:`169`)
@@ -158,7 +176,7 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.2** September 28, 2020
+**v0.0.2 September 28, 2020**
     * Fixes
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
@@ -171,7 +189,7 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.1.0** September 24, 2020
+**v0.1.0 September 24, 2020**
     * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
     * Add global config options and add ``datetime_format`` option for type inference (:pr:`134`)
     * Fix bug with Integer and WholeNumber inference in column with ``pd.NA`` values (:pr:`133`)

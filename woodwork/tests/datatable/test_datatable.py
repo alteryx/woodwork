@@ -342,7 +342,90 @@ def test_datatable_types(sample_df):
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
     for tag in returned_types['Semantic Tag(s)']:
-        assert isinstance(tag, set)
+        assert isinstance(tag, str)
+
+
+def test_datatable_typing_info_with_col_names(sample_df):
+    dt = DataTable(sample_df)
+    typing_info_df = dt._get_typing_info(include_names_col=True)
+
+    assert isinstance(typing_info_df, pd.DataFrame)
+    assert 'Data Column' in typing_info_df.columns
+    assert 'Physical Type' in typing_info_df.columns
+    assert 'Logical Type' in typing_info_df.columns
+    assert 'Semantic Tag(s)' in typing_info_df.columns
+    assert typing_info_df.shape[1] == 4
+    assert typing_info_df.iloc[:, 0].name == 'Data Column'
+
+    assert len(typing_info_df.index) == len(sample_df.columns)
+    assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean,
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(typing_info_df['Logical Type'])
+    for tag in typing_info_df['Semantic Tag(s)']:
+        assert isinstance(tag, str)
+
+    correct_column_names = pd.Series(list(sample_df.columns),
+                                     index=list(sample_df.columns))
+    assert typing_info_df['Data Column'].equals(correct_column_names)
+
+
+def test_datatable_head(sample_df):
+    dt = DataTable(sample_df, index='id', logical_types={'email': 'EmailAddress'}, semantic_tags={'signup_date': 'birthdat'})
+
+    head = dt.head()
+    assert isinstance(head, pd.DataFrame)
+    assert isinstance(head.columns, pd.MultiIndex)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        assert len(head) == 2
+    else:
+        assert len(head) == 4
+
+    for i in range(len(head.columns)):
+        name, dtype, logical_type, tags = head.columns[i]
+        dc = dt[name]
+
+        # confirm the order is the same
+        assert dt._dataframe.columns[i] == name
+
+        # confirm the rest of the attributes match up
+        assert dc.dtype == dtype
+        assert dc.logical_type == logical_type
+        assert str(list(dc.semantic_tags)) == tags
+
+    shorter_head = dt.head(1)
+    assert len(shorter_head) == 1
+    assert head.columns.equals(shorter_head.columns)
+
+
+def test_datatable_repr(small_df):
+    dt = DataTable(small_df)
+
+    dt_repr = repr(dt)
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nData Column                                                        \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    assert dt_repr == expected_repr
+
+    dt_html_repr = dt._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Data Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    assert dt_html_repr == expected_repr
+
+
+def test_datatable_repr_empty(empty_df):
+    dt = DataTable(empty_df)
+    assert repr(dt) == 'Empty DataTable'
+
+    assert dt._repr_html_() == 'Empty DataTable'
+
+    assert dt.head() == 'Empty DataTable'
 
 
 def test_datatable_ltypes(sample_df):
@@ -752,6 +835,29 @@ def test_sets_category_dtype_on_update():
         assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
 
 
+def test_sets_object_dtype_on_init(latlong_df):
+    for column_name in latlong_df.columns:
+        ltypes = {
+            column_name: LatLong,
+        }
+        dt = DataTable(latlong_df.loc[:, [column_name]], logical_types=ltypes)
+        assert dt.columns[column_name].logical_type == LatLong
+        assert dt.columns[column_name].dtype == LatLong.pandas_dtype
+        assert dt.to_dataframe()[column_name].dtype == LatLong.pandas_dtype
+
+
+def test_sets_object_dtype_on_update(latlong_df):
+    for column_name in latlong_df.columns:
+        ltypes = {
+            column_name: NaturalLanguage
+        }
+        dt = DataTable(latlong_df.loc[:, [column_name]], logical_types=ltypes)
+        dt = dt.set_types(logical_types={column_name: LatLong})
+        assert dt.columns[column_name].logical_type == LatLong
+        assert dt.columns[column_name].dtype == LatLong.pandas_dtype
+        assert dt.to_dataframe()[column_name].dtype == LatLong.pandas_dtype
+
+
 def test_sets_string_dtype_on_init():
     column_name = 'test_series'
     series_list = [
@@ -765,7 +871,6 @@ def test_sets_string_dtype_on_init():
         Filepath,
         FullName,
         IPAddress,
-        LatLong,
         NaturalLanguage,
         PhoneNumber,
         URL,
@@ -791,7 +896,6 @@ def test_sets_string_dtype_on_update():
         Filepath,
         FullName,
         IPAddress,
-        LatLong,
         NaturalLanguage,
         PhoneNumber,
         URL,
@@ -1462,16 +1566,20 @@ def test_setitem_new_column(sample_df):
         dtype = 'Int64'
 
     new_col = DataColumn(new_series, use_standard_tags=False)
+    assert new_col.name is None
+
     dt['test_col2'] = new_col
     updated_df = dt.to_dataframe()
     assert 'test_col2' in dt.columns
     assert dt['test_col2'].logical_type == Integer
     assert dt['test_col2'].semantic_tags == set()
+    assert dt['test_col2'].name == 'test_col2'
+    assert dt['test_col2']._series.name == 'test_col2'
     assert 'test_col2' in updated_df.columns
     assert updated_df['test_col2'].dtype == dtype
 
     # Standard tags and no logical type
-    new_series = pd.Series(['new', 'column', 'inserted'])
+    new_series = pd.Series(['new', 'column', 'inserted'], name='test_col')
     if ks and isinstance(sample_df, ks.DataFrame):
         dtype = 'object'
         new_series = ks.Series(new_series)
@@ -1483,6 +1591,8 @@ def test_setitem_new_column(sample_df):
     assert 'test_col' in dt.columns
     assert dt['test_col'].logical_type == Categorical
     assert dt['test_col'].semantic_tags == {'category'}
+    assert dt['test_col'].name == 'test_col'
+    assert dt['test_col']._series.name == 'test_col'
     assert 'test_col' in updated_df.columns
     assert updated_df['test_col'].dtype == dtype
 
@@ -1499,6 +1609,8 @@ def test_setitem_new_column(sample_df):
     assert 'test_col3' in dt.columns
     assert dt['test_col3'].logical_type == Double
     assert dt['test_col3'].semantic_tags == {'test_tag'}
+    assert dt['test_col3'].name == 'test_col3'
+    assert dt['test_col3']._series.name == 'test_col3'
     assert 'test_col3' in updated_df.columns
     assert updated_df['test_col3'].dtype == 'float'
 
@@ -1547,6 +1659,23 @@ def test_setitem_overwrite_column(sample_df):
     assert 'full_name' in updated_df.columns
     assert updated_df['full_name'].dtype == dtype
     assert original_col.to_series() is not dt['full_name'].to_series()
+
+
+def test_setitem_with_differnt_types(sample_df_pandas):
+    dt = DataTable(sample_df_pandas)
+
+    dt['np_array_col'] = DataColumn(np.array([1, 3, 4, 5]))
+    assert 'np_array_col' in dt.columns
+    assert 'np_array_col' in dt._dataframe.columns
+    assert dt['np_array_col'].name == 'np_array_col'
+    assert isinstance(dt['np_array_col']._series, pd.Series)
+
+    dt['extension_col'] = DataColumn(pd.Categorical(['a', 'b', 'c', 'd']), logical_type='ZipCode', name='extension_col')
+    assert 'extension_col' in dt.columns
+    assert 'extension_col' in dt._dataframe.columns
+    assert dt['extension_col'].name == 'extension_col'
+    assert isinstance(dt['extension_col']._series, pd.Series)
+    assert dt['extension_col'].logical_type == ZIPCode
 
 
 def test_set_index(sample_df):
@@ -1942,7 +2071,8 @@ def test_datatable_describe_method(describe_df):
     timedelta_ltypes = [Timedelta]
     numeric_ltypes = [Double, Integer]
     natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
-                               LatLong, PhoneNumber, URL]
+                               PhoneNumber, URL]
+    latlong_ltypes = [LatLong]
 
     expected_index = ['physical_type',
                       'logical_type',
@@ -2125,6 +2255,27 @@ def test_datatable_describe_method(describe_df):
         assert set(stats_df.columns) == {'natural_language_col'}
         assert stats_df.index.tolist() == expected_index
         pd.testing.assert_series_equal(expected_vals, stats_df['natural_language_col'].dropna())
+
+    # Test latlong columns
+    latlong_data = describe_df[['latlong_col']]
+    expected_dtype = 'object'
+    for ltype in latlong_ltypes:
+        mode = [0, 0] if ks and isinstance(describe_df, ks.DataFrame) else (0, 0)
+        expected_vals = pd.Series({
+            'physical_type': expected_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 6,
+            'nan_count': 2,
+            'mode': mode}, name='latlong_col')
+        dt = DataTable(latlong_data,
+                       logical_types={'latlong_col': ltype},
+                       semantic_tags={'latlong_col': 'custom_tag'})
+        stats_df = dt.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'latlong_col'}
+        assert stats_df.index.tolist() == expected_index
+        pd.testing.assert_series_equal(expected_vals, stats_df['latlong_col'].dropna())
 
 
 def test_datatable_describe_with_improper_tags(describe_df):
@@ -2660,6 +2811,55 @@ def test_datatable_column_order_after_rename(sample_df_pandas):
     check_column_order(renamed_dt, reset_tags_dt)
 
 
+def test_datatable_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    dt = DataTable(sample_unsorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date')
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
+                                  to_pandas(dt._dataframe))
+
+    dt = DataTable(sample_unsorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date',
+                   already_sorted=True)
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index].logical_type == Datetime
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe))
+
+
+def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    index = 'id'
+    time_index = 'signup_date'
+    sorted_df = sample_unsorted_df.sort_values([time_index, index])
+    dt = DataTable(sorted_df,
+                   name='datatable',
+                   index='id',
+                   time_index='signup_date',
+                   already_sorted=True)
+
+    dt.update_dataframe(sample_unsorted_df, already_sorted=False)
+    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe))
+
+    dt.update_dataframe(sample_unsorted_df, already_sorted=True)
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
+
+
 def test_datatable_init_with_col_descriptions(sample_df):
     descriptions = {
         'age': 'age of the user',
@@ -2682,3 +2882,72 @@ def test_datatable_col_descriptions_warnings(sample_df):
     err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
         DataTable(sample_df, column_descriptions=descriptions)
+
+
+def test_datatable_drop(sample_df):
+    original_columns = sample_df.columns.copy()
+    original_dt = DataTable(sample_df.copy())
+    assert set(original_dt.columns.keys()) == set(original_columns)
+
+    single_input_dt = original_dt.drop('is_registered')
+    assert len(single_input_dt.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in single_input_dt.columns
+    assert to_pandas(original_dt._dataframe).drop('is_registered', axis='columns').equals(to_pandas(single_input_dt._dataframe))
+
+    list_input_dt = original_dt.drop(['is_registered'])
+    assert len(list_input_dt.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in list_input_dt.columns
+    assert to_pandas(original_dt._dataframe).drop('is_registered', axis='columns').equals(to_pandas(list_input_dt._dataframe))
+    # should be equal to the single input example above
+    assert single_input_dt == list_input_dt
+    assert to_pandas(single_input_dt._dataframe).equals(to_pandas(list_input_dt._dataframe))
+
+    multiple_list_dt = original_dt.drop(['age', 'full_name', 'is_registered'])
+    assert len(multiple_list_dt.columns) == (len(original_columns) - 3)
+    assert 'is_registered' not in multiple_list_dt.columns
+    assert 'full_name' not in multiple_list_dt.columns
+    assert 'age' not in multiple_list_dt.columns
+
+    assert to_pandas(original_dt._dataframe).drop(['is_registered', 'age', 'full_name'], axis='columns').equals(to_pandas(multiple_list_dt._dataframe))
+
+    # Drop the same columns in a different order and confirm resulting DataTable column order doesn't change
+    different_order_dt = original_dt.drop(['is_registered', 'age', 'full_name'])
+    check_column_order(different_order_dt, multiple_list_dt)
+    assert different_order_dt == multiple_list_dt
+    assert to_pandas(multiple_list_dt._dataframe).equals(to_pandas(different_order_dt._dataframe))
+
+
+def test_datatable_drop_indices(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    assert dt.index == 'id'
+    assert dt.time_index == 'signup_date'
+
+    dropped_index_dt = dt.drop('id')
+    assert 'id' not in dropped_index_dt.columns
+    assert dropped_index_dt.index is None
+    assert dropped_index_dt.time_index == 'signup_date'
+
+    dropped_time_index_dt = dt.drop(['signup_date'])
+    assert 'signup_date' not in dropped_time_index_dt.columns
+    assert dropped_time_index_dt.time_index is None
+    assert dropped_time_index_dt.index == 'id'
+
+
+def test_datatable_drop_errors(sample_df):
+    dt = DataTable(sample_df)
+
+    error = 'Input to DataTable.drop must be either a string or list of strings.'
+    for bad_input in [4, {'test': 'column'}]:
+        with pytest.raises(TypeError, match=error):
+            dt.drop(bad_input)
+
+    error = re.escape("['not_present'] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop('not_present')
+
+    with pytest.raises(ValueError, match=error):
+        dt.drop(['age', 'not_present'])
+
+    error = re.escape("['not_present1', 'not_present2'] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop(['not_present1', 'not_present2'])

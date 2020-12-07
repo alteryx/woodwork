@@ -12,6 +12,7 @@ from woodwork.logical_types import (
     Boolean,
     Datetime,
     Double,
+    LatLong,
     LogicalType,
     str_to_logical_type
 )
@@ -41,7 +42,8 @@ class DataTable(object):
                  metadata=None,
                  use_standard_tags=True,
                  make_index=False,
-                 column_descriptions=None):
+                 column_descriptions=None,
+                 already_sorted=False):
         """Create DataTable
 
         Args:
@@ -70,6 +72,9 @@ class DataTable(object):
                 ``dataframe``. If False, the name is specified in ``index`` must match a column
                 present in the ``dataframe``. Defaults to False.
             column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
+            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
         """
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
@@ -99,6 +104,7 @@ class DataTable(object):
 
         if time_index:
             _update_time_index(self, time_index)
+            self._sort_columns(already_sorted)
 
         self.metadata = metadata or {}
 
@@ -150,8 +156,8 @@ class DataTable(object):
         if column.name is not None and column.name != col_name:
             warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
                           ColumnNameMismatchWarning)
-            column._series.name = col_name
-            column._assigned_name = col_name
+        column._series.name = col_name
+        column._assigned_name = col_name
 
         self._dataframe[col_name] = column._series
         self._update_columns({col_name: column})
@@ -162,20 +168,83 @@ class DataTable(object):
     def __len__(self):
         return self._dataframe.__len__()
 
+    def __repr__(self):
+        '''A string representation of a DataTable containing typing information and a preview of the data.
+        '''
+        dt_repr = self._get_typing_info()
+        if isinstance(dt_repr, str):
+            return dt_repr
+
+        return repr(dt_repr)
+
+    def _repr_html_(self):
+        '''An HTML representation of a DataTable for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data.
+        '''
+        dt_repr = self._get_typing_info()
+        if isinstance(dt_repr, str):
+            return dt_repr
+
+        return dt_repr.to_html()
+
     @property
     def types(self):
         """Dataframe containing the physical dtypes, logical types and semantic
         tags for the table"""
+        return self._get_typing_info()
+
+    def head(self, n=5):
+        '''Shows the first n rows of the DataTable along with typing information.
+
+        Note:
+            This will bring data into memory for Dask or Koalas DataTables.
+
+        Args:
+            n (int): number of rows to return. Defaults to 5.
+
+        Returns:
+            DataFrame with the top n rows where the column headers contain
+        each DataColumn's typing information.
+        '''
+
+        typing_info = self._get_typing_info(include_names_col=True)
+        if isinstance(typing_info, str):
+            return typing_info
+
+        data = self._dataframe.head(n)
+        if not isinstance(data, pd.DataFrame):
+            data = data.to_pandas()
+        data.columns = pd.MultiIndex.from_frame(typing_info)
+
+        return data
+
+    def _get_typing_info(self, include_names_col=False):
+        '''Creates a DataFrame that contains the typing information for a DataTable,
+        optionally including the Data Column names as a column in addition to being
+        the index.
+        '''
+        if len(self._dataframe.index) == 0 and len(self._dataframe.columns) == 0:
+            return "Empty DataTable"
+
         typing_info = {}
         # Access column names from underlying data to maintain column order
         for col_name in self._dataframe.columns:
             dc = self[col_name]
-            typing_info[dc.name] = [dc.dtype, dc.logical_type, dc.semantic_tags]
+            types = [dc.dtype, dc.logical_type, str(list(dc.semantic_tags))]
+            if include_names_col:
+                types.insert(0, dc.name)
+            typing_info[dc.name] = types
+
+        columns = ['Physical Type', 'Logical Type', 'Semantic Tag(s)']
+        index = 'Data Column'
+        if include_names_col:
+            columns.insert(0, index)
+
         df = pd.DataFrame.from_dict(typing_info,
                                     orient='index',
-                                    columns=['Physical Type', 'Logical Type', 'Semantic Tag(s)'],
+                                    columns=columns,
                                     dtype="object")
-        df.index.name = 'Data Column'
+        df.index.name = index
         return df
 
     @property
@@ -271,6 +340,15 @@ class DataTable(object):
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
 
+    def _sort_columns(self, already_sorted):
+        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+            already_sorted = True  # Skip sorting for Dask and Koalas input
+        if not already_sorted:
+            sort_cols = [self.time_index, self.index]
+            if not self.index:
+                sort_cols = [self.time_index]
+            self._dataframe = self._dataframe.sort_values(sort_cols)
+
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
 
@@ -284,6 +362,26 @@ class DataTable(object):
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
+
+    def drop(self, columns):
+        """Drop specified columns from a DataTable.
+
+        Args:
+            columns (str or list[str]): Column name or names to drop. Must be present in the DataTable.
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified columns removed.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not isinstance(columns, (list, set)):
+            raise TypeError('Input to DataTable.drop must be either a string or list of strings.')
+
+        not_present = [col for col in columns if col not in self.columns]
+        if not_present:
+            raise ValueError(f'{not_present} not found in DataTable')
+
+        return self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
 
     def rename(self, columns):
         """Renames columns in a DataTable
@@ -506,7 +604,7 @@ class DataTable(object):
         cols_to_include = self._filter_cols(include)
         return self._new_dt_from_cols(cols_to_include)
 
-    def update_dataframe(self, new_df):
+    def update_dataframe(self, new_df, already_sorted=False):
         '''Replace the DataTable's dataframe with a new dataframe, making sure the new dataframe dtypes are updated.
         If the original DataTable was created with ``make_index=True``, an index column will be added to the updated
         data if it is not present.
@@ -514,6 +612,9 @@ class DataTable(object):
         Args:
             new_df (DataFrame): Dataframe containing the new data. The same columns present in the original data should
                 also be present in the new dataframe.
+            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
         '''
         if self.make_index and self.index not in new_df.columns:
             new_df = _make_index(new_df, self.index)
@@ -528,12 +629,13 @@ class DataTable(object):
         if self.index:
             _check_index(new_df, self.index)
 
-        if self.time_index:
-            _check_time_index(new_df, self.time_index)
-
         # Make sure column ordering matches existing ordering
         new_df = new_df[[column for column in self._dataframe.columns]]
         self._dataframe = new_df
+
+        if self.time_index:
+            _check_time_index(new_df, self.time_index)
+            self._sort_columns(already_sorted)
 
         # Update column series and dtype
         for column in self.columns.keys():
@@ -653,6 +755,11 @@ class DataTable(object):
             # Missing values in Koalas will be replaced with 'None' - change them to
             # np.nan so stats are calculated properly
             df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
+
+            # Any LatLong columns will be using lists, which we must convert
+            # back to tuples so we can calculate the mode, which requires hashable values
+            latlong_columns = [col_name for col_name, col in self.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+            df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
         else:
             df = self._dataframe
 
@@ -685,8 +792,13 @@ class DataTable(object):
                 values["second_quartile"] = quant_values[1]
                 values["third_quartile"] = quant_values[2]
 
+            mode = _get_mode(series)
+            # The format of the mode should match its format in the DataTable
+            if ks and isinstance(self._dataframe, ks.DataFrame) and series.name in latlong_columns:
+                mode = list(mode)
+
             values["nan_count"] = series.isna().sum()
-            values["mode"] = _get_mode(series)
+            values["mode"] = mode
             values["physical_type"] = column.dtype
             values["logical_type"] = logical_type
             values["semantic_tags"] = semantic_tags

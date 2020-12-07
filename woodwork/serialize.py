@@ -4,6 +4,9 @@ import os
 import tarfile
 import tempfile
 
+import pandas as pd
+
+from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import (
     _get_ltype_class,
@@ -143,12 +146,18 @@ def write_table_data(datatable, path, format='csv', **kwargs):
             compression=compression
         )
     elif format == 'pickle':
-        # Dask currently does not support to_pickle
-        if dd and isinstance(df, dd.DataFrame):
-            msg = 'Cannot serialize Dask DataTable to pickle'
+        # Dask and Koalas currently do not support to_pickle
+        if not isinstance(df, pd.DataFrame):
+            msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
             raise ValueError(msg)
         df.to_pickle(file, **kwargs)
     elif format == 'parquet':
+        # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
+        # an error in parquet format.
+        df = df.copy()
+        latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+        df[latlong_columns] = df[latlong_columns].astype(str)
+
         df.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'

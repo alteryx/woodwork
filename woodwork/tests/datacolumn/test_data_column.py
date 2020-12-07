@@ -56,12 +56,12 @@ def test_datacolumn_init_with_semantic_tags(sample_series):
 
 
 def test_datacolumn_init_wrong_series():
-    error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray'
+    error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, numpy.ndarray, or pandas.ExtensionArray'
     with pytest.raises(TypeError, match=error):
         DataColumn([1, 2, 3, 4])
 
     with pytest.raises(TypeError, match=error):
-        DataColumn(np.array([1, 2, 3, 4]))
+        DataColumn({1, 2, 3, 4})
 
 
 def test_datacolumn_init_with_name(sample_series, sample_datetime_series):
@@ -94,6 +94,8 @@ def test_datacolumn_init_with_extension_array():
     assert series.equals(series_categories)
     assert series.name is None
     assert data_col.name is None
+    assert data_col.dtype == 'category'
+    assert data_col.logical_type == Categorical
 
     series_ints = pd.Series([1, 2, None, 4], dtype='Int64')
     extension_ints = pd.arrays.IntegerArray(np.array([1, 2, 3, 4], dtype="int64"), mask=np.array([False, False, True, False]))
@@ -109,6 +111,29 @@ def test_datacolumn_init_with_extension_array():
     data_col_different_ltype = DataColumn(extension_ints, logical_type='NaturalLanguage')
     series = data_col_different_ltype.to_series()
     assert series.equals(series_strs)
+    assert data_col_different_ltype.logical_type == NaturalLanguage
+    assert data_col_different_ltype.dtype == 'string'
+
+
+def test_datacolumn_init_with_numpy_array():
+    numpy_array = np.array([1, 2, 3, 4])
+    expected_series = pd.Series([1, 2, 3, 4], dtype='Int64')
+
+    dc = DataColumn(numpy_array)
+    assert dc.name is None
+    assert dc.logical_type == Integer
+    assert dc.semantic_tags == {'numeric'}
+    assert dc.dtype == 'Int64'
+    assert dc._series.equals(expected_series)
+
+    dc = DataColumn(numpy_array, logical_type='NaturalLanguage', name='test_col')
+    expected_series.name = 'test_col'
+
+    assert dc.name == 'test_col'
+    assert dc.logical_type == NaturalLanguage
+    assert dc.semantic_tags == set()
+    assert dc.dtype == 'string'
+    assert dc._series.equals(expected_series.astype('string'))
 
 
 def test_datacolumn_with_alternate_semantic_tags_input(sample_series):
@@ -542,6 +567,22 @@ def test_ordinal_with_nan_values():
     dc = DataColumn(nan_series, logical_type=ordinal_with_order)
     assert isinstance(dc.logical_type, Ordinal)
     assert dc.logical_type.order == ['a', 'b']
+
+
+def test_latlong_formatting(latlongs):
+    expected_series = pd.Series([(1, 2), (3, 4)])
+    if ks and isinstance(latlongs[0], ks.Series):
+        expected_series = ks.Series([[1, 2], [3, 4]])
+    elif dd and isinstance(latlongs[0], dd.Series):
+        expected_series = dd.from_pandas(expected_series, npartitions=2)
+
+    expected_dc = DataColumn(expected_series, logical_type='LatLong', name='test_series')
+
+    for series in latlongs:
+        dc = DataColumn(series, logical_type='LatLong', name='test_series')
+        pd.testing.assert_series_equal(to_pandas(dc.to_series()), to_pandas(expected_series))
+
+        assert dc == expected_dc
 
 
 def test_datacolumn_equality(sample_series, sample_datetime_series):

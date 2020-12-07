@@ -56,6 +56,36 @@ def sample_df_koalas(sample_df_pandas):
     return ks.from_pandas(sample_df_pandas)
 
 
+@pytest.fixture(params=['sample_unsorted_df_pandas', 'sample_unsorted_df_dask', 'sample_unsorted_df_koalas'])
+def sample_unsorted_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def sample_unsorted_df_pandas():
+    return pd.DataFrame({
+        'id': [3, 1, 2, 0],
+        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
+        'age': [33, 25, 33, 57],
+        'signup_date': pd.to_datetime(['2020-09-01', '2020-08-01', '2020-08-02', '2020-09-01']),
+        'is_registered': [True, False, True, True],
+    })
+
+
+@pytest.fixture()
+def sample_unsorted_df_dask(sample_unsorted_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(sample_unsorted_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def sample_unsorted_df_koalas(sample_unsorted_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(sample_unsorted_df_pandas)
+
+
 @pytest.fixture(params=['sample_series_pandas', 'sample_series_dask', 'sample_series_koalas'])
 def sample_series(request):
     return request.getfixturevalue(request.param)
@@ -189,6 +219,14 @@ def describe_df_pandas():
         np.nan,
         'I am the last line',
     ]
+    latlong_data = [(0, 0),
+                    (1, 1),
+                    (2, 2),
+                    (3, 3),
+                    (0, 0),
+                    (np.nan, np.nan),
+                    (np.nan, 6),
+                    np.nan]
     timedelta_data = datetime_data - pd.Timestamp('2020-01-01')
 
     return pd.DataFrame({
@@ -200,6 +238,7 @@ def describe_df_pandas():
         'numeric_col': numeric_data,
         'natural_language_col': natural_language_data,
         'timedelta_col': timedelta_data,
+        'latlong_col': latlong_data,
     })
 
 
@@ -212,7 +251,9 @@ def describe_df_dask(describe_df_pandas):
 @pytest.fixture()
 def describe_df_koalas(describe_df_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(describe_df_pandas.drop(columns='timedelta_col'))
+    return ks.from_pandas(describe_df_pandas
+                          .applymap(lambda tup: [None if pd.isnull(elt) else elt for elt in tup] if isinstance(tup, tuple) else tup)
+                          .drop(columns='timedelta_col'))
 
 
 @pytest.fixture(params=['describe_df_pandas', 'describe_df_dask', 'describe_df_koalas'])
@@ -302,4 +343,75 @@ def categorical_df_koalas(categorical_df_pandas):
 
 @pytest.fixture(params=['categorical_df_pandas', 'categorical_df_dask', 'categorical_df_koalas'])
 def categorical_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def empty_df_pandas():
+    return pd.DataFrame({})
+
+
+@pytest.fixture()
+def empty_df_dask(empty_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(empty_df_pandas, npartitions=2)
+
+
+# Cannot have an empty Koalas DataFrame
+@pytest.fixture(params=['empty_df_pandas', 'empty_df_dask'])
+def empty_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def small_df_pandas():
+    return pd.DataFrame(pd.Series([pd.to_datetime('2020-09-01')] * 4, name='sample_datetime_series').astype('object'))
+
+
+@pytest.fixture()
+def small_df_dask(small_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(small_df_pandas, npartitions=1)
+
+
+@pytest.fixture()
+def small_df_koalas(small_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(small_df_pandas)
+
+
+@pytest.fixture(params=['small_df_pandas', 'small_df_dask', 'small_df_koalas'])
+def small_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def latlong_df_pandas():
+    return pd.DataFrame({
+        'tuple_ints': pd.Series([(1, 2), (3, 4)]),
+        'tuple_strings': pd.Series([('1', '2'), ('3', '4')]),
+        'string_tuple': pd.Series(['(1, 2)', '(3, 4)']),
+        'bracketless_string_tuple': pd.Series(['1, 2', '3, 4']),
+        'list_strings': pd.Series([['1', '2'], ['3', '4']]),
+        'combo_tuple_types': pd.Series(['[1, 2]', '(3, 4)']),
+        'null_value': pd.Series([np.nan, (3, 4)]),
+        'null_latitude': pd.Series([(np.nan, 2.0), (3.0, 4.0)]),
+        'both_null': pd.Series([(np.nan, np.nan), (3.0, 4.0)]),
+    })
+
+
+@pytest.fixture()
+def latlong_df_dask(latlong_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(latlong_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def latlong_df_koalas(latlong_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(latlong_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
+
+
+@pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_koalas'])
+def latlong_df(request):
     return request.getfixturevalue(request.param)

@@ -1,5 +1,6 @@
 import warnings
 
+import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -16,6 +17,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
+    LatLong,
     LogicalType,
     NaturalLanguage,
     Ordinal,
@@ -25,6 +27,7 @@ from woodwork.logical_types import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_ltype_class,
+    _reformat_to_latlong,
     col_is_datetime,
     import_or_none
 )
@@ -43,7 +46,7 @@ class DataColumn(object):
         """Create a DataColumn.
 
         Args:
-            series (pd.Series or dd.Series or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
+            series (pd.Series or dd.Series or numpy.ndarray or pd.api.extensions.ExtensionArray): Series containing the data associated with the column.
             logical_type (LogicalType, optional): The logical type that should be assigned
                 to the column. If no value is provided, the LogicalType for the series will
                 be inferred.
@@ -104,6 +107,19 @@ class DataColumn(object):
         to the LogicalType for the column."""
         if isinstance(self.logical_type, Ordinal):
             self.logical_type._validate_data(self._series)
+        elif _get_ltype_class(self.logical_type) == LatLong:
+            # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
+            if dd and isinstance(self._series, dd.Series):
+                name = self._series.name
+                meta = (self._series, tuple([float, float]))
+                self._series = self._series.apply(_reformat_to_latlong, meta=meta)
+                self._series.name = name
+            elif ks and isinstance(self._series, ks.Series):
+                formatted_series = self._series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+                self._series = ks.from_pandas(formatted_series)
+            else:
+                self._series = self._series.apply(_reformat_to_latlong)
+
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series
             try:
@@ -174,11 +190,11 @@ class DataColumn(object):
     def _set_series(self, series):
         if not ((dd and isinstance(series, dd.Series)) or
                 (ks and isinstance(series, ks.Series)) or
-                isinstance(series, (pd.Series, pd.api.extensions.ExtensionArray))):
-            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, or pandas.ExtensionArray')
+                isinstance(series, (pd.Series, pd.api.extensions.ExtensionArray, np.ndarray))):
+            raise TypeError('Series must be one of: pandas.Series, dask.Series, koalas.Series, numpy.ndarray, or pandas.ExtensionArray')
 
-        # pandas ExtensionArrays should be converted to pandas.Series
-        if isinstance(series, pd.api.extensions.ExtensionArray):
+        # pandas ExtensionArrays or numpy arrays should be converted to pandas.Series
+        if isinstance(series, (pd.api.extensions.ExtensionArray, np.ndarray)):
             series = pd.Series(series, dtype=series.dtype)
 
         if self._assigned_name is not None and series.name is not None and self._assigned_name != series.name:
