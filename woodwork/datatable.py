@@ -9,13 +9,18 @@ import woodwork.serialize as serialize
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
-from woodwork.logical_types import Boolean, Datetime, Double
+from woodwork.logical_types import (
+    Boolean,
+    Datetime,
+    Double,
+    LatLong,
+    LogicalType,
+    str_to_logical_type
+)
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
     col_is_datetime,
-    str_to_logical_type
-)
 from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
@@ -752,6 +757,11 @@ class DataTable(object):
             # Missing values in Koalas will be replaced with 'None' - change them to
             # np.nan so stats are calculated properly
             df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
+
+            # Any LatLong columns will be using lists, which we must convert
+            # back to tuples so we can calculate the mode, which requires hashable values
+            latlong_columns = [col_name for col_name, col in self.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+            df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
         else:
             df = self._dataframe
 
@@ -784,8 +794,13 @@ class DataTable(object):
                 values["second_quartile"] = quant_values[1]
                 values["third_quartile"] = quant_values[2]
 
+            mode = _get_mode(series)
+            # The format of the mode should match its format in the DataTable
+            if ks and isinstance(self._dataframe, ks.DataFrame) and series.name in latlong_columns:
+                mode = list(mode)
+
             values["nan_count"] = series.isna().sum()
-            values["mode"] = _get_mode(series)
+            values["mode"] = mode
             values["physical_type"] = column.dtype
             values["logical_type"] = logical_type
             values["semantic_tags"] = semantic_tags

@@ -1,4 +1,5 @@
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ import woodwork as ww
 from woodwork.logical_types import Categorical, Datetime, Double
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
+    _is_null_latlong,
     _is_numeric_series,
     list_logical_types,
     list_semantic_tags,
@@ -19,10 +21,15 @@ from woodwork.utils import (
     _is_s3,
     _is_url,
     _new_dt_including,
+    _reformat_to_latlong,
+    _to_latlong_float,
     camel_to_snake,
     import_or_none,
     import_or_raise
 )
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 def test_camel_to_snake():
@@ -228,3 +235,92 @@ def test_is_url():
 def test_is_s3():
     assert _is_s3('s3://test-bucket/test-key')
     assert not _is_s3('https://woodwork-static.s3.amazonaws.com/')
+
+
+def test_reformat_to_latlong_errors():
+    for latlong in [{1, 2, 3}, '{1, 2, 3}', 'This is text']:
+        error = (f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
+        with pytest.raises(ValueError, match=error):
+            _reformat_to_latlong(latlong)
+
+    error = re.escape("LatLongs must either be a tuple, a list, or a string representation of a tuple. (1,2) does not fit the criteria.")
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong("'(1,2)'")
+
+    for latlong in [(1, 2, 3), '(1, 2, 3)']:
+        error = re.escape("LatLong values must have exactly two values. (1, 2, 3) does not have two values.")
+        with pytest.raises(ValueError, match=error):
+            _reformat_to_latlong(latlong)
+
+    error = re.escape("Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by 41deg52\'54\" N cannot be converted to a float.")
+    with pytest.raises(ValueError, match=error):
+        _reformat_to_latlong(('41deg52\'54\" N', '21deg22\'54\" W'))
+
+
+def test_reformat_to_latlong():
+    simple_latlong = (1, 2)
+
+    assert _reformat_to_latlong((1, 2)) == simple_latlong
+    assert _reformat_to_latlong(('1', '2')) == simple_latlong
+    assert _reformat_to_latlong('(1,2)') == simple_latlong
+
+    # Check non-standard tuple formats
+    assert _reformat_to_latlong([1, 2]) == simple_latlong
+    assert _reformat_to_latlong(['1', '2']) == simple_latlong
+    assert _reformat_to_latlong('[1, 2]') == simple_latlong
+    assert _reformat_to_latlong('1, 2') == simple_latlong
+
+    assert _reformat_to_latlong(None) is np.nan
+    assert _reformat_to_latlong((1, np.nan)) == (1, np.nan)
+    assert _reformat_to_latlong((np.nan, '1')) == (np.nan, 1)
+
+    # This is how csv and parquet will deserialize
+    assert _reformat_to_latlong('(1, nan)') == (1, np.nan)
+    assert _reformat_to_latlong('(NaN, 9)') == (np.nan, 9)
+
+
+def test_reformat_to_latlong_list():
+    simple_latlong = [1, 2]
+
+    assert _reformat_to_latlong((1, 2), use_list=True) == simple_latlong
+    assert _reformat_to_latlong(('1', '2'), use_list=True) == simple_latlong
+    assert _reformat_to_latlong('(1,2)', use_list=True) == simple_latlong
+
+    assert _reformat_to_latlong([1, 2], use_list=True) == simple_latlong
+    assert _reformat_to_latlong(['1', '2'], use_list=True) == simple_latlong
+    assert _reformat_to_latlong('[1, 2]', use_list=True) == simple_latlong
+    assert _reformat_to_latlong('1, 2', use_list=True) == simple_latlong
+
+    assert _reformat_to_latlong((1, np.nan), use_list=True) == [1, np.nan]
+    assert _reformat_to_latlong((np.nan, '1'), use_list=True) == [np.nan, 1]
+
+    # This is how csv and parquet will deserialize
+    assert _reformat_to_latlong('[1, nan]', use_list=True) == [1, np.nan]
+    assert _reformat_to_latlong('[1, NaN]', use_list=True) == [1, np.nan]
+
+
+def test_to_latlong_float():
+    assert _to_latlong_float(4) == 4.0
+    assert _to_latlong_float('2.2') == 2.2
+
+    assert _to_latlong_float(None) is np.nan
+    assert _to_latlong_float(np.nan) is np.nan
+    assert _to_latlong_float(pd.NA) is np.nan
+
+    error = re.escape('Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by [1, 2, 3] cannot be converted to a float.')
+    with pytest.raises(ValueError, match=error):
+        _to_latlong_float([1, 2, 3])
+
+
+def test_is_null_latlong():
+    assert _is_null_latlong(None)
+    assert _is_null_latlong(np.nan)
+    assert _is_null_latlong(pd.NA)
+    assert _is_null_latlong('None')
+    assert _is_null_latlong('nan')
+    assert _is_null_latlong('NaN')
+
+    assert not _is_null_latlong([None, 1, 3])
+    assert not _is_null_latlong('none')
+    assert not _is_null_latlong(0)
+    assert not _is_null_latlong(False)

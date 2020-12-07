@@ -10,9 +10,13 @@ from woodwork.exceptions import (
     StandardTagsRemovalWarning
 )
 from woodwork.indexers import _iLocIndexer
-from woodwork.logical_types import Datetime, Ordinal
+from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class, str_to_logical_type
-from woodwork.utils import _convert_input_to_set, import_or_none
+from woodwork.utils import (
+    _convert_input_to_set,
+    _reformat_to_latlong,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -89,6 +93,19 @@ class DataColumn(object):
         to the LogicalType for the column."""
         if isinstance(self.logical_type, Ordinal):
             self.logical_type._validate_data(self._series)
+        elif _get_ltype_class(self.logical_type) == LatLong:
+            # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
+            if dd and isinstance(self._series, dd.Series):
+                name = self._series.name
+                meta = (self._series, tuple([float, float]))
+                self._series = self._series.apply(_reformat_to_latlong, meta=meta)
+                self._series.name = name
+            elif ks and isinstance(self._series, ks.Series):
+                formatted_series = self._series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+                self._series = ks.from_pandas(formatted_series)
+            else:
+                self._series = self._series.apply(_reformat_to_latlong)
+
         if self.logical_type.pandas_dtype != str(self._series.dtype):
             # Update the underlying series
             try:

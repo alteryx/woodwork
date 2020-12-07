@@ -243,6 +243,35 @@ def pdnas(request):
     return request.getfixturevalue(request.param)
 
 
+# LatLong Fixtures for testing access to latlong values
+@pytest.fixture
+def pandas_latlongs():
+    return [
+        pd.Series([('1', '2'), ('3', '4')]),
+        pd.Series([['1', '2'], ['3', '4']]),
+        pd.Series([(1, 2), (3, 4)]),
+        pd.Series([[1, 2], [3, 4]]),
+        pd.Series(['(1, 2)', '(3, 4)']),
+        pd.Series(['1, 2', '3, 4']),
+        pd.Series(['[1, 2]', '[3, 4]'])
+    ]
+
+
+@pytest.fixture
+def dask_latlongs(pandas_latlongs):
+    return [pd_to_dask(series) for series in pandas_latlongs]
+
+
+@pytest.fixture
+def koalas_latlongs(pandas_latlongs):
+    return [pd_to_koalas(series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)) for series in pandas_latlongs]
+
+
+@pytest.fixture(params=['pandas_latlongs', 'dask_latlongs', 'koalas_latlongs'])
+def latlongs(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture
 def default_inference_functions():
     return {
