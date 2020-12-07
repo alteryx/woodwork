@@ -2837,3 +2837,35 @@ def test_datatable_col_descriptions_warnings(sample_df):
     err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
         DataTable(sample_df, column_descriptions=descriptions)
+
+
+def test_datatable_drop(sample_df):
+    original_columns = sample_df.columns.copy()
+    original_dt = DataTable(sample_df.copy())
+    assert set(original_dt.columns.keys()) == set(original_columns)
+
+    single_input_dt = original_dt.drop('is_registered')
+    assert len(single_input_dt.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in single_input_dt.columns
+    assert to_pandas(original_dt._dataframe).drop('is_registered', axis='columns').equals(to_pandas(single_input_dt._dataframe))
+
+    list_input_dt = original_dt.drop(['is_registered'])
+    assert len(list_input_dt.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in list_input_dt.columns
+    assert to_pandas(original_dt._dataframe).drop('is_registered', axis='columns').equals(to_pandas(list_input_dt._dataframe))
+    # should be equal to the single input example above
+    assert single_input_dt == list_input_dt
+    assert to_pandas(single_input_dt._dataframe).equals(to_pandas(list_input_dt._dataframe))
+
+    multiple_list_dt = original_dt.drop(['age', 'full_name', 'is_registered'])
+    assert len(multiple_list_dt.columns) == (len(original_columns) - 3)
+    assert 'is_registered' not in multiple_list_dt.columns
+    assert 'full_name' not in multiple_list_dt.columns
+    assert 'age' not in multiple_list_dt.columns
+
+    assert to_pandas(original_dt._dataframe).drop(['is_registered', 'age', 'full_name'], axis='columns').equals(to_pandas(multiple_list_dt._dataframe))
+
+    # Drop the same columns in a different order and confirm resulting DataTable column order doesn't change
+    different_order_dt = original_dt.drop(['is_registered', 'age', 'full_name'])
+    assert different_order_dt == multiple_list_dt
+    assert to_pandas(multiple_list_dt._dataframe).equals(to_pandas(different_order_dt._dataframe))
