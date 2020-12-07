@@ -172,14 +172,19 @@ def test_to_pickle(sample_df, tmpdir):
         assert dt == _dt
 
 
-def test_to_pickle_with_latlong(latlong_df_pandas, tmpdir):
-    dt = DataTable(latlong_df_pandas, logical_types={col: 'LatLong' for col in latlong_df_pandas.columns})
-    dt.to_pickle(str(tmpdir))
-    _dt = deserialize.read_datatable(str(tmpdir))
+def test_to_pickle_with_latlong(latlong_df, tmpdir):
+    dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
+    if not isinstance(latlong_df, pd.DataFrame):
+        msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            dt.to_pickle(str(tmpdir))
+    else:
+        dt.to_pickle(str(tmpdir))
+        _dt = deserialize.read_datatable(str(tmpdir))
 
-    pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
-                                  to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-    assert dt == _dt
+        pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
+                                      to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
+        assert dt == _dt
 
 
 def test_to_parquet(sample_df, tmpdir):
