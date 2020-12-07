@@ -1,0 +1,147 @@
+on: push
+
+name: Tests
+jobs:
+  build_docs:
+    name: 3.7 build docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install woodwork with doc requirements
+        run: |
+          sudo apt update
+          sudo apt install -y pandoc
+          sudo apt install -y graphviz
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install -r dev-requirements.txt
+      - name: Build docs
+        run: |
+          make -C docs/ html
+          ls docs/build/html
+
+  lint_test:
+    name: ${{ matrix.python_version }} lint test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]        
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install woodwork with dev, test, and optional requirements
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e unpacked_sdist/[dask]
+          python -m pip install -e unpacked_sdist/[koalas]
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - name: Run lint test
+        run: make lint
+
+  release_notes_updated:
+    name: release notes updated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for development branch
+        id: branch
+        shell: python
+        run: |
+          from os.path import basename
+          from re import compile
+          main = '^main$'
+          release = '^v\d+\.\d+\.\d+$'
+          dep_update = '^dep-update-[a-f0-9]{7}$'
+          regex = main, release, dep_update
+          patterns = list(map(compile, regex))
+          ref = basename("${{ github.event.ref }}")
+          is_dev = not any(pattern.match(ref) for pattern in patterns)
+          print('::set-output name=is_dev::' + str(is_dev))
+      - name: Install package for requests
+        run: python -m pip install requests
+      - name: Check for pull request number
+        id: pull_request
+        shell: python
+        run: |
+          from requests import get
+          url = "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls"
+          headers = {'Accept': 'application/vnd.github.groot-preview+json'}
+          response = get(url=url, headers=headers)
+          info = "%s (%s)" % (response.reason, response.status_code)
+          assert response.status_code == 200, info
+          json = response.json()
+          number = str(json[0]['number'] if json else None)
+          print('::set-output name=number::' + number)
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+        name: Checkout repository
+        uses: actions/checkout@v2
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+        name: Check if release notes were updated
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
+
+  unit_tests:
+    name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]
+        optional_libraries: ["minimal", "optional"]
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build woodwork package
+        run: make package_woodwork
+      - name: Set up pip
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+      - if: ${{ matrix.optional_libraries != 'optional' }}
+        name: Install woodwork with test requirements
+        run: |
+          python -m pip install -e unpacked_sdist/
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - if: ${{ matrix.optional_libraries == 'optional' }}
+        name: Install woodwork with test and optional requirements
+        run: |
+          sudo apt update
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          python -m pip install -e unpacked_sdist/[dask]
+          python -m pip install -e unpacked_sdist/[koalas]
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - if: ${{ matrix.python_version != 3.6 || matrix.optional_libraries != 'optional' }}
+        name: Run unit tests (no code coverage)
+        run: |
+          cd unpacked_sdist
+          pytest woodwork/ -n 2
+      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
+        name: Run unit tests with code coverage
+        run: |
+          python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          coverage erase
+          cd unpacked_sdist/
+          coverage erase
+          pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
+      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
+        name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
