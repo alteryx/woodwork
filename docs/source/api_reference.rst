@@ -31,6 +31,7 @@ DataTable
     DataTable.rename
     DataTable.update_dataframe
     DataTable.head
+    DataTable.drop
 
 
 DataColumn
