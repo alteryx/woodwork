@@ -73,7 +73,7 @@ DEFAULT_TYPE = NaturalLanguage
 
 
 class TypeSystem(object):
-    def __init__(self, inference_functions=None, relationships=None):
+    def __init__(self, inference_functions=None, relationships=None, default_type=NaturalLanguage):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
 
@@ -85,13 +85,16 @@ class TypeSystem(object):
                 relationships between logical types. The first element should be the parent LogicalType. The
                 second element should be the child LogicalType. If not specified, will default to an empty list
                 indicating all types should be considered root types with no children.
+            default_type (LogicalType, optional): The default LogicalType to use if no inference matches are
+                found. If not specified, will default to the built-in NaturalLanguage LogicalType.
         """
+        self.default_type = default_type
         if inference_functions:
             self.inference_functions = inference_functions.copy()
-            if DEFAULT_TYPE not in self.inference_functions:
-                self.inference_functions[DEFAULT_TYPE] = None
+            if self.default_type not in self.inference_functions:
+                self.inference_functions[self.default_type] = None
         else:
-            self.inference_functions = {DEFAULT_TYPE: None}
+            self.inference_functions = {self.default_type: None}
 
         if relationships:
             self.relationships = relationships.copy()
@@ -101,6 +104,7 @@ class TypeSystem(object):
         # Store initial values for resetting
         self._default_inference_functions = self.inference_functions.copy()
         self._default_relationships = self.relationships.copy()
+        self._default_type = self.default_type
 
     def add_type(self, logical_type, inference_function=None, parent=None):
         """Add a new LogicalType to the TypeSystem, optionally specifying the corresponding inference function and a
@@ -133,8 +137,8 @@ class TypeSystem(object):
             logical_type = str_to_logical_type(logical_type)
         self._validate_type_input(logical_type=logical_type)
         # Remove the inference function
-        if logical_type == DEFAULT_TYPE:
-            raise ValueError(f"{DEFAULT_TYPE} LogicalType cannot be removed")
+        if logical_type == self.default_type:
+            raise ValueError("Default LogicalType cannot be removed")
         self.inference_functions.pop(logical_type)
 
         # If the removed type had children we need to update them
@@ -187,6 +191,7 @@ class TypeSystem(object):
         """
         self.inference_functions = self._default_inference_functions.copy()
         self.relationships = self._default_relationships.copy()
+        self.default_type = self._default_type
 
     @property
     def registered_types(self):
@@ -260,8 +265,8 @@ class TypeSystem(object):
         type_matches = get_inference_matches(self.root_types, series)
 
         if len(type_matches) == 0:
-            # If no matches, set type to DEFAULT_TYPE (NaturalLanguage)
-            return DEFAULT_TYPE
+            # If no matches, set type to default type (NaturalLanguage)
+            return self.default_type
         elif len(type_matches) == 1:
             # If we match only one type, return it
             return type_matches[0]
@@ -280,4 +285,5 @@ class TypeSystem(object):
 
 
 type_system = TypeSystem(inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
-                         relationships=DEFAULT_RELATIONSHIPS)
+                         relationships=DEFAULT_RELATIONSHIPS,
+                         default_type=DEFAULT_TYPE)
