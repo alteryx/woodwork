@@ -425,6 +425,8 @@ def test_datatable_repr_empty(empty_df):
 
     assert dt._repr_html_() == 'Empty DataTable'
 
+    assert dt.head() == 'Empty DataTable'
+
 
 def test_datatable_ltypes(sample_df):
     dt = DataTable(sample_df)
