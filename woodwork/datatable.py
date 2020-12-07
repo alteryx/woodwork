@@ -374,7 +374,7 @@ class DataTable(object):
         if isinstance(columns, str):
             columns = [columns]
         elif not isinstance(columns, (list, set)):
-            raise TypeError('Input to drop must be either a string or list of strings.')
+            raise TypeError('Input to DataTable.drop must be either a string or list of strings.')
 
         not_present = [col for col in columns if col not in self.columns]
         if not_present:

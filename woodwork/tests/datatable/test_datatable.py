@@ -2867,5 +2867,42 @@ def test_datatable_drop(sample_df):
 
     # Drop the same columns in a different order and confirm resulting DataTable column order doesn't change
     different_order_dt = original_dt.drop(['is_registered', 'age', 'full_name'])
+    check_column_order(different_order_dt, multiple_list_dt)
     assert different_order_dt == multiple_list_dt
     assert to_pandas(multiple_list_dt._dataframe).equals(to_pandas(different_order_dt._dataframe))
+
+
+def test_datatable_drop_indices(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    assert dt.index == 'id'
+    assert dt.time_index == 'signup_date'
+
+    dropped_index_dt = dt.drop('id')
+    assert 'id' not in dropped_index_dt.columns
+    assert dropped_index_dt.index is None
+    assert dropped_index_dt.time_index == 'signup_date'
+
+    dropped_time_index_dt = dt.drop(['signup_date'])
+    assert 'signup_date' not in dropped_time_index_dt.columns
+    assert dropped_time_index_dt.time_index is None
+    assert dropped_time_index_dt.index == 'id'
+
+
+def test_datatable_drop_errors(sample_df):
+    dt = DataTable(sample_df)
+
+    error = 'Input to DataTable.drop must be either a string or list of strings.'
+    for bad_input in [4, {'test': 'column'}]:
+        with pytest.raises(TypeError, match=error):
+            dt.drop(bad_input)
+
+    error = re.escape("['not_present'] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop('not_present')
+
+    with pytest.raises(ValueError, match=error):
+        dt.drop(['age', 'not_present'])
+
+    error = re.escape("['not_present1', 'not_present2'] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop(['not_present1', 'not_present2'])
