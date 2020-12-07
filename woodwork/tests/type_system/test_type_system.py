@@ -72,24 +72,23 @@ def test_update_relationship_validation_errors(type_sys):
 
 def test_type_system_default_type(default_inference_functions, default_relationships):
     type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships,
-                          default_type=SubRegionCode)
-    assert type_sys.default_type == SubRegionCode
+                          relationships=default_relationships)
     type_sys.update_inference_function(Categorical, None)
     test_series = pd.Series(['a', 'b', 'c'])
-    assert type_sys.infer_logical_type(test_series) == SubRegionCode
-    assert SubRegionCode in type_sys.registered_types
+    assert type_sys.infer_logical_type(test_series) == NaturalLanguage
+    assert NaturalLanguage in type_sys.registered_types
 
 
 def test_type_system_default_type_remove_error(default_inference_functions, default_relationships):
     type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships,
-                          default_type=SubRegionCode)
-    error_msg = "Default LogicalType cannot be removed"
+                          relationships=default_relationships)
+    error_msg = "NaturalLanguage LogicalType cannot be removed"
     with pytest.raises(ValueError, match=error_msg):
-        type_sys.remove_type(SubRegionCode)
+        type_sys.remove_type(NaturalLanguage)
     with pytest.raises(ValueError, match=error_msg):
-        type_sys.remove_type('SubRegionCode')
+        type_sys.remove_type('NaturalLanguage')
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.remove_type('natural_language')
 
 
 def test_type_system_registered_types(type_sys):
@@ -204,8 +203,7 @@ def test_inference_multiple_matches_same_depth(default_relationships):
         CountryCode: always_true,
     }
     type_sys = TypeSystem(inference_functions=inference_functions,
-                          relationships=default_relationships,
-                          default_type=NaturalLanguage)
+                          relationships=default_relationships)
     type_sys.update_inference_function(Integer, always_true)
     type_sys.update_inference_function(CountryCode, always_true)
     inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
@@ -224,8 +222,7 @@ def test_inference_multiple_matches_different_depths(default_relationships):
         CountryCode: always_true,
     }
     type_sys = TypeSystem(inference_functions=inference_functions,
-                          relationships=default_relationships,
-                          default_type=NaturalLanguage)
+                          relationships=default_relationships)
     type_sys.update_inference_function(Integer, always_true)
     type_sys.update_inference_function(CountryCode, always_true)
     type_sys.add_type(SubRegionCode, inference_function=always_true, parent=CountryCode)
@@ -237,9 +234,7 @@ def test_inference_multiple_matches_different_depths(default_relationships):
 def test_reset_defaults(type_sys, default_inference_functions, default_relationships):
     type_sys.update_inference_function('Integer', None)
     type_sys.update_relationship(CountryCode, parent=NaturalLanguage)
-    type_sys.default_type = Categorical
     type_sys.reset_defaults()
 
     assert type_sys.inference_functions == default_inference_functions
     assert type_sys.relationships == default_relationships
-    assert type_sys.default_type == NaturalLanguage

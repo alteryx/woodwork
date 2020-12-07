@@ -262,5 +262,4 @@ def default_relationships():
 @pytest.fixture
 def type_sys(default_inference_functions, default_relationships):
     return TypeSystem(inference_functions=default_inference_functions,
-                      relationships=default_relationships,
-                      default_type=NaturalLanguage)
+                      relationships=default_relationships)
