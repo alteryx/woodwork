@@ -362,6 +362,26 @@ class DataTable(object):
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
 
+    def drop(self, columns):
+        """Drop specified columns from a DataTable.
+
+        Args:
+            columns (str or list[str]): Column name or names to drop. Must be present in the DataTable.
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified columns removed.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        elif not isinstance(columns, (list, set)):
+            raise TypeError('Input to DataTable.drop must be either a string or list of strings.')
+
+        not_present = [col for col in columns if col not in self.columns]
+        if not_present:
+            raise ValueError(f'{not_present} not found in DataTable')
+
+        return self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
+
     def rename(self, columns):
         """Renames columns in a DataTable
 
