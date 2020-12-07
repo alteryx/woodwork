@@ -34,7 +34,7 @@ Release Notes
         * Improve parameterization for ``test_datatable_equality`` (:pr:`409`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`ctduffy`
 
 **Breaking Changes**
     * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
