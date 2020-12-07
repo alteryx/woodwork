@@ -158,7 +158,14 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/alteryx/woodwork/pull/}\`"
+      - run: |
+          # 
+          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
+            exit 0;
+          elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+            exit 0;
+          fi
+          cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/alteryx/woodwork/pull/}\`"
 
 workflows:
   version: 2
@@ -199,6 +206,4 @@ workflows:
             branches:
               ignore:
                 - /^main?/
-                - /^v\d+\.\d+\.\d+$/
-                - /^dep-update-[a-f0-9]{7}$/
           context: dockerhub
