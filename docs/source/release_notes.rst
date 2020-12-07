@@ -13,6 +13,7 @@ Release Notes
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
+        * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
