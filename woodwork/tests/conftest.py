@@ -392,7 +392,7 @@ def small_df_koalas(small_df_pandas):
 
 @pytest.fixture(params=['small_df_pandas', 'small_df_dask', 'small_df_koalas'])
 def small_df(request):
-    return pd.DataFrame(pd.Series([pd.to_datetime('2020-09-01')] * 4, name='sample_datetime_series').astype('object'))
+    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture()
