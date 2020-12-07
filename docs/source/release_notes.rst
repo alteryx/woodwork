@@ -8,6 +8,7 @@ Release Notes
         * Allow initializing DataColumn with numpy array (:pr:`430`)
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
+        * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
