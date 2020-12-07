@@ -9,7 +9,6 @@ import woodwork as ww
 from woodwork.logical_types import Categorical, Datetime, Double
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
-    _is_null_latlong,
     _is_numeric_series,
     list_logical_types,
     list_semantic_tags,
@@ -18,6 +17,7 @@ from woodwork.type_sys.utils import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
+    _is_null_latlong,
     _is_s3,
     _is_url,
     _new_dt_including,

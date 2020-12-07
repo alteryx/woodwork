@@ -9,18 +9,13 @@ import woodwork.serialize as serialize
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
-from woodwork.logical_types import (
-    Boolean,
-    Datetime,
-    Double,
-    LatLong,
-    LogicalType,
-    str_to_logical_type
-)
+from woodwork.logical_types import Boolean, Datetime, Double, LatLong
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
     col_is_datetime,
+    str_to_logical_type
+)
 from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,

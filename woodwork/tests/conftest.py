@@ -5,6 +5,16 @@ import pytest
 from woodwork.utils import import_or_none
 
 
+def pd_to_dask(series):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(series, npartitions=2)
+
+
+def pd_to_koalas(series):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(series)
+
+
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
     pyspark = import_or_none('pyspark.sql')
@@ -414,4 +424,33 @@ def latlong_df_koalas(latlong_df_pandas):
 
 @pytest.fixture(params=['latlong_df_pandas', 'latlong_df_dask', 'latlong_df_koalas'])
 def latlong_df(request):
+    return request.getfixturevalue(request.param)
+
+
+# LatLong Fixtures for testing access to latlong values
+@pytest.fixture
+def pandas_latlongs():
+    return [
+        pd.Series([('1', '2'), ('3', '4')]),
+        pd.Series([['1', '2'], ['3', '4']]),
+        pd.Series([(1, 2), (3, 4)]),
+        pd.Series([[1, 2], [3, 4]]),
+        pd.Series(['(1, 2)', '(3, 4)']),
+        pd.Series(['1, 2', '3, 4']),
+        pd.Series(['[1, 2]', '[3, 4]'])
+    ]
+
+
+@pytest.fixture
+def dask_latlongs(pandas_latlongs):
+    return [pd_to_dask(series) for series in pandas_latlongs]
+
+
+@pytest.fixture
+def koalas_latlongs(pandas_latlongs):
+    return [pd_to_koalas(series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)) for series in pandas_latlongs]
+
+
+@pytest.fixture(params=['pandas_latlongs', 'dask_latlongs', 'koalas_latlongs'])
+def latlongs(request):
     return request.getfixturevalue(request.param)
