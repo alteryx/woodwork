@@ -2837,3 +2837,72 @@ def test_datatable_col_descriptions_warnings(sample_df):
     err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
         DataTable(sample_df, column_descriptions=descriptions)
+
+
+def test_datatable_drop(sample_df):
+    original_columns = sample_df.columns.copy()
+    original_dt = DataTable(sample_df.copy())
+    assert set(original_dt.columns.keys()) == set(original_columns)
+
+    single_input_dt = original_dt.drop('is_registered')
+    assert len(single_input_dt.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in single_input_dt.columns
+    assert to_pandas(original_dt._dataframe).drop('is_registered', axis='columns').equals(to_pandas(single_input_dt._dataframe))
+
+    list_input_dt = original_dt.drop(['is_registered'])
+    assert len(list_input_dt.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in list_input_dt.columns
+    assert to_pandas(original_dt._dataframe).drop('is_registered', axis='columns').equals(to_pandas(list_input_dt._dataframe))
+    # should be equal to the single input example above
+    assert single_input_dt == list_input_dt
+    assert to_pandas(single_input_dt._dataframe).equals(to_pandas(list_input_dt._dataframe))
+
+    multiple_list_dt = original_dt.drop(['age', 'full_name', 'is_registered'])
+    assert len(multiple_list_dt.columns) == (len(original_columns) - 3)
+    assert 'is_registered' not in multiple_list_dt.columns
+    assert 'full_name' not in multiple_list_dt.columns
+    assert 'age' not in multiple_list_dt.columns
+
+    assert to_pandas(original_dt._dataframe).drop(['is_registered', 'age', 'full_name'], axis='columns').equals(to_pandas(multiple_list_dt._dataframe))
+
+    # Drop the same columns in a different order and confirm resulting DataTable column order doesn't change
+    different_order_dt = original_dt.drop(['is_registered', 'age', 'full_name'])
+    check_column_order(different_order_dt, multiple_list_dt)
+    assert different_order_dt == multiple_list_dt
+    assert to_pandas(multiple_list_dt._dataframe).equals(to_pandas(different_order_dt._dataframe))
+
+
+def test_datatable_drop_indices(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    assert dt.index == 'id'
+    assert dt.time_index == 'signup_date'
+
+    dropped_index_dt = dt.drop('id')
+    assert 'id' not in dropped_index_dt.columns
+    assert dropped_index_dt.index is None
+    assert dropped_index_dt.time_index == 'signup_date'
+
+    dropped_time_index_dt = dt.drop(['signup_date'])
+    assert 'signup_date' not in dropped_time_index_dt.columns
+    assert dropped_time_index_dt.time_index is None
+    assert dropped_time_index_dt.index == 'id'
+
+
+def test_datatable_drop_errors(sample_df):
+    dt = DataTable(sample_df)
+
+    error = 'Input to DataTable.drop must be either a string or list of strings.'
+    for bad_input in [4, {'test': 'column'}]:
+        with pytest.raises(TypeError, match=error):
+            dt.drop(bad_input)
+
+    error = re.escape("['not_present'] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop('not_present')
+
+    with pytest.raises(ValueError, match=error):
+        dt.drop(['age', 'not_present'])
+
+    error = re.escape("['not_present1', 'not_present2'] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop(['not_present1', 'not_present2'])

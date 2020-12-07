@@ -7,6 +7,7 @@ Release Notes
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
         * Add ``__repr__`` to DataTable (:pr:`425`)
         * Allow initializing DataColumn with numpy array (:pr:`430`)
+        * Add ``drop`` to DataTable (:pr:`434`)
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
