@@ -1092,7 +1092,6 @@ def _validate_dataframe(dataframe):
 
     if isinstance(dataframe, np.ndarray):
         dataframe = pd.DataFrame(dataframe)
-        dataframe.columns = dataframe.columns.astype(str)
     return dataframe
 
 

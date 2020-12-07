@@ -191,26 +191,26 @@ def test_datatable_init_with_semantic_tags(sample_df):
 def test_datatable_init_with_numpy(sample_df_pandas):
     numpy_df = sample_df_pandas.to_numpy()
 
-    dt = DataTable(numpy_df, index='0')
-    assert set(dt.columns.keys()) == {str(i) for i in range(len(numpy_df[0]))}
-    assert dt.index == '0'
-    assert dt['0'].logical_type == Categorical
-    assert dt['1'].logical_type == NaturalLanguage
-    assert dt['5'].logical_type == Datetime
+    dt = DataTable(numpy_df, index=0)
+    assert set(dt.columns.keys()) == {i for i in range(len(numpy_df[0]))}
+    assert dt.index == 0
+    assert dt[0].logical_type == Categorical
+    assert dt[1].logical_type == NaturalLanguage
+    assert dt[5].logical_type == Datetime
 
     np_ints = np.array([[1, 0],
                         [2, 4],
                         [3, 6],
                         [4, 1]])
     dt = DataTable(np_ints)
-    assert dt['0'].logical_type == Integer
-    assert dt['1'].logical_type == Integer
+    assert dt[0].logical_type == Integer
+    assert dt[1].logical_type == Integer
 
-    dt = DataTable(np_ints, time_index='1', logical_types={'0': 'Double', '1': Datetime}, semantic_tags={'1': 'numeric_datetime'})
-    assert dt['0'].logical_type == Double
-    assert dt['0'].semantic_tags == {'numeric'}
-    assert dt['1'].logical_type == Datetime
-    assert dt['1'].semantic_tags == {'numeric_datetime', 'time_index'}
+    dt = DataTable(np_ints, time_index=1, logical_types={0: 'Double', 1: Datetime}, semantic_tags={1: 'numeric_datetime'})
+    assert dt[0].logical_type == Double
+    assert dt[0].semantic_tags == {'numeric'}
+    assert dt[1].logical_type == Datetime
+    assert dt[1].semantic_tags == {'numeric_datetime', 'time_index'}
 
 
 def test_datatable_adds_standard_semantic_tags(sample_df):
