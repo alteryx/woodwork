@@ -10,12 +10,12 @@ Release Notes
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
-        * Fix missing test coverage (:pr:`436`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
     * Documentation Changes
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
     * Testing Changes
+        * Fix missing test coverage (:pr:`436`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`
