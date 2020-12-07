@@ -238,4 +238,3 @@ Release Notes
 
 .. command
 .. git log --pretty=oneline --abbrev-commit
- 
