@@ -4,7 +4,6 @@ import pytest
 import woodwork as ww
 from woodwork import DataColumn, DataTable
 from woodwork.indexers import _iLocIndexer
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.logical_types import (
     Categorical,
     Datetime,
@@ -13,6 +12,7 @@ from woodwork.logical_types import (
     Integer,
     PhoneNumber
 )
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')

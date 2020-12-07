@@ -6,7 +6,6 @@ import pytest
 
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning, DuplicateTagsWarning
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -18,6 +17,7 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')

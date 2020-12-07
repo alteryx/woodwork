@@ -17,12 +17,6 @@ from woodwork.datatable import (
     _validate_params
 )
 from woodwork.exceptions import ColumnNameMismatchWarning
-from woodwork.tests.testing_utils import (
-    check_column_order,
-    mi_between_cols,
-    to_pandas,
-    validate_subset_dt
-)
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -43,6 +37,12 @@ from woodwork.logical_types import (
     SubRegionCode,
     Timedelta,
     ZIPCode
+)
+from woodwork.tests.testing_utils import (
+    check_column_order,
+    mi_between_cols,
+    to_pandas,
+    validate_subset_dt
 )
 from woodwork.utils import import_or_none
 

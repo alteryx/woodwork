@@ -6,6 +6,8 @@ from .inference_functions import (
     integer_func,
     timedelta_func
 )
+from .utils import str_to_logical_type
+
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -27,8 +29,6 @@ from woodwork.logical_types import (
     Timedelta,
     ZIPCode
 )
-from .utils import str_to_logical_type
-
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')

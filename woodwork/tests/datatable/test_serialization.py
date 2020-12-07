@@ -9,8 +9,8 @@ import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
 from woodwork import DataTable
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.logical_types import Ordinal
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
