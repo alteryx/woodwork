@@ -30,6 +30,7 @@ DataTable
     DataTable.to_parquet
     DataTable.rename
     DataTable.update_dataframe
+    DataTable.head
 
 
 DataColumn
