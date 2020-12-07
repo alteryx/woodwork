@@ -1,6 +1,6 @@
 import pandas as pd
 
-from woodwork.type_system.utils import _get_specified_ltype_params
+from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import camel_to_snake
 
 

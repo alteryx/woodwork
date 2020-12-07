@@ -3,19 +3,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.type_system.inference_functions import (
+from woodwork.type_sys.inference_functions import (
     categorical_func,
     double_func,
     integer_func
 )
-from woodwork.type_system.logical_types import (
+from woodwork.type_sys.logical_types import (
     Categorical,
     CountryCode,
     Double,
     Integer,
     NaturalLanguage
 )
-from woodwork.type_system.type_system import TypeSystem
+from woodwork.type_sys.type_system import TypeSystem
 
 
 def pd_to_dask(series):

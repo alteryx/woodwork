@@ -1,7 +1,7 @@
 import pandas.api.types as pdtypes
 
 import woodwork as ww
-from woodwork.type_system.utils import col_is_datetime
+from woodwork.type_sys.utils import col_is_datetime
 
 
 def categorical_func(series):

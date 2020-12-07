@@ -1,14 +1,14 @@
 import pytest
 
 import woodwork as ww
-from woodwork.type_system.logical_types import (
+from woodwork.type_sys.logical_types import (
     Boolean,
     Categorical,
     Datetime,
     FullName,
     Ordinal
 )
-from woodwork.type_system.utils import get_logical_types, str_to_logical_type
+from woodwork.type_sys.utils import get_logical_types, str_to_logical_type
 
 
 def test_logical_eq():
@@ -33,7 +33,7 @@ def test_instantiated_type_str():
 
 
 def test_get_logical_types():
-    all_types = ww.type_sys.registered_types
+    all_types = ww.type_system.registered_types
     logical_types = get_logical_types()
 
     for logical_type in all_types:
@@ -44,7 +44,7 @@ def test_get_logical_types():
 
 
 def test_str_to_logical_type():
-    all_types = ww.type_sys.registered_types
+    all_types = ww.type_system.registered_types
 
     with pytest.raises(ValueError, match='String test is not a valid logical type'):
         str_to_logical_type('test')

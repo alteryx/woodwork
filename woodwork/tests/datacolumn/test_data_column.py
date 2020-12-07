@@ -7,7 +7,7 @@ import pytest
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning, DuplicateTagsWarning
 from woodwork.tests.testing_utils import to_pandas
-from woodwork.type_system.logical_types import (
+from woodwork.type_sys.logical_types import (
     Categorical,
     CountryCode,
     Datetime,

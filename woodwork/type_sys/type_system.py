@@ -242,7 +242,7 @@ class TypeSystem(object):
             series = series.head(100000).to_pandas()
 
         def get_inference_matches(types_to_check, series, type_matches=[]):
-            # Since NaturalLangue isn't inferred by default, make sure to check
+            # Since NaturalLanguage isn't inferred by default, make sure to check
             # any children of NaturalLanguage, otherwise they never get evaluated
             if NaturalLanguage in types_to_check:
                 check_next = self._get_children(NaturalLanguage)
@@ -279,5 +279,5 @@ class TypeSystem(object):
             return best_match
 
 
-type_sys = TypeSystem(inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
+type_system = TypeSystem(inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
                       relationships=DEFAULT_RELATIONSHIPS)

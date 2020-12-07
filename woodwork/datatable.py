@@ -9,8 +9,8 @@ import woodwork.serialize as serialize
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
-from woodwork.type_system.logical_types import Boolean, Datetime, Double
-from woodwork.type_system.utils import (
+from woodwork.type_sys.logical_types import Boolean, Datetime, Double
+from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
     col_is_datetime,
@@ -647,8 +647,8 @@ class DataTable(object):
         cols_to_include = set()
 
         for selector in include:
-            if _get_ltype_class(selector) in ww.type_sys.registered_types:
-                if selector not in ww.type_sys.registered_types:
+            if _get_ltype_class(selector) in ww.type_system.registered_types:
+                if selector not in ww.type_system.registered_types:
                     raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
                 if selector in ltypes_in_dt:
                     ltypes_used.add(selector)

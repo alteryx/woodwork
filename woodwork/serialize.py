@@ -7,7 +7,7 @@ import tempfile
 import pandas as pd
 
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.type_system.utils import (
+from woodwork.type_sys.utils import (
     _get_ltype_class,
     _get_specified_ltype_params
 )

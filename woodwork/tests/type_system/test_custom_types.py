@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 import woodwork as ww
-from woodwork.type_system.logical_types import Categorical, Double, LogicalType
+from woodwork.type_sys.logical_types import Categorical, Double, LogicalType
 
 
 def test_register_custom_logical_type(type_sys):
@@ -31,13 +31,13 @@ def test_custom_type_with_datatable(sample_df):
             return True
         return False
 
-    ww.type_sys.add_type(AgesAbove20, inference_function=ages_func, parent='Integer')
+    ww.type_system.add_type(AgesAbove20, inference_function=ages_func, parent='Integer')
     dt = ww.DataTable(sample_df)
     assert dt['age'].logical_type == AgesAbove20
     assert dt['age'].semantic_tags == {'age', 'numeric'}
     assert dt.to_dataframe()['age'].dtype == 'float64'
     # Reset global type system to original settings
-    ww.type_sys.reset_defaults()
+    ww.type_system.reset_defaults()
 
 
 def test_override_default_function(sample_df):
@@ -47,10 +47,10 @@ def test_override_default_function(sample_df):
         return False
 
     # Update functions to cause 'age' to be recognized as Double instead fo Integer
-    ww.type_sys.update_inference_function('Double', inference_function=new_double_func)
-    ww.type_sys.update_inference_function('Integer', inference_function=None)
+    ww.type_system.update_inference_function('Double', inference_function=new_double_func)
+    ww.type_system.update_inference_function('Integer', inference_function=None)
     dt = ww.DataTable(sample_df)
     assert dt['age'].logical_type == Double
     assert dt.to_dataframe()['age'].dtype == 'float64'
     # Reset global type system to original settings
-    ww.type_sys.reset_defaults()
+    ww.type_system.reset_defaults()

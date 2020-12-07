@@ -11,9 +11,9 @@ ks = import_or_none('databricks.koalas')
 def get_logical_types():
     """Returns a dictionary of logical type name strings and logical type classes"""
     # Get snake case strings
-    logical_types = {logical_type.type_string: logical_type for logical_type in ww.type_sys.registered_types}
+    logical_types = {logical_type.type_string: logical_type for logical_type in ww.type_system.registered_types}
     # Add class name strings
-    class_name_dict = {logical_type.__name__: logical_type for logical_type in ww.type_sys.registered_types}
+    class_name_dict = {logical_type.__name__: logical_type for logical_type in ww.type_system.registered_types}
     logical_types.update(class_name_dict)
 
     return logical_types
@@ -82,10 +82,10 @@ def _is_numeric_series(series, logical_type):
             logical_type = str_to_logical_type(logical_type)
 
         # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
-        if _get_ltype_class(logical_type) == ww.type_system.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
+        if _get_ltype_class(logical_type) == ww.type_sys.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
-        logical_type = ww.type_sys.infer_logical_type(series)
+        logical_type = ww.type_system.infer_logical_type(series)
 
     return 'numeric' in logical_type.standard_tags
 
@@ -106,8 +106,8 @@ def list_logical_types():
           'description': ltype.__doc__,
           'physical_type': ltype.pandas_dtype,
           'standard_tags': ltype.standard_tags,
-          'parent_type': ww.type_sys._get_parent(ltype)}
-            for ltype in ww.type_sys.registered_types]
+          'parent_type': ww.type_system._get_parent(ltype)}
+            for ltype in ww.type_system.registered_types]
     )
 
 
@@ -122,7 +122,7 @@ def list_semantic_tags():
         the corresponding logical type(s).
     """
     sem_tags = {}
-    for ltype in ww.type_sys.registered_types:
+    for ltype in ww.type_system.registered_types:
         for tag in ltype.standard_tags:
             if tag in sem_tags:
                 sem_tags[tag].append(ltype)
@@ -143,7 +143,7 @@ def list_semantic_tags():
 
 
 def _get_ltype_class(ltype):
-    if ltype in ww.type_sys.registered_types:
+    if ltype in ww.type_system.registered_types:
         return ltype
     return ltype.__class__
 
@@ -162,7 +162,7 @@ def _get_specified_ltype_params(ltype):
     Returns:
         dict: The LogicalType's specified parameters.
     '''
-    if ltype in ww.type_sys.registered_types:
+    if ltype in ww.type_system.registered_types:
         # Do not reveal parameters for an uninstantiated LogicalType
         return {}
     return ltype.__dict__

@@ -54,7 +54,7 @@ DataColumn
 Logical Types
 =============
 
-.. currentmodule:: woodwork.type_system.logical_types
+.. currentmodule:: woodwork.type_sys.logical_types
 .. autosummary::
     :toctree: generated/
 
@@ -80,7 +80,7 @@ Logical Types
 TypeSystem
 ==========
 
-.. currentmodule:: woodwork.type_system.type_system
+.. currentmodule:: woodwork.type_sys.type_system
 .. autosummary::
     :toctree: generated/
 
@@ -94,7 +94,7 @@ TypeSystem
 Utils
 =====
 
-.. currentmodule:: woodwork.type_system.utils
+.. currentmodule:: woodwork.type_sys.utils
 
 Type Utils
 ~~~~~~~~~~

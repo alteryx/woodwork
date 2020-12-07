@@ -10,8 +10,8 @@ from woodwork.exceptions import (
     StandardTagsRemovalWarning
 )
 from woodwork.indexers import _iLocIndexer
-from woodwork.type_system.logical_types import Datetime, Ordinal
-from woodwork.type_system.utils import _get_ltype_class, str_to_logical_type
+from woodwork.type_sys.logical_types import Datetime, Ordinal
+from woodwork.type_sys.utils import _get_ltype_class, str_to_logical_type
 from woodwork.utils import _convert_input_to_set, import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -180,12 +180,12 @@ class DataColumn(object):
             ltype_class = _get_ltype_class(logical_type)
             if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
                 raise TypeError("Must use an Ordinal instance with order values defined")
-            if ltype_class in ww.type_sys.registered_types:
+            if ltype_class in ww.type_system.registered_types:
                 return logical_type
             else:
                 raise TypeError(f"Invalid logical type specified for '{self.name}'")
         else:
-            return ww.type_sys.infer_logical_type(self._series)
+            return ww.type_system.infer_logical_type(self._series)
 
     def set_semantic_tags(self, semantic_tags, retain_index_tags=True):
         """Replace current semantic tags with new values and return a new DataColumn object.

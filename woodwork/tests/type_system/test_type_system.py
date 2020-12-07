@@ -1,12 +1,12 @@
 import pandas as pd
 import pytest
 
-from woodwork.type_system.inference_functions import (
+from woodwork.type_sys.inference_functions import (
     categorical_func,
     double_func,
     integer_func
 )
-from woodwork.type_system.logical_types import (
+from woodwork.type_sys.logical_types import (
     Categorical,
     CountryCode,
     Double,
@@ -15,7 +15,7 @@ from woodwork.type_system.logical_types import (
     Ordinal,
     SubRegionCode
 )
-from woodwork.type_system.type_system import TypeSystem
+from woodwork.type_sys.type_system import TypeSystem
 
 
 def test_type_system_init(default_inference_functions, default_relationships):
