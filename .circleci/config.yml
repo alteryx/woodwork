@@ -206,6 +206,4 @@ workflows:
             branches:
               ignore:
                 - /^main?/
-                - /^v\d+\.\d+\.\d+$/
-                - /^dep-update-[a-f0-9]{7}$/
           context: dockerhub
