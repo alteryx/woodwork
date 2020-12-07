@@ -16,6 +16,7 @@ Release Notes
     * Documentation Changes
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
     * Testing Changes
+        * Fix missing test coverage (:pr:`436`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
