@@ -45,10 +45,10 @@ jobs:
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e unpacked_sdist/[dask]
-          python -m pip install -e unpacked_sdist/[koalas]
-          python -m pip install -r unpacked_sdist/dev-requirements.txt
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+          python -m pip install -e .[dask]
+          python -m pip install -e .[koalas]
+          python -m pip install -r dev-requirements.txt
+          python -m pip install -r test-requirements.txt
       - name: Run lint test
         run: make lint
 
@@ -144,4 +144,5 @@ jobs:
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
