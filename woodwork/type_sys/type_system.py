@@ -280,4 +280,4 @@ class TypeSystem(object):
 
 
 type_system = TypeSystem(inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
-                      relationships=DEFAULT_RELATIONSHIPS)
+                         relationships=DEFAULT_RELATIONSHIPS)
