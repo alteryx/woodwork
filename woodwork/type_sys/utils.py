@@ -82,7 +82,7 @@ def _is_numeric_series(series, logical_type):
             logical_type = str_to_logical_type(logical_type)
 
         # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
-        if _get_ltype_class(logical_type) == ww.type_sys.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
+        if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
         logical_type = ww.type_system.infer_logical_type(series)

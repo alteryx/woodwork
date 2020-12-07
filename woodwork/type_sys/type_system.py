@@ -6,7 +6,7 @@ from .inference_functions import (
     integer_func,
     timedelta_func
 )
-from .logical_types import (
+from woodwork.logical_types import (
     URL,
     Boolean,
     Categorical,

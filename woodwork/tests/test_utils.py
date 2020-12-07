@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.type_sys.logical_types import Categorical, Datetime, Double
+from woodwork.logical_types import Categorical, Datetime, Double
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,

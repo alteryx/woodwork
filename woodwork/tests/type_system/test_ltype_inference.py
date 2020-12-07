@@ -1,6 +1,6 @@
 
 import woodwork as ww
-from woodwork.type_sys.logical_types import (
+from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,

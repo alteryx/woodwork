@@ -8,7 +8,7 @@ from woodwork.type_sys.inference_functions import (
     double_func,
     integer_func
 )
-from woodwork.type_sys.logical_types import (
+from woodwork.logical_types import (
     Categorical,
     CountryCode,
     Double,

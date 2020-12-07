@@ -10,7 +10,7 @@ from woodwork.exceptions import (
     StandardTagsRemovalWarning
 )
 from woodwork.indexers import _iLocIndexer
-from woodwork.type_sys.logical_types import Datetime, Ordinal
+from woodwork.logical_types import Datetime, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class, str_to_logical_type
 from woodwork.utils import _convert_input_to_set, import_or_none
 

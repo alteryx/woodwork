@@ -5,7 +5,7 @@ import woodwork as ww
 from woodwork import DataColumn, DataTable
 from woodwork.indexers import _iLocIndexer
 from woodwork.tests.testing_utils import to_pandas
-from woodwork.type_sys.logical_types import (
+from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,

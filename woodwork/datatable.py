@@ -9,7 +9,7 @@ import woodwork.serialize as serialize
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
-from woodwork.type_sys.logical_types import Boolean, Datetime, Double
+from woodwork.logical_types import Boolean, Datetime, Double
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,

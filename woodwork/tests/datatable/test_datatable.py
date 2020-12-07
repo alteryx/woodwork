@@ -23,7 +23,7 @@ from woodwork.tests.testing_utils import (
     to_pandas,
     validate_subset_dt
 )
-from woodwork.type_sys.logical_types import (
+from woodwork.logical_types import (
     URL,
     Boolean,
     Categorical,

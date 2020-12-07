@@ -4,7 +4,7 @@ import pytest
 
 from woodwork import DataTable
 from woodwork.demo import load_retail
-from woodwork.type_sys.logical_types import (
+from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,

@@ -55,7 +55,7 @@ DataColumn
 Logical Types
 =============
 
-.. currentmodule:: woodwork.type_sys.logical_types
+.. currentmodule:: woodwork.logical_types
 .. autosummary::
     :toctree: generated/
 
