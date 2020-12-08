@@ -106,8 +106,10 @@ def list_logical_types():
           'description': ltype.__doc__,
           'physical_type': ltype.pandas_dtype,
           'standard_tags': ltype.standard_tags,
+          'is_default_type': ltype in ww.type_system._default_inference_functions,
+          'is_registered': ltype in ww.type_system.registered_types,
           'parent_type': ww.type_system._get_parent(ltype)}
-            for ltype in ww.type_system.registered_types]
+            for ltype in ww.logical_types.LogicalType.__subclasses__()]
     )
     return ltypes_df.sort_values('name').reset_index(drop=True)
 
