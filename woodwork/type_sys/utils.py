@@ -100,7 +100,7 @@ def list_logical_types():
         pd.DataFrame: A dataframe containing details on each LogicalType, including
         the corresponding physical type and any standard semantic tags.
     """
-    return pd.DataFrame(
+    ltypes_df = pd.DataFrame(
         [{'name': ltype.__name__,
           'type_string': ltype.type_string,
           'description': ltype.__doc__,
@@ -109,6 +109,7 @@ def list_logical_types():
           'parent_type': ww.type_system._get_parent(ltype)}
             for ltype in ww.type_system.registered_types]
     )
+    return ltypes_df.sort_values('name').reset_index(drop=True)
 
 
 def list_semantic_tags():

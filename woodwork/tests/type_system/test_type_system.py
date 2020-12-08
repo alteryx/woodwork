@@ -35,6 +35,9 @@ def test_add_type_validation_errors(type_sys):
     with pytest.raises(TypeError, match=error_msg):
         type_sys.add_type(logical_type=1)
 
+    with pytest.raises(TypeError, match=error_msg):
+        type_sys.add_type(logical_type=Double())
+
     error_msg = 'inference_function must be a function'
     with pytest.raises(TypeError, match=error_msg):
         type_sys.add_type(logical_type=Ordinal, inference_function='not a function')
@@ -42,6 +45,9 @@ def test_add_type_validation_errors(type_sys):
     error_msg = 'parent must be a valid LogicalType'
     with pytest.raises(ValueError, match=error_msg):
         type_sys.add_type(logical_type=Ordinal, parent=1)
+
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.add_type(logical_type=Ordinal, parent=Double())
 
 
 def test_remove_type_validation_errors(type_sys):
