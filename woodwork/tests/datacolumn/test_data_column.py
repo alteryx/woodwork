@@ -85,6 +85,16 @@ def test_datacolumn_init_with_name(sample_series, sample_datetime_series):
     assert dc_with_ltype_change.to_series().name == changed_name
 
 
+def test_datacolumn_inity_with_truthy_name(sample_series):
+    truthy_name = 0
+    warning = 'Name mismatch between sample_series and 0. DataColumn and underlying series name are now 0'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        dc_truthy_name = DataColumn(sample_series.copy(), name=truthy_name)
+
+    assert dc_truthy_name.name == truthy_name
+    assert dc_truthy_name.to_series().name == truthy_name
+
+
 def test_datacolumn_init_with_extension_array():
     series_categories = pd.Series([1, 2, 3], dtype='category')
     extension_categories = pd.Categorical([1, 2, 3])

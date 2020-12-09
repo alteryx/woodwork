@@ -43,8 +43,7 @@ class DataColumn(object):
                 (list or set) If multiple tags are being set, a list or set of strings can be passed.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
-            # --> name could also be int now
-            name (str, optional): Name of DataColumn. Will overwrite Series name, if it exists.
+            name (Hashable, optional): Name of DataColumn. Will overwrite Series name, if it exists.
             description (str, optional): Optional text describing the contents of the column
         """
         self._assigned_name = name
@@ -344,7 +343,7 @@ class DataColumn(object):
     @property
     def name(self):
         """The name of the column"""
-        return self._assigned_name or self._series.name
+        return self._assigned_name if self._assigned_name is not None else self._series.name
 
     @property
     def dtype(self):

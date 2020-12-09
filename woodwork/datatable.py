@@ -324,7 +324,7 @@ class DataTable(object):
 
     @time_index.setter
     def time_index(self, time_index):
-        if self.time_index and time_index is None:
+        if self.time_index is not None and time_index is None:
             updated_time_index_col = self.columns[self.time_index].remove_semantic_tags('time_index')
             self._update_columns({self.time_index: updated_time_index_col})
         elif time_index is not None:
@@ -435,6 +435,7 @@ class DataTable(object):
         tags for the column to be removed.
 
         Args:
+        # --> update to anythign hashable here and wherever else
             index (str): The name of the column to set as the index
 
         Returns:

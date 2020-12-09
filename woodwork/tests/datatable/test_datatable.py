@@ -2940,3 +2940,32 @@ def test_datatable_drop_errors(sample_df):
         dt.drop(['not_present1', 4])
 
 # --> add test initializing with df that has different types of columns
+
+
+def test_datatable_truthy_column_names(truthy_names_df):
+    if dd and isinstance(truthy_names_df, dd.DataFrame):
+        pytest.xfail('Dask DataTables cannot handle integer column names')
+
+    dt = DataTable(truthy_names_df.copy(), index=0, time_index='')
+    assert dt.index == 0
+    assert dt.time_index == ''
+
+    for col_name in truthy_names_df.columns:
+        dc = dt[col_name]
+        assert dc.name == col_name
+        assert dc._series.name == col_name
+
+    dt.time_index = None
+    assert dt.time_index is None
+
+    dt = dt.set_index('')
+    assert dt.index == ''
+
+    popped_col = dt.pop('')
+    dt[''] = popped_col
+    assert dt[''].name == ''
+    assert dt['']._series.name == ''
+
+    dt = dt.rename({0: 'col_with_name'})
+    assert 0 not in dt.columns
+    assert 'col_with_name' in dt.columns
