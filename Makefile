@@ -40,3 +40,10 @@ installdeps-dev:
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark|koalas')
 	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
+
+.PHONY: package_woodwork
+package_woodwork:
+	python setup.py sdist
+	$(eval DT_VERSION=$(shell python setup.py --version))
+	tar -zxvf "dist/woodwork-${DT_VERSION}.tar.gz"
+	mv "woodwork-${DT_VERSION}" unpacked_sdist
