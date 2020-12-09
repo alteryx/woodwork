@@ -29,6 +29,7 @@ def datatable_to_description(datatable):
     ordered_columns = df.columns
     column_metadata = [
         {
+            # need to change to add column_metadata field and maybe the above to be "column description???"
             'name': col.name,
             'ordinal': ordered_columns.get_loc(col.name),
             'logical_type': {

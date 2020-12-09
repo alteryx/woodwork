@@ -36,7 +36,8 @@ class DataTable(object):
                  time_index=None,
                  semantic_tags=None,
                  logical_types=None,
-                 metadata=None,
+                 table_metadata=None,
+                 column_metadata,
                  use_standard_tags=True,
                  make_index=False,
                  column_descriptions=None,
@@ -60,7 +61,9 @@ class DataTable(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
-            metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
+            column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
+                to that column's metadata dictionary.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
             make_index (bool, optional): If True, will create a new unique, numeric index column with the
@@ -76,7 +79,7 @@ class DataTable(object):
         # Check that inputs are valid
         dataframe = _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types,
-                         metadata, semantic_tags, make_index, column_descriptions)
+                         table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
 
         self._dataframe = dataframe
 
@@ -87,6 +90,7 @@ class DataTable(object):
         self.name = name
         self.use_standard_tags = use_standard_tags
 
+        # --> add column metadata to this
         # Infer logical types and create columns
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
@@ -103,7 +107,7 @@ class DataTable(object):
             _update_time_index(self, time_index)
             self._sort_columns(already_sorted)
 
-        self.metadata = metadata or {}
+        self.metadata = table_metadata or {}
 
     def __eq__(self, other, deep=True):
         if self.name != other.name:
@@ -1085,7 +1089,8 @@ def _validate_dataframe(dataframe):
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types,
-                     metadata, semantic_tags, make_index, column_descriptions):
+                     table_metadata, column_metadata, semantic_tags,
+                     make_index, column_descriptions):
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
@@ -1094,8 +1099,10 @@ def _validate_params(dataframe, name, index, time_index, logical_types,
         _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
-    if metadata:
-        _check_metadata(metadata)
+    if table_metadata:
+        _check_table_metadata(table_metadata)
+    if column_metadata:
+        _check_column_metadata(column_metadata)
     if time_index is not None:
         datetime_format = None
         logical_type = None
@@ -1169,9 +1176,14 @@ def _check_column_descriptions(dataframe, column_descriptions):
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
-def _check_metadata(metadata):
-    if not isinstance(metadata, dict):
-        raise TypeError('Metadata must be a dictionary.')
+def _check_table_metadata(table_metadata):
+    if not isinstance(table_metadata, dict):
+        raise TypeError('Table metadata must be a dictionary.')
+
+
+def _check_column_metadata(column_metadata):
+    pass
+# check all cols are present
 
 
 def _update_index(datatable, index, old_index=None):

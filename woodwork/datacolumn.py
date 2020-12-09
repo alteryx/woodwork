@@ -45,6 +45,7 @@ class DataColumn(object):
                 on the inferred or specified logical type for the column. Defaults to True.
             name (str, optional): Name of DataColumn. Will overwrite Series name, if it exists.
             description (str, optional): Optional text describing the contents of the column
+            # --> add column metatdata as a param
         """
         self._assigned_name = name
         self._set_series(series)
