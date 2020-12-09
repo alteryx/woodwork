@@ -31,6 +31,7 @@ Release Notes
         * Sort dataframe if ``time_index`` is specified, bypass sorting with ``already_sorted`` parameter. (:pr:`410`)
         * Add ``description`` attribute to DataColumn (:pr:`416`)
         * Implement ``DataColumn.__len__`` and ``DataTable.__len__`` (:pr:`415`)
+        * Migrate CI tests to github actions (:pr:`417`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
         * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
@@ -51,7 +52,7 @@ Release Notes
         * Improve parameterization for ``test_datatable_equality`` (:pr:`409`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
