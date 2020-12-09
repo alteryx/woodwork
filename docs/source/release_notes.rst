@@ -20,7 +20,7 @@ Release Notes
         * Fix missing test coverage (:pr:`436`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.6 November 30, 2020**
     * Enhancements
