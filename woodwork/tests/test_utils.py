@@ -6,19 +6,18 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import (
-    Categorical,
-    Datetime,
-    Double,
-    LogicalType,
+from woodwork.logical_types import Categorical, Datetime, Double
+from woodwork.type_sys.utils import (
+    _get_specified_ltype_params,
+    _is_numeric_series,
+    list_logical_types,
+    list_semantic_tags,
     str_to_logical_type
 )
 from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
-    _get_specified_ltype_params,
     _is_null_latlong,
-    _is_numeric_series,
     _is_s3,
     _is_url,
     _new_dt_including,
@@ -26,9 +25,7 @@ from woodwork.utils import (
     _to_latlong_float,
     camel_to_snake,
     import_or_none,
-    import_or_raise,
-    list_logical_types,
-    list_semantic_tags
+    import_or_raise
 )
 
 dd = import_or_none('dask.dataframe')
@@ -70,16 +67,48 @@ def test_convert_input_to_set():
     assert semantic_tags_from_set == {'index', 'numeric', 'category'}
 
 
-def test_list_logical_types():
-    all_ltypes = LogicalType.__subclasses__()
+def test_list_logical_types_default():
+    all_ltypes = ww.logical_types.LogicalType.__subclasses__()
 
     df = list_logical_types()
 
-    assert set(df.columns) == {'name', 'type_string', 'description', 'physical_type', 'standard_tags'}
+    assert set(df.columns) == {'name', 'type_string', 'description', 'physical_type',
+                               'standard_tags', 'is_default_type', 'is_registered', 'parent_type'}
 
     assert len(all_ltypes) == len(df)
     for name in df['name']:
         assert str_to_logical_type(name) in all_ltypes
+    assert all(df['is_default_type'])
+    assert all(df['is_registered'])
+
+
+def test_list_logical_types_customized_type_system():
+    ww.type_system.remove_type('URL')
+
+    class CustomRegistered(ww.logical_types.LogicalType):
+        pandas_dtype = 'int64'
+
+    class CustomNotRegistered(ww.logical_types.LogicalType):
+        pandas_dtype = 'int64'
+
+    ww.type_system.add_type(CustomRegistered)
+    all_ltypes = ww.logical_types.LogicalType.__subclasses__()
+    df = list_logical_types()
+    assert len(all_ltypes) == len(df)
+    # Check that URL is unregistered
+    assert df.loc[18, 'is_default_type']
+    assert not df.loc[18, 'is_registered']
+
+    # Check that new registered type is present and shows as registered
+    assert 'CustomRegistered' in df['name'].values
+    assert not df.loc[4, 'is_default_type']
+    assert df.loc[4, 'is_registered']
+
+    # Check that new unregistered type is present and shows as not registered
+    assert 'CustomNotRegistered' in df['name'].values
+    assert not df.loc[3, 'is_default_type']
+    assert not df.loc[3, 'is_registered']
+    ww.type_system.reset_defaults()
 
 
 def test_list_semantic_tags():

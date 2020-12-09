@@ -4,25 +4,22 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
+import woodwork as ww
 import woodwork.serialize as serialize
 from woodwork.datacolumn import DataColumn
 from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.indexers import _iLocIndexer
-from woodwork.logical_types import (
-    Boolean,
-    Datetime,
-    Double,
-    LatLong,
-    LogicalType,
+from woodwork.logical_types import Boolean, Datetime, Double, LatLong
+from woodwork.type_sys.utils import (
+    _get_ltype_class,
+    _is_numeric_series,
+    col_is_datetime,
     str_to_logical_type
 )
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_ltype_class,
     _get_mode,
-    _is_numeric_series,
     _new_dt_including,
-    col_is_datetime,
     import_or_none
 )
 
@@ -670,8 +667,8 @@ class DataTable(object):
         cols_to_include = set()
 
         for selector in include:
-            if _get_ltype_class(selector) in LogicalType.__subclasses__():
-                if selector not in LogicalType.__subclasses__():
+            if _get_ltype_class(selector) in ww.type_system.registered_types:
+                if selector not in ww.type_system.registered_types:
                     raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
                 if selector in ltypes_in_dt:
                     ltypes_used.add(selector)

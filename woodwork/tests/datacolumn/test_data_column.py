@@ -503,8 +503,8 @@ def test_len(sample_series):
     assert len(col) == len(sample_series) == 4
 
 
-def test_dtype_update_on_init(datetime_series):
-    dc = DataColumn(datetime_series,
+def test_dtype_update_on_init(sample_datetime_series):
+    dc = DataColumn(sample_datetime_series,
                     logical_type='DateTime')
     assert dc._series.dtype == 'datetime64[ns]'
 

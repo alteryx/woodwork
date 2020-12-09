@@ -3,6 +3,20 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.logical_types import (
+    Categorical,
+    CountryCode,
+    Double,
+    Integer,
+    NaturalLanguage
+)
+from woodwork.type_sys.inference_functions import (
+    categorical_func,
+    double_func,
+    integer_func
+)
+from woodwork.type_sys.type_system import TypeSystem
+
 
 def pd_to_dask(series):
     dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
@@ -108,11 +122,6 @@ def koalas_datetimes(pandas_datetimes):
 @pytest.fixture(params=['pandas_datetimes', 'dask_datetimes', 'koalas_datetimes'])
 def datetimes(request):
     return request.getfixturevalue(request.param)
-
-
-@pytest.fixture()
-def datetime_series(datetimes):
-    return datetimes[1]
 
 
 # Categorical Inference Fixtures
@@ -234,30 +243,24 @@ def pdnas(request):
     return request.getfixturevalue(request.param)
 
 
-# LatLong Fixtures for testing access to latlong values
 @pytest.fixture
-def pandas_latlongs():
-    return [
-        pd.Series([('1', '2'), ('3', '4')]),
-        pd.Series([['1', '2'], ['3', '4']]),
-        pd.Series([(1, 2), (3, 4)]),
-        pd.Series([[1, 2], [3, 4]]),
-        pd.Series(['(1, 2)', '(3, 4)']),
-        pd.Series(['1, 2', '3, 4']),
-        pd.Series(['[1, 2]', '[3, 4]'])
-    ]
+def default_inference_functions():
+    return {
+        Double: double_func,
+        Integer: integer_func,
+        Categorical: categorical_func,
+        CountryCode: None,
+        NaturalLanguage: None,
+    }
 
 
 @pytest.fixture
-def dask_latlongs(pandas_latlongs):
-    return [pd_to_dask(series) for series in pandas_latlongs]
+def default_relationships():
+    return [(Double, Integer), (Categorical, CountryCode)]
 
 
 @pytest.fixture
-def koalas_latlongs(pandas_latlongs):
-    return [pd_to_koalas(series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)) for series in pandas_latlongs]
-
-
-@pytest.fixture(params=['pandas_latlongs', 'dask_latlongs', 'koalas_latlongs'])
-def latlongs(request):
-    return request.getfixturevalue(request.param)
+def type_sys(default_inference_functions, default_relationships):
+    return TypeSystem(inference_functions=default_inference_functions,
+                      relationships=default_relationships,
+                      default_type=NaturalLanguage)

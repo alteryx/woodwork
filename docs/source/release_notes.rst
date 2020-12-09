@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
         * Add ``__repr__`` to DataTable (:pr:`425`)
         * Allow initializing DataColumn with numpy array (:pr:`430`)
         * Add ``drop`` to DataTable (:pr:`434`)
@@ -13,13 +14,13 @@ Release Notes
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
-    * Documentation Changes
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
+    * Documentation Changes
     * Testing Changes
         * Fix missing test coverage (:pr:`436`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.6 November 30, 2020**
     * Enhancements

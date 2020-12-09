@@ -327,7 +327,7 @@ def test_datatable_types(sample_df):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
-    assert all([dc.logical_type in LogicalType.__subclasses__() or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
+    assert all([dc.logical_type in ww.type_system.registered_types or isinstance(dc.logical_type, LogicalType) for dc in dt.columns.values()])
     correct_logical_types = {
         'id': Integer,
         'full_name': NaturalLanguage,
@@ -465,7 +465,7 @@ def test_datatable_logical_types(sample_df):
     for k, v in dt.logical_types.items():
         assert isinstance(k, str)
         assert k in sample_df.columns
-        assert v in LogicalType.__subclasses__()
+        assert v in ww.type_system.registered_types
         assert v == dt.columns[k].logical_type
 
 
@@ -1194,7 +1194,7 @@ def test_select_ltypes_no_match_and_all(sample_df):
     })
     assert len(dt.select(ZIPCode).columns) == 0
     assert len(dt.select(['ZIPCode', PhoneNumber]).columns) == 1
-    all_types = LogicalType.__subclasses__()
+    all_types = ww.type_system.registered_types
     dt_all_types = dt.select(all_types)
     assert len(dt_all_types.columns) == len(dt.columns)
     assert len(dt_all_types.to_dataframe().columns) == len(dt.to_dataframe().columns)

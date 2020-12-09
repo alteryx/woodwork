@@ -6,15 +6,13 @@ import tempfile
 
 import pandas as pd
 
-from woodwork.logical_types import LatLong
+import woodwork as ww
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import (
+from woodwork.type_sys.utils import (
     _get_ltype_class,
-    _get_specified_ltype_params,
-    _is_s3,
-    _is_url,
-    import_or_none
+    _get_specified_ltype_params
 )
+from woodwork.utils import _is_s3, _is_url, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -155,7 +153,7 @@ def write_table_data(datatable, path, format='csv', **kwargs):
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
         df = df.copy()
-        latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+        latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
         df[latlong_columns] = df[latlong_columns].astype(str)
 
         df.to_parquet(file, **kwargs)

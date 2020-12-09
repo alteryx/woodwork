@@ -78,10 +78,36 @@ Logical Types
     URL
     ZIPCode
 
-.. currentmodule:: woodwork.utils
+TypeSystem
+==========
+
+.. currentmodule:: woodwork.type_sys.type_system
+.. autosummary::
+    :toctree: generated/
+
+    TypeSystem
+    TypeSystem.add_type
+    TypeSystem.infer_logical_type
+    TypeSystem.remove_type
+    TypeSystem.update_inference_function
+    TypeSystem.update_relationship
 
 Utils
 =====
+
+.. currentmodule:: woodwork.type_sys.utils
+
+Type Utils
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    list_logical_types
+    list_semantic_tags
+
+.. currentmodule:: woodwork.utils
 
 General Utils
 ~~~~~~~~~~~~~
@@ -90,8 +116,6 @@ General Utils
     :toctree: generated
     :nosignatures:
 
-    list_logical_types
-    list_semantic_tags
     read_csv
 
 Demo Data
