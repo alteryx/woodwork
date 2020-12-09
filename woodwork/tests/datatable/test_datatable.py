@@ -244,10 +244,7 @@ def test_validate_params_errors(sample_df):
 
 
 def test_check_index_errors(sample_df):
-    error_message = 'Index column name must be a string'
-    with pytest.raises(TypeError, match=error_message):
-        _check_index(dataframe=sample_df, index=1)
-
+    # --> add a check that the index name is hashable?
     error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
@@ -268,10 +265,7 @@ def test_check_index_errors(sample_df):
 
 
 def test_check_time_index_errors(sample_df):
-    error_message = 'Time index column name must be a string'
-    with pytest.raises(TypeError, match=error_message):
-        _check_time_index(dataframe=sample_df,
-                          time_index=1)
+    # --> add check that the name is hashable?
 
     error_message = 'Specified time index column `foo` not found in dataframe'
     with pytest.raises(LookupError, match=error_message):
@@ -1412,7 +1406,7 @@ def test_getitem(sample_df):
 def test_getitem_invalid_input(sample_df):
     dt = DataTable(sample_df)
 
-    error_msg = 'Column name must be a string'
+    error_msg = 'Column with name 1 not found in DataTable'
     with pytest.raises(KeyError, match=error_msg):
         dt[1]
 
@@ -1496,11 +1490,6 @@ def test_datatable_getitem_list_warnings(sample_df):
 
 def test_setitem_invalid_input(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
-
-    error_msg = 'Column name must be a string'
-    with pytest.raises(KeyError, match=error_msg):
-        dt[1] = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                           use_standard_tags=False)
 
     error_msg = 'New column must be of DataColumn type'
     with pytest.raises(ValueError, match=error_msg):
@@ -1613,6 +1602,8 @@ def test_setitem_new_column(sample_df):
     assert dt['test_col3']._series.name == 'test_col3'
     assert 'test_col3' in updated_df.columns
     assert updated_df['test_col3'].dtype == 'float'
+
+    # --> check where adding a column name of type int and see how it changes the index type
 
 
 def test_setitem_overwrite_column(sample_df):
@@ -2619,13 +2610,7 @@ def test_datatable_rename_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         dt.rename({'age': 'test', 'full_name': 'test'})
 
-    error = 'Column to rename must be a string. 1 is not a string.'
-    with pytest.raises(KeyError, match=error):
-        dt.rename({1: 'test'})
-
-    error = 'New column name must be a string. 1 is not a string.'
-    with pytest.raises(ValueError, match=error):
-        dt.rename({'age': 1})
+    # --> add check that column to rename is hashable
 
     error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
     with pytest.raises(KeyError, match=error):
@@ -2936,10 +2921,9 @@ def test_datatable_drop_indices(sample_df):
 def test_datatable_drop_errors(sample_df):
     dt = DataTable(sample_df)
 
-    error = 'Input to DataTable.drop must be either a string or list of strings.'
-    for bad_input in [4, {'test': 'column'}]:
-        with pytest.raises(TypeError, match=error):
-            dt.drop(bad_input)
+    error = re.escape("[{'test': 'column'}] not found in DataTable")
+    with pytest.raises(ValueError, match=error):
+        dt.drop({'test': 'column'})
 
     error = re.escape("['not_present'] not found in DataTable")
     with pytest.raises(ValueError, match=error):
@@ -2948,6 +2932,8 @@ def test_datatable_drop_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         dt.drop(['age', 'not_present'])
 
-    error = re.escape("['not_present1', 'not_present2'] not found in DataTable")
+    error = re.escape("['not_present1', 4] not found in DataTable")
     with pytest.raises(ValueError, match=error):
-        dt.drop(['not_present1', 'not_present2'])
+        dt.drop(['not_present1', 4])
+
+# --> add test initializing with df that has different types of columns

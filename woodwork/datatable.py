@@ -1,5 +1,6 @@
 import warnings
 
+from collections.abc import Hashable
 import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
@@ -131,16 +132,15 @@ class DataTable(object):
             if invalid_cols:
                 raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
             return self._new_dt_from_cols(key)
-        if not isinstance(key, str):
-            raise KeyError('Column name must be a string')
+        if not isinstance(key, Hashable):
+            raise KeyError('Column name must be hashable')
         if key not in self.columns.keys():
             raise KeyError(f"Column with name '{key}' not found in DataTable")
         return self.columns[key]
 
     def __setitem__(self, col_name, column):
-        if not isinstance(col_name, str):
-            raise KeyError('Column name must be a string')
-
+        if not isinstance(col_name, Hashable):
+            raise KeyError('Column name must be hashable')
         if not isinstance(column, DataColumn):
             raise ValueError('New column must be of DataColumn type')
 
@@ -355,6 +355,7 @@ class DataTable(object):
         Returns:
             woodwork.DataColumn: DataColumn including logical type and semantic tags.
         """
+        # --> make sure to update away from RangeInddex if necessary
         col = self[column_name]
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
@@ -369,12 +370,12 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: DataTable with the specified columns removed.
         """
-        if isinstance(columns, str):
+        if not isinstance(columns, (list, set)):
             columns = [columns]
-        elif not isinstance(columns, (list, set)):
-            raise TypeError('Input to DataTable.drop must be either a string or list of strings.')
 
-        not_present = [col for col in columns if col not in self.columns]
+        # If the value isn't hashable it couldn't be a column name, but we check separately because
+        # checking if it's in self.columns isn't possible because it's not hashable
+        not_present = [col for col in columns if (not isinstance(col, Hashable) or col not in self.columns)]
         if not_present:
             raise ValueError(f'{not_present} not found in DataTable')
 
@@ -395,12 +396,13 @@ class DataTable(object):
         """
         if len(columns) != len(set(columns.values())):
             raise ValueError('New columns names must be unique from one another.')
-
+        # -->if the columns are a RangeIndex then any rename will convert them all to strings
+        # pandas just turns the col to object but I think we should only have non-strings if a RangeIndex
         for old_name, new_name in columns.items():
-            if not isinstance(old_name, str):
-                raise KeyError(f"Column to rename must be a string. {old_name} is not a string.")
-            if not isinstance(new_name, str):
-                raise ValueError(f"New column name must be a string. {new_name} is not a string.")
+            if not isinstance(old_name, Hashable):
+                raise KeyError(f"Column to rename must be hashable. {old_name} is not hashable.")
+            if not isinstance(new_name, Hashable):
+                raise ValueError(f"New column name must be hashable. {new_name} is not hashable.")
             if old_name not in self.columns:
                 raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
             if new_name in self.columns and new_name not in columns.keys():
@@ -1083,6 +1085,7 @@ class DataTable(object):
 
 
 def _validate_dataframe(dataframe):
+    # --> look into creating a rangeindex if no columns exist
     '''Check that the dataframe supplied during DataTable initialization is valid,
     and convert numpy array to pandas DataFrame if necessary.'''
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
@@ -1092,6 +1095,7 @@ def _validate_dataframe(dataframe):
 
     if isinstance(dataframe, np.ndarray):
         dataframe = pd.DataFrame(dataframe)
+    # --> might be nough to just always turn into a string if not a RangeIndex
     return dataframe
 
 
@@ -1130,8 +1134,8 @@ def _check_unique_column_names(dataframe):
 
 
 def _check_index(dataframe, index, make_index=False):
-    if index and not isinstance(index, str):
-        raise TypeError('Index column name must be a string')
+    if index and not isinstance(index, Hashable):
+        raise TypeError('Index column name must be hashable')
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
@@ -1148,8 +1152,8 @@ def _check_index(dataframe, index, make_index=False):
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
-    if not isinstance(time_index, str):
-        raise TypeError('Time index column name must be a string')
+    if not isinstance(time_index, Hashable):
+        raise TypeError('Time index column name must be hashable')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
     if not (_is_numeric_series(dataframe[time_index], logical_type) or
