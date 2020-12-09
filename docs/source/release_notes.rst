@@ -7,6 +7,7 @@ Release Notes
         * Add ``__repr__`` to DataTable (:pr:`425`)
         * Allow initializing DataColumn with numpy array (:pr:`430`)
         * Add ``drop`` to DataTable (:pr:`434`)
+        * Migrate CI tests to Github Actions (:pr:`417`, :pr:`441`)
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
@@ -18,7 +19,7 @@ Release Notes
         * Fix missing test coverage (:pr:`436`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`jeff-hernandez`
 
 **v0.0.6 November 30, 2020**
     * Enhancements
@@ -31,7 +32,6 @@ Release Notes
         * Sort dataframe if ``time_index`` is specified, bypass sorting with ``already_sorted`` parameter. (:pr:`410`)
         * Add ``description`` attribute to DataColumn (:pr:`416`)
         * Implement ``DataColumn.__len__`` and ``DataTable.__len__`` (:pr:`415`)
-        * Migrate CI tests to github actions (:pr:`417`)
     * Fixes
         * Rename ``data_column.py`` ``datacolumn.py`` (:pr:`386`)
         * Rename ``data_table.py`` ``datatable.py`` (:pr:`387`)
@@ -52,7 +52,7 @@ Release Notes
         * Improve parameterization for ``test_datatable_equality`` (:pr:`409`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
