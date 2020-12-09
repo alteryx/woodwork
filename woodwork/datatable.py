@@ -126,8 +126,8 @@ class DataTable(object):
 
     def __getitem__(self, key):
         if isinstance(key, list):
-            if not all([isinstance(col, str) for col in key]):
-                raise KeyError('Column names must be strings')
+            if not all([isinstance(col, Hashable) for col in key]):
+                raise KeyError('Column names must be hashable')
             invalid_cols = set(key).difference(set(self.columns.keys()))
             if invalid_cols:
                 raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
@@ -372,8 +372,7 @@ class DataTable(object):
         if not isinstance(columns, (list, set)):
             columns = [columns]
 
-        # If the value isn't hashable it couldn't be a column name, but we check separately because
-        # checking if it's in self.columns isn't possible because it's not hashable
+        # If the column name isn't hashable we can't do "col not in self.columns", so we check separately
         not_present = [col for col in columns if (not isinstance(col, Hashable) or col not in self.columns)]
         if not_present:
             raise ValueError(f'{not_present} not found in DataTable')

@@ -1414,6 +1414,10 @@ def test_getitem(sample_df):
 def test_getitem_invalid_input(sample_df):
     dt = DataTable(sample_df)
 
+    error_msg = 'Column name must be hashable'
+    with pytest.raises(KeyError, match=error_msg):
+        dt[{}]
+
     error_msg = 'Column with name 1 not found in DataTable'
     with pytest.raises(KeyError, match=error_msg):
         dt[1]
@@ -1490,8 +1494,8 @@ def test_datatable_getitem_list_warnings(sample_df):
     with pytest.raises(KeyError, match=error_msg):
         dt[columns]
 
-    columns = [1]
-    error_msg = 'Column names must be strings'
+    columns = [{}]
+    error_msg = 'Column names must be hashable'
     with pytest.raises(KeyError, match=error_msg):
         dt[columns]
 
@@ -2945,15 +2949,15 @@ def test_datatable_drop_errors(sample_df):
         dt.drop(['not_present1', 4])
 
 
-def test_datatable_truthy_column_names(truthy_names_df):
-    if dd and isinstance(truthy_names_df, dd.DataFrame):
+def test_datatable_falsy_column_names(falsy_names_df):
+    if dd and isinstance(falsy_names_df, dd.DataFrame):
         pytest.xfail('Dask DataTables cannot handle integer column names')
 
-    dt = DataTable(truthy_names_df.copy(), index=0, time_index='')
+    dt = DataTable(falsy_names_df.copy(), index=0, time_index='')
     assert dt.index == 0
     assert dt.time_index == ''
 
-    for col_name in truthy_names_df.columns:
+    for col_name in falsy_names_df.columns:
         dc = dt[col_name]
         assert dc.name == col_name
         assert dc._series.name == col_name

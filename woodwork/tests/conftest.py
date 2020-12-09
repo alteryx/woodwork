@@ -457,7 +457,7 @@ def latlongs(request):
 
 
 @pytest.fixture()
-def truthy_names_df_pandas():
+def falsy_names_df_pandas():
     return pd.DataFrame({
         0: ['a', 'b', 'c'],
         '': [1, 2, 3],
@@ -465,17 +465,17 @@ def truthy_names_df_pandas():
 
 
 @pytest.fixture()
-def truthy_names_df_dask(truthy_names_df_pandas):
+def falsy_names_df_dask(falsy_names_df_pandas):
     dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
-    return dd.from_pandas(truthy_names_df_pandas, npartitions=2)
+    return dd.from_pandas(falsy_names_df_pandas, npartitions=2)
 
 
 @pytest.fixture()
-def truthy_names_df_koalas(truthy_names_df_pandas):
+def falsy_names_df_koalas(falsy_names_df_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(truthy_names_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
+    return ks.from_pandas(falsy_names_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
 
 
-@pytest.fixture(params=['truthy_names_df_pandas', 'truthy_names_df_dask', 'truthy_names_df_koalas'])
-def truthy_names_df(request):
+@pytest.fixture(params=['falsy_names_df_pandas', 'falsy_names_df_dask', 'falsy_names_df_koalas'])
+def falsy_names_df(request):
     return request.getfixturevalue(request.param)
