@@ -247,7 +247,10 @@ def test_validate_params_errors(sample_df):
 
 
 def test_check_index_errors(sample_df):
-    # --> add a check that the index name is hashable?
+    error_message = 'Index column name must be hashable'
+    with pytest.raises(TypeError, match=error_message):
+        _check_index(dataframe=sample_df, index={})
+
     error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
@@ -268,7 +271,9 @@ def test_check_index_errors(sample_df):
 
 
 def test_check_time_index_errors(sample_df):
-    # --> add check that the name is hashable?
+    error_message = 'Time index column name must be hashable'
+    with pytest.raises(TypeError, match=error_message):
+        _check_time_index(dataframe=sample_df, time_index={})
 
     error_message = 'Specified time index column `foo` not found in dataframe'
     with pytest.raises(LookupError, match=error_message):
@@ -1606,8 +1611,6 @@ def test_setitem_new_column(sample_df):
     assert 'test_col3' in updated_df.columns
     assert updated_df['test_col3'].dtype == 'float'
 
-    # --> check where adding a column name of type int and see how it changes the index type
-
 
 def test_setitem_overwrite_column(sample_df):
     dt = DataTable(sample_df, index='id',
@@ -2613,7 +2616,9 @@ def test_datatable_rename_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         dt.rename({'age': 'test', 'full_name': 'test'})
 
-    # --> add check that column to rename is hashable
+    error = re.escape('New column name must be hashable. [] is not hashable.')
+    with pytest.raises(ValueError, match=error):
+        dt.rename({'test': []})
 
     error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
     with pytest.raises(KeyError, match=error):
@@ -2938,8 +2943,6 @@ def test_datatable_drop_errors(sample_df):
     error = re.escape("['not_present1', 4] not found in DataTable")
     with pytest.raises(ValueError, match=error):
         dt.drop(['not_present1', 4])
-
-# --> add test initializing with df that has different types of columns
 
 
 def test_datatable_truthy_column_names(truthy_names_df):

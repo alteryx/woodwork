@@ -94,7 +94,6 @@ class DataTable(object):
                                             semantic_tags,
                                             use_standard_tags,
                                             column_descriptions)
-        # --> need to make sure we don't do if col_name anywhere bc then 0 will evaluate to False
         if index is not None:
             _update_index(self, index)
 
@@ -356,7 +355,6 @@ class DataTable(object):
         Returns:
             woodwork.DataColumn: DataColumn including logical type and semantic tags.
         """
-        # --> make sure to update away from RangeInddex if necessary
         col = self[column_name]
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
@@ -395,13 +393,7 @@ class DataTable(object):
         Note:
             Index and time index columns cannot be renamed.
         """
-        if len(columns) != len(set(columns.values())):
-            raise ValueError('New columns names must be unique from one another.')
-        # -->if the columns are a RangeIndex then any rename will convert them all to strings
-        # pandas just turns the col to object but I think we should only have non-strings if a RangeIndex
         for old_name, new_name in columns.items():
-            if not isinstance(old_name, Hashable):
-                raise KeyError(f"Column to rename must be hashable. {old_name} is not hashable.")
             if not isinstance(new_name, Hashable):
                 raise ValueError(f"New column name must be hashable. {new_name} is not hashable.")
             if old_name not in self.columns:
@@ -410,6 +402,9 @@ class DataTable(object):
                 raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
+
+        if len(columns) != len(set(columns.values())):
+            raise ValueError('New columns names must be unique from one another.')
 
         old_all_cols = list(self._dataframe.columns)
         new_dt = self._new_dt_from_cols(old_all_cols)
@@ -435,7 +430,6 @@ class DataTable(object):
         tags for the column to be removed.
 
         Args:
-        # --> update to anythign hashable here and wherever else
             index (str): The name of the column to set as the index
 
         Returns:
@@ -1087,7 +1081,6 @@ class DataTable(object):
 
 
 def _validate_dataframe(dataframe):
-    # --> look into creating a rangeindex if no columns exist
     '''Check that the dataframe supplied during DataTable initialization is valid,
     and convert numpy array to pandas DataFrame if necessary.'''
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
@@ -1097,7 +1090,6 @@ def _validate_dataframe(dataframe):
 
     if isinstance(dataframe, np.ndarray):
         dataframe = pd.DataFrame(dataframe)
-    # --> might be nough to just always turn into a string if not a RangeIndex
     return dataframe
 
 
