@@ -1503,6 +1503,10 @@ def test_datatable_getitem_list_warnings(sample_df):
 def test_setitem_invalid_input(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
 
+    error_msg = 'Column name must be hashable'
+    with pytest.raises(KeyError, match=error_msg):
+        dt[[]] = pd.Series([1, 2, 3], dtype='Int64')
+
     error_msg = 'New column must be of DataColumn type'
     with pytest.raises(ValueError, match=error_msg):
         dt['test'] = pd.Series([1, 2, 3], dtype='Int64')
