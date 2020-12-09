@@ -1,6 +1,6 @@
 import warnings
-
 from collections.abc import Hashable
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
@@ -94,13 +94,14 @@ class DataTable(object):
                                             semantic_tags,
                                             use_standard_tags,
                                             column_descriptions)
-        if index:
+        # --> need to make sure we don't do if col_name anywhere bc then 0 will evaluate to False
+        if index is not None:
             _update_index(self, index)
 
         # Update dtypes before setting time index so that any Datetime formatting is applied
         self._update_columns(self.columns)
 
-        if time_index:
+        if time_index is not None:
             _update_time_index(self, time_index)
             self._sort_columns(already_sorted)
 
@@ -135,7 +136,7 @@ class DataTable(object):
         if not isinstance(key, Hashable):
             raise KeyError('Column name must be hashable')
         if key not in self.columns.keys():
-            raise KeyError(f"Column with name '{key}' not found in DataTable")
+            raise KeyError(f"Column with name {key} not found in DataTable")
         return self.columns[key]
 
     def __setitem__(self, col_name, column):
@@ -307,7 +308,7 @@ class DataTable(object):
 
     @index.setter
     def index(self, index):
-        if self.index and index is None:
+        if self.index is not None and index is None:
             updated_index_col = self.columns[self.index].remove_semantic_tags('index')
             self._update_columns({self.index: updated_index_col})
         elif index is not None:
@@ -1105,13 +1106,13 @@ def _validate_params(dataframe, name, index, time_index, logical_types,
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
-    if index or make_index:
+    if index is not None or make_index:
         _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
     if metadata:
         _check_metadata(metadata)
-    if time_index:
+    if time_index is not None:
         datetime_format = None
         logical_type = None
         if logical_types is not None and time_index in logical_types:
@@ -1134,19 +1135,19 @@ def _check_unique_column_names(dataframe):
 
 
 def _check_index(dataframe, index, make_index=False):
-    if index and not isinstance(index, Hashable):
+    if index is not None and not isinstance(index, Hashable):
         raise TypeError('Index column name must be hashable')
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
-    if index and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
+    if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
         # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
-    if make_index and index and index in dataframe.columns:
+    if make_index and index is not None and index in dataframe.columns:
         # User sets make_index to True, but supplies an index name that matches a column already present
         raise IndexError('When setting make_index to True, the name specified for index cannot match an existing column name')
-    if make_index and not index:
+    if make_index and index is None:
         # User sets make_index to True, but does not supply a name for the index
         raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
 
@@ -1199,7 +1200,7 @@ def _update_index(datatable, index, old_index=None):
     can be used as an index."""
     _check_index(datatable._dataframe, index)
     datatable.columns[index]._set_as_index()
-    if old_index:
+    if old_index is not None:
         datatable._update_columns({old_index: datatable.columns[old_index].remove_semantic_tags('index')})
 
 
@@ -1210,7 +1211,7 @@ def _update_time_index(datatable, time_index, old_time_index=None):
 
     _check_time_index(datatable._dataframe, time_index)
     datatable.columns[time_index]._set_as_time_index()
-    if old_time_index:
+    if old_time_index is not None:
         datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
 
 

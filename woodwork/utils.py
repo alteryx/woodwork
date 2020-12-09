@@ -121,9 +121,9 @@ def _new_dt_including(datatable, new_data):
                          in datatable.logical_types.items() if col_name in cols}
     new_index = datatable.index if datatable.index in cols else None
     new_time_index = datatable.time_index if datatable.time_index in cols else None
-    if new_index:
+    if new_index is not None:
         new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
-    if new_time_index:
+    if new_time_index is not None:
         new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
     return ww.DataTable(new_data,
                         name=datatable.name,

@@ -205,12 +205,15 @@ def test_datatable_init_with_numpy(sample_df_pandas):
     dt = DataTable(np_ints)
     assert dt[0].logical_type == Integer
     assert dt[1].logical_type == Integer
+    dt = dt.set_index(0)
+    assert dt.index == 0
 
-    dt = DataTable(np_ints, time_index=1, logical_types={0: 'Double', 1: Datetime}, semantic_tags={1: 'numeric_datetime'})
+    dt = DataTable(np_ints, time_index=0, logical_types={0: 'Double', 1: Datetime}, semantic_tags={1: 'numeric_datetime'})
+    assert dt.time_index == 0
     assert dt[0].logical_type == Double
-    assert dt[0].semantic_tags == {'numeric'}
+    assert dt[0].semantic_tags == {'numeric', 'time_index'}
     assert dt[1].logical_type == Datetime
-    assert dt[1].semantic_tags == {'numeric_datetime', 'time_index'}
+    assert dt[1].semantic_tags == {'numeric_datetime'}
 
 
 def test_datatable_adds_standard_semantic_tags(sample_df):
@@ -1386,7 +1389,7 @@ def test_pop_error(sample_df):
                    semantic_tags={'age': 'custom_tag'},
                    use_standard_tags=True)
 
-    with pytest.raises(KeyError, match="Column with name \'missing\' not found in DataTable"):
+    with pytest.raises(KeyError, match="Column with name missing not found in DataTable"):
         dt.pop("missing")
 
 
@@ -1410,7 +1413,7 @@ def test_getitem_invalid_input(sample_df):
     with pytest.raises(KeyError, match=error_msg):
         dt[1]
 
-    error_msg = "Column with name 'invalid_column' not found in DataTable"
+    error_msg = "Column with name invalid_column not found in DataTable"
     with pytest.raises(KeyError, match=error_msg):
         dt['invalid_column']
 
