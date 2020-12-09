@@ -126,21 +126,15 @@ class DataTable(object):
 
     def __getitem__(self, key):
         if isinstance(key, list):
-            if not all([isinstance(col, Hashable) for col in key]):
-                raise KeyError('Column names must be hashable')
             invalid_cols = set(key).difference(set(self.columns.keys()))
             if invalid_cols:
                 raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
             return self._new_dt_from_cols(key)
-        if not isinstance(key, Hashable):
-            raise KeyError('Column name must be hashable')
         if key not in self.columns.keys():
             raise KeyError(f"Column with name {key} not found in DataTable")
         return self.columns[key]
 
     def __setitem__(self, col_name, column):
-        if not isinstance(col_name, Hashable):
-            raise KeyError('Column name must be hashable')
         if not isinstance(column, DataColumn):
             raise ValueError('New column must be of DataColumn type')
 
@@ -393,8 +387,6 @@ class DataTable(object):
             Index and time index columns cannot be renamed.
         """
         for old_name, new_name in columns.items():
-            if not isinstance(new_name, Hashable):
-                raise ValueError(f"New column name must be hashable. {new_name} is not hashable.")
             if old_name not in self.columns:
                 raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
             if new_name in self.columns and new_name not in columns.keys():
@@ -1127,8 +1119,6 @@ def _check_unique_column_names(dataframe):
 
 
 def _check_index(dataframe, index, make_index=False):
-    if index is not None and not isinstance(index, Hashable):
-        raise TypeError('Index column name must be hashable')
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
@@ -1145,8 +1135,6 @@ def _check_index(dataframe, index, make_index=False):
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
-    if not isinstance(time_index, Hashable):
-        raise TypeError('Time index column name must be hashable')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
     if not (_is_numeric_series(dataframe[time_index], logical_type) or

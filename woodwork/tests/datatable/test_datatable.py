@@ -247,10 +247,6 @@ def test_validate_params_errors(sample_df):
 
 
 def test_check_index_errors(sample_df):
-    error_message = 'Index column name must be hashable'
-    with pytest.raises(TypeError, match=error_message):
-        _check_index(dataframe=sample_df, index={})
-
     error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
@@ -271,10 +267,6 @@ def test_check_index_errors(sample_df):
 
 
 def test_check_time_index_errors(sample_df):
-    error_message = 'Time index column name must be hashable'
-    with pytest.raises(TypeError, match=error_message):
-        _check_time_index(dataframe=sample_df, time_index={})
-
     error_message = 'Specified time index column `foo` not found in dataframe'
     with pytest.raises(LookupError, match=error_message):
         _check_time_index(dataframe=sample_df, time_index='foo')
@@ -1414,10 +1406,6 @@ def test_getitem(sample_df):
 def test_getitem_invalid_input(sample_df):
     dt = DataTable(sample_df)
 
-    error_msg = 'Column name must be hashable'
-    with pytest.raises(KeyError, match=error_msg):
-        dt[{}]
-
     error_msg = 'Column with name 1 not found in DataTable'
     with pytest.raises(KeyError, match=error_msg):
         dt[1]
@@ -1494,18 +1482,9 @@ def test_datatable_getitem_list_warnings(sample_df):
     with pytest.raises(KeyError, match=error_msg):
         dt[columns]
 
-    columns = [{}]
-    error_msg = 'Column names must be hashable'
-    with pytest.raises(KeyError, match=error_msg):
-        dt[columns]
-
 
 def test_setitem_invalid_input(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
-
-    error_msg = 'Column name must be hashable'
-    with pytest.raises(KeyError, match=error_msg):
-        dt[[]] = pd.Series([1, 2, 3], dtype='Int64')
 
     error_msg = 'New column must be of DataColumn type'
     with pytest.raises(ValueError, match=error_msg):
@@ -2623,10 +2602,6 @@ def test_datatable_rename_errors(sample_df):
     error = 'New columns names must be unique from one another.'
     with pytest.raises(ValueError, match=error):
         dt.rename({'age': 'test', 'full_name': 'test'})
-
-    error = re.escape('New column name must be hashable. [] is not hashable.')
-    with pytest.raises(ValueError, match=error):
-        dt.rename({'test': []})
 
     error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
     with pytest.raises(KeyError, match=error):
