@@ -14,7 +14,7 @@ Release Notes
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
-        * Support column names of any type that's hashable (:pr:`442`)
+        * Support column names of any type allowed by the underlying DataFrame (:pr:`442`)
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
     * Documentation Changes
     * Testing Changes

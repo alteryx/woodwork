@@ -1,5 +1,4 @@
 import warnings
-from collections.abc import Hashable
 
 import numpy as np
 import pandas as pd
@@ -366,8 +365,7 @@ class DataTable(object):
         if not isinstance(columns, (list, set)):
             columns = [columns]
 
-        # If the column name isn't hashable we can't do "col not in self.columns", so we check separately
-        not_present = [col for col in columns if (not isinstance(col, Hashable) or col not in self.columns)]
+        not_present = [col for col in columns if col not in self.columns]
         if not_present:
             raise ValueError(f'{not_present} not found in DataTable')
 
