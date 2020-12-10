@@ -93,13 +93,13 @@ class DataTable(object):
                                             semantic_tags,
                                             use_standard_tags,
                                             column_descriptions)
-        if index:
+        if index is not None:
             _update_index(self, index)
 
         # Update dtypes before setting time index so that any Datetime formatting is applied
         self._update_columns(self.columns)
 
-        if time_index:
+        if time_index is not None:
             _update_time_index(self, time_index)
             self._sort_columns(already_sorted)
 
@@ -125,22 +125,15 @@ class DataTable(object):
 
     def __getitem__(self, key):
         if isinstance(key, list):
-            if not all([isinstance(col, str) for col in key]):
-                raise KeyError('Column names must be strings')
             invalid_cols = set(key).difference(set(self.columns.keys()))
             if invalid_cols:
                 raise KeyError(f"Column(s) '{', '.join(sorted(list(invalid_cols)))}' not found in DataTable")
             return self._new_dt_from_cols(key)
-        if not isinstance(key, str):
-            raise KeyError('Column name must be a string')
         if key not in self.columns.keys():
-            raise KeyError(f"Column with name '{key}' not found in DataTable")
+            raise KeyError(f"Column with name {key} not found in DataTable")
         return self.columns[key]
 
     def __setitem__(self, col_name, column):
-        if not isinstance(col_name, str):
-            raise KeyError('Column name must be a string')
-
         if not isinstance(column, DataColumn):
             raise ValueError('New column must be of DataColumn type')
 
@@ -307,7 +300,7 @@ class DataTable(object):
 
     @index.setter
     def index(self, index):
-        if self.index and index is None:
+        if self.index is not None and index is None:
             updated_index_col = self.columns[self.index].remove_semantic_tags('index')
             self._update_columns({self.index: updated_index_col})
         elif index is not None:
@@ -323,7 +316,7 @@ class DataTable(object):
 
     @time_index.setter
     def time_index(self, time_index):
-        if self.time_index and time_index is None:
+        if self.time_index is not None and time_index is None:
             updated_time_index_col = self.columns[self.time_index].remove_semantic_tags('time_index')
             self._update_columns({self.time_index: updated_time_index_col})
         elif time_index is not None:
@@ -369,10 +362,8 @@ class DataTable(object):
         Returns:
             woodwork.DataTable: DataTable with the specified columns removed.
         """
-        if isinstance(columns, str):
+        if not isinstance(columns, (list, set)):
             columns = [columns]
-        elif not isinstance(columns, (list, set)):
-            raise TypeError('Input to DataTable.drop must be either a string or list of strings.')
 
         not_present = [col for col in columns if col not in self.columns]
         if not_present:
@@ -393,20 +384,16 @@ class DataTable(object):
         Note:
             Index and time index columns cannot be renamed.
         """
-        if len(columns) != len(set(columns.values())):
-            raise ValueError('New columns names must be unique from one another.')
-
         for old_name, new_name in columns.items():
-            if not isinstance(old_name, str):
-                raise KeyError(f"Column to rename must be a string. {old_name} is not a string.")
-            if not isinstance(new_name, str):
-                raise ValueError(f"New column name must be a string. {new_name} is not a string.")
             if old_name not in self.columns:
                 raise KeyError(f"Column to rename must be present in the DataTable. {old_name} is not present in the DataTable.")
             if new_name in self.columns and new_name not in columns.keys():
                 raise ValueError(f"The column {new_name} is already present in the DataTable. Please choose another name to rename {old_name} to or also rename {old_name}.")
             if old_name == self.index or old_name == self.time_index:
                 raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
+
+        if len(columns) != len(set(columns.values())):
+            raise ValueError('New columns names must be unique from one another.')
 
         old_all_cols = list(self._dataframe.columns)
         new_dt = self._new_dt_from_cols(old_all_cols)
@@ -1092,7 +1079,6 @@ def _validate_dataframe(dataframe):
 
     if isinstance(dataframe, np.ndarray):
         dataframe = pd.DataFrame(dataframe)
-        dataframe.columns = dataframe.columns.astype(str)
     return dataframe
 
 
@@ -1102,13 +1088,13 @@ def _validate_params(dataframe, name, index, time_index, logical_types,
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
         raise TypeError('DataTable name must be a string')
-    if index or make_index:
+    if index is not None or make_index:
         _check_index(dataframe, index, make_index)
     if logical_types:
         _check_logical_types(dataframe, logical_types)
     if metadata:
         _check_metadata(metadata)
-    if time_index:
+    if time_index is not None:
         datetime_format = None
         logical_type = None
         if logical_types is not None and time_index in logical_types:
@@ -1131,26 +1117,22 @@ def _check_unique_column_names(dataframe):
 
 
 def _check_index(dataframe, index, make_index=False):
-    if index and not isinstance(index, str):
-        raise TypeError('Index column name must be a string')
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
-    if index and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
+    if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
         # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
-    if make_index and index and index in dataframe.columns:
+    if make_index and index is not None and index in dataframe.columns:
         # User sets make_index to True, but supplies an index name that matches a column already present
         raise IndexError('When setting make_index to True, the name specified for index cannot match an existing column name')
-    if make_index and not index:
+    if make_index and index is None:
         # User sets make_index to True, but does not supply a name for the index
         raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
-    if not isinstance(time_index, str):
-        raise TypeError('Time index column name must be a string')
     if time_index not in dataframe.columns:
         raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
     if not (_is_numeric_series(dataframe[time_index], logical_type) or
@@ -1196,7 +1178,7 @@ def _update_index(datatable, index, old_index=None):
     can be used as an index."""
     _check_index(datatable._dataframe, index)
     datatable.columns[index]._set_as_index()
-    if old_index:
+    if old_index is not None:
         datatable._update_columns({old_index: datatable.columns[old_index].remove_semantic_tags('index')})
 
 
@@ -1207,7 +1189,7 @@ def _update_time_index(datatable, time_index, old_time_index=None):
 
     _check_time_index(datatable._dataframe, time_index)
     datatable.columns[time_index]._set_as_time_index()
-    if old_time_index:
+    if old_time_index is not None:
         datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
 
 

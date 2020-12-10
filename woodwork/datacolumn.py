@@ -187,7 +187,7 @@ class DataColumn(object):
             warnings.warn(ColumnNameMismatchWarning().get_warning_message(series.name, self._assigned_name),
                           ColumnNameMismatchWarning)
 
-        series.name = self._assigned_name or series.name
+        series.name = self._assigned_name if self._assigned_name is not None else series.name
         self._series = series
 
     def _parse_logical_type(self, logical_type):
@@ -343,7 +343,7 @@ class DataColumn(object):
     @property
     def name(self):
         """The name of the column"""
-        return self._assigned_name or self._series.name
+        return self._assigned_name if self._assigned_name is not None else self._series.name
 
     @property
     def dtype(self):

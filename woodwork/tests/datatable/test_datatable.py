@@ -191,26 +191,29 @@ def test_datatable_init_with_semantic_tags(sample_df):
 def test_datatable_init_with_numpy(sample_df_pandas):
     numpy_df = sample_df_pandas.to_numpy()
 
-    dt = DataTable(numpy_df, index='0')
-    assert set(dt.columns.keys()) == {str(i) for i in range(len(numpy_df[0]))}
-    assert dt.index == '0'
-    assert dt['0'].logical_type == Categorical
-    assert dt['1'].logical_type == NaturalLanguage
-    assert dt['5'].logical_type == Datetime
+    dt = DataTable(numpy_df, index=0)
+    assert set(dt.columns.keys()) == {i for i in range(len(numpy_df[0]))}
+    assert dt.index == 0
+    assert dt[0].logical_type == Categorical
+    assert dt[1].logical_type == NaturalLanguage
+    assert dt[5].logical_type == Datetime
 
     np_ints = np.array([[1, 0],
                         [2, 4],
                         [3, 6],
                         [4, 1]])
     dt = DataTable(np_ints)
-    assert dt['0'].logical_type == Integer
-    assert dt['1'].logical_type == Integer
+    assert dt[0].logical_type == Integer
+    assert dt[1].logical_type == Integer
+    dt = dt.set_index(0)
+    assert dt.index == 0
 
-    dt = DataTable(np_ints, time_index='1', logical_types={'0': 'Double', '1': Datetime}, semantic_tags={'1': 'numeric_datetime'})
-    assert dt['0'].logical_type == Double
-    assert dt['0'].semantic_tags == {'numeric'}
-    assert dt['1'].logical_type == Datetime
-    assert dt['1'].semantic_tags == {'numeric_datetime', 'time_index'}
+    dt = DataTable(np_ints, time_index=0, logical_types={0: 'Double', 1: Datetime}, semantic_tags={1: 'numeric_datetime'})
+    assert dt.time_index == 0
+    assert dt[0].logical_type == Double
+    assert dt[0].semantic_tags == {'numeric', 'time_index'}
+    assert dt[1].logical_type == Datetime
+    assert dt[1].semantic_tags == {'numeric_datetime'}
 
 
 def test_datatable_adds_standard_semantic_tags(sample_df):
@@ -244,10 +247,6 @@ def test_validate_params_errors(sample_df):
 
 
 def test_check_index_errors(sample_df):
-    error_message = 'Index column name must be a string'
-    with pytest.raises(TypeError, match=error_message):
-        _check_index(dataframe=sample_df, index=1)
-
     error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
@@ -268,11 +267,6 @@ def test_check_index_errors(sample_df):
 
 
 def test_check_time_index_errors(sample_df):
-    error_message = 'Time index column name must be a string'
-    with pytest.raises(TypeError, match=error_message):
-        _check_time_index(dataframe=sample_df,
-                          time_index=1)
-
     error_message = 'Specified time index column `foo` not found in dataframe'
     with pytest.raises(LookupError, match=error_message):
         _check_time_index(dataframe=sample_df, time_index='foo')
@@ -1392,7 +1386,7 @@ def test_pop_error(sample_df):
                    semantic_tags={'age': 'custom_tag'},
                    use_standard_tags=True)
 
-    with pytest.raises(KeyError, match="Column with name \'missing\' not found in DataTable"):
+    with pytest.raises(KeyError, match="Column with name missing not found in DataTable"):
         dt.pop("missing")
 
 
@@ -1412,11 +1406,11 @@ def test_getitem(sample_df):
 def test_getitem_invalid_input(sample_df):
     dt = DataTable(sample_df)
 
-    error_msg = 'Column name must be a string'
+    error_msg = 'Column with name 1 not found in DataTable'
     with pytest.raises(KeyError, match=error_msg):
         dt[1]
 
-    error_msg = "Column with name 'invalid_column' not found in DataTable"
+    error_msg = "Column with name invalid_column not found in DataTable"
     with pytest.raises(KeyError, match=error_msg):
         dt['invalid_column']
 
@@ -1488,19 +1482,9 @@ def test_datatable_getitem_list_warnings(sample_df):
     with pytest.raises(KeyError, match=error_msg):
         dt[columns]
 
-    columns = [1]
-    error_msg = 'Column names must be strings'
-    with pytest.raises(KeyError, match=error_msg):
-        dt[columns]
-
 
 def test_setitem_invalid_input(sample_df):
     dt = DataTable(sample_df, index='id', time_index='signup_date')
-
-    error_msg = 'Column name must be a string'
-    with pytest.raises(KeyError, match=error_msg):
-        dt[1] = DataColumn(pd.Series([1, 2, 3], dtype='Int64'),
-                           use_standard_tags=False)
 
     error_msg = 'New column must be of DataColumn type'
     with pytest.raises(ValueError, match=error_msg):
@@ -2619,14 +2603,6 @@ def test_datatable_rename_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         dt.rename({'age': 'test', 'full_name': 'test'})
 
-    error = 'Column to rename must be a string. 1 is not a string.'
-    with pytest.raises(KeyError, match=error):
-        dt.rename({1: 'test'})
-
-    error = 'New column name must be a string. 1 is not a string.'
-    with pytest.raises(ValueError, match=error):
-        dt.rename({'age': 1})
-
     error = 'Column to rename must be present in the DataTable. not_present is not present in the DataTable.'
     with pytest.raises(KeyError, match=error):
         dt.rename({'not_present': 'test'})
@@ -2936,11 +2912,6 @@ def test_datatable_drop_indices(sample_df):
 def test_datatable_drop_errors(sample_df):
     dt = DataTable(sample_df)
 
-    error = 'Input to DataTable.drop must be either a string or list of strings.'
-    for bad_input in [4, {'test': 'column'}]:
-        with pytest.raises(TypeError, match=error):
-            dt.drop(bad_input)
-
     error = re.escape("['not_present'] not found in DataTable")
     with pytest.raises(ValueError, match=error):
         dt.drop('not_present')
@@ -2948,6 +2919,35 @@ def test_datatable_drop_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         dt.drop(['age', 'not_present'])
 
-    error = re.escape("['not_present1', 'not_present2'] not found in DataTable")
+    error = re.escape("['not_present1', 4] not found in DataTable")
     with pytest.raises(ValueError, match=error):
-        dt.drop(['not_present1', 'not_present2'])
+        dt.drop(['not_present1', 4])
+
+
+def test_datatable_falsy_column_names(falsy_names_df):
+    if dd and isinstance(falsy_names_df, dd.DataFrame):
+        pytest.xfail('Dask DataTables cannot handle integer column names')
+
+    dt = DataTable(falsy_names_df.copy(), index=0, time_index='')
+    assert dt.index == 0
+    assert dt.time_index == ''
+
+    for col_name in falsy_names_df.columns:
+        dc = dt[col_name]
+        assert dc.name == col_name
+        assert dc._series.name == col_name
+
+    dt.time_index = None
+    assert dt.time_index is None
+
+    dt = dt.set_index('')
+    assert dt.index == ''
+
+    popped_col = dt.pop('')
+    dt[''] = popped_col
+    assert dt[''].name == ''
+    assert dt['']._series.name == ''
+
+    dt = dt.rename({0: 'col_with_name'})
+    assert 0 not in dt.columns
+    assert 'col_with_name' in dt.columns

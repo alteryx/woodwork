@@ -454,3 +454,28 @@ def koalas_latlongs(pandas_latlongs):
 @pytest.fixture(params=['pandas_latlongs', 'dask_latlongs', 'koalas_latlongs'])
 def latlongs(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def falsy_names_df_pandas():
+    return pd.DataFrame({
+        0: ['a', 'b', 'c'],
+        '': [1, 2, 3],
+    })
+
+
+@pytest.fixture()
+def falsy_names_df_dask(falsy_names_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(falsy_names_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def falsy_names_df_koalas(falsy_names_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(falsy_names_df_pandas.applymap(lambda tup: list(tup) if isinstance(tup, tuple) else tup))
+
+
+@pytest.fixture(params=['falsy_names_df_pandas', 'falsy_names_df_dask', 'falsy_names_df_koalas'])
+def falsy_names_df(request):
+    return request.getfixturevalue(request.param)
