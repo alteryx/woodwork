@@ -245,6 +245,8 @@ def test_new_dt_including(sample_df_pandas):
         assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
         assert new_dt.logical_types[col] == new_dt.logical_types[col]
 
+    # --> test that metadata get's passed over
+
 
 def test_import_or_raise():
     assert import_or_raise('pandas', 'Module pandas could not be found') == pd

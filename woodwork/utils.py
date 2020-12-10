@@ -114,6 +114,7 @@ def _new_dt_including(datatable, new_data):
     Returns:
         DataTable: New DataTable with attributes from original DataTable but data from new DataTable
     '''
+    # --> need to send metadata, descriptions through
     cols = new_data.columns
     new_semantic_tags = {col_name: semantic_tag_set for col_name, semantic_tag_set
                          in datatable.semantic_tags.items() if col_name in cols}
