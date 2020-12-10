@@ -90,7 +90,6 @@ class DataTable(object):
         self.name = name
         self.use_standard_tags = use_standard_tags
 
-        # --> add column metadata to this
         # Infer logical types and create columns
         self.columns = self._create_columns(self._dataframe.columns,
                                             logical_types,
@@ -270,7 +269,6 @@ class DataTable(object):
             else:
                 semantic_tag = None
             if column_descriptions:
-                # --> maybe description would go into the metadata?
                 description = column_descriptions.get(name)
             else:
                 description = None
@@ -278,7 +276,6 @@ class DataTable(object):
                 metadata = column_metadata.get(name)
             else:
                 metadata = None
-            # --> metadata as input to DataColumn
             dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description, metadata)
             datacolumns[dc.name] = dc
         return datacolumns

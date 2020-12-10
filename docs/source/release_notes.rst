@@ -9,6 +9,7 @@ Release Notes
         * Allow initializing DataColumn with numpy array (:pr:`430`)
         * Add ``drop`` to DataTable (:pr:`434`)
         * Migrate CI tests to Github Actions (:pr:`417`, :pr:`441`, :pr:`451`)
+        * Add ``metadata`` to DataColumn for user-defined metadata (:pr:`447`)
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)

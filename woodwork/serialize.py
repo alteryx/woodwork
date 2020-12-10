@@ -29,7 +29,6 @@ def datatable_to_description(datatable):
     ordered_columns = df.columns
     column_metadata = [
         {
-            # need to change to add column_metadata field and maybe the above to be "column description???"
             'name': col.name,
             'ordinal': ordered_columns.get_loc(col.name),
             'logical_type': {
@@ -41,7 +40,6 @@ def datatable_to_description(datatable):
             },
             'semantic_tags': sorted(list(col.semantic_tags)),
             'description': col.description,
-            # --> not a great name
             'metadata': col.metadata
         }
         for col in datatable.columns.values()
