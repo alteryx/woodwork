@@ -114,6 +114,8 @@ class DataTable(object):
             return False
         if set(self.columns.keys()) != set(other.columns.keys()):
             return False
+        if self.metadata != other.metadata:
+            return False
         for col_name in self.columns.keys():
             if self[col_name] != other[col_name]:
                 return False
