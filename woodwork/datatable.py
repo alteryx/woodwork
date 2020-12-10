@@ -37,7 +37,7 @@ class DataTable(object):
                  semantic_tags=None,
                  logical_types=None,
                  table_metadata=None,
-                 column_metadata,
+                 column_metadata=None,
                  use_standard_tags=True,
                  make_index=False,
                  column_descriptions=None,
@@ -96,7 +96,8 @@ class DataTable(object):
                                             logical_types,
                                             semantic_tags,
                                             use_standard_tags,
-                                            column_descriptions)
+                                            column_descriptions,
+                                            column_metadata)
         if index is not None:
             _update_index(self, index)
 
@@ -253,7 +254,8 @@ class DataTable(object):
                         logical_types,
                         semantic_tags,
                         use_standard_tags,
-                        column_descriptions):
+                        column_descriptions,
+                        column_metadata):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
@@ -268,10 +270,16 @@ class DataTable(object):
             else:
                 semantic_tag = None
             if column_descriptions:
+                # --> maybe description would go into the metadata?
                 description = column_descriptions.get(name)
             else:
                 description = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description)
+            if column_metadata:
+                metadata = column_metadata.get(name)
+            else:
+                metadata = None
+            # --> metadata as input to DataColumn
+            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description, metadata)
             datacolumns[dc.name] = dc
         return datacolumns
 
@@ -1102,7 +1110,7 @@ def _validate_params(dataframe, name, index, time_index, logical_types,
     if table_metadata:
         _check_table_metadata(table_metadata)
     if column_metadata:
-        _check_column_metadata(column_metadata)
+        _check_column_metadata(dataframe, column_metadata)
     if time_index is not None:
         datetime_format = None
         logical_type = None
@@ -1181,9 +1189,13 @@ def _check_table_metadata(table_metadata):
         raise TypeError('Table metadata must be a dictionary.')
 
 
-def _check_column_metadata(column_metadata):
-    pass
-# check all cols are present
+def _check_column_metadata(dataframe, column_metadata):
+    if not isinstance(column_metadata, dict):
+        raise TypeError('Column metadata must be a dictionary.')
+    cols_not_found = set(column_metadata.keys()).difference(set(dataframe.columns))
+    if cols_not_found:
+        raise LookupError('column_metadata contains columns that are not present in '
+                          f'dataframe: {sorted(list(cols_not_found))}')
 
 
 def _update_index(datatable, index, old_index=None):

@@ -17,7 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '4.0.0'
+SCHEMA_VERSION = '5.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
@@ -40,7 +40,9 @@ def datatable_to_description(datatable):
                 'type': str(col.dtype)
             },
             'semantic_tags': sorted(list(col.semantic_tags)),
-            'description': col.description
+            'description': col.description,
+            # --> not a great name
+            'metadata': col.metadata
         }
         for col in datatable.columns.values()
     ]

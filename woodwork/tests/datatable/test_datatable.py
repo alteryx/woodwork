@@ -7,10 +7,11 @@ import pytest
 import woodwork as ww
 from woodwork import DataColumn, DataTable
 from woodwork.datatable import (
+    _check_column_metadata,
     _check_index,
     _check_logical_types,
-    _check_metadata,
     _check_semantic_tags,
+    _check_table_metadata,
     _check_time_index,
     _check_unique_column_names,
     _validate_dataframe,
@@ -240,7 +241,8 @@ def test_validate_params_errors(sample_df):
                          index=None,
                          time_index=None,
                          logical_types=None,
-                         metadata=None,
+                         table_metadata=None,
+                         column_metadata=None,
                          semantic_tags=None,
                          make_index=False,
                          column_descriptions=None)
@@ -300,10 +302,23 @@ def test_check_logical_types_errors(sample_df):
         _check_logical_types(sample_df, bad_logical_types_keys)
 
 
-def test_check_metadata_errors():
-    error_message = 'Metadata must be a dictionary.'
+def test_check_table_metadata_errors():
+    error_message = 'Table metadata must be a dictionary.'
     with pytest.raises(TypeError, match=error_message):
-        _check_metadata('test')
+        _check_table_metadata('test')
+
+
+def test_check_column_metadata_errors(sample_df):
+    error_message = 'Column metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=error_message):
+        _check_column_metadata(sample_df, column_metadata='test')
+
+    column_metadata = {
+        'invalid_col': {'description': 'not a valid column'}
+    }
+    err_msg = re.escape("column_metadata contains columns that are not present in dataframe: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        DataTable(sample_df, column_metadata=column_metadata)
 
 
 def test_datatable_types(sample_df):
@@ -2755,7 +2770,7 @@ def test_datatable_metadata(sample_df):
     dt.metadata = metadata
     assert dt.metadata == metadata
 
-    dt = DataTable(sample_df, time_index='signup_date', metadata=metadata)
+    dt = DataTable(sample_df, time_index='signup_date', table_metadata=metadata)
     assert dt.metadata == metadata
 
     new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
@@ -2956,3 +2971,13 @@ def test_datatable_falsy_column_names(falsy_names_df):
     dt = dt.rename({0: 'col_with_name'})
     assert 0 not in dt.columns
     assert 'col_with_name' in dt.columns
+
+
+def test_datatable_init_with_column_metadata(sample_df):
+    column_metadata = {
+        'age': {'interesting_values': [33]},
+        'signup_date': {'description': 'date of account creation'}
+    }
+    dt = DataTable(sample_df, column_metadata=column_metadata)
+    for name, column in dt.columns.items():
+        assert column.metadata == (column_metadata.get(name) or {})

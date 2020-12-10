@@ -28,7 +28,8 @@ class DataColumn(object):
                  semantic_tags=None,
                  use_standard_tags=True,
                  name=None,
-                 description=None):
+                 description=None,
+                 metadata=None):
         """Create a DataColumn.
 
         Args:
@@ -45,7 +46,7 @@ class DataColumn(object):
                 on the inferred or specified logical type for the column. Defaults to True.
             name (str, optional): Name of DataColumn. Will overwrite Series name, if it exists.
             description (str, optional): Optional text describing the contents of the column
-            # --> add column metatdata as a param
+            metadata (dict[str -> json serializable], optional): Metadata associated with the column.
         """
         self._assigned_name = name
         self._set_series(series)
@@ -61,6 +62,10 @@ class DataColumn(object):
         if description and not isinstance(description, str):
             raise TypeError("Column description must be a string")
         self.description = description
+
+        if metadata and not isinstance(metadata, dict):
+            raise TypeError("Column metadata must be a dictionary")
+        self.metadata = metadata or {}
 
     def __repr__(self):
         msg = u"<DataColumn: {} ".format(self.name)
@@ -79,6 +84,8 @@ class DataColumn(object):
         if self.logical_type != other.logical_type:
             return False
         if self.description != other.description:
+            return False
+        if self.metadata != other.metadata:
             return False
 
         # Only check pandas series for equality

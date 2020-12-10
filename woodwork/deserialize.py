@@ -94,6 +94,7 @@ def description_to_datatable(table_description, **kwargs):
     logical_types = {}
     semantic_tags = {}
     column_descriptions = {}
+    column_metadata = {}
     for col in table_description['column_metadata']:
         col_name = col['name']
 
@@ -110,6 +111,7 @@ def description_to_datatable(table_description, **kwargs):
         logical_types[col_name] = ltype
         semantic_tags[col_name] = tags
         column_descriptions[col_name] = col['description']
+        column_metadata[col_name] = col['metadata']
 
     return DataTable(dataframe,
                      name=table_description.get('name'),
@@ -118,7 +120,8 @@ def description_to_datatable(table_description, **kwargs):
                      logical_types=logical_types,
                      semantic_tags=semantic_tags,
                      use_standard_tags=False,
-                     metadata=table_description.get('table_metadata'),
+                     table_metadata=table_description.get('table_metadata'),
+                     column_metadata=column_metadata,
                      column_descriptions=column_descriptions)
 
 
