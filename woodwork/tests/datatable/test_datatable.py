@@ -2912,10 +2912,6 @@ def test_datatable_drop_indices(sample_df):
 def test_datatable_drop_errors(sample_df):
     dt = DataTable(sample_df)
 
-    error = re.escape("[{'test': 'column'}] not found in DataTable")
-    with pytest.raises(ValueError, match=error):
-        dt.drop({'test': 'column'})
-
     error = re.escape("['not_present'] not found in DataTable")
     with pytest.raises(ValueError, match=error):
         dt.drop('not_present')
