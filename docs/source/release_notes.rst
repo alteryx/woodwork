@@ -8,7 +8,7 @@ Release Notes
         * Add ``__repr__`` to DataTable (:pr:`425`)
         * Allow initializing DataColumn with numpy array (:pr:`430`)
         * Add ``drop`` to DataTable (:pr:`434`)
-        * Migrate CI tests to Github Actions (:pr:`417`, :pr:`441`)
+        * Migrate CI tests to Github Actions (:pr:`417`, :pr:`441`, :pr:`452`)
     * Fixes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
