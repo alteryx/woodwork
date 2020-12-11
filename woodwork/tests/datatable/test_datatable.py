@@ -1295,7 +1295,6 @@ def test_select_ltypes_table(sample_df):
 
 
 def test_new_dt_from_columns(sample_df):
-    # -> add tests that confirm that all fields are represented
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt = dt.set_types(logical_types={
         'full_name': FullName,
