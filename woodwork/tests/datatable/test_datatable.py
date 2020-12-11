@@ -2637,7 +2637,12 @@ def test_datatable_rename_errors(sample_df):
 
 
 def test_datatable_rename(sample_df):
-    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    table_metadata = {'table_info': 'this is text'}
+    id_description = 'the id of the row'
+    dt = DataTable(sample_df, index='id',
+                   time_index='signup_date',
+                   table_metadata=table_metadata,
+                   column_descriptions={'id': id_description})
     original_df = to_pandas(dt.to_dataframe()).copy()
 
     dt_renamed = dt.rename({'age': 'birthday'})
@@ -2652,6 +2657,10 @@ def test_datatable_rename(sample_df):
     assert 'birthday' in new_df.columns
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('birthday')
     pd.testing.assert_series_equal(original_df['age'], new_df['birthday'], check_names=False)
+
+    # confirm that metadata and descriptions are there
+    assert dt_renamed.metadata == table_metadata
+    assert dt['id'].description == id_description
 
     old_col = dt['age']
     new_col = dt_renamed['birthday']
