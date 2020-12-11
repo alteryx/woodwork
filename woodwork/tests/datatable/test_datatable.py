@@ -2641,7 +2641,7 @@ def test_datatable_rename(sample_df):
     id_description = 'the id of the row'
     dt = DataTable(sample_df, index='id',
                    time_index='signup_date',
-                   metadata=table_metadata,
+                   table_metadata=table_metadata,
                    column_descriptions={'id': id_description})
     original_df = to_pandas(dt.to_dataframe()).copy()
 

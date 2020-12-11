@@ -119,13 +119,14 @@ def _new_dt_including(datatable, new_data):
     new_logical_types = {}
     new_semantic_tags = {}
     new_column_descriptions = {}
+    new_column_metadata = {}
     for col_name, col in datatable.columns.items():
         if col_name not in cols:
             continue
-
         new_logical_types[col_name] = col.logical_type
         new_semantic_tags[col_name] = col.semantic_tags
         new_column_descriptions[col_name] = col.description
+        new_column_metadata[col_name] = col.metadata
 
     new_index = datatable.index if datatable.index in cols else None
     new_time_index = datatable.time_index if datatable.time_index in cols else None
@@ -141,7 +142,8 @@ def _new_dt_including(datatable, new_data):
                         semantic_tags=new_semantic_tags,
                         logical_types=new_logical_types,
                         use_standard_tags=datatable.use_standard_tags,
-                        metadata=datatable.metadata,
+                        table_metadata=datatable.metadata,
+                        column_metadata=new_column_metadata,
                         column_descriptions=new_column_descriptions)
 
 
