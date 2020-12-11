@@ -134,7 +134,6 @@ def _new_dt_including(datatable, new_data):
     if new_time_index is not None:
         new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-    # --> broken: make_index?, metadata. col metadata, description
     return ww.DataTable(new_data,
                         name=datatable.name,
                         index=new_index,

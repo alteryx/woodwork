@@ -249,21 +249,20 @@ def test_new_dt_including(sample_df_pandas):
         assert new_dt.logical_types[col] == new_dt.logical_types[col]
 
 
-def test_new_dt_including_full_equality(sample_df):
+def test_new_dt_including_all_params(sample_df):
     # The first element is self, so it won't be included in kwargs
     possible_dt_params = inspect.getfullargspec(ww.DataTable.__init__)[0][1:]
 
     kwargs = {
         'dataframe': sample_df.copy(),
         'name': 'test_dt',
-        'index': 'id',
+        'index': 'made_index',
         'time_index': 'signup_date',
         'semantic_tags': {'age': 'test_tag'},
         'logical_types': {'email': 'EmailAddress'},
         'metadata': {'created_by': 'user1'},
-        # 'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}}, --> add back in
         'use_standard_tags': False,
-        'make_index': False,
+        'make_index': True,
         'column_descriptions': {'age': 'this is a description'},
         'already_sorted': True}
 
@@ -271,7 +270,7 @@ def test_new_dt_including_full_equality(sample_df):
     assert set(possible_dt_params) == set(kwargs.keys())
 
     dt = ww.DataTable(**kwargs)
-    copy_dt = _new_dt_including(dt, sample_df.copy())
+    copy_dt = _new_dt_including(dt, dt._dataframe.copy())
 
     assert dt == copy_dt
     pd.testing.assert_frame_equal(to_pandas(dt._dataframe), to_pandas(copy_dt._dataframe))
