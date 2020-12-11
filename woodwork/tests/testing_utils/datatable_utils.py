@@ -7,6 +7,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def validate_subset_dt(subset_dt, dt):
+    # --> should be updated to include any new attrs
     assert subset_dt.name == dt.name
     assert len(subset_dt.columns) == len(subset_dt.to_dataframe().columns)
     for subset_col_name, subset_col in subset_dt.columns.items():
