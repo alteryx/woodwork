@@ -2610,10 +2610,10 @@ def test_datatable_equality(sample_combos):
     assert dt_with_ltypes == dt_numeric_time_index.set_types(logical_types={'full_name': Categorical})
     assert dt_with_ltypes != dt_numeric_time_index.set_types(logical_types={'full_name': Categorical()})
 
-    dt_with_metadata = DataTable(sample_df, index='id', metadata={'created_by': 'user1'})
+    dt_with_metadata = DataTable(sample_df, index='id', table_metadata={'created_by': 'user1'})
     assert DataTable(sample_df, index='id') != dt_with_metadata
-    assert DataTable(sample_df, index='id', metadata={'created_by': 'user1'}) == dt_with_metadata
-    assert DataTable(sample_df, index='id', metadata={'created_by': 'user2'}) != dt_with_metadata
+    assert DataTable(sample_df, index='id', table_metadata={'created_by': 'user1'}) == dt_with_metadata
+    assert DataTable(sample_df, index='id', table_metadata={'created_by': 'user2'}) != dt_with_metadata
 
 
 def test_datatable_rename_errors(sample_df):
