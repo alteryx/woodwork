@@ -17,6 +17,7 @@ Release Notes
         * Update links to use alteryx org Github URL (:pr:`423`)
         * Support column names of any type allowed by the underlying DataFrame (:pr:`442`)
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
+        * Restrict dask version to prevent 2020.12.0 release from being installed (:pr:`453`)
     * Documentation Changes
     * Testing Changes
         * Fix missing test coverage (:pr:`436`)
