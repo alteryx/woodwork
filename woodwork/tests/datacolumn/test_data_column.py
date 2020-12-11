@@ -603,12 +603,14 @@ def test_datacolumn_equality(sample_series, sample_datetime_series):
     diff_name_col = DataColumn(sample_datetime_series, logical_type=Categorical)
     diff_dtype_col = DataColumn(sample_series, logical_type=NaturalLanguage)
     diff_description_col = DataColumn(sample_series, logical_type='Categorical', description='description')
+    diff_metadata_col = DataColumn(sample_series, logical_type='Categorical', metadata={'interesting_values': ['a', 'b']})
 
     assert str_col == str_col_2
     assert str_col != str_col_diff_tags
     assert str_col != diff_name_col
     assert str_col != diff_dtype_col
     assert str_col != diff_description_col
+    assert str_col != diff_metadata_col
 
     # Check columns with same logical types but different parameters
     ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
@@ -640,3 +642,30 @@ def test_datacolumn_equality(sample_series, sample_datetime_series):
         assert str_col != null_col
     else:
         assert str_col == null_col
+
+
+def test_datacolumn_metadata(sample_series):
+    column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
+
+    data_col = DataColumn(sample_series)
+    assert data_col.metadata == {}
+
+    data_col = DataColumn(sample_series, metadata=column_metadata)
+    assert data_col.metadata == column_metadata
+
+    new_metadata = {'date_created': '1/1/19', 'created_by': 'user1'}
+
+    data_col.metadata = {**data_col.metadata, **new_metadata}
+    assert data_col.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'created_by': 'user1'}
+
+    data_col.metadata.pop('created_by')
+    assert data_col.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3]}
+
+    data_col.metadata['number'] = 1012034
+    assert data_col.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}
+
+
+def test_datacolumn_metadata_error(sample_series):
+    err_msg = "Column metadata must be a dictionary"
+    with pytest.raises(TypeError, match=err_msg):
+        DataColumn(sample_series, metadata=123)

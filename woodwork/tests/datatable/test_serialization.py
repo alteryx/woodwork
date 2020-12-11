@@ -19,7 +19,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_datatable_schema_4.0.0.tar"
+TEST_FILE = "test_serialization_data_datatable_schema_5.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -49,7 +49,7 @@ def test_to_dictionary(sample_df):
         cat_val = 'category'
         string_val = 'string'
         bool_val = 'boolean'
-    expected = {'schema_version': '4.0.0',
+    expected = {'schema_version': '5.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -58,44 +58,51 @@ def test_to_dictionary(sample_df):
                                      'logical_type': {'parameters': {}, 'type': 'Integer'},
                                      'physical_type': {'type': int_val},
                                      'semantic_tags': ['index', 'tag1'],
-                                     'description': None},
+                                     'description': None,
+                                     'metadata':{'is_sorted': True}},
                                     {'name': 'full_name',
                                      'ordinal': 1,
                                      'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                      'physical_type': {'type': string_val},
                                      'semantic_tags': [],
-                                     'description': None},
+                                     'description': None,
+                                     'metadata':{}},
                                     {'name': 'email',
                                      'ordinal': 2,
                                      'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                      'physical_type': {'type': string_val},
                                      'semantic_tags': [],
-                                     'description': None},
+                                     'description': None,
+                                     'metadata':{}},
                                     {'name': 'phone_number',
                                      'ordinal': 3,
                                      'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                      'physical_type': {'type': string_val},
                                      'semantic_tags': [],
-                                     'description': None},
+                                     'description': None,
+                                     'metadata': {}},
                                     {'name': 'age',
                                      'ordinal': 4,
                                      'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
                                      'physical_type': {'type': cat_val},
                                      'semantic_tags': ['category'],
-                                     'description': 'age of the user'},
+                                     'description': 'age of the user',
+                                     'metadata':{'interesting_values': [33, 57]}},
                                     {'name': 'signup_date',
                                      'ordinal': 5,
                                      'logical_type': {'parameters': {},
                                                       'type': 'Datetime'},
                                      'physical_type': {'type': 'datetime64[ns]'},
                                      'semantic_tags': [],
-                                     'description': 'original signup date'},
+                                     'description': 'original signup date',
+                                     'metadata':{}},
                                     {'name': 'is_registered',
                                      'ordinal': 6,
                                      'logical_type': {'parameters': {}, 'type': 'Boolean'},
                                      'physical_type': {'type': bool_val},
                                      'semantic_tags': [],
-                                     'description': None}],
+                                     'description': None,
+                                     'metadata':{}}],
                 'loading_info': {'table_type': table_type},
                 'table_metadata': {'date_created': '11/16/20'}
                 }
@@ -105,9 +112,12 @@ def test_to_dictionary(sample_df):
                    index='id',
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33, 57])},
-                   metadata={'date_created': '11/16/20'},
+                   table_metadata={'date_created': '11/16/20'},
                    column_descriptions={'signup_date': 'original signup date',
-                                        'age': 'age of the user'})
+                                        'age': 'age of the user'},
+                   column_metadata={'id': {'is_sorted': True},
+                                    'age': {'interesting_values': [33, 57]}}
+                   )
 
     description = dt.to_dictionary()
 
@@ -115,7 +125,7 @@ def test_to_dictionary(sample_df):
 
 
 def test_unserializable_table(sample_df, tmpdir):
-    dt = DataTable(sample_df, metadata={'not_serializable': sample_df['is_registered'].dtype})
+    dt = DataTable(sample_df, table_metadata={'not_serializable': sample_df['is_registered'].dtype})
 
     error = "DataTable is not json serializable: Object of type dtype is not JSON serializable"
     with pytest.raises(TypeError, match=error):
@@ -137,7 +147,9 @@ def test_to_csv(sample_df, tmpdir):
                    semantic_tags={'id': 'tag1'},
                    logical_types={'age': Ordinal(order=[25, 33, 57])},
                    column_descriptions={'signup_date': 'original signup date',
-                                        'age': 'age of the user'})
+                                        'age': 'age of the user'},
+                   column_metadata={'id': {'is_sorted': True},
+                                    'age': {'interesting_values': [33, 57]}})
 
     dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     _dt = deserialize.read_datatable(str(tmpdir))
