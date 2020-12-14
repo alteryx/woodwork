@@ -1,4 +1,5 @@
-numpy==1.15.4
+numpy==1.15.4; python_version != '3.8'
+numpy==1.18.0; python_version == '3.8'
 pandas==1.1.1
 click>=7.1.2
 scikit-learn>=0.21.3
