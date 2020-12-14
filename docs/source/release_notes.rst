@@ -20,6 +20,7 @@ Release Notes
         * Support column names of any type allowed by the underlying DataFrame (:pr:`442`)
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
         * Restrict dask version to prevent 2020.12.0 release from being installed (:pr:`453`)
+        * Lower minimum requirement for numpy to 1.15.4, and set pandas minimum requirement 1.1.1 (:pr:`459`)
     * Documentation Changes
     * Testing Changes
         * Fix missing test coverage (:pr:`436`)
