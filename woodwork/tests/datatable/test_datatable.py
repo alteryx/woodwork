@@ -1728,13 +1728,6 @@ def test_underlying_index(sample_df_pandas):
     unspecified_index = pd.RangeIndex
     specified_index = pd.Index
 
-    # if dd and isinstance(sample_df, dd.DataFrame):
-    #     unspecified_index = dd.Index
-    #     specified_index = dd.Index
-    # if ks and isinstance(sample_df, ks.DataFrame):
-    #     unspecified_index = ks.Index
-    #     specified_index = ks.Index
-
     dt = DataTable(sample_df_pandas.copy(), index='id')
     assert dt._dataframe.index.name == 'id'
     assert (dt._dataframe.index == [0, 1, 2, 3]).all()
@@ -1762,16 +1755,17 @@ def test_underlying_index(sample_df_pandas):
     assert type(dt._dataframe.index) == unspecified_index
     assert type(dt.to_dataframe().index) == unspecified_index
 
-    # --> test creating index
     dt = DataTable(sample_df_pandas.copy(), index='made_index', make_index=True)
     assert (dt._dataframe.index == [0, 1, 2, 3]).all()
     assert dt._dataframe.index.name == 'made_index'
     assert type(dt._dataframe.index) == specified_index
     assert type(dt.to_dataframe().index) == specified_index
 
-    # --> test dropping the index
-
-    # --> test dropping a row? or something else that would change the index
+    dt_dropped = dt.drop('made_index')
+    assert 'made_index' not in dt_dropped.columns
+    assert 'made_index' not in dt_dropped._dataframe.columns
+    assert type(dt_dropped._dataframe.index) == unspecified_index
+    assert type(dt_dropped.to_dataframe().index) == unspecified_index
 
 
 def test_set_time_index(sample_df):
@@ -2900,7 +2894,7 @@ def test_datatable_already_sorted(sample_unsorted_df):
 
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df, index='id'), to_pandas(dt._dataframe))
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df.set_index('id', drop=False)), to_pandas(dt._dataframe))
 
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
