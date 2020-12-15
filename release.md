@@ -5,7 +5,7 @@
 Before starting the release process, verify the following:
 
 * All work required for this release has been completed and the team is ready to release.
-* [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/alteryx/woodwork?branch=main).
+* [All Github Actions Tests are green on main](https://github.com/alteryx/woodwork/actions?query=branch%3Amain+workflow%3ATests).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-datatables/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/) looks correct, and the [release notes](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 * Get agreement on the version number to use for the release.

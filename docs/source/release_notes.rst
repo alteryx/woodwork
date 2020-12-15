@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
+       * Fix release document with Github Actions link for CI (:pr:`462`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 **v0.0.7 December 14, 2020**
     * Enhancements
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
