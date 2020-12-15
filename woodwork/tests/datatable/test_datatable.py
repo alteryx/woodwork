@@ -62,7 +62,6 @@ def test_datatable_init(sample_df):
 
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
-    # --> doesnt match
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
 
 
@@ -650,7 +649,6 @@ def test_set_semantic_tags_with_time_index(sample_df):
 
 
 def test_set_types_combined(sample_df):
-    # --> ambig
     dt = DataTable(sample_df, index='id', time_index='signup_date')
     assert dt['signup_date'].semantic_tags == set(['time_index'])
     assert dt['signup_date'].logical_type == Datetime
@@ -1271,7 +1269,6 @@ def test_select_ltypes_mixed(sample_df):
 
 
 def test_select_ltypes_table(sample_df):
-    # --> ambig input
     dt = DataTable(sample_df, time_index='signup_date', index='id')
     dt = dt.set_types(logical_types={
         'full_name': FullName,
@@ -1304,7 +1301,6 @@ def test_select_ltypes_table(sample_df):
 
 
 def test_new_dt_from_columns(sample_df):
-    # --> ambiguous
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt = dt.set_types(logical_types={
         'full_name': FullName,
@@ -1441,7 +1437,6 @@ def test_getitem_invalid_input(sample_df):
 
 
 def test_datatable_getitem_list_input(sample_df):
-    # --> ambigous
     # Test regular columns
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     df = dt.to_dataframe()
@@ -1887,7 +1882,6 @@ def test_select_invalid_inputs(sample_df):
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
-    # --> ambigious input
 
     err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
     with pytest.raises(TypeError, match=err_msg):
@@ -1910,7 +1904,6 @@ def test_select_single_inputs(sample_df):
         'age': 'numeric',
         'signup_date': 'date_of_birth'
     })
-    # --> ambigouous input
 
     dt_ltype_string = dt.select('full_name')
     assert len(dt_ltype_string.columns) == 1
@@ -1945,7 +1938,6 @@ def test_select_list_inputs(sample_df):
         'email': 'tag2',
         'is_registered': 'category'
     })
-    # --> ambigious input
 
     dt_just_strings = dt.select(['FullName', 'index', 'tag2', 'boolean'])
     assert len(dt_just_strings.columns) == 4
@@ -1970,7 +1962,6 @@ def test_select_list_inputs(sample_df):
 
 def test_select_semantic_tags_no_match(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
-    # --> ambiguous index
     dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
@@ -2712,7 +2703,6 @@ def test_datatable_rename(sample_df):
                    column_descriptions={'id': id_description})
     original_df = to_pandas(dt.to_dataframe()).copy()
 
-    # --> index causes ambiguity
     dt_renamed = dt.rename({'age': 'birthday'})
     new_df = to_pandas(dt_renamed.to_dataframe())
 
@@ -2732,7 +2722,7 @@ def test_datatable_rename(sample_df):
 
     old_col = dt['age']
     new_col = dt_renamed['birthday']
-    pd.testing.assert_series_equal(to_pandas(old_col.to_series()), to_pandas(new_col.to_series()), check_names=False)
+    pd.testing.assert_series_equal(to_pandas(old_col.to_series()), to_pandas(new_col.to_series()), check_names=False, check_index_type=False)
     assert old_col.logical_type == new_col.logical_type
     assert old_col.semantic_tags == new_col.semantic_tags
     assert old_col.dtype == new_col.dtype
@@ -2897,21 +2887,20 @@ def test_datatable_already_sorted(sample_unsorted_df):
 
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
-    # --> erroring bc index types don't match
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False),
                                   to_pandas(dt._dataframe))
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
     dt = DataTable(sample_unsorted_df,
-                   name='datatable', test_datatable_renametest_datatable_rename
+                   name='datatable',
                    index='id',
                    time_index='signup_date',
                    already_sorted=True)
 
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe))
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df, index='id'), to_pandas(dt._dataframe))
 
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
@@ -2922,6 +2911,7 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
     if ks and isinstance(sample_unsorted_df, ks.DataFrame):
         pytest.xfail('Sorting dataframe is not supported with Koalas input')
+    # --> ambiguous index
 
     index = 'id'
     time_index = 'signup_date'
@@ -3048,6 +3038,7 @@ def test_datatable_falsy_column_names(falsy_names_df):
     assert dt.time_index is None
     print(dt._dataframe)
 
+# --> causing issues
     dt = dt.set_index('')
     assert dt.index == ''
 

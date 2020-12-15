@@ -114,6 +114,10 @@ class DataTable(object):
         # Otherwise, resets index
         self._dataframe = _set_underlying_index(index, self._dataframe)
 
+        if time_index is not None:
+            _update_time_index(self, time_index)
+            self._sort_columns(already_sorted)
+
         self.metadata = table_metadata or {}
 
     def __eq__(self, other, deep=True):
@@ -354,10 +358,11 @@ class DataTable(object):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
         if not already_sorted:
-            sort_cols = [self.time_index, self.index]
-            if not self.index:
-                sort_cols = [self.time_index]
-            self._dataframe = self._dataframe.sort_values(sort_cols)
+            if self.index is not None:
+                partially_sorted = partially_sorted.sort_index()
+                # --> need to separate index and cant use in sort_values
+            next_df = partially_sorted.sort_values(self.time_index)
+            self._dataframe = next_df
         return already_sorted
 
     def pop(self, column_name):
@@ -1244,15 +1249,17 @@ def _set_underlying_index(index, dataframe):
     '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
 
     If the DataTable has an index, will be set to that index.
-    If no index is specified, will reset the DataFrame's index,
+    If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
     meaning that the index will be a pd.RangeIndex starting from zero.
     '''
     if not isinstance(dataframe, pd.DataFrame):
         return dataframe
 
-    if index is None:
+    if index is not None:
+        assert index in dataframe.columns
+        return dataframe.set_index(index, drop=False)
+
+    # Only reset the index if the index isn't a RangeIndex
+    if not isinstance(dataframe.index, pd.RangeIndex):
         return dataframe.reset_index(drop=True)
-
-    assert index in dataframe.columns
-
-    return dataframe.set_index(index, drop=False)
+    return dataframe
