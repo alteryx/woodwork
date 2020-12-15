@@ -110,6 +110,10 @@ class DataTable(object):
                 for column in self.columns.keys():
                     self.columns[column]._set_series(self._dataframe[column])
 
+        # Standardize the index - if the DataTable.index is set, will make that the index column
+        # Otherwise, resets index
+        self._dataframe = _set_underlying_index(index, self._dataframe)
+
         self.metadata = table_metadata or {}
 
     def __eq__(self, other, deep=True):
@@ -315,10 +319,12 @@ class DataTable(object):
     @index.setter
     def index(self, index):
         if self.index is not None and index is None:
+            # --> might need to explicetly remove the index here
             updated_index_col = self.columns[self.index].remove_semantic_tags('index')
             self._update_columns({self.index: updated_index_col})
         elif index is not None:
             _update_index(self, index, self.index)
+        self._dataframe = _set_underlying_index(index, self._dataframe)
 
     @property
     def time_index(self):
@@ -441,6 +447,7 @@ class DataTable(object):
         """
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_index(new_dt, index, self.index)
+        new_dt._dataframe = _set_underlying_index(index, new_dt._dataframe)
         return new_dt
 
     def set_time_index(self, time_index):
@@ -581,10 +588,7 @@ class DataTable(object):
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
                 of dataframe used to create the DataTable.
         """
-        if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
-            return self._dataframe
-        else:
-            return self._dataframe.set_index(self.index, drop=False)
+        return self._dataframe
 
     @property
     def df(self):
@@ -1234,3 +1238,21 @@ def _make_index(dataframe, index):
         dataframe.insert(0, index, range(len(dataframe)))
 
     return dataframe
+
+
+def _set_underlying_index(index, dataframe):
+    '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
+
+    If the DataTable has an index, will be set to that index.
+    If no index is specified, will reset the DataFrame's index,
+    meaning that the index will be a pd.RangeIndex starting from zero.
+    '''
+    if not isinstance(dataframe, pd.DataFrame):
+        return dataframe
+
+    if index is None:
+        return dataframe.reset_index(drop=True)
+
+    assert index in dataframe.columns
+
+    return dataframe.set_index(index, drop=False)

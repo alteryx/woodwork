@@ -62,6 +62,7 @@ def test_datatable_init(sample_df):
 
     assert set(dt.columns.keys()) == set(sample_df.columns)
     assert df is sample_df
+    # --> doesnt match
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
 
 
@@ -649,6 +650,7 @@ def test_set_semantic_tags_with_time_index(sample_df):
 
 
 def test_set_types_combined(sample_df):
+    # --> ambig
     dt = DataTable(sample_df, index='id', time_index='signup_date')
     assert dt['signup_date'].semantic_tags == set(['time_index'])
     assert dt['signup_date'].logical_type == Datetime
@@ -1269,6 +1271,7 @@ def test_select_ltypes_mixed(sample_df):
 
 
 def test_select_ltypes_table(sample_df):
+    # --> ambig input
     dt = DataTable(sample_df, time_index='signup_date', index='id')
     dt = dt.set_types(logical_types={
         'full_name': FullName,
@@ -1301,6 +1304,7 @@ def test_select_ltypes_table(sample_df):
 
 
 def test_new_dt_from_columns(sample_df):
+    # --> ambiguous
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     dt = dt.set_types(logical_types={
         'full_name': FullName,
@@ -1437,6 +1441,7 @@ def test_getitem_invalid_input(sample_df):
 
 
 def test_datatable_getitem_list_input(sample_df):
+    # --> ambigous
     # Test regular columns
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
     df = dt.to_dataframe()
@@ -1724,32 +1729,54 @@ def test_set_index(sample_df):
         assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
 
 
-def test_underlying_index(sample_df):
+def test_underlying_index(sample_df_pandas):
     unspecified_index = pd.RangeIndex
     specified_index = pd.Index
 
-    if dd and isinstance(sample_df, dd.DataFrame):
-        unspecified_index = dd.Index
-        specified_index = dd.Index
-    if ks and isinstance(sample_df, ks.DataFrame):
-        unspecified_index = ks.Index
-        specified_index = ks.Index
+    # if dd and isinstance(sample_df, dd.DataFrame):
+    #     unspecified_index = dd.Index
+    #     specified_index = dd.Index
+    # if ks and isinstance(sample_df, ks.DataFrame):
+    #     unspecified_index = ks.Index
+    #     specified_index = ks.Index
 
-    dt = DataTable(sample_df.copy(), index='id')
+    dt = DataTable(sample_df_pandas.copy(), index='id')
+    assert dt._dataframe.index.name == 'id'
+    assert (dt._dataframe.index == [0, 1, 2, 3]).all()
     assert type(dt._dataframe.index) == specified_index
     assert type(dt.to_dataframe().index) == specified_index
 
-    dt = DataTable(sample_df.copy())
+    dt = DataTable(sample_df_pandas.copy())
     assert type(dt._dataframe.index) == unspecified_index
     assert type(dt.to_dataframe().index) == unspecified_index
 
-    dt_set_index = dt.set_index('id')
-    assert type(dt_set_index._dataframe.index) == specified_index
-    assert type(dt_set_index.to_dataframe().index) == specified_index
-
-    dt.index = 'id'
+    dt = dt.set_index('full_name')
+    assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
+    assert dt._dataframe.index.name == 'full_name'
     assert type(dt._dataframe.index) == specified_index
     assert type(dt.to_dataframe().index) == specified_index
+
+    dt.index = 'id'
+    assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    assert dt._dataframe.index.name == 'id'
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    # test removing index removes the dataframe's index
+    dt.index = None
+    assert type(dt._dataframe.index) == unspecified_index
+    assert type(dt.to_dataframe().index) == unspecified_index
+
+    # --> test creating index
+    dt = DataTable(sample_df_pandas.copy(), index='made_index', make_index=True)
+    assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    assert dt._dataframe.index.name == 'made_index'
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    # --> test dropping the index
+
+    # --> test dropping a row? or something else that would change the index
 
 
 def test_set_time_index(sample_df):
@@ -1860,6 +1887,7 @@ def test_select_invalid_inputs(sample_df):
         'full_name': ['new_tag', 'tag2'],
         'age': 'numeric',
     })
+    # --> ambigious input
 
     err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
     with pytest.raises(TypeError, match=err_msg):
@@ -1882,6 +1910,7 @@ def test_select_single_inputs(sample_df):
         'age': 'numeric',
         'signup_date': 'date_of_birth'
     })
+    # --> ambigouous input
 
     dt_ltype_string = dt.select('full_name')
     assert len(dt_ltype_string.columns) == 1
@@ -1916,6 +1945,7 @@ def test_select_list_inputs(sample_df):
         'email': 'tag2',
         'is_registered': 'category'
     })
+    # --> ambigious input
 
     dt_just_strings = dt.select(['FullName', 'index', 'tag2', 'boolean'])
     assert len(dt_just_strings.columns) == 4
@@ -1940,6 +1970,7 @@ def test_select_list_inputs(sample_df):
 
 def test_select_semantic_tags_no_match(sample_df):
     dt = DataTable(sample_df, time_index='signup_date', index='id', name='dt_name')
+    # --> ambiguous index
     dt = dt.set_types(logical_types={
         'full_name': FullName,
         'email': EmailAddress,
@@ -2681,6 +2712,7 @@ def test_datatable_rename(sample_df):
                    column_descriptions={'id': id_description})
     original_df = to_pandas(dt.to_dataframe()).copy()
 
+    # --> index causes ambiguity
     dt_renamed = dt.rename({'age': 'birthday'})
     new_df = to_pandas(dt_renamed.to_dataframe())
 
@@ -2865,13 +2897,14 @@ def test_datatable_already_sorted(sample_unsorted_df):
 
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
+    # --> erroring bc index types don't match
     pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
                                   to_pandas(dt._dataframe))
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
     dt = DataTable(sample_unsorted_df,
-                   name='datatable',
+                   name='datatable', test_datatable_renametest_datatable_rename
                    index='id',
                    time_index='signup_date',
                    already_sorted=True)
@@ -3013,6 +3046,7 @@ def test_datatable_falsy_column_names(falsy_names_df):
 
     dt.time_index = None
     assert dt.time_index is None
+    print(dt._dataframe)
 
     dt = dt.set_index('')
     assert dt.index == ''
