@@ -2916,7 +2916,7 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
                    already_sorted=True)
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=False)
-    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe))
+    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe), check_index_type=False)
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
@@ -3029,7 +3029,6 @@ def test_datatable_falsy_column_names(falsy_names_df):
 
     dt.time_index = None
     assert dt.time_index is None
-    print(dt._dataframe)
 
     dt = dt.set_index('')
     assert dt.index == ''
