@@ -23,7 +23,7 @@ Release Notes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
         * Check DataTable metadata in equality check (:pr:`449`)
-        * Propogate all attributes of DataTable in ``_new_dt_including`` (:pr:`454`)
+        * Propagate all attributes of DataTable in ``_new_dt_including`` (:pr:`454`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
         * Support column names of any type allowed by the underlying DataFrame (:pr:`442`)
