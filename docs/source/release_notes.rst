@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.0.7 December 14, 2020**
     * Enhancements
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
         * Add ``__repr__`` to DataTable (:pr:`425`)
@@ -14,14 +23,13 @@ Release Notes
         * Update DataColumn name when using setitem on column with no name (:pr:`426`)
         * Don't allow pickle serialization for Koalas DataFrames (:pr:`432`)
         * Check DataTable metadata in equality check (:pr:`449`)
-        * Propogate all attributes of DataTable in ``_new_dt_including`` (:pr:`454`)
+        * Propagate all attributes of DataTable in ``_new_dt_including`` (:pr:`454`)
     * Changes
         * Update links to use alteryx org Github URL (:pr:`423`)
         * Support column names of any type allowed by the underlying DataFrame (:pr:`442`)
         * Use ``object`` dtype for LatLong columns for easy access to latitude and longitude values (:pr:`414`)
         * Restrict dask version to prevent 2020.12.0 release from being installed (:pr:`453`)
         * Lower minimum requirement for numpy to 1.15.4, and set pandas minimum requirement 1.1.1 (:pr:`459`)
-    * Documentation Changes
     * Testing Changes
         * Fix missing test coverage (:pr:`436`)
 
