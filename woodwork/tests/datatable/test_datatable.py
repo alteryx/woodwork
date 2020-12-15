@@ -2905,7 +2905,6 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
     if ks and isinstance(sample_unsorted_df, ks.DataFrame):
         pytest.xfail('Sorting dataframe is not supported with Koalas input')
-    # --> ambiguous index
 
     index = 'id'
     time_index = 'signup_date'
@@ -3032,7 +3031,6 @@ def test_datatable_falsy_column_names(falsy_names_df):
     assert dt.time_index is None
     print(dt._dataframe)
 
-# --> causing issues
     dt = dt.set_index('')
     assert dt.index == ''
 

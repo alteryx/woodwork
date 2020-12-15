@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
+        * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
     * Fixes
         * Sort underlying series when sorting dataframe (:pr:`468`)
     * Changes

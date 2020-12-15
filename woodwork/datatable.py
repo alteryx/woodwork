@@ -111,7 +111,6 @@ class DataTable(object):
                     self.columns[column]._set_series(self._dataframe[column])
 
         # Standardize the index - if the DataTable.index is set, will make that the index column
-        # Otherwise, resets index
         self._dataframe = _set_underlying_index(index, self._dataframe)
 
         if time_index is not None:
@@ -323,12 +322,12 @@ class DataTable(object):
     @index.setter
     def index(self, index):
         if self.index is not None and index is None:
-            # --> might need to explicetly remove the index here
             updated_index_col = self.columns[self.index].remove_semantic_tags('index')
             self._update_columns({self.index: updated_index_col})
         elif index is not None:
             _update_index(self, index, self.index)
-        self._dataframe = _set_underlying_index(index, self._dataframe)
+        # Update the underlying index
+        self._dataframe = _set_underlying_index(self.index, self._dataframe)
 
     @property
     def time_index(self):
@@ -358,11 +357,10 @@ class DataTable(object):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
         if not already_sorted:
+            partially_sorted = self._dataframe
             if self.index is not None:
                 partially_sorted = partially_sorted.sort_index()
-                # --> need to separate index and cant use in sort_values
-            next_df = partially_sorted.sort_values(self.time_index)
-            self._dataframe = next_df
+            self._dataframe = partially_sorted.sort_values(self.time_index)
         return already_sorted
 
     def pop(self, column_name):
