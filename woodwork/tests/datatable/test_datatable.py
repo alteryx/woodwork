@@ -1718,8 +1718,38 @@ def test_set_index(sample_df):
         dt = DataTable(sample_df)
         dt.index = 'id'
         assert (dt.to_dataframe().index == [0, 1, 2, 3]).all()
+        assert (dt._dataframe.index == [0, 1, 2, 3]).all()
         dt.index = 'full_name'
         assert (dt.to_dataframe().index == dt.to_dataframe()['full_name']).all()
+        assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
+
+
+def test_underlying_index(sample_df):
+    unspecified_index = pd.RangeIndex
+    specified_index = pd.Index
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        unspecified_index = dd.Index
+        specified_index = dd.Index
+    if ks and isinstance(sample_df, ks.DataFrame):
+        unspecified_index = ks.Index
+        specified_index = ks.Index
+
+    dt = DataTable(sample_df.copy(), index='id')
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    dt = DataTable(sample_df.copy())
+    assert type(dt._dataframe.index) == unspecified_index
+    assert type(dt.to_dataframe().index) == unspecified_index
+
+    dt_set_index = dt.set_index('id')
+    assert type(dt_set_index._dataframe.index) == specified_index
+    assert type(dt_set_index.to_dataframe().index) == specified_index
+
+    dt.index = 'id'
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
 
 
 def test_set_time_index(sample_df):
