@@ -1767,6 +1767,14 @@ def test_underlying_index(sample_df_pandas):
     assert type(dt_dropped._dataframe.index) == unspecified_index
     assert type(dt_dropped.to_dataframe().index) == unspecified_index
 
+    # --> test updating the data
+    # --> also check datatable for all methods that might update the dataframe in a way that would miss the index
+    dt.update_dataframe(sample_df_pandas.iloc[2:, :])
+    assert (dt._dataframe.index == [2, 3]).all()
+    assert dt._dataframe.index.name == 'made_index'
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
 
 def test_set_time_index(sample_df):
     # Test setting time index with set_time_index()

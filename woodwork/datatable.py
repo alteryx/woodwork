@@ -359,7 +359,9 @@ class DataTable(object):
         if not already_sorted:
             partially_sorted = self._dataframe
             if self.index is not None:
+                print('sorting by index')
                 partially_sorted = partially_sorted.sort_index()
+            print('sorting by time index')
             self._dataframe = partially_sorted.sort_values(self.time_index)
         return already_sorted
 
@@ -643,9 +645,8 @@ class DataTable(object):
         new_df = new_df[[column for column in self._dataframe.columns]]
         self._dataframe = new_df
 
-        if self.time_index:
+        if self.time_index is not None:
             _check_time_index(new_df, self.time_index)
-            self._sort_columns(already_sorted)
 
         # Update column series and dtype
         for column in self.columns.keys():
@@ -654,6 +655,11 @@ class DataTable(object):
 
         # Make sure dataframe dtypes match columns
         self._update_columns(self.columns)
+
+        # Set underlying index and sort on it, if necessary
+        self._dataframe = _set_underlying_index(self.index, new_df)
+        if self.time_index is not None:
+            self._sort_columns(already_sorted)
 
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
