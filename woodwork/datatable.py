@@ -106,6 +106,8 @@ class DataTable(object):
         if time_index is not None:
             _update_time_index(self, time_index)
             self._sort_columns(already_sorted)
+            for column in self.columns.keys():
+                self.columns[column]._set_series(self._dataframe[column])
 
         self.metadata = table_metadata or {}
 
@@ -634,7 +636,7 @@ class DataTable(object):
 
         # Update column series and dtype
         for column in self.columns.keys():
-            self.columns[column]._set_series(new_df[column])
+            self.columns[column]._set_series(self._dataframe[column])
             self.columns[column]._update_dtype()
 
         # Make sure dataframe dtypes match columns
