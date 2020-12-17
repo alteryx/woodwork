@@ -2837,6 +2837,8 @@ def test_datatable_already_sorted(sample_unsorted_df):
     assert dt.columns[dt.time_index].logical_type == Datetime
     pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
                                   to_pandas(dt._dataframe))
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
     dt = DataTable(sample_unsorted_df,
                    name='datatable',
@@ -2847,6 +2849,9 @@ def test_datatable_already_sorted(sample_unsorted_df):
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
     pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe))
+
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
 
 def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
@@ -2866,9 +2871,13 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=False)
     pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe))
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=True)
     pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
+    for col in dt.columns:
+        assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
 
 def test_datatable_init_with_col_descriptions(sample_df):
