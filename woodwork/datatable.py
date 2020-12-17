@@ -103,7 +103,6 @@ class DataTable(object):
         # Update dtypes before setting time index so that any Datetime formatting is applied
         self._update_columns(self.columns)
 
-        # Standardize the index - if the DataTable.index is set, will make that the index column
         needs_index_update = self._set_underlying_index()
 
         needs_sorting_update = False
@@ -112,8 +111,7 @@ class DataTable(object):
             needs_sorting_update = not self._sort_columns(already_sorted)
 
         if needs_index_update or needs_sorting_update:
-            for column in self.columns.keys():
-                self.columns[column]._set_series(self._dataframe[column])
+            self._update_columns_from_dataframe()
 
         self.metadata = table_metadata or {}
 
@@ -327,8 +325,7 @@ class DataTable(object):
         # Update the underlying index
         needs_update = self._set_underlying_index()
         if needs_update:
-            for column in self.columns.keys():
-                self.columns[column]._set_series(self._dataframe[column])
+            self._update_columns_from_dataframe()
 
     @property
     def time_index(self):
@@ -354,6 +351,13 @@ class DataTable(object):
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
 
+    def _update_columns_from_dataframe(self):
+        '''
+        Update each DataColumns' series based on the current DataTable's dataframe
+        '''
+        for column in self.columns.keys():
+            self.columns[column]._set_series(self._dataframe[column])
+
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
@@ -373,7 +377,6 @@ class DataTable(object):
         '''
         needs_update = False
         new_df = self._dataframe
-
         if isinstance(self._dataframe, pd.DataFrame):
             if self.index is not None:
                 needs_update = True
@@ -475,8 +478,7 @@ class DataTable(object):
         _update_index(new_dt, index, self.index)
         needs_update = new_dt._set_underlying_index()
         if needs_update:
-            for column in self.columns.keys():
-                self.columns[column]._set_series(self._dataframe[column])
+            self._update_columns_from_dataframe()
         return new_dt
 
     def set_time_index(self, time_index):
@@ -609,6 +611,7 @@ class DataTable(object):
         return new_dt
 
     def to_dataframe(self):
+        # --> test these changes
         """Retrieves the DataTable's underlying dataframe.
 
         Note: Do not modify the returned dataframe directly to avoid unexpected behavior
@@ -673,7 +676,6 @@ class DataTable(object):
             _check_time_index(new_df, self.time_index)
 
         # Set underlying index and sort on it, if necessary
-        self._dataframe = new_df
         self._set_underlying_index()
         if self.time_index is not None:
             self._sort_columns(already_sorted)
