@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
     * Fixes
     * Changes
        * Fix release document with Github Actions link for CI (:pr:`462`)
@@ -11,7 +12,7 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
     
 **v0.0.7 December 14, 2020**
     * Enhancements
