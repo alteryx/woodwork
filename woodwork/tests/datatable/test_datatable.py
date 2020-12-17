@@ -1769,11 +1769,16 @@ def test_underlying_index(sample_df_pandas):
 
     # --> test updating the data
     # --> also check datatable for all methods that might update the dataframe in a way that would miss the index
-    dt.update_dataframe(sample_df_pandas.iloc[2:, :])
+
+
+def test_underlying_index_on_update(sample_df_pandas):
+    dt = DataTable(sample_df_pandas.copy(), index='id')
+
+    dt.update_dataframe(sample_df_pandas.tail(2))
     assert (dt._dataframe.index == [2, 3]).all()
-    assert dt._dataframe.index.name == 'made_index'
-    assert type(dt._dataframe.index) == specified_index
-    assert type(dt.to_dataframe().index) == specified_index
+    assert dt._dataframe.index.name == 'id'
+    assert type(dt._dataframe.index) == pd.Int64Index
+    assert type(dt.to_dataframe().index) == pd.Int64Index
 
 
 def test_set_time_index(sample_df):
@@ -2776,6 +2781,8 @@ def test_datatable_update_dataframe(sample_df):
     pd.testing.assert_frame_equal(original_types, dt.types)
 
     # new_df does not have updated dtypes, so ignore during check
+    if isinstance(new_df, pd.DataFrame):
+        new_df = new_df.set_index('id', drop=False)
     pd.testing.assert_frame_equal(to_pandas(new_df),
                                   to_pandas(dt._dataframe),
                                   check_dtype=False,
@@ -2924,12 +2931,14 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
                    already_sorted=True)
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=False)
-    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe), check_index_type=False)
+    sorted_df = sorted_df.set_index('id', drop=False)
+    assert (sorted_df.index == dt._dataframe.index).all()
     for col in dt.columns:
+        assert (to_pandas(dt._dataframe[col]) == to_pandas(sorted_df[col])).all()
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=True)
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
+    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df.set_index('id', drop=False)), to_pandas(dt._dataframe), check_dtype=False)
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 

@@ -103,19 +103,18 @@ class DataTable(object):
         # Update dtypes before setting time index so that any Datetime formatting is applied
         self._update_columns(self.columns)
 
-        if time_index is not None:
-            _update_time_index(self, time_index)
-            already_sorted = self._sort_columns(already_sorted)
-            if not already_sorted:
-                for column in self.columns.keys():
-                    self.columns[column]._set_series(self._dataframe[column])
-
         # Standardize the index - if the DataTable.index is set, will make that the index column
-        self._dataframe = _set_underlying_index(index, self._dataframe)
+        needs_index_update = self._set_underlying_index()
 
+        needs_sorting_update = False
         if time_index is not None:
             _update_time_index(self, time_index)
-            self._sort_columns(already_sorted)
+            needs_sorting_update = not self._sort_columns(already_sorted)
+
+        if needs_index_update or needs_sorting_update:
+            # --> only update once - also make sure we are doing this in thebest way
+            for column in self.columns.keys():
+                self.columns[column]._set_series(self._dataframe[column])
 
         self.metadata = table_metadata or {}
 
@@ -327,7 +326,10 @@ class DataTable(object):
         elif index is not None:
             _update_index(self, index, self.index)
         # Update the underlying index
-        self._dataframe = _set_underlying_index(self.index, self._dataframe)
+        needs_update = self._set_underlying_index()
+        if needs_update:
+            for column in self.columns.keys():
+                self.columns[column]._set_series(self._dataframe[column])
 
     @property
     def time_index(self):
@@ -359,11 +361,31 @@ class DataTable(object):
         if not already_sorted:
             partially_sorted = self._dataframe
             if self.index is not None:
-                print('sorting by index')
                 partially_sorted = partially_sorted.sort_index()
-            print('sorting by time index')
             self._dataframe = partially_sorted.sort_values(self.time_index)
         return already_sorted
+
+    def _set_underlying_index(self):
+        '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
+
+        If the DataTable has an index, will be set to that index.
+        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
+        meaning that the index will be a pd.RangeIndex starting from zero.
+        '''
+        needs_update = False
+        new_df = self._dataframe
+
+        if isinstance(self._dataframe, pd.DataFrame):
+            if self.index is not None:
+                needs_update = True
+                new_df = self._dataframe.set_index(self.index, drop=False)
+            # Only reset the index if the index isn't a RangeIndex
+            elif not isinstance(self._dataframe.index, pd.RangeIndex):
+                needs_update = True
+                new_df = self._dataframe.reset_index(drop=True)
+
+        self._dataframe = new_df
+        return needs_update
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -452,7 +474,10 @@ class DataTable(object):
         """
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_index(new_dt, index, self.index)
-        new_dt._dataframe = _set_underlying_index(index, new_dt._dataframe)
+        needs_update = new_dt._set_underlying_index()
+        if needs_update:
+            for column in self.columns.keys():
+                self.columns[column]._set_series(self._dataframe[column])
         return new_dt
 
     def set_time_index(self, time_index):
@@ -648,6 +673,12 @@ class DataTable(object):
         if self.time_index is not None:
             _check_time_index(new_df, self.time_index)
 
+        # Set underlying index and sort on it, if necessary
+        self._dataframe = new_df
+        needs_update = self._set_underlying_index()
+        if self.time_index is not None:
+            self._sort_columns(already_sorted)
+
         # Update column series and dtype
         for column in self.columns.keys():
             self.columns[column]._set_series(self._dataframe[column])
@@ -655,11 +686,6 @@ class DataTable(object):
 
         # Make sure dataframe dtypes match columns
         self._update_columns(self.columns)
-
-        # Set underlying index and sort on it, if necessary
-        self._dataframe = _set_underlying_index(self.index, new_df)
-        if self.time_index is not None:
-            self._sort_columns(already_sorted)
 
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
@@ -1246,24 +1272,4 @@ def _make_index(dataframe, index):
     else:
         dataframe.insert(0, index, range(len(dataframe)))
 
-    return dataframe
-
-
-def _set_underlying_index(index, dataframe):
-    '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
-
-    If the DataTable has an index, will be set to that index.
-    If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
-    meaning that the index will be a pd.RangeIndex starting from zero.
-    '''
-    if not isinstance(dataframe, pd.DataFrame):
-        return dataframe
-
-    if index is not None:
-        assert index in dataframe.columns
-        return dataframe.set_index(index, drop=False)
-
-    # Only reset the index if the index isn't a RangeIndex
-    if not isinstance(dataframe.index, pd.RangeIndex):
-        return dataframe.reset_index(drop=True)
     return dataframe
