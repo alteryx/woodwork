@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
     * Fixes
         * Sort underlying series when sorting dataframe (:pr:`468`)
     * Changes
@@ -12,7 +13,7 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
     
 **v0.0.7 December 14, 2020**
     * Enhancements

@@ -586,6 +586,10 @@ class DataTable(object):
         else:
             return self._dataframe.set_index(self.index, drop=False)
 
+    @property
+    def df(self):
+        return self.to_dataframe()
+
     def select(self, include):
         """Create a DataTable including only columns whose logical type and
         semantic tags are specified in the list of types and tags to include.
