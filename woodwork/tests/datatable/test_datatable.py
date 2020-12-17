@@ -1767,9 +1767,6 @@ def test_underlying_index(sample_df_pandas):
     assert type(dt_dropped._dataframe.index) == unspecified_index
     assert type(dt_dropped.to_dataframe().index) == unspecified_index
 
-    # --> test updating the data
-    # --> also check datatable for all methods that might update the dataframe in a way that would miss the index
-
 
 def test_underlying_index_on_update(sample_df_pandas):
     dt = DataTable(sample_df_pandas.copy(), index='id')
@@ -3047,16 +3044,13 @@ def test_datatable_falsy_column_names(falsy_names_df):
     dt.time_index = None
     assert dt.time_index is None
 
-    dt = dt.set_index('')
-    assert dt.index == ''
-
     popped_col = dt.pop('')
     dt[''] = popped_col
     assert dt[''].name == ''
     assert dt['']._series.name == ''
 
-    dt = dt.rename({0: 'col_with_name'})
-    assert 0 not in dt.columns
+    dt = dt.rename({'': 'col_with_name'})
+    assert '' not in dt.columns
     assert 'col_with_name' in dt.columns
 
 

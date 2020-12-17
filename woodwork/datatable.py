@@ -112,7 +112,6 @@ class DataTable(object):
             needs_sorting_update = not self._sort_columns(already_sorted)
 
         if needs_index_update or needs_sorting_update:
-            # --> only update once - also make sure we are doing this in thebest way
             for column in self.columns.keys():
                 self.columns[column]._set_series(self._dataframe[column])
 
@@ -675,7 +674,7 @@ class DataTable(object):
 
         # Set underlying index and sort on it, if necessary
         self._dataframe = new_df
-        needs_update = self._set_underlying_index()
+        self._set_underlying_index()
         if self.time_index is not None:
             self._sort_columns(already_sorted)
 
