@@ -5,13 +5,14 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Sort underlying series when sorting dataframe (:pr:`468`)
     * Changes
        * Fix release document with Github Actions link for CI (:pr:`462`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`tamargrey`
     
 **v0.0.7 December 14, 2020**
     * Enhancements
