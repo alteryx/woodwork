@@ -65,6 +65,12 @@ def test_datatable_init(sample_df):
     pd.testing.assert_frame_equal(to_pandas(df), to_pandas(sample_df))
 
 
+def test_datatable_df_property(sample_df):
+    dt = DataTable(sample_df)
+    assert dt.df is sample_df
+    pd.testing.assert_frame_equal(to_pandas(dt.df), to_pandas(sample_df))
+
+
 def test_datatable_init_with_name_and_index_vals(sample_df):
     dt = DataTable(sample_df,
                    name='datatable',
