@@ -614,7 +614,6 @@ class DataTable(object):
         return new_dt
 
     def to_dataframe(self):
-        # --> test these changes
         """Retrieves the DataTable's underlying dataframe.
 
         Note: Do not modify the returned dataframe directly to avoid unexpected behavior
