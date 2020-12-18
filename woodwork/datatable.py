@@ -362,10 +362,11 @@ class DataTable(object):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
         if not already_sorted:
-            partially_sorted = self._dataframe
-            if self.index is not None:
-                partially_sorted = partially_sorted.sort_index()
-            self._dataframe = partially_sorted.sort_values(self.time_index)
+            sort_cols = [self.time_index, self.index]
+            if self.index is None:
+                sort_cols = [self.time_index]
+            self._dataframe = self._dataframe.sort_values(sort_cols)
+
         return already_sorted
 
     def _set_underlying_index(self):
@@ -381,6 +382,8 @@ class DataTable(object):
             if self.index is not None:
                 needs_update = True
                 new_df = self._dataframe.set_index(self.index, drop=False)
+                # Drop index name to not overlap with the original column
+                new_df.index.name = None
             # Only reset the index if the index isn't a RangeIndex
             elif not isinstance(self._dataframe.index, pd.RangeIndex):
                 needs_update = True
