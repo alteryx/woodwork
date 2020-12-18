@@ -2,7 +2,7 @@ import woodwork as ww
 import pandas as pd
 
 
-@pd.api.extensions.register_dataframe_accessor("ww1")
+@pd.api.extensions.register_dataframe_accessor("ww")
 class DataTableAccessor:
     def __init__(self, pandas_obj):
         self._datatable = ww.DataTable(pandas_obj)
@@ -21,6 +21,8 @@ class DataTableAccessor:
         return object.__getattribute__(self, attr)
 
     def init(self, **kwargs):
+        '''Initialize a DataTable the pandas accessor with any relevant DataTable arguments.
+        '''
         self._datatable = ww.DataTable(self._datatable.df, **kwargs)
 
     @property
@@ -32,5 +34,3 @@ class DataTableAccessor:
         '''To be used any time a DataTable method returns a new DataTable object
         '''
         self._datatable = datatable
-
-# somehow setting an item doesnt call getattr so i need another way of intercepting it :/
