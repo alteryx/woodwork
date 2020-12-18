@@ -1,4 +1,6 @@
 import woodwork as ww
+import dask.dataframe as dd
+from databricks.koalas.extensions import register_dataframe_accessor
 import pandas as pd
 
 
@@ -34,3 +36,13 @@ class DataTableAccessor:
         '''To be used any time a DataTable method returns a new DataTable object
         '''
         self._datatable = datatable
+
+
+@dd.extensions.register_dataframe_accessor("ww")
+class DaskDataTableAccessor(DataTableAccessor):
+    pass
+
+
+@register_dataframe_accessor("ww")
+class KoalasDataTableAccessor(DataTableAccessor):
+    pass
