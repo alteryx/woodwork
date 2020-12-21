@@ -1724,6 +1724,17 @@ def test_set_index(sample_df):
         assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
 
 
+def test_set_index_twice(sample_df):
+    dt = DataTable(sample_df, index='id')
+    assert dt.index == 'id'
+
+    dt_twice = dt.set_index('id')
+    assert dt_twice.index == 'id'
+
+    dt.index = 'id'
+    assert dt.index == 'id'
+
+
 def test_underlying_index_no_index(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
