@@ -1725,18 +1725,29 @@ def test_set_index(sample_df):
 
 
 def test_set_index_twice(sample_df):
-    dt = DataTable(sample_df, index='id')
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
     original_df = dt.df.copy()
 
-    dt_twice = dt.set_index('id')
-    assert 'index' in dt_twice['id'].semantic_tags
-    assert dt_twice.index == 'id'
-    assert dt_twice == dt
-    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_twice.df))
+    dt_index_twice = dt.set_index('id')
+    assert 'index' in dt_index_twice['id'].semantic_tags
+    assert dt_index_twice.index == 'id'
+    assert dt_index_twice == dt
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_index_twice.df))
+
+    dt_time_index_twice = dt.set_time_index('signup_date')
+    assert 'time_index' in dt_time_index_twice['signup_date'].semantic_tags
+    assert dt_time_index_twice.time_index == 'signup_date'
+    assert dt_time_index_twice == dt
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_time_index_twice.df))
 
     dt.index = 'id'
     assert 'index' in dt['id'].semantic_tags
     assert dt.index == 'id'
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt.df))
+
+    dt.time_index = 'signup_date'
+    assert 'time_index' in dt['signup_date'].semantic_tags
+    assert dt.time_index == 'signup_date'
     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt.df))
 
 

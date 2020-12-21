@@ -1261,9 +1261,9 @@ def _update_time_index(datatable, time_index, old_time_index=None):
     column can be used as a time index."""
 
     _check_time_index(datatable._dataframe, time_index)
-    datatable.columns[time_index]._set_as_time_index()
     if old_time_index is not None:
         datatable._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
+    datatable.columns[time_index]._set_as_time_index()
 
 
 def _make_index(dataframe, index):
