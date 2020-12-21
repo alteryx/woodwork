@@ -7,6 +7,7 @@ import pandas as pd
 @pd.api.extensions.register_dataframe_accessor("ww")
 class DataTableAccessor:
     def __init__(self, pandas_obj):
+        print('__init__ DataTableAccessor')
         self._datatable = ww.DataTable(pandas_obj)
 
     def __getattribute__(self, attr):
