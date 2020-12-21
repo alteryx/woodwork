@@ -103,12 +103,15 @@ class DataTable(object):
         # Update dtypes before setting time index so that any Datetime formatting is applied
         self._update_columns(self.columns)
 
+        needs_index_update = self._set_underlying_index()
+
+        needs_sorting_update = False
         if time_index is not None:
             _update_time_index(self, time_index)
-            already_sorted = self._sort_columns(already_sorted)
-            if not already_sorted:
-                for column in self.columns.keys():
-                    self.columns[column]._set_series(self._dataframe[column])
+            needs_sorting_update = not self._sort_columns(already_sorted)
+
+        if needs_index_update or needs_sorting_update:
+            self._update_columns_from_dataframe()
 
         self.metadata = table_metadata or {}
 
@@ -319,6 +322,10 @@ class DataTable(object):
             self._update_columns({self.index: updated_index_col})
         elif index is not None:
             _update_index(self, index, self.index)
+        # Update the underlying index
+        needs_update = self._set_underlying_index()
+        if needs_update:
+            self._update_columns_from_dataframe()
 
     @property
     def time_index(self):
@@ -344,15 +351,46 @@ class DataTable(object):
             # Make sure the underlying dataframe is in sync in case series data has changed
             self._dataframe[name] = column._series
 
+    def _update_columns_from_dataframe(self):
+        '''
+        Update each DataColumns' series based on the current DataTable's dataframe
+        '''
+        for column in self.columns.keys():
+            self.columns[column]._set_series(self._dataframe[column])
+
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
         if not already_sorted:
             sort_cols = [self.time_index, self.index]
-            if not self.index:
+            if self.index is None:
                 sort_cols = [self.time_index]
             self._dataframe = self._dataframe.sort_values(sort_cols)
+
         return already_sorted
+
+    def _set_underlying_index(self):
+        '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
+
+        If the DataTable has an index, will be set to that index.
+        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
+        meaning that the index will be a pd.RangeIndex starting from zero.
+        '''
+        needs_update = False
+        new_df = self._dataframe
+        if isinstance(self._dataframe, pd.DataFrame):
+            if self.index is not None:
+                needs_update = True
+                new_df = self._dataframe.set_index(self.index, drop=False)
+                # Drop index name to not overlap with the original column
+                new_df.index.name = None
+            # Only reset the index if the index isn't a RangeIndex
+            elif not isinstance(self._dataframe.index, pd.RangeIndex):
+                needs_update = True
+                new_df = self._dataframe.reset_index(drop=True)
+
+        self._dataframe = new_df
+        return needs_update
 
     def pop(self, column_name):
         """Return a DataColumn and drop it from the DataTable.
@@ -441,6 +479,9 @@ class DataTable(object):
         """
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_index(new_dt, index, self.index)
+        needs_update = new_dt._set_underlying_index()
+        if needs_update:
+            self._update_columns_from_dataframe()
         return new_dt
 
     def set_time_index(self, time_index):
@@ -581,10 +622,7 @@ class DataTable(object):
             DataFrame: The underlying dataframe of the DataTable. Return type will depend on the type
                 of dataframe used to create the DataTable.
         """
-        if self.index is None or not isinstance(self._dataframe, pd.DataFrame):
-            return self._dataframe
-        else:
-            return self._dataframe.set_index(self.index, drop=False)
+        return self._dataframe
 
     @property
     def df(self):
@@ -636,8 +674,12 @@ class DataTable(object):
         new_df = new_df[[column for column in self._dataframe.columns]]
         self._dataframe = new_df
 
-        if self.time_index:
+        if self.time_index is not None:
             _check_time_index(new_df, self.time_index)
+
+        # Set underlying index and sort on it, if necessary
+        self._set_underlying_index()
+        if self.time_index is not None:
             self._sort_columns(already_sorted)
 
         # Update column series and dtype

@@ -1718,8 +1718,90 @@ def test_set_index(sample_df):
         dt = DataTable(sample_df)
         dt.index = 'id'
         assert (dt.to_dataframe().index == [0, 1, 2, 3]).all()
+        assert (dt._dataframe.index == [0, 1, 2, 3]).all()
         dt.index = 'full_name'
         assert (dt.to_dataframe().index == dt.to_dataframe()['full_name']).all()
+        assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
+
+
+def test_underlying_index_no_index(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    assert type(sample_df.index) == pd.RangeIndex
+    dt = DataTable(sample_df.copy())
+    assert type(dt._dataframe.index) == pd.RangeIndex
+    assert type(dt.to_dataframe().index) == pd.RangeIndex
+
+    sample_df = sample_df.sort_values('full_name')
+    assert type(sample_df.index) == pd.Int64Index
+    dt = DataTable(sample_df)
+
+    assert type(dt._dataframe.index) == pd.RangeIndex
+    assert type(dt.to_dataframe().index) == pd.RangeIndex
+
+
+def test_underlying_index(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    unspecified_index = pd.RangeIndex
+    specified_index = pd.Index
+
+    dt = DataTable(sample_df.copy(), index='id')
+    assert dt._dataframe.index.name is None
+    assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    dt = DataTable(sample_df.copy())
+    dt = dt.set_index('full_name')
+    assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
+    assert dt._dataframe.index.name is None
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    dt.index = 'id'
+    assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    assert dt._dataframe.index.name is None
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    # test removing index removes the dataframe's index
+    dt.index = None
+    assert type(dt._dataframe.index) == unspecified_index
+    assert type(dt.to_dataframe().index) == unspecified_index
+
+    dt = DataTable(sample_df.copy(), index='made_index', make_index=True)
+    assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    assert dt._dataframe.index.name is None
+    assert type(dt._dataframe.index) == specified_index
+    assert type(dt.to_dataframe().index) == specified_index
+
+    dt_dropped = dt.drop('made_index')
+    assert 'made_index' not in dt_dropped.columns
+    assert 'made_index' not in dt_dropped._dataframe.columns
+    assert type(dt_dropped._dataframe.index) == unspecified_index
+    assert type(dt_dropped.to_dataframe().index) == unspecified_index
+
+
+def test_underlying_index_on_update(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    dt = DataTable(sample_df.copy(), index='id')
+
+    dt.update_dataframe(sample_df.tail(2))
+    assert (dt._dataframe.index == [2, 3]).all()
+    assert dt._dataframe.index.name is None
+    assert type(dt._dataframe.index) == pd.Int64Index
+    assert type(dt.to_dataframe().index) == pd.Int64Index
 
 
 def test_set_time_index(sample_df):
@@ -2721,6 +2803,9 @@ def test_datatable_update_dataframe(sample_df):
     assert dt.time_index == 'signup_date'
     pd.testing.assert_frame_equal(original_types, dt.types)
 
+    if isinstance(new_df, pd.DataFrame):
+        new_df = new_df.set_index('id', drop=False)
+        new_df.index.name = None
     # new_df does not have updated dtypes, so ignore during check
     pd.testing.assert_frame_equal(to_pandas(new_df),
                                   to_pandas(dt._dataframe),
@@ -2835,7 +2920,10 @@ def test_datatable_already_sorted(sample_unsorted_df):
 
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']),
+
+    sorted_df = to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False)
+    sorted_df.index.name = None
+    pd.testing.assert_frame_equal(sorted_df,
                                   to_pandas(dt._dataframe))
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
@@ -2848,7 +2936,9 @@ def test_datatable_already_sorted(sample_unsorted_df):
 
     assert dt.time_index == 'signup_date'
     assert dt.columns[dt.time_index].logical_type == Datetime
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe))
+    unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
+    unsorted_df.index.name = None
+    pd.testing.assert_frame_equal(unsorted_df, to_pandas(dt._dataframe))
 
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
@@ -2870,12 +2960,17 @@ def test_datatable_update_dataframe_already_sorted(sample_unsorted_df):
                    already_sorted=True)
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=False)
-    pd.testing.assert_frame_equal(to_pandas(sorted_df), to_pandas(dt._dataframe))
+    sorted_df = sorted_df.set_index('id', drop=False)
+    sorted_df.index.name = None
+    assert (sorted_df.index == dt._dataframe.index).all()
     for col in dt.columns:
+        assert (to_pandas(dt._dataframe[col]) == to_pandas(sorted_df[col])).all()
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
     dt.update_dataframe(sample_unsorted_df, already_sorted=True)
-    pd.testing.assert_frame_equal(to_pandas(sample_unsorted_df), to_pandas(dt._dataframe), check_dtype=False)
+    unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
+    unsorted_df.index.name = None
+    pd.testing.assert_frame_equal(unsorted_df, to_pandas(dt._dataframe), check_dtype=False)
     for col in dt.columns:
         assert to_pandas(dt.columns[col]._series).equals(to_pandas(dt._dataframe[col]))
 
@@ -2984,16 +3079,13 @@ def test_datatable_falsy_column_names(falsy_names_df):
     dt.time_index = None
     assert dt.time_index is None
 
-    dt = dt.set_index('')
-    assert dt.index == ''
-
     popped_col = dt.pop('')
     dt[''] = popped_col
     assert dt[''].name == ''
     assert dt['']._series.name == ''
 
-    dt = dt.rename({0: 'col_with_name'})
-    assert 0 not in dt.columns
+    dt = dt.rename({'': 'col_with_name'})
+    assert '' not in dt.columns
     assert 'col_with_name' in dt.columns
 
 
