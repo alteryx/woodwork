@@ -1726,13 +1726,18 @@ def test_set_index(sample_df):
 
 def test_set_index_twice(sample_df):
     dt = DataTable(sample_df, index='id')
-    assert dt.index == 'id'
+    original_df = dt.df.copy()
 
     dt_twice = dt.set_index('id')
+    assert 'index' in dt_twice['id'].semantic_tags
     assert dt_twice.index == 'id'
+    assert dt_twice == dt
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_twice.df))
 
     dt.index = 'id'
+    assert 'index' in dt['id'].semantic_tags
     assert dt.index == 'id'
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt.df))
 
 
 def test_underlying_index_no_index(sample_df):
