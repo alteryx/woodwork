@@ -7,8 +7,8 @@ import pandas as pd
 # DataFrame Accessors
 @pd.api.extensions.register_dataframe_accessor('ww')
 class DataTableAccessor:
-    def __init__(self, pandas_obj):
-        self._datatable = ww.DataTable(pandas_obj)
+    def __init__(self, dataframe):
+        self._datatable = ww.DataTable(dataframe)
 
     def __getattribute__(self, attr):
         return _get_attr_from_child(self, '_datatable', attr)
@@ -41,8 +41,8 @@ class KoalasDataTableAccessor(DataTableAccessor):
 # DataColumn Accessors
 @pd.api.extensions.register_series_accessor('ww')
 class DataColumnAccessor:
-    def __init__(self, pandas_obj):
-        self._datacolumn = ww.DataColumn(pandas_obj)
+    def __init__(self, series):
+        self._datacolumn = ww.DataColumn(series)
 
     def __getattribute__(self, attr):
         return _get_attr_from_child(self, '_datacolumn', attr)
@@ -78,9 +78,9 @@ def _get_attr_from_child(obj, child, attr):
 
     if hasattr(child, attr):
         child_attr = getattr(child, attr)
-        is_logical_type = ww.type_sys.utils._get_ltype_class(child_attr) in ww.logical_types.LogicalType.__subclasses__()
 
-        if callable(child_attr) and not is_logical_type:
+        # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
+        if callable(child_attr) and attr != 'logical_type':
             def wrapper(*args, **kwargs):
                 return child_attr(*args, **kwargs)
             return wrapper
