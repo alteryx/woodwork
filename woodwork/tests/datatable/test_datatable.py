@@ -1724,6 +1724,33 @@ def test_set_index(sample_df):
         assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
 
 
+def test_set_index_twice(sample_df):
+    dt = DataTable(sample_df, index='id', time_index='signup_date')
+    original_df = dt.df.copy()
+
+    dt_index_twice = dt.set_index('id')
+    assert 'index' in dt_index_twice['id'].semantic_tags
+    assert dt_index_twice.index == 'id'
+    assert dt_index_twice == dt
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_index_twice.df))
+
+    dt_time_index_twice = dt.set_time_index('signup_date')
+    assert 'time_index' in dt_time_index_twice['signup_date'].semantic_tags
+    assert dt_time_index_twice.time_index == 'signup_date'
+    assert dt_time_index_twice == dt
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_time_index_twice.df))
+
+    dt.index = 'id'
+    assert 'index' in dt['id'].semantic_tags
+    assert dt.index == 'id'
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt.df))
+
+    dt.time_index = 'signup_date'
+    assert 'time_index' in dt['signup_date'].semantic_tags
+    assert dt.time_index == 'signup_date'
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt.df))
+
+
 def test_underlying_index_no_index(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')

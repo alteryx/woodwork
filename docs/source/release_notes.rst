@@ -8,6 +8,7 @@ Release Notes
         * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
     * Fixes
         * Sort underlying series when sorting dataframe (:pr:`468`)
+        * Allow setting indices to current index without side effects (:pr:`474`)
     * Changes
        * Fix release document with Github Actions link for CI (:pr:`462`)
     * Documentation Changes
