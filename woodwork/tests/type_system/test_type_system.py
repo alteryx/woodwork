@@ -1,11 +1,13 @@
 import pandas as pd
 import pytest
 
+import woodwork as ww
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
     Double,
     Integer,
+    LogicalType,
     NaturalLanguage,
     Ordinal,
     SubRegionCode
@@ -16,6 +18,7 @@ from woodwork.type_sys.inference_functions import (
     integer_func
 )
 from woodwork.type_sys.type_system import TypeSystem
+from woodwork.type_sys.utils import str_to_logical_type
 
 
 def test_type_system_init(default_inference_functions, default_relationships):
@@ -129,6 +132,28 @@ def test_add_type_with_parent():
     assert type_sys.inference_functions[Integer] is integer_func
     assert len(type_sys.relationships) == 1
     assert type_sys.relationships[0] == (Double, Integer)
+
+
+def test_add_duplicate_ltype(type_sys):
+    # test adding new class but same name
+    # test adding ltype
+    inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
+
+    assert str_to_logical_type('Integer') == ww.logical_types.Integer
+
+    class Integer(LogicalType):
+        pandas_dtype = 'string'
+
+    error_msg = 'Logical Type with name Integer already present in the Type System. Please rename the LogicalType or remove existing one.'
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.add_type(Integer, inference_function=inference_fn)
+
+    type_sys.remove_type(ww.logical_types.Integer)
+    type_sys.add_type(Integer, inference_function=inference_fn)
+
+    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == Integer
+
+    # --> we should have a test somewere that doing this kind of thing actually changes the type inference
 
 
 def test_remove_type_no_children(type_sys):

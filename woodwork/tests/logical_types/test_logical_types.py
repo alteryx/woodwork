@@ -34,7 +34,7 @@ def test_instantiated_type_str():
 
 def test_get_logical_types():
     all_types = ww.type_system.registered_types
-    logical_types = get_logical_types()
+    logical_types = get_logical_types(ww.type_system.registered_types)
 
     for logical_type in all_types:
         assert logical_types[logical_type.__name__] == logical_type
@@ -72,6 +72,9 @@ def test_str_to_logical_type():
     # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated
     assert str_to_logical_type('full_NAME', params={}) == FullName
     assert datetime_no_format != Datetime
+
+    # --> maybe add a check after removing a logical type from the type system
+    # --> test where you input a diff type system and one where you dont
 
 
 def test_ordinal_order_errors():
