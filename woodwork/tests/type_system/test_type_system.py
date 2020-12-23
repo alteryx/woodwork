@@ -135,11 +135,9 @@ def test_add_type_with_parent():
 
 
 def test_add_duplicate_ltype(type_sys):
-    # test adding new class but same name
-    # test adding ltype
     inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
 
-    assert str_to_logical_type('Integer') == ww.logical_types.Integer
+    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == ww.logical_types.Integer
 
     class Integer(LogicalType):
         pandas_dtype = 'string'
@@ -153,7 +151,8 @@ def test_add_duplicate_ltype(type_sys):
 
     assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == Integer
 
-    # --> we should have a test somewere that doing this kind of thing actually changes the type inference
+    type_sys.reset_defaults()
+    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == ww.logical_types.Integer
 
 
 def test_remove_type_no_children(type_sys):

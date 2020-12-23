@@ -18,7 +18,6 @@ class LogicalTypeMetaClass(type):
 
 
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
-    # --> add a check to confirm this name doesn't already exist?????
     """Base class for all other Logical Types"""
     type_string = ClassNameDescriptor()
     pandas_dtype = 'string'
@@ -30,8 +29,6 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def __str__(self):
         return str(self.__class__)
-
-    # --> idea - add setters for fields??? - get dtype - looks at type sys then pandas dtype then backup dtype
 
 
 class Boolean(LogicalType):

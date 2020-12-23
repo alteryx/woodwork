@@ -71,14 +71,6 @@ DEFAULT_RELATIONSHIPS = [
 
 DEFAULT_TYPE = NaturalLanguage
 
-# --> idea: Update dtypes dict - can override any default ltype's dtype if you want and we'll reference that if it exists.
-# --> probably would also want to do that for standard tags - this gives you a way of updating any Default Ltype's values without touching the object itself
-# Q: how does this interact with types you've added yourself? I guess you probably want to make sure you add the types you actually want but
-# this gives you a way to update and override if you want. Or maybe we only allow updating the defaults?
-
-# --> idea - first remove an old type and then add the new one but it errors until you do that.
-# Q: Does that cause issues with the actual presence of two identical subclasses? Do you ahve to delete? How to reset to defaults then?
-
 
 class TypeSystem(object):
     def __init__(self, inference_functions=None, relationships=None, default_type=NaturalLanguage):
@@ -195,7 +187,6 @@ class TypeSystem(object):
         # Add the new/updated relationship
         self.relationships.append((parent, logical_type))
 
-    # --> idea add a delete_logical_type to remove a whole ass logical type
     def reset_defaults(self):
         """Reset type system to the default settings that were specified at initialization.
 

@@ -23,11 +23,11 @@ def str_to_logical_type(logical_str, registered_types=None, params=None, raise_e
     """Helper function for converting a string value to the corresponding logical type object.
     If a dictionary of params for the logical type is provided, apply them."""
     registered_types = registered_types or ww.type_system.registered_types
-    logical_str = logical_str.lower()
+    logical_str_lower = logical_str.lower()
     logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types(registered_types).items()}
 
-    if logical_str in logical_types_dict:
-        ltype = logical_types_dict[logical_str]
+    if logical_str_lower in logical_types_dict:
+        ltype = logical_types_dict[logical_str_lower]
         if params:
             return ltype(**params)
         else:

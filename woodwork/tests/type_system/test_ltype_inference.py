@@ -6,6 +6,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
+    LogicalType,
     NaturalLanguage,
     Timedelta
 )
@@ -156,3 +157,23 @@ def test_pdna_inference(pdnas):
     for index, series in enumerate(pdnas):
         inferred_type = ww.type_system.infer_logical_type(series)
         assert inferred_type == expected_logical_types[index]
+
+
+def test_updated_ltype_inference(integers, type_sys):
+    inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
+    type_sys.remove_type(ww.logical_types.Integer)
+
+    class Integer(LogicalType):
+        pandas_dtype = 'string'
+
+    type_sys.add_type(Integer, inference_function=inference_fn)
+
+    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    if ks and isinstance(integers[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
+
+    for series in integers:
+        for dtype in dtypes:
+            inferred_type = type_sys.infer_logical_type(series.astype(dtype))
+            assert inferred_type == Integer
+            assert inferred_type.pandas_dtype == 'string'

@@ -8,6 +8,7 @@ from woodwork.logical_types import (
     FullName,
     Ordinal
 )
+from woodwork.type_sys.type_system import TypeSystem
 from woodwork.type_sys.utils import get_logical_types, str_to_logical_type
 
 
@@ -73,8 +74,12 @@ def test_str_to_logical_type():
     assert str_to_logical_type('full_NAME', params={}) == FullName
     assert datetime_no_format != Datetime
 
-    # --> maybe add a check after removing a logical type from the type system
-    # --> test where you input a diff type system and one where you dont
+    # Input a different type system
+    new_type_sys = TypeSystem()
+    with pytest.raises(ValueError, match='String Integer is not a valid logical type'):
+        str_to_logical_type('Integer', registered_types=new_type_sys.registered_types)
+    new_type_sys.add_type(Boolean)
+    assert Boolean == str_to_logical_type('Boolean', registered_types=new_type_sys.registered_types)
 
 
 def test_ordinal_order_errors():
