@@ -11,6 +11,7 @@ Release Notes
         * Allow setting indices to current index without side effects (:pr:`474`)
     * Changes
        * Fix release document with Github Actions link for CI (:pr:`462`)
+       * Don't allow registered LogialTypes with the same name (:pr:`477`)
     * Documentation Changes
     * Testing Changes
 
