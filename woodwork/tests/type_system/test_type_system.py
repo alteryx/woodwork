@@ -149,10 +149,14 @@ def test_add_duplicate_ltype(type_sys):
     type_sys.remove_type(ww.logical_types.Integer)
     type_sys.add_type(Integer, inference_function=inference_fn)
 
-    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == Integer
+    ltype = str_to_logical_type('Integer', registered_types=type_sys.registered_types)
+    assert ltype == Integer
+    assert ltype.pandas_dtype == 'string'
 
     type_sys.reset_defaults()
-    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == ww.logical_types.Integer
+    ltype = str_to_logical_type('Integer', registered_types=type_sys.registered_types)
+    assert ltype == ww.logical_types.Integer
+    assert ltype.pandas_dtype == 'Int64'
 
 
 def test_remove_type_no_children(type_sys):
