@@ -24,7 +24,6 @@ def categorical_func(series):
         return True
     if ((pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype)) and
             _is_numeric_categorical(series, numeric_categorical_threshold)):
-        raise TypeError('NOT COVERED??')
         return True
     return False
 
