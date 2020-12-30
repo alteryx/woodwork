@@ -8,6 +8,7 @@ from woodwork.logical_types import (
     FullName,
     Ordinal
 )
+from woodwork.type_sys.type_system import TypeSystem
 from woodwork.type_sys.utils import get_logical_types, str_to_logical_type
 
 
@@ -34,7 +35,7 @@ def test_instantiated_type_str():
 
 def test_get_logical_types():
     all_types = ww.type_system.registered_types
-    logical_types = get_logical_types()
+    logical_types = get_logical_types(ww.type_system.registered_types)
 
     for logical_type in all_types:
         assert logical_types[logical_type.__name__] == logical_type
@@ -72,6 +73,13 @@ def test_str_to_logical_type():
     # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated
     assert str_to_logical_type('full_NAME', params={}) == FullName
     assert datetime_no_format != Datetime
+
+    # Input a different type system
+    new_type_sys = TypeSystem()
+    with pytest.raises(ValueError, match='String Integer is not a valid logical type'):
+        str_to_logical_type('Integer', registered_types=new_type_sys.registered_types)
+    new_type_sys.add_type(Boolean)
+    assert Boolean == str_to_logical_type('Boolean', registered_types=new_type_sys.registered_types)
 
 
 def test_ordinal_order_errors():

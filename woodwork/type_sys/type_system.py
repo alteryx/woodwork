@@ -118,10 +118,14 @@ class TypeSystem(object):
                 this type will be considered a root type with no parent.
         """
         if isinstance(parent, str):
-            parent = str_to_logical_type(parent)
+            parent = str_to_logical_type(parent, registered_types=self.registered_types)
         self._validate_type_input(logical_type=logical_type,
                                   inference_function=inference_function,
                                   parent=parent)
+
+        registered_ltype_names = [ltype.__name__ for ltype in self.registered_types]
+        if logical_type.__name__ in registered_ltype_names:
+            raise ValueError(f'Logical Type with name {logical_type.__name__} already present in the Type System. Please rename the LogicalType or remove existing one.')
         self.update_inference_function(logical_type, inference_function)
         if parent:
             self.update_relationship(logical_type, parent)
@@ -134,7 +138,7 @@ class TypeSystem(object):
             logical_type (LogicalType): The LogicalType to remove.
         """
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type)
+            logical_type = str_to_logical_type(logical_type, registered_types=self.registered_types)
         self._validate_type_input(logical_type=logical_type)
         # Remove the inference function
         if logical_type == self.default_type:
@@ -160,7 +164,7 @@ class TypeSystem(object):
                 type inference for the specified LogicalType.
         """
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type)
+            logical_type = str_to_logical_type(logical_type, registered_types=self.registered_types)
         self._validate_type_input(logical_type=logical_type, inference_function=inference_function)
         self.inference_functions[logical_type] = inference_function
 
@@ -174,9 +178,9 @@ class TypeSystem(object):
             parent (LogicalType): The new parent to set for the specified LogicalType.
         """
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type)
+            logical_type = str_to_logical_type(logical_type, registered_types=self.registered_types)
         if isinstance(parent, str):
-            parent = str_to_logical_type(parent)
+            parent = str_to_logical_type(parent, registered_types=self.registered_types)
         self._validate_type_input(logical_type=logical_type, parent=parent)
         # If the logical_type already has a parent, remove that from the list
         self.relationships = [rel for rel in self.relationships if rel[1] != logical_type]

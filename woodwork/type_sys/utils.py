@@ -8,25 +8,26 @@ from woodwork.utils import import_or_none
 ks = import_or_none('databricks.koalas')
 
 
-def get_logical_types():
+def get_logical_types(registered_types):
     """Returns a dictionary of logical type name strings and logical type classes"""
     # Get snake case strings
-    logical_types = {logical_type.type_string: logical_type for logical_type in ww.type_system.registered_types}
+    logical_types = {logical_type.type_string: logical_type for logical_type in registered_types}
     # Add class name strings
-    class_name_dict = {logical_type.__name__: logical_type for logical_type in ww.type_system.registered_types}
+    class_name_dict = {logical_type.__name__: logical_type for logical_type in registered_types}
     logical_types.update(class_name_dict)
 
     return logical_types
 
 
-def str_to_logical_type(logical_str, params=None, raise_error=True):
+def str_to_logical_type(logical_str, registered_types=None, params=None, raise_error=True):
     """Helper function for converting a string value to the corresponding logical type object.
     If a dictionary of params for the logical type is provided, apply them."""
-    logical_str = logical_str.lower()
-    logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types().items()}
+    registered_types = registered_types or ww.type_system.registered_types
+    logical_str_lower = logical_str.lower()
+    logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in get_logical_types(registered_types).items()}
 
-    if logical_str in logical_types_dict:
-        ltype = logical_types_dict[logical_str]
+    if logical_str_lower in logical_types_dict:
+        ltype = logical_types_dict[logical_str_lower]
         if params:
             return ltype(**params)
         else:
