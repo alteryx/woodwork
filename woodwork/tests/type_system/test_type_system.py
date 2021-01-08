@@ -151,12 +151,12 @@ def test_add_duplicate_ltype(type_sys):
     type_sys.remove_type(ww.logical_types.Integer)
     type_sys.add_type(Integer, inference_function=inference_fn)
 
-    ltype = ww.type_system.str_to_logical_type('Integer')
+    ltype = type_sys.str_to_logical_type('Integer')
     assert ltype.pandas_dtype == 'string'
     assert ltype == Integer
 
     type_sys.reset_defaults()
-    ltype = ww.type_system.str_to_logical_type('Integer')
+    ltype = type_sys.str_to_logical_type('Integer')
     assert ltype.pandas_dtype == 'Int64'
     assert ltype == ww.logical_types.Integer
 
