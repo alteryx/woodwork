@@ -18,7 +18,6 @@ from woodwork.type_sys.inference_functions import (
     integer_func
 )
 from woodwork.type_sys.type_system import TypeSystem
-from woodwork.type_sys.utils import str_to_logical_type
 
 
 def test_type_system_init(default_inference_functions, default_relationships):
@@ -137,7 +136,7 @@ def test_add_type_with_parent():
 def test_add_duplicate_ltype(type_sys):
     inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
 
-    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == ww.logical_types.Integer
+    assert ww.type_system.str_to_logical_type('Integer') == ww.logical_types.Integer
 
     class Integer(LogicalType):
         pandas_dtype = 'string'
@@ -149,14 +148,14 @@ def test_add_duplicate_ltype(type_sys):
     type_sys.remove_type(ww.logical_types.Integer)
     type_sys.add_type(Integer, inference_function=inference_fn)
 
-    ltype = str_to_logical_type('Integer', registered_types=type_sys.registered_types)
-    assert ltype == Integer
+    ltype = ww.type_system.str_to_logical_type('Integer')
     assert ltype.pandas_dtype == 'string'
+    assert ltype == Integer
 
     type_sys.reset_defaults()
-    ltype = str_to_logical_type('Integer', registered_types=type_sys.registered_types)
-    assert ltype == ww.logical_types.Integer
+    ltype = ww.type_system.str_to_logical_type('Integer')
     assert ltype.pandas_dtype == 'Int64'
+    assert ltype == ww.logical_types.Integer
 
 
 def test_remove_type_no_children(type_sys):

@@ -8,11 +8,11 @@ from pathlib import Path
 
 import pandas as pd
 
+import woodwork as ww
 from woodwork import DataTable
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import FORMATS, SCHEMA_VERSION
-from woodwork.type_sys.utils import str_to_logical_type
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
@@ -99,7 +99,7 @@ def description_to_datatable(table_description, **kwargs):
         col_name = col['name']
 
         ltype_metadata = col['logical_type']
-        ltype = str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
+        ltype = ww.type_system.str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
 
         tags = col['semantic_tags']
 

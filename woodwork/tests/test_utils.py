@@ -14,8 +14,7 @@ from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,
     list_logical_types,
-    list_semantic_tags,
-    str_to_logical_type
+    list_semantic_tags
 )
 from woodwork.utils import (
     _convert_input_to_set,
@@ -80,7 +79,7 @@ def test_list_logical_types_default():
 
     assert len(all_ltypes) == len(df)
     for name in df['name']:
-        assert str_to_logical_type(name) in all_ltypes
+        assert ww.type_system.str_to_logical_type(name) in all_ltypes
     assert all(df['is_default_type'])
     assert all(df['is_registered'])
 

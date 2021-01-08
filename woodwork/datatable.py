@@ -13,8 +13,7 @@ from woodwork.logical_types import Boolean, Datetime, Double, LatLong
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
-    col_is_datetime,
-    str_to_logical_type
+    col_is_datetime
 )
 from woodwork.utils import (
     _convert_input_to_set,
@@ -723,7 +722,7 @@ class DataTable(object):
             elif isinstance(selector, str):
                 # If the str is a viable ltype, it'll take precedence
                 # but if it's not present, we'll check if it's a tag
-                ltype = str_to_logical_type(selector, raise_error=False)
+                ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
                 if ltype and ltype in ltypes_in_dt:
                     ltypes_used.add(ltype)
                     continue

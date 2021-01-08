@@ -6,7 +6,6 @@ from .inference_functions import (
     integer_func,
     timedelta_func
 )
-from .utils import str_to_logical_type
 
 from woodwork.logical_types import (
     URL,
@@ -118,7 +117,7 @@ class TypeSystem(object):
                 this type will be considered a root type with no parent.
         """
         if isinstance(parent, str):
-            parent = str_to_logical_type(parent, registered_types=self.registered_types)
+            parent = self.str_to_logical_type(parent)
         self._validate_type_input(logical_type=logical_type,
                                   inference_function=inference_function,
                                   parent=parent)
@@ -138,7 +137,7 @@ class TypeSystem(object):
             logical_type (LogicalType): The LogicalType to remove.
         """
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type, registered_types=self.registered_types)
+            logical_type = self.str_to_logical_type(logical_type)
         self._validate_type_input(logical_type=logical_type)
         # Remove the inference function
         if logical_type == self.default_type:
@@ -164,7 +163,7 @@ class TypeSystem(object):
                 type inference for the specified LogicalType.
         """
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type, registered_types=self.registered_types)
+            logical_type = self.str_to_logical_type(logical_type)
         self._validate_type_input(logical_type=logical_type, inference_function=inference_function)
         self.inference_functions[logical_type] = inference_function
 
@@ -178,9 +177,9 @@ class TypeSystem(object):
             parent (LogicalType): The new parent to set for the specified LogicalType.
         """
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type, registered_types=self.registered_types)
+            logical_type = self.str_to_logical_type(logical_type)
         if isinstance(parent, str):
-            parent = str_to_logical_type(parent, registered_types=self.registered_types)
+            parent = self.str_to_logical_type(parent)
         self._validate_type_input(logical_type=logical_type, parent=parent)
         # If the logical_type already has a parent, remove that from the list
         self.relationships = [rel for rel in self.relationships if rel[1] != logical_type]
@@ -286,6 +285,31 @@ class TypeSystem(object):
                     best_match = logical_type
                     best_depth = ltype_depth
             return best_match
+
+    def _get_logical_types(self):
+        """Returns a dictionary of logical type name strings and logical type classes"""
+        # Get snake case strings
+        logical_types = {logical_type.type_string: logical_type for logical_type in self.registered_types}
+        # Add class name strings
+        class_name_dict = {logical_type.__name__: logical_type for logical_type in self.registered_types}
+        logical_types.update(class_name_dict)
+
+        return logical_types
+
+    def str_to_logical_type(self, logical_str, params=None, raise_error=True):
+        """Helper function for converting a string value to the corresponding logical type object.
+        If a dictionary of params for the logical type is provided, apply them."""
+        logical_str_lower = logical_str.lower()
+        logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in self._get_logical_types().items()}
+
+        if logical_str_lower in logical_types_dict:
+            ltype = logical_types_dict[logical_str_lower]
+            if params:
+                return ltype(**params)
+            else:
+                return ltype
+        elif raise_error:
+            raise ValueError('String %s is not a valid logical type' % logical_str)
 
 
 type_system = TypeSystem(inference_functions=DEFAULT_INFERENCE_FUNCTIONS,

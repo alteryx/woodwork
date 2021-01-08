@@ -9,6 +9,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def get_logical_types(registered_types):
+    # --> eventually remove
     """Returns a dictionary of logical type name strings and logical type classes"""
     # Get snake case strings
     logical_types = {logical_type.type_string: logical_type for logical_type in registered_types}
@@ -20,6 +21,7 @@ def get_logical_types(registered_types):
 
 
 def str_to_logical_type(logical_str, registered_types=None, params=None, raise_error=True):
+    # --> eventually remove
     """Helper function for converting a string value to the corresponding logical type object.
     If a dictionary of params for the logical type is provided, apply them."""
     registered_types = registered_types or ww.type_system.registered_types
@@ -80,7 +82,7 @@ def _is_numeric_series(series, logical_type):
 
     if logical_type is not None:
         if isinstance(logical_type, str):
-            logical_type = str_to_logical_type(logical_type)
+            logical_type = ww.type_system.str_to_logical_type(logical_type)
 
         # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
         if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
@@ -139,9 +141,9 @@ def list_semantic_tags():
          for tag in sem_tags]
     )
     tags_df = tags_df.append(
-        pd.DataFrame([['index', False, [str_to_logical_type(tag) for tag in ['integer', 'double', 'categorical', 'datetime']]],
-                      ['time_index', False, [str_to_logical_type('datetime')]],
-                      ['date_of_birth', False, [str_to_logical_type('datetime')]]
+        pd.DataFrame([['index', False, [ww.type_system.str_to_logical_type(tag) for tag in ['integer', 'double', 'categorical', 'datetime']]],
+                      ['time_index', False, [ww.type_system.str_to_logical_type('datetime')]],
+                      ['date_of_birth', False, [ww.type_system.str_to_logical_type('datetime')]]
                       ], columns=tags_df.columns), ignore_index=True)
     return tags_df
 

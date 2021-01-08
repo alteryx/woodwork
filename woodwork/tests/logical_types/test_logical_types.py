@@ -34,6 +34,7 @@ def test_instantiated_type_str():
 
 
 def test_get_logical_types():
+    # --> remove or move to be a type system test wiht _get_logical_types
     all_types = ww.type_system.registered_types
     logical_types = get_logical_types(ww.type_system.registered_types)
 
@@ -45,6 +46,7 @@ def test_get_logical_types():
 
 
 def test_str_to_logical_type():
+    # --> move to type system tests
     all_types = ww.type_system.registered_types
 
     with pytest.raises(ValueError, match='String test is not a valid logical type'):
