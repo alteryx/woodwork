@@ -284,7 +284,6 @@ def test_reset_defaults(type_sys, default_inference_functions, default_relations
 
 
 def test_get_logical_types():
-    # --> maybe remove
     all_types = ww.type_system.registered_types
     logical_types = ww.type_system._get_logical_types()
 
