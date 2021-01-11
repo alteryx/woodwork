@@ -12,7 +12,7 @@ Release Notes
     * Changes
        * Fix release document with Github Actions link for CI (:pr:`462`)
        * Don't allow registered LogicalTypes with the same name (:pr:`477`)
-       * Move ``str_to_logical_type`` to Type System class (:pr:`482`)
+       * Move ``str_to_logical_type`` to TypeSystem class (:pr:`482`)
     * Documentation Changes
     * Testing Changes
 
