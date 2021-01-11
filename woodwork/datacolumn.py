@@ -11,7 +11,7 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer
 from woodwork.logical_types import Datetime, LatLong, Ordinal
-from woodwork.type_sys.utils import _get_ltype_class, str_to_logical_type
+from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import (
     _convert_input_to_set,
     _reformat_to_latlong,
@@ -201,7 +201,7 @@ class DataColumn(object):
     def _parse_logical_type(self, logical_type):
         if logical_type:
             if isinstance(logical_type, str):
-                logical_type = str_to_logical_type(logical_type)
+                logical_type = ww.type_system.str_to_logical_type(logical_type)
             ltype_class = _get_ltype_class(logical_type)
             if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
                 raise TypeError("Must use an Ordinal instance with order values defined")

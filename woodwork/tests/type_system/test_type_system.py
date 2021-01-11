@@ -3,9 +3,12 @@ import pytest
 
 import woodwork as ww
 from woodwork.logical_types import (
+    Boolean,
     Categorical,
     CountryCode,
+    Datetime,
     Double,
+    FullName,
     Integer,
     LogicalType,
     NaturalLanguage,
@@ -18,7 +21,6 @@ from woodwork.type_sys.inference_functions import (
     integer_func
 )
 from woodwork.type_sys.type_system import TypeSystem
-from woodwork.type_sys.utils import str_to_logical_type
 
 
 def test_type_system_init(default_inference_functions, default_relationships):
@@ -137,7 +139,7 @@ def test_add_type_with_parent():
 def test_add_duplicate_ltype(type_sys):
     inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
 
-    assert str_to_logical_type('Integer', registered_types=type_sys.registered_types) == ww.logical_types.Integer
+    assert ww.type_system.str_to_logical_type('Integer') == ww.logical_types.Integer
 
     class Integer(LogicalType):
         pandas_dtype = 'string'
@@ -149,14 +151,14 @@ def test_add_duplicate_ltype(type_sys):
     type_sys.remove_type(ww.logical_types.Integer)
     type_sys.add_type(Integer, inference_function=inference_fn)
 
-    ltype = str_to_logical_type('Integer', registered_types=type_sys.registered_types)
-    assert ltype == Integer
+    ltype = type_sys.str_to_logical_type('Integer')
     assert ltype.pandas_dtype == 'string'
+    assert ltype == Integer
 
     type_sys.reset_defaults()
-    ltype = str_to_logical_type('Integer', registered_types=type_sys.registered_types)
-    assert ltype == ww.logical_types.Integer
+    ltype = type_sys.str_to_logical_type('Integer')
     assert ltype.pandas_dtype == 'Int64'
+    assert ltype == ww.logical_types.Integer
 
 
 def test_remove_type_no_children(type_sys):
@@ -279,3 +281,52 @@ def test_reset_defaults(type_sys, default_inference_functions, default_relations
     assert type_sys.inference_functions == default_inference_functions
     assert type_sys.relationships == default_relationships
     assert type_sys.default_type == NaturalLanguage
+
+
+def test_get_logical_types():
+    all_types = ww.type_system.registered_types
+    logical_types = ww.type_system._get_logical_types()
+
+    for logical_type in all_types:
+        assert logical_types[logical_type.__name__] == logical_type
+        assert logical_types[logical_type.type_string] == logical_type
+
+    assert len(logical_types) == 2 * len(all_types)
+
+
+def test_str_to_logical_type():
+    all_types = ww.type_system.registered_types
+
+    with pytest.raises(ValueError, match='String test is not a valid logical type'):
+        ww.type_system.str_to_logical_type('test')
+    assert ww.type_system.str_to_logical_type('test', raise_error=False) is None
+
+    for logical_type in all_types:
+        assert ww.type_system.str_to_logical_type(logical_type.__name__) == logical_type
+        assert ww.type_system.str_to_logical_type(logical_type.type_string) == logical_type
+
+    assert ww.type_system.str_to_logical_type('bOoLeAn') == Boolean
+    assert ww.type_system.str_to_logical_type('full_NAME') == FullName
+    assert ww.type_system.str_to_logical_type('FullnamE') == FullName
+
+    ymd = '%Y-%m-%d'
+    datetime_with_format = ww.type_system.str_to_logical_type('datetime', params={'datetime_format': ymd})
+    assert datetime_with_format.__class__ == Datetime
+    assert datetime_with_format.datetime_format == ymd
+    assert datetime_with_format == Datetime(datetime_format=ymd)
+
+    datetime_no_format = ww.type_system.str_to_logical_type('datetime', params={'datetime_format': None})
+    assert datetime_no_format.__class__ == Datetime
+    assert datetime_no_format.datetime_format is None
+    assert datetime_no_format == Datetime()
+
+    # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated
+    assert ww.type_system.str_to_logical_type('full_NAME', params={}) == FullName
+    assert datetime_no_format != Datetime
+
+    # Input a different type system
+    new_type_sys = TypeSystem()
+    with pytest.raises(ValueError, match='String Integer is not a valid logical type'):
+        new_type_sys.str_to_logical_type('Integer')
+    new_type_sys.add_type(Boolean)
+    assert Boolean == new_type_sys.str_to_logical_type('Boolean')
