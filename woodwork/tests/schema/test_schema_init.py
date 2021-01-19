@@ -176,14 +176,12 @@ def test_schema_init_with_string_logical_types(sample_df):
     }
     dt = Schema(sample_df,
                 name='schema',
-                logical_types=logical_types
-                # --> add time index back in after implementing
-                # ,
-                # time_index='signup_date'
+                logical_types=logical_types,
+                time_index='signup_date'
                 )
     assert dt.columns['full_name']['logical_type'] == NaturalLanguage
     assert dt.columns['age']['logical_type'] == Integer
-    # assert dt.time_index == 'signup_date'
+    assert dt.time_index == 'signup_date'
 
 
 def test_schema_init_with_semantic_tags(sample_df):
@@ -743,7 +741,7 @@ def test_schema_init_with_metadata(sample_df):
     dt.metadata = metadata
     assert dt.metadata == metadata
 
-    dt = Schema(sample_df, table_metadata=metadata)  # --> add time index back in
+    dt = Schema(sample_df, table_metadata=metadata, time_index='signup_date')
     assert dt.metadata == metadata
 
     new_data = {'date_created': '1/1/19', 'created_by': 'user1'}

@@ -152,7 +152,6 @@ class Schema(object):
             if logical_types and name in logical_types:
                 logical_type = logical_types[name]
             else:
-                # --> parse logical_type
                 logical_type = None
             logical_type = _parse_column_logical_type(logical_type, series)
 
@@ -173,6 +172,7 @@ class Schema(object):
                     raise TypeError("Column description must be a string")
             else:
                 description = None
+
             if column_metadata:
                 metadata = column_metadata.get(name) or {}
                 if metadata and not isinstance(metadata, dict):
@@ -180,6 +180,7 @@ class Schema(object):
             else:
                 metadata = {}
 
+            # Update the underlying data to use Logical Type dtype
             updated_series = _update_column_dtype(series, logical_type, name)
             dataframe[name] = updated_series
 
