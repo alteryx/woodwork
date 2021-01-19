@@ -139,53 +139,91 @@ def test_schema_init_with_string_logical_types(sample_df):
     # assert dt.time_index == 'signup_date'
 
 
-# def test_schema_init_with_semantic_tags(sample_df):
-#     semantic_tags = {
-#         'id': 'custom_tag',
-#     }
-#     dt = Schema(sample_df,
-#                 name='schema',
-#                 semantic_tags=semantic_tags,
-#                 use_standard_tags=False)
+def test_schema_init_with_semantic_tags(sample_df):
+    semantic_tags = {
+        'id': 'custom_tag',
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                semantic_tags=semantic_tags,
+                use_standard_tags=False)
 
-#     id_semantic_tags = dt.columns['id']['semantic_tags']
-#     assert isinstance(id_semantic_tags, set)
-#     assert len(id_semantic_tags) == 1
-#     assert 'custom_tag' in id_semantic_tags
+    id_semantic_tags = dt.columns['id']['semantic_tags']
+    assert isinstance(id_semantic_tags, set)
+    assert len(id_semantic_tags) == 1
+    assert 'custom_tag' in id_semantic_tags
 
 
-# def test_schema_adds_standard_semantic_tags(sample_df):
-#     dt = Schema(sample_df,
-#                 name='schema',
-#                 logical_types={
-#                     'id': Categorical,
-#                     'age': Integer,
-#                 })
+def test_schema_adds_standard_semantic_tags(sample_df):
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types={
+                    'id': Categorical,
+                    'age': Integer,
+                })
 
-#     assert dt.semantic_tags['id'] == {'category'}
-#     assert dt.semantic_tags['age'] == {'numeric'}
+    assert dt.semantic_tags['id'] == {'category'}
+    assert dt.semantic_tags['age'] == {'numeric'}
 
-# def test_semantic_tags_during_init(sample_df):
-#     semantic_tags = {
-#         'full_name': 'tag1',
-#         'email': ['tag2'],
-#         'phone_number': ['tag3'],
-#         'signup_date': ['secondary_time_index'],
-#         'age': ['numeric', 'age']
-#     }
-#     expected_types = {
-#         'full_name': {'tag1'},
-#         'email': {'tag2'},
-#         'phone_number': {'tag3'},
-#         'signup_date': {'secondary_time_index'},
-#         'age': {'numeric', 'age'}
-#     }
-#     dt = DataTable(sample_df, semantic_tags=semantic_tags)
-#     assert dt.columns['full_name'].semantic_tags == expected_types['full_name']
-#     assert dt.columns['email'].semantic_tags == expected_types['email']
-#     assert dt.columns['phone_number'].semantic_tags == expected_types['phone_number']
-#     assert dt.columns['signup_date'].semantic_tags == expected_types['signup_date']
-#     assert dt.columns['age'].semantic_tags == expected_types['age']
+
+def test_semantic_tags_during_init(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3'],
+        'signup_date': ['secondary_time_index'],
+        'age': ['numeric', 'age']
+    }
+    expected_types = {
+        'full_name': {'tag1'},
+        'email': {'tag2'},
+        'phone_number': {'tag3'},
+        'signup_date': {'secondary_time_index'},
+        'age': {'numeric', 'age'}
+    }
+    dt = Schema(sample_df, semantic_tags=semantic_tags)
+    assert dt.columns['full_name']['semantic_tags'] == expected_types['full_name']
+    assert dt.columns['email']['semantic_tags'] == expected_types['email']
+    assert dt.columns['phone_number']['semantic_tags'] == expected_types['phone_number']
+    assert dt.columns['signup_date']['semantic_tags'] == expected_types['signup_date']
+    assert dt.columns['age']['semantic_tags'] == expected_types['age']
+
+
+def test_schema_physical_types(sample_df):
+    # --> move the next three to schema (not init) tests
+    dt = Schema(sample_df)
+    assert isinstance(dt.physical_types, dict)
+    assert set(dt.physical_types.keys()) == set(sample_df.columns)
+    for k, v in dt.physical_types.items():
+        assert isinstance(k, str)
+        assert v == sample_df[k].dtype
+
+
+def test_schema_logical_types(sample_df):
+    dt = Schema(sample_df)
+    assert isinstance(dt.logical_types, dict)
+    assert set(dt.logical_types.keys()) == set(sample_df.columns)
+    for k, v in dt.logical_types.items():
+        assert isinstance(k, str)
+        assert k in sample_df.columns
+        assert v in ww.type_system.registered_types
+        assert v == dt.columns[k]['logical_type']
+
+
+def test_schema_semantic_tags(sample_df):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'age': ['numeric', 'age']
+    }
+    dt = Schema(sample_df, semantic_tags=semantic_tags)
+    assert isinstance(dt.semantic_tags, dict)
+    assert set(dt.semantic_tags.keys()) == set(sample_df.columns)
+    for k, v in dt.semantic_tags.items():
+        assert isinstance(k, str)
+        assert k in sample_df.columns
+        assert isinstance(v, set)
+        assert v == dt.columns[k]['semantic_tags']
 
 
 def test_validate_params_errors(sample_df):
@@ -288,13 +326,40 @@ def test_check_column_metadata_errors(sample_df):
     with pytest.raises(TypeError, match=error_message):
         _check_column_metadata(sample_df, column_metadata='test')
 
-    # --> add back in after implementing metadata on init
-    # column_metadata = {
-    #     'invalid_col': {'description': 'not a valid column'}
-    # }
-    # err_msg = re.escape("column_metadata contains columns that are not present in dataframe: ['invalid_col']")
-    # with pytest.raises(LookupError, match=err_msg):
-    #     Schema(sample_df, column_metadata=column_metadata)
+    column_metadata = {
+        'invalid_col': {'description': 'not a valid column'}
+    }
+    err_msg = re.escape("column_metadata contains columns that are not present in dataframe: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        Schema(sample_df, column_metadata=column_metadata)
+
+
+def test_raises_error_setting_index_tag_directly(sample_df):
+    error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
+                          "use DataTable.set_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        Schema(sample_df, semantic_tags={'id': 'index'})
+
+    # --> add back in when allowing updating tags
+    # Schema = Schema(sample_df)
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.add_semantic_tags({'id': 'index'})
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.set_semantic_tags({'id': 'index'})
+
+
+def test_raises_error_setting_time_index_tag_directly(sample_df):
+    error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
+                          "use DataTable.set_time_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        Schema(sample_df, semantic_tags={'signup_date': 'time_index'})
+
+    # --> add back in when allowing updating tags
+    # schema = Schema(sample_series)
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.add_semantic_tags({'signup_date': 'time_index'})
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.set_semantic_tags({'signup_date': 'time_index'})
 
 
 def test_int_dtype_inference_on_init():

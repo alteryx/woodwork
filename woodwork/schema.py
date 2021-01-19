@@ -112,6 +112,21 @@ class Schema(object):
         self.metadata = table_metadata or {}
 
     @property
+    def logical_types(self):
+        """A dictionary containing logical types for each column"""
+        return {col['name']: col['logical_type'] for col in self.columns.values()}
+
+    @property
+    def physical_types(self):
+        """A dictionary containing physical types for each column"""
+        return {col['name']: col['dtype'] for col in self.columns.values()}
+
+    @property
+    def semantic_tags(self):
+        """A dictionary containing semantic tags for each column"""
+        return {col['name']: col['semantic_tags'] for col in self.columns.values()}
+
+    @property
     def index(self):
         """The index column for the table"""
         for column in self.columns.values():
@@ -451,3 +466,14 @@ def _update_column_dtype(series, logical_type, name):
                 f'logical type {logical_type}.'
             raise TypeError(error_msg)
     return series
+
+
+def _validate_tags(semantic_tags):
+    # --> should be on Schema
+    """Verify user has not supplied tags that cannot be set directly"""
+    if 'index' in semantic_tags:
+        raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
+                         "use DataTable.set_index() instead.")
+    if 'time_index' in semantic_tags:
+        raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
+                         "use DataTable.set_time_index() instead.")

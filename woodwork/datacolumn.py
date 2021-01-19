@@ -361,7 +361,6 @@ class DataColumn(object):
 
 
 def _validate_tags(semantic_tags):
-    # --> should be on Schema
     """Verify user has not supplied tags that cannot be set directly"""
     if 'index' in semantic_tags:
         raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
