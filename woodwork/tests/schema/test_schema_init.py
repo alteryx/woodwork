@@ -70,34 +70,35 @@ def test_schema_init_with_name(sample_df):
     assert schema.time_index == None
 
 
-# def test_schema_init_with_name_and_index(sample_df):
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     index='id')
-#     # --> add signup_date time index back in
+def test_schema_init_with_name_and_index(sample_df):
+    schema = Schema(sample_df,
+                    name='schema',
+                    index='id',
+                    time_index='signup_date')
 
-#     assert schema.name == 'schema'
-#     assert schema.index == 'id'
-#     assert schema.time_index == 'signup_date'
-#     assert schema.columns[schema.time_index]['logical_type'] == Datetime
-
-
-# def test_schema_init_with_valid_string_time_index(time_index_df):
-#     dt = Schema(time_index_df,
-#                 name='schema',
-#                 index='id',
-#                 time_index='times')
-
-#     assert dt.name == 'schema'
-#     assert dt.index == 'id'
-#     assert dt.time_index == 'times'
-#     assert dt.columns[dt.time_index]['logical_type'] == Datetime
+    assert schema.name == 'schema'
+    assert schema.index == 'id'
+    assert schema.time_index == 'signup_date'
+    assert schema.columns[schema.time_index]['logical_type'] == Datetime
 
 
-# def test_schema_init_with_invalid_string_time_index(sample_df):
-#     error_msg = 'Time index column must contain datetime or numeric values'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(sample_df, name='schema', time_index='full_name')
+def test_schema_init_with_valid_string_time_index(time_index_df):
+    dt = Schema(time_index_df,
+                name='schema',
+                index='id',
+                time_index='times')
+
+    assert dt.name == 'schema'
+    assert dt.index == 'id'
+    assert dt.time_index == 'times'
+    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+
+
+def test_schema_init_with_invalid_string_time_index(sample_df):
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(sample_df, name='schema', time_index='full_name')
+
 
 def test_schema_init_with_logical_types(sample_df):
     logical_types = {

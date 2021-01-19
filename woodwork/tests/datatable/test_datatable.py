@@ -2941,6 +2941,7 @@ def test_datatable_column_order_after_rename(sample_df_pandas):
 
 
 def test_datatable_already_sorted(sample_unsorted_df):
+    # --> add to schema tests
     if dd and isinstance(sample_unsorted_df, dd.DataFrame):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
     if ks and isinstance(sample_unsorted_df, ks.DataFrame):
