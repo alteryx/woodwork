@@ -25,9 +25,6 @@ if ks:
 
 
 class Schema(object):
-    def __init__(self):
-        pass
-
     def __init__(self, dataframe,
                  name=None,
                  index=None,
@@ -87,7 +84,6 @@ class Schema(object):
         self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
-        #  --> have a way of creating columns that stores info and infers types and updates df
         self.columns = self._create_columns(dataframe, dataframe.columns,
                                             logical_types,
                                             semantic_tags,
