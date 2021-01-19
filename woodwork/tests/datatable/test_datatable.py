@@ -330,6 +330,7 @@ def test_check_column_metadata_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
+    # --> move to schema tests
     new_dates = ["2019~01~01", "2019~01~02", "2019~01~03", "2019~01~04"]
     if dd and isinstance(sample_df, dd.DataFrame):
         sample_df['formatted_date'] = pd.Series(new_dates)
@@ -363,6 +364,7 @@ def test_datatable_types(sample_df):
 
 
 def test_datatable_typing_info_with_col_names(sample_df):
+    # --> move to schema tests
     dt = DataTable(sample_df)
     typing_info_df = dt._get_typing_info(include_names_col=True)
 
@@ -425,6 +427,7 @@ def test_datatable_head(sample_df):
 
 
 def test_datatable_repr(small_df):
+    # --> move to schema tests
     dt = DataTable(small_df)
 
     dt_repr = repr(dt)
@@ -2692,6 +2695,7 @@ def test_numeric_index_strings(time_index_df):
 
 
 def test_datatable_equality(sample_combos):
+    # --> move to schema tests
     sample_df, sample_series = sample_combos
     dt_basic = DataTable(sample_df)
     dt_basic2 = DataTable(sample_df.copy())

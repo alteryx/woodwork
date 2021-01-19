@@ -163,16 +163,16 @@ class Schema(object):
             # Get description and metadata
             if column_descriptions:
                 description = column_descriptions.get(name)
-                if not isinstance(description, str):
+                if description and not isinstance(description, str):
                     raise TypeError("Column description must be a string")
             else:
                 description = None
             if column_metadata:
-                metadata = column_metadata.get(name)
-                if not isinstance(metadata, dict):
+                metadata = column_metadata.get(name) or {}
+                if metadata and not isinstance(metadata, dict):
                     raise TypeError("Column metadata must be a dictionary")
             else:
-                metadata = None
+                metadata = {}
 
             updated_series = _update_column_dtype(series, logical_type, name)
             dataframe[name] = updated_series
@@ -182,6 +182,7 @@ class Schema(object):
             # --> move over any param validation??
             column = {
                 'name': name,
+                'dtype': updated_series.dtype,
                 'logical_type': logical_type,
                 # --> semantic tag logic should
                 'semantic_tags': column_tags,

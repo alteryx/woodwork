@@ -99,30 +99,44 @@ def test_schema_init_with_name(sample_df):
 #     with pytest.raises(TypeError, match=error_msg):
 #         Schema(sample_df, name='schema', time_index='full_name')
 
+def test_schema_init_with_logical_types(sample_df):
+    logical_types = {
+        'full_name': NaturalLanguage,
+        'age': Double
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types=logical_types)
+    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
+    assert dt.columns['age']['logical_type'] == Double
 
-# def test_schema_init_with_string_logical_types(sample_df):
-#     logical_types = {
-#         'full_name': 'natural_language',
-#         'age': 'Double'
-#     }
-#     dt = Schema(sample_df,
-#                 name='schema',
-#                 logical_types=logical_types)
-#     assert dt.columns['full_name']['logical_type'] == NaturalLanguage
-#     assert dt.columns['age']['logical_type'] == Double
 
-#     logical_types = {
-#         'full_name': 'NaturalLanguage',
-#         'age': 'Integer',
-#         'signup_date': 'Datetime'
-#     }
-#     dt = Schema(sample_df,
-#                 name='schema',
-#                 logical_types=logical_types,
-#                 time_index='signup_date')
-#     assert dt.columns['full_name']['logical_type'] == NaturalLanguage
-#     assert dt.columns['age']['logical_type'] == Integer
-#     assert dt.time_index == 'signup_date'
+def test_schema_init_with_string_logical_types(sample_df):
+    logical_types = {
+        'full_name': 'natural_language',
+        'age': 'Double'
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types=logical_types)
+    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
+    assert dt.columns['age']['logical_type'] == Double
+
+    logical_types = {
+        'full_name': 'NaturalLanguage',
+        'age': 'Integer',
+        'signup_date': 'Datetime'
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types=logical_types
+                # --> add time index back in after implementing
+                # ,
+                # time_index='signup_date'
+                )
+    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
+    assert dt.columns['age']['logical_type'] == Integer
+    # assert dt.time_index == 'signup_date'
 
 
 # def test_schema_init_with_semantic_tags(sample_df):
@@ -150,6 +164,28 @@ def test_schema_init_with_name(sample_df):
 
 #     assert dt.semantic_tags['id'] == {'category'}
 #     assert dt.semantic_tags['age'] == {'numeric'}
+
+# def test_semantic_tags_during_init(sample_df):
+#     semantic_tags = {
+#         'full_name': 'tag1',
+#         'email': ['tag2'],
+#         'phone_number': ['tag3'],
+#         'signup_date': ['secondary_time_index'],
+#         'age': ['numeric', 'age']
+#     }
+#     expected_types = {
+#         'full_name': {'tag1'},
+#         'email': {'tag2'},
+#         'phone_number': {'tag3'},
+#         'signup_date': {'secondary_time_index'},
+#         'age': {'numeric', 'age'}
+#     }
+#     dt = DataTable(sample_df, semantic_tags=semantic_tags)
+#     assert dt.columns['full_name'].semantic_tags == expected_types['full_name']
+#     assert dt.columns['email'].semantic_tags == expected_types['email']
+#     assert dt.columns['phone_number'].semantic_tags == expected_types['phone_number']
+#     assert dt.columns['signup_date'].semantic_tags == expected_types['signup_date']
+#     assert dt.columns['age'].semantic_tags == expected_types['age']
 
 
 def test_validate_params_errors(sample_df):
@@ -223,6 +259,22 @@ def test_check_logical_types_errors(sample_df):
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
+
+
+def test_check_semantic_tags_errors(sample_df):
+    error_message = 'semantic_tags must be a dictionary'
+    with pytest.raises(TypeError, match=error_message):
+        _check_semantic_tags(sample_df, semantic_tags='type')
+
+    bad_semantic_tags_keys = {
+        'full_name': None,
+        'age': None,
+        'birthday': None,
+        'occupation': None,
+    }
+    error_message = re.escape("semantic_tags contains columns that are not present in dataframe: ['birthday', 'occupation']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_semantic_tags(sample_df, bad_semantic_tags_keys)
 
 
 def test_check_table_metadata_errors():
@@ -335,3 +387,263 @@ def test_timedelta_dtype_inference_on_init():
     assert df['delta_nan'].dtype == 'timedelta64[ns]'
     assert df['delta_NaT'].dtype == 'timedelta64[ns]'
     assert df['delta_NA_specified'].dtype == 'timedelta64[ns]'
+
+
+def test_sets_category_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['a', 'b', 'c'], name=column_name),
+        pd.Series(['a', None, 'c'], name=column_name),
+        pd.Series(['a', np.nan, 'c'], name=column_name),
+        pd.Series(['a', pd.NA, 'c'], name=column_name),
+        pd.Series(['a', pd.NaT, 'c'], name=column_name),
+    ]
+
+    logical_types = [
+        Categorical,
+        CountryCode,
+        Ordinal(order=['a', 'b', 'c']),
+        SubRegionCode,
+        ZIPCode,
+    ]
+
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            dt = Schema(df, logical_types=ltypes)
+            assert dt.columns[column_name]['logical_type'] == logical_type
+            assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_object_dtype_on_init(latlong_df):
+    for column_name in latlong_df.columns:
+        ltypes = {
+            column_name: LatLong,
+        }
+        df = latlong_df.loc[:, [column_name]]
+        dt = Schema(df, logical_types=ltypes)
+        assert dt.columns[column_name]['logical_type'] == LatLong
+        assert dt.columns[column_name]['dtype'] == LatLong.pandas_dtype
+        assert df[column_name].dtype == LatLong.pandas_dtype
+
+
+def test_sets_string_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['a', 'b', 'c'], name=column_name),
+        pd.Series(['a', None, 'c'], name=column_name),
+        pd.Series(['a', np.nan, 'c'], name=column_name),
+        pd.Series(['a', pd.NA, 'c'], name=column_name),
+    ]
+
+    logical_types = [
+        Filepath,
+        FullName,
+        IPAddress,
+        NaturalLanguage,
+        PhoneNumber,
+        URL,
+    ]
+
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            dt = Schema(df, logical_types=ltypes)
+            assert dt.columns[column_name]['logical_type'] == logical_type
+            assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_boolean_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([True, False, True], name=column_name),
+        pd.Series([True, None, True], name=column_name),
+        pd.Series([True, np.nan, True], name=column_name),
+        pd.Series([True, pd.NA, True], name=column_name),
+    ]
+
+    logical_type = Boolean
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        df = pd.DataFrame(series)
+        dt = Schema(df, logical_types=ltypes)
+        assert dt.columns[column_name]['logical_type'] == logical_type
+        assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_int64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([1, 2, 3], name=column_name),
+        pd.Series([1, None, 3], name=column_name),
+        pd.Series([1, np.nan, 3], name=column_name),
+        pd.Series([1, pd.NA, 3], name=column_name),
+    ]
+
+    logical_types = [Integer]
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            dt = Schema(df, logical_types=ltypes)
+            assert dt.columns[column_name]['logical_type'] == logical_type
+            assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_float64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([1.1, 2, 3], name=column_name),
+        pd.Series([1.1, None, 3], name=column_name),
+        pd.Series([1.1, np.nan, 3], name=column_name),
+    ]
+
+    logical_type = Double
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        df = pd.DataFrame(series)
+        dt = Schema(df, logical_types=ltypes)
+        assert dt.columns[column_name]['logical_type'] == logical_type
+        assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_datetime64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name),
+    ]
+
+    logical_type = Datetime
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        df = pd.DataFrame(series)
+        dt = Schema(df, logical_types=ltypes)
+        assert dt.columns[column_name]['logical_type'] == logical_type
+        assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_invalid_dtype_casting():
+    column_name = 'test_series'
+
+    # Cannot cast a column with pd.NA to Double
+    series = pd.Series([1.1, pd.NA, 3], name=column_name)
+    ltypes = {
+        column_name: Double,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'float64. Please confirm the underlying data is consistent with logical type Double.'
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(pd.DataFrame(series), logical_types=ltypes)
+
+    # Cannot cast Datetime to Double
+    series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
+    ltypes = {
+        column_name: Datetime,
+    }
+    # --> insert when set_types is added
+    # dt = Schema(pd.DataFrame(series), logical_types=ltypes)
+    # err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
+    #     'float64. Please confirm the underlying data is consistent with logical type Double.'
+    # with pytest.raises(TypeError, match=re.escape(err_msg)):
+    #     dt.set_types(logical_types={column_name: Double})
+
+    # Cannot cast invalid strings to integers
+    series = pd.Series(['1', 'two', '3'], name=column_name)
+    ltypes = {
+        column_name: Integer,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'Int64. Please confirm the underlying data is consistent with logical type Integer.'
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(pd.DataFrame(series), logical_types=ltypes)
+
+
+def test_schema_init_with_col_descriptions(sample_df):
+    descriptions = {
+        'age': 'age of the user',
+        'signup_date': 'date of account creation'
+    }
+    dt = Schema(sample_df, column_descriptions=descriptions)
+    for name, column in dt.columns.items():
+        assert column['description'] == descriptions.get(name)
+
+
+def test_schema_col_descriptions_warnings(sample_df):
+    err_msg = 'column_descriptions must be a dictionary'
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(sample_df, column_descriptions=34)
+
+    descriptions = {
+        'invalid_col': 'not a valid column',
+        'signup_date': 'date of account creation'
+    }
+    err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        Schema(sample_df, column_descriptions=descriptions)
+
+
+def test_schema_init_with_column_metadata(sample_df):
+    column_metadata = {
+        'age': {'interesting_values': [33]},
+        'signup_date': {'description': 'date of account creation'}
+    }
+    dt = Schema(sample_df, column_metadata=column_metadata)
+    for name, column in dt.columns.items():
+        assert column['metadata'] == (column_metadata.get(name) or {})
+
+
+def test_schema_init_with_metadata(sample_df):
+    metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
+
+    dt = Schema(sample_df)
+    assert dt.metadata == {}
+
+    dt.metadata = metadata
+    assert dt.metadata == metadata
+
+    dt = Schema(sample_df, table_metadata=metadata)  # --> add time index back in
+    assert dt.metadata == metadata
+
+    new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
+    dt.metadata = {**metadata, **new_data}
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19',
+                           'created_by': 'user1'}
+
+    dt.metadata.pop('created_by')
+    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
+
+    dt.metadata['number'] = 1012034
+    assert dt.metadata == {'number': 1012034,
+                           'secondary_time_index': {'is_registered': 'age'},
+                           'date_created': '1/1/19'}
