@@ -79,7 +79,7 @@ class Schema(object):
 
         self.make_index = make_index or None
         if self.make_index:
-            dataframe = _make_index(dataframe, index)
+            _make_index(dataframe, index)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -248,6 +248,7 @@ def _validate_dataframe(dataframe):
 
     if isinstance(dataframe, np.ndarray):
         dataframe = pd.DataFrame(dataframe)
+    # --> still useful to return df here for numpy??
     return dataframe
 
 
@@ -381,11 +382,10 @@ def _make_index(dataframe, index):
         dataframe[index] = 1
         dataframe[index] = dataframe[index].cumsum() - 1
     elif ks and isinstance(dataframe, ks.DataFrame):
+        # --> needs to happen inplace if possible - fix when handling Koalas stuff at end
         dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
     else:
         dataframe.insert(0, index, range(len(dataframe)))
-
-    return dataframe
 
 
 def _parse_column_logical_type(logical_type, series):

@@ -96,6 +96,50 @@ def test_schema_init_with_valid_string_time_index(time_index_df):
     assert dt.columns[dt.time_index]['logical_type'] == Datetime
 
 
+def test_schema_with_numeric_datetime_time_index(time_index_df):
+    schema_df = time_index_df.copy()
+    dt = Schema(schema_df, time_index='ints', logical_types={'ints': Datetime})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(time_index_df, name='schema', time_index='strs', logical_types={'strs': Datetime})
+
+    assert dt.time_index == 'ints'
+    assert schema_df['ints'].dtype == 'datetime64[ns]'
+
+
+def test_schema_with_numeric_time_index(time_index_df):
+    # Set a numeric time index on init
+    dt = Schema(time_index_df, time_index='ints')
+    date_col = dt.columns['ints']
+    assert dt.time_index == 'ints'
+    assert date_col['logical_type'] == Integer
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+    # Specify logical type for time index on init
+    dt = Schema(time_index_df, time_index='ints', logical_types={'ints': 'Double'})
+    date_col = dt.columns['ints']
+    assert dt.time_index == 'ints'
+    assert date_col['logical_type'] == Double
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+# --> add back in once updates are allowed
+    # # Change time index to normal datetime time index
+    # dt = dt.set_time_index('times')
+    # date_col = dt['ints']
+    # assert dt.time_index == 'times'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'numeric'}
+
+    # Set numeric time index after init
+    # dt = Schema(time_index_df, logical_types={'ints': 'Double'})
+    # dt = dt.set_time_index('ints')
+    # date_col = dt['ints']
+    # assert dt.time_index == 'ints'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
 def test_schema_init_with_invalid_string_time_index(sample_df):
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
@@ -803,12 +847,11 @@ def test_underlying_index(sample_df):
     # assert type(dt._dataframe.index) == unspecified_index
     # assert type(dt.to_dataframe().index) == unspecified_index
 
-    # --> add back in when allowing make index
-    # dt = Schema(sample_df.copy(), index='made_index', make_index=True)
-    # assert (dt._dataframe.index == [0, 1, 2, 3]).all()
-    # assert dt._dataframe.index.name is None
-    # assert type(dt._dataframe.index) == specified_index
-    # assert type(dt.to_dataframe().index) == specified_index
+    schema_df = sample_df.copy()
+    dt = Schema(schema_df, index='made_index', make_index=True)
+    assert (schema_df.index == [0, 1, 2, 3]).all()
+    assert schema_df.index.name is None
+    assert type(schema_df.index) == specified_index
 
     # --> add back in when allowin drop
     # dt_dropped = dt.drop('made_index')
@@ -816,3 +859,70 @@ def test_underlying_index(sample_df):
     # assert 'made_index' not in dt_dropped._dataframe.columns
     # assert type(dt_dropped._dataframe.index) == unspecified_index
     # assert type(dt_dropped.to_dataframe().index) == unspecified_index
+
+
+def test_make_index(sample_df):
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Schemas made from Koalas DataFrames do not currently support made indices')
+
+    schema_df = sample_df.copy()
+    dt = Schema(schema_df, index='new_index', make_index=True)
+    assert dt.index == 'new_index'
+    assert 'new_index' in dt.columns
+    assert 'new_index' in schema_df.columns
+    assert to_pandas(schema_df)['new_index'].unique
+    assert to_pandas(schema_df['new_index']).is_monotonic
+    assert 'index' in dt.columns['new_index']['semantic_tags']
+
+
+def test_numeric_time_index_dtypes(numeric_time_index_df):
+    dt = Schema(numeric_time_index_df, time_index='ints')
+    date_col = dt.columns['ints']
+    assert dt.time_index == 'ints'
+    assert date_col['logical_type'] == Integer
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+# --> add back in when updates asre allowed
+    # dt = dt.set_time_index('floats')
+    # date_col = dt['floats']
+    # assert dt.time_index == 'floats'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+    # dt = dt.set_time_index('with_null')
+    # date_col = dt['with_null']
+    # assert dt.time_index == 'with_null'
+    # if ks and isinstance(numeric_time_index_df, ks.DataFrame):
+    #     ltype = Double
+    # else:
+    #     ltype = Integer
+    # assert date_col.logical_type == ltype
+    # assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_numeric_index_strings(time_index_df):
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(time_index_df, time_index='strs')
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(time_index_df, time_index='ints', logical_types={'ints': 'Categorical'})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(time_index_df, time_index='letters', logical_types={'strs': 'Integer'})
+
+    dt = Schema(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
+    date_col = dt.columns['strs']
+    assert dt.time_index == 'strs'
+    assert date_col['logical_type'] == Double
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+    # --> add back in when updates are allowed
+    # dt = Schema(time_index_df, logical_types={'strs': 'Double'})
+    # dt = dt.set_time_index('strs')
+    # date_col = dt['strs']
+    # assert dt.time_index == 'strs'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'time_index', 'numeric'}

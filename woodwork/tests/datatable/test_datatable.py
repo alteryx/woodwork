@@ -107,7 +107,6 @@ def test_datatable_with_numeric_datetime_time_index(time_index_df):
 
 
 def test_datatable_with_numeric_time_index(time_index_df):
-    # --> add to schema tests
     # Set a numeric time index on init
     dt = DataTable(time_index_df, time_index='ints')
     date_col = dt['ints']
