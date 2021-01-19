@@ -99,7 +99,8 @@ class Schema(object):
             _update_index(self, index)
 
         # Update dtypes before setting time index so that any Datetime formatting is applied
-        self._update_columns(self.columns)
+        # --> may not be necessary
+        # self._update_columns(self.columns)
 
         needs_index_update = self._set_underlying_index()
 
@@ -108,10 +109,19 @@ class Schema(object):
             _update_time_index(self, time_index)
             needs_sorting_update = not self._sort_columns(already_sorted)
 
-        if needs_index_update or needs_sorting_update:
-            self._update_columns_from_dataframe()
+        # if needs_index_update or needs_sorting_update:
+        #     # --> may not be necessary
+        #     self._update_columns_from_dataframe()
 
         self.metadata = table_metadata or {}
+
+    @property
+    def index(self):
+        """The index column for the table"""
+        for column in self.columns.values():
+            if 'index' in column['semantic_tags']:
+                return column['name']
+        return None
 
     def _create_columns(self,
                         column_names,
@@ -123,7 +133,7 @@ class Schema(object):
         """Create a dictionary with column names as keys and new DataColumn objects
         as values, while assigning any values that are passed for logical types or
         semantic tags to the new column."""
-        datacolumns = {}
+        columns = {}
         for name in column_names:
             if logical_types and name in logical_types:
                 logical_type = logical_types[name]
@@ -141,9 +151,19 @@ class Schema(object):
                 metadata = column_metadata.get(name)
             else:
                 metadata = None
-            dc = DataColumn(self._dataframe[name], logical_type, semantic_tag, use_standard_tags, name, description, metadata)
-            datacolumns[dc.name] = dc
-        return datacolumns
+
+            # --> move over any param validation??
+            column = {
+                'name': name,
+                'logical_type': logical_type,
+                # --> semantic tag logic should
+                'semantic_tags': semantic_tag or {},
+                'use_standard_tags': use_standard_tags,
+                'description': description,
+                'metadata': metadata
+            }
+            columns[name] = column
+        return columns
 
     def _update_columns(self, new_columns):
         """Update the DataTable columns based on items contained in the
