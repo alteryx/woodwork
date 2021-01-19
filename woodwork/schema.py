@@ -94,21 +94,11 @@ class Schema(object):
         if index is not None:
             _update_index(self, dataframe, index)
 
-        # Update dtypes before setting time index so that any Datetime formatting is applied
-        # --> may not be necessary
-        # self._update_columns(self.columns)
+        self._set_underlying_index(dataframe)
 
-        # --> add thjis ability back in
-        # needs_index_update = self._set_underlying_index()
-
-        needs_sorting_update = False
         if time_index is not None:
             _update_time_index(self, dataframe, time_index)
-            needs_sorting_update = not self._sort_columns(already_sorted, dataframe)
-
-        # if needs_index_update or needs_sorting_update:
-        #     # --> may not be necessary
-        #     self._update_columns_from_dataframe()
+            not self._sort_columns(already_sorted, dataframe)
 
         self.metadata = table_metadata or {}
 
@@ -193,14 +183,10 @@ class Schema(object):
             updated_series = _update_column_dtype(series, logical_type, name)
             dataframe[name] = updated_series
 
-            # --> update dtype??
-
-            # --> move over any param validation??
             column = {
                 'name': name,
                 'dtype': updated_series.dtype,
                 'logical_type': logical_type,
-                # --> semantic tag logic should
                 'semantic_tags': column_tags,
                 'use_standard_tags': use_standard_tags,
                 'description': description,
@@ -218,8 +204,6 @@ class Schema(object):
                 sort_cols = [self.time_index]
             dataframe.sort_values(sort_cols, inplace=True)
 
-        return already_sorted
-
     def _set_index_tags(self, index):
         '''
         Updates the semantic tags of the index.
@@ -235,29 +219,23 @@ class Schema(object):
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
-    def _set_underlying_index(self):
-        # --> update this
+    def _set_underlying_index(self, dataframe):
         '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
 
         If the DataTable has an index, will be set to that index.
         If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
         meaning that the index will be a pd.RangeIndex starting from zero.
         '''
-        needs_update = False
-        new_df = self._dataframe
-        if isinstance(self._dataframe, pd.DataFrame):
+        new_df = dataframe
+        if isinstance(dataframe, pd.DataFrame):
             if self.index is not None:
                 needs_update = True
-                new_df = self._dataframe.set_index(self.index, drop=False)
+                dataframe.set_index(self.index, drop=False, inplace=True)
                 # Drop index name to not overlap with the original column
-                new_df.index.name = None
+                dataframe.index.name = None
             # Only reset the index if the index isn't a RangeIndex
-            elif not isinstance(self._dataframe.index, pd.RangeIndex):
-                needs_update = True
-                new_df = self._dataframe.reset_index(drop=True)
-
-        self._dataframe = new_df
-        return needs_update
+            elif not isinstance(dataframe.index, pd.RangeIndex):
+                dataframe.reset_index(drop=True, inplace=True)
 
 
 def _validate_dataframe(dataframe):
@@ -472,7 +450,6 @@ def _update_column_dtype(series, logical_type, name):
 
 
 def _validate_tags(semantic_tags):
-    # --> should be on Schema
     """Verify user has not supplied tags that cannot be set directly"""
     if 'index' in semantic_tags:
         raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "

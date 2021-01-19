@@ -50,6 +50,8 @@ dd = import_or_none('dask.dataframe')
 dask_delayed = import_or_none('dask.delayed')
 ks = import_or_none('databricks.koalas')
 
+# --> change all dt useage to schema
+
 
 def test_schema_init(sample_df):
     schema = Schema(sample_df)
@@ -713,3 +715,104 @@ def test_schema_init_with_metadata(sample_df):
     assert dt.metadata == {'number': 1012034,
                            'secondary_time_index': {'is_registered': 'age'},
                            'date_created': '1/1/19'}
+
+
+def test_schema_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    schema_df = sample_unsorted_df.copy()
+    dt = Schema(schema_df,
+                name='datatable',
+                index='id',
+                time_index='signup_date')
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+
+    sorted_df = to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False)
+    sorted_df.index.name = None
+    pd.testing.assert_frame_equal(sorted_df,
+                                  to_pandas(schema_df), check_index_type=False, check_dtype=False)
+
+    schema_df = sample_unsorted_df.copy()
+    dt = Schema(schema_df,
+                name='datatable',
+                index='id',
+                time_index='signup_date',
+                already_sorted=True)
+
+    assert dt.time_index == 'signup_date'
+    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+
+    unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
+    unsorted_df.index.name = None
+    pd.testing.assert_frame_equal(unsorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False)
+
+
+def test_underlying_index_no_index(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    assert type(sample_df.index) == pd.RangeIndex
+
+    schema_df = sample_df.copy()
+    dt = Schema(schema_df)
+    assert type(schema_df.index) == pd.RangeIndex
+
+    sample_df = sample_df.sort_values('full_name')
+    assert type(sample_df.index) == pd.Int64Index
+    dt = Schema(sample_df)
+    assert type(sample_df.index) == pd.RangeIndex
+
+
+def test_underlying_index(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    specified_index = pd.Index
+
+    schema_df = sample_df.copy()
+    dt = Schema(schema_df, index='full_name')
+    assert schema_df.index.name is None
+    assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
+    assert type(schema_df.index) == specified_index
+
+# --> add back in when allowing updates
+    # dt = Schema(sample_df.copy())
+    # dt = dt.set_index('full_name')
+    # assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
+    # assert dt._dataframe.index.name is None
+    # assert type(dt._dataframe.index) == specified_index
+    # assert type(dt.to_dataframe().index) == specified_index
+
+    # dt.index = 'id'
+    # assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    # assert dt._dataframe.index.name is None
+    # assert type(dt._dataframe.index) == specified_index
+    # assert type(dt.to_dataframe().index) == specified_index
+
+    # # test removing index removes the dataframe's index
+    # dt.index = None
+    # assert type(dt._dataframe.index) == unspecified_index
+    # assert type(dt.to_dataframe().index) == unspecified_index
+
+    # --> add back in when allowing make index
+    # dt = Schema(sample_df.copy(), index='made_index', make_index=True)
+    # assert (dt._dataframe.index == [0, 1, 2, 3]).all()
+    # assert dt._dataframe.index.name is None
+    # assert type(dt._dataframe.index) == specified_index
+    # assert type(dt.to_dataframe().index) == specified_index
+
+    # --> add back in when allowin drop
+    # dt_dropped = dt.drop('made_index')
+    # assert 'made_index' not in dt_dropped.columns
+    # assert 'made_index' not in dt_dropped._dataframe.columns
+    # assert type(dt_dropped._dataframe.index) == unspecified_index
+    # assert type(dt_dropped.to_dataframe().index) == unspecified_index
