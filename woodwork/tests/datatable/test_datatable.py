@@ -107,6 +107,7 @@ def test_datatable_with_numeric_datetime_time_index(time_index_df):
 
 
 def test_datatable_with_numeric_time_index(time_index_df):
+    # --> add to schema tests
     # Set a numeric time index on init
     dt = DataTable(time_index_df, time_index='ints')
     date_col = dt['ints']
@@ -196,6 +197,7 @@ def test_datatable_init_with_semantic_tags(sample_df):
 
 
 def test_datatable_init_with_numpy(sample_df_pandas):
+    # --> add to schema tests
     numpy_df = sample_df_pandas.to_numpy()
 
     dt = DataTable(numpy_df, index=0)

@@ -50,6 +50,7 @@ class DataColumn(object):
         """
         self._assigned_name = name
         self._set_series(series)
+        # --> might need to make sure we save use_semantic_tags
         self.use_standard_tags = use_standard_tags
         self._logical_type = self._parse_logical_type(logical_type)
         semantic_tags = _convert_input_to_set(semantic_tags)
@@ -360,6 +361,7 @@ class DataColumn(object):
 
 
 def _validate_tags(semantic_tags):
+    # --> should be on Schema
     """Verify user has not supplied tags that cannot be set directly"""
     if 'index' in semantic_tags:
         raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "

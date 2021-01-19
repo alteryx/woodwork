@@ -58,7 +58,108 @@ def test_schema_init(sample_df):
     assert schema.index is None
     assert schema.time_index is None
 
-    assert set(schema.columns.keys) == set(sample_df.columns)
+    assert set(schema.columns.keys()) == set(sample_df.columns)
+
+
+def test_schema_init_with_name_and_index_vals(sample_df):
+    schema = Schema(sample_df,
+                    name='schema',
+                    index='id')
+    # --> add signup_date time index back in
+
+    assert schema.name == 'schema'
+    assert schema.index == 'id'
+    assert schema.time_index == 'signup_date'
+    assert schema.columns[schema.time_index]['logical_type'] == Datetime
+
+
+def test_schema_init_with_valid_string_time_index(time_index_df):
+    dt = Schema(time_index_df,
+                name='schema',
+                index='id',
+                time_index='times')
+
+    assert dt.name == 'schema'
+    assert dt.index == 'id'
+    assert dt.time_index == 'times'
+    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+
+
+def test_validate_params_errors(sample_df):
+    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray'
+    with pytest.raises(TypeError, match=error_message):
+        _validate_dataframe(dataframe=pd.Series())
+
+    error_message = 'DataTable name must be a string'
+    with pytest.raises(TypeError, match=error_message):
+        _validate_params(dataframe=sample_df,
+                         name=1,
+                         index=None,
+                         time_index=None,
+                         logical_types=None,
+                         table_metadata=None,
+                         column_metadata=None,
+                         semantic_tags=None,
+                         make_index=False,
+                         column_descriptions=None)
+
+
+def test_schema_init_with_invalid_string_time_index(sample_df):
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(sample_df, name='schema', time_index='full_name')
+
+
+def test_schema_init_with_string_logical_types(sample_df):
+    logical_types = {
+        'full_name': 'natural_language',
+        'age': 'Double'
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types=logical_types)
+    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
+    assert dt.columns['age']['logical_type'] == Double
+
+    logical_types = {
+        'full_name': 'NaturalLanguage',
+        'age': 'Integer',
+        'signup_date': 'Datetime'
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types=logical_types,
+                time_index='signup_date')
+    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
+    assert dt.columns['age']['logical_type'] == Integer
+    assert dt.time_index == 'signup_date'
+
+
+def test_schema_init_with_semantic_tags(sample_df):
+    semantic_tags = {
+        'id': 'custom_tag',
+    }
+    dt = Schema(sample_df,
+                name='schema',
+                semantic_tags=semantic_tags,
+                use_standard_tags=False)
+
+    id_semantic_tags = dt.columns['id']['semantic_tags']
+    assert isinstance(id_semantic_tags, set)
+    assert len(id_semantic_tags) == 1
+    assert 'custom_tag' in id_semantic_tags
+
+
+def test_schema_adds_standard_semantic_tags(sample_df):
+    dt = Schema(sample_df,
+                name='schema',
+                logical_types={
+                    'id': Categorical,
+                    'age': Integer,
+                })
+
+    assert dt.semantic_tags['id'] == {'category'}
+    assert dt.semantic_tags['age'] == {'numeric'}
 
 
 def test_validate_params_errors(sample_df):

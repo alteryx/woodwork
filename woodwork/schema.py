@@ -3,7 +3,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from woodwork.logical_types import Boolean, Datetime, Double, LatLong
+import woodwork as ww
+from woodwork.logical_types import Boolean, Datetime, Double, LatLong, Ordinal
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -13,6 +14,7 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
     _new_dt_including,
+    _reformat_to_latlong,
     import_or_none
 )
 
@@ -77,19 +79,16 @@ class Schema(object):
         _validate_params(dataframe, name, index, time_index, logical_types,
                          table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
 
-        # --> remove this and determine passing in DataFrame to all the fns???
-        self._dataframe = dataframe
-
         self.make_index = make_index or None
         if self.make_index:
-            dataframe = _make_index(self._dataframe, index)
+            dataframe = _make_index(dataframe, index)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
         #  --> have a way of creating columns that stores info and infers types and updates df
-        self.columns = self._create_columns(self._dataframe.columns,
+        self.columns = self._create_columns(dataframe, dataframe.columns,
                                             logical_types,
                                             semantic_tags,
                                             use_standard_tags,
@@ -102,7 +101,8 @@ class Schema(object):
         # --> may not be necessary
         # self._update_columns(self.columns)
 
-        needs_index_update = self._set_underlying_index()
+        # --> add thjis ability back in
+        # needs_index_update = self._set_underlying_index()
 
         needs_sorting_update = False
         if time_index is not None:
@@ -123,7 +123,16 @@ class Schema(object):
                 return column['name']
         return None
 
+    @property
+    def time_index(self):
+        """The time index column for the table"""
+        for column in self.columns.values():
+            if 'time_index' in column['semantic_tags']:
+                return column['name']
+        return None
+
     def _create_columns(self,
+                        dataframe,
                         column_names,
                         logical_types,
                         semantic_tags,
@@ -135,29 +144,51 @@ class Schema(object):
         semantic tags to the new column."""
         columns = {}
         for name in column_names:
+            series = dataframe[name]
+
+            # Determine Logical Type
             if logical_types and name in logical_types:
                 logical_type = logical_types[name]
             else:
+                # --> parse logical_type
                 logical_type = None
+            logical_type = _parse_column_logical_type(logical_type, series)
+
+            # Determine Semantic Tags
             if semantic_tags and name in semantic_tags:
-                semantic_tag = semantic_tags[name]
+                column_tags = semantic_tags[name]
+                column_tags = _convert_input_to_set(column_tags)
+                _validate_tags(column_tags)
             else:
-                semantic_tag = None
+                column_tags = set()
+            if use_standard_tags:
+                column_tags = column_tags.union(logical_type.standard_tags)
+
+            # Get description and metadata
             if column_descriptions:
                 description = column_descriptions.get(name)
+                if not isinstance(description, str):
+                    raise TypeError("Column description must be a string")
             else:
                 description = None
             if column_metadata:
                 metadata = column_metadata.get(name)
+                if not isinstance(metadata, dict):
+                    raise TypeError("Column metadata must be a dictionary")
             else:
                 metadata = None
+
+            updated_series = _update_column_dtype(series, logical_type, name)
+            dataframe[name] = updated_series
+
+            # --> update dtype??
 
             # --> move over any param validation??
             column = {
                 'name': name,
                 'logical_type': logical_type,
                 # --> semantic tag logic should
-                'semantic_tags': semantic_tag or {},
+                'semantic_tags': column_tags,
                 'use_standard_tags': use_standard_tags,
                 'description': description,
                 'metadata': metadata
@@ -234,6 +265,7 @@ def _validate_params(dataframe, name, index, time_index, logical_types,
     """Check that values supplied during DataTable initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
+        # --> Change to Schema
         raise TypeError('DataTable name must be a string')
     if index is not None or make_index:
         _check_index(dataframe, index, make_index)
@@ -361,3 +393,64 @@ def _make_index(dataframe, index):
         dataframe.insert(0, index, range(len(dataframe)))
 
     return dataframe
+
+
+def _parse_column_logical_type(logical_type, series):
+    if logical_type:
+        if isinstance(logical_type, str):
+            logical_type = ww.type_system.str_to_logical_type(logical_type)
+        ltype_class = _get_ltype_class(logical_type)
+        if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
+            raise TypeError("Must use an Ordinal instance with order values defined")
+        if ltype_class in ww.type_system.registered_types:
+            return logical_type
+        else:
+            raise TypeError(f"Invalid logical type specified for '{self.name}'")
+    else:
+        return ww.type_system.infer_logical_type(series)
+
+
+def _update_column_dtype(series, logical_type, name):
+    """Update the dtype of the underlying series to match the dtype corresponding
+    to the LogicalType for the column."""
+    if isinstance(logical_type, Ordinal):
+        logical_type._validate_data(series)
+    elif _get_ltype_class(logical_type) == LatLong:
+        # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
+        if dd and isinstance(series, dd.Series):
+            name = series.name
+            meta = (series, tuple([float, float]))
+            series = series.apply(_reformat_to_latlong, meta=meta)
+            series.name = name
+        elif ks and isinstance(series, ks.Series):
+            formattedseries = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+            series = ks.from_pandas(formattedseries)
+        else:
+            series = series.apply(_reformat_to_latlong)
+
+    if logical_type.pandas_dtype != str(series.dtype):
+        # Update the underlying series
+        try:
+            if _get_ltype_class(logical_type) == Datetime:
+                if dd and isinstance(series, dd.Series):
+                    name = series.name
+                    series = dd.to_datetime(series, format=logical_type.datetime_format)
+                    series.name = name
+                elif ks and isinstance(series, ks.Series):
+                    series = ks.Series(ks.to_datetime(series.to_numpy(),
+                                                      format=logical_type.datetime_format),
+                                       name=series.name)
+                else:
+                    series = pd.to_datetime(series, format=logical_type.datetime_format)
+            else:
+                if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
+                    new_dtype = logical_type.backup_dtype
+                else:
+                    new_dtype = logical_type.pandas_dtype
+                series = series.astype(new_dtype)
+        except (TypeError, ValueError):
+            error_msg = f'Error converting datatype for column {name} from type {str(series.dtype)} ' \
+                f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                f'logical type {logical_type}.'
+            raise TypeError(error_msg)
+    return series
