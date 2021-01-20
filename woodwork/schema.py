@@ -215,7 +215,7 @@ class Schema(object):
                 logical_type = logical_types[name]
             else:
                 logical_type = None
-            logical_type = _parse_column_logical_type(logical_type, series)
+            logical_type = _parse_column_logical_type(logical_type, series, name)
 
             # Determine Semantic Tags
             if semantic_tags and name in semantic_tags:
@@ -289,10 +289,8 @@ class Schema(object):
         If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
         meaning that the index will be a pd.RangeIndex starting from zero.
         '''
-        new_df = dataframe
         if isinstance(dataframe, pd.DataFrame):
             if self.index is not None:
-                needs_update = True
                 dataframe.set_index(self.index, drop=False, inplace=True)
                 # Drop index name to not overlap with the original column
                 dataframe.index.name = None
@@ -445,7 +443,7 @@ def _make_index(dataframe, index):
         dataframe.insert(0, index, range(len(dataframe)))
 
 
-def _parse_column_logical_type(logical_type, series):
+def _parse_column_logical_type(logical_type, series, name):
     if logical_type:
         if isinstance(logical_type, str):
             logical_type = ww.type_system.str_to_logical_type(logical_type)
@@ -455,7 +453,7 @@ def _parse_column_logical_type(logical_type, series):
         if ltype_class in ww.type_system.registered_types:
             return logical_type
         else:
-            raise TypeError(f"Invalid logical type specified for '{self.name}'")
+            raise TypeError(f"Invalid logical type specified for '{name}'")
     else:
         return ww.type_system.infer_logical_type(series)
 

@@ -13,7 +13,6 @@ from woodwork.logical_types import (
     CountryCode,
     Datetime,
     Double,
-    EmailAddress,
     Filepath,
     FullName,
     Integer,
@@ -24,7 +23,6 @@ from woodwork.logical_types import (
     Ordinal,
     PhoneNumber,
     SubRegionCode,
-    Timedelta,
     ZIPCode
 )
 from woodwork.schema import (
@@ -38,12 +36,7 @@ from woodwork.schema import (
     _validate_dataframe,
     _validate_params
 )
-from woodwork.tests.testing_utils import (
-    check_column_order,
-    mi_between_cols,
-    to_pandas,
-    validate_subset_dt
-)
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -68,8 +61,8 @@ def test_schema_init_with_name(sample_df):
                     name='schema')
 
     assert schema.name == 'schema'
-    assert schema.index == None
-    assert schema.time_index == None
+    assert schema.index is None
+    assert schema.time_index is None
 
 
 def test_schema_init_with_name_and_index(sample_df):
@@ -803,12 +796,12 @@ def test_underlying_index_no_index(sample_df):
     assert type(sample_df.index) == pd.RangeIndex
 
     schema_df = sample_df.copy()
-    dt = Schema(schema_df)
+    Schema(schema_df)
     assert type(schema_df.index) == pd.RangeIndex
 
     sample_df = sample_df.sort_values('full_name')
     assert type(sample_df.index) == pd.Int64Index
-    dt = Schema(sample_df)
+    Schema(sample_df)
     assert type(sample_df.index) == pd.RangeIndex
 
 
@@ -821,7 +814,7 @@ def test_underlying_index(sample_df):
     specified_index = pd.Index
 
     schema_df = sample_df.copy()
-    dt = Schema(schema_df, index='full_name')
+    Schema(schema_df, index='full_name')
     assert schema_df.index.name is None
     assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
     assert type(schema_df.index) == specified_index
@@ -846,7 +839,7 @@ def test_underlying_index(sample_df):
     # assert type(dt.to_dataframe().index) == unspecified_index
 
     schema_df = sample_df.copy()
-    dt = Schema(schema_df, index='made_index', make_index=True)
+    Schema(schema_df, index='made_index', make_index=True)
     assert (schema_df.index == [0, 1, 2, 3]).all()
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
