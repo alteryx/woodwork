@@ -1,10 +1,7 @@
-import warnings
-
-import numpy as np
 import pandas as pd
 
 import woodwork as ww
-from woodwork.logical_types import Boolean, Datetime, Double, LatLong, Ordinal
+from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -12,8 +9,6 @@ from woodwork.type_sys.utils import (
 )
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_mode,
-    _new_dt_including,
     _reformat_to_latlong,
     import_or_none
 )
@@ -102,6 +97,24 @@ class Schema(object):
 
         self.metadata = table_metadata or {}
 
+    def __eq__(self, other, deep=True):
+        if self.name != other.name:
+            return False
+        if self.index != other.index:
+            return False
+        if self.time_index != other.time_index:
+            return False
+        if set(self.columns.keys()) != set(other.columns.keys()):
+            return False
+        if self.metadata != other.metadata:
+            return False
+        for col_name in self.columns.keys():
+            # --> may need to do this explicetly
+            if self.columns[col_name] != other.columns[col_name]:
+                return False
+
+        return True
+
     def __repr__(self):
         '''A string representation of a Schema containing typing information.
         '''
@@ -136,7 +149,7 @@ class Schema(object):
             return "Empty Schema"
 
         typing_info = {}
-        # --> we can't access from the unlerying dta, so the order can get out of sync!!!!! need to see how this impacts many things!!!
+        # --> we can't access from the unlerying data, so the order can get out of sync!!!!! need to see how this impacts many things!!!
         for col_name, col_dict in self.columns.items():
 
             types = [col_dict['dtype'], col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
