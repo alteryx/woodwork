@@ -924,3 +924,22 @@ def test_numeric_index_strings(time_index_df):
     # assert dt.time_index == 'strs'
     # assert date_col.logical_type == Double
     # assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_schema_repr(small_df):
+    dt = Schema(small_df)
+
+    dt_repr = repr(dt)
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    assert dt_repr == expected_repr
+
+    dt_html_repr = dt._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    assert dt_html_repr == expected_repr
+
+
+def test_schema_repr_empty(empty_df):
+    dt = Schema(empty_df)
+    assert repr(dt) == 'Empty Schema'
+
+    assert dt._repr_html_() == 'Empty Schema'

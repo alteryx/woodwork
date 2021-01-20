@@ -425,7 +425,6 @@ def test_datatable_head(sample_df):
 
 
 def test_datatable_repr(small_df):
-    # --> move to schema tests
     dt = DataTable(small_df)
 
     dt_repr = repr(dt)

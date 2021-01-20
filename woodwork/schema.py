@@ -102,6 +102,55 @@ class Schema(object):
 
         self.metadata = table_metadata or {}
 
+    def __repr__(self):
+        '''A string representation of a Schema containing typing information.
+        '''
+        dt_repr = self._get_typing_info()
+        if isinstance(dt_repr, str):
+            return dt_repr
+
+        return repr(dt_repr)
+
+    def _repr_html_(self):
+        '''An HTML representation of a DataTable for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data.
+        '''
+        dt_repr = self._get_typing_info()
+        if isinstance(dt_repr, str):
+            return dt_repr
+
+        return dt_repr.to_html()
+
+    @property
+    def types(self):
+        """Dataframe containing the physical dtypes, logical types and semantic
+        tags for the table"""
+        return self._get_typing_info()
+
+    def _get_typing_info(self):
+        '''Creates a DataFrame that contains the typing information for a Schema,
+        optionally including the column names as a column in addition to being
+        the index.
+        '''
+        if len(self.columns) == 0:
+            return "Empty Schema"
+
+        typing_info = {}
+        # --> we can't access from the unlerying dta, so the order can get out of sync!!!!! need to see how this impacts many things!!!
+        for col_name, col_dict in self.columns.items():
+
+            types = [col_dict['dtype'], col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
+            typing_info[col_name] = types
+
+        columns = ['Physical Type', 'Logical Type', 'Semantic Tag(s)']
+
+        df = pd.DataFrame.from_dict(typing_info,
+                                    orient='index',
+                                    columns=columns,
+                                    dtype="object")
+        df.index.name = 'Column'
+        return df
+
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
