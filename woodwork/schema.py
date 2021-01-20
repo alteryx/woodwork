@@ -40,7 +40,7 @@ class Schema(object):
         """Create Schema
 
         Args:
-            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame, numpy.ndarray): Dataframe providing the data for the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): Dataframe providing the data for the datatable.
             name (str, optional): Name used to identify the datatable.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
@@ -73,7 +73,7 @@ class Schema(object):
         """
         # Check that inputs are valid
         # --> confirm nothing ever returns a new dataframe!!!!
-        dataframe = _validate_dataframe(dataframe)
+        _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types,
                          table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
 
@@ -240,17 +240,11 @@ class Schema(object):
 
 
 def _validate_dataframe(dataframe):
-    '''Check that the dataframe supplied during DataTable initialization is valid,
-    and convert numpy array to pandas DataFrame if necessary.'''
+    '''Check that the dataframe supplied during DataTable initialization is valid.'''
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
             (ks and isinstance(dataframe, ks.DataFrame)) or
-            isinstance(dataframe, (pd.DataFrame, np.ndarray))):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray')
-
-    if isinstance(dataframe, np.ndarray):
-        dataframe = pd.DataFrame(dataframe)
-    # --> still useful to return df here for numpy??
-    return dataframe
+            isinstance(dataframe, pd.DataFrame)):
+        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
 
 
 def _validate_params(dataframe, name, index, time_index, logical_types,

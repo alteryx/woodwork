@@ -272,7 +272,7 @@ def test_schema_semantic_tags(sample_df):
 
 
 def test_validate_params_errors(sample_df):
-    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame, numpy.ndarray'
+    error_message = 'Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame'
     with pytest.raises(TypeError, match=error_message):
         _validate_dataframe(dataframe=pd.Series())
 
