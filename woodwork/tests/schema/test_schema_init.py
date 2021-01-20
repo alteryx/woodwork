@@ -41,8 +41,6 @@ dd = import_or_none('dask.dataframe')
 dask_delayed = import_or_none('dask.delayed')
 ks = import_or_none('databricks.koalas')
 
-# --> change all dt useage to schema
-
 
 def test_schema_init(sample_df):
     schema = Schema(sample_df)
@@ -76,57 +74,57 @@ def test_schema_init_with_name_and_index(sample_df):
 
 
 def test_schema_init_with_valid_string_time_index(time_index_df):
-    dt = Schema(time_index_df,
-                name='schema',
-                index='id',
-                time_index='times')
+    schema = Schema(time_index_df,
+                    name='schema',
+                    index='id',
+                    time_index='times')
 
-    assert dt.name == 'schema'
-    assert dt.index == 'id'
-    assert dt.time_index == 'times'
-    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+    assert schema.name == 'schema'
+    assert schema.index == 'id'
+    assert schema.time_index == 'times'
+    assert schema.columns[schema.time_index]['logical_type'] == Datetime
 
 
 def test_schema_with_numeric_datetime_time_index(time_index_df):
     schema_df = time_index_df.copy()
-    dt = Schema(schema_df, time_index='ints', logical_types={'ints': Datetime})
+    schema = Schema(schema_df, time_index='ints', logical_types={'ints': Datetime})
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
         Schema(time_index_df, name='schema', time_index='strs', logical_types={'strs': Datetime})
 
-    assert dt.time_index == 'ints'
+    assert schema.time_index == 'ints'
     assert schema_df['ints'].dtype == 'datetime64[ns]'
 
 
 def test_schema_with_numeric_time_index(time_index_df):
     # Set a numeric time index on init
-    dt = Schema(time_index_df, time_index='ints')
-    date_col = dt.columns['ints']
-    assert dt.time_index == 'ints'
+    schema = Schema(time_index_df, time_index='ints')
+    date_col = schema.columns['ints']
+    assert schema.time_index == 'ints'
     assert date_col['logical_type'] == Integer
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
-    dt = Schema(time_index_df, time_index='ints', logical_types={'ints': 'Double'})
-    date_col = dt.columns['ints']
-    assert dt.time_index == 'ints'
+    schema = Schema(time_index_df, time_index='ints', logical_types={'ints': 'Double'})
+    date_col = schema.columns['ints']
+    assert schema.time_index == 'ints'
     assert date_col['logical_type'] == Double
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-# --> add back in once updates are allowed
+    # --> add back when schema updates are implemented
     # # Change time index to normal datetime time index
-    # dt = dt.set_time_index('times')
-    # date_col = dt['ints']
-    # assert dt.time_index == 'times'
+    # schema = schema.set_time_index('times')
+    # date_col = schema['ints']
+    # assert schema.time_index == 'times'
     # assert date_col.logical_type == Double
     # assert date_col.semantic_tags == {'numeric'}
 
     # Set numeric time index after init
-    # dt = Schema(time_index_df, logical_types={'ints': 'Double'})
-    # dt = dt.set_time_index('ints')
-    # date_col = dt['ints']
-    # assert dt.time_index == 'ints'
+    # schema = Schema(time_index_df, logical_types={'ints': 'Double'})
+    # schema = schema.set_time_index('ints')
+    # date_col = schema['ints']
+    # assert schema.time_index == 'ints'
     # assert date_col.logical_type == Double
     # assert date_col.semantic_tags == {'time_index', 'numeric'}
 
@@ -142,11 +140,11 @@ def test_schema_init_with_logical_types(sample_df):
         'full_name': NaturalLanguage,
         'age': Double
     }
-    dt = Schema(sample_df,
-                name='schema',
-                logical_types=logical_types)
-    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
-    assert dt.columns['age']['logical_type'] == Double
+    schema = Schema(sample_df,
+                    name='schema',
+                    logical_types=logical_types)
+    assert schema.columns['full_name']['logical_type'] == NaturalLanguage
+    assert schema.columns['age']['logical_type'] == Double
 
 
 def test_schema_init_with_string_logical_types(sample_df):
@@ -154,52 +152,52 @@ def test_schema_init_with_string_logical_types(sample_df):
         'full_name': 'natural_language',
         'age': 'Double'
     }
-    dt = Schema(sample_df,
-                name='schema',
-                logical_types=logical_types)
-    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
-    assert dt.columns['age']['logical_type'] == Double
+    schema = Schema(sample_df,
+                    name='schema',
+                    logical_types=logical_types)
+    assert schema.columns['full_name']['logical_type'] == NaturalLanguage
+    assert schema.columns['age']['logical_type'] == Double
 
     logical_types = {
         'full_name': 'NaturalLanguage',
         'age': 'Integer',
         'signup_date': 'Datetime'
     }
-    dt = Schema(sample_df,
-                name='schema',
-                logical_types=logical_types,
-                time_index='signup_date'
-                )
-    assert dt.columns['full_name']['logical_type'] == NaturalLanguage
-    assert dt.columns['age']['logical_type'] == Integer
-    assert dt.time_index == 'signup_date'
+    schema = Schema(sample_df,
+                    name='schema',
+                    logical_types=logical_types,
+                    time_index='signup_date'
+                    )
+    assert schema.columns['full_name']['logical_type'] == NaturalLanguage
+    assert schema.columns['age']['logical_type'] == Integer
+    assert schema.time_index == 'signup_date'
 
 
 def test_schema_init_with_semantic_tags(sample_df):
     semantic_tags = {
         'id': 'custom_tag',
     }
-    dt = Schema(sample_df,
-                name='schema',
-                semantic_tags=semantic_tags,
-                use_standard_tags=False)
+    schema = Schema(sample_df,
+                    name='schema',
+                    semantic_tags=semantic_tags,
+                    use_standard_tags=False)
 
-    id_semantic_tags = dt.columns['id']['semantic_tags']
+    id_semantic_tags = schema.columns['id']['semantic_tags']
     assert isinstance(id_semantic_tags, set)
     assert len(id_semantic_tags) == 1
     assert 'custom_tag' in id_semantic_tags
 
 
 def test_schema_adds_standard_semantic_tags(sample_df):
-    dt = Schema(sample_df,
-                name='schema',
-                logical_types={
-                    'id': Categorical,
-                    'age': Integer,
-                })
+    schema = Schema(sample_df,
+                    name='schema',
+                    logical_types={
+                        'id': Categorical,
+                        'age': Integer,
+                    })
 
-    assert dt.semantic_tags['id'] == {'category'}
-    assert dt.semantic_tags['age'] == {'numeric'}
+    assert schema.semantic_tags['id'] == {'category'}
+    assert schema.semantic_tags['age'] == {'numeric'}
 
     schema = Schema(sample_df,
                     name='schema',
@@ -227,12 +225,12 @@ def test_semantic_tags_during_init(sample_df):
         'signup_date': {'secondary_time_index'},
         'age': {'numeric', 'age'}
     }
-    dt = Schema(sample_df, semantic_tags=semantic_tags)
-    assert dt.columns['full_name']['semantic_tags'] == expected_types['full_name']
-    assert dt.columns['email']['semantic_tags'] == expected_types['email']
-    assert dt.columns['phone_number']['semantic_tags'] == expected_types['phone_number']
-    assert dt.columns['signup_date']['semantic_tags'] == expected_types['signup_date']
-    assert dt.columns['age']['semantic_tags'] == expected_types['age']
+    schema = Schema(sample_df, semantic_tags=semantic_tags)
+    assert schema.columns['full_name']['semantic_tags'] == expected_types['full_name']
+    assert schema.columns['email']['semantic_tags'] == expected_types['email']
+    assert schema.columns['phone_number']['semantic_tags'] == expected_types['phone_number']
+    assert schema.columns['signup_date']['semantic_tags'] == expected_types['signup_date']
+    assert schema.columns['age']['semantic_tags'] == expected_types['age']
 
 
 def test_index_replacing_standard_tags(sample_df):
@@ -357,7 +355,7 @@ def test_raises_error_setting_index_tag_directly(sample_df):
     with pytest.raises(ValueError, match=error_msg):
         Schema(sample_df, semantic_tags={'id': 'index'})
 
-    # --> add back in when allowing updating tags
+    # --> add back when schema updates are implemented
     # Schema = Schema(sample_df)
     # with pytest.raises(ValueError, match=error_msg):
     #     schema.add_semantic_tags({'id': 'index'})
@@ -371,7 +369,7 @@ def test_raises_error_setting_time_index_tag_directly(sample_df):
     with pytest.raises(ValueError, match=error_msg):
         Schema(sample_df, semantic_tags={'signup_date': 'time_index'})
 
-    # --> add back in when allowing updating tags
+    # --> add back when schema updates are implemented
     # schema = Schema(sample_series)
     # with pytest.raises(ValueError, match=error_msg):
     #     schema.add_semantic_tags({'signup_date': 'time_index'})
@@ -496,9 +494,9 @@ def test_sets_category_dtype_on_init():
                 column_name: logical_type,
             }
             df = pd.DataFrame(series)
-            dt = Schema(df, logical_types=ltypes)
-            assert dt.columns[column_name]['logical_type'] == logical_type
-            assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            schema = Schema(df, logical_types=ltypes)
+            assert schema.columns[column_name]['logical_type'] == logical_type
+            assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
             assert df[column_name].dtype == logical_type.pandas_dtype
 
 
@@ -508,9 +506,9 @@ def test_sets_object_dtype_on_init(latlong_df):
             column_name: LatLong,
         }
         df = latlong_df.loc[:, [column_name]]
-        dt = Schema(df, logical_types=ltypes)
-        assert dt.columns[column_name]['logical_type'] == LatLong
-        assert dt.columns[column_name]['dtype'] == LatLong.pandas_dtype
+        schema = Schema(df, logical_types=ltypes)
+        assert schema.columns[column_name]['logical_type'] == LatLong
+        assert schema.columns[column_name]['dtype'] == LatLong.pandas_dtype
         assert df[column_name].dtype == LatLong.pandas_dtype
 
 
@@ -539,9 +537,9 @@ def test_sets_string_dtype_on_init():
                 column_name: logical_type,
             }
             df = pd.DataFrame(series)
-            dt = Schema(df, logical_types=ltypes)
-            assert dt.columns[column_name]['logical_type'] == logical_type
-            assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            schema = Schema(df, logical_types=ltypes)
+            assert schema.columns[column_name]['logical_type'] == logical_type
+            assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
             assert df[column_name].dtype == logical_type.pandas_dtype
 
 
@@ -561,9 +559,9 @@ def test_sets_boolean_dtype_on_init():
             column_name: logical_type,
         }
         df = pd.DataFrame(series)
-        dt = Schema(df, logical_types=ltypes)
-        assert dt.columns[column_name]['logical_type'] == logical_type
-        assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        schema = Schema(df, logical_types=ltypes)
+        assert schema.columns[column_name]['logical_type'] == logical_type
+        assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
         assert df[column_name].dtype == logical_type.pandas_dtype
 
 
@@ -584,9 +582,9 @@ def test_sets_int64_dtype_on_init():
                 column_name: logical_type,
             }
             df = pd.DataFrame(series)
-            dt = Schema(df, logical_types=ltypes)
-            assert dt.columns[column_name]['logical_type'] == logical_type
-            assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            schema = Schema(df, logical_types=ltypes)
+            assert schema.columns[column_name]['logical_type'] == logical_type
+            assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
             assert df[column_name].dtype == logical_type.pandas_dtype
 
 
@@ -605,9 +603,9 @@ def test_sets_float64_dtype_on_init():
             column_name: logical_type,
         }
         df = pd.DataFrame(series)
-        dt = Schema(df, logical_types=ltypes)
-        assert dt.columns[column_name]['logical_type'] == logical_type
-        assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        schema = Schema(df, logical_types=ltypes)
+        assert schema.columns[column_name]['logical_type'] == logical_type
+        assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
         assert df[column_name].dtype == logical_type.pandas_dtype
 
 
@@ -628,9 +626,9 @@ def test_sets_datetime64_dtype_on_init():
             column_name: logical_type,
         }
         df = pd.DataFrame(series)
-        dt = Schema(df, logical_types=ltypes)
-        assert dt.columns[column_name]['logical_type'] == logical_type
-        assert dt.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        schema = Schema(df, logical_types=ltypes)
+        assert schema.columns[column_name]['logical_type'] == logical_type
+        assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
         assert df[column_name].dtype == logical_type.pandas_dtype
 
 
@@ -652,12 +650,12 @@ def test_invalid_dtype_casting():
     ltypes = {
         column_name: Datetime,
     }
-    # --> insert when set_types is added
-    # dt = Schema(pd.DataFrame(series), logical_types=ltypes)
+    # --> add back when schema updates are implemented
+    # schema = Schema(pd.DataFrame(series), logical_types=ltypes)
     # err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
     #     'float64. Please confirm the underlying data is consistent with logical type Double.'
     # with pytest.raises(TypeError, match=re.escape(err_msg)):
-    #     dt.set_types(logical_types={column_name: Double})
+    #     schema.set_types(logical_types={column_name: Double})
 
     # Cannot cast invalid strings to integers
     series = pd.Series(['1', 'two', '3'], name=column_name)
@@ -675,8 +673,8 @@ def test_schema_init_with_col_descriptions(sample_df):
         'age': 'age of the user',
         'signup_date': 'date of account creation'
     }
-    dt = Schema(sample_df, column_descriptions=descriptions)
-    for name, column in dt.columns.items():
+    schema = Schema(sample_df, column_descriptions=descriptions)
+    for name, column in schema.columns.items():
         assert column['description'] == descriptions.get(name)
 
 
@@ -699,36 +697,9 @@ def test_schema_init_with_column_metadata(sample_df):
         'age': {'interesting_values': [33]},
         'signup_date': {'description': 'date of account creation'}
     }
-    dt = Schema(sample_df, column_metadata=column_metadata)
-    for name, column in dt.columns.items():
+    schema = Schema(sample_df, column_metadata=column_metadata)
+    for name, column in schema.columns.items():
         assert column['metadata'] == (column_metadata.get(name) or {})
-
-
-def test_schema_init_with_metadata(sample_df):
-    metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
-
-    dt = Schema(sample_df)
-    assert dt.metadata == {}
-
-    dt.metadata = metadata
-    assert dt.metadata == metadata
-
-    dt = Schema(sample_df, table_metadata=metadata, time_index='signup_date')
-    assert dt.metadata == metadata
-
-    new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
-    dt.metadata = {**metadata, **new_data}
-    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'},
-                           'date_created': '1/1/19',
-                           'created_by': 'user1'}
-
-    dt.metadata.pop('created_by')
-    assert dt.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
-
-    dt.metadata['number'] = 1012034
-    assert dt.metadata == {'number': 1012034,
-                           'secondary_time_index': {'is_registered': 'age'},
-                           'date_created': '1/1/19'}
 
 
 def test_schema_already_sorted(sample_unsorted_df):
@@ -738,13 +709,13 @@ def test_schema_already_sorted(sample_unsorted_df):
         pytest.xfail('Sorting dataframe is not supported with Koalas input')
 
     schema_df = sample_unsorted_df.copy()
-    dt = Schema(schema_df,
-                name='datatable',
-                index='id',
-                time_index='signup_date')
+    schema = Schema(schema_df,
+                    name='datatable',
+                    index='id',
+                    time_index='signup_date')
 
-    assert dt.time_index == 'signup_date'
-    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+    assert schema.time_index == 'signup_date'
+    assert schema.columns[schema.time_index]['logical_type'] == Datetime
 
     sorted_df = to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False)
     sorted_df.index.name = None
@@ -752,14 +723,14 @@ def test_schema_already_sorted(sample_unsorted_df):
                                   to_pandas(schema_df), check_index_type=False, check_dtype=False)
 
     schema_df = sample_unsorted_df.copy()
-    dt = Schema(schema_df,
-                name='datatable',
-                index='id',
-                time_index='signup_date',
-                already_sorted=True)
+    schema = Schema(schema_df,
+                    name='datatable',
+                    index='id',
+                    time_index='signup_date',
+                    already_sorted=True)
 
-    assert dt.time_index == 'signup_date'
-    assert dt.columns[dt.time_index]['logical_type'] == Datetime
+    assert schema.time_index == 'signup_date'
+    assert schema.columns[schema.time_index]['logical_type'] == Datetime
 
     unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
     unsorted_df.index.name = None
@@ -798,24 +769,24 @@ def test_underlying_index(sample_df):
     assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
     assert type(schema_df.index) == specified_index
 
-# --> add back in when allowing updates
-    # dt = Schema(sample_df.copy())
-    # dt = dt.set_index('full_name')
-    # assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()
-    # assert dt._dataframe.index.name is None
-    # assert type(dt._dataframe.index) == specified_index
-    # assert type(dt.to_dataframe().index) == specified_index
+    # --> add back when schema updates are implemented
+    # schema = Schema(sample_df.copy())
+    # schema = schema.set_index('full_name')
+    # assert (schema._dataframe.index == schema.to_dataframe()['full_name']).all()
+    # assert schema._dataframe.index.name is None
+    # assert type(schema._dataframe.index) == specified_index
+    # assert type(schema.to_dataframe().index) == specified_index
 
-    # dt.index = 'id'
-    # assert (dt._dataframe.index == [0, 1, 2, 3]).all()
-    # assert dt._dataframe.index.name is None
-    # assert type(dt._dataframe.index) == specified_index
-    # assert type(dt.to_dataframe().index) == specified_index
+    # schema.index = 'id'
+    # assert (schema._dataframe.index == [0, 1, 2, 3]).all()
+    # assert schema._dataframe.index.name is None
+    # assert type(schema._dataframe.index) == specified_index
+    # assert type(schema.to_dataframe().index) == specified_index
 
     # # test removing index removes the dataframe's index
-    # dt.index = None
-    # assert type(dt._dataframe.index) == unspecified_index
-    # assert type(dt.to_dataframe().index) == unspecified_index
+    # schema.index = None
+    # assert type(schema._dataframe.index) == unspecified_index
+    # assert type(schema.to_dataframe().index) == unspecified_index
 
     schema_df = sample_df.copy()
     Schema(schema_df, index='made_index', make_index=True)
@@ -823,12 +794,12 @@ def test_underlying_index(sample_df):
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
 
-    # --> add back in when allowin drop
-    # dt_dropped = dt.drop('made_index')
-    # assert 'made_index' not in dt_dropped.columns
-    # assert 'made_index' not in dt_dropped._dataframe.columns
-    # assert type(dt_dropped._dataframe.index) == unspecified_index
-    # assert type(dt_dropped.to_dataframe().index) == unspecified_index
+    # --> add back when schema updates are implemented
+    # schema_dropped = schema.drop('made_index')
+    # assert 'made_index' not in schema_dropped.columns
+    # assert 'made_index' not in schema_dropped._dataframe.columns
+    # assert type(schema_dropped._dataframe.index) == unspecified_index
+    # assert type(schema_dropped.to_dataframe().index) == unspecified_index
 
 
 def test_make_index(sample_df):
@@ -836,32 +807,32 @@ def test_make_index(sample_df):
         pytest.xfail('Schemas made from Koalas DataFrames do not currently support made indices')
 
     schema_df = sample_df.copy()
-    dt = Schema(schema_df, index='new_index', make_index=True)
-    assert dt.index == 'new_index'
-    assert 'new_index' in dt.columns
+    schema = Schema(schema_df, index='new_index', make_index=True)
+    assert schema.index == 'new_index'
+    assert 'new_index' in schema.columns
     assert 'new_index' in schema_df.columns
     assert to_pandas(schema_df)['new_index'].unique
     assert to_pandas(schema_df['new_index']).is_monotonic
-    assert 'index' in dt.columns['new_index']['semantic_tags']
+    assert 'index' in schema.columns['new_index']['semantic_tags']
 
 
 def test_numeric_time_index_dtypes(numeric_time_index_df):
-    dt = Schema(numeric_time_index_df, time_index='ints')
-    date_col = dt.columns['ints']
-    assert dt.time_index == 'ints'
+    schema = Schema(numeric_time_index_df, time_index='ints')
+    date_col = schema.columns['ints']
+    assert schema.time_index == 'ints'
     assert date_col['logical_type'] == Integer
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-# --> add back in when updates asre allowed
-    # dt = dt.set_time_index('floats')
-    # date_col = dt['floats']
-    # assert dt.time_index == 'floats'
+    # --> add back when schema updates are implemented
+    # schema = schema.set_time_index('floats')
+    # date_col = schema['floats']
+    # assert schema.time_index == 'floats'
     # assert date_col.logical_type == Double
     # assert date_col.semantic_tags == {'time_index', 'numeric'}
 
-    # dt = dt.set_time_index('with_null')
-    # date_col = dt['with_null']
-    # assert dt.time_index == 'with_null'
+    # schema = schema.set_time_index('with_null')
+    # date_col = schema['with_null']
+    # assert schema.time_index == 'with_null'
     # if ks and isinstance(numeric_time_index_df, ks.DataFrame):
     #     ltype = Double
     # else:
@@ -883,16 +854,16 @@ def test_numeric_index_strings(time_index_df):
     with pytest.raises(TypeError, match=error_msg):
         Schema(time_index_df, time_index='letters', logical_types={'strs': 'Integer'})
 
-    dt = Schema(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
-    date_col = dt.columns['strs']
-    assert dt.time_index == 'strs'
+    schema = Schema(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
+    date_col = schema.columns['strs']
+    assert schema.time_index == 'strs'
     assert date_col['logical_type'] == Double
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-    # --> add back in when updates are allowed
-    # dt = Schema(time_index_df, logical_types={'strs': 'Double'})
-    # dt = dt.set_time_index('strs')
-    # date_col = dt['strs']
-    # assert dt.time_index == 'strs'
+    # --> add back when schema updates are implemented
+    # schema = Schema(time_index_df, logical_types={'strs': 'Double'})
+    # schema = schema.set_time_index('strs')
+    # date_col = schema['strs']
+    # assert schema.time_index == 'strs'
     # assert date_col.logical_type == Double
     # assert date_col.semantic_tags == {'time_index', 'numeric'}

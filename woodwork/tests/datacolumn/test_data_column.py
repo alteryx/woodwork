@@ -181,6 +181,7 @@ def test_semantic_tag_errors(sample_series):
 
 
 def test_datacolumn_description(sample_series):
+    # --> test in schema
     column_description = "custom description"
     data_col = DataColumn(sample_series, description=column_description)
     assert data_col.description == column_description
@@ -645,6 +646,7 @@ def test_datacolumn_equality(sample_series, sample_datetime_series):
 
 
 def test_datacolumn_metadata(sample_series):
+    # --> should be testsed in schema
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
     data_col = DataColumn(sample_series)

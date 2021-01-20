@@ -415,7 +415,7 @@ def _update_index(schema, dataframe, index, old_index=None):
     old_index column, if specified. Also checks that the specified index column
     can be used as an index."""
     _check_index(dataframe, index)
-    # --> when allowing update need a way of removing the old index
+    # --> when schema updates are implemented need a way of removing the old index
     # if old_index is not None:
     #     schema._update_columns({old_index: schema.columns[old_index].remove_semantic_tags('index')})
     schema._set_index_tags(index)
@@ -426,7 +426,7 @@ def _update_time_index(schema, dataframe, time_index, old_time_index=None):
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
     _check_time_index(dataframe, time_index)
-    # --> when allowing update need a way of removing the old index
+    # --> when schema updates are implemented need a way of removing the old index
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
