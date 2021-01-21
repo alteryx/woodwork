@@ -260,7 +260,7 @@ def test_validate_params_errors(sample_df):
     with pytest.raises(TypeError, match=error_message):
         _validate_dataframe(dataframe=pd.Series())
 
-    error_message = 'DataTable name must be a string'
+    error_message = 'Schema name must be a string'
     with pytest.raises(TypeError, match=error_message):
         _validate_params(dataframe=sample_df,
                          name=1,
@@ -365,7 +365,7 @@ def test_check_column_metadata_errors(sample_df):
 
 def test_raises_error_setting_index_tag_directly(sample_df):
     error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
-                          "use DataTable.set_index() instead.")
+                          "use Schema.set_index() instead.")
     with pytest.raises(ValueError, match=error_msg):
         Schema(sample_df, semantic_tags={'id': 'index'})
 
@@ -379,7 +379,7 @@ def test_raises_error_setting_index_tag_directly(sample_df):
 
 def test_raises_error_setting_time_index_tag_directly(sample_df):
     error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                          "use DataTable.set_time_index() instead.")
+                          "use Schema.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_msg):
         Schema(sample_df, semantic_tags={'signup_date': 'time_index'})
 
@@ -744,7 +744,7 @@ def test_schema_already_sorted(sample_unsorted_df):
 
     schema_df = sample_unsorted_df.copy()
     schema = Schema(schema_df,
-                    name='datatable',
+                    name='schema',
                     index='id',
                     time_index='signup_date')
 
@@ -758,7 +758,7 @@ def test_schema_already_sorted(sample_unsorted_df):
 
     schema_df = sample_unsorted_df.copy()
     schema = Schema(schema_df,
-                    name='datatable',
+                    name='schema',
                     index='id',
                     time_index='signup_date',
                     already_sorted=True)

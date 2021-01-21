@@ -35,8 +35,9 @@ class Schema(object):
         """Create Schema
 
         Args:
-            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): Dataframe providing the data for the datatable.
-            name (str, optional): Name used to identify the datatable.
+            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): Dataframe providing the data for the Schema.
+                Will be updated to reflect the changes imposed by the Schema
+            name (str, optional): Name used to identify the Schema.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
             semantic_tags (dict, optional): Dictionary mapping column names in the dataframe to the
@@ -51,7 +52,7 @@ class Schema(object):
             logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the dataframe to the LogicalType for the column. LogicalTypes will be inferred
                 for any columns not present in the dictionary.
-            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the DataTable.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the Schema.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
@@ -76,6 +77,7 @@ class Schema(object):
         if self.make_index:
             _make_index(dataframe, index)
 
+        # --> should update the name of the dataframe!!!!!!
         self.name = name
         self.use_standard_tags = use_standard_tags
 
@@ -117,32 +119,30 @@ class Schema(object):
     def __repr__(self):
         '''A string representation of a Schema containing typing information.
         '''
-        dt_repr = self._get_typing_info()
-        if isinstance(dt_repr, str):
-            return dt_repr
+        schema_repr = self._get_typing_info()
+        if isinstance(schema_repr, str):
+            return schema_repr
 
-        return repr(dt_repr)
+        return repr(schema_repr)
 
     def _repr_html_(self):
-        '''An HTML representation of a DataTable for IPython.display in Jupyter Notebooks
+        '''An HTML representation of a Schema for IPython.display in Jupyter Notebooks
         containing typing information and a preview of the data.
         '''
-        dt_repr = self._get_typing_info()
-        if isinstance(dt_repr, str):
-            return dt_repr
+        schema_repr = self._get_typing_info()
+        if isinstance(schema_repr, str):
+            return schema_repr
 
-        return dt_repr.to_html()
+        return schema_repr.to_html()
 
     @property
     def types(self):
-        """Dataframe containing the physical dtypes, logical types and semantic
-        tags for the table"""
+        """DataFrame containing the physical dtypes, logical types and semantic
+        tags for the Schema."""
         return self._get_typing_info()
 
     def _get_typing_info(self):
-        '''Creates a DataFrame that contains the typing information for a Schema,
-        optionally including the column names as a column in addition to being
-        the index.
+        '''Creates a DataFrame that contains the typing information for a Schema.
         '''
         if len(self.columns) == 0:
             return "Empty Schema"
@@ -202,9 +202,9 @@ class Schema(object):
                         use_standard_tags,
                         column_descriptions,
                         column_metadata):
-        """Create a dictionary with column names as keys and new DataColumn objects
-        as values, while assigning any values that are passed for logical types or
-        semantic tags to the new column."""
+        """Create a dictionary with column names as keys and new column dictionaries holding
+        each column's typing information as values, while assigning any values
+        that are passed for logical types or semantic tags to the new column."""
         columns = {}
         for name in column_names:
             series = dataframe[name]
@@ -282,9 +282,9 @@ class Schema(object):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
     def _set_underlying_index(self, dataframe):
-        '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
+        '''Sets the index of a Schema's underlying DataFrame.
 
-        If the DataTable has an index, will be set to that index.
+        If the Schema has an index, will be set to that index.
         If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
         meaning that the index will be a pd.RangeIndex starting from zero.
         '''
@@ -299,7 +299,7 @@ class Schema(object):
 
 
 def _validate_dataframe(dataframe):
-    '''Check that the dataframe supplied during DataTable initialization is valid.'''
+    '''Check that the DataFrame supplied during Schema initialization is valid.'''
     if not ((dd and isinstance(dataframe, dd.DataFrame)) or
             (ks and isinstance(dataframe, ks.DataFrame)) or
             isinstance(dataframe, pd.DataFrame)):
@@ -309,11 +309,10 @@ def _validate_dataframe(dataframe):
 def _validate_params(dataframe, name, index, time_index, logical_types,
                      table_metadata, column_metadata, semantic_tags,
                      make_index, column_descriptions):
-    """Check that values supplied during DataTable initialization are valid"""
+    """Check that values supplied during Schema initialization are valid"""
     _check_unique_column_names(dataframe)
     if name and not isinstance(name, str):
-        # --> Change to Schema
-        raise TypeError('DataTable name must be a string')
+        raise TypeError('Schema name must be a string')
     if index is not None or make_index:
         _check_index(dataframe, index, make_index)
     if logical_types:
@@ -427,7 +426,7 @@ def _update_time_index(schema, dataframe, time_index, old_time_index=None):
     _check_time_index(dataframe, time_index)
     # --> when schema updates are implemented need a way of removing the old index
     # if old_time_index is not None:
-    #     schema._update_columns({old_time_index: datatable.columns[old_time_index].remove_semantic_tags('time_index')})
+    #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
 
 
@@ -509,7 +508,7 @@ def _validate_tags(semantic_tags):
     """Verify user has not supplied tags that cannot be set directly"""
     if 'index' in semantic_tags:
         raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
-                         "use DataTable.set_index() instead.")
+                         "use Schema.set_index() instead.")
     if 'time_index' in semantic_tags:
         raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                         "use DataTable.set_time_index() instead.")
+                         "use Schema.set_time_index() instead.")
