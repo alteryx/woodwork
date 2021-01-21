@@ -109,7 +109,6 @@ class Schema(object):
         if self.metadata != other.metadata:
             return False
         for col_name in self.columns.keys():
-            # --> may need to do this explicetly
             if self.columns[col_name] != other.columns[col_name]:
                 return False
 
@@ -438,7 +437,9 @@ def _make_index(dataframe, index):
         dataframe[index] = dataframe[index].cumsum() - 1
     elif ks and isinstance(dataframe, ks.DataFrame):
         # --> needs to happen inplace if possible - fix when handling Koalas stuff at end
-        dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
+        # and if we aren't going to allow it, we should catch it at param validation
+        # dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
+        raise TypeError('Cannot make index on a Koalas DataFrame.')
     else:
         dataframe.insert(0, index, range(len(dataframe)))
 

@@ -105,7 +105,6 @@ def test_schema_repr_empty(empty_df):
 
 
 def test_schema_equality(sample_combos):
-    # --> add back when schema updates are implemented
     sample_df, sample_series = sample_combos
     schema_basic = Schema(sample_df)
     schema_basic2 = Schema(sample_df.copy())
@@ -113,33 +112,23 @@ def test_schema_equality(sample_combos):
 
     assert schema_basic != schema_names
     assert schema_basic == schema_basic2
-    # schema_basic2.pop('id')
-    # assert schema_basic != schema_basic2
+
+    df_missing_col = sample_df.drop('id', axis=1)
+    schema_missing_col = Schema(df_missing_col)
+    assert schema_basic != schema_missing_col
 
     schema_index = Schema(sample_df, index='id')
     schema_time_index = Schema(sample_df, time_index='signup_date')
-    # schema_set_index = schema_basic.set_index('id')
 
     assert schema_basic != schema_index
-    # assert schema_index == schema_set_index
     assert schema_index != schema_time_index
-
-    # # Check datatable with same parameters but changed underlying df
-    # # We only check underlying data for equality with pandas dataframes
-    # schema_set_index['phone_number'] = DataColumn(sample_series.rename('phone_number'), logical_type='NaturalLanguage')
-    # if isinstance(schema_index.to_dataframe(), pd.DataFrame):
-    #     assert schema_index != schema_set_index
-    # else:
-    #     assert schema_index == schema_set_index
 
     schema_numeric_time_index = Schema(sample_df, time_index='id')
 
     assert schema_time_index != schema_numeric_time_index
 
-    schema_with_ltypes = Schema(sample_df, time_index='id', logical_types={'full_name': 'categorical'})
+    schema_with_ltypes = Schema(sample_df, time_index='signup_date', logical_types={'full_name': 'categorical'})
     assert schema_with_ltypes != schema_time_index
-    # assert schema_with_ltypes == schema_numeric_time_index.set_types(logical_types={'full_name': Categorical})
-    # assert schema_with_ltypes != schema_numeric_time_index.set_types(logical_types={'full_name': Categorical()})
 
     schema_with_metadata = Schema(sample_df, index='id', table_metadata={'created_by': 'user1'})
     assert Schema(sample_df, index='id') != schema_with_metadata

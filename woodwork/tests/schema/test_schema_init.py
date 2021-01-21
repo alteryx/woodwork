@@ -678,7 +678,8 @@ def test_schema_init_with_col_descriptions(sample_df):
         assert column['description'] == descriptions.get(name)
 
 
-def test_schema_col_descriptions_warnings(sample_df):
+def test_schema_col_descriptions_errors(sample_df):
+    # Errors at the table level
     err_msg = 'column_descriptions must be a dictionary'
     with pytest.raises(TypeError, match=err_msg):
         Schema(sample_df, column_descriptions=34)
@@ -691,6 +692,15 @@ def test_schema_col_descriptions_warnings(sample_df):
     with pytest.raises(LookupError, match=err_msg):
         Schema(sample_df, column_descriptions=descriptions)
 
+    # Errors at the column level
+    descriptions = {
+        'age': 7,
+        'signup_date': 'date of account creation'
+    }
+    err_msg = "Column description must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(sample_df, column_descriptions=descriptions)
+
 
 def test_schema_init_with_column_metadata(sample_df):
     column_metadata = {
@@ -700,6 +710,16 @@ def test_schema_init_with_column_metadata(sample_df):
     schema = Schema(sample_df, column_metadata=column_metadata)
     for name, column in schema.columns.items():
         assert column['metadata'] == (column_metadata.get(name) or {})
+
+
+def test_column_metadata_errors(sample_df):
+    column_metadata = {
+        'age': 7,
+        'signup_date': {'description': 'date of account creation'}
+    }
+    err_msg = "Column metadata must be a dictionary"
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(sample_df, column_metadata=column_metadata)
 
 
 def test_schema_already_sorted(sample_unsorted_df):
@@ -804,16 +824,18 @@ def test_underlying_index(sample_df):
 
 def test_make_index(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
-        pytest.xfail('Schemas made from Koalas DataFrames do not currently support made indices')
-
-    schema_df = sample_df.copy()
-    schema = Schema(schema_df, index='new_index', make_index=True)
-    assert schema.index == 'new_index'
-    assert 'new_index' in schema.columns
-    assert 'new_index' in schema_df.columns
-    assert to_pandas(schema_df)['new_index'].unique
-    assert to_pandas(schema_df['new_index']).is_monotonic
-    assert 'index' in schema.columns['new_index']['semantic_tags']
+        error = 'Cannot make index on a Koalas DataFrame.'
+        with pytest.raises(TypeError, match=error):
+            Schema(sample_df.copy(), index='new_index', make_index=True)
+    else:
+        schema_df = sample_df.copy()
+        schema = Schema(schema_df, index='new_index', make_index=True)
+        assert schema.index == 'new_index'
+        assert 'new_index' in schema.columns
+        assert 'new_index' in schema_df.columns
+        assert to_pandas(schema_df)['new_index'].unique
+        assert to_pandas(schema_df['new_index']).is_monotonic
+        assert 'index' in schema.columns['new_index']['semantic_tags']
 
 
 def test_numeric_time_index_dtypes(numeric_time_index_df):
@@ -867,3 +889,21 @@ def test_numeric_index_strings(time_index_df):
     # assert schema.time_index == 'strs'
     # assert date_col.logical_type == Double
     # assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_ordinal_requires_instance_on_init(sample_df):
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(sample_df, logical_types={'full_name': 'Ordinal'})
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(sample_df, logical_types={'full_name': Ordinal})
+
+
+def test_invalid_logical_type(sample_df):
+    error_message = "Invalid logical type specified for 'full_name'"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_df, logical_types={'full_name': int})
+
+    error_message = "String naturalllanguage is not a valid logical type"
+    with pytest.raises(ValueError, match=error_message):
+        Schema(sample_df, logical_types={'full_name': 'naturalllanguage'})
