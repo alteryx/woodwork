@@ -233,6 +233,20 @@ def test_semantic_tags_during_init(sample_df):
     assert schema.columns['age']['semantic_tags'] == expected_types['age']
 
 
+def test_semantic_tag_errors(sample_df):
+    error_message = "semantic_tags for column id must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_df, semantic_tags={'id': int})
+
+    error_message = "semantic_tags for column id must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_df, semantic_tags={'id': {'index': {}, 'time_index': {}}})
+
+    error_message = "semantic_tags for column id must contain only strings"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_df, semantic_tags={'id': ['index', 1]})
+
+
 def test_index_replacing_standard_tags(sample_df):
     schema = Schema(sample_df)
     assert schema.columns['id']['semantic_tags'] == {'numeric'}

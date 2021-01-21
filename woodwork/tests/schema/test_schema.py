@@ -136,7 +136,7 @@ def test_schema_equality(sample_combos):
     assert Schema(sample_df, index='id', table_metadata={'created_by': 'user2'}) != schema_with_metadata
 
 
-def test_schema_init_with_metadata(sample_df):
+def test_schema_table_metadata(sample_df):
     metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
 
     schema = Schema(sample_df)
@@ -161,3 +161,24 @@ def test_schema_init_with_metadata(sample_df):
     assert schema.metadata == {'number': 1012034,
                                'secondary_time_index': {'is_registered': 'age'},
                                'date_created': '1/1/19'}
+
+
+def test_schema_column_metadata(sample_df):
+    column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
+
+    schema = Schema(sample_df)
+    assert schema.columns['id']['metadata'] == {}
+
+    schema = Schema(sample_df, column_metadata={'id': column_metadata})
+    assert schema.columns['id']['metadata'] == column_metadata
+
+    new_metadata = {'date_created': '1/1/19', 'created_by': 'user1'}
+
+    schema.columns['id']['metadata'] = {**schema.columns['id']['metadata'], **new_metadata}
+    assert schema.columns['id']['metadata'] == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'created_by': 'user1'}
+
+    schema.columns['id']['metadata'].pop('created_by')
+    assert schema.columns['id']['metadata'] == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3]}
+
+    schema.columns['id']['metadata']['number'] = 1012034
+    assert schema.columns['id']['metadata'] == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}

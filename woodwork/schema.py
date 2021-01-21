@@ -219,7 +219,7 @@ class Schema(object):
             # Determine Semantic Tags
             if semantic_tags and name in semantic_tags:
                 column_tags = semantic_tags[name]
-                column_tags = _convert_input_to_set(column_tags)
+                column_tags = _convert_input_to_set(column_tags, error_language=f'semantic_tags for column {name}')
                 _validate_tags(column_tags)
             else:
                 column_tags = set()
