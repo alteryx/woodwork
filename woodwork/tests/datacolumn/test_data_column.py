@@ -157,7 +157,6 @@ def test_datacolumn_with_alternate_semantic_tags_input(sample_series):
 
 
 def test_invalid_logical_type(sample_series):
-    # --> move to schema tests
     error_message = "Invalid logical type specified for 'sample_series'"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, int)
@@ -168,7 +167,6 @@ def test_invalid_logical_type(sample_series):
 
 
 def test_semantic_tag_errors(sample_series):
-    # --> maybe test specifically - these checks should happen
     error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         DataColumn(sample_series, semantic_tags=int)
@@ -183,7 +181,6 @@ def test_semantic_tag_errors(sample_series):
 
 
 def test_datacolumn_description(sample_series):
-    # --> test in schema
     column_description = "custom description"
     data_col = DataColumn(sample_series, description=column_description)
     assert data_col.description == column_description
@@ -531,7 +528,6 @@ def test_dtype_update_on_ltype_change():
 
 
 def test_ordinal_requires_instance_on_init(sample_series):
-    # --> move to schema tests
     error_msg = 'Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error_msg):
         DataColumn(sample_series, logical_type=Ordinal)
@@ -649,7 +645,6 @@ def test_datacolumn_equality(sample_series, sample_datetime_series):
 
 
 def test_datacolumn_metadata(sample_series):
-    # --> should be testsed in schema
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
     data_col = DataColumn(sample_series)

@@ -328,7 +328,6 @@ def test_check_column_metadata_errors(sample_df):
 
 
 def test_datatable_types(sample_df):
-    # --> move to schema tests
     new_dates = ["2019~01~01", "2019~01~02", "2019~01~03", "2019~01~04"]
     if dd and isinstance(sample_df, dd.DataFrame):
         sample_df['formatted_date'] = pd.Series(new_dates)
@@ -362,7 +361,6 @@ def test_datatable_types(sample_df):
 
 
 def test_datatable_typing_info_with_col_names(sample_df):
-    # --> move to schema tests
     dt = DataTable(sample_df)
     typing_info_df = dt._get_typing_info(include_names_col=True)
 

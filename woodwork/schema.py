@@ -68,7 +68,6 @@ class Schema(object):
                 only). Defaults to False.
         """
         # Check that inputs are valid
-        # --> confirm nothing ever returns a new dataframe!!!!
         _validate_dataframe(dataframe)
         _validate_params(dataframe, name, index, time_index, logical_types,
                          table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
@@ -77,7 +76,6 @@ class Schema(object):
         if self.make_index:
             _make_index(dataframe, index)
 
-        # --> should update the name of the dataframe!!!!!!
         self.name = name
         self.use_standard_tags = use_standard_tags
 
@@ -148,7 +146,6 @@ class Schema(object):
             return "Empty Schema"
 
         typing_info = {}
-        # --> we can't access from the unlerying data, so the order can get out of sync!!!!! need to see how this impacts many things!!!
         for col_name, col_dict in self.columns.items():
 
             types = [col_dict['dtype'], col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
@@ -435,9 +432,6 @@ def _make_index(dataframe, index):
         dataframe[index] = 1
         dataframe[index] = dataframe[index].cumsum() - 1
     elif ks and isinstance(dataframe, ks.DataFrame):
-        # --> needs to happen inplace if possible - fix when handling Koalas stuff at end
-        # and if we aren't going to allow it, we should catch it at param validation
-        # dataframe = dataframe.koalas.attach_id_column('distributed-sequence', index)
         raise TypeError('Cannot make index on a Koalas DataFrame.')
     else:
         dataframe.insert(0, index, range(len(dataframe)))
