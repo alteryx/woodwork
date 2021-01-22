@@ -42,217 +42,163 @@ dask_delayed = import_or_none('dask.delayed')
 ks = import_or_none('databricks.koalas')
 
 
-# def test_schema_init(sample_df):
-#     schema = Schema(sample_df)
+def test_schema_init(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
 
-#     assert schema.name is None
-#     assert schema.index is None
-#     assert schema.time_index is None
+    assert schema.name is None
+    assert schema.index is None
+    assert schema.time_index is None
 
-#     assert set(schema.columns.keys()) == set(sample_df.columns)
-
-
-# def test_schema_init_with_name(sample_df):
-#     schema = Schema(sample_df,
-#                     name='schema')
-
-#     assert schema.name == 'schema'
-#     assert schema.index is None
-#     assert schema.time_index is None
+    assert set(schema.columns.keys()) == set(sample_column_names)
 
 
-# def test_schema_init_with_name_and_index(sample_df):
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     index='id',
-#                     time_index='signup_date')
+def test_schema_init_with_name(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    name='schema')
 
-#     assert schema.name == 'schema'
-#     assert schema.index == 'id'
-#     assert schema.time_index == 'signup_date'
-#     assert schema.columns[schema.time_index]['logical_type'] == Datetime
+    assert schema.name == 'schema'
+    assert schema.index is None
+    assert schema.time_index is None
 
 
-# def test_schema_init_with_valid_string_time_index(time_index_df):
-#     schema = Schema(time_index_df,
-#                     name='schema',
-#                     index='id',
-#                     time_index='times')
+def test_schema_init_with_name_and_indices(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    name='schema',
+                    index='id',
+                    time_index='signup_date')
 
-#     assert schema.name == 'schema'
-#     assert schema.index == 'id'
-#     assert schema.time_index == 'times'
-#     assert schema.columns[schema.time_index]['logical_type'] == Datetime
-
-
-# def test_schema_with_numeric_datetime_time_index(time_index_df):
-#     schema_df = time_index_df.copy()
-#     schema = Schema(schema_df, time_index='ints', logical_types={'ints': Datetime})
-
-#     error_msg = 'Time index column must contain datetime or numeric values'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(time_index_df, name='schema', time_index='strs', logical_types={'strs': Datetime})
-
-#     assert schema.time_index == 'ints'
-#     assert schema_df['ints'].dtype == 'datetime64[ns]'
+    assert schema.name == 'schema'
+    assert schema.index == 'id'
+    assert schema.time_index == 'signup_date'
+    assert schema.columns[schema.time_index]['logical_type'] == Datetime
 
 
-# def test_schema_with_numeric_time_index(time_index_df):
-#     # Set a numeric time index on init
-#     schema = Schema(time_index_df, time_index='ints')
-#     date_col = schema.columns['ints']
-#     assert schema.time_index == 'ints'
-#     assert date_col['logical_type'] == Integer
-#     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_logical_types):
+    # Set a numeric time index on init
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': 'Integer'}},
+                    time_index='signup_date')
+    date_col = schema.columns['signup_date']
+    assert schema.time_index == 'signup_date'
+    assert date_col['logical_type'] == Integer
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-#     # Specify logical type for time index on init
-#     schema = Schema(time_index_df, time_index='ints', logical_types={'ints': 'Double'})
-#     date_col = schema.columns['ints']
-#     assert schema.time_index == 'ints'
-#     assert date_col['logical_type'] == Double
-#     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+    # Specify logical type for time index on init
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': 'Double'}},
+                    time_index='signup_date')
+    date_col = schema.columns['signup_date']
+    assert schema.time_index == 'signup_date'
+    assert date_col['logical_type'] == Double
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-#     # --> add back when schema updates are implemented
-#     # # Change time index to normal datetime time index
-#     # schema = schema.set_time_index('times')
-#     # date_col = schema['ints']
-#     # assert schema.time_index == 'times'
-#     # assert date_col.logical_type == Double
-#     # assert date_col.semantic_tags == {'numeric'}
+    # --> add back when schema updates are implemented
+    # # Change time index to normal datetime time index
+    # schema = schema.set_time_index('times')
+    # date_col = schema['ints']
+    # assert schema.time_index == 'times'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'numeric'}
 
-#     # Set numeric time index after init
-#     # schema = Schema(time_index_df, logical_types={'ints': 'Double'})
-#     # schema = schema.set_time_index('ints')
-#     # date_col = schema['ints']
-#     # assert schema.time_index == 'ints'
-#     # assert date_col.logical_type == Double
-#     # assert date_col.semantic_tags == {'time_index', 'numeric'}
-
-
-# def test_schema_init_with_invalid_string_time_index(sample_df):
-#     error_msg = 'Time index column must contain datetime or numeric values'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(sample_df, name='schema', time_index='full_name')
+    # Set numeric time index after init
+    # schema = Schema(time_index_df, logical_types={'ints': 'Double'})
+    # schema = schema.set_time_index('ints')
+    # date_col = schema['ints']
+    # assert schema.time_index == 'ints'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-# def test_schema_init_with_logical_types(sample_df):
-#     logical_types = {
-#         'full_name': NaturalLanguage,
-#         'age': Double
-#     }
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     logical_types=logical_types)
-#     assert schema.columns['full_name']['logical_type'] == NaturalLanguage
-#     assert schema.columns['age']['logical_type'] == Double
+def test_schema_init_with_logical_type_classes(sample_column_names, sample_inferred_logical_types):
+    logical_types = {
+        'full_name': NaturalLanguage,
+        'age': Double
+    }
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **logical_types},
+                    name='schema')
+
+    full_logical_types = {'id': Integer,
+                          'full_name': NaturalLanguage,
+                          'email': NaturalLanguage,
+                          'phone_number': NaturalLanguage,
+                          'age': Double,
+                          'signup_date': Datetime,
+                          'is_registered': Boolean}
+    assert schema.logical_types == full_logical_types
 
 
-# def test_schema_init_with_string_logical_types(sample_df):
-#     logical_types = {
-#         'full_name': 'natural_language',
-#         'age': 'Double'
-#     }
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     logical_types=logical_types)
-#     assert schema.columns['full_name']['logical_type'] == NaturalLanguage
-#     assert schema.columns['age']['logical_type'] == Double
+def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'id': 'custom_tag',
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    name='schema',
+                    semantic_tags=semantic_tags,
+                    use_standard_tags=False)
 
-#     logical_types = {
-#         'full_name': 'NaturalLanguage',
-#         'age': 'Integer',
-#         'signup_date': 'Datetime'
-#     }
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     logical_types=logical_types,
-#                     time_index='signup_date'
-#                     )
-#     assert schema.columns['full_name']['logical_type'] == NaturalLanguage
-#     assert schema.columns['age']['logical_type'] == Integer
-#     assert schema.time_index == 'signup_date'
+    id_semantic_tags = schema.columns['id']['semantic_tags']
+    assert isinstance(id_semantic_tags, set)
+    assert len(id_semantic_tags) == 1
+    assert 'custom_tag' in id_semantic_tags
 
 
-# def test_schema_init_with_semantic_tags(sample_df):
-#     semantic_tags = {
-#         'id': 'custom_tag',
-#     }
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     semantic_tags=semantic_tags,
-#                     use_standard_tags=False)
+def test_schema_adds_standard_semantic_tags(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': 'Categorical'}},
+                    name='schema',
+                    )
 
-#     id_semantic_tags = schema.columns['id']['semantic_tags']
-#     assert isinstance(id_semantic_tags, set)
-#     assert len(id_semantic_tags) == 1
-#     assert 'custom_tag' in id_semantic_tags
+    assert schema.semantic_tags['id'] == {'category'}
+    assert schema.semantic_tags['age'] == {'numeric'}
 
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': 'Categorical'}},
+                    name='schema',
+                    use_standard_tags=False)
 
-# def test_schema_adds_standard_semantic_tags(sample_df):
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     logical_types={
-#                         'id': Categorical,
-#                         'age': Integer,
-#                     })
-
-#     assert schema.semantic_tags['id'] == {'category'}
-#     assert schema.semantic_tags['age'] == {'numeric'}
-
-#     schema = Schema(sample_df,
-#                     name='schema',
-#                     logical_types={
-#                         'id': Categorical,
-#                         'age': Integer},
-#                     use_standard_tags=False)
-
-#     assert schema.semantic_tags['id'] == set()
-#     assert schema.semantic_tags['age'] == set()
+    assert schema.semantic_tags['id'] == set()
+    assert schema.semantic_tags['age'] == set()
 
 
-# def test_semantic_tags_during_init(sample_df):
-#     semantic_tags = {
-#         'full_name': 'tag1',
-#         'email': ['tag2'],
-#         'phone_number': ['tag3'],
-#         'signup_date': ['secondary_time_index'],
-#         'age': ['numeric', 'age']
-#     }
-#     expected_types = {
-#         'full_name': {'tag1'},
-#         'email': {'tag2'},
-#         'phone_number': {'tag3'},
-#         'signup_date': {'secondary_time_index'},
-#         'age': {'numeric', 'age'}
-#     }
-#     schema = Schema(sample_df, semantic_tags=semantic_tags)
-#     assert schema.columns['full_name']['semantic_tags'] == expected_types['full_name']
-#     assert schema.columns['email']['semantic_tags'] == expected_types['email']
-#     assert schema.columns['phone_number']['semantic_tags'] == expected_types['phone_number']
-#     assert schema.columns['signup_date']['semantic_tags'] == expected_types['signup_date']
-#     assert schema.columns['age']['semantic_tags'] == expected_types['age']
+def test_semantic_tags_during_init(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3'],
+        'signup_date': ['secondary_time_index'],
+        'age': ['numeric', 'age']
+    }
+    expected_types = {
+        'full_name': {'tag1'},
+        'email': {'tag2'},
+        'phone_number': {'tag3'},
+        'signup_date': {'secondary_time_index'},
+        'age': {'numeric', 'age'}
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags)
+    assert schema.columns['full_name']['semantic_tags'] == expected_types['full_name']
+    assert schema.columns['email']['semantic_tags'] == expected_types['email']
+    assert schema.columns['phone_number']['semantic_tags'] == expected_types['phone_number']
+    assert schema.columns['signup_date']['semantic_tags'] == expected_types['signup_date']
+    assert schema.columns['age']['semantic_tags'] == expected_types['age']
 
 
-# def test_semantic_tag_errors(sample_df):
-#     error_message = "semantic_tags for column id must be a string, set or list"
-#     with pytest.raises(TypeError, match=error_message):
-#         Schema(sample_df, semantic_tags={'id': int})
+def test_semantic_tag_errors(sample_column_names, sample_inferred_logical_types):
+    error_message = "semantic_tags for column id must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': int})
 
-#     error_message = "semantic_tags for column id must be a string, set or list"
-#     with pytest.raises(TypeError, match=error_message):
-#         Schema(sample_df, semantic_tags={'id': {'index': {}, 'time_index': {}}})
+    error_message = "semantic_tags for column id must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': {'index': {}, 'time_index': {}}})
 
-#     error_message = "semantic_tags for column id must contain only strings"
-#     with pytest.raises(TypeError, match=error_message):
-#         Schema(sample_df, semantic_tags={'id': ['index', 1]})
+    error_message = "semantic_tags for column id must contain only strings"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': ['index', 1]})
 
 
-# def test_index_replacing_standard_tags(sample_df):
-#     schema = Schema(sample_df)
-#     assert schema.columns['id']['semantic_tags'] == {'numeric'}
+def test_index_replacing_standard_tags(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    assert schema.columns['id']['semantic_tags'] == {'numeric'}
 
-#     schema = Schema(sample_df, index='id')
-#     assert schema.columns['id']['semantic_tags'] == {'index'}
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    assert schema.columns['id']['semantic_tags'] == {'index'}
 
 
 def test_validate_params_errors(sample_column_names):
@@ -278,7 +224,15 @@ def test_check_index_errors(sample_column_names):
 def test_check_time_index_errors(sample_column_names):
     error_message = 'Specified time index column `foo` not found in Schema'
     with pytest.raises(LookupError, match=error_message):
-        _check_time_index(column_names=sample_column_names, time_index='foo')
+        _check_time_index(column_names=sample_column_names, time_index='foo', logical_type=Integer)
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='NaturalLanguage')
+
+    error_msg = 'String test is not a valid logical type'
+    with pytest.raises(ValueError, match=error_msg):
+        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='test')
 
 
 def test_check_column_names(sample_column_names):
@@ -329,7 +283,7 @@ def test_check_semantic_tags_errors(sample_column_names):
         'birthday': None,
         'occupation': None,
     }
-    error_message = re.escape("semantic_tags contains columns that are not present in dataframe: ['birthday', 'occupation']")
+    error_message = re.escape("semantic_tags contains columns that are not present in Schema: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
 
@@ -348,7 +302,7 @@ def test_check_column_metadata_errors(sample_column_names):
     column_metadata = {
         'invalid_col': {'description': 'not a valid column'}
     }
-    err_msg = re.escape("column_metadata contains columns that are not present in dataframe: ['invalid_col']")
+    err_msg = re.escape("column_metadata contains columns that are not present in Schema: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
         _check_column_metadata(sample_column_names, column_metadata=column_metadata)
 
@@ -361,7 +315,7 @@ def test_check_column_description_errors(sample_column_names):
     column_descriptions = {
         'invalid_col': 'a description'
     }
-    err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
+    err_msg = re.escape("column_descriptions contains columns that are not present in Schema: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
         _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
 

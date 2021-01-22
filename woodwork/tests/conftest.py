@@ -490,3 +490,14 @@ def sample_column_names():
             'age',
             'signup_date',
             'is_registered']
+
+
+@pytest.fixture()
+def sample_inferred_logical_types():
+    return {'id': 'Integer',
+            'full_name': 'NaturalLanguage',
+            'email': 'NaturalLanguage',
+            'phone_number': 'NaturalLanguage',
+            'age': 'Integer',
+            'signup_date': 'Datetime',
+            'is_registered': 'Boolean'}

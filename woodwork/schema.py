@@ -13,19 +13,14 @@ from woodwork.utils import (
     import_or_none
 )
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
-if ks:
-    ks.set_option('compute.ops_on_diff_frames', True)
-
 
 class Schema(object):
     def __init__(self, column_names,
+                 logical_types,
                  name=None,
                  index=None,
                  time_index=None,
                  semantic_tags=None,
-                 logical_types=None,
                  table_metadata=None,
                  column_metadata=None,
                  use_standard_tags=True,
@@ -33,8 +28,11 @@ class Schema(object):
         """Create Schema
 
         Args:
-            dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): Dataframe providing the data for the Schema.
+            column_names (list, set): The columns present in the Schema.
                 Will be updated to reflect the changes imposed by the Schema
+            logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
+                the Schema to the LogicalType for the column. All columns present in the 
+                Schema        
             name (str, optional): Name used to identify the Schema.
             index (str, optional): Name of the index column in the dataframe.
             time_index (str, optional): Name of the time index column in the dataframe.
@@ -47,9 +45,6 @@ class Schema(object):
                 used as the value.
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
-            logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
-                the dataframe to the LogicalType for the column. LogicalTypes will be inferred
-                for any columns not present in the dictionary.
             table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the Schema.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
@@ -80,10 +75,10 @@ class Schema(object):
                                             column_descriptions,
                                             column_metadata)
         if index is not None:
-            _update_index(self, dataframe, index)
+            _update_index(self, column_names, index)
 
         if time_index is not None:
-            _update_time_index(self, dataframe, time_index)
+            _update_time_index(self, column_names, time_index)
 
         self.metadata = table_metadata or {}
 
@@ -193,14 +188,7 @@ class Schema(object):
         that are passed for logical types or semantic tags to the new column."""
         columns = {}
         for name in column_names:
-            series = dataframe[name]
-
-            # Determine Logical Type
-            if logical_types and name in logical_types:
-                logical_type = logical_types[name]
-            else:
-                logical_type = None
-            logical_type = _parse_column_logical_type(logical_type, series, name)
+            logical_type = _parse_column_logical_type(logical_types.get(name), name)
 
             # Determine Semantic Tags
             if semantic_tags and name in semantic_tags:
@@ -227,13 +215,9 @@ class Schema(object):
             else:
                 metadata = {}
 
-            # Update the underlying data to use Logical Type dtype
-            updated_series = _update_column_dtype(series, logical_type, name)
-            dataframe[name] = updated_series
-
             column = {
                 'name': name,
-                'dtype': updated_series.dtype,
+                'dtype': logical_type.pandas_dtype,  # --> should either be pandas dtype or backup depending on if it's a pandas schema
                 'logical_type': logical_type,
                 'semantic_tags': column_tags,
                 'use_standard_tags': use_standard_tags,
@@ -274,7 +258,7 @@ def _validate_params(column_names, name, index, time_index, logical_types,
     if column_metadata:
         _check_column_metadata(column_names, column_metadata)
     if time_index is not None:
-        _check_time_index(column_names, time_index)
+        _check_time_index(column_names, time_index, logical_types.get(time_index))
     if semantic_tags:
         _check_semantic_tags(column_names, semantic_tags)
     if column_descriptions:
@@ -291,13 +275,22 @@ def _check_column_names(column_names):
 
 def _check_index(column_names, index):
     if index not in column_names:
-        # User specifies an index that is not in the dataframe, without setting make_index to True
+        # User specifies an index that is not in the list of column names
         raise LookupError(f'Specified index column `{index}` not found in Schema.')
 
 
-def _check_time_index(column_names, time_index):
+def _check_time_index(column_names, time_index, logical_type):
     if time_index not in column_names:
         raise LookupError(f'Specified time index column `{time_index}` not found in Schema')
+    # We've already confirmed all columns have LogicalTypes specified, so if time_index
+    # is a column, there should always be a LogicalType
+    assert logical_type is not None
+
+    logical_type = _parse_column_logical_type(logical_type, time_index)
+
+    # --> this way of checking if datetime stops people from removing this ltype and adding a datetime of their own
+    if not (_get_ltype_class(logical_type) == ww.logical_types.Datetime or 'numeric' in logical_type.standard_tags):
+        raise TypeError('Time index column must contain datetime or numeric values')
 
 
 def _check_logical_types(column_names, logical_types):
@@ -322,7 +315,7 @@ def _check_semantic_tags(column_names, semantic_tags):
     cols_not_found = set(semantic_tags.keys()).difference(set(column_names))
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
-                          f'dataframe: {sorted(list(cols_not_found))}')
+                          f'Schema: {sorted(list(cols_not_found))}')
 
 
 def _check_column_descriptions(column_names, column_descriptions):
@@ -331,7 +324,7 @@ def _check_column_descriptions(column_names, column_descriptions):
     cols_not_found = set(column_descriptions.keys()).difference(set(column_names))
     if cols_not_found:
         raise LookupError('column_descriptions contains columns that are not present in '
-                          f'dataframe: {sorted(list(cols_not_found))}')
+                          f'Schema: {sorted(list(cols_not_found))}')
 
 
 def _check_table_metadata(table_metadata):
@@ -345,44 +338,44 @@ def _check_column_metadata(column_names, column_metadata):
     cols_not_found = set(column_metadata.keys()).difference(set(column_names))
     if cols_not_found:
         raise LookupError('column_metadata contains columns that are not present in '
-                          f'dataframe: {sorted(list(cols_not_found))}')
+                          f'Schema: {sorted(list(cols_not_found))}')
 
 
-def _update_index(schema, dataframe, index, old_index=None):
+def _update_index(schema, column_names, index, old_index=None):
     """Add the `index` tag to the specified index column and remove the tag from the
     old_index column, if specified. Also checks that the specified index column
     can be used as an index."""
-    _check_index(dataframe, index)
+    _check_index(column_names, index)
     # --> when schema updates are implemented need a way of removing the old index
     # if old_index is not None:
     #     schema._update_columns({old_index: schema.columns[old_index].remove_semantic_tags('index')})
     schema._set_index_tags(index)
 
 
-def _update_time_index(schema, dataframe, time_index, old_time_index=None):
+def _update_time_index(schema, column_names, time_index, old_time_index=None):
     """Add the `time_index` tag to the specified time_index column and remove the tag from the
     old_time_index column, if specified. Also checks that the specified time_index
     column can be used as a time index."""
-    _check_time_index(dataframe, time_index)
+    _check_time_index(column_names, time_index, schema.columns[time_index]['logical_type'])
     # --> when schema updates are implemented need a way of removing the old index
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
 
 
-def _parse_column_logical_type(logical_type, series, name):
-    if logical_type:
-        if isinstance(logical_type, str):
-            logical_type = ww.type_system.str_to_logical_type(logical_type)
-        ltype_class = _get_ltype_class(logical_type)
-        if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
-            raise TypeError("Must use an Ordinal instance with order values defined")
-        if ltype_class in ww.type_system.registered_types:
-            return logical_type
-        else:
-            raise TypeError(f"Invalid logical type specified for '{name}'")
+def _parse_column_logical_type(logical_type, name):
+    # Every column should have a LogicalType specified
+    assert logical_type is not None
+
+    if isinstance(logical_type, str):
+        logical_type = ww.type_system.str_to_logical_type(logical_type)
+    ltype_class = _get_ltype_class(logical_type)
+    if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
+        raise TypeError("Must use an Ordinal instance with order values defined")
+    if ltype_class in ww.type_system.registered_types:
+        return logical_type
     else:
-        return ww.type_system.infer_logical_type(series)
+        raise TypeError(f"Invalid logical type specified for '{name}'")
 
 
 def _update_column_dtype(series, logical_type, name):
