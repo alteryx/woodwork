@@ -2,7 +2,6 @@ import re
 
 import pytest
 
-from woodwork.schema import Schema
 from woodwork.logical_types import (
     Boolean,
     Datetime,
@@ -12,6 +11,7 @@ from woodwork.logical_types import (
     Ordinal
 )
 from woodwork.schema import (
+    Schema,
     _check_column_descriptions,
     _check_column_metadata,
     _check_column_names,

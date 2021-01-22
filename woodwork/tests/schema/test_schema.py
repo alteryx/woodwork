@@ -1,7 +1,6 @@
 import pandas as pd
 
 import woodwork as ww
-from woodwork.schema import Schema
 from woodwork.logical_types import (
     Boolean,
     Datetime,
@@ -9,6 +8,7 @@ from woodwork.logical_types import (
     LogicalType,
     NaturalLanguage
 )
+from woodwork.schema import Schema
 
 
 def test_schema_physical_types(sample_column_names, sample_inferred_logical_types):
