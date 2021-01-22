@@ -21,16 +21,15 @@ class Schema(object):
 
         Args:
             column_names (list, set): The columns present in the Schema.
-                Will be updated to reflect the changes imposed by the Schema
             logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
                 the Schema to the LogicalType for the column. All columns present in the
-                Schema
+                Schema must be present in the logical_types dictionary.
             name (str, optional): Name used to identify the Schema.
-            index (str, optional): Name of the index column in the dataframe.
-            time_index (str, optional): Name of the time index column in the dataframe.
-            semantic_tags (dict, optional): Dictionary mapping column names in the dataframe to the
+            index (str, optional): Name of the index column.
+            time_index (str, optional): Name of the time index column.
+            semantic_tags (dict, optional): Dictionary mapping column names in the Schema to the
                 semantic tags for the column. The keys in the dictionary should be strings
-                that correspond to columns in the underlying dataframe. There are two options for
+                that correspond to columns in the Schema. There are two options for
                 specifying the dictionary values:
                 (str): If only one semantic tag is being set, a single string can be used as a value.
                 (list[str] or set[str]): If multiple tags are being set, a list or set of strings can be
@@ -42,15 +41,7 @@ class Schema(object):
                 to that column's metadata dictionary.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the inferred or specified logical type for the column. Defaults to True.
-            make_index (bool, optional): If True, will create a new unique, numeric index column with the
-                name specified by ``index`` and will add the new index column to the supplied DataFrame.
-                If True, the name specified in ``index`` cannot match an existing column name in
-                ``dataframe``. If False, the name is specified in ``index`` must match a column
-                present in the ``dataframe``. Defaults to False.
-            column_descriptions (dict[str -> str], optional): Dictionary containing column descriptions
-            already_sorted (bool, optional): Indicates whether the input dataframe is already sorted on the time
-                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
-                only). Defaults to False.
+            column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
         """
         # Check that inputs are valid
         _validate_params(column_names, name, index, time_index, logical_types,
@@ -279,9 +270,10 @@ def _check_time_index(column_names, time_index, logical_type):
     assert logical_type is not None
 
     logical_type = _parse_column_logical_type(logical_type, time_index)
+    ltype_class = _get_ltype_class(logical_type)
 
     # --> this way of checking if datetime stops people from removing this ltype and adding a datetime of their own
-    if not (_get_ltype_class(logical_type) == ww.logical_types.Datetime or 'numeric' in logical_type.standard_tags):
+    if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):
         raise TypeError('Time index column must contain datetime or numeric values')
 
 

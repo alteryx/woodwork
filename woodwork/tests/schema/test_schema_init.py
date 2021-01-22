@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from woodwork import Schema
+from woodwork.schema import Schema
 from woodwork.logical_types import (
     Boolean,
     Datetime,
@@ -382,59 +382,6 @@ def test_column_metadata_errors(sample_column_names, sample_inferred_logical_typ
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
         Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
-
-
-# def test_numeric_time_index_dtypes(numeric_time_index_df):
-#     schema = Schema(numeric_time_index_df, time_index='ints')
-#     date_col = schema.columns['ints']
-#     assert schema.time_index == 'ints'
-#     assert date_col['logical_type'] == Integer
-#     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
-
-#     # --> add back when schema updates are implemented
-#     # schema = schema.set_time_index('floats')
-#     # date_col = schema['floats']
-#     # assert schema.time_index == 'floats'
-#     # assert date_col.logical_type == Double
-#     # assert date_col.semantic_tags == {'time_index', 'numeric'}
-
-#     # schema = schema.set_time_index('with_null')
-#     # date_col = schema['with_null']
-#     # assert schema.time_index == 'with_null'
-#     # if ks and isinstance(numeric_time_index_df, ks.DataFrame):
-#     #     ltype = Double
-#     # else:
-#     #     ltype = Integer
-#     # assert date_col.logical_type == ltype
-#     # assert date_col.semantic_tags == {'time_index', 'numeric'}
-
-
-# def test_numeric_index_strings(time_index_df):
-#     error_msg = 'Time index column must contain datetime or numeric values'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(time_index_df, time_index='strs')
-
-#     error_msg = 'Time index column must contain datetime or numeric values'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(time_index_df, time_index='ints', logical_types={'ints': 'Categorical'})
-
-#     error_msg = 'Time index column must contain datetime or numeric values'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(time_index_df, time_index='letters', logical_types={'strs': 'Integer'})
-
-#     schema = Schema(time_index_df, time_index='strs', logical_types={'strs': 'Double'})
-#     date_col = schema.columns['strs']
-#     assert schema.time_index == 'strs'
-#     assert date_col['logical_type'] == Double
-#     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
-
-#     # --> add back when schema updates are implemented
-#     # schema = Schema(time_index_df, logical_types={'strs': 'Double'})
-#     # schema = schema.set_time_index('strs')
-#     # date_col = schema['strs']
-#     # assert schema.time_index == 'strs'
-#     # assert date_col.logical_type == Double
-#     # assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
 def test_ordinal_requires_instance_on_init(sample_column_names, sample_inferred_logical_types):

@@ -1,7 +1,7 @@
 import pandas as pd
 
 import woodwork as ww
-from woodwork import Schema
+from woodwork.schema import Schema
 from woodwork.logical_types import (
     Boolean,
     Datetime,
