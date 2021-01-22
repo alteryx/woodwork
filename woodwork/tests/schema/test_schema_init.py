@@ -42,6 +42,125 @@ dask_delayed = import_or_none('dask.delayed')
 ks = import_or_none('databricks.koalas')
 
 
+def test_validate_params_errors(sample_column_names):
+    error_message = 'Schema name must be a string'
+    with pytest.raises(TypeError, match=error_message):
+        _validate_params(column_names=sample_column_names,
+                         name=1,
+                         index=None,
+                         time_index=None,
+                         logical_types=None,
+                         table_metadata=None,
+                         column_metadata=None,
+                         semantic_tags=None,
+                         column_descriptions=None)
+
+
+def test_check_index_errors(sample_column_names):
+    error_message = 'Specified index column `foo` not found in Schema.'
+    with pytest.raises(LookupError, match=error_message):
+        _check_index(column_names=sample_column_names, index='foo')
+
+
+def test_check_time_index_errors(sample_column_names):
+    error_message = 'Specified time index column `foo` not found in Schema'
+    with pytest.raises(LookupError, match=error_message):
+        _check_time_index(column_names=sample_column_names, time_index='foo', logical_type=Integer)
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='NaturalLanguage')
+
+    error_msg = 'String test is not a valid logical type'
+    with pytest.raises(ValueError, match=error_msg):
+        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='test')
+
+
+def test_check_column_names(sample_column_names):
+    error_message = 'Column names must be a list or set'
+    with pytest.raises(TypeError, match=error_message):
+        _check_column_names(column_names=int)
+
+    sample_column_names.append('id')
+    with pytest.raises(IndexError, match='Schema cannot contain duplicate columns names'):
+        _check_column_names(sample_column_names)
+
+
+def test_check_logical_types_errors(sample_column_names):
+    error_message = 'logical_types must be a dictionary'
+    with pytest.raises(TypeError, match=error_message):
+        _check_logical_types(sample_column_names, logical_types='type')
+
+    bad_logical_types_keys = {
+        'full_name': None,
+        'age': None,
+        'birthday': None,
+        'occupation': None,
+    }
+    error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday', 'occupation']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_logical_types(sample_column_names, bad_logical_types_keys)
+
+    bad_logical_types_keys = {
+        'id': None,
+        'full_name': None,
+        'email': None,
+        'phone_number': None,
+        'age': None,
+    }
+    error_message = re.escape("logical_types is missing columns that are present in Schema: ['is_registered', 'signup_date']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_logical_types(sample_column_names, bad_logical_types_keys)
+
+
+def test_check_semantic_tags_errors(sample_column_names):
+    error_message = 'semantic_tags must be a dictionary'
+    with pytest.raises(TypeError, match=error_message):
+        _check_semantic_tags(sample_column_names, semantic_tags='type')
+
+    bad_semantic_tags_keys = {
+        'full_name': None,
+        'age': None,
+        'birthday': None,
+        'occupation': None,
+    }
+    error_message = re.escape("semantic_tags contains columns that are not present in Schema: ['birthday', 'occupation']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
+
+
+def test_check_table_metadata_errors():
+    error_message = 'Table metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=error_message):
+        _check_table_metadata('test')
+
+
+def test_check_column_metadata_errors(sample_column_names):
+    error_message = 'Column metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=error_message):
+        _check_column_metadata(sample_column_names, column_metadata='test')
+
+    column_metadata = {
+        'invalid_col': {'description': 'not a valid column'}
+    }
+    err_msg = re.escape("column_metadata contains columns that are not present in Schema: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        _check_column_metadata(sample_column_names, column_metadata=column_metadata)
+
+
+def test_check_column_description_errors(sample_column_names):
+    error_message = 'column_descriptions must be a dictionary'
+    with pytest.raises(TypeError, match=error_message):
+        _check_column_descriptions(sample_column_names, column_descriptions='test')
+
+    column_descriptions = {
+        'invalid_col': 'a description'
+    }
+    err_msg = re.escape("column_descriptions contains columns that are not present in Schema: ['invalid_col']")
+    with pytest.raises(LookupError, match=err_msg):
+        _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
+
+
 def test_schema_init(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types)
 
@@ -201,612 +320,86 @@ def test_index_replacing_standard_tags(sample_column_names, sample_inferred_logi
     assert schema.columns['id']['semantic_tags'] == {'index'}
 
 
-def test_validate_params_errors(sample_column_names):
-    error_message = 'Schema name must be a string'
-    with pytest.raises(TypeError, match=error_message):
-        _validate_params(column_names=sample_column_names,
-                         name=1,
-                         index=None,
-                         time_index=None,
-                         logical_types=None,
-                         table_metadata=None,
-                         column_metadata=None,
-                         semantic_tags=None,
-                         column_descriptions=None)
-
-
-def test_check_index_errors(sample_column_names):
-    error_message = 'Specified index column `foo` not found in Schema.'
-    with pytest.raises(LookupError, match=error_message):
-        _check_index(column_names=sample_column_names, index='foo')
-
-
-def test_check_time_index_errors(sample_column_names):
-    error_message = 'Specified time index column `foo` not found in Schema'
-    with pytest.raises(LookupError, match=error_message):
-        _check_time_index(column_names=sample_column_names, time_index='foo', logical_type=Integer)
-
-    error_msg = 'Time index column must contain datetime or numeric values'
-    with pytest.raises(TypeError, match=error_msg):
-        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='NaturalLanguage')
-
-    error_msg = 'String test is not a valid logical type'
+def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+    error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
+                          "use Schema.set_index() instead.")
     with pytest.raises(ValueError, match=error_msg):
-        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='test')
+        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': 'index'})
+
+    # --> add back when schema updates are implemented
+    # Schema = Schema(sample_df)
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.add_semantic_tags({'id': 'index'})
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.set_semantic_tags({'id': 'index'})
 
 
-def test_check_column_names(sample_column_names):
-    error_message = 'Column names must be a list or set'
-    with pytest.raises(TypeError, match=error_message):
-        _check_column_names(column_names=int)
+def test_raises_error_setting_time_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+    error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
+                          "use Schema.set_time_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'signup_date': 'time_index'})
 
-    sample_column_names.append('id')
-    with pytest.raises(IndexError, match='Schema cannot contain duplicate columns names'):
-        _check_column_names(sample_column_names)
+    # --> add back when schema updates are implemented
+    # schema = Schema(sample_series)
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.add_semantic_tags({'signup_date': 'time_index'})
+    # with pytest.raises(ValueError, match=error_msg):
+    #     schema.set_semantic_tags({'signup_date': 'time_index'})
 
 
-def test_check_logical_types_errors(sample_column_names):
-    error_message = 'logical_types must be a dictionary'
-    with pytest.raises(TypeError, match=error_message):
-        _check_logical_types(sample_column_names, logical_types='type')
-
-    bad_logical_types_keys = {
-        'full_name': None,
-        'age': None,
-        'birthday': None,
-        'occupation': None,
+def test_schema_init_with_col_descriptions(sample_column_names, sample_inferred_logical_types):
+    descriptions = {
+        'age': 'age of the user',
+        'signup_date': 'date of account creation'
     }
-    error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday', 'occupation']")
-    with pytest.raises(LookupError, match=error_message):
-        _check_logical_types(sample_column_names, bad_logical_types_keys)
-
-    bad_logical_types_keys = {
-        'id': None,
-        'full_name': None,
-        'email': None,
-        'phone_number': None,
-        'age': None,
-    }
-    error_message = re.escape("logical_types is missing columns that are present in Schema: ['is_registered', 'signup_date']")
-    with pytest.raises(LookupError, match=error_message):
-        _check_logical_types(sample_column_names, bad_logical_types_keys)
+    schema = Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
+    for name, column in schema.columns.items():
+        assert column['description'] == descriptions.get(name)
 
 
-def test_check_semantic_tags_errors(sample_column_names):
-    error_message = 'semantic_tags must be a dictionary'
-    with pytest.raises(TypeError, match=error_message):
-        _check_semantic_tags(sample_column_names, semantic_tags='type')
+def test_schema_col_descriptions_errors(sample_column_names, sample_inferred_logical_types):
+    # Errors at the table level
+    err_msg = 'column_descriptions must be a dictionary'
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=34)
 
-    bad_semantic_tags_keys = {
-        'full_name': None,
-        'age': None,
-        'birthday': None,
-        'occupation': None,
-    }
-    error_message = re.escape("semantic_tags contains columns that are not present in Schema: ['birthday', 'occupation']")
-    with pytest.raises(LookupError, match=error_message):
-        _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
-
-
-def test_check_table_metadata_errors():
-    error_message = 'Table metadata must be a dictionary.'
-    with pytest.raises(TypeError, match=error_message):
-        _check_table_metadata('test')
-
-
-def test_check_column_metadata_errors(sample_column_names):
-    error_message = 'Column metadata must be a dictionary.'
-    with pytest.raises(TypeError, match=error_message):
-        _check_column_metadata(sample_column_names, column_metadata='test')
-
-    column_metadata = {
-        'invalid_col': {'description': 'not a valid column'}
-    }
-    err_msg = re.escape("column_metadata contains columns that are not present in Schema: ['invalid_col']")
-    with pytest.raises(LookupError, match=err_msg):
-        _check_column_metadata(sample_column_names, column_metadata=column_metadata)
-
-
-def test_check_column_description_errors(sample_column_names):
-    error_message = 'column_descriptions must be a dictionary'
-    with pytest.raises(TypeError, match=error_message):
-        _check_column_descriptions(sample_column_names, column_descriptions='test')
-
-    column_descriptions = {
-        'invalid_col': 'a description'
+    descriptions = {
+        'invalid_col': 'not a valid column',
+        'signup_date': 'date of account creation'
     }
     err_msg = re.escape("column_descriptions contains columns that are not present in Schema: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
-        _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
-
-
-# def test_raises_error_setting_index_tag_directly(sample_df):
-#     error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
-#                           "use Schema.set_index() instead.")
-#     with pytest.raises(ValueError, match=error_msg):
-#         Schema(sample_df, semantic_tags={'id': 'index'})
-
-#     # --> add back when schema updates are implemented
-#     # Schema = Schema(sample_df)
-#     # with pytest.raises(ValueError, match=error_msg):
-#     #     schema.add_semantic_tags({'id': 'index'})
-#     # with pytest.raises(ValueError, match=error_msg):
-#     #     schema.set_semantic_tags({'id': 'index'})
-
-
-# def test_raises_error_setting_time_index_tag_directly(sample_df):
-#     error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
-#                           "use Schema.set_time_index() instead.")
-#     with pytest.raises(ValueError, match=error_msg):
-#         Schema(sample_df, semantic_tags={'signup_date': 'time_index'})
-
-#     # --> add back when schema updates are implemented
-#     # schema = Schema(sample_series)
-#     # with pytest.raises(ValueError, match=error_msg):
-#     #     schema.add_semantic_tags({'signup_date': 'time_index'})
-#     # with pytest.raises(ValueError, match=error_msg):
-#     #     schema.set_semantic_tags({'signup_date': 'time_index'})
-
-
-# def test_int_dtype_inference_on_init():
-#     df = pd.DataFrame({
-#         'ints_no_nans': pd.Series([1, 2]),
-#         'ints_nan': pd.Series([1, np.nan]),
-#         'ints_NA': pd.Series([1, pd.NA]),
-#         'ints_NA_specified': pd.Series([1, pd.NA], dtype='Int64')})
-#     Schema(df)
-
-#     assert df['ints_no_nans'].dtype == 'Int64'
-#     assert df['ints_nan'].dtype == 'float64'
-#     assert df['ints_NA'].dtype == 'category'
-#     assert df['ints_NA_specified'].dtype == 'Int64'
-
-
-# def test_bool_dtype_inference_on_init():
-#     df = pd.DataFrame({
-#         'bools_no_nans': pd.Series([True, False]),
-#         'bool_nan': pd.Series([True, np.nan]),
-#         'bool_NA': pd.Series([True, pd.NA]),
-#         'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean")})
-#     Schema(df)
-
-#     assert df['bools_no_nans'].dtype == 'boolean'
-#     assert df['bool_nan'].dtype == 'category'
-#     assert df['bool_NA'].dtype == 'category'
-#     assert df['bool_NA_specified'].dtype == 'boolean'
-
-
-# def test_str_dtype_inference_on_init():
-#     df = pd.DataFrame({
-#         'str_no_nans': pd.Series(['a', 'b']),
-#         'str_nan': pd.Series(['a', np.nan]),
-#         'str_NA': pd.Series(['a', pd.NA]),
-#         'str_NA_specified': pd.Series([1, pd.NA], dtype="string"),
-#         'long_str_NA_specified': pd.Series(['this is a very long sentence inferred as a string', pd.NA], dtype="string"),
-#         'long_str_NA': pd.Series(['this is a very long sentence inferred as a string', pd.NA])
-#     })
-#     Schema(df)
-
-#     assert df['str_no_nans'].dtype == 'category'
-#     assert df['str_nan'].dtype == 'category'
-#     assert df['str_NA'].dtype == 'category'
-#     assert df['str_NA_specified'].dtype == 'category'
-#     assert df['long_str_NA_specified'].dtype == 'string'
-#     assert df['long_str_NA'].dtype == 'string'
-
-
-# def test_float_dtype_inference_on_init():
-#     df = pd.DataFrame({
-#         'floats_no_nans': pd.Series([1.1, 2.2]),
-#         'floats_nan': pd.Series([1.1, np.nan]),
-#         'floats_NA': pd.Series([1.1, pd.NA]),
-#         'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float')})
-#     Schema(df)
-
-#     assert df['floats_no_nans'].dtype == 'float64'
-#     assert df['floats_nan'].dtype == 'float64'
-#     assert df['floats_NA'].dtype == 'category'
-#     assert df['floats_nan_specified'].dtype == 'float64'
-
-
-# def test_datetime_dtype_inference_on_init():
-#     df = pd.DataFrame({
-#         'date_no_nans': pd.Series([pd.to_datetime('2020-09-01')] * 2),
-#         'date_nan': pd.Series([pd.to_datetime('2020-09-01'), np.nan]),
-#         'date_NA': pd.Series([pd.to_datetime('2020-09-01'), pd.NA]),
-#         'date_NaT': pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]),
-#         'date_NA_specified': pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]')})
-#     Schema(df)
-
-#     assert df['date_no_nans'].dtype == 'datetime64[ns]'
-#     assert df['date_nan'].dtype == 'datetime64[ns]'
-#     assert df['date_NA'].dtype == 'datetime64[ns]'
-#     assert df['date_NaT'].dtype == 'datetime64[ns]'
-#     assert df['date_NA_specified'].dtype == 'datetime64[ns]'
-
-
-# def test_timedelta_dtype_inference_on_init():
-#     df = pd.DataFrame({
-#         'delta_no_nans': (pd.Series([pd.to_datetime('2020-09-01')] * 2) - pd.to_datetime('2020-07-01')),
-#         'delta_nan': (pd.Series([pd.to_datetime('2020-09-01'), np.nan]) - pd.to_datetime('2020-07-01')),
-#         'delta_NaT': (pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]) - pd.to_datetime('2020-07-01')),
-#         'delta_NA_specified': (pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]') - pd.to_datetime('2020-07-01')),
-#     })
-#     Schema(df)
-
-#     assert df['delta_no_nans'].dtype == 'timedelta64[ns]'
-#     assert df['delta_nan'].dtype == 'timedelta64[ns]'
-#     assert df['delta_NaT'].dtype == 'timedelta64[ns]'
-#     assert df['delta_NA_specified'].dtype == 'timedelta64[ns]'
-
-
-# def test_sets_category_dtype_on_init():
-#     column_name = 'test_series'
-#     series_list = [
-#         pd.Series(['a', 'b', 'c'], name=column_name),
-#         pd.Series(['a', None, 'c'], name=column_name),
-#         pd.Series(['a', np.nan, 'c'], name=column_name),
-#         pd.Series(['a', pd.NA, 'c'], name=column_name),
-#         pd.Series(['a', pd.NaT, 'c'], name=column_name),
-#     ]
-
-#     logical_types = [
-#         Categorical,
-#         CountryCode,
-#         Ordinal(order=['a', 'b', 'c']),
-#         SubRegionCode,
-#         ZIPCode,
-#     ]
-
-#     for series in series_list:
-#         series = series.astype('object')
-#         for logical_type in logical_types:
-#             ltypes = {
-#                 column_name: logical_type,
-#             }
-#             df = pd.DataFrame(series)
-#             schema = Schema(df, logical_types=ltypes)
-#             assert schema.columns[column_name]['logical_type'] == logical_type
-#             assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
-#             assert df[column_name].dtype == logical_type.pandas_dtype
-
-
-# def test_sets_object_dtype_on_init(latlong_df):
-#     for column_name in latlong_df.columns:
-#         ltypes = {
-#             column_name: LatLong,
-#         }
-#         df = latlong_df.loc[:, [column_name]]
-#         schema = Schema(df, logical_types=ltypes)
-#         assert schema.columns[column_name]['logical_type'] == LatLong
-#         assert schema.columns[column_name]['dtype'] == LatLong.pandas_dtype
-#         assert df[column_name].dtype == LatLong.pandas_dtype
-
-
-# def test_sets_string_dtype_on_init():
-#     column_name = 'test_series'
-#     series_list = [
-#         pd.Series(['a', 'b', 'c'], name=column_name),
-#         pd.Series(['a', None, 'c'], name=column_name),
-#         pd.Series(['a', np.nan, 'c'], name=column_name),
-#         pd.Series(['a', pd.NA, 'c'], name=column_name),
-#     ]
-
-#     logical_types = [
-#         Filepath,
-#         FullName,
-#         IPAddress,
-#         NaturalLanguage,
-#         PhoneNumber,
-#         URL,
-#     ]
-
-#     for series in series_list:
-#         series = series.astype('object')
-#         for logical_type in logical_types:
-#             ltypes = {
-#                 column_name: logical_type,
-#             }
-#             df = pd.DataFrame(series)
-#             schema = Schema(df, logical_types=ltypes)
-#             assert schema.columns[column_name]['logical_type'] == logical_type
-#             assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
-#             assert df[column_name].dtype == logical_type.pandas_dtype
-
-
-# def test_sets_boolean_dtype_on_init():
-#     column_name = 'test_series'
-#     series_list = [
-#         pd.Series([True, False, True], name=column_name),
-#         pd.Series([True, None, True], name=column_name),
-#         pd.Series([True, np.nan, True], name=column_name),
-#         pd.Series([True, pd.NA, True], name=column_name),
-#     ]
-
-#     logical_type = Boolean
-#     for series in series_list:
-#         series = series.astype('object')
-#         ltypes = {
-#             column_name: logical_type,
-#         }
-#         df = pd.DataFrame(series)
-#         schema = Schema(df, logical_types=ltypes)
-#         assert schema.columns[column_name]['logical_type'] == logical_type
-#         assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
-#         assert df[column_name].dtype == logical_type.pandas_dtype
-
-
-# def test_sets_int64_dtype_on_init():
-#     column_name = 'test_series'
-#     series_list = [
-#         pd.Series([1, 2, 3], name=column_name),
-#         pd.Series([1, None, 3], name=column_name),
-#         pd.Series([1, np.nan, 3], name=column_name),
-#         pd.Series([1, pd.NA, 3], name=column_name),
-#     ]
-
-#     logical_types = [Integer]
-#     for series in series_list:
-#         series = series.astype('object')
-#         for logical_type in logical_types:
-#             ltypes = {
-#                 column_name: logical_type,
-#             }
-#             df = pd.DataFrame(series)
-#             schema = Schema(df, logical_types=ltypes)
-#             assert schema.columns[column_name]['logical_type'] == logical_type
-#             assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
-#             assert df[column_name].dtype == logical_type.pandas_dtype
-
-
-# def test_sets_float64_dtype_on_init():
-#     column_name = 'test_series'
-#     series_list = [
-#         pd.Series([1.1, 2, 3], name=column_name),
-#         pd.Series([1.1, None, 3], name=column_name),
-#         pd.Series([1.1, np.nan, 3], name=column_name),
-#     ]
-
-#     logical_type = Double
-#     for series in series_list:
-#         series = series.astype('object')
-#         ltypes = {
-#             column_name: logical_type,
-#         }
-#         df = pd.DataFrame(series)
-#         schema = Schema(df, logical_types=ltypes)
-#         assert schema.columns[column_name]['logical_type'] == logical_type
-#         assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
-#         assert df[column_name].dtype == logical_type.pandas_dtype
-
-
-# def test_sets_datetime64_dtype_on_init():
-#     column_name = 'test_series'
-#     series_list = [
-#         pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name),
-#         pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
-#         pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
-#         pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
-#         pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name),
-#     ]
-
-#     logical_type = Datetime
-#     for series in series_list:
-#         series = series.astype('object')
-#         ltypes = {
-#             column_name: logical_type,
-#         }
-#         df = pd.DataFrame(series)
-#         schema = Schema(df, logical_types=ltypes)
-#         assert schema.columns[column_name]['logical_type'] == logical_type
-#         assert schema.columns[column_name]['dtype'] == logical_type.pandas_dtype
-#         assert df[column_name].dtype == logical_type.pandas_dtype
-
-
-# def test_invalid_dtype_casting():
-#     column_name = 'test_series'
-
-#     # Cannot cast a column with pd.NA to Double
-#     series = pd.Series([1.1, pd.NA, 3], name=column_name)
-#     ltypes = {
-#         column_name: Double,
-#     }
-#     err_msg = 'Error converting datatype for column test_series from type object to type ' \
-#         'float64. Please confirm the underlying data is consistent with logical type Double.'
-#     with pytest.raises(TypeError, match=err_msg):
-#         Schema(pd.DataFrame(series), logical_types=ltypes)
-
-#     # Cannot cast Datetime to Double
-#     series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
-#     ltypes = {
-#         column_name: Datetime,
-#     }
-#     # --> add back when schema updates are implemented
-#     # schema = Schema(pd.DataFrame(series), logical_types=ltypes)
-#     # err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
-#     #     'float64. Please confirm the underlying data is consistent with logical type Double.'
-#     # with pytest.raises(TypeError, match=re.escape(err_msg)):
-#     #     schema.set_types(logical_types={column_name: Double})
-
-#     # Cannot cast invalid strings to integers
-#     series = pd.Series(['1', 'two', '3'], name=column_name)
-#     ltypes = {
-#         column_name: Integer,
-#     }
-#     err_msg = 'Error converting datatype for column test_series from type object to type ' \
-#         'Int64. Please confirm the underlying data is consistent with logical type Integer.'
-#     with pytest.raises(TypeError, match=err_msg):
-#         Schema(pd.DataFrame(series), logical_types=ltypes)
-
-
-# def test_schema_init_with_col_descriptions(sample_df):
-#     descriptions = {
-#         'age': 'age of the user',
-#         'signup_date': 'date of account creation'
-#     }
-#     schema = Schema(sample_df, column_descriptions=descriptions)
-#     for name, column in schema.columns.items():
-#         assert column['description'] == descriptions.get(name)
-
-
-# def test_schema_col_descriptions_errors(sample_df):
-#     # Errors at the table level
-#     err_msg = 'column_descriptions must be a dictionary'
-#     with pytest.raises(TypeError, match=err_msg):
-#         Schema(sample_df, column_descriptions=34)
-
-#     descriptions = {
-#         'invalid_col': 'not a valid column',
-#         'signup_date': 'date of account creation'
-#     }
-#     err_msg = re.escape("column_descriptions contains columns that are not present in dataframe: ['invalid_col']")
-#     with pytest.raises(LookupError, match=err_msg):
-#         Schema(sample_df, column_descriptions=descriptions)
-
-#     # Errors at the column level
-#     descriptions = {
-#         'age': 7,
-#         'signup_date': 'date of account creation'
-#     }
-#     err_msg = "Column description must be a string"
-#     with pytest.raises(TypeError, match=err_msg):
-#         Schema(sample_df, column_descriptions=descriptions)
-
-
-# def test_schema_init_with_column_metadata(sample_df):
-#     column_metadata = {
-#         'age': {'interesting_values': [33]},
-#         'signup_date': {'description': 'date of account creation'}
-#     }
-#     schema = Schema(sample_df, column_metadata=column_metadata)
-#     for name, column in schema.columns.items():
-#         assert column['metadata'] == (column_metadata.get(name) or {})
-
-
-# def test_column_metadata_errors(sample_df):
-#     column_metadata = {
-#         'age': 7,
-#         'signup_date': {'description': 'date of account creation'}
-#     }
-#     err_msg = "Column metadata must be a dictionary"
-#     with pytest.raises(TypeError, match=err_msg):
-#         Schema(sample_df, column_metadata=column_metadata)
-
-
-# def test_schema_already_sorted(sample_unsorted_df):
-#     if dd and isinstance(sample_unsorted_df, dd.DataFrame):
-#         pytest.xfail('Sorting dataframe is not supported with Dask input')
-#     if ks and isinstance(sample_unsorted_df, ks.DataFrame):
-#         pytest.xfail('Sorting dataframe is not supported with Koalas input')
-
-#     schema_df = sample_unsorted_df.copy()
-#     schema = Schema(schema_df,
-#                     name='schema',
-#                     index='id',
-#                     time_index='signup_date')
-
-#     assert schema.time_index == 'signup_date'
-#     assert schema.columns[schema.time_index]['logical_type'] == Datetime
-
-#     sorted_df = to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False)
-#     sorted_df.index.name = None
-#     pd.testing.assert_frame_equal(sorted_df,
-#                                   to_pandas(schema_df), check_index_type=False, check_dtype=False)
-
-#     schema_df = sample_unsorted_df.copy()
-#     schema = Schema(schema_df,
-#                     name='schema',
-#                     index='id',
-#                     time_index='signup_date',
-#                     already_sorted=True)
-
-#     assert schema.time_index == 'signup_date'
-#     assert schema.columns[schema.time_index]['logical_type'] == Datetime
-
-#     unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
-#     unsorted_df.index.name = None
-#     pd.testing.assert_frame_equal(unsorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False)
-
-
-# def test_underlying_index_no_index(sample_df):
-#     if dd and isinstance(sample_df, dd.DataFrame):
-#         pytest.xfail('Setting underlying index is not supported with Dask input')
-#     if ks and isinstance(sample_df, ks.DataFrame):
-#         pytest.xfail('Setting underlying index is not supported with Koalas input')
-
-#     assert type(sample_df.index) == pd.RangeIndex
-
-#     schema_df = sample_df.copy()
-#     Schema(schema_df)
-#     assert type(schema_df.index) == pd.RangeIndex
-
-#     sample_df = sample_df.sort_values('full_name')
-#     assert type(sample_df.index) == pd.Int64Index
-#     Schema(sample_df)
-#     assert type(sample_df.index) == pd.RangeIndex
-
-
-# def test_underlying_index(sample_df):
-#     if dd and isinstance(sample_df, dd.DataFrame):
-#         pytest.xfail('Setting underlying index is not supported with Dask input')
-#     if ks and isinstance(sample_df, ks.DataFrame):
-#         pytest.xfail('Setting underlying index is not supported with Koalas input')
-
-#     specified_index = pd.Index
-
-#     schema_df = sample_df.copy()
-#     Schema(schema_df, index='full_name')
-#     assert schema_df.index.name is None
-#     assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
-#     assert type(schema_df.index) == specified_index
-
-#     # --> add back when schema updates are implemented
-#     # schema = Schema(sample_df.copy())
-#     # schema = schema.set_index('full_name')
-#     # assert (schema._dataframe.index == schema.to_dataframe()['full_name']).all()
-#     # assert schema._dataframe.index.name is None
-#     # assert type(schema._dataframe.index) == specified_index
-#     # assert type(schema.to_dataframe().index) == specified_index
-
-#     # schema.index = 'id'
-#     # assert (schema._dataframe.index == [0, 1, 2, 3]).all()
-#     # assert schema._dataframe.index.name is None
-#     # assert type(schema._dataframe.index) == specified_index
-#     # assert type(schema.to_dataframe().index) == specified_index
-
-#     # # test removing index removes the dataframe's index
-#     # schema.index = None
-#     # assert type(schema._dataframe.index) == unspecified_index
-#     # assert type(schema.to_dataframe().index) == unspecified_index
-
-#     schema_df = sample_df.copy()
-#     Schema(schema_df, index='made_index', make_index=True)
-#     assert (schema_df.index == [0, 1, 2, 3]).all()
-#     assert schema_df.index.name is None
-#     assert type(schema_df.index) == specified_index
-
-#     # --> add back when schema updates are implemented
-#     # schema_dropped = schema.drop('made_index')
-#     # assert 'made_index' not in schema_dropped.columns
-#     # assert 'made_index' not in schema_dropped._dataframe.columns
-#     # assert type(schema_dropped._dataframe.index) == unspecified_index
-#     # assert type(schema_dropped.to_dataframe().index) == unspecified_index
-
-
-# def test_make_index(sample_df):
-#     if ks and isinstance(sample_df, ks.DataFrame):
-#         error = 'Cannot make index on a Koalas DataFrame.'
-#         with pytest.raises(TypeError, match=error):
-#             Schema(sample_df.copy(), index='new_index', make_index=True)
-#     else:
-#         schema_df = sample_df.copy()
-#         schema = Schema(schema_df, index='new_index', make_index=True)
-#         assert schema.index == 'new_index'
-#         assert 'new_index' in schema.columns
-#         assert 'new_index' in schema_df.columns
-#         assert to_pandas(schema_df)['new_index'].unique
-#         assert to_pandas(schema_df['new_index']).is_monotonic
-#         assert 'index' in schema.columns['new_index']['semantic_tags']
+        Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
+
+    # Errors at the column level
+    descriptions = {
+        'age': 7,
+        'signup_date': 'date of account creation'
+    }
+    err_msg = "Column description must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
+
+
+def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_logical_types):
+    column_metadata = {
+        'age': {'interesting_values': [33]},
+        'signup_date': {'description': 'date of account creation'}
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
+    for name, column in schema.columns.items():
+        assert column['metadata'] == (column_metadata.get(name) or {})
+
+
+def test_column_metadata_errors(sample_column_names, sample_inferred_logical_types):
+    column_metadata = {
+        'age': 7,
+        'signup_date': {'description': 'date of account creation'}
+    }
+    err_msg = "Column metadata must be a dictionary"
+    with pytest.raises(TypeError, match=err_msg):
+        Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
 
 
 # def test_numeric_time_index_dtypes(numeric_time_index_df):
@@ -862,19 +455,19 @@ def test_check_column_description_errors(sample_column_names):
 #     # assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-# def test_ordinal_requires_instance_on_init(sample_df):
-#     error_msg = 'Must use an Ordinal instance with order values defined'
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(sample_df, logical_types={'full_name': 'Ordinal'})
-#     with pytest.raises(TypeError, match=error_msg):
-#         Schema(sample_df, logical_types={'full_name': Ordinal})
+def test_ordinal_requires_instance_on_init(sample_column_names, sample_inferred_logical_types):
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': 'Ordinal'}})
+    with pytest.raises(TypeError, match=error_msg):
+        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': Ordinal}})
 
 
-# def test_invalid_logical_type(sample_df):
-#     error_message = "Invalid logical type specified for 'full_name'"
-#     with pytest.raises(TypeError, match=error_message):
-#         Schema(sample_df, logical_types={'full_name': int})
+def test_invalid_logical_type(sample_column_names, sample_inferred_logical_types):
+    error_message = "Invalid logical type specified for 'full_name'"
+    with pytest.raises(TypeError, match=error_message):
+        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': int}})
 
-#     error_message = "String naturalllanguage is not a valid logical type"
-#     with pytest.raises(ValueError, match=error_message):
-#         Schema(sample_df, logical_types={'full_name': 'naturalllanguage'})
+    error_message = "String naturalllanguage is not a valid logical type"
+    with pytest.raises(ValueError, match=error_message):
+        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': 'naturalllanguage'}})
