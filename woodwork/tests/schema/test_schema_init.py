@@ -1,45 +1,27 @@
 import re
 
-import numpy as np
-import pandas as pd
 import pytest
 
 from woodwork import Schema
 from woodwork.logical_types import (
-    URL,
     Boolean,
-    Categorical,
-    CountryCode,
     Datetime,
     Double,
-    Filepath,
-    FullName,
     Integer,
-    IPAddress,
-    LatLong,
     NaturalLanguage,
-    Ordinal,
-    PhoneNumber,
-    SubRegionCode,
-    ZIPCode
+    Ordinal
 )
 from woodwork.schema import (
     _check_column_descriptions,
     _check_column_metadata,
+    _check_column_names,
     _check_index,
     _check_logical_types,
     _check_semantic_tags,
     _check_table_metadata,
     _check_time_index,
-    _check_column_names,
     _validate_params
 )
-from woodwork.tests.testing_utils import to_pandas
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-dask_delayed = import_or_none('dask.delayed')
-ks = import_or_none('databricks.koalas')
 
 
 def test_validate_params_errors(sample_column_names):
