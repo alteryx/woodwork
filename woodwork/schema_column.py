@@ -11,7 +11,7 @@ def _get_column_dict(name,
     Args:
         name (str): The name of the column.
         logical_type (str, LogicalType): The column's LogicalType.
-        semantic_tags (str, list, set): 
+        semantic_tags (str, list, set):
 
     """
     _validate_description(column_description)

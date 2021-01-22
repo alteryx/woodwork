@@ -1,10 +1,9 @@
 import pandas as pd
 
 import woodwork as ww
-from woodwork.logical_types import Ordinal
-from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import _convert_input_to_set, _parse_column_logical_type
 from woodwork.schema_column import _get_column_dict
+from woodwork.type_sys.utils import _get_ltype_class
+from woodwork.utils import _parse_column_logical_type
 
 
 class Schema(object):
