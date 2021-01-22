@@ -20,7 +20,7 @@ if ks:
 
 
 class Schema(object):
-    def __init__(self, dataframe,
+    def __init__(self, column_names,
                  name=None,
                  index=None,
                  time_index=None,
@@ -29,9 +29,7 @@ class Schema(object):
                  table_metadata=None,
                  column_metadata=None,
                  use_standard_tags=True,
-                 make_index=False,
-                 column_descriptions=None,
-                 already_sorted=False):
+                 column_descriptions=None):
         """Create Schema
 
         Args:
@@ -68,19 +66,14 @@ class Schema(object):
                 only). Defaults to False.
         """
         # Check that inputs are valid
-        _validate_dataframe(dataframe)
-        _validate_params(dataframe, name, index, time_index, logical_types,
-                         table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
-
-        self.make_index = make_index or None
-        if self.make_index:
-            _make_index(dataframe, index)
+        _validate_params(column_names, name, index, time_index, logical_types,
+                         table_metadata, column_metadata, semantic_tags, column_descriptions)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
-        self.columns = self._create_columns(dataframe, dataframe.columns,
+        self.columns = self._create_columns(column_names,
                                             logical_types,
                                             semantic_tags,
                                             use_standard_tags,
@@ -89,11 +82,8 @@ class Schema(object):
         if index is not None:
             _update_index(self, dataframe, index)
 
-        self._set_underlying_index(dataframe)
-
         if time_index is not None:
             _update_time_index(self, dataframe, time_index)
-            not self._sort_columns(already_sorted, dataframe)
 
         self.metadata = table_metadata or {}
 
@@ -192,7 +182,6 @@ class Schema(object):
         return None
 
     def _create_columns(self,
-                        dataframe,
                         column_names,
                         logical_types,
                         semantic_tags,
@@ -254,15 +243,6 @@ class Schema(object):
             columns[name] = column
         return columns
 
-    def _sort_columns(self, already_sorted, dataframe):
-        if dd and isinstance(dataframe, dd.DataFrame) or (ks and isinstance(dataframe, ks.DataFrame)):
-            already_sorted = True  # Skip sorting for Dask and Koalas input
-        if not already_sorted:
-            sort_cols = [self.time_index, self.index]
-            if self.index is None:
-                sort_cols = [self.time_index]
-            dataframe.sort_values(sort_cols, inplace=True)
-
     def _set_index_tags(self, index):
         '''
         Updates the semantic tags of the index.
@@ -278,114 +258,77 @@ class Schema(object):
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
-    def _set_underlying_index(self, dataframe):
-        '''Sets the index of a Schema's underlying DataFrame.
 
-        If the Schema has an index, will be set to that index.
-        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
-        meaning that the index will be a pd.RangeIndex starting from zero.
-        '''
-        if isinstance(dataframe, pd.DataFrame):
-            if self.index is not None:
-                dataframe.set_index(self.index, drop=False, inplace=True)
-                # Drop index name to not overlap with the original column
-                dataframe.index.name = None
-            # Only reset the index if the index isn't a RangeIndex
-            elif not isinstance(dataframe.index, pd.RangeIndex):
-                dataframe.reset_index(drop=True, inplace=True)
-
-
-def _validate_dataframe(dataframe):
-    '''Check that the DataFrame supplied during Schema initialization is valid.'''
-    if not ((dd and isinstance(dataframe, dd.DataFrame)) or
-            (ks and isinstance(dataframe, ks.DataFrame)) or
-            isinstance(dataframe, pd.DataFrame)):
-        raise TypeError('Dataframe must be one of: pandas.DataFrame, dask.DataFrame, koalas.DataFrame')
-
-
-def _validate_params(dataframe, name, index, time_index, logical_types,
-                     table_metadata, column_metadata, semantic_tags,
-                     make_index, column_descriptions):
+def _validate_params(column_names, name, index, time_index, logical_types,
+                     table_metadata, column_metadata, semantic_tags, column_descriptions):
     """Check that values supplied during Schema initialization are valid"""
-    _check_unique_column_names(dataframe)
+    _check_column_names(column_names)
     if name and not isinstance(name, str):
         raise TypeError('Schema name must be a string')
-    if index is not None or make_index:
-        _check_index(dataframe, index, make_index)
+    if index is not None:
+        _check_index(column_names, index)
     if logical_types:
-        _check_logical_types(dataframe, logical_types)
+        _check_logical_types(column_names, logical_types)
     if table_metadata:
         _check_table_metadata(table_metadata)
     if column_metadata:
-        _check_column_metadata(dataframe, column_metadata)
+        _check_column_metadata(column_names, column_metadata)
     if time_index is not None:
-        datetime_format = None
-        logical_type = None
-        if logical_types is not None and time_index in logical_types:
-            logical_type = logical_types[time_index]
-            if _get_ltype_class(logical_types[time_index]) == Datetime:
-                datetime_format = logical_types[time_index].datetime_format
-
-        _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
-
+        _check_time_index(column_names, time_index)
     if semantic_tags:
-        _check_semantic_tags(dataframe, semantic_tags)
-
+        _check_semantic_tags(column_names, semantic_tags)
     if column_descriptions:
-        _check_column_descriptions(dataframe, column_descriptions)
+        _check_column_descriptions(column_names, column_descriptions)
 
 
-def _check_unique_column_names(dataframe):
-    if not dataframe.columns.is_unique:
-        raise IndexError('Dataframe cannot contain duplicate columns names')
+def _check_column_names(column_names):
+    if not isinstance(column_names, (list, set)):
+        raise TypeError('Column names must be a list or set')
+
+    if len(column_names) != len(set(column_names)):
+        raise IndexError('Schema cannot contain duplicate columns names')
 
 
-def _check_index(dataframe, index, make_index=False):
-    if not make_index and index not in dataframe.columns:
+def _check_index(column_names, index):
+    if index not in column_names:
         # User specifies an index that is not in the dataframe, without setting make_index to True
-        raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
-    if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
-        # User specifies an index that is in the dataframe but not unique
-        # Does not check for Dask as Dask does not support is_unique
-        raise IndexError('Index column must be unique')
-    if make_index and index is not None and index in dataframe.columns:
-        # User sets make_index to True, but supplies an index name that matches a column already present
-        raise IndexError('When setting make_index to True, the name specified for index cannot match an existing column name')
-    if make_index and index is None:
-        # User sets make_index to True, but does not supply a name for the index
-        raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
+        raise LookupError(f'Specified index column `{index}` not found in Schema.')
 
 
-def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
-    if time_index not in dataframe.columns:
-        raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
-    if not (_is_numeric_series(dataframe[time_index], logical_type) or
-            col_is_datetime(dataframe[time_index], datetime_format=datetime_format)):
-        raise TypeError('Time index column must contain datetime or numeric values')
+def _check_time_index(column_names, time_index):
+    if time_index not in column_names:
+        raise LookupError(f'Specified time index column `{time_index}` not found in Schema')
 
 
-def _check_logical_types(dataframe, logical_types):
+def _check_logical_types(column_names, logical_types):
     if not isinstance(logical_types, dict):
         raise TypeError('logical_types must be a dictionary')
-    cols_not_found = set(logical_types.keys()).difference(set(dataframe.columns))
-    if cols_not_found:
+    cols_in_ltypes = set(logical_types.keys())
+    cols_in_schema = set(column_names)
+
+    cols_not_found_in_schema = cols_in_ltypes.difference(cols_in_schema)
+    if cols_not_found_in_schema:
         raise LookupError('logical_types contains columns that are not present in '
-                          f'dataframe: {sorted(list(cols_not_found))}')
+                          f'Schema: {sorted(list(cols_not_found_in_schema))}')
+    cols_not_found_in_ltypes = cols_in_schema.difference(cols_in_ltypes)
+    if cols_not_found_in_ltypes:
+        raise LookupError(f'logical_types is missing columns that are present in '
+                          f'Schema: {sorted(list(cols_not_found_in_ltypes))}')
 
 
-def _check_semantic_tags(dataframe, semantic_tags):
+def _check_semantic_tags(column_names, semantic_tags):
     if not isinstance(semantic_tags, dict):
         raise TypeError('semantic_tags must be a dictionary')
-    cols_not_found = set(semantic_tags.keys()).difference(set(dataframe.columns))
+    cols_not_found = set(semantic_tags.keys()).difference(set(column_names))
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
 
 
-def _check_column_descriptions(dataframe, column_descriptions):
+def _check_column_descriptions(column_names, column_descriptions):
     if not isinstance(column_descriptions, dict):
         raise TypeError('column_descriptions must be a dictionary')
-    cols_not_found = set(column_descriptions.keys()).difference(set(dataframe.columns))
+    cols_not_found = set(column_descriptions.keys()).difference(set(column_names))
     if cols_not_found:
         raise LookupError('column_descriptions contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
@@ -396,10 +339,10 @@ def _check_table_metadata(table_metadata):
         raise TypeError('Table metadata must be a dictionary.')
 
 
-def _check_column_metadata(dataframe, column_metadata):
+def _check_column_metadata(column_names, column_metadata):
     if not isinstance(column_metadata, dict):
         raise TypeError('Column metadata must be a dictionary.')
-    cols_not_found = set(column_metadata.keys()).difference(set(dataframe.columns))
+    cols_not_found = set(column_metadata.keys()).difference(set(column_names))
     if cols_not_found:
         raise LookupError('column_metadata contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
@@ -425,16 +368,6 @@ def _update_time_index(schema, dataframe, time_index, old_time_index=None):
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
-
-
-def _make_index(dataframe, index):
-    if dd and isinstance(dataframe, dd.DataFrame):
-        dataframe[index] = 1
-        dataframe[index] = dataframe[index].cumsum() - 1
-    elif ks and isinstance(dataframe, ks.DataFrame):
-        raise TypeError('Cannot make index on a Koalas DataFrame.')
-    else:
-        dataframe.insert(0, index, range(len(dataframe)))
 
 
 def _parse_column_logical_type(logical_type, series, name):
