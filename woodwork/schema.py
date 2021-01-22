@@ -168,7 +168,8 @@ class Schema(object):
                         column_descriptions,
                         column_metadata):
         """Create a dictionary with column names as keys and new column dictionaries holding
-        each column's typing information as values."""
+        each column's typing information as values.
+        """
         columns = {}
         for name in column_names:
             semantic_tags_for_col = (semantic_tags or {}).get(name)
@@ -317,13 +318,3 @@ def _update_time_index(schema, column_names, time_index, old_time_index=None):
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
-
-
-def _validate_tags(semantic_tags):
-    """Verify user has not supplied tags that cannot be set directly"""
-    if 'index' in semantic_tags:
-        raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
-                         "use Schema.set_index() instead.")
-    if 'time_index' in semantic_tags:
-        raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                         "use Schema.set_time_index() instead.")
