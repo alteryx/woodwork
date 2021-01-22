@@ -3,7 +3,8 @@ import pandas as pd
 import woodwork as ww
 from woodwork.logical_types import Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import _convert_input_to_set
+from woodwork.utils import _convert_input_to_set, _parse_column_logical_type
+from woodwork.schema_column import _get_column_dict
 
 
 class Schema(object):
@@ -167,47 +168,18 @@ class Schema(object):
                         column_descriptions,
                         column_metadata):
         """Create a dictionary with column names as keys and new column dictionaries holding
-        each column's typing information as values, while assigning any values
-        that are passed for logical types or semantic tags to the new column."""
+        each column's typing information as values."""
         columns = {}
         for name in column_names:
-            logical_type = _parse_column_logical_type(logical_types.get(name), name)
-
-            # Determine Semantic Tags
-            if semantic_tags and name in semantic_tags:
-                column_tags = semantic_tags[name]
-                column_tags = _convert_input_to_set(column_tags, error_language=f'semantic_tags for column {name}')
-                _validate_tags(column_tags)
-            else:
-                column_tags = set()
-            if use_standard_tags:
-                column_tags = column_tags.union(logical_type.standard_tags)
-
-            # Get description and metadata
-            if column_descriptions:
-                description = column_descriptions.get(name)
-                if description and not isinstance(description, str):
-                    raise TypeError("Column description must be a string")
-            else:
-                description = None
-
-            if column_metadata:
-                metadata = column_metadata.get(name) or {}
-                if metadata and not isinstance(metadata, dict):
-                    raise TypeError("Column metadata must be a dictionary")
-            else:
-                metadata = {}
-
-            column = {
-                'name': name,
-                'dtype': logical_type.pandas_dtype,  # --> should either be pandas dtype or backup depending on if it's a pandas schema
-                'logical_type': logical_type,
-                'semantic_tags': column_tags,
-                'use_standard_tags': use_standard_tags,
-                'description': description,
-                'metadata': metadata
-            }
-            columns[name] = column
+            semantic_tags_for_col = (semantic_tags or {}).get(name)
+            description = (column_descriptions or {}).get(name)
+            metadata_for_col = (column_metadata or {}).get(name)
+            columns[name] = _get_column_dict(name,
+                                             logical_types.get(name),
+                                             semantic_tags=semantic_tags_for_col,
+                                             use_standard_tags=use_standard_tags,
+                                             column_description=description,
+                                             column_metadata=metadata_for_col)
         return columns
 
     def _set_index_tags(self, index):
@@ -345,21 +317,6 @@ def _update_time_index(schema, column_names, time_index, old_time_index=None):
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
-
-
-def _parse_column_logical_type(logical_type, name):
-    # Every column should have a LogicalType specified
-    assert logical_type is not None
-
-    if isinstance(logical_type, str):
-        logical_type = ww.type_system.str_to_logical_type(logical_type)
-    ltype_class = _get_ltype_class(logical_type)
-    if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
-        raise TypeError("Must use an Ordinal instance with order values defined")
-    if ltype_class in ww.type_system.registered_types:
-        return logical_type
-    else:
-        raise TypeError(f"Invalid logical type specified for '{name}'")
 
 
 def _validate_tags(semantic_tags):

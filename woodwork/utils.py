@@ -233,3 +233,18 @@ def _is_null_latlong(val):
 
     # Since we can have list inputs here, pd.isnull will not have a relevant truth value for lists
     return not isinstance(val, list) and pd.isnull(val)
+
+
+def _parse_column_logical_type(logical_type, name):
+    # Every column should have a LogicalType specified
+    assert logical_type is not None
+
+    if isinstance(logical_type, str):
+        logical_type = ww.type_system.str_to_logical_type(logical_type)
+    ltype_class = ww.type_sys.utils._get_ltype_class(logical_type)
+    if ltype_class == ww.logical_types.Ordinal and not isinstance(logical_type, ww.logical_types.Ordinal):
+        raise TypeError("Must use an Ordinal instance with order values defined")
+    if ltype_class in ww.type_system.registered_types:
+        return logical_type
+    else:
+        raise TypeError(f"Invalid logical type specified for '{name}'")

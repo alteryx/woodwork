@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import Categorical, Datetime, Double
+from woodwork.logical_types import Categorical, Datetime, Double, Ordinal
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -23,6 +23,7 @@ from woodwork.utils import (
     _is_s3,
     _is_url,
     _new_dt_including,
+    _parse_column_logical_type,
     _reformat_to_latlong,
     _to_latlong_float,
     camel_to_snake,
@@ -386,3 +387,28 @@ def test_is_null_latlong():
     assert not _is_null_latlong('none')
     assert not _is_null_latlong(0)
     assert not _is_null_latlong(False)
+
+
+def test_parse_column_logical_type():
+    assert _parse_column_logical_type('Datetime', 'col_name') == Datetime
+    assert _parse_column_logical_type(Datetime, 'col_name') == Datetime
+
+    ymd_format = Datetime(datetime_format='%Y-%m-%d')
+    assert _parse_column_logical_type(ymd_format, 'col_name') == ymd_format
+
+
+def test_parse_column_logical_type_errors():
+    error = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error):
+        _parse_column_logical_type('Ordinal', 'col_name')
+
+    with pytest.raises(TypeError, match=error):
+        _parse_column_logical_type(Ordinal, 'col_name')
+
+    error = "Invalid logical type specified for 'col_name'"
+    with pytest.raises(TypeError, match=error):
+        _parse_column_logical_type(int, 'col_name')
+
+    error = 'String invalid is not a valid logical type'
+    with pytest.raises(ValueError, match=error):
+        _parse_column_logical_type('invalid', 'col_name')
