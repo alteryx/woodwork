@@ -33,6 +33,7 @@ from woodwork.utils import (
     _is_s3,
     _is_url,
     _new_dt_including,
+    _parse_column_logical_type,
     _reformat_to_latlong,
     _to_latlong_float,
     camel_to_snake,
@@ -414,3 +415,24 @@ def test_get_valid_mi_types():
     ]
 
     assert valid_types == expected_types
+
+
+def test_parse_column_logical_type():
+    assert _parse_column_logical_type('Datetime', 'col_name') == Datetime
+    assert _parse_column_logical_type(Datetime, 'col_name') == Datetime
+
+    ymd_format = Datetime(datetime_format='%Y-%m-%d')
+    assert _parse_column_logical_type(ymd_format, 'col_name') == ymd_format
+
+
+def test_parse_column_logical_type_errors():
+    error = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error):
+        _parse_column_logical_type('Ordinal', 'col_name')
+
+    with pytest.raises(TypeError, match=error):
+        _parse_column_logical_type(Ordinal, 'col_name')
+
+    error = "Invalid logical type specified for 'col_name'"
+    with pytest.raises(TypeError, match=error):
+        _parse_column_logical_type(int, 'col_name')
