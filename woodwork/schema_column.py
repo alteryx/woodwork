@@ -1,4 +1,6 @@
-from woodwork.utils import _convert_input_to_set, _parse_column_logical_type
+import woodwork as ww
+from woodwork.type_sys.utils import _get_ltype_class
+from woodwork.utils import _convert_input_to_set
 
 
 def _get_column_dict(name,
@@ -14,13 +16,12 @@ def _get_column_dict(name,
         semantic_tags (str, list, set):
 
     """
+    _validate_logical_type(logical_type)
     _validate_description(column_description)
 
     if column_metadata is None:
         column_metadata = {}
     _validate_metadata(column_metadata)
-
-    logical_type = _parse_column_logical_type(logical_type, name)
 
     semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name)
 
@@ -29,7 +30,6 @@ def _get_column_dict(name,
         'dtype': logical_type.pandas_dtype,
         'logical_type': logical_type,
         'semantic_tags': semantic_tags,
-        'use_standard_tags': use_standard_tags,
         'description': column_description,
         'metadata': column_metadata
     }
@@ -43,6 +43,15 @@ def _validate_tags(semantic_tags):
     if 'time_index' in semantic_tags:
         raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
                          "use Schema.set_time_index() instead.")
+
+
+def _validate_logical_type(logical_type):
+    ltype_class = _get_ltype_class(logical_type)
+
+    if ltype_class not in ww.type_system.registered_types:
+        raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
+    if ltype_class == ww.logical_types.Ordinal and not isinstance(logical_type, ww.logical_types.Ordinal):
+        raise TypeError("Must use an Ordinal instance with order values defined")
 
 
 def _validate_description(column_description):

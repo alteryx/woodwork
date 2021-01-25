@@ -1,11 +1,10 @@
 import pandas as pd
 
-import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
+    Categorical,
     Datetime,
     Integer,
-    LogicalType,
     NaturalLanguage
 )
 from woodwork.schema import Schema
@@ -57,7 +56,6 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_column_names)
-    assert all([col_dict['logical_type'] in ww.type_system.registered_types or isinstance(col_dict['logical_type'], LogicalType) for col_dict in schema.columns.values()])
     correct_logical_types = {
         'id': Integer,
         'full_name': NaturalLanguage,
@@ -76,7 +74,7 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
 
 
 def test_schema_repr(small_df):
-    schema = Schema(list(small_df.columns), logical_types={'sample_datetime_series': 'Datetime'})
+    schema = Schema(list(small_df.columns), logical_types={'sample_datetime_series': Datetime})
 
     schema_repr = repr(schema)
     expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []'
@@ -120,7 +118,7 @@ def test_schema_equality(sample_column_names, sample_inferred_logical_types):
     assert schema_time_index != schema_numeric_time_index
 
     schema_with_ltypes = Schema(sample_column_names,
-                                logical_types={**sample_inferred_logical_types, **{'full_name': 'categorical'}},
+                                logical_types={**sample_inferred_logical_types, **{'full_name': Categorical}},
                                 time_index='signup_date')
     assert schema_with_ltypes != schema_time_index
 

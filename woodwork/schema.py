@@ -3,7 +3,6 @@ import pandas as pd
 import woodwork as ww
 from woodwork.schema_column import _get_column_dict
 from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import _parse_column_logical_type
 
 
 class Schema(object):
@@ -233,11 +232,6 @@ def _check_index(column_names, index):
 def _check_time_index(column_names, time_index, logical_type):
     if time_index not in column_names:
         raise LookupError(f'Specified time index column `{time_index}` not found in Schema')
-    # We've already confirmed all columns have LogicalTypes specified, so if time_index
-    # is a column, there should always be a LogicalType
-    assert logical_type is not None
-
-    logical_type = _parse_column_logical_type(logical_type, time_index)
     ltype_class = _get_ltype_class(logical_type)
 
     if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):

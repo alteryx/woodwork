@@ -4,6 +4,7 @@ import pytest
 
 from woodwork.logical_types import (
     Boolean,
+    Categorical,
     Datetime,
     Double,
     Integer,
@@ -51,7 +52,7 @@ def test_check_time_index_errors(sample_column_names):
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
-        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='NaturalLanguage')
+        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type=NaturalLanguage)
 
 
 def test_check_column_names(sample_column_names):
@@ -172,7 +173,7 @@ def test_schema_init_with_name_and_indices(sample_column_names, sample_inferred_
 
 def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_logical_types):
     # Set a numeric time index on init
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': 'Integer'}},
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': Integer}},
                     time_index='signup_date')
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
@@ -180,7 +181,7 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': 'Double'}},
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': Double}},
                     time_index='signup_date')
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
@@ -236,13 +237,13 @@ def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_log
 
 
 def test_schema_adds_standard_semantic_tags(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': 'Categorical'}},
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': Categorical}},
                     name='schema')
 
     assert schema.semantic_tags['id'] == {'category'}
     assert schema.semantic_tags['age'] == {'numeric'}
 
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': 'Categorical'}},
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': Categorical}},
                     name='schema',
                     use_standard_tags=False)
 
@@ -295,34 +296,6 @@ def test_index_replacing_standard_tags(sample_column_names, sample_inferred_logi
     assert schema.columns['id']['semantic_tags'] == {'index'}
 
 
-def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
-    error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
-                          "use Schema.set_index() instead.")
-    with pytest.raises(ValueError, match=error_msg):
-        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': 'index'})
-
-    # --> add back when schema updates are implemented
-    # Schema = Schema(sample_df)
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.add_semantic_tags({'id': 'index'})
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.set_semantic_tags({'id': 'index'})
-
-
-def test_raises_error_setting_time_index_tag_directly(sample_column_names, sample_inferred_logical_types):
-    error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                          "use Schema.set_time_index() instead.")
-    with pytest.raises(ValueError, match=error_msg):
-        Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'signup_date': 'time_index'})
-
-    # --> add back when schema updates are implemented
-    # schema = Schema(sample_series)
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.add_semantic_tags({'signup_date': 'time_index'})
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.set_semantic_tags({'signup_date': 'time_index'})
-
-
 def test_schema_init_with_col_descriptions(sample_column_names, sample_inferred_logical_types):
     descriptions = {
         'age': 'age of the user',
@@ -334,7 +307,6 @@ def test_schema_init_with_col_descriptions(sample_column_names, sample_inferred_
 
 
 def test_schema_col_descriptions_errors(sample_column_names, sample_inferred_logical_types):
-    # Errors at the table level
     err_msg = 'column_descriptions must be a dictionary'
     with pytest.raises(TypeError, match=err_msg):
         Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=34)
@@ -345,15 +317,6 @@ def test_schema_col_descriptions_errors(sample_column_names, sample_inferred_log
     }
     err_msg = re.escape("column_descriptions contains columns that are not present in Schema: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
-        Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
-
-    # Errors at the column level
-    descriptions = {
-        'age': 7,
-        'signup_date': 'date of account creation'
-    }
-    err_msg = "Column description must be a string"
-    with pytest.raises(TypeError, match=err_msg):
         Schema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
 
 
@@ -367,29 +330,7 @@ def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_l
         assert column['metadata'] == (column_metadata.get(name) or {})
 
 
-def test_column_metadata_errors(sample_column_names, sample_inferred_logical_types):
-    column_metadata = {
-        'age': 7,
-        'signup_date': {'description': 'date of account creation'}
-    }
-    err_msg = "Column metadata must be a dictionary"
-    with pytest.raises(TypeError, match=err_msg):
-        Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
-
-
 def test_ordinal_requires_instance_on_init(sample_column_names, sample_inferred_logical_types):
     error_msg = 'Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error_msg):
-        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': 'Ordinal'}})
-    with pytest.raises(TypeError, match=error_msg):
         Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': Ordinal}})
-
-
-def test_invalid_logical_type(sample_column_names, sample_inferred_logical_types):
-    error_message = "Invalid logical type specified for 'full_name'"
-    with pytest.raises(TypeError, match=error_message):
-        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': int}})
-
-    error_message = "String naturalllanguage is not a valid logical type"
-    with pytest.raises(ValueError, match=error_message):
-        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': 'naturalllanguage'}})
