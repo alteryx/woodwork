@@ -39,7 +39,7 @@ class Schema(object):
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-                on the inferred or specified logical type for the column. Defaults to True.
+                specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
         """
         # Check that inputs are valid
@@ -80,21 +80,13 @@ class Schema(object):
     def __repr__(self):
         '''A string representation of a Schema containing typing information.
         '''
-        schema_repr = self._get_typing_info()
-        if isinstance(schema_repr, str):
-            return schema_repr
-
-        return repr(schema_repr)
+        return repr(self._get_typing_info())
 
     def _repr_html_(self):
         '''An HTML representation of a Schema for IPython.display in Jupyter Notebooks
         containing typing information and a preview of the data.
         '''
-        schema_repr = self._get_typing_info()
-        if isinstance(schema_repr, str):
-            return schema_repr
-
-        return schema_repr.to_html()
+        return self._get_typing_info().to_html()
 
     @property
     def types(self):
@@ -105,9 +97,6 @@ class Schema(object):
     def _get_typing_info(self):
         '''Creates a DataFrame that contains the typing information for a Schema.
         '''
-        if len(self.columns) == 0:
-            return "Empty Schema"
-
         typing_info = {}
         for col_name, col_dict in self.columns.items():
 

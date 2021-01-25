@@ -15,7 +15,6 @@ def test_schema_physical_types(sample_column_names, sample_inferred_logical_type
     assert isinstance(schema.physical_types, dict)
     assert set(schema.physical_types.keys()) == set(sample_column_names)
     for k, v in schema.physical_types.items():
-        assert isinstance(k, str)
         assert v == schema.columns[k]['logical_type'].pandas_dtype
 
 
@@ -24,7 +23,6 @@ def test_schema_logical_types(sample_column_names, sample_inferred_logical_types
     assert isinstance(schema.logical_types, dict)
     assert set(schema.logical_types.keys()) == set(sample_column_names)
     for k, v in schema.logical_types.items():
-        assert isinstance(k, str)
         assert v == schema.columns[k]['logical_type']
 
 
@@ -38,7 +36,6 @@ def test_schema_semantic_tags(sample_column_names, sample_inferred_logical_types
     assert isinstance(schema.semantic_tags, dict)
     assert set(schema.semantic_tags.keys()) == set(sample_column_names)
     for k, v in schema.semantic_tags.items():
-        assert isinstance(k, str)
         assert isinstance(v, set)
         assert v == schema.columns[k]['semantic_tags']
 
@@ -69,8 +66,20 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
-    for tag in returned_types['Semantic Tag(s)']:
-        assert isinstance(tag, str)
+
+    correct_semantic_tags = {
+        'id': "['numeric']",
+        'full_name': "[]",
+        'email': "[]",
+        'phone_number': "[]",
+        'age': "['numeric']",
+        'signup_date': "[]",
+        'is_registered': "[]",
+        'formatted_date': "[]",
+    }
+    correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
+                                      index=list(correct_semantic_tags.keys()))
+    assert correct_semantic_tags.equals(returned_types['Semantic Tag(s)'])
 
 
 def test_schema_repr(small_df):
@@ -87,9 +96,9 @@ def test_schema_repr(small_df):
 
 def test_schema_repr_empty():
     schema = Schema([], {})
-    assert repr(schema) == 'Empty Schema'
+    assert repr(schema) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
 
-    assert schema._repr_html_() == 'Empty Schema'
+    assert schema._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
 
 
 def test_schema_equality(sample_column_names, sample_inferred_logical_types):
@@ -140,26 +149,9 @@ def test_schema_table_metadata(sample_column_names, sample_inferred_logical_type
     schema = Schema(sample_column_names, sample_inferred_logical_types)
     assert schema.metadata == {}
 
-    schema.metadata = metadata
-    assert schema.metadata == metadata
-
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     table_metadata=metadata, time_index='signup_date')
     assert schema.metadata == metadata
-
-    new_data = {'date_created': '1/1/19', 'created_by': 'user1'}
-    schema.metadata = {**metadata, **new_data}
-    assert schema.metadata == {'secondary_time_index': {'is_registered': 'age'},
-                               'date_created': '1/1/19',
-                               'created_by': 'user1'}
-
-    schema.metadata.pop('created_by')
-    assert schema.metadata == {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '1/1/19'}
-
-    schema.metadata['number'] = 1012034
-    assert schema.metadata == {'number': 1012034,
-                               'secondary_time_index': {'is_registered': 'age'},
-                               'date_created': '1/1/19'}
 
 
 def test_schema_column_metadata(sample_column_names, sample_inferred_logical_types):
@@ -170,14 +162,3 @@ def test_schema_column_metadata(sample_column_names, sample_inferred_logical_typ
 
     schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata={'id': column_metadata})
     assert schema.columns['id']['metadata'] == column_metadata
-
-    new_metadata = {'date_created': '1/1/19', 'created_by': 'user1'}
-
-    schema.columns['id']['metadata'] = {**schema.columns['id']['metadata'], **new_metadata}
-    assert schema.columns['id']['metadata'] == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'created_by': 'user1'}
-
-    schema.columns['id']['metadata'].pop('created_by')
-    assert schema.columns['id']['metadata'] == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3]}
-
-    schema.columns['id']['metadata']['number'] = 1012034
-    assert schema.columns['id']['metadata'] == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}

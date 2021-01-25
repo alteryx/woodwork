@@ -8,8 +8,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
-    NaturalLanguage,
-    Ordinal
+    NaturalLanguage
 )
 from woodwork.schema import (
     Schema,
@@ -328,9 +327,3 @@ def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_l
     schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
     for name, column in schema.columns.items():
         assert column['metadata'] == (column_metadata.get(name) or {})
-
-
-def test_ordinal_requires_instance_on_init(sample_column_names, sample_inferred_logical_types):
-    error_msg = 'Must use an Ordinal instance with order values defined'
-    with pytest.raises(TypeError, match=error_msg):
-        Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'full_name': Ordinal}})

@@ -55,7 +55,6 @@ def _is_numeric_series(series, logical_type):
             logical_type = ww.type_system.str_to_logical_type(logical_type)
 
         # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
-        # --> this way of checking if datetime stops people from removing this ltype and adding a datetime of their own
         if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
