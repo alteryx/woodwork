@@ -427,6 +427,7 @@ def test_parse_column_logical_type():
 
     ymd_format=Datetime(datetime_format='%Y-%m-%d')
     assert _parse_column_logical_type(ymd_format, 'col_name') == ymd_format
+    # --> add tests where you need to infer ltype from sereies
 
 
 def test_parse_column_logical_type_errors():

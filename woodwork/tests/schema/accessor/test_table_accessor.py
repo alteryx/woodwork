@@ -3,6 +3,7 @@ import re
 
 import pandas as pd
 
+from woodwork.logical_types import Integer, FullName
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
     _check_index,
@@ -127,3 +128,14 @@ def test_make_index(sample_df):
     assert to_pandas(schema_df)['new_index'].unique
     assert to_pandas(schema_df['new_index']).is_monotonic
     assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
+
+
+def test_accessor_logical_types(sample_df):
+    # --> need much more thoughrough testing of all of this - from datatable!
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types={'full_name': 'FullName'})
+
+    assert schema_df.ww.logical_types['id'] == Integer
+    assert schema_df.ww.logical_types['full_name'] == FullName

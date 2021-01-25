@@ -4,7 +4,7 @@ import pandas as pd
 import woodwork as ww
 
 from woodwork.schema import Schema
-from woodwork.utils import import_or_none
+from woodwork.utils import import_or_none, _parse_column_logical_type
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -17,6 +17,35 @@ class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe = dataframe
         self._schema = None
+
+    def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
+        # confirm all kwargs are present in the schema class - kwargs should be all the arguments from the Schema class
+        _validate_schema_params(kwargs)
+        _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
+
+        if make_index:
+            _make_index(self._dataframe, index)
+
+        # Type Inference for each column (parse ltype), updating dataframe (update col dtype)
+        parsed_logical_types = {}
+        for name in self._dataframe.columns:
+            series = self._dataframe[name]
+
+            logical_type = None
+            if logical_types:
+                logical_type = logical_types.get(name)
+
+            logical_type = _parse_column_logical_type(series, logical_type, name)
+            parsed_logical_types[name] = logical_type
+
+        # make schema
+        column_names = list(self._dataframe.columns)
+        self._schema = Schema(column_names=column_names,
+                              logical_types=parsed_logical_types,
+                              index=index,  # --> do a test that this doesnt double up weirdly
+                              time_index=time_index, **kwargs)
+
+        # sort columns based on index
 
     def __getattribute__(self, attr):
         '''
@@ -38,26 +67,6 @@ class WoodworkTableAccessor:
                     return wrapper
                 else:
                     return schema_attr
-
-    def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
-        # confirm all kwargs are present in the schema class - kwargs should be all the arguments from the Schema class
-        _validate_schema_params(kwargs)
-        _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
-
-        if make_index:
-            _make_index(self._dataframe, index)
-
-        # Type Inference for each column (parse ltype), updating dataframe (update col dtype)
-
-        # make schema
-        column_names = list(self._dataframe.columns)
-        logical_types = {col_name: ww.logical_types.NaturalLanguage for col_name in column_names}
-        self._schema = Schema(column_names=column_names,
-                              logical_types=logical_types,
-                              index=index,  # --> do a test that this doesnt double up weirdly
-                              time_index=time_index, **kwargs)
-
-        # sort columns based on index
 
     @property
     def schema(self):
@@ -122,11 +131,11 @@ def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=
         raise TypeError('Time index column must contain datetime or numeric values')
 
 
-def _check_logical_types(dataframe, logical_types):
+def _check_logical_types(dataframe_columns, logical_types):
     # --> definitely reusable but maybe not neccessary both places???
     if not isinstance(logical_types, dict):
         raise TypeError('logical_types must be a dictionary')
-    cols_not_found = set(logical_types.keys()).difference(set(dataframe.columns))
+    cols_not_found = set(logical_types.keys()).difference(set(dataframe_columns))
     if cols_not_found:
         raise LookupError('logical_types contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
