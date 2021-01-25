@@ -7,3 +7,4 @@ from .utils import read_csv
 from .version import __version__
 
 import woodwork.demo
+import woodwork.table_accessor
