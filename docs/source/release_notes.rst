@@ -22,6 +22,7 @@ Thanks to the following people for contributing to this release:
     * Enhancements
         * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
         * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
+        * Add Schema class that holds typing info (:pr:`499`)
     * Fixes
         * Sort underlying series when sorting dataframe (:pr:`468`)
         * Allow setting indices to current index without side effects (:pr:`474`)
