@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.logical_types import Boolean, Datetime, Integer, NaturalLanguage
 from woodwork.utils import import_or_none
 
 
@@ -479,3 +480,25 @@ def falsy_names_df_koalas(falsy_names_df_pandas):
 @pytest.fixture(params=['falsy_names_df_pandas', 'falsy_names_df_dask', 'falsy_names_df_koalas'])
 def falsy_names_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def sample_column_names():
+    return ['id',
+            'full_name',
+            'email',
+            'phone_number',
+            'age',
+            'signup_date',
+            'is_registered']
+
+
+@pytest.fixture()
+def sample_inferred_logical_types():
+    return {'id': Integer,
+            'full_name': NaturalLanguage,
+            'email': NaturalLanguage,
+            'phone_number': NaturalLanguage,
+            'age': Integer,
+            'signup_date': Datetime,
+            'is_registered': Boolean}
