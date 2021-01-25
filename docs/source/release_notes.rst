@@ -11,7 +11,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-**v0.0.7 January 25, 2021**
+**v0.0.8 January 25, 2021**
     * Enhancements
         * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
         * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
