@@ -19,7 +19,8 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
     _new_dt_including,
-    import_or_none
+    import_or_none,
+    import_or_raise
 )
 
 dd = import_or_none('dask.dataframe')
@@ -1124,6 +1125,14 @@ class DataTable(object):
                 compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
+        import_error_message = (
+            "The pyarrow library is required to serialize to parquet.\n"
+            "Install via pip:\n"
+            "    pip install pyarrow\n"
+            "Install via conda:\n"
+            "   conda install pyarrow -c conda-forge"
+        )
+        import_or_raise('pyarrow', import_error_message)
         serialize.write_datatable(self, path, format='parquet',
                                   engine='pyarrow', compression=compression,
                                   profile_name=profile_name)
