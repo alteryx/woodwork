@@ -6,7 +6,7 @@ from woodwork.schema import Schema
 
 
 @pd.api.extensions.register_dataframe_accessor('ww')
-class DataTableAccessor:
+class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe = dataframe
         self._schema = None
@@ -25,7 +25,7 @@ class DataTableAccessor:
         logical_types = {col_name: 'NaturalLanguage' for col_name in column_names}
         self._schema = Schema(column_names=column_names,
                               logical_types=logical_types,
-                              index=index,
+                              index=index,  # --> do a test that this doesnt double up weirdly
                               time_index=time_index, **kwargs)
 
         # sort columns based on index

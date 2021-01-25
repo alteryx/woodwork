@@ -12,7 +12,7 @@ from woodwork.schema_column import (
 )
 
 
-def test_validate_logical_type():
+def test_validate_logical_type_errors():
     match = re.escape("logical_type <class 'int'> is not a registered LogicalType.")
     with pytest.raises(TypeError, match=match):
         _validate_logical_type(int)
@@ -27,14 +27,18 @@ def test_validate_logical_type():
         _validate_logical_type(Integer)
     ww.type_system.reset_defaults()
 
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        _get_column_dict('column', Ordinal)
 
-def test_validate_description():
+
+def test_validate_description_errors():
     match = re.escape("Column description must be a string")
     with pytest.raises(TypeError, match=match):
         _validate_description(int)
 
 
-def test_validate_metadata():
+def test_validate_metadata_errors():
     match = re.escape("Column metadata must be a dictionary")
     with pytest.raises(TypeError, match=match):
         _validate_metadata(int)
@@ -93,9 +97,3 @@ def test_raises_error_setting_time_index_tag_directly(sample_column_names, sampl
     #     schema.add_semantic_tags({'signup_date': 'time_index'})
     # with pytest.raises(ValueError, match=error_msg):
     #     schema.set_semantic_tags({'signup_date': 'time_index'})
-
-
-def test_ordinal_requires_instance_on_init():
-    error_msg = 'Must use an Ordinal instance with order values defined'
-    with pytest.raises(TypeError, match=error_msg):
-        _get_column_dict('column', Ordinal)

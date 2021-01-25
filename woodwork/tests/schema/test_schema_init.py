@@ -49,7 +49,7 @@ def test_check_time_index_errors(sample_column_names):
     with pytest.raises(LookupError, match=error_message):
         _check_time_index(column_names=sample_column_names, time_index='foo', logical_type=Integer)
 
-    error_msg = 'Time index column must contain datetime or numeric values'
+    error_msg = 'Time index column must be a Datetime or numeric column'
     with pytest.raises(TypeError, match=error_msg):
         _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type=NaturalLanguage)
 

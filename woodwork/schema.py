@@ -224,7 +224,7 @@ def _check_time_index(column_names, time_index, logical_type):
     ltype_class = _get_ltype_class(logical_type)
 
     if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):
-        raise TypeError('Time index column must contain datetime or numeric values')
+        raise TypeError('Time index column must be a Datetime or numeric column.')
 
 
 def _check_logical_types(column_names, logical_types):
