@@ -1,6 +1,7 @@
 import inspect
 
 import pandas as pd
+import woodwork as ww
 
 from woodwork.schema import Schema
 
@@ -10,6 +11,27 @@ class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe = dataframe
         self._schema = None
+
+    def __getattribute__(self, attr):
+        '''
+            If method is present on the Accessor, uses that method. 
+            If the method is present on Schema, uses that method. 
+        '''
+        try:
+            # --> see if there's a way to use hasattr on the object in its own
+            return object.__getattribute__(self, attr)
+        except AttributeError:
+            schema = object.__getattribute__(self, '_schema')
+            if hasattr(schema, attr):
+                schema_attr = getattr(schema, attr)
+
+                # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
+                if callable(schema_attr) and attr != 'logical_type':
+                    def wrapper(*args, **kwargs):
+                        return schema_attr(*args, **kwargs)
+                    return wrapper
+                else:
+                    return schema_attr
 
     def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
         # confirm all kwargs are present in the schema class - kwargs should be all the arguments from the Schema class
@@ -22,13 +44,17 @@ class WoodworkTableAccessor:
 
         # make schema
         column_names = list(self._dataframe.columns)
-        logical_types = {col_name: 'NaturalLanguage' for col_name in column_names}
+        logical_types = {col_name: ww.logical_types.NaturalLanguage for col_name in column_names}
         self._schema = Schema(column_names=column_names,
                               logical_types=logical_types,
                               index=index,  # --> do a test that this doesnt double up weirdly
                               time_index=time_index, **kwargs)
 
         # sort columns based on index
+
+    @property
+    def schema(self):
+        return self._schema
 
 
 def _validate_schema_params(schema_params_dict):

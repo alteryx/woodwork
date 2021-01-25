@@ -85,3 +85,30 @@ def test_check_unique_column_names_errors(sample_df):
         duplicate_cols_df.insert(0, 'age', [18, 21, 65, 43], allow_duplicates=True)
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
+
+
+def test_accessor_init(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    assert sample_df.ww.schema is None
+    sample_df.ww.init()
+    assert isinstance(sample_df.ww.schema, Schema)
+
+
+def test_accessor_getattr(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    assert sample_df.ww.name is None
+    assert sample_df.ww.index is None
+    assert sample_df.ww.time_index is None
+
+    assert set(sample_df.ww.columns.keys()) == set(sample_df.columns)
+
+    # --> do test to make sure dataframe obj is the same????
+
+
+def test_accessor_attr_precedence(sample_df):
+    # --> will have to wait until we have an attr that matches the schema and accessor
+    pass
