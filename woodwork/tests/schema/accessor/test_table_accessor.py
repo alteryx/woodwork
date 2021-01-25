@@ -12,6 +12,7 @@ from woodwork.table_accessor import (
     _validate_accessor_params,
     _validate_schema_params
 )
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -112,3 +113,17 @@ def test_accessor_getattr(sample_df):
 def test_accessor_attr_precedence(sample_df):
     # --> will have to wait until we have an attr that matches the schema and accessor
     pass
+
+
+def test_make_index(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='new_index', make_index=True)
+
+    assert schema_df.ww.index == 'new_index'
+    assert 'new_index' in schema_df.ww.columns
+    assert 'new_index' in schema_df.ww.columns
+    assert to_pandas(schema_df)['new_index'].unique
+    assert to_pandas(schema_df['new_index']).is_monotonic
+    assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']

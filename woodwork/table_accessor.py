@@ -4,6 +4,12 @@ import pandas as pd
 import woodwork as ww
 
 from woodwork.schema import Schema
+from woodwork.utils import import_or_none
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
+if ks:
+    ks.set_option('compute.ops_on_diff_frames', True)
 
 
 @pd.api.extensions.register_dataframe_accessor('ww')
@@ -38,7 +44,8 @@ class WoodworkTableAccessor:
         _validate_schema_params(kwargs)
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
 
-        #  Make index column if necessary
+        if make_index:
+            _make_index(self._dataframe, index)
 
         # Type Inference for each column (parse ltype), updating dataframe (update col dtype)
 
@@ -123,3 +130,13 @@ def _check_logical_types(dataframe, logical_types):
     if cols_not_found:
         raise LookupError('logical_types contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _make_index(dataframe, index):
+    if dd and isinstance(dataframe, dd.DataFrame):
+        dataframe[index] = 1
+        dataframe[index] = dataframe[index].cumsum() - 1
+    elif ks and isinstance(dataframe, ks.DataFrame):
+        raise TypeError('Cannot make index on a Koalas DataFrame.')
+    else:
+        dataframe.insert(0, index, range(len(dataframe)))
