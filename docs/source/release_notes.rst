@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.0.8 January 25, 2021**
     * Enhancements
         * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
         * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
@@ -14,12 +23,10 @@ Release Notes
        * Don't allow registered LogicalTypes with the same name (:pr:`477`)
        * Move ``str_to_logical_type`` to TypeSystem class (:pr:`482`)
        * Remove ``pyarrow`` from core dependencies (:pr:`508`)
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
-    
+
 **v0.0.7 December 14, 2020**
     * Enhancements
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
