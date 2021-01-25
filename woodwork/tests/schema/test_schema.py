@@ -26,8 +26,6 @@ def test_schema_logical_types(sample_column_names, sample_inferred_logical_types
     assert set(schema.logical_types.keys()) == set(sample_column_names)
     for k, v in schema.logical_types.items():
         assert isinstance(k, str)
-        assert k in sample_column_names
-        assert v in ww.type_system.registered_types
         assert v == schema.columns[k]['logical_type']
 
 
@@ -42,7 +40,6 @@ def test_schema_semantic_tags(sample_column_names, sample_inferred_logical_types
     assert set(schema.semantic_tags.keys()) == set(sample_column_names)
     for k, v in schema.semantic_tags.items():
         assert isinstance(k, str)
-        assert k in sample_column_names
         assert isinstance(v, set)
         assert v == schema.columns[k]['semantic_tags']
 

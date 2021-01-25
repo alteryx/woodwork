@@ -408,7 +408,3 @@ def test_parse_column_logical_type_errors():
     error = "Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
         _parse_column_logical_type(int, 'col_name')
-
-    error = 'String invalid is not a valid logical type'
-    with pytest.raises(ValueError, match=error):
-        _parse_column_logical_type('invalid', 'col_name')

@@ -53,10 +53,6 @@ def test_check_time_index_errors(sample_column_names):
     with pytest.raises(TypeError, match=error_msg):
         _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='NaturalLanguage')
 
-    error_msg = 'String test is not a valid logical type'
-    with pytest.raises(ValueError, match=error_msg):
-        _check_time_index(column_names=sample_column_names, time_index='full_name', logical_type='test')
-
 
 def test_check_column_names(sample_column_names):
     error_message = 'Column names must be a list or set'
@@ -227,9 +223,7 @@ def test_schema_init_with_logical_type_classes(sample_column_names, sample_infer
 
 
 def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_logical_types):
-    semantic_tags = {
-        'id': 'custom_tag',
-    }
+    semantic_tags = {'id': 'custom_tag'}
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     name='schema',
                     semantic_tags=semantic_tags,
@@ -243,8 +237,7 @@ def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_log
 
 def test_schema_adds_standard_semantic_tags(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': 'Categorical'}},
-                    name='schema',
-                    )
+                    name='schema')
 
     assert schema.semantic_tags['id'] == {'category'}
     assert schema.semantic_tags['age'] == {'numeric'}

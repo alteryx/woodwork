@@ -16,7 +16,9 @@ def _get_column_dict(name,
     """
     _validate_description(column_description)
 
-    column_metadata = _validate_metadata(column_metadata)
+    if column_metadata is None:
+        column_metadata = {}
+    _validate_metadata(column_metadata)
 
     logical_type = _parse_column_logical_type(logical_type, name)
 
@@ -24,7 +26,7 @@ def _get_column_dict(name,
 
     return {
         'name': name,
-        'dtype': logical_type.pandas_dtype,  # --> should either be pandas dtype or backup depending on if it's a pandas schema
+        'dtype': logical_type.pandas_dtype,
         'logical_type': logical_type,
         'semantic_tags': semantic_tags,
         'use_standard_tags': use_standard_tags,
@@ -49,11 +51,8 @@ def _validate_description(column_description):
 
 
 def _validate_metadata(column_metadata):
-    if column_metadata is None:
-        column_metadata = {}
     if not isinstance(column_metadata, dict):
         raise TypeError("Column metadata must be a dictionary")
-    return column_metadata
 
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):

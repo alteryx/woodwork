@@ -48,7 +48,6 @@ class Schema(object):
                          table_metadata, column_metadata, semantic_tags, column_descriptions)
 
         self.name = name
-        self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
         self.columns = self._create_columns(column_names,
@@ -65,20 +64,17 @@ class Schema(object):
 
         self.metadata = table_metadata or {}
 
-    def __eq__(self, other, deep=True):
+    def __eq__(self, other):
         if self.name != other.name:
             return False
         if self.index != other.index:
             return False
         if self.time_index != other.time_index:
             return False
-        if set(self.columns.keys()) != set(other.columns.keys()):
+        if self.columns != other.columns:
             return False
         if self.metadata != other.metadata:
             return False
-        for col_name in self.columns.keys():
-            if self.columns[col_name] != other.columns[col_name]:
-                return False
 
         return True
 
@@ -244,7 +240,6 @@ def _check_time_index(column_names, time_index, logical_type):
     logical_type = _parse_column_logical_type(logical_type, time_index)
     ltype_class = _get_ltype_class(logical_type)
 
-    # --> this way of checking if datetime stops people from removing this ltype and adding a datetime of their own
     if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):
         raise TypeError('Time index column must contain datetime or numeric values')
 
