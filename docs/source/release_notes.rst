@@ -8,7 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-       * Add Python 3.9 support without parquet serialization (:pr:`#161`)
+       * Add Python 3.9 support without parquet serialization (:pr:`511`)
 
 Thanks to the following people for contributing to this release:
     :user:`gsheni`
