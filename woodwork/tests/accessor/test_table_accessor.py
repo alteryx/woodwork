@@ -146,6 +146,7 @@ def test_accessor_getattr(sample_df):
 
     error = re.escape("WoodworkTableAccessor and Schema classes have no attribute 'not_present'")
     with pytest.raises(AttributeError, match=error):
+        sample_df.ww.init()
         sample_df.ww.not_present
 
 

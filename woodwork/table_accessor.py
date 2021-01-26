@@ -62,29 +62,26 @@ class WoodworkTableAccessor:
         if self._schema.time_index is not None:
             self._sort_columns(already_sorted)
 
-    def __getattribute__(self, attr):
+    def __getattr__(self, attr):
         '''
             If method is present on the Accessor, uses that method.
             If the method is present on Schema, uses that method.
         '''
-        try:
-            return object.__getattribute__(self, attr)
-        except AttributeError:
-            schema = object.__getattribute__(self, '_schema')
-            if schema is None:
-                raise AttributeError(f"Schema not initialized; cannot get attribute '{attr}'")
-            if hasattr(schema, attr):
-                schema_attr = getattr(schema, attr)
+        schema = object.__getattribute__(self, '_schema')
+        if schema is None:
+            raise AttributeError(f"Schema not initialized; cannot get attribute '{attr}'")
+        if hasattr(schema, attr):
+            schema_attr = getattr(schema, attr)
 
-                # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
-                if callable(schema_attr) and attr != 'logical_type':
-                    def wrapper(*args, **kwargs):
-                        return schema_attr(*args, **kwargs)
-                    return wrapper
-                else:
-                    return schema_attr
+            # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
+            if callable(schema_attr) and attr != 'logical_type':
+                def wrapper(*args, **kwargs):
+                    return schema_attr(*args, **kwargs)
+                return wrapper
             else:
-                raise AttributeError(f"WoodworkTableAccessor and Schema classes have no attribute '{attr}'")
+                return schema_attr
+        else:
+            raise AttributeError(f"WoodworkTableAccessor and Schema classes have no attribute '{attr}'")
 
     @property
     def schema(self):
