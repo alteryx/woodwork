@@ -3,7 +3,7 @@ import re
 
 import pandas as pd
 
-from woodwork.logical_types import Integer, FullName
+from woodwork.logical_types import Datetime, Integer, FullName
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
     _check_index,
@@ -141,3 +141,101 @@ def test_accessor_logical_types(sample_df):
     assert schema_df.ww.logical_types['full_name'] == FullName
     assert schema_df['id'].dtype == 'Int64'
     assert schema_df['full_name'].dtype == 'string'
+
+
+def test_underlying_index_no_index(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    assert type(sample_df.index) == pd.RangeIndex
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+    assert type(schema_df.index) == pd.RangeIndex
+
+    sample_df = sample_df.sort_values('full_name')
+    assert type(sample_df.index) == pd.Int64Index
+    sample_df.ww.init()
+    assert type(sample_df.index) == pd.RangeIndex
+
+
+def test_underlying_index(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    specified_index = pd.Index
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='full_name')
+    assert schema_df.index.name is None
+    assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
+    assert type(schema_df.index) == specified_index
+
+    # --> add back when schema updates are implemented
+    # schema = Schema(sample_df.copy())
+    # schema = schema.set_index('full_name')
+    # assert (schema._dataframe.index == schema.to_dataframe()['full_name']).all()
+    # assert schema._dataframe.index.name is None
+    # assert type(schema._dataframe.index) == specified_index
+    # assert type(schema.to_dataframe().index) == specified_index
+
+    # schema.index = 'id'
+    # assert (schema._dataframe.index == [0, 1, 2, 3]).all()
+    # assert schema._dataframe.index.name is None
+    # assert type(schema._dataframe.index) == specified_index
+    # assert type(schema.to_dataframe().index) == specified_index
+
+    # # test removing index removes the dataframe's index
+    # schema.index = None
+    # assert type(schema._dataframe.index) == unspecified_index
+    # assert type(schema.to_dataframe().index) == unspecified_index
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='made_index', make_index=True)
+    assert (schema_df.index == [0, 1, 2, 3]).all()
+    assert schema_df.index.name is None
+    assert type(schema_df.index) == specified_index
+
+    # --> add back when schema updates are implemented
+    # schema_dropped = schema.drop('made_index')
+    # assert 'made_index' not in schema_dropped.columns
+    # assert 'made_index' not in schema_dropped._dataframe.columns
+    # assert type(schema_dropped._dataframe.index) == unspecified_index
+    # assert type(schema_dropped.to_dataframe().index) == unspecified_index
+
+
+def test_accessor_already_sorted(sample_unsorted_df):
+    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Dask input')
+    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+        pytest.xfail('Sorting dataframe is not supported with Koalas input')
+
+    schema_df = sample_unsorted_df.copy()
+    schema_df.ww.init(name='schema',
+                      index='id',
+                      time_index='signup_date')
+
+    assert schema_df.ww.time_index == 'signup_date'
+    assert schema_df.ww.columns[schema_df.ww.time_index]['logical_type'] == Datetime
+
+    sorted_df = to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False)
+    sorted_df.index.name = None
+    pd.testing.assert_frame_equal(sorted_df,
+                                  to_pandas(schema_df), check_index_type=False, check_dtype=False)
+
+    schema_df = sample_unsorted_df.copy()
+    schema_df.ww.init(name='schema',
+                      index='id',
+                      time_index='signup_date',
+                      already_sorted=True)
+
+    assert schema_df.ww.time_index == 'signup_date'
+    assert schema_df.ww.columns[schema_df.ww.time_index]['logical_type'] == Datetime
+
+    unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
+    unsorted_df.index.name = None
+    pd.testing.assert_frame_equal(unsorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False)

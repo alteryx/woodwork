@@ -6,7 +6,7 @@ import woodwork as ww
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
 from woodwork.utils import import_or_none, _parse_column_logical_type
-from woodwork.type_sys.utils import _get_ltype_class
+from woodwork.type_sys.utils import _get_ltype_class, _is_numeric_series, col_is_datetime
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -50,7 +50,10 @@ class WoodworkTableAccessor:
                               index=index,  # --> do a test that this doesnt double up weirdly
                               time_index=time_index, **kwargs)
 
-        # sort columns based on index
+        # Set index on underlying data and sort columns based on indices
+        self._set_underlying_index()
+        if self._schema.time_index is not None:
+            self._sort_columns(already_sorted)
 
     def __getattribute__(self, attr):
         '''
@@ -76,6 +79,30 @@ class WoodworkTableAccessor:
     @property
     def schema(self):
         return self._schema
+
+    def _sort_columns(self, already_sorted):
+        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+            already_sorted = True  # Skip sorting for Dask and Koalas input
+        if not already_sorted:
+            sort_cols = [self._schema.time_index, self._schema.index]
+            if self._schema.index is None:
+                sort_cols = [self._schema.time_index]
+            self._dataframe.sort_values(sort_cols, inplace=True)
+
+    def _set_underlying_index(self):
+        '''Sets the index of a Schema's underlying DataFrame.
+        If the Schema has an index, will be set to that index.
+        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
+        meaning that the index will be a pd.RangeIndex starting from zero.
+        '''
+        if isinstance(self._dataframe, pd.DataFrame):
+            if self._schema.index is not None:
+                self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
+                # Drop index name to not overlap with the original column
+                self._dataframe.index.name = None
+            # Only reset the index if the index isn't a RangeIndex
+            elif not isinstance(self._dataframe.index, pd.RangeIndex):
+                self._dataframe.reset_index(drop=True, inplace=True)
 
 
 def _validate_schema_params(schema_params_dict):
