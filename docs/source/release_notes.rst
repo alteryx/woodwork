@@ -4,14 +4,15 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
-       * Add Python 3.9 support without Koalas testing (:pr:`511`)
+        * Add Python 3.9 support without Koalas testing (:pr:`511`)
     * Fixes
+        * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.0.8 January 25, 2021**
     * Enhancements
