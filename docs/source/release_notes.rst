@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
+       * Add Python 3.9 support without Koalas testing (:pr:`511`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 **v0.0.8 January 25, 2021**
     * Enhancements
