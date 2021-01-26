@@ -5,13 +5,14 @@ Release Notes
 **Future Release**
     * Enhancements
        * Add Python 3.9 support without Koalas testing (:pr:`511`)
+       * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 **v0.0.8 January 25, 2021**
     * Enhancements
