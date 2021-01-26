@@ -8,7 +8,17 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import Categorical, Datetime, Double
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    CountryCode,
+    Datetime,
+    Double,
+    Integer,
+    Ordinal,
+    SubRegionCode,
+    ZIPCode
+)
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -26,6 +36,7 @@ from woodwork.utils import (
     _reformat_to_latlong,
     _to_latlong_float,
     camel_to_snake,
+    get_valid_mi_types,
     import_or_none,
     import_or_raise
 )
@@ -386,3 +397,20 @@ def test_is_null_latlong():
     assert not _is_null_latlong('none')
     assert not _is_null_latlong(0)
     assert not _is_null_latlong(False)
+
+
+def test_get_valid_mi_types():
+    valid_types = get_valid_mi_types()
+    expected_types = [
+        Boolean,
+        Categorical,
+        CountryCode,
+        Datetime,
+        Double,
+        Integer,
+        Ordinal,
+        SubRegionCode,
+        ZIPCode,
+    ]
+
+    assert valid_types == expected_types
