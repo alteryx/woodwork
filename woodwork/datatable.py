@@ -950,7 +950,7 @@ class DataTable(object):
             series = data[column_name]
             ltype = column._logical_type
 
-            if column._is_numeric():
+            if column._is_numeric() or _get_ltype_class(ltype) == Datetime:
                 mean = series.mean()
                 if isinstance(mean, float) and not _get_ltype_class(ltype) == Double:
                     data[column_name] = series.astype('float')

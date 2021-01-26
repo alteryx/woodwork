@@ -2517,6 +2517,7 @@ def test_datatable_handle_nans_for_mutual_info():
         'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
         'str': pd.Series(['test', np.nan, 'test2', 'test']),
         'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
+        'dates': pd.Series(['2020-01-01', None, '2020-01-02', '2020-01-03'])
     })
     dt_nans = DataTable(df_nans)
     formatted_df = dt_nans._handle_nans_for_mutual_info(dt_nans.to_dataframe().copy())
@@ -2530,6 +2531,7 @@ def test_datatable_handle_nans_for_mutual_info():
     assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
     assert formatted_df['str'].equals(pd.Series(['test', 'test', 'test2', 'test'], dtype='category'))
     assert formatted_df['str_no_nan'].equals(pd.Series(['test', 'test2', 'test2', 'test'], dtype='category'))
+    assert formatted_df['dates'].equals(pd.Series(['2020-01-01', '2020-01-02', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]'))
 
 
 def test_datatable_make_categorical_for_mutual_info():

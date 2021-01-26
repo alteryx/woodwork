@@ -4,9 +4,10 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
-       * Add Python 3.9 support without Koalas testing (:pr:`511`)
-       * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
+        * Add Python 3.9 support without Koalas testing (:pr:`511`)
+        * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
     * Fixes
+        * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
     * Changes
     * Documentation Changes
     * Testing Changes
