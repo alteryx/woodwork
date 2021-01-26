@@ -117,6 +117,7 @@ General Utils
     :nosignatures:
 
     read_csv
+    get_valid_mi_types
 
 Demo Data
 =========
