@@ -1,6 +1,6 @@
-import sys
 import json
 import os
+import sys
 
 import boto3
 import pandas as pd
