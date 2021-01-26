@@ -667,7 +667,6 @@ def test_underlying_index(sample_df):
 
 
 def test_accessor_already_sorted(sample_unsorted_df):
-    xfail_dask_and_koalas(sample_unsorted_df)
     if dd and isinstance(sample_unsorted_df, dd.DataFrame):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
     if ks and isinstance(sample_unsorted_df, ks.DataFrame):
