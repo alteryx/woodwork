@@ -3,7 +3,7 @@ import re
 
 import pandas as pd
 
-from woodwork.logical_types import Datetime, Integer, FullName
+from woodwork.logical_types import Datetime, Double, Integer, FullName, NaturalLanguage
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
     _check_index,
@@ -97,6 +97,18 @@ def test_accessor_init(sample_df):
     assert isinstance(sample_df.ww.schema, Schema)
 
 
+def test_accessor_separation_of_params(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    # mix up order of acccessor and schema params
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_name', index='id', semantic_tags={'id': 'test_tag'}, time_index='signup_date')
+
+    assert schema_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
+    assert schema_df.ww.index == 'id'
+    assert schema_df.ww.time_index == 'signup_date'
+    assert schema_df.ww.name == 'test_name'
+
+
 def test_accessor_getattr(sample_df):
     xfail_dask_and_koalas(sample_df)
 
@@ -114,6 +126,101 @@ def test_accessor_getattr(sample_df):
 def test_accessor_attr_precedence(sample_df):
     # --> will have to wait until we have an attr that matches the schema and accessor
     pass
+
+
+def test_accessor_init_with_valid_string_time_index(time_index_df):
+    xfail_dask_and_koalas(time_index_df)
+
+    time_index_df.ww.init(name='schema',
+                          index='id',
+                          time_index='times')
+
+    assert time_index_df.ww.name == 'schema'
+    assert time_index_df.ww.index == 'id'
+    assert time_index_df.ww.time_index == 'times'
+    assert time_index_df.ww.columns[time_index_df.ww.time_index]['logical_type'] == Datetime
+
+
+def test_accessor_init_with_numeric_datetime_time_index(time_index_df):
+    xfail_dask_and_koalas(time_index_df)
+    schema_df = time_index_df.copy()
+    schema_df.ww.init(time_index='ints', logical_types={'ints': Datetime})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        time_index_df.ww.init(name='schema', time_index='strs', logical_types={'strs': Datetime})
+
+    assert schema_df.ww.time_index == 'ints'
+    assert schema_df['ints'].dtype == 'datetime64[ns]'
+
+
+def test_accessor_with_numeric_time_index(time_index_df):
+    xfail_dask_and_koalas(time_index_df)
+    # Set a numeric time index on init
+    schema_df = time_index_df.copy()
+    schema_df.ww.init(time_index='ints')
+    date_col = schema_df.ww.columns['ints']
+    assert schema_df.ww.time_index == 'ints'
+    assert date_col['logical_type'] == Integer
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+    # Specify logical type for time index on init
+    schema_df = time_index_df.copy()
+    schema_df.ww.init(time_index='ints', logical_types={'ints': 'Double'})
+    date_col = schema_df.ww.columns['ints']
+    assert schema_df.ww.time_index == 'ints'
+    assert date_col['logical_type'] == Double
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+    # --> add back when schema updates are implemented
+    # # Change time index to normal datetime time index
+    # schema = schema.set_time_index('times')
+    # date_col = schema['ints']
+    # assert schema.time_index == 'times'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'numeric'}
+
+    # Set numeric time index after init
+    # schema = Schema(time_index_df, logical_types={'ints': 'Double'})
+    # schema = schema.set_time_index('ints')
+    # date_col = schema['ints']
+    # assert schema.time_index == 'ints'
+    # assert date_col.logical_type == Double
+    # assert date_col.semantic_tags == {'time_index', 'numeric'}
+
+
+def test_accessor_init_with_invalid_string_time_index(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        sample_df.ww.init(name='schema', time_index='full_name')
+
+
+def test_accessor_init_with_string_logical_types(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    logical_types = {
+        'full_name': 'natural_language',
+        'age': 'Double'
+    }
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='schema',
+                      logical_types=logical_types)
+    assert schema_df.ww.columns['full_name']['logical_type'] == NaturalLanguage
+    assert schema_df.ww.columns['age']['logical_type'] == Double
+
+    logical_types = {
+        'full_name': 'NaturalLanguage',
+        'age': 'Integer',
+        'signup_date': 'Datetime'
+    }
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='schema',
+                      logical_types=logical_types,
+                      time_index='signup_date'
+                      )
+    assert schema_df.ww.columns['full_name']['logical_type'] == NaturalLanguage
+    assert schema_df.ww.columns['age']['logical_type'] == Integer
+    assert schema_df.ww.time_index == 'signup_date'
 
 
 def test_make_index(sample_df):
