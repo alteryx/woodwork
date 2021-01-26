@@ -139,3 +139,5 @@ def test_accessor_logical_types(sample_df):
 
     assert schema_df.ww.logical_types['id'] == Integer
     assert schema_df.ww.logical_types['full_name'] == FullName
+    assert schema_df['id'].dtype == 'Int64'
+    assert schema_df['full_name'].dtype == 'string'
