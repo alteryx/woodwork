@@ -1,12 +1,19 @@
 import inspect
 
 import pandas as pd
-import woodwork as ww
 
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
-from woodwork.utils import import_or_none, _parse_column_logical_type, _reformat_to_latlong
-from woodwork.type_sys.utils import _get_ltype_class, _is_numeric_series, col_is_datetime
+from woodwork.type_sys.utils import (
+    _get_ltype_class,
+    _is_numeric_series,
+    col_is_datetime
+)
+from woodwork.utils import (
+    _parse_column_logical_type,
+    _reformat_to_latlong,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -47,7 +54,7 @@ class WoodworkTableAccessor:
         column_names = list(self._dataframe.columns)
         self._schema = Schema(column_names=column_names,
                               logical_types=parsed_logical_types,
-                              index=index,  # --> do a test that this doesnt double up weirdly
+                              index=index,
                               time_index=time_index, **kwargs)
 
         # Set index on underlying data and sort columns based on indices
@@ -57,11 +64,10 @@ class WoodworkTableAccessor:
 
     def __getattribute__(self, attr):
         '''
-            If method is present on the Accessor, uses that method. 
-            If the method is present on Schema, uses that method. 
+            If method is present on the Accessor, uses that method.
+            If the method is present on Schema, uses that method.
         '''
         try:
-            # --> see if there's a way to use hasattr on the object in its own
             return object.__getattribute__(self, attr)
         except AttributeError:
             schema = object.__getattribute__(self, '_schema')
@@ -75,6 +81,8 @@ class WoodworkTableAccessor:
                     return wrapper
                 else:
                     return schema_attr
+            else:
+                raise AttributeError(f"WoodworkTableAccessor and Schema classes have no attribute '{attr}'")
 
     @property
     def schema(self):
@@ -113,10 +121,6 @@ def _validate_schema_params(schema_params_dict):
 
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types):
-    # --> figure out best way to utilize Schema checks code without repeating checks!!!!
-    #  --> either remove redundant checks or maybe pass 'already checked' param??
-    #  There has to be a balance betwen where we check each param - want users to b e able to make Schemas directly without creating errors
-    # --> maybe turn repetetive cheks into assertions
     _check_unique_column_names(dataframe)
     if index is not None or make_index:
         _check_index(dataframe, index, make_index)
@@ -139,7 +143,6 @@ def _check_unique_column_names(dataframe):
 
 
 def _check_index(dataframe, index, make_index=False):
-    # --> definitely might be able to reuse
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
         raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
@@ -164,7 +167,6 @@ def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=
 
 
 def _check_logical_types(dataframe_columns, logical_types):
-    # --> definitely reusable but maybe not neccessary both places???
     if not isinstance(logical_types, dict):
         raise TypeError('logical_types must be a dictionary')
     cols_not_found = set(logical_types.keys()).difference(set(dataframe_columns))

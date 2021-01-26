@@ -1,36 +1,37 @@
-from woodwork.utils import import_or_none
-from woodwork.tests.testing_utils import to_pandas
+import re
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from woodwork.logical_types import (
+    URL,
+    Boolean,
+    Categorical,
+    CountryCode,
+    Datetime,
+    Double,
+    Filepath,
+    FullName,
+    Integer,
+    IPAddress,
+    LatLong,
+    NaturalLanguage,
+    Ordinal,
+    PhoneNumber,
+    SubRegionCode,
+    ZIPCode
+)
+from woodwork.schema import Schema
 from woodwork.table_accessor import (
     _check_index,
     _check_logical_types,
     _check_time_index,
     _check_unique_column_names,
-    _validate_accessor_params,
     _validate_schema_params
 )
-from woodwork.schema import Schema
-import pytest
-import re
-
-import pandas as pd
-import numpy as np
-
-from woodwork.logical_types import (Boolean,
-                                    Categorical,
-                                    Datetime,
-                                    Double,
-                                    Integer,
-                                    IPAddress,
-                                    Filepath,
-                                    FullName,
-                                    LatLong,
-                                    NaturalLanguage,
-                                    CountryCode,
-                                    Ordinal,
-                                    PhoneNumber,
-                                    SubRegionCode,
-                                    URL,
-                                    ZIPCode,)
+from woodwork.tests.testing_utils import to_pandas
+from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -130,20 +131,18 @@ def test_accessor_separation_of_params(sample_df):
 def test_accessor_getattr(sample_df):
     xfail_dask_and_koalas(sample_df)
 
-    sample_df.ww.init()
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
 
-    assert sample_df.ww.name is None
-    assert sample_df.ww.index is None
-    assert sample_df.ww.time_index is None
+    assert schema_df.ww.name is None
+    assert schema_df.ww.index is None
+    assert schema_df.ww.time_index is None
 
-    assert set(sample_df.ww.columns.keys()) == set(sample_df.columns)
+    assert set(schema_df.ww.columns.keys()) == set(sample_df.columns)
 
-    # --> do test to make sure dataframe obj is the same????
-
-
-def test_accessor_attr_precedence(sample_df):
-    # --> will have to wait until we have an attr that matches the schema and accessor
-    pass
+    error = re.escape("WoodworkTableAccessor and Schema classes have no attribute 'not_present'")
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.not_present
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):
@@ -560,19 +559,6 @@ def test_make_index(sample_df):
     assert to_pandas(schema_df)['new_index'].unique
     assert to_pandas(schema_df['new_index']).is_monotonic
     assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
-
-
-def test_accessor_logical_types(sample_df):
-    # --> need much more thoughrough testing of all of this - from datatable!
-    xfail_dask_and_koalas(sample_df)
-
-    schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': 'FullName'})
-
-    assert schema_df.ww.logical_types['id'] == Integer
-    assert schema_df.ww.logical_types['full_name'] == FullName
-    assert schema_df['id'].dtype == 'Int64'
-    assert schema_df['full_name'].dtype == 'string'
 
 
 def test_underlying_index_no_index(sample_df):

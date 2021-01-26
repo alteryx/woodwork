@@ -421,23 +421,24 @@ def test_get_valid_mi_types():
     assert valid_types == expected_types
 
 
-def test_parse_column_logical_type():
-    assert _parse_column_logical_type('Datetime', 'col_name') == Datetime
-    assert _parse_column_logical_type(Datetime, 'col_name') == Datetime
+def test_parse_column_logical_type(sample_series):
+    assert _parse_column_logical_type(sample_series, 'Datetime', 'col_name') == Datetime
+    assert _parse_column_logical_type(sample_series, Datetime, 'col_name') == Datetime
 
     ymd_format=Datetime(datetime_format='%Y-%m-%d')
-    assert _parse_column_logical_type(ymd_format, 'col_name') == ymd_format
-    # --> add tests where you need to infer ltype from sereies
+    assert _parse_column_logical_type(sample_series, ymd_format, 'col_name') == ymd_format
+
+    assert _parse_column_logical_type(sample_series, None, 'col_name') == Categorical
 
 
-def test_parse_column_logical_type_errors():
+def test_parse_column_logical_type_errors(sample_series):
     error='Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error):
-        _parse_column_logical_type('Ordinal', 'col_name')
+        _parse_column_logical_type(sample_series, 'Ordinal', 'col_name')
 
     with pytest.raises(TypeError, match=error):
-        _parse_column_logical_type(Ordinal, 'col_name')
+        _parse_column_logical_type(sample_series, Ordinal, 'col_name')
 
     error="Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
-        _parse_column_logical_type(int, 'col_name')
+        _parse_column_logical_type(sample_series, int, 'col_name')
