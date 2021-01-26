@@ -32,11 +32,6 @@ def xfail_tmp_disappears(dataframe):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
 
 
-def xskip_pyarrow_py39():
-    if sys.version_info >= (3, 9):
-        pytest.skip('skipping serialization test for python 3.9')
-
-
 def test_to_dictionary(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         table_type = 'dask'
@@ -206,8 +201,6 @@ def test_to_pickle_with_latlong(latlong_df, tmpdir):
 
 
 def test_to_parquet(sample_df, tmpdir):
-    xskip_pyarrow_py39()
-
     dt = DataTable(sample_df, index='id')
     dt.to_parquet(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
@@ -217,8 +210,6 @@ def test_to_parquet(sample_df, tmpdir):
 
 
 def test_to_parquet_with_latlong(latlong_df, tmpdir):
-    xskip_pyarrow_py39()
-
     dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
     dt.to_parquet(str(tmpdir))
     _dt = deserialize.read_datatable(str(tmpdir))
@@ -280,7 +271,6 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
 
 
 def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
-    xskip_pyarrow_py39()
     xfail_tmp_disappears(sample_df)
 
     dt = DataTable(sample_df)
@@ -321,7 +311,6 @@ def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
 
 
 def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
-    xskip_pyarrow_py39()
     xfail_tmp_disappears(sample_df)
 
     dt = DataTable(sample_df)
