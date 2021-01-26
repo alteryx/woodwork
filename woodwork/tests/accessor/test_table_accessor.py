@@ -1,10 +1,5 @@
-import pytest
-import re
-
-import pandas as pd
-
-from woodwork.logical_types import Datetime, Double, Integer, FullName, NaturalLanguage
-from woodwork.schema import Schema
+from woodwork.utils import import_or_none
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.table_accessor import (
     _check_index,
     _check_logical_types,
@@ -13,8 +8,29 @@ from woodwork.table_accessor import (
     _validate_accessor_params,
     _validate_schema_params
 )
-from woodwork.tests.testing_utils import to_pandas
-from woodwork.utils import import_or_none
+from woodwork.schema import Schema
+import pytest
+import re
+
+import pandas as pd
+import numpy as np
+
+from woodwork.logical_types import (Boolean,
+                                    Categorical,
+                                    Datetime,
+                                    Double,
+                                    Integer,
+                                    IPAddress,
+                                    Filepath,
+                                    FullName,
+                                    LatLong,
+                                    NaturalLanguage,
+                                    CountryCode,
+                                    Ordinal,
+                                    PhoneNumber,
+                                    SubRegionCode,
+                                    URL,
+                                    ZIPCode,)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -87,6 +103,8 @@ def test_check_unique_column_names_errors(sample_df):
         duplicate_cols_df.insert(0, 'age', [18, 21, 65, 43], allow_duplicates=True)
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
+
+# --> add checks that confirm the schema object is the same as if you make it directly!!!!!
 
 
 def test_accessor_init(sample_df):
@@ -172,6 +190,21 @@ def test_accessor_with_numeric_time_index(time_index_df):
     assert date_col['logical_type'] == Double
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
+    schema_df = time_index_df.copy()
+    schema_df.ww.init(time_index='strs', logical_types={'strs': 'Double'})
+    date_col = schema_df.ww.columns['strs']
+    assert schema_df.ww.time_index == 'strs'
+    assert date_col['logical_type'] == Double
+    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        time_index_df.ww.init(time_index='ints', logical_types={'ints': 'Categorical'})
+
+    error_msg = 'Time index column must contain datetime or numeric values'
+    with pytest.raises(TypeError, match=error_msg):
+        time_index_df.ww.init(time_index='letters', logical_types={'strs': 'Integer'})
+
     # --> add back when schema updates are implemented
     # # Change time index to normal datetime time index
     # schema = schema.set_time_index('times')
@@ -221,6 +254,298 @@ def test_accessor_init_with_string_logical_types(sample_df):
     assert schema_df.ww.columns['full_name']['logical_type'] == NaturalLanguage
     assert schema_df.ww.columns['age']['logical_type'] == Integer
     assert schema_df.ww.time_index == 'signup_date'
+
+
+def test_int_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'ints_no_nans': pd.Series([1, 2]),
+        'ints_nan': pd.Series([1, np.nan]),
+        'ints_NA': pd.Series([1, pd.NA]),
+        'ints_NA_specified': pd.Series([1, pd.NA], dtype='Int64')})
+    df.ww.init()
+
+    assert df['ints_no_nans'].dtype == 'Int64'
+    assert df['ints_nan'].dtype == 'float64'
+    assert df['ints_NA'].dtype == 'category'
+    assert df['ints_NA_specified'].dtype == 'Int64'
+
+
+def test_bool_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'bools_no_nans': pd.Series([True, False]),
+        'bool_nan': pd.Series([True, np.nan]),
+        'bool_NA': pd.Series([True, pd.NA]),
+        'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean")})
+    df.ww.init()
+
+    assert df['bools_no_nans'].dtype == 'boolean'
+    assert df['bool_nan'].dtype == 'category'
+    assert df['bool_NA'].dtype == 'category'
+    assert df['bool_NA_specified'].dtype == 'boolean'
+
+
+def test_str_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'str_no_nans': pd.Series(['a', 'b']),
+        'str_nan': pd.Series(['a', np.nan]),
+        'str_NA': pd.Series(['a', pd.NA]),
+        'str_NA_specified': pd.Series([1, pd.NA], dtype="string"),
+        'long_str_NA_specified': pd.Series(['this is a very long sentence inferred as a string', pd.NA], dtype="string"),
+        'long_str_NA': pd.Series(['this is a very long sentence inferred as a string', pd.NA])
+    })
+    df.ww.init()
+
+    assert df['str_no_nans'].dtype == 'category'
+    assert df['str_nan'].dtype == 'category'
+    assert df['str_NA'].dtype == 'category'
+    assert df['str_NA_specified'].dtype == 'category'
+    assert df['long_str_NA_specified'].dtype == 'string'
+    assert df['long_str_NA'].dtype == 'string'
+
+
+def test_float_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'floats_no_nans': pd.Series([1.1, 2.2]),
+        'floats_nan': pd.Series([1.1, np.nan]),
+        'floats_NA': pd.Series([1.1, pd.NA]),
+        'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float')})
+    df.ww.init()
+
+    assert df['floats_no_nans'].dtype == 'float64'
+    assert df['floats_nan'].dtype == 'float64'
+    assert df['floats_NA'].dtype == 'category'
+    assert df['floats_nan_specified'].dtype == 'float64'
+
+
+def test_datetime_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'date_no_nans': pd.Series([pd.to_datetime('2020-09-01')] * 2),
+        'date_nan': pd.Series([pd.to_datetime('2020-09-01'), np.nan]),
+        'date_NA': pd.Series([pd.to_datetime('2020-09-01'), pd.NA]),
+        'date_NaT': pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]),
+        'date_NA_specified': pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]')})
+    df.ww.init()
+
+    assert df['date_no_nans'].dtype == 'datetime64[ns]'
+    assert df['date_nan'].dtype == 'datetime64[ns]'
+    assert df['date_NA'].dtype == 'datetime64[ns]'
+    assert df['date_NaT'].dtype == 'datetime64[ns]'
+    assert df['date_NA_specified'].dtype == 'datetime64[ns]'
+
+
+def test_timedelta_dtype_inference_on_init():
+    df = pd.DataFrame({
+        'delta_no_nans': (pd.Series([pd.to_datetime('2020-09-01')] * 2) - pd.to_datetime('2020-07-01')),
+        'delta_nan': (pd.Series([pd.to_datetime('2020-09-01'), np.nan]) - pd.to_datetime('2020-07-01')),
+        'delta_NaT': (pd.Series([pd.to_datetime('2020-09-01'), pd.NaT]) - pd.to_datetime('2020-07-01')),
+        'delta_NA_specified': (pd.Series([pd.to_datetime('2020-09-01'), pd.NA], dtype='datetime64[ns]') - pd.to_datetime('2020-07-01')),
+    })
+    df.ww.init()
+
+    assert df['delta_no_nans'].dtype == 'timedelta64[ns]'
+    assert df['delta_nan'].dtype == 'timedelta64[ns]'
+    assert df['delta_NaT'].dtype == 'timedelta64[ns]'
+    assert df['delta_NA_specified'].dtype == 'timedelta64[ns]'
+
+
+def test_sets_category_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['a', 'b', 'c'], name=column_name),
+        pd.Series(['a', None, 'c'], name=column_name),
+        pd.Series(['a', np.nan, 'c'], name=column_name),
+        pd.Series(['a', pd.NA, 'c'], name=column_name),
+        pd.Series(['a', pd.NaT, 'c'], name=column_name),
+    ]
+
+    logical_types = [
+        Categorical,
+        CountryCode,
+        Ordinal(order=['a', 'b', 'c']),
+        SubRegionCode,
+        ZIPCode,
+    ]
+
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            df.ww.init(logical_types=ltypes)
+            assert df.ww.columns[column_name]['logical_type'] == logical_type
+            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_object_dtype_on_init(latlong_df):
+    xfail_dask_and_koalas(latlong_df)
+    for column_name in latlong_df.columns:
+        ltypes = {
+            column_name: LatLong,
+        }
+        df = latlong_df.loc[:, [column_name]]
+        df.ww.init(logical_types=ltypes)
+        assert df.ww.columns[column_name]['logical_type'] == LatLong
+        assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
+        assert df[column_name].dtype == LatLong.pandas_dtype
+
+
+def test_sets_string_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['a', 'b', 'c'], name=column_name),
+        pd.Series(['a', None, 'c'], name=column_name),
+        pd.Series(['a', np.nan, 'c'], name=column_name),
+        pd.Series(['a', pd.NA, 'c'], name=column_name),
+    ]
+
+    logical_types = [
+        Filepath,
+        FullName,
+        IPAddress,
+        NaturalLanguage,
+        PhoneNumber,
+        URL,
+    ]
+
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            df.ww.init(logical_types=ltypes)
+            assert df.ww.columns[column_name]['logical_type'] == logical_type
+            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_boolean_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([True, False, True], name=column_name),
+        pd.Series([True, None, True], name=column_name),
+        pd.Series([True, np.nan, True], name=column_name),
+        pd.Series([True, pd.NA, True], name=column_name),
+    ]
+
+    logical_type = Boolean
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        df = pd.DataFrame(series)
+        df.ww.init(logical_types=ltypes)
+        assert df.ww.columns[column_name]['logical_type'] == logical_type
+        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_int64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([1, 2, 3], name=column_name),
+        pd.Series([1, None, 3], name=column_name),
+        pd.Series([1, np.nan, 3], name=column_name),
+        pd.Series([1, pd.NA, 3], name=column_name),
+    ]
+
+    logical_types = [Integer]
+    for series in series_list:
+        series = series.astype('object')
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            df.ww.init(logical_types=ltypes)
+            assert df.ww.columns[column_name]['logical_type'] == logical_type
+            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_float64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series([1.1, 2, 3], name=column_name),
+        pd.Series([1.1, None, 3], name=column_name),
+        pd.Series([1.1, np.nan, 3], name=column_name),
+    ]
+
+    logical_type = Double
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        df = pd.DataFrame(series)
+        df.ww.init(logical_types=ltypes)
+        assert df.ww.columns[column_name]['logical_type'] == logical_type
+        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_sets_datetime64_dtype_on_init():
+    column_name = 'test_series'
+    series_list = [
+        pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name),
+    ]
+
+    logical_type = Datetime
+    for series in series_list:
+        series = series.astype('object')
+        ltypes = {
+            column_name: logical_type,
+        }
+        df = pd.DataFrame(series)
+        df.ww.init(logical_types=ltypes)
+        assert df.ww.columns[column_name]['logical_type'] == logical_type
+        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.pandas_dtype
+
+
+def test_invalid_dtype_casting():
+    column_name = 'test_series'
+
+    # Cannot cast a column with pd.NA to Double
+    series = pd.Series([1.1, pd.NA, 3], name=column_name)
+    ltypes = {
+        column_name: Double,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'float64. Please confirm the underlying data is consistent with logical type Double.'
+    with pytest.raises(TypeError, match=err_msg):
+        pd.DataFrame(series).ww.init(logical_types=ltypes)
+
+    # --> add back when schema updates are implemented
+    # # Cannot cast Datetime to Double
+    # series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
+    # ltypes = {
+    #     column_name: Datetime,
+    # }
+    # schema = Schema(pd.DataFrame(series), logical_types=ltypes)
+    # err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
+    #     'float64. Please confirm the underlying data is consistent with logical type Double.'
+    # with pytest.raises(TypeError, match=re.escape(err_msg)):
+    #     schema.set_types(logical_types={column_name: Double})
+
+    # Cannot cast invalid strings to integers
+    series = pd.Series(['1', 'two', '3'], name=column_name)
+    ltypes = {
+        column_name: Integer,
+    }
+    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+        'Int64. Please confirm the underlying data is consistent with logical type Integer.'
+    with pytest.raises(TypeError, match=err_msg):
+        pd.DataFrame(series).ww.init(logical_types=ltypes)
 
 
 def test_make_index(sample_df):

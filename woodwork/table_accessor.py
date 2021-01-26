@@ -5,7 +5,7 @@ import woodwork as ww
 
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
-from woodwork.utils import import_or_none, _parse_column_logical_type
+from woodwork.utils import import_or_none, _parse_column_logical_type, _reformat_to_latlong
 from woodwork.type_sys.utils import _get_ltype_class, _is_numeric_series, col_is_datetime
 
 dd = import_or_none('dask.dataframe')
