@@ -4,11 +4,11 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+       * Add Python 3.9 support without Koalas testing (:pr:`511`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
-       * Add Python 3.9 support without Koalas testing (:pr:`511`)
 
 Thanks to the following people for contributing to this release:
     :user:`gsheni`
