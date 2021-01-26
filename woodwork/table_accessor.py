@@ -71,6 +71,8 @@ class WoodworkTableAccessor:
             return object.__getattribute__(self, attr)
         except AttributeError:
             schema = object.__getattribute__(self, '_schema')
+            if schema is None:
+                raise AttributeError(f"Schema not initialized; cannot get attribute '{attr}'")
             if hasattr(schema, attr):
                 schema_attr = getattr(schema, attr)
 
@@ -198,8 +200,8 @@ def _update_column_dtype(series, logical_type, name):
             series = series.apply(_reformat_to_latlong, meta=meta)
             series.name = name
         elif ks and isinstance(series, ks.Series):
-            formattedseries = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
-            series = ks.from_pandas(formattedseries)
+            formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+            series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
 

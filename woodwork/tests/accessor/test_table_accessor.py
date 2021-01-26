@@ -132,6 +132,10 @@ def test_accessor_getattr(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
+    error = re.escape("Schema not initialized; cannot get attribute 'index'")
+    with pytest.raises(AttributeError, match=error):
+        schema_df.ww.index
+
     schema_df.ww.init()
 
     assert schema_df.ww.name is None
@@ -143,6 +147,41 @@ def test_accessor_getattr(sample_df):
     error = re.escape("WoodworkTableAccessor and Schema classes have no attribute 'not_present'")
     with pytest.raises(AttributeError, match=error):
         sample_df.ww.not_present
+
+
+def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
+    xfail_dask_and_koalas(sample_df)
+    comparison_schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    # eq not implemented on Accessor class, so Schema's eq is called
+    assert schema_df.ww.__eq__(comparison_schema)
+
+    # Since there's a repr on Accessor, it gets called
+    assert schema_df.ww._repr_html_() == comparison_schema._repr_html_()
+    assert schema_df.ww.__repr__() != comparison_schema.__repr__()
+
+    logical_types = {
+        'id': Double,
+        'full_name': FullName
+    }
+    semantic_tags = {
+        'email': 'test_tag',
+    }
+    comparison_schema = Schema(sample_column_names,
+                               logical_types={**sample_inferred_logical_types, **logical_types},
+                               index='id',
+                               time_index='signup_date',
+                               semantic_tags=semantic_tags)
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types=logical_types,
+                      index='id',
+                      time_index='signup_date',
+                      semantic_tags=semantic_tags,
+                      already_sorted=True)
+    assert schema_df.ww == comparison_schema
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):
@@ -627,6 +666,7 @@ def test_underlying_index(sample_df):
 
 
 def test_accessor_already_sorted(sample_unsorted_df):
+    xfail_dask_and_koalas(sample_unsorted_df)
     if dd and isinstance(sample_unsorted_df, dd.DataFrame):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
     if ks and isinstance(sample_unsorted_df, ks.DataFrame):
