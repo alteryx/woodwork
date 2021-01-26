@@ -20,6 +20,7 @@ Release Notes
     * Enhancements
         * Add Python 3.9 support without Koalas testing (:pr:`511`)
         * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
+        * Add Schema class that holds typing info (:pr:`499`)
     * Fixes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
         * Support numpy 1.20.0 by restricting version for koalas and changing serialization error message (:pr:`532`)
@@ -38,7 +39,6 @@ Release Notes
     * Enhancements
         * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
         * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
-        * Add Schema class that holds typing info (:pr:`499`)
     * Fixes
         * Sort underlying series when sorting dataframe (:pr:`468`)
         * Allow setting indices to current index without side effects (:pr:`474`)
