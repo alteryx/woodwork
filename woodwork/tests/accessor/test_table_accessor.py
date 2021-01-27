@@ -132,6 +132,10 @@ def test_accessor_getattr(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
+
+    # We can access attributes on the Accessor class before the Schema is initialized
+    assert schema_df.ww.schema is None
+
     error = re.escape("Schema not initialized; cannot get attribute 'index'")
     with pytest.raises(AttributeError, match=error):
         schema_df.ww.index
