@@ -430,6 +430,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
         assert df[column_name].dtype == LatLong.pandas_dtype
 
+        assert df[column_name].iloc[-1] == (3, 4)
+
 
 def test_sets_string_dtype_on_init():
     column_name = 'test_series'
@@ -697,3 +699,75 @@ def test_accessor_already_sorted(sample_unsorted_df):
     unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
     unsorted_df.index.name = None
     pd.testing.assert_frame_equal(unsorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False)
+
+
+def test_ordinal_with_order(sample_series):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
+
+    ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
+    schema_df = pd.DataFrame(sample_series)
+    schema_df.ww.init(logical_types={'sample_series': ordinal_with_order})
+
+    column_logical_type = schema_df.ww.logical_types['sample_series']
+    assert isinstance(column_logical_type, Ordinal)
+    assert column_logical_type.order == ['a', 'b', 'c']
+
+    # --> add back when schema updates are implemented
+    # dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+    # new_dc = dc.set_logical_type(ordinal_with_order)
+    # assert isinstance(new_dc.logical_type, Ordinal)
+    # assert new_dc.logical_type.order == ['a', 'b', 'c']
+
+
+def test_ordinal_with_incomplete_ranking(sample_series):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
+
+    ordinal_incomplete_order = Ordinal(order=['a', 'b'])
+    error_msg = re.escape("Ordinal column sample_series contains values that are not "
+                          "present in the order values provided: ['c']")
+    with pytest.raises(ValueError, match=error_msg):
+        schema_df = pd.DataFrame(sample_series)
+        schema_df.ww.init(logical_types={'sample_series': ordinal_incomplete_order})
+
+
+def test_ordinal_with_nan_values():
+    nan_df = pd.DataFrame(pd.Series(['a', 'b', np.nan, 'a'], name='nan_series'))
+    ordinal_with_order = Ordinal(order=['a', 'b'])
+    nan_df.ww.init(logical_types={'nan_series': ordinal_with_order})
+
+    column_logical_type = nan_df.ww.logical_types['nan_series']
+    assert isinstance(column_logical_type, Ordinal)
+    assert column_logical_type.order == ['a', 'b']
+
+
+def test_accessor_with_falsy_column_names(falsy_names_df):
+    if dd and isinstance(falsy_names_df, dd.DataFrame):
+        pytest.xfail('Dask DataTables cannot handle integer column names')
+    xfail_dask_and_koalas(falsy_names_df)
+
+    schema_df = falsy_names_df.copy()
+    schema_df.ww.init(index=0, time_index='')
+    assert schema_df.ww.index == 0
+    assert schema_df.ww.time_index == ''
+
+    # --> add back in when series accessor is implemented
+    # for col_name in falsy_names_df.columns:
+    #     dc = dt[col_name]
+    #     assert dc.name == col_name
+    #     assert dc._series.name == col_name
+
+    # --> add back in once schema updates are implemented
+    # dt.time_index = None
+    # assert dt.time_index is None
+
+    # --> add back in once pop and rename are implemented on the accessor
+    # popped_col = dt.pop('')
+    # dt[''] = popped_col
+    # assert dt[''].name == ''
+    # assert dt['']._series.name == ''
+
+    # dt = dt.rename({'': 'col_with_name'})
+    # assert '' not in dt.columns
+    # assert 'col_with_name' in dt.columns
