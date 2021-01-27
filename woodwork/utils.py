@@ -233,3 +233,27 @@ def _is_null_latlong(val):
 
     # Since we can have list inputs here, pd.isnull will not have a relevant truth value for lists
     return not isinstance(val, list) and pd.isnull(val)
+
+
+def get_valid_mi_types():
+    """
+    Generate a list of LogicalTypes that are valid for calculating mutual information. Note that
+    index columns are not valid for calculating mutual information, but their types may be
+    returned by this function.
+
+    Args:
+        None
+
+    Returns:
+        list(LogicalType): A list of the LogicalTypes that can be use to calculate mutual information
+    """
+    valid_types = []
+    for ltype in ww.type_system.registered_types:
+        if 'category' in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif 'numeric' in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif ltype == ww.logical_types.Datetime or ltype == ww.logical_types.Boolean:
+            valid_types.append(ltype)
+
+    return valid_types

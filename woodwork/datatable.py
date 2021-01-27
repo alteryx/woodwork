@@ -19,6 +19,7 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_mode,
     _new_dt_including,
+    get_valid_mi_types,
     import_or_none,
     import_or_raise
 )
@@ -1009,15 +1010,9 @@ class DataTable(object):
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        # We only want Numeric, Categorical, and Boolean columns
-        # And we don't want the index column
-        valid_columns = [col_name for col_name, column
-                         in self.columns.items() if (col_name != self.index and
-                                                     (column._is_numeric() or
-                                                      column._is_categorical() or
-                                                      _get_ltype_class(column.logical_type) == Boolean or
-                                                      _get_ltype_class(column.logical_type) == Datetime)
-                                                     )]
+        valid_types = get_valid_mi_types()
+        valid_columns = [col.name for col in self.columns.values() if (
+            col.name != self.index and _get_ltype_class(col.logical_type) in valid_types)]
 
         data = self._dataframe[valid_columns]
         if dd and isinstance(data, dd.DataFrame):
