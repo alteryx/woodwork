@@ -28,8 +28,6 @@ class WoodworkTableAccessor:
         self._schema = None
 
     def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
-        # confirm all kwargs are present in the schema class - kwargs should be all the arguments from the Schema class
-        _validate_schema_params(kwargs)
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
 
         if make_index:
@@ -48,16 +46,15 @@ class WoodworkTableAccessor:
             parsed_logical_types[name] = logical_type
 
             updated_series = _update_column_dtype(series, logical_type, name)
-            self._dataframe[name] = updated_series
+            if updated_series is not series:
+                self._dataframe[name] = updated_series
 
-        # Create the Schema
         column_names = list(self._dataframe.columns)
         self._schema = Schema(column_names=column_names,
                               logical_types=parsed_logical_types,
                               index=index,
                               time_index=time_index, **kwargs)
 
-        # Set index on underlying data and sort columns based on indices
         self._set_underlying_index()
         if self._schema.time_index is not None:
             self._sort_columns(already_sorted)
@@ -69,7 +66,7 @@ class WoodworkTableAccessor:
         '''
         # schema = object.__getattribute__(self, '_schema')
         if self._schema is None:
-            raise AttributeError(f"Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+            raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
         if hasattr(self._schema, attr):
             schema_attr = getattr(self._schema, attr)
 
@@ -82,6 +79,9 @@ class WoodworkTableAccessor:
                 return schema_attr
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
+
+    def __repr__(self):
+        return repr(self._schema)
 
     @property
     def schema(self):
@@ -110,13 +110,6 @@ class WoodworkTableAccessor:
             # Only reset the index if the index isn't a RangeIndex
             elif not isinstance(self._dataframe.index, pd.RangeIndex):
                 self._dataframe.reset_index(drop=True, inplace=True)
-
-
-def _validate_schema_params(schema_params_dict):
-    possible_schema_params = inspect.signature(Schema).parameters
-    for param in schema_params_dict.keys():
-        if param not in possible_schema_params:
-            raise TypeError(f'Parameter {param} does not exist on the Schema class.')
 
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types):

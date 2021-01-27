@@ -27,8 +27,7 @@ from woodwork.table_accessor import (
     _check_index,
     _check_logical_types,
     _check_time_index,
-    _check_unique_column_names,
-    _validate_schema_params
+    _check_unique_column_names
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -40,16 +39,6 @@ ks = import_or_none('databricks.koalas')
 def xfail_dask_and_koalas(df):
     if dd and isinstance(df, dd.DataFrame) or ks and isinstance(df, ks.DataFrame):
         pytest.xfail('Dask and Koalas Accessors not yet supported.')
-
-
-def test_validate_schema_params_errors():
-    error = 'Parameter not_present does not exist on the Schema class.'
-    with pytest.raises(TypeError, match=error):
-        _validate_schema_params({
-            'name': 'schema',
-            'semantic_tags': {'id': 'tag'},
-            'not_present': True
-        })
 
 
 def test_check_index_errors(sample_df):
@@ -164,7 +153,7 @@ def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_in
 
     # Since there's a repr on Accessor, it gets called
     assert schema_df.ww._repr_html_() == comparison_schema._repr_html_()
-    assert schema_df.ww.__repr__() != comparison_schema.__repr__()
+    assert schema_df.ww.__repr__() == comparison_schema.__repr__()
 
     logical_types = {
         'id': Double,
@@ -773,3 +762,12 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     # dt = dt.rename({'': 'col_with_name'})
     # assert '' not in dt.columns
     # assert 'col_with_name' in dt.columns
+
+
+def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_types):
+    xfail_dask_and_koalas(sample_df)
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    sample_df.ww.init()
+
+    assert repr(schema) == repr(sample_df.ww)
