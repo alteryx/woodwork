@@ -237,7 +237,9 @@ def _is_null_latlong(val):
 
 def get_valid_mi_types():
     """
-    Generate a list of LogicalTypes that are valid for calculating mutual information.
+    Generate a list of LogicalTypes that are valid for calculating mutual information. Note that
+    index columns are not valid for calculating mutual information, but their types may be
+    returned by this function.
 
     Args:
         None
