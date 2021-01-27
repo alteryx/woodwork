@@ -67,11 +67,11 @@ class WoodworkTableAccessor:
             If the method is present on the Accessor, uses that method.
             If the method is present on Schema, uses that method.
         '''
-        schema = object.__getattribute__(self, '_schema')
-        if schema is None:
-            raise AttributeError(f"Schema not initialized; cannot get attribute '{attr}'")
-        if hasattr(schema, attr):
-            schema_attr = getattr(schema, attr)
+        # schema = object.__getattribute__(self, '_schema')
+        if self._schema is None:
+            raise AttributeError(f"Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+        if hasattr(self._schema, attr):
+            schema_attr = getattr(self._schema, attr)
 
             # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
             if callable(schema_attr) and attr != 'logical_type':
@@ -81,7 +81,7 @@ class WoodworkTableAccessor:
             else:
                 return schema_attr
         else:
-            raise AttributeError(f"WoodworkTableAccessor and Schema classes have no attribute '{attr}'")
+            raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
     @property
     def schema(self):

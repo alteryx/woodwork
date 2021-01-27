@@ -105,8 +105,6 @@ def test_check_unique_column_names_errors(sample_df):
     with pytest.raises(IndexError, match='Dataframe cannot contain duplicate columns names'):
         _check_unique_column_names(duplicate_cols_df)
 
-# --> add checks that confirm the schema object is the same as if you make it directly!!!!!
-
 
 def test_accessor_init(sample_df):
     xfail_dask_and_koalas(sample_df)
@@ -136,7 +134,7 @@ def test_accessor_getattr(sample_df):
     # We can access attributes on the Accessor class before the Schema is initialized
     assert schema_df.ww.schema is None
 
-    error = re.escape("Schema not initialized; cannot get attribute 'index'")
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     with pytest.raises(AttributeError, match=error):
         schema_df.ww.index
 
@@ -148,7 +146,7 @@ def test_accessor_getattr(sample_df):
 
     assert set(schema_df.ww.columns.keys()) == set(sample_df.columns)
 
-    error = re.escape("WoodworkTableAccessor and Schema classes have no attribute 'not_present'")
+    error = re.escape("Woodwork has no attribute 'not_present'")
     with pytest.raises(AttributeError, match=error):
         sample_df.ww.init()
         sample_df.ww.not_present

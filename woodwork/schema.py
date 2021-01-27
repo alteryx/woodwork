@@ -248,8 +248,8 @@ def _check_semantic_tags(column_names, semantic_tags):
         raise TypeError('semantic_tags must be a dictionary')
     cols_not_found = set(semantic_tags.keys()).difference(set(column_names))
     if cols_not_found:
-        raise LookupError('semantic_tags contains columns that are not present in '
-                          f'Schema: {sorted(list(cols_not_found))}')
+        raise LookupError('semantic_tags contains columns that do not exist: '
+                          f'{sorted(list(cols_not_found))}')
 
 
 def _check_column_descriptions(column_names, column_descriptions):
@@ -257,8 +257,8 @@ def _check_column_descriptions(column_names, column_descriptions):
         raise TypeError('column_descriptions must be a dictionary')
     cols_not_found = set(column_descriptions.keys()).difference(set(column_names))
     if cols_not_found:
-        raise LookupError('column_descriptions contains columns that are not present in '
-                          f'Schema: {sorted(list(cols_not_found))}')
+        raise LookupError('column_descriptions contains columns that do not exist: '
+                          f'{sorted(list(cols_not_found))}')
 
 
 def _check_table_metadata(table_metadata):
@@ -271,8 +271,8 @@ def _check_column_metadata(column_names, column_metadata):
         raise TypeError('Column metadata must be a dictionary.')
     cols_not_found = set(column_metadata.keys()).difference(set(column_names))
     if cols_not_found:
-        raise LookupError('column_metadata contains columns that are not present in '
-                          f'Schema: {sorted(list(cols_not_found))}')
+        raise LookupError('column_metadata contains columns that do not exist: '
+                          f'{sorted(list(cols_not_found))}')
 
 
 def _update_index(schema, column_names, index, old_index=None):
