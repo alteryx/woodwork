@@ -27,7 +27,7 @@ from woodwork.table_accessor import (
     _check_index,
     _check_logical_types,
     _check_time_index,
-    _check_unique_column_names
+    _is_valid_schema,
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -771,3 +771,45 @@ def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_t
     sample_df.ww.init()
 
     assert repr(schema) == repr(sample_df.ww)
+
+
+def test_is_valid_schema(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', logical_types={'id': 'Double', 'full_name': 'FullName'})
+    schema = schema_df.ww.schema
+
+    assert _is_valid_schema(schema_df, schema)
+    assert not _is_valid_schema(sample_df, schema)
+
+    sampled_df = schema_df.sample(2)
+    assert _is_valid_schema(sampled_df, schema)
+
+    dropped_df = schema_df.drop('id', axis=1)
+    assert not _is_valid_schema(dropped_df, schema)
+
+    different_underlying_index_df = schema_df.reset_index()
+    assert not _is_valid_schema(different_underlying_index_df, schema)
+
+    not_unique_df = schema_df.replace({3: 1})
+    not_unique_df.index = not_unique_df['id']
+    not_unique_df.index.name = None
+    assert not _is_valid_schema(not_unique_df, schema)
+
+
+def test_init_accessor_with_schema(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+    schema = schema_df.ww.schema
+
+    # --> should sorting happen??????
+    head_df = schema_df.head(2)
+
+
+def test_init_with_schema_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    pass

@@ -251,3 +251,22 @@ def _update_column_dtype(series, logical_type, name):
                 f'logical type {logical_type}.'
             raise TypeError(error_msg)
     return series
+
+
+def _is_valid_schema(dataframe, schema):
+    # --> consider raising warnings that tell the user what' wrong???
+    if set(dataframe.columns) != set(schema.columns.keys()):
+        return False
+    for name in dataframe.columns:
+        # --> need to know when to use backup dtype
+        if str(dataframe[name].dtype) != schema.logical_types[name].pandas_dtype:
+            return False
+    if schema.index is not None:
+        if not dataframe.index.equals(dataframe[schema.index]):
+            return False
+        elif not dataframe[schema.index].is_unique:
+            return False
+
+    return True
+
+    # --> need to check if index is still unique???
