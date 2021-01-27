@@ -259,7 +259,7 @@ def get_valid_mi_types():
     return valid_types
 
 
-def _parse_column_logical_type(series, logical_type, name):
+def _get_column_logical_type(series, logical_type, name):
     if logical_type:
         if isinstance(logical_type, str):
             logical_type = ww.type_system.str_to_logical_type(logical_type)

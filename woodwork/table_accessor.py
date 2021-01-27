@@ -10,7 +10,7 @@ from woodwork.type_sys.utils import (
     col_is_datetime
 )
 from woodwork.utils import (
-    _parse_column_logical_type,
+    _get_column_logical_type,
     _reformat_to_latlong,
     import_or_none
 )
@@ -44,7 +44,7 @@ class WoodworkTableAccessor:
             if logical_types:
                 logical_type = logical_types.get(name)
 
-            logical_type = _parse_column_logical_type(series, logical_type, name)
+            logical_type = _get_column_logical_type(series, logical_type, name)
             parsed_logical_types[name] = logical_type
 
             updated_series = _update_column_dtype(series, logical_type, name)
@@ -64,7 +64,7 @@ class WoodworkTableAccessor:
 
     def __getattr__(self, attr):
         '''
-            If method is present on the Accessor, uses that method.
+            If the method is present on the Accessor, uses that method.
             If the method is present on Schema, uses that method.
         '''
         schema = object.__getattribute__(self, '_schema')
