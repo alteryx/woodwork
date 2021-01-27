@@ -10,6 +10,7 @@ Release Notes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
     * Changes
     * Documentation Changes
+        * Add Alteryx OSS Twitter link (:pr:`519`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
