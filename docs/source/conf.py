@@ -100,7 +100,7 @@ html_theme = "pydata_sphinx_theme"
 #
 html_theme_options = {
     "github_url": "https://github.com/alteryx/woodwork",
-    "twitter_url": "https://twitter.com/alteryx?lang=en",
+    "twitter_url": "https://twitter.com/AlteryxOSS",
 }
 
 # The name of an image file (relative to this directory) to place at the top
