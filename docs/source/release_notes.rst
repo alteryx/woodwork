@@ -23,6 +23,7 @@ Release Notes
         * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
+        * Add WoodworkTableAccessor class that performs type inference and stores Schema (:pr:`514`)
     * Fixes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
         * Support numpy 1.20.0 by restricting version for koalas and changing serialization error message (:pr:`532`)
