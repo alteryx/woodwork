@@ -833,7 +833,8 @@ def test_is_valid_schema(sample_df):
     dropped_df = schema_df.drop('id', axis=1)
     assert not _is_valid_schema(dropped_df, schema)
 
-    different_underlying_index_df = schema_df.reset_index()
+    different_underlying_index_df = schema_df.copy()
+    different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
     assert not _is_valid_schema(different_underlying_index_df, schema)
 
     not_unique_df = schema_df.replace({3: 1})
