@@ -2,6 +2,27 @@
 API Reference
 =============
 
+WoodworkTableAccessor
+=====================
+
+.. currentmodule:: woodwork.table_accessor
+.. autosummary::
+    :toctree: generated/
+
+    WoodworkTableAccessor
+    WoodworkTableAccessor.init
+
+
+Schema
+======
+
+.. currentmodule:: woodwork.schema
+.. autosummary::
+    :toctree: generated/
+
+    Schema
+
+
 DataTable
 =========
 
