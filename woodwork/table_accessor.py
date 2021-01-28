@@ -25,7 +25,7 @@ class WoodworkTableAccessor:
         self._dataframe = dataframe
         self._schema = None
 
-    def init(self, schema=None, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
+    def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, schema=None, **kwargs):
         '''Initializes Woodwork typing information for a DataFrame.
 
         Args:
@@ -57,15 +57,13 @@ class WoodworkTableAccessor:
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            schema (Woodwork.Schema, optional): Typing information to use for the DataFrame instead of performing inference.
+                Any other arguments provided will be ignored.
         '''
+        _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
         if schema is not None:
-            if not _is_valid_schema(self._dataframe, schema):
-                raise ValueError('Invalid typing information presented at init. Cannot set Woodwork on DataFrame.')
-            else:
-                self._schema = schema
+            self._schema = schema
         else:
-            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
-
             if make_index:
                 _make_index(self._dataframe, index)
 
@@ -148,8 +146,10 @@ class WoodworkTableAccessor:
                 self._dataframe.reset_index(drop=True, inplace=True)
 
 
-def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types):
+def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):
     _check_unique_column_names(dataframe)
+    if schema is not None:
+        _check_schema(dataframe, schema)
     if index is not None or make_index:
         _check_index(dataframe, index, make_index)
     if logical_types:
@@ -201,6 +201,13 @@ def _check_logical_types(dataframe_columns, logical_types):
     if cols_not_found:
         raise LookupError('logical_types contains columns that are not present in '
                           f'dataframe: {sorted(list(cols_not_found))}')
+
+
+def _check_schema(dataframe, schema):
+    if not isinstance(schema, Schema):
+        raise TypeError('Provided schema must be a Woodwork.Schema object.')
+    if not _is_valid_schema(dataframe, schema):
+        raise ValueError('Invalid typing information presented at init. Cannot set Woodwork on DataFrame.')
 
 
 def _make_index(dataframe, index):
@@ -263,7 +270,6 @@ def _is_valid_schema(dataframe, schema):
     if set(dataframe.columns) != set(schema.columns.keys()):
         return False
     for name in dataframe.columns:
-        # --> need to know when to use backup dtype
         if str(dataframe[name].dtype) != schema.logical_types[name].pandas_dtype:
             return False
     if schema.index is not None:

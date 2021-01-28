@@ -116,6 +116,49 @@ def test_accessor_separation_of_params(sample_df):
     assert schema_df.ww.name == 'test_name'
 
 
+def test_init_accessor_with_schema(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
+    schema = schema_df.ww.schema
+
+    head_df = schema_df.head(2)
+    assert head_df.ww.schema is None
+    head_df.ww.init(schema=schema)
+
+    assert head_df.ww.name == 'test_schema'
+    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
+
+    iloc_df = schema_df.iloc[2:]
+    assert iloc_df.ww.schema is None
+    iloc_df.ww.init(schema=schema, logical_types={'id': NaturalLanguage})
+
+    assert iloc_df.ww.name == 'test_schema'
+    assert iloc_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
+    # Extra parameters do not take effect
+    assert iloc_df.ww.logical_types['id'] == Integer
+
+
+def test_init_accessor_with_schema_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+    schema = schema_df.ww.schema
+
+    iloc_df = schema_df.iloc[:, :-3]
+    assert iloc_df.ww.schema is None
+
+    error = 'Provided schema must be a Woodwork.Schema object.'
+    with pytest.raises(TypeError, match=error):
+        iloc_df.ww.init(schema=int)
+
+    error = 'Invalid typing information presented at init. Cannot set Woodwork on DataFrame.'
+    with pytest.raises(ValueError, match=error):
+        iloc_df.ww.init(schema=schema)
+
+
 def test_accessor_getattr(sample_df):
     xfail_dask_and_koalas(sample_df)
 
@@ -800,32 +843,3 @@ def test_is_valid_schema(sample_df):
 
     different_dtype_df = schema_df.astype({'id': 'Int64'}, copy=True)
     assert not _is_valid_schema(different_dtype_df, schema)
-
-
-def test_init_accessor_with_schema(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
-    schema_df = sample_df.copy()
-    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
-    schema = schema_df.ww.schema
-
-    # --> should sorting happen??????
-    head_df = schema_df.head(2)
-    assert head_df.ww.schema is None
-    head_df.ww.init(schema)
-
-    assert head_df.ww.name == 'test_schema'
-    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
-
-
-def test_init_accessor_with_schema_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
-    schema_df = sample_df.copy()
-    schema_df.ww.init()
-    schema = schema_df.ww.schema
-
-    iloc_df = schema_df.iloc[:, :-3]
-    error = 'Invalid typing information presented at init. Cannot set Woodwork on DataFrame.'
-    with pytest.raises(ValueError, match=error):
-        iloc_df.ww.init(schema)
