@@ -25,7 +25,7 @@ class WoodworkTableAccessor:
         self._dataframe = dataframe
         self._schema = None
 
-    def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
+    def init(self, schema=None, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
         '''Initializes Woodwork typing information for a DataFrame.
 
         Args:
@@ -58,36 +58,42 @@ class WoodworkTableAccessor:
                 specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
         '''
-        _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
+        if schema is not None:
+            if not _is_valid_schema(self._dataframe, schema):
+                raise ValueError('Invalid typing information presented at init. Cannot set Woodwork on DataFrame.')
+            else:
+                self._schema = schema
+        else:
+            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
 
-        if make_index:
-            _make_index(self._dataframe, index)
+            if make_index:
+                _make_index(self._dataframe, index)
 
-        # Perform type inference and update underlying data
-        parsed_logical_types = {}
-        for name in self._dataframe.columns:
-            series = self._dataframe[name]
+            # Perform type inference and update underlying data
+            parsed_logical_types = {}
+            for name in self._dataframe.columns:
+                series = self._dataframe[name]
 
-            logical_type = None
-            if logical_types:
-                logical_type = logical_types.get(name)
+                logical_type = None
+                if logical_types:
+                    logical_type = logical_types.get(name)
 
-            logical_type = _get_column_logical_type(series, logical_type, name)
-            parsed_logical_types[name] = logical_type
+                logical_type = _get_column_logical_type(series, logical_type, name)
+                parsed_logical_types[name] = logical_type
 
-            updated_series = _update_column_dtype(series, logical_type, name)
-            if updated_series is not series:
-                self._dataframe[name] = updated_series
+                updated_series = _update_column_dtype(series, logical_type, name)
+                if updated_series is not series:
+                    self._dataframe[name] = updated_series
 
-        column_names = list(self._dataframe.columns)
-        self._schema = Schema(column_names=column_names,
-                              logical_types=parsed_logical_types,
-                              index=index,
-                              time_index=time_index, **kwargs)
+            column_names = list(self._dataframe.columns)
+            self._schema = Schema(column_names=column_names,
+                                  logical_types=parsed_logical_types,
+                                  index=index,
+                                  time_index=time_index, **kwargs)
 
-        self._set_underlying_index()
-        if self._schema.time_index is not None:
-            self._sort_columns(already_sorted)
+            self._set_underlying_index()
+            if self._schema.time_index is not None:
+                self._sort_columns(already_sorted)
 
     def __getattr__(self, attr):
         '''
@@ -254,7 +260,6 @@ def _update_column_dtype(series, logical_type, name):
 
 
 def _is_valid_schema(dataframe, schema):
-    # --> consider raising warnings that tell the user what' wrong???
     if set(dataframe.columns) != set(schema.columns.keys()):
         return False
     for name in dataframe.columns:
@@ -262,11 +267,8 @@ def _is_valid_schema(dataframe, schema):
         if str(dataframe[name].dtype) != schema.logical_types[name].pandas_dtype:
             return False
     if schema.index is not None:
-        if not dataframe.index.equals(dataframe[schema.index]):
+        if not all(dataframe.index == dataframe[schema.index]):
             return False
         elif not dataframe[schema.index].is_unique:
             return False
-
     return True
-
-    # --> need to check if index is still unique???

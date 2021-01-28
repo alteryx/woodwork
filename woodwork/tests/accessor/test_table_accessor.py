@@ -27,7 +27,8 @@ from woodwork.table_accessor import (
     _check_index,
     _check_logical_types,
     _check_time_index,
-    _is_valid_schema,
+    _check_unique_column_names,
+    _is_valid_schema
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -777,7 +778,7 @@ def test_is_valid_schema(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
-    schema_df.ww.init(name='test_schema', logical_types={'id': 'Double', 'full_name': 'FullName'})
+    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
     schema = schema_df.ww.schema
 
     assert _is_valid_schema(schema_df, schema)
@@ -797,19 +798,34 @@ def test_is_valid_schema(sample_df):
     not_unique_df.index.name = None
     assert not _is_valid_schema(not_unique_df, schema)
 
+    different_dtype_df = schema_df.astype({'id': 'Int64'}, copy=True)
+    assert not _is_valid_schema(different_dtype_df, schema)
+
 
 def test_init_accessor_with_schema(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
+    schema = schema_df.ww.schema
+
+    # --> should sorting happen??????
+    head_df = schema_df.head(2)
+    assert head_df.ww.schema is None
+    head_df.ww.init(schema)
+
+    assert head_df.ww.name == 'test_schema'
+    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
+
+
+def test_init_accessor_with_schema_errors(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init()
     schema = schema_df.ww.schema
 
-    # --> should sorting happen??????
-    head_df = schema_df.head(2)
-
-
-def test_init_with_schema_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
-    pass
+    iloc_df = schema_df.iloc[:, :-3]
+    error = 'Invalid typing information presented at init. Cannot set Woodwork on DataFrame.'
+    with pytest.raises(ValueError, match=error):
+        iloc_df.ww.init(schema)
