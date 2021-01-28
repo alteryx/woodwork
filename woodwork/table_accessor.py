@@ -127,8 +127,8 @@ class WoodworkTableAccessor:
             self._dataframe.sort_values(sort_cols, inplace=True)
 
     def _set_underlying_index(self):
-        '''Sets the index of a Schema's underlying DataFrame.
-        If the Schema has an index, will be set to that index.
+        '''Sets the index of the underlying DataFrame.
+        If there is an index specified for the Schema, will be set to that index.
         If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
         meaning that the index will be a pd.RangeIndex starting from zero.
         '''
