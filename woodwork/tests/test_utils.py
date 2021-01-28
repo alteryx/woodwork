@@ -1,5 +1,13 @@
 
-from woodwork.logical_types import Categorical, Datetime, Double, Ordinal
+import inspect
+import os
+import re
+
+import numpy as np
+import pandas as pd
+import pytest
+
+import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -11,18 +19,6 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
-import inspect
-import os
-import re
-
-import numpy as np
-import pandas as pd
-import pytest
-
-import woodwork as ww
-<< << << < HEAD
-== == == =
->>>>>> > Create Schema class that holds typing info(  # 499)
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -46,12 +42,12 @@ from woodwork.utils import (
     import_or_raise
 )
 
-dd=import_or_none('dask.dataframe')
-ks=import_or_none('databricks.koalas')
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 def test_camel_to_snake():
-    test_items={
+    test_items = {
         'ZIPCode': 'zip_code',
         'SubRegionCode': 'sub_region_code',
         'NaturalLanguage': 'natural_language',
@@ -63,32 +59,32 @@ def test_camel_to_snake():
 
 
 def test_convert_input_to_set():
-    error_message="semantic_tags must be a string, set or list"
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         _convert_input_to_set(int)
 
-    error_message="test_text must be a string, set or list"
+    error_message = "test_text must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         _convert_input_to_set({'index': {}, 'time_index': {}}, 'test_text')
 
-    error_message="include parameter must contain only strings"
+    error_message = "include parameter must contain only strings"
     with pytest.raises(TypeError, match=error_message):
         _convert_input_to_set(['index', 1], 'include parameter')
 
-    semantic_tags_from_single=_convert_input_to_set('index', 'include parameter')
+    semantic_tags_from_single = _convert_input_to_set('index', 'include parameter')
     assert semantic_tags_from_single == {'index'}
 
-    semantic_tags_from_list=_convert_input_to_set(['index', 'numeric', 'category'])
+    semantic_tags_from_list = _convert_input_to_set(['index', 'numeric', 'category'])
     assert semantic_tags_from_list == {'index', 'numeric', 'category'}
 
-    semantic_tags_from_set=_convert_input_to_set({'index', 'numeric', 'category'}, 'include parameter')
+    semantic_tags_from_set = _convert_input_to_set({'index', 'numeric', 'category'}, 'include parameter')
     assert semantic_tags_from_set == {'index', 'numeric', 'category'}
 
 
 def test_list_logical_types_default():
-    all_ltypes=ww.logical_types.LogicalType.__subclasses__()
+    all_ltypes = ww.logical_types.LogicalType.__subclasses__()
 
-    df=list_logical_types()
+    df = list_logical_types()
 
     assert set(df.columns) == {'name', 'type_string', 'description', 'physical_type',
                                'standard_tags', 'is_default_type', 'is_registered', 'parent_type'}
@@ -104,14 +100,14 @@ def test_list_logical_types_customized_type_system():
     ww.type_system.remove_type('URL')
 
     class CustomRegistered(ww.logical_types.LogicalType):
-        pandas_dtype='int64'
+        pandas_dtype = 'int64'
 
     class CustomNotRegistered(ww.logical_types.LogicalType):
-        pandas_dtype='int64'
+        pandas_dtype = 'int64'
 
     ww.type_system.add_type(CustomRegistered)
-    all_ltypes=ww.logical_types.LogicalType.__subclasses__()
-    df=list_logical_types()
+    all_ltypes = ww.logical_types.LogicalType.__subclasses__()
+    df = list_logical_types()
     assert len(all_ltypes) == len(df)
     # Check that URL is unregistered
     assert df.loc[18, 'is_default_type']
@@ -130,7 +126,7 @@ def test_list_logical_types_customized_type_system():
 
 
 def test_list_semantic_tags():
-    df=list_semantic_tags()
+    df = list_semantic_tags()
 
     assert set(df.columns) == {'name', 'is_standard_tag', 'valid_logical_types'}
 
@@ -141,7 +137,7 @@ def test_list_semantic_tags():
 
 
 def test_get_mode():
-    series_list=[
+    series_list = [
         pd.Series([1, 2, 3, 4, 2, 2, 3]),
         pd.Series(['a', 'b', 'b', 'c', 'b']),
         pd.Series([3, 2, 3, 2]),
@@ -151,10 +147,10 @@ def test_get_mode():
         pd.Series([1, 2, pd.NA, 2, pd.NA, 3, 2])
     ]
 
-    answer_list=[2, 'b', 2, None, None, 2, 2]
+    answer_list = [2, 'b', 2, None, None, 2, 2]
 
     for series, answer in zip(series_list, answer_list):
-        mode=_get_mode(series)
+        mode = _get_mode(series)
         if answer is None:
             assert mode is None
         else:
@@ -162,11 +158,11 @@ def test_get_mode():
 
 
 def test_read_csv_no_params(sample_df_pandas, tmpdir):
-    filepath=os.path.join(tmpdir, 'sample.csv')
+    filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
 
-    dt_from_csv=ww.read_csv(filepath=filepath)
-    dt=ww.DataTable(sample_df_pandas)
+    dt_from_csv = ww.read_csv(filepath=filepath)
+    dt = ww.DataTable(sample_df_pandas)
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
     assert dt_from_csv.semantic_tags == dt.semantic_tags
@@ -174,22 +170,22 @@ def test_read_csv_no_params(sample_df_pandas, tmpdir):
 
 
 def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
-    filepath=os.path.join(tmpdir, 'sample.csv')
+    filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
-    logical_types={
+    logical_types = {
         'full_name': 'NaturalLanguage',
         'phone_number': 'PhoneNumber'
     }
-    semantic_tags={
+    semantic_tags = {
         'age': ['tag1', 'tag2'],
         'is_registered': ['tag3', 'tag4']
     }
-    dt_from_csv=ww.read_csv(filepath=filepath,
+    dt_from_csv = ww.read_csv(filepath=filepath,
                               index='id',
                               time_index='signup_date',
                               logical_types=logical_types,
                               semantic_tags=semantic_tags)
-    dt=ww.DataTable(sample_df_pandas,
+    dt = ww.DataTable(sample_df_pandas,
                       index='id',
                       time_index='signup_date',
                       logical_types=logical_types,
@@ -202,11 +198,11 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
 
 
 def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
-    filepath=os.path.join(tmpdir, 'sample.csv')
+    filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
-    nrows=2
-    dt_from_csv=ww.read_csv(filepath=filepath, nrows=nrows)
-    dt=ww.DataTable(sample_df_pandas)
+    nrows = 2
+    dt_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
+    dt = ww.DataTable(sample_df_pandas)
 
     assert isinstance(dt, ww.DataTable)
     assert dt_from_csv.logical_types == dt.logical_types
@@ -239,26 +235,26 @@ def test_is_numeric_datetime_series(time_index_df):
 
 
 def test_get_ltype_params():
-    params_empty_class=_get_specified_ltype_params(Categorical)
+    params_empty_class = _get_specified_ltype_params(Categorical)
     assert params_empty_class == {}
-    params_empty=_get_specified_ltype_params(Categorical())
+    params_empty = _get_specified_ltype_params(Categorical())
     assert params_empty == {}
 
-    params_class=_get_specified_ltype_params(Datetime)
+    params_class = _get_specified_ltype_params(Datetime)
     assert params_class == {}
 
-    params_null=_get_specified_ltype_params(Datetime())
+    params_null = _get_specified_ltype_params(Datetime())
     assert params_null == {'datetime_format': None}
 
-    ymd='%Y-%m-%d'
-    params_value=_get_specified_ltype_params(Datetime(datetime_format=ymd))
+    ymd = '%Y-%m-%d'
+    params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
 
 
 def test_new_dt_including(sample_df_pandas):
     # more thorough testing for this exists in indexer testing and new_dt_from_cols testing
-    dt=ww.DataTable(sample_df_pandas)
-    new_dt=_new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
+    dt = ww.DataTable(sample_df_pandas)
+    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
     for col in new_dt.columns:
         assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
         assert new_dt.logical_types[col] == new_dt.logical_types[col]
@@ -266,9 +262,9 @@ def test_new_dt_including(sample_df_pandas):
 
 def test_new_dt_including_all_params(sample_df):
     # The first element is self, so it won't be included in kwargs
-    possible_dt_params=inspect.getfullargspec(ww.DataTable.__init__)[0][1:]
+    possible_dt_params = inspect.getfullargspec(ww.DataTable.__init__)[0][1:]
 
-    kwargs={
+    kwargs = {
         'dataframe': sample_df.copy(),
         'name': 'test_dt',
         'index': 'made_index',
@@ -285,8 +281,8 @@ def test_new_dt_including_all_params(sample_df):
     # Confirm all possible params to DataTable init are present with non-default values where possible
     assert set(possible_dt_params) == set(kwargs.keys())
 
-    dt=ww.DataTable(**kwargs)
-    copy_dt=_new_dt_including(dt, dt._dataframe.copy())
+    dt = ww.DataTable(**kwargs)
+    copy_dt = _new_dt_including(dt, dt._dataframe.copy())
 
     assert dt == copy_dt
     pd.testing.assert_frame_equal(to_pandas(dt._dataframe), to_pandas(copy_dt._dataframe))
@@ -295,7 +291,7 @@ def test_new_dt_including_all_params(sample_df):
 def test_import_or_raise():
     assert import_or_raise('pandas', 'Module pandas could not be found') == pd
 
-    error='Module nonexistent could not be found.'
+    error = 'Module nonexistent could not be found.'
     with pytest.raises(ImportError, match=error):
         import_or_raise('nonexistent', error)
 
@@ -317,26 +313,26 @@ def test_is_s3():
 
 def test_reformat_to_latlong_errors():
     for latlong in [{1, 2, 3}, '{1, 2, 3}', 'This is text']:
-        error=(f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
+        error = (f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
         with pytest.raises(ValueError, match=error):
             _reformat_to_latlong(latlong)
 
-    error=re.escape("LatLongs must either be a tuple, a list, or a string representation of a tuple. (1,2) does not fit the criteria.")
+    error = re.escape("LatLongs must either be a tuple, a list, or a string representation of a tuple. (1,2) does not fit the criteria.")
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong("'(1,2)'")
 
     for latlong in [(1, 2, 3), '(1, 2, 3)']:
-        error=re.escape("LatLong values must have exactly two values. (1, 2, 3) does not have two values.")
+        error = re.escape("LatLong values must have exactly two values. (1, 2, 3) does not have two values.")
         with pytest.raises(ValueError, match=error):
             _reformat_to_latlong(latlong)
 
-    error=re.escape("Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by 41deg52\'54\" N cannot be converted to a float.")
+    error = re.escape("Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by 41deg52\'54\" N cannot be converted to a float.")
     with pytest.raises(ValueError, match=error):
         _reformat_to_latlong(('41deg52\'54\" N', '21deg22\'54\" W'))
 
 
 def test_reformat_to_latlong():
-    simple_latlong=(1, 2)
+    simple_latlong = (1, 2)
 
     assert _reformat_to_latlong((1, 2)) == simple_latlong
     assert _reformat_to_latlong(('1', '2')) == simple_latlong
@@ -358,7 +354,7 @@ def test_reformat_to_latlong():
 
 
 def test_reformat_to_latlong_list():
-    simple_latlong=[1, 2]
+    simple_latlong = [1, 2]
 
     assert _reformat_to_latlong((1, 2), use_list=True) == simple_latlong
     assert _reformat_to_latlong(('1', '2'), use_list=True) == simple_latlong
@@ -385,7 +381,7 @@ def test_to_latlong_float():
     assert _to_latlong_float(np.nan) is np.nan
     assert _to_latlong_float(pd.NA) is np.nan
 
-    error=re.escape('Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by [1, 2, 3] cannot be converted to a float.')
+    error = re.escape('Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by [1, 2, 3] cannot be converted to a float.')
     with pytest.raises(ValueError, match=error):
         _to_latlong_float([1, 2, 3])
 
@@ -405,8 +401,8 @@ def test_is_null_latlong():
 
 
 def test_get_valid_mi_types():
-    valid_types=get_valid_mi_types()
-    expected_types=[
+    valid_types = get_valid_mi_types()
+    expected_types = [
         Boolean,
         Categorical,
         CountryCode,
@@ -425,20 +421,20 @@ def test_get_column_logical_type(sample_series):
     assert _get_column_logical_type(sample_series, 'Datetime', 'col_name') == Datetime
     assert _get_column_logical_type(sample_series, Datetime, 'col_name') == Datetime
 
-    ymd_format=Datetime(datetime_format='%Y-%m-%d')
+    ymd_format = Datetime(datetime_format='%Y-%m-%d')
     assert _get_column_logical_type(sample_series, ymd_format, 'col_name') == ymd_format
 
     assert _get_column_logical_type(sample_series, None, 'col_name') == Categorical
 
 
 def test_get_column_logical_type_errors(sample_series):
-    error='Must use an Ordinal instance with order values defined'
+    error = 'Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error):
         _get_column_logical_type(sample_series, 'Ordinal', 'col_name')
 
     with pytest.raises(TypeError, match=error):
         _get_column_logical_type(sample_series, Ordinal, 'col_name')
 
-    error="Invalid logical type specified for 'col_name'"
+    error = "Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
         _get_column_logical_type(sample_series, int, 'col_name')

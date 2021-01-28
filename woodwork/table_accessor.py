@@ -1,5 +1,3 @@
-import inspect
-
 import pandas as pd
 
 from woodwork.logical_types import Datetime, LatLong, Ordinal
@@ -28,6 +26,38 @@ class WoodworkTableAccessor:
         self._schema = None
 
     def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, **kwargs):
+        '''Initializes Woodwork typing information for a DataFrame.
+
+        Args:
+            index (str, optional): Name of the index column.
+            time_index (str, optional): Name of the time index column.
+            logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
+                the DataFrame to the LogicalType for the column.
+            make_index (bool, optional): If True, will create a new unique, numeric index column with the
+                name specified by ``index`` and will add the new index column to the supplied DataFrame.
+                If True, the name specified in ``index`` cannot match an existing column name in
+                ``dataframe``. If False, the name is specified in ``index`` must match a column
+                present in the ``dataframe``. Defaults to False.
+            already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
+            name (str, optional): Name used to identify the DataFrame.
+            semantic_tags (dict, optional): Dictionary mapping column names in Woodwork to the
+                semantic tags for the column. The keys in the dictionary should be strings
+                that correspond to column names. There are two options for
+                specifying the dictionary values:
+                (str): If only one semantic tag is being set, a single string can be used as a value.
+                (list[str] or set[str]): If multiple tags are being set, a list or set of strings can be
+                used as the value.
+                Semantic tags will be set to an empty set for any column not included in the
+                dictionary.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
+            column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
+                to that column's metadata dictionary.
+            use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
+                specified logical type for the column. Defaults to True.
+            column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+        '''
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types)
 
         if make_index:
