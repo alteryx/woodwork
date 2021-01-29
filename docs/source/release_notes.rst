@@ -22,6 +22,7 @@ Release Notes
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
         * Add WoodworkTableAccessor class that performs type inference and stores Schema (:pr:`514`)
+        * Allow initializing Accessor schema with a valid Schema object (:pr:`522`)
     * Fixes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
         * Support numpy 1.20.0 by restricting version for koalas and changing serialization error message (:pr:`532`)
