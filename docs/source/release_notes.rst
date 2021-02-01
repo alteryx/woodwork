@@ -8,6 +8,7 @@ Release Notes
         * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
     * Fixes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
+        * Support numpy 1.20.0 by restricting version for koalas and changing serialization error message (:pr:`532`)
     * Changes
     * Documentation Changes
         * Add Alteryx OSS Twitter link (:pr:`519`)
@@ -16,7 +17,7 @@ Release Notes
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.8 January 25, 2021**
     * Enhancements
