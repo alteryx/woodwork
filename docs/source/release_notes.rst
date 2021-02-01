@@ -13,6 +13,7 @@ Release Notes
     * Documentation Changes
         * Add Alteryx OSS Twitter link (:pr:`519`)
         * Update logo and add new favicon (:pr:`521`)
+        * Multiple improvements to Getting Started page and guides (:pr:`527`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
