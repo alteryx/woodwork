@@ -491,7 +491,7 @@ class DataTable(object):
 
         Args:
             time_index (str): The name of the column to set as the time index.
-        
+
         Returns:
             woodwork.DataTable: DataTable with the specified time index column set.
         """
