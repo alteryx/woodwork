@@ -884,25 +884,6 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
     assert 'new_name' in schema_df.columns
 
 
-def test_dataframe_methods_on_accessor_returning_indexer(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
-    schema_df = sample_df.copy()
-    schema_df.ww.init(name='test_schema')
-
-    iloc_df = schema_df.ww.iloc()[2:, :]
-    assert iloc_df.ww.schema is None
-    pd.testing.assert_frame_equal(to_pandas(schema_df.iloc[2:, :]), to_pandas(iloc_df))
-
-    iloc_df.ww.init(schema=schema_df.ww.schema)
-    assert iloc_df.ww.name == 'test_schema'
-
-    error = 'Woodwork typing information is not valid for this DataFrame.'
-    with pytest.raises(ValueError, match=error):
-        iloc_df = schema_df.ww.iloc()[:, 2:]
-        iloc_df.ww.init(schema=schema_df.ww.schema)
-
-
 def test_dataframe_methods_on_accessor_returning_series(sample_df):
     xfail_dask_and_koalas(sample_df)
 
