@@ -1,5 +1,8 @@
+import warnings
+
 import pandas as pd
 
+from woodwork.exceptions import SchemaInvalidatedWarning
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
 from woodwork.type_sys.utils import (
@@ -121,9 +124,12 @@ class WoodworkTableAccessor:
                     '''
                     result = dataframe_attr(*args, **kwargs)
                     if isinstance(result, pd.DataFrame):
+                        # --> check valid schema before init so we can have better error message
                         result.ww.init(schema=self._schema)
                     # Confirm that the Schema is still valid on original DataFrame
-                    _check_schema(self._dataframe, self._schema)
+                    if not _is_valid_schema(self._dataframe, self._schema):
+                        warnings.warn(SchemaInvalidatedWarning().get_warning_message(attr), SchemaInvalidatedWarning)
+                        self._schema = None
 
                     return result
                 return wrapper
@@ -284,6 +290,7 @@ def _update_column_dtype(series, logical_type, name):
     return series
 
 
+# --> add separate error messages
 def _is_valid_schema(dataframe, schema):
     if set(dataframe.columns) != set(schema.columns.keys()):
         return False

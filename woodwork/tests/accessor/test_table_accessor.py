@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.exceptions import SchemaInvalidatedWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -863,6 +864,7 @@ def test_dataframe_methods_on_accessor(sample_df):
     error = 'Woodwork typing information is not valid for this DataFrame.'
     with pytest.raises(ValueError, match=error):
         schema_df.ww.astype({'id': 'string'})
+    assert schema_df.ww.schema is not None
 
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):
@@ -878,10 +880,11 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
 
-    error = 'Woodwork typing information is not valid for this DataFrame.'
-    with pytest.raises(ValueError, match=error):
+    warning = 'Operation performed by rename has invalidated the Woodwork typing information.'
+    with pytest.warns(SchemaInvalidatedWarning, match=warning):
         schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
     assert 'new_name' in schema_df.columns
+    assert schema_df.ww.schema is None
 
 
 def test_dataframe_methods_on_accessor_returning_series(sample_df):
@@ -899,10 +902,11 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(memory, schema_df.memory_usage())
 
-    error = 'Woodwork typing information is not valid for this DataFrame.'
-    with pytest.raises(ValueError, match=error):
+    warning = 'Operation performed by pop has invalidated the Woodwork typing information.'
+    with pytest.warns(SchemaInvalidatedWarning, match=warning):
         schema_df.ww.pop('id')
     assert 'id' not in schema_df.columns
+    assert schema_df.ww.schema is None
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):

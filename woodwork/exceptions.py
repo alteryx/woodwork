@@ -27,3 +27,8 @@ class OutdatedSchemaWarning(UserWarning):
                 '%s is no longer supported by this version '
                 'of woodwork. Attempting to load woodwork.DataTable ...'
                 % (saved_version_str))
+
+
+class SchemaInvalidatedWarning(UserWarning):
+    def get_warning_message(self, attr):
+        return (f'Operation performed by {attr} has invalidated the Woodwork typing information.')
