@@ -880,7 +880,7 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
 
-    warning = "Operation performed by rename has invalidated the Woodwork typing information:\n The following columns in the DataFrame were missing from the typing information: {'new_name'}"
+    warning = "Operation performed by rename has invalidated the Woodwork typing information:\n The following columns in the DataFrame were missing from the typing information: {'new_name'}. Reinitialize the typing information with DataFrame.ww.init."
     with pytest.warns(SchemaInvalidatedWarning, match=warning):
         schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
     assert 'new_name' in schema_df.columns
@@ -902,7 +902,7 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(memory, schema_df.memory_usage())
 
-    warning = "Operation performed by pop has invalidated the Woodwork typing information:\n The following columns in the typing information were missing from the DataFrame: {'id'}"
+    warning = "Operation performed by pop has invalidated the Woodwork typing information:\n The following columns in the typing information were missing from the DataFrame: {'id'}. Reinitialize the typing information with DataFrame.ww.init."
     with pytest.warns(SchemaInvalidatedWarning, match=warning):
         schema_df.ww.pop('id')
     assert 'id' not in schema_df.columns
