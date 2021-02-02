@@ -10,29 +10,28 @@ DataTable
     :toctree: generated/
 
     DataTable
-    DataTable.shape
     DataTable.add_semantic_tags
-    DataTable.remove_semantic_tags
-    DataTable.reset_semantic_tags
-    DataTable.select
-    DataTable.iloc
-    DataTable.set_index
-    DataTable.set_types
-    DataTable.set_time_index
-    DataTable.to_dataframe
     DataTable.describe
     DataTable.describe_dict
+    DataTable.drop
+    DataTable.head
+    DataTable.iloc
     DataTable.mutual_information
     DataTable.mutual_information_dict
-    DataTable.value_counts
-    DataTable.to_csv
-    DataTable.to_pickle
-    DataTable.to_parquet
+    DataTable.remove_semantic_tags
     DataTable.rename
+    DataTable.reset_semantic_tags
+    DataTable.select
+    DataTable.set_index
+    DataTable.set_time_index
+    DataTable.set_types
+    DataTable.shape
+    DataTable.to_csv
+    DataTable.to_dataframe
+    DataTable.to_parquet
+    DataTable.to_pickle
     DataTable.update_dataframe
-    DataTable.head
-    DataTable.drop
-
+    DataTable.value_counts
 
 DataColumn
 ==========
@@ -42,15 +41,14 @@ DataColumn
     :toctree: generated/
 
     DataColumn
-    DataColumn.shape
-    DataColumn.iloc
     DataColumn.add_semantic_tags
+    DataColumn.iloc
     DataColumn.remove_semantic_tags
     DataColumn.reset_semantic_tags
     DataColumn.set_logical_type
     DataColumn.set_semantic_tags
+    DataColumn.shape
     DataColumn.to_series
-
 
 Logical Types
 =============
@@ -64,10 +62,10 @@ Logical Types
     CountryCode
     Datetime
     Double
-    Integer
     EmailAddress
     Filepath
     FullName
+    Integer
     IPAddress
     LatLong
     NaturalLanguage
@@ -116,8 +114,8 @@ General Utils
     :toctree: generated
     :nosignatures:
 
-    read_csv
     get_valid_mi_types
+    read_csv
 
 Demo Data
 =========
