@@ -211,6 +211,64 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
 
 
+def test_read_csv_to_accessor_no_params(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df_pandas.to_csv(filepath, index=False)
+
+    df_from_csv = ww.read_csv_to_accessor(filepath=filepath)
+    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init()
+
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    pd.testing.assert_frame_equal(schema_df, df_from_csv)
+
+
+def test_read_csv_to_accessor_with_woodwork_params(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df_pandas.to_csv(filepath, index=False)
+    logical_types = {
+        'full_name': 'NaturalLanguage',
+        'phone_number': 'PhoneNumber'
+    }
+    semantic_tags = {
+        'age': ['tag1', 'tag2'],
+        'is_registered': ['tag3', 'tag4']
+    }
+    df_from_csv = ww.read_csv_to_accessor(filepath=filepath,
+                                          index='id',
+                                          time_index='signup_date',
+                                          logical_types=logical_types,
+                                          semantic_tags=semantic_tags)
+    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init(index='id',
+                      time_index='signup_date',
+                      logical_types=logical_types,
+                      semantic_tags=semantic_tags)
+
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    pd.testing.assert_frame_equal(schema_df, df_from_csv)
+
+
+def test_read_csv_to_accessor_with_pandas_params(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df_pandas.to_csv(filepath, index=False)
+    nrows = 2
+
+    df_from_csv = ww.read_csv_to_accessor(filepath=filepath, nrows=nrows)
+    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init()
+
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    assert len(df_from_csv) == nrows
+    pd.testing.assert_frame_equal(df_from_csv, schema_df.head(nrows))
+
+
 def test_is_numeric_datetime_series(time_index_df):
     assert _is_numeric_series(time_index_df['ints'], None)
     assert _is_numeric_series(time_index_df['ints'], Double)
