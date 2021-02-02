@@ -29,7 +29,7 @@ from woodwork.table_accessor import (
     _check_logical_types,
     _check_time_index,
     _check_unique_column_names,
-    _is_valid_schema
+    _get_invalid_schema_message
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -818,33 +818,33 @@ def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_t
     assert repr(schema) == repr(sample_df.ww)
 
 
-def test_is_valid_schema(sample_df):
+def test_get_invalid_schema_message(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
     schema = schema_df.ww.schema
 
-    assert _is_valid_schema(schema_df, schema)
-    assert not _is_valid_schema(sample_df, schema)
+    assert _get_invalid_schema_message(schema_df, schema) is None
+    assert _get_invalid_schema_message(sample_df, schema) == 'dtype mismatch for column id between DataFrame dtype, int64, and LogicalType dtype, float64.'
 
     sampled_df = schema_df.sample(2)
-    assert _is_valid_schema(sampled_df, schema)
+    assert _get_invalid_schema_message(sampled_df, schema) is None
 
     dropped_df = schema_df.drop('id', axis=1)
-    assert not _is_valid_schema(dropped_df, schema)
+    assert _get_invalid_schema_message(dropped_df, schema) == "The following columns in the typing information were missing from the DataFrame: {'id'}"
+
+    renamed_df = schema_df.rename({'id': 'new_col'}, axis=1)
+    assert _get_invalid_schema_message(renamed_df, schema) == "The following columns in the DataFrame were missing from the typing information: {'new_col'}"
 
     different_underlying_index_df = schema_df.copy()
     different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
-    assert not _is_valid_schema(different_underlying_index_df, schema)
+    assert _get_invalid_schema_message(different_underlying_index_df, schema) == "Index mismatch between DataFrame and typing information."
 
     not_unique_df = schema_df.replace({3: 1})
     not_unique_df.index = not_unique_df['id']
     not_unique_df.index.name = None
-    assert not _is_valid_schema(not_unique_df, schema)
-
-    different_dtype_df = schema_df.astype({'id': 'Int64'}, copy=True)
-    assert not _is_valid_schema(different_dtype_df, schema)
+    assert _get_invalid_schema_message(not_unique_df, schema) == 'Index column is not unique.'
 
 
 def test_dataframe_methods_on_accessor(sample_df):
@@ -861,7 +861,7 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    error = 'Woodwork typing information is not valid for this DataFrame.'
+    error = 'Cannot perform operation astype: dtype mismatch for column id between DataFrame dtype, string, and LogicalType dtype, Int64.'
     with pytest.raises(ValueError, match=error):
         schema_df.ww.astype({'id': 'string'})
     assert schema_df.ww.schema is not None
@@ -880,7 +880,7 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
 
-    warning = 'Operation performed by rename has invalidated the Woodwork typing information.'
+    warning = "Operation performed by rename has invalidated the Woodwork typing information:\n The following columns in the DataFrame were missing from the typing information: {'new_name'}"
     with pytest.warns(SchemaInvalidatedWarning, match=warning):
         schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
     assert 'new_name' in schema_df.columns
@@ -902,7 +902,7 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(memory, schema_df.memory_usage())
 
-    warning = 'Operation performed by pop has invalidated the Woodwork typing information.'
+    warning = "Operation performed by pop has invalidated the Woodwork typing information:\n The following columns in the typing information were missing from the DataFrame: {'id'}"
     with pytest.warns(SchemaInvalidatedWarning, match=warning):
         schema_df.ww.pop('id')
     assert 'id' not in schema_df.columns

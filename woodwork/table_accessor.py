@@ -125,10 +125,15 @@ class WoodworkTableAccessor:
                     result = dataframe_attr(*args, **kwargs)
                     if isinstance(result, pd.DataFrame):
                         # --> check valid schema before init so we can have better error message
+                        invalid_schema_message = _get_invalid_schema_message(result, self._schema)
+                        if invalid_schema_message:
+                            raise ValueError(f'Cannot perform operation {attr}: {invalid_schema_message}')
                         result.ww.init(schema=self._schema)
                     # Confirm that the Schema is still valid on original DataFrame
-                    if not _is_valid_schema(self._dataframe, self._schema):
-                        warnings.warn(SchemaInvalidatedWarning().get_warning_message(attr), SchemaInvalidatedWarning)
+                    invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
+                    if invalid_schema_message:
+                        warnings.warn(SchemaInvalidatedWarning().get_warning_message(attr, invalid_schema_message),
+                                      SchemaInvalidatedWarning)
                         self._schema = None
 
                     return result
@@ -230,8 +235,9 @@ def _check_logical_types(dataframe_columns, logical_types):
 def _check_schema(dataframe, schema):
     if not isinstance(schema, Schema):
         raise TypeError('Provided schema must be a Woodwork.Schema object.')
-    if not _is_valid_schema(dataframe, schema):
-        raise ValueError('Woodwork typing information is not valid for this DataFrame.')
+    invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
+    if invalid_schema_message:
+        raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
 
 
 def _make_index(dataframe, index):
@@ -290,16 +296,23 @@ def _update_column_dtype(series, logical_type, name):
     return series
 
 
-# --> add separate error messages
-def _is_valid_schema(dataframe, schema):
-    if set(dataframe.columns) != set(schema.columns.keys()):
-        return False
+def _get_invalid_schema_message(dataframe, schema):
+    dataframe_cols = set(dataframe.columns)
+    schema_cols = set(schema.columns.keys())
+
+    df_cols_not_in_schema = dataframe_cols - schema_cols
+    if df_cols_not_in_schema:
+        return f'The following columns in the DataFrame were missing from the typing information: {df_cols_not_in_schema}'
+    schema_cols_not_in_df = schema_cols - dataframe_cols
+    if schema_cols_not_in_df:
+        return f'The following columns in the typing information were missing from the DataFrame: {schema_cols_not_in_df}'
     for name in dataframe.columns:
-        if str(dataframe[name].dtype) != schema.logical_types[name].pandas_dtype:
-            return False
+        df_dtype = str(dataframe[name].dtype)
+        schema_dtype = schema.logical_types[name].pandas_dtype
+        if df_dtype != schema_dtype:
+            return f'dtype mismatch for column {name} between DataFrame dtype, {df_dtype}, and LogicalType dtype, {schema_dtype}.'
     if schema.index is not None:
         if not all(dataframe.index == dataframe[schema.index]):
-            return False
+            return 'Index mismatch between DataFrame and typing information.'
         elif not dataframe[schema.index].is_unique:
-            return False
-    return True
+            return 'Index column is not unique.'

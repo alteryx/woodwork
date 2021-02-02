@@ -30,5 +30,5 @@ class OutdatedSchemaWarning(UserWarning):
 
 
 class SchemaInvalidatedWarning(UserWarning):
-    def get_warning_message(self, attr):
-        return (f'Operation performed by {attr} has invalidated the Woodwork typing information.')
+    def get_warning_message(self, attr, invalid_reason):
+        return (f'Operation performed by {attr} has invalidated the Woodwork typing information:\n {invalid_reason}')
