@@ -110,7 +110,6 @@ class WoodworkTableAccessor:
                 return wrapper
             return schema_attr
         if hasattr(self._dataframe, attr):
-            # --> should do a lot of manual testing here to see what sorts of things we can get returned via callable and not
             dataframe_attr = getattr(self._dataframe, attr)
 
             if callable(dataframe_attr):

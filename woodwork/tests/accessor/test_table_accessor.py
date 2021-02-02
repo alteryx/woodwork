@@ -860,9 +860,9 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    # --> test iloc as full copy
-
-    # --> add check that invalidates
+    error = 'Woodwork typing information is not valid for this DataFrame.'
+    with pytest.raises(ValueError, match=error):
+        schema_df.ww.astype({'id': 'string'})
 
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):
@@ -878,7 +878,29 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
 
-# --> add option that ends up throwing error - astype
+    error = 'Woodwork typing information is not valid for this DataFrame.'
+    with pytest.raises(ValueError, match=error):
+        schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
+    assert 'new_name' in schema_df.columns
+
+
+def test_dataframe_methods_on_accessor_returning_indexer(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    iloc_df = schema_df.ww.iloc()[2:, :]
+    assert iloc_df.ww.schema is None
+    pd.testing.assert_frame_equal(to_pandas(schema_df.iloc[2:, :]), to_pandas(iloc_df))
+
+    iloc_df.ww.init(schema=schema_df.ww.schema)
+    assert iloc_df.ww.name == 'test_schema'
+
+    error = 'Woodwork typing information is not valid for this DataFrame.'
+    with pytest.raises(ValueError, match=error):
+        iloc_df = schema_df.ww.iloc()[:, 2:]
+        iloc_df.ww.init(schema=schema_df.ww.schema)
 
 
 def test_dataframe_methods_on_accessor_returning_series(sample_df):
@@ -895,7 +917,11 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     memory = schema_df.ww.memory_usage()
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(memory, schema_df.memory_usage())
-    # --> test pop
+
+    error = 'Woodwork typing information is not valid for this DataFrame.'
+    with pytest.raises(ValueError, match=error):
+        schema_df.ww.pop('id')
+    assert 'id' not in schema_df.columns
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
