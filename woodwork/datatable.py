@@ -491,6 +491,9 @@ class DataTable(object):
 
         Args:
             time_index (str): The name of the column to set as the time index.
+        
+        Returns:
+            woodwork.DataTable: DataTable with the specified time index column set.
         """
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_time_index(new_dt, time_index, self.time_index)
