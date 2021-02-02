@@ -124,7 +124,6 @@ class WoodworkTableAccessor:
                     '''
                     result = dataframe_attr(*args, **kwargs)
                     if isinstance(result, pd.DataFrame):
-                        # --> check valid schema before init so we can have better error message
                         invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                         if invalid_schema_message:
                             raise ValueError(f'Cannot perform operation {attr}: {invalid_schema_message}')
