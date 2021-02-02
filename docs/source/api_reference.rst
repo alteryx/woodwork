@@ -18,6 +18,7 @@ DataTable
     DataTable.iloc
     DataTable.mutual_information
     DataTable.mutual_information_dict
+    DataTable.pop
     DataTable.remove_semantic_tags
     DataTable.rename
     DataTable.reset_semantic_tags
@@ -87,6 +88,7 @@ TypeSystem
     TypeSystem.add_type
     TypeSystem.infer_logical_type
     TypeSystem.remove_type
+    TypeSystem.reset_defaults
     TypeSystem.update_inference_function
     TypeSystem.update_relationship
 
