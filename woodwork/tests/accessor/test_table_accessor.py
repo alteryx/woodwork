@@ -860,6 +860,10 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
+    # --> test iloc as full copy
+
+    # --> add check that invalidates
+
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):
     xfail_dask_and_koalas(sample_df)
@@ -874,17 +878,36 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
 
+# --> add option that ends up throwing error - astype
+
 
 def test_dataframe_methods_on_accessor_returning_series(sample_df):
     xfail_dask_and_koalas(sample_df)
-    pass
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    dtypes = schema_df.ww.dtypes
+
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_series_equal(dtypes, schema_df.dtypes)
+
+    memory = schema_df.ww.memory_usage()
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_series_equal(memory, schema_df.memory_usage())
+    # --> test pop
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
     xfail_dask_and_koalas(sample_df)
-    pass
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
 
+    shape = schema_df.ww.shape
 
-def test_erroring_dataframe_methods_on_accessor(sample_df):
-    xfail_dask_and_koalas(sample_df)
-    pass
+    assert schema_df.ww.name == 'test_schema'
+    assert shape == schema_df.shape
+
+    keys = schema_df.ww.keys()
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_index_equal(keys, schema_df.keys())

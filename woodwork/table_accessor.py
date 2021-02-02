@@ -115,7 +115,7 @@ class WoodworkTableAccessor:
 
             if callable(dataframe_attr):
                 def wrapper(*args, **kwargs):
-                    '''Makes the method call on the DataFrame, intercepting it prior to return in order
+                    '''Makes the method call on the DataFrame, intercepting its result prior to return in order
                     to initialize Woodwork if the return object is also a DataFrame.
                     Will error if the Schema is not valid for the new DataFrame.
                     '''
