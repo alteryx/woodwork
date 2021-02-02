@@ -154,7 +154,7 @@ def test_init_accessor_with_schema_errors(sample_df):
     with pytest.raises(TypeError, match=error):
         iloc_df.ww.init(schema=int)
 
-    error = 'Invalid typing information presented at init. Cannot set Woodwork on DataFrame.'
+    error = 'Woodwork typing information is not valid for this DataFrame.'
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
 
@@ -844,3 +844,47 @@ def test_is_valid_schema(sample_df):
 
     different_dtype_df = schema_df.astype({'id': 'Int64'}, copy=True)
     assert not _is_valid_schema(different_dtype_df, schema)
+
+
+def test_dataframe_methods_on_accessor(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    copied_df = schema_df.ww.copy()
+
+    assert schema_df is not copied_df
+    assert isinstance(copied_df.ww.schema, Schema)
+    assert copied_df.ww.schema == schema_df.ww.schema
+
+    pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
+
+
+def test_dataframe_methods_on_accessor_inplace(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    df_pre_sort = schema_df.copy()
+
+    schema_df.ww.sort_values(['full_name'], inplace=True)
+    assert schema_df.ww.name == 'test_schema'
+
+    pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
+
+
+def test_dataframe_methods_on_accessor_returning_series(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    pass
+
+
+def test_dataframe_methods_on_accessor_other_returns(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    pass
+
+
+def test_erroring_dataframe_methods_on_accessor(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    pass

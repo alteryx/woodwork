@@ -104,13 +104,31 @@ class WoodworkTableAccessor:
         if hasattr(self._schema, attr):
             schema_attr = getattr(self._schema, attr)
 
-            # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
-            if callable(schema_attr) and attr != 'logical_type':
+            if callable(schema_attr):
                 def wrapper(*args, **kwargs):
                     return schema_attr(*args, **kwargs)
                 return wrapper
-            else:
-                return schema_attr
+            return schema_attr
+        if hasattr(self._dataframe, attr):
+            # --> should do a lot of manual testing here to see what sorts of things we can get returned via callable and not
+            dataframe_attr = getattr(self._dataframe, attr)
+
+            if callable(dataframe_attr):
+                def wrapper(*args, **kwargs):
+                    '''Makes the method call on the DataFrame, intercepting it prior to return in order
+                    to initialize Woodwork if the return object is also a DataFrame.
+                    Will error if the Schema is not valid for the new DataFrame.
+                    '''
+                    result = dataframe_attr(*args, **kwargs)
+                    if isinstance(result, pd.DataFrame):
+                        result.ww.init(schema=self._schema)
+                    # Confirm that the Schema is still valid on original DataFrame
+                    _check_schema(self._dataframe, self._schema)
+
+                    return result
+                return wrapper
+            return dataframe_attr
+
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
@@ -207,7 +225,7 @@ def _check_schema(dataframe, schema):
     if not isinstance(schema, Schema):
         raise TypeError('Provided schema must be a Woodwork.Schema object.')
     if not _is_valid_schema(dataframe, schema):
-        raise ValueError('Invalid typing information presented at init. Cannot set Woodwork on DataFrame.')
+        raise ValueError('Woodwork typing information is not valid for this DataFrame.')
 
 
 def _make_index(dataframe, index):
