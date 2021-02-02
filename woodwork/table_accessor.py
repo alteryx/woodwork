@@ -97,6 +97,7 @@ class WoodworkTableAccessor:
         '''
             If the method is present on the Accessor, uses that method.
             If the method is present on Schema, uses that method.
+            If the method is present on DataFrame, uses that method.
         '''
         # schema = object.__getattribute__(self, '_schema')
         if self._schema is None:
