@@ -26,8 +26,6 @@ from woodwork.utils import (
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-if ks:
-    ks.set_option('compute.ops_on_diff_frames', True)
 
 
 class DataTable(object):
@@ -83,6 +81,8 @@ class DataTable(object):
                          table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
 
         self._dataframe = dataframe
+        if ks and isinstance(dataframe, ks.DataFrame) and not ks.get_option('compute.ops_on_diff_frames'):
+            ks.set_option('compute.ops_on_diff_frames', True)
 
         self.make_index = make_index or None
         if self.make_index:
