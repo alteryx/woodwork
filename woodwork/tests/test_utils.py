@@ -2,6 +2,7 @@
 import inspect
 import os
 import re
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -37,6 +38,7 @@ from woodwork.utils import (
     _to_latlong_float,
     camel_to_snake,
     get_valid_mi_types,
+    import_and_configure_koalas,
     import_or_none,
     import_or_raise
 )
@@ -298,6 +300,33 @@ def test_import_or_raise():
 def test_import_or_none():
     assert import_or_none('pandas') == pd
     assert import_or_none('nonexistent') is None
+
+
+@patch('woodwork.utils.import_or_none')
+def test_import_and_configure_koalas(mock_import_or_none):
+    mock_import_or_none.return_value = None
+    ks = import_and_configure_koalas()
+    assert ks is None
+    assert mock_import_or_none.called_with('databricks.koalas')
+
+    mock_import_or_none.return_value = MagicMock()
+    ks = import_and_configure_koalas()
+    assert ks == mock_import_or_none.return_value
+    assert mock_import_or_none.called_with('databricks.koalas')
+    assert mock_import_or_none.set_option.called_with('compute_ops_on_diff_frames', True)
+
+
+@patch('woodwork.utils.import_or_none')
+def test_import_and_configure_koalas_exception(mock_import_or_none):
+    mock_ks = MagicMock(name='mock_ks')
+    mock_ks.set_option.side_effect = Exception('Y33T')
+    mock_import_or_none.return_value = mock_ks
+    with pytest.warns(None) as warnings_record:
+        ks = import_and_configure_koalas()
+        assert ks == mock_ks
+        assert mock_import_or_none.called_with('databricks.koalas')
+        assert len(warnings_record) == 1
+        assert str(warnings_record[0].message) == 'Unable to set compute.ops_on_diff_frames for koalas: Y33T'
 
 
 def test_is_url():

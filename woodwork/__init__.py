@@ -1,9 +1,13 @@
 # flake8: noqa
+import warnings
+
 from .config import config
 from .datatable import DataColumn, DataTable
 from .type_sys import type_system
 from .type_sys.utils import list_logical_types, list_semantic_tags
-from .utils import read_csv
+from .utils import import_and_configure_koalas, read_csv
 from .version import __version__
 
 import woodwork.demo
+
+ks = import_and_configure_koalas()

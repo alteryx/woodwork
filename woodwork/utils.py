@@ -1,7 +1,7 @@
-
 import ast
 import importlib
 import re
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -21,6 +21,41 @@ def import_or_none(library):
         return importlib.import_module(library)
     except ImportError:
         return None
+
+
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportError with the supplied error message.
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)
+
+
+def import_and_configure_koalas(compute_ops_on_diff_frames=True):
+    """
+    Import the koalas library. Set the compute.ops_on_diff_frames as an optimization.
+
+    Args:
+        compute_ops_on_diff_frames (bool): the koalas compute.ops_on_diff_frames argum,ent
+
+    Returns:
+        A reference to the koalas module
+    """
+    ks = import_or_none('databricks.koalas')
+    if ks is None:
+        return None
+    try:
+        ks.set_option('compute.ops_on_diff_frames', compute_ops_on_diff_frames)
+    except Exception as e:
+        warnings.warn('Unable to set compute.ops_on_diff_frames for koalas: ' + str(e))
+    return ks
 
 
 def camel_to_snake(s):
@@ -145,21 +180,6 @@ def _new_dt_including(datatable, new_data):
                         table_metadata=datatable.metadata,
                         column_metadata=new_column_metadata,
                         column_descriptions=new_column_descriptions)
-
-
-def import_or_raise(library, error_msg):
-    '''
-    Attempts to import the requested library.  If the import fails, raises an
-    ImportError with the supplied error message.
-
-    Args:
-        library (str): the name of the library
-        error_msg (str): error message to return if the import fails
-    '''
-    try:
-        return importlib.import_module(library)
-    except ImportError:
-        raise ImportError(error_msg)
 
 
 def _is_s3(string):
