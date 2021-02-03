@@ -9,6 +9,7 @@ Release Notes
     * Fixes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
         * Support numpy 1.20.0 by restricting version for koalas and changing serialization error message (:pr:`532`)
+        * Avoid fatal errors at import-time from koalas (:pr:`542`)
     * Changes
     * Documentation Changes
         * Add Alteryx OSS Twitter link (:pr:`519`)
