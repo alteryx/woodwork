@@ -16,7 +16,7 @@ Release Notes
         * Update logo and add new favicon (:pr:`521`)
         * Multiple improvements to Getting Started page and guides (:pr:`527`)
         * Clean up API Reference and docstrings (:pr:`536`)
-        * Added Open Graph for Twitter and Facebook (:pr:`527`)
+        * Added Open Graph for Twitter and Facebook (:pr:`529`)
     * Testing Changes
 
 Thanks to the following people for contributing to this release:
