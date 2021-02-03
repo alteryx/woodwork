@@ -2,7 +2,10 @@ import warnings
 
 import pandas as pd
 
-from woodwork.exceptions import CannotInitSchemaWarning, SchemaInvalidatedWarning
+from woodwork.exceptions import (
+    CannotInitSchemaWarning,
+    SchemaInvalidatedWarning
+)
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
 from woodwork.type_sys.utils import (
@@ -112,41 +115,9 @@ class WoodworkTableAccessor:
         if self._schema is None:
             raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
         if hasattr(self._schema, attr):
-            schema_attr = getattr(self._schema, attr)
-
-            if callable(schema_attr):
-                def wrapper(*args, **kwargs):
-                    return schema_attr(*args, **kwargs)
-                return wrapper
-            return schema_attr
+            return self._make_schema_call(attr)
         if hasattr(self._dataframe, attr):
-            dataframe_attr = getattr(self._dataframe, attr)
-
-            if callable(dataframe_attr):
-                def wrapper(*args, **kwargs):
-                    '''Makes the method call on the DataFrame, intercepting its result prior to return in order
-                    to initialize Woodwork if the return object is also a DataFrame.
-                    Will error if the Schema is not valid for the new DataFrame.
-                    '''
-                    result = dataframe_attr(*args, **kwargs)
-                    if isinstance(result, pd.DataFrame):
-                        invalid_schema_message = _get_invalid_schema_message(result, self._schema)
-                        if invalid_schema_message:
-                            warnings.warn(CannotInitSchemaWarning().get_warning_message(attr, invalid_schema_message),
-                                          CannotInitSchemaWarning)
-                        else:
-                            result.ww.init(schema=self._schema)
-                    # Confirm that the Schema is still valid on original DataFrame
-                    invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
-                    if invalid_schema_message:
-                        warnings.warn(SchemaInvalidatedWarning().get_warning_message(attr, invalid_schema_message),
-                                      SchemaInvalidatedWarning)
-                        self._schema = None
-
-                    return result
-                return wrapper
-            return dataframe_attr
-
+            return self._make_dataframe_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
@@ -180,6 +151,55 @@ class WoodworkTableAccessor:
             # Only reset the index if the index isn't a RangeIndex
             elif not isinstance(self._dataframe.index, pd.RangeIndex):
                 self._dataframe.reset_index(drop=True, inplace=True)
+
+    def _make_schema_call(self, attr):
+        '''
+        Forwards the requested attribute onto the schema object.
+        Results are that of the Woodwork.Schema class.
+        '''
+        schema_attr = getattr(self._schema, attr)
+
+        if callable(schema_attr):
+            def wrapper(*args, **kwargs):
+                return schema_attr(*args, **kwargs)
+            return wrapper
+        return schema_attr
+
+    def _make_dataframe_call(self, attr):
+        '''
+        Forwards the requested attribute onto the dataframe object.
+        Intercepts return value, attempting to initialize Woodwork with the current schema
+        when a new DataFrame is returned.
+        Confirms schema is still valid for the original DataFrame.
+        '''
+        dataframe_attr = getattr(self._dataframe, attr)
+
+        if callable(dataframe_attr):
+            def wrapper(*args, **kwargs):
+                # Make DataFrame call and intercept the result
+                result = dataframe_attr(*args, **kwargs)
+
+                # Try to initialize Woodwork with the existing Schema
+                if isinstance(result, pd.DataFrame):
+                    invalid_schema_message = _get_invalid_schema_message(result, self._schema)
+                    if invalid_schema_message:
+                        warnings.warn(CannotInitSchemaWarning().get_warning_message(attr, invalid_schema_message),
+                                      CannotInitSchemaWarning)
+                    else:
+                        result.ww.init(schema=self._schema)
+                # Confirm that the Schema is still valid on original DataFrame
+                # Important for inplace operations
+                invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
+                if invalid_schema_message:
+                    warnings.warn(SchemaInvalidatedWarning().get_warning_message(attr, invalid_schema_message),
+                                  SchemaInvalidatedWarning)
+                    self._schema = None
+
+                # Always return the results of the DataFrame operation whether or not Woodwork is initialized
+                return result
+            return wrapper
+        # Directly return non-callable DataFrame attributes
+        return dataframe_attr
 
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):

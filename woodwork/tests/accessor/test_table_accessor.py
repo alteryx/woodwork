@@ -4,7 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import CannotInitSchemaWarning, SchemaInvalidatedWarning
+from woodwork.exceptions import (
+    CannotInitSchemaWarning,
+    SchemaInvalidatedWarning
+)
 from woodwork.logical_types import (
     URL,
     Boolean,
