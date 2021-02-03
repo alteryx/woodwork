@@ -2,7 +2,7 @@ import warnings
 
 import pandas as pd
 
-from woodwork.exceptions import SchemaInvalidatedWarning
+from woodwork.exceptions import CannotInitSchemaWarning, SchemaInvalidatedWarning
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
 from woodwork.type_sys.utils import (
@@ -102,7 +102,6 @@ class WoodworkTableAccessor:
             If the method is present on Schema, uses that method.
             If the method is present on DataFrame, uses that method.
         '''
-        # schema = object.__getattribute__(self, '_schema')
         if self._schema is None:
             raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
         if hasattr(self._schema, attr):
@@ -126,8 +125,10 @@ class WoodworkTableAccessor:
                     if isinstance(result, pd.DataFrame):
                         invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                         if invalid_schema_message:
-                            raise ValueError(f'Cannot perform operation {attr}: {invalid_schema_message}')
-                        result.ww.init(schema=self._schema)
+                            warnings.warn(CannotInitSchemaWarning().get_warning_message(attr, invalid_schema_message),
+                                          CannotInitSchemaWarning)
+                        else:
+                            result.ww.init(schema=self._schema)
                     # Confirm that the Schema is still valid on original DataFrame
                     invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
                     if invalid_schema_message:
@@ -309,9 +310,9 @@ def _get_invalid_schema_message(dataframe, schema):
         df_dtype = str(dataframe[name].dtype)
         schema_dtype = schema.logical_types[name].pandas_dtype
         if df_dtype != schema_dtype:
-            return f'dtype mismatch for column {name} between DataFrame dtype, {df_dtype}, and LogicalType dtype, {schema_dtype}.'
+            return f'dtype mismatch for column {name} between DataFrame dtype, {df_dtype}, and LogicalType dtype, {schema_dtype}'
     if schema.index is not None:
         if not all(dataframe.index == dataframe[schema.index]):
-            return 'Index mismatch between DataFrame and typing information.'
+            return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
-            return 'Index column is not unique.'
+            return 'Index column is not unique'
