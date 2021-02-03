@@ -28,7 +28,14 @@ class WoodworkTableAccessor:
         self._dataframe = dataframe
         self._schema = None
 
-    def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, schema=None, **kwargs):
+    def init(self,
+             index=None,
+             time_index=None,
+             logical_types=None,
+             make_index=False,
+             already_sorted=False,
+             schema=None,
+             **kwargs):
         '''Initializes Woodwork typing information for a DataFrame.
 
         Args:
@@ -202,17 +209,20 @@ def _check_unique_column_names(dataframe):
 def _check_index(dataframe, index, make_index=False):
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
-        raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
+        raise LookupError(f'Specified index column `{index}` not found in dataframe. '
+                          'To create a new index column, set make_index to True.')
     if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
         # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
     if make_index and index is not None and index in dataframe.columns:
         # User sets make_index to True, but supplies an index name that matches a column already present
-        raise IndexError('When setting make_index to True, the name specified for index cannot match an existing column name')
+        raise IndexError('When setting make_index to True, '
+                         'the name specified for index cannot match an existing column name')
     if make_index and index is None:
         # User sets make_index to True, but does not supply a name for the index
-        raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
+        raise IndexError('When setting make_index to True, '
+                         'the name for the new index must be specified in the index parameter')
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
@@ -302,15 +312,18 @@ def _get_invalid_schema_message(dataframe, schema):
 
     df_cols_not_in_schema = dataframe_cols - schema_cols
     if df_cols_not_in_schema:
-        return f'The following columns in the DataFrame were missing from the typing information: {df_cols_not_in_schema}'
+        return f'The following columns in the DataFrame were missing from the typing information: '\
+            f'{df_cols_not_in_schema}'
     schema_cols_not_in_df = schema_cols - dataframe_cols
     if schema_cols_not_in_df:
-        return f'The following columns in the typing information were missing from the DataFrame: {schema_cols_not_in_df}'
+        return f'The following columns in the typing information were missing from the DataFrame: '\
+            f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
         df_dtype = str(dataframe[name].dtype)
         schema_dtype = schema.logical_types[name].pandas_dtype
         if df_dtype != schema_dtype:
-            return f'dtype mismatch for column {name} between DataFrame dtype, {df_dtype}, and LogicalType dtype, {schema_dtype}'
+            return f'dtype mismatch for column {name} between DataFrame dtype, '\
+                f'{df_dtype}, and LogicalType dtype, {schema_dtype}'
     if schema.index is not None:
         if not all(dataframe.index == dataframe[schema.index]):
             return 'Index mismatch between DataFrame and typing information'
