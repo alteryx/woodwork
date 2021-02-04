@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -28,7 +29,7 @@ from woodwork.table_accessor import (
     _check_logical_types,
     _check_time_index,
     _check_unique_column_names,
-    _is_valid_schema
+    _get_invalid_schema_message
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -147,14 +148,15 @@ def test_init_accessor_with_schema_errors(sample_df):
     schema_df.ww.init()
     schema = schema_df.ww.schema
 
-    iloc_df = schema_df.iloc[:, :-3]
+    iloc_df = schema_df.iloc[:, :-1]
     assert iloc_df.ww.schema is None
 
     error = 'Provided schema must be a Woodwork.Schema object.'
     with pytest.raises(TypeError, match=error):
         iloc_df.ww.init(schema=int)
 
-    error = 'Invalid typing information presented at init. Cannot set Woodwork on DataFrame.'
+    error = ("Woodwork typing information is not valid for this DataFrame: "
+             "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
 
@@ -817,30 +819,118 @@ def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_t
     assert repr(schema) == repr(sample_df.ww)
 
 
-def test_is_valid_schema(sample_df):
+def test_get_invalid_schema_message(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
     schema = schema_df.ww.schema
 
-    assert _is_valid_schema(schema_df, schema)
-    assert not _is_valid_schema(sample_df, schema)
+    assert _get_invalid_schema_message(schema_df, schema) is None
+    assert (_get_invalid_schema_message(sample_df, schema) ==
+            'dtype mismatch for column id between DataFrame dtype, int64, and Double dtype, float64')
 
     sampled_df = schema_df.sample(2)
-    assert _is_valid_schema(sampled_df, schema)
+    assert _get_invalid_schema_message(sampled_df, schema) is None
 
     dropped_df = schema_df.drop('id', axis=1)
-    assert not _is_valid_schema(dropped_df, schema)
+    assert (_get_invalid_schema_message(dropped_df, schema) ==
+            "The following columns in the typing information were missing from the DataFrame: {'id'}")
+
+    renamed_df = schema_df.rename({'id': 'new_col'}, axis=1)
+    assert (_get_invalid_schema_message(renamed_df, schema) ==
+            "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
 
     different_underlying_index_df = schema_df.copy()
     different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
-    assert not _is_valid_schema(different_underlying_index_df, schema)
+    assert (_get_invalid_schema_message(different_underlying_index_df, schema) ==
+            "Index mismatch between DataFrame and typing information")
 
     not_unique_df = schema_df.replace({3: 1})
     not_unique_df.index = not_unique_df['id']
     not_unique_df.index.name = None
-    assert not _is_valid_schema(not_unique_df, schema)
+    assert _get_invalid_schema_message(not_unique_df, schema) == 'Index column is not unique'
 
-    different_dtype_df = schema_df.astype({'id': 'Int64'}, copy=True)
-    assert not _is_valid_schema(different_dtype_df, schema)
+
+def test_dataframe_methods_on_accessor(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    copied_df = schema_df.ww.copy()
+
+    assert schema_df is not copied_df
+    assert isinstance(copied_df.ww.schema, Schema)
+    assert copied_df.ww.schema == schema_df.ww.schema
+
+    pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
+
+    warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
+        'dtype mismatch for column id between DataFrame dtype, string, and Integer dtype, Int64.\n '\
+        'Please initialize Woodwork with DataFrame.ww.init'
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        new_df = schema_df.ww.astype({'id': 'string'})
+    assert new_df['id'].dtype == 'string'
+    assert new_df.ww.schema is None
+    assert schema_df.ww.schema is not None
+
+
+def test_dataframe_methods_on_accessor_inplace(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    df_pre_sort = schema_df.copy()
+
+    schema_df.ww.sort_values(['full_name'], inplace=True)
+    assert schema_df.ww.name == 'test_schema'
+
+    pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
+
+    warning = "Operation performed by rename has invalidated the Woodwork typing information:\n "\
+        "The following columns in the DataFrame were missing from the typing information: {'new_name'}.\n "\
+        "Please initialize Woodwork with DataFrame.ww.init"
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
+    assert 'new_name' in schema_df.columns
+    assert schema_df.ww.schema is None
+
+
+def test_dataframe_methods_on_accessor_returning_series(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    dtypes = schema_df.ww.dtypes
+
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_series_equal(dtypes, schema_df.dtypes)
+
+    memory = schema_df.ww.memory_usage()
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_series_equal(memory, schema_df.memory_usage())
+
+    warning = "Operation performed by pop has invalidated the Woodwork typing information:\n "\
+        "The following columns in the typing information were missing from the DataFrame: {'id'}.\n "\
+        "Please initialize Woodwork with DataFrame.ww.init"
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        schema_df.ww.pop('id')
+    assert 'id' not in schema_df.columns
+    assert schema_df.ww.schema is None
+
+
+def test_dataframe_methods_on_accessor_other_returns(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema')
+
+    shape = schema_df.ww.shape
+
+    assert schema_df.ww.name == 'test_schema'
+    assert shape == schema_df.shape
+
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
