@@ -126,8 +126,21 @@ class WoodworkTableAccessor:
         return self._schema
 
     def select(self, include):
-        '''
-        '''
+        """Create a DataFrame with Woodowork typing information initialized 
+        that includes only columns whose Logical Type and semantic tags are 
+        specified in the list of types and tags to include.
+        If no matching columns are found, an empty DataFrame will be returned.
+
+        Args:
+            include (str or LogicalType or list[str or LogicalType]): Logical
+                types, semantic tags to include
+                in the DataFrame.
+
+        Returns:
+            DataFrame: The subset of the original DataFrame that contains just the
+            logical types and semantic tags in ``include``. Has Woodwork typing
+            information initialized.
+        """
         cols_to_include = self._schema._filter_cols(include)
         return self._new_df_with_schema_from_cols(cols_to_include)
 
@@ -206,7 +219,10 @@ class WoodworkTableAccessor:
         return dataframe_attr
 
     def _new_df_with_schema_from_cols(self, cols_to_include):
-        # confirm order is the same and all columns are present
+        '''
+        Creates a new DataFrame from a list of column names with Woodwork initialized,
+        retaining all typing information and maintaining the DataFrame's column order.
+        '''
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
         cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
 

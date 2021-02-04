@@ -230,6 +230,12 @@ class Schema(object):
 
     def _new_schema_including(self, subset_cols):
         '''
+        Creates a new Schema with specified columns, retainig typing information.
+
+        Args:
+            subset_cols (list[str]): subset of columns from which to create the new Schema
+        Returns:
+            Schema: New Schema with attributes from original Schema
         '''
         new_logical_types = {}
         new_semantic_tags = {}
