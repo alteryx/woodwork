@@ -1,5 +1,8 @@
+import warnings
+
 import pandas as pd
 
+from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
 from woodwork.type_sys.utils import (
@@ -25,7 +28,14 @@ class WoodworkTableAccessor:
         self._dataframe = dataframe
         self._schema = None
 
-    def init(self, index=None, time_index=None, logical_types=None, make_index=False, already_sorted=False, schema=None, **kwargs):
+    def init(self,
+             index=None,
+             time_index=None,
+             logical_types=None,
+             make_index=False,
+             already_sorted=False,
+             schema=None,
+             **kwargs):
         '''Initializes Woodwork typing information for a DataFrame.
 
         Args:
@@ -97,20 +107,14 @@ class WoodworkTableAccessor:
         '''
             If the method is present on the Accessor, uses that method.
             If the method is present on Schema, uses that method.
+            If the method is present on DataFrame, uses that method.
         '''
-        # schema = object.__getattribute__(self, '_schema')
         if self._schema is None:
             raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
         if hasattr(self._schema, attr):
-            schema_attr = getattr(self._schema, attr)
-
-            # logical_type attr can return an uninstantiated LogicalType which we don't want to interpret as callable
-            if callable(schema_attr) and attr != 'logical_type':
-                def wrapper(*args, **kwargs):
-                    return schema_attr(*args, **kwargs)
-                return wrapper
-            else:
-                return schema_attr
+            return self._make_schema_call(attr)
+        if hasattr(self._dataframe, attr):
+            return self._make_dataframe_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
@@ -145,6 +149,56 @@ class WoodworkTableAccessor:
             elif not isinstance(self._dataframe.index, pd.RangeIndex):
                 self._dataframe.reset_index(drop=True, inplace=True)
 
+    def _make_schema_call(self, attr):
+        '''
+        Forwards the requested attribute onto the schema object.
+        Results are that of the Woodwork.Schema class.
+        '''
+        schema_attr = getattr(self._schema, attr)
+
+        if callable(schema_attr):
+            def wrapper(*args, **kwargs):
+                return schema_attr(*args, **kwargs)
+            return wrapper
+        return schema_attr
+
+    def _make_dataframe_call(self, attr):
+        '''
+        Forwards the requested attribute onto the dataframe object.
+        Intercepts return value, attempting to initialize Woodwork with the current schema
+        when a new DataFrame is returned.
+        Confirms schema is still valid for the original DataFrame.
+        '''
+        dataframe_attr = getattr(self._dataframe, attr)
+
+        if callable(dataframe_attr):
+            def wrapper(*args, **kwargs):
+                # Make DataFrame call and intercept the result
+                result = dataframe_attr(*args, **kwargs)
+
+                # Try to initialize Woodwork with the existing Schema
+                if isinstance(result, pd.DataFrame):
+                    invalid_schema_message = _get_invalid_schema_message(result, self._schema)
+                    if invalid_schema_message:
+                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message),
+                                      TypingInfoMismatchWarning)
+                    else:
+                        result.ww.init(schema=self._schema)
+                else:
+                    # Confirm that the Schema is still valid on original DataFrame
+                    # Important for inplace operations
+                    invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
+                    if invalid_schema_message:
+                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message),
+                                      TypingInfoMismatchWarning)
+                        self._schema = None
+
+                # Always return the results of the DataFrame operation whether or not Woodwork is initialized
+                return result
+            return wrapper
+        # Directly return non-callable DataFrame attributes
+        return dataframe_attr
+
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):
     _check_unique_column_names(dataframe)
@@ -173,17 +227,20 @@ def _check_unique_column_names(dataframe):
 def _check_index(dataframe, index, make_index=False):
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
-        raise LookupError(f'Specified index column `{index}` not found in dataframe. To create a new index column, set make_index to True.')
+        raise LookupError(f'Specified index column `{index}` not found in dataframe. '
+                          'To create a new index column, set make_index to True.')
     if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
         # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
     if make_index and index is not None and index in dataframe.columns:
         # User sets make_index to True, but supplies an index name that matches a column already present
-        raise IndexError('When setting make_index to True, the name specified for index cannot match an existing column name')
+        raise IndexError('When setting make_index to True, '
+                         'the name specified for index cannot match an existing column name')
     if make_index and index is None:
         # User sets make_index to True, but does not supply a name for the index
-        raise IndexError('When setting make_index to True, the name for the new index must be specified in the index parameter')
+        raise IndexError('When setting make_index to True, '
+                         'the name for the new index must be specified in the index parameter')
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
@@ -206,8 +263,9 @@ def _check_logical_types(dataframe_columns, logical_types):
 def _check_schema(dataframe, schema):
     if not isinstance(schema, Schema):
         raise TypeError('Provided schema must be a Woodwork.Schema object.')
-    if not _is_valid_schema(dataframe, schema):
-        raise ValueError('Invalid typing information presented at init. Cannot set Woodwork on DataFrame.')
+    invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
+    if invalid_schema_message:
+        raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
 
 
 def _make_index(dataframe, index):
@@ -266,15 +324,26 @@ def _update_column_dtype(series, logical_type, name):
     return series
 
 
-def _is_valid_schema(dataframe, schema):
-    if set(dataframe.columns) != set(schema.columns.keys()):
-        return False
+def _get_invalid_schema_message(dataframe, schema):
+    dataframe_cols = set(dataframe.columns)
+    schema_cols = set(schema.columns.keys())
+
+    df_cols_not_in_schema = dataframe_cols - schema_cols
+    if df_cols_not_in_schema:
+        return f'The following columns in the DataFrame were missing from the typing information: '\
+            f'{df_cols_not_in_schema}'
+    schema_cols_not_in_df = schema_cols - dataframe_cols
+    if schema_cols_not_in_df:
+        return f'The following columns in the typing information were missing from the DataFrame: '\
+            f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
-        if str(dataframe[name].dtype) != schema.logical_types[name].pandas_dtype:
-            return False
+        df_dtype = dataframe[name].dtype
+        schema_dtype = schema.logical_types[name].pandas_dtype
+        if df_dtype != schema_dtype:
+            return f'dtype mismatch for column {name} between DataFrame dtype, '\
+                f'{df_dtype}, and {schema.logical_types[name]} dtype, {schema_dtype}'
     if schema.index is not None:
         if not all(dataframe.index == dataframe[schema.index]):
-            return False
+            return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
-            return False
-    return True
+            return 'Index column is not unique'
