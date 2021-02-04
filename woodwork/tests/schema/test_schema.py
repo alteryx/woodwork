@@ -225,15 +225,15 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
         schema._filter_cols(Datetime())
 
 
-def test_new_schema_including(sample_column_names, sample_inferred_logical_types):
+def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types)
-    new_schema = schema._new_schema_including(sample_column_names[1:4])
+    new_schema = schema._get_subset_schema(sample_column_names[1:4])
     for col in new_schema.columns:
         assert new_schema.semantic_tags[col] == schema.semantic_tags[col]
         assert new_schema.logical_types[col] == schema.logical_types[col]
 
 
-def test_new_schema_including_all_params(sample_column_names, sample_inferred_logical_types):
+def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logical_types):
     # The first element is self, so it won't be included in kwargs
     possible_dt_params = inspect.getfullargspec(Schema.__init__)[0][1:]
 
@@ -254,6 +254,6 @@ def test_new_schema_including_all_params(sample_column_names, sample_inferred_lo
     assert set(possible_dt_params) == set(kwargs.keys())
 
     schema = Schema(**kwargs)
-    copy_schema = schema._new_schema_including(sample_column_names)
+    copy_schema = schema._get_subset_schema(sample_column_names)
 
     assert schema == copy_schema
