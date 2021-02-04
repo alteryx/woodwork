@@ -181,6 +181,53 @@ class Schema(object):
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
+    def _filter_cols(self, include):
+        """Return list of columns filtered in specified way. In case of collision, favors logical types
+        then semantic tag then column name.
+
+        Args:
+            include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
+                filter columns by. Can be Logical Types or Semantic Tags.
+
+        Returns:
+            List[str] of column names that fit into filter.
+        """
+        if not isinstance(include, list):
+            include = [include]
+
+        ltypes_used = set()
+        ltypes_in_schema = {_get_ltype_class(col['logical_type']) for col in self.columns.values()}
+
+        tags_used = set()
+        tags_in_schema = {tag for col in self.columns.values() for tag in col['semantic_tags']}
+
+        cols_to_include = set()
+
+        for selector in include:
+            if _get_ltype_class(selector) in ww.type_system.registered_types:
+                if selector not in ww.type_system.registered_types:
+                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
+                if selector in ltypes_in_schema:
+                    ltypes_used.add(selector)
+            elif isinstance(selector, str):
+                # If the str is a viable ltype, it'll take precedence
+                # but if it's not present, we'll check if it's a tag
+                ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
+                if ltype and ltype in ltypes_in_schema:
+                    ltypes_used.add(ltype)
+                    continue
+                elif selector in tags_in_schema:
+                    tags_used.add(selector)
+            else:
+                raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
+
+        for col_name, col in self.columns.items():
+            if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
+                cols_to_include.add(col_name)
+
+        # --> need to remember to sort by dataframe column order any time we use this with a DataFrame
+        return list(cols_to_include)
+
 
 def _validate_params(column_names, name, index, time_index, logical_types,
                      table_metadata, column_metadata, semantic_tags, column_descriptions):

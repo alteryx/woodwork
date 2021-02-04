@@ -1,9 +1,12 @@
+import pytest
+
 import pandas as pd
 
 from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,
+    Double,
     Integer,
     NaturalLanguage
 )
@@ -162,3 +165,59 @@ def test_schema_column_metadata(sample_column_names, sample_inferred_logical_typ
 
     schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata={'id': column_metadata})
     assert schema.columns['id']['metadata'] == column_metadata
+
+
+def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='dt_name')
+
+    filtered = schema._filter_cols(include=Datetime)
+    assert filtered == ['signup_date']
+
+    filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
+    filtered_log_type = schema._filter_cols(include=NaturalLanguage)
+    assert filtered_log_type == filtered_log_type_string
+
+    filtered_semantic_tag = schema._filter_cols(include='numeric')
+    assert filtered_semantic_tag == ['age']
+
+    filtered_multiple = schema._filter_cols(include=['numeric'])
+    expected = ['phone_number', 'age']
+    for col in filtered_multiple:
+        assert col in expected
+
+    # --> add back in when describe is implemented
+    # filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
+    # expected = ['full_name', 'phone_number', 'email']
+    # for col in filtered_multiple_overlap:
+    #     assert col in expected
+
+
+def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='dt_name')
+
+    filter_no_matches = schema._filter_cols(include='nothing')
+    assert filter_no_matches == []
+
+    filter_empty_list = schema._filter_cols(include=[])
+    assert filter_empty_list == []
+
+
+def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='dt_name')
+
+    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(include=['boolean', 'index', Double, 1])
+
+    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(Datetime())
