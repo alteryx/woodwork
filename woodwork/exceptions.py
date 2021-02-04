@@ -29,15 +29,8 @@ class OutdatedSchemaWarning(UserWarning):
                 % (saved_version_str))
 
 
-class SchemaInvalidatedWarning(UserWarning):
+class TypingInfoMismatchWarning(UserWarning):
     def get_warning_message(self, attr, invalid_reason):
         return (f'Operation performed by {attr} has invalidated the Woodwork typing information:\n '
-                f'{invalid_reason}.\n '
-                'Please reinitialize Woodwork with DataFrame.ww.init')
-
-
-class CannotInitSchemaWarning(UserWarning):
-    def get_warning_message(self, attr, invalid_reason):
-        return (f'DataFrame created by {attr} is not valid for the given typing information:\n '
                 f'{invalid_reason}.\n '
                 'Please initialize Woodwork with DataFrame.ww.init')

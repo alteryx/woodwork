@@ -2,10 +2,7 @@ import warnings
 
 import pandas as pd
 
-from woodwork.exceptions import (
-    CannotInitSchemaWarning,
-    SchemaInvalidatedWarning
-)
+from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.schema import Schema
 from woodwork.type_sys.utils import (
@@ -183,17 +180,18 @@ class WoodworkTableAccessor:
                 if isinstance(result, pd.DataFrame):
                     invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                     if invalid_schema_message:
-                        warnings.warn(CannotInitSchemaWarning().get_warning_message(attr, invalid_schema_message),
-                                      CannotInitSchemaWarning)
+                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message),
+                                      TypingInfoMismatchWarning)
                     else:
                         result.ww.init(schema=self._schema)
-                # Confirm that the Schema is still valid on original DataFrame
-                # Important for inplace operations
-                invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
-                if invalid_schema_message:
-                    warnings.warn(SchemaInvalidatedWarning().get_warning_message(attr, invalid_schema_message),
-                                  SchemaInvalidatedWarning)
-                    self._schema = None
+                else:
+                    # Confirm that the Schema is still valid on original DataFrame
+                    # Important for inplace operations
+                    invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
+                    if invalid_schema_message:
+                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message),
+                                      TypingInfoMismatchWarning)
+                        self._schema = None
 
                 # Always return the results of the DataFrame operation whether or not Woodwork is initialized
                 return result

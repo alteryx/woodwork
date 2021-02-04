@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import (
-    CannotInitSchemaWarning,
-    SchemaInvalidatedWarning
-)
+from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -869,10 +866,10 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    warning = 'DataFrame created by astype is not valid for the given typing information:\n '\
+    warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
         'dtype mismatch for column id between DataFrame dtype, string, and Integer dtype, Int64.\n '\
         'Please initialize Woodwork with DataFrame.ww.init'
-    with pytest.warns(CannotInitSchemaWarning, match=warning):
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
         new_df = schema_df.ww.astype({'id': 'string'})
     assert new_df['id'].dtype == 'string'
     assert new_df.ww.schema is None
@@ -894,8 +891,8 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     warning = "Operation performed by rename has invalidated the Woodwork typing information:\n "\
         "The following columns in the DataFrame were missing from the typing information: {'new_name'}.\n "\
-        "Please reinitialize Woodwork with DataFrame.ww.init"
-    with pytest.warns(SchemaInvalidatedWarning, match=warning):
+        "Please initialize Woodwork with DataFrame.ww.init"
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
         schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
     assert 'new_name' in schema_df.columns
     assert schema_df.ww.schema is None
@@ -918,8 +915,8 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
 
     warning = "Operation performed by pop has invalidated the Woodwork typing information:\n "\
         "The following columns in the typing information were missing from the DataFrame: {'id'}.\n "\
-        "Please reinitialize Woodwork with DataFrame.ww.init"
-    with pytest.warns(SchemaInvalidatedWarning, match=warning):
+        "Please initialize Woodwork with DataFrame.ww.init"
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
         schema_df.ww.pop('id')
     assert 'id' not in schema_df.columns
     assert schema_df.ww.schema is None
