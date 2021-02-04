@@ -1,12 +1,14 @@
-import pytest
+import inspect
 
 import pandas as pd
+import pytest
 
 from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,
     Double,
+    EmailAddress,
     Integer,
     NaturalLanguage
 )
@@ -221,3 +223,37 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(Datetime())
+
+
+def test_new_schema_including(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    new_schema = schema._new_schema_including(sample_column_names[1:4])
+    for col in new_schema.columns:
+        assert new_schema.semantic_tags[col] == schema.semantic_tags[col]
+        assert new_schema.logical_types[col] == schema.logical_types[col]
+
+
+def test_new_schema_including_all_params(sample_column_names, sample_inferred_logical_types):
+    # The first element is self, so it won't be included in kwargs
+    possible_dt_params = inspect.getfullargspec(Schema.__init__)[0][1:]
+
+    kwargs = {
+        'column_names': sample_column_names,
+        'logical_types': {**sample_inferred_logical_types, **{'email': EmailAddress}},
+        'name': 'test_dt',
+        'index': 'id',
+        'time_index': 'signup_date',
+        'semantic_tags': {'age': 'test_tag'},
+        'table_metadata': {'created_by': 'user1'},
+        'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
+        'use_standard_tags': False,
+        'column_descriptions': {'age': 'this is a description'}
+    }
+
+    # Confirm all possible params to DataTable init are present with non-default values where possible
+    assert set(possible_dt_params) == set(kwargs.keys())
+
+    schema = Schema(**kwargs)
+    copy_schema = schema._new_schema_including(sample_column_names)
+
+    assert schema == copy_schema

@@ -47,6 +47,7 @@ class Schema(object):
                          table_metadata, column_metadata, semantic_tags, column_descriptions)
 
         self.name = name
+        self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
         self.columns = self._create_columns(column_names,
@@ -225,8 +226,40 @@ class Schema(object):
             if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
                 cols_to_include.add(col_name)
 
-        # --> need to remember to sort by dataframe column order any time we use this with a DataFrame
         return list(cols_to_include)
+
+    def _new_schema_including(self, subset_cols):
+        '''
+        '''
+        new_logical_types = {}
+        new_semantic_tags = {}
+        new_column_descriptions = {}
+        new_column_metadata = {}
+        for col_name, col in self.columns.items():
+            if col_name not in subset_cols:
+                continue
+            new_logical_types[col_name] = col['logical_type']
+            new_semantic_tags[col_name] = col['semantic_tags']
+            new_column_descriptions[col_name] = col['description']
+            new_column_metadata[col_name] = col['metadata']
+
+        new_index = self.index if self.index in subset_cols else None
+        new_time_index = self.time_index if self.time_index in subset_cols else None
+        if new_index is not None:
+            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+        if new_time_index is not None:
+            new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+
+        return Schema(subset_cols,
+                      new_logical_types,
+                      name=self.name,
+                      index=new_index,
+                      time_index=new_time_index,
+                      semantic_tags=new_semantic_tags,
+                      use_standard_tags=self.use_standard_tags,
+                      table_metadata=self.metadata,
+                      column_metadata=new_column_metadata,
+                      column_descriptions=new_column_descriptions)
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,
