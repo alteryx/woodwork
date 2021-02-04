@@ -1,13 +1,11 @@
-from woodwork.utils import import_or_none
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
-from woodwork.table_accessor import (
-    _check_index,
-    _check_logical_types,
-    _check_time_index,
-    _check_unique_column_names,
-    _get_invalid_schema_message
-)
-from woodwork.schema import Schema
+import re
+
+import numpy as np
+import pandas as pd
+import pytest
+
+import woodwork as ww
+from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -27,17 +25,16 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
-import woodwork as ww
-from woodwork.exceptions import TypingInfoMismatchWarning
-import re
-
-import numpy as np
-import pandas as pd
-import pytest
-
-<< << << < HEAD
-== == == =
->>>>>> > Implement select on Table Accessor
+from woodwork.schema import Schema
+from woodwork.table_accessor import (
+    _check_index,
+    _check_logical_types,
+    _check_time_index,
+    _check_unique_column_names,
+    _get_invalid_schema_message
+)
+from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
+from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')

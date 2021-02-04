@@ -218,9 +218,8 @@ class WoodworkTableAccessor:
         # Directly return non-callable DataFrame attributes
         return dataframe_attr
 
-
-== == == =
->>>>>> > cleanup
+    def _get_subset_df_with_schema(self, cols_to_include):
+        '''
         Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order.
         '''
