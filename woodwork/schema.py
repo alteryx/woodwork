@@ -228,7 +228,7 @@ class Schema(object):
 
         return list(cols_to_include)
 
-    def _new_schema_including(self, subset_cols):
+    def _get_subset_schema(self, subset_cols):
         '''
         Creates a new Schema with specified columns, retainig typing information.
 

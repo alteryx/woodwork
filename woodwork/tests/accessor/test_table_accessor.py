@@ -941,7 +941,7 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
 
 
-def test_new_df_with_schema_from_cols(sample_df):
+def test_get_subset_df_with_schema(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
@@ -958,25 +958,25 @@ def test_new_df_with_schema_from_cols(sample_df):
                       )
     schema = schema_df.ww.schema
 
-    empty_df = schema_df.ww._new_df_with_schema_from_cols([])
+    empty_df = schema_df.ww._get_subset_df_with_schema([])
     assert len(empty_df.columns) == 0
     assert empty_df.ww.schema is not None
     pd.testing.assert_frame_equal(empty_df, schema_df[[]])
     validate_subset_schema(empty_df.ww.schema, schema)
 
-    just_index = schema_df.ww._new_df_with_schema_from_cols(['id'])
+    just_index = schema_df.ww._get_subset_df_with_schema(['id'])
     assert just_index.ww.index == schema.index
     assert just_index.ww.time_index is None
     pd.testing.assert_frame_equal(just_index, schema_df[['id']])
     validate_subset_schema(just_index.ww.schema, schema)
 
-    just_time_index = schema_df.ww._new_df_with_schema_from_cols(['signup_date'])
+    just_time_index = schema_df.ww._get_subset_df_with_schema(['signup_date'])
     assert just_time_index.ww.time_index == schema.time_index
     assert just_time_index.ww.index is None
     pd.testing.assert_frame_equal(just_time_index, schema_df[['signup_date']])
     validate_subset_schema(just_time_index.ww.schema, schema)
 
-    transfer_schema = schema_df.ww._new_df_with_schema_from_cols(['phone_number'])
+    transfer_schema = schema_df.ww._get_subset_df_with_schema(['phone_number'])
     assert transfer_schema.ww.index is None
     assert transfer_schema.ww.time_index is None
     pd.testing.assert_frame_equal(transfer_schema, schema_df[['phone_number']])
@@ -1131,3 +1131,110 @@ def test_select_semantic_tags(sample_df):
     assert 'id' in df_common_tags.columns
     assert 'is_registered' in df_common_tags.columns
     assert 'age' in df_common_tags.columns
+
+
+def test_select_single_inputs(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(time_index='signup_date',
+                      index='id',
+                      name='df_name',
+                      logical_types={
+                          'full_name': FullName,
+                          'email': EmailAddress,
+                          'phone_number': PhoneNumber,
+                          'signup_date': Datetime(datetime_format='%Y-%m-%d')
+                      },
+                      semantic_tags={
+                          'full_name': ['new_tag', 'tag2'],
+                          'age': 'numeric',
+                          'signup_date': 'date_of_birth'
+                      })
+
+    df_ltype_string = schema_df.ww.select('full_name')
+    assert len(df_ltype_string.columns) == 1
+    assert 'full_name' in df_ltype_string.columns
+
+    df_ltype_obj = schema_df.ww.select(Integer)
+    assert len(df_ltype_obj.columns) == 2
+    assert 'age' in df_ltype_obj.columns
+    assert 'id' in df_ltype_obj.columns
+
+    df_tag_string = schema_df.ww.select('index')
+    assert len(df_tag_string.columns) == 1
+    assert 'id' in df_tag_string.columns
+
+    df_tag_instantiated = schema_df.ww.select('Datetime')
+    assert len(df_tag_instantiated.columns) == 1
+    assert 'signup_date' in df_tag_instantiated.columns
+
+
+def test_select_list_inputs(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(time_index='signup_date',
+                      index='id',
+                      name='df_name',
+                      logical_types={
+                          'full_name': FullName,
+                          'email': EmailAddress,
+                          'phone_number': PhoneNumber,
+                          'signup_date': Datetime(datetime_format='%Y-%m-%d'),
+                      },
+                      semantic_tags={
+                          'full_name': ['new_tag', 'tag2'],
+                          'age': 'numeric',
+                          'signup_date': 'date_of_birth',
+                          'email': 'tag2',
+                          'is_registered': 'category'
+                      })
+
+    df_just_strings = schema_df.ww.select(['FullName', 'index', 'tag2', 'boolean'])
+    assert len(df_just_strings.columns) == 4
+    assert 'id' in df_just_strings.columns
+    assert 'full_name' in df_just_strings.columns
+    assert 'email' in df_just_strings.columns
+    assert 'is_registered' in df_just_strings.columns
+
+    df_mixed_selectors = schema_df.ww.select([FullName, 'index', 'time_index', Integer])
+    assert len(df_mixed_selectors.columns) == 4
+    assert 'id' in df_mixed_selectors.columns
+    assert 'full_name' in df_mixed_selectors.columns
+    assert 'signup_date' in df_mixed_selectors.columns
+    assert 'age' in df_mixed_selectors.columns
+
+    df_common_tags = schema_df.ww.select(['category', 'numeric', Boolean, Datetime])
+    assert len(df_common_tags.columns) == 3
+    assert 'is_registered' in df_common_tags.columns
+    assert 'age' in df_common_tags.columns
+    assert 'signup_date' in df_common_tags.columns
+
+
+def test_select_semantic_tags_no_match(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(time_index='signup_date',
+                      index='id',
+                      name='df_name',
+                      logical_types={
+                          'full_name': FullName,
+                          'email': EmailAddress,
+                          'phone_number': PhoneNumber,
+                          'signup_date': Datetime(datetime_format='%Y-%m-%d'),
+                      }, semantic_tags={
+                          'full_name': ['new_tag', 'tag2'],
+                          'age': 'numeric',
+                          'signup_date': 'date_of_birth',
+                          'email': 'tag2'
+                      })
+
+    assert len(schema_df.ww.select(['doesnt_exist']).columns) == 0
+
+    df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
+    assert len(df_multiple_unused.columns) == 2
+
+    df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', ZIPCode, Integer])
+    assert len(df_unused_ltype.columns) == 3
