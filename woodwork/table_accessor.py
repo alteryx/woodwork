@@ -339,11 +339,11 @@ def _get_invalid_schema_message(dataframe, schema):
         return f'The following columns in the typing information were missing from the DataFrame: '\
             f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
-        df_dtype = str(dataframe[name].dtype)
+        df_dtype = dataframe[name].dtype
         schema_dtype = schema.logical_types[name].pandas_dtype
         if df_dtype != schema_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
-                f'{df_dtype}, and LogicalType dtype, {schema_dtype}'
+                f'{df_dtype}, and {schema.logical_types[name]} dtype, {schema_dtype}'
     if schema.index is not None:
         if not all(dataframe.index == dataframe[schema.index]):
             return 'Index mismatch between DataFrame and typing information'
