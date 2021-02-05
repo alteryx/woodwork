@@ -79,19 +79,17 @@ def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):
     return semantic_tags
 
 
-def _is_numeric(col_dict):
+def _is_col_numeric(col_dict):
     return 'numeric' in col_dict['logical_type'].standard_tags
 
 
-def _is_categorical(col_dict):
+def _is_col_categorical(col_dict):
     return 'category' in col_dict['logical_type'].standard_tags
 
 
-def _is_datetime(col_dict):
-    # --> what should we do if it's been deregistered??
-    # have a backup??
+def _is_col_datetime(col_dict):
     return _get_ltype_class(col_dict['logical_type']) == Datetime
 
 
-def _is_boolean(col_dict):
+def _is_col_boolean(col_dict):
     return _get_ltype_class(col_dict['logical_type']) == Boolean

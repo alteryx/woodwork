@@ -6,10 +6,10 @@ import woodwork as ww
 from woodwork.logical_types import Boolean, Categorical, Datetime, Double, Integer, NaturalLanguage, Ordinal
 from woodwork.schema_column import (
     _get_column_dict,
-    _is_boolean,
-    _is_categorical,
-    _is_datetime,
-    _is_numeric,
+    _is_col_boolean,
+    _is_col_categorical,
+    _is_col_datetime,
+    _is_col_numeric,
     _validate_description,
     _validate_logical_type,
     _validate_metadata,
@@ -103,71 +103,69 @@ def test_raises_error_setting_time_index_tag_directly():
     #     schema.set_semantic_tags({'signup_date': 'time_index'})
 
 
-def test_is_numeric():
+def test_is_col_numeric():
     int_column = _get_column_dict('ints', Integer)
-    assert _is_numeric(int_column)
+    assert _is_col_numeric(int_column)
 
     double_column = _get_column_dict('floats', Double)
-    assert _is_numeric(double_column)
+    assert _is_col_numeric(double_column)
 
     nl_column = _get_column_dict('text', NaturalLanguage)
-    assert not _is_numeric(nl_column)
+    assert not _is_col_numeric(nl_column)
 
     manually_added = _get_column_dict('text', NaturalLanguage, semantic_tags='numeric')
-    assert not _is_numeric(manually_added)
+    assert not _is_col_numeric(manually_added)
 
     no_standard_tags = _get_column_dict('ints', Integer, use_standard_tags=False)
-    assert _is_numeric(no_standard_tags)
+    assert _is_col_numeric(no_standard_tags)
 
     instantiated_column = _get_column_dict('ints', Integer())
-    assert _is_numeric(instantiated_column)
+    assert _is_col_numeric(instantiated_column)
 
 
-def test_is_categorical():
+def test_is_col_categorical():
     categorical_column = _get_column_dict('cats', Categorical)
-    assert _is_categorical(categorical_column)
+    assert _is_col_categorical(categorical_column)
 
     ordinal_column = _get_column_dict('ordinal', Ordinal(order=['a', 'b']))
-    assert _is_categorical(ordinal_column)
+    assert _is_col_categorical(ordinal_column)
 
     nl_column = _get_column_dict('text', NaturalLanguage)
-    assert not _is_categorical(nl_column)
+    assert not _is_col_categorical(nl_column)
 
     manually_added = _get_column_dict('text', NaturalLanguage, semantic_tags='category')
-    assert not _is_categorical(manually_added)
+    assert not _is_col_categorical(manually_added)
 
     no_standard_tags = _get_column_dict('cats', Categorical, use_standard_tags=False)
-    assert _is_categorical(no_standard_tags)
+    assert _is_col_categorical(no_standard_tags)
 
 
-def test_is_boolean():
+def test_is_col_boolean():
     boolean_column = _get_column_dict('bools', Boolean)
-    assert _is_boolean(boolean_column)
+    assert _is_col_boolean(boolean_column)
 
     instantiated_column = _get_column_dict('bools', Boolean())
-    assert _is_boolean(instantiated_column)
+    assert _is_col_boolean(instantiated_column)
 
     ordinal_column = _get_column_dict('ordinal', Ordinal(order=['a', 'b']))
-    assert not _is_boolean(ordinal_column)
+    assert not _is_col_boolean(ordinal_column)
 
     nl_column = _get_column_dict('text', NaturalLanguage)
-    assert not _is_boolean(nl_column)
-
-    # --> might be worth defining boolean and datetime by dtype???
+    assert not _is_col_boolean(nl_column)
 
 
-def test_is_datetime():
+def test_is_col_datetime():
     datetime_column = _get_column_dict('dates', Datetime)
-    assert _is_datetime(datetime_column)
+    assert _is_col_datetime(datetime_column)
 
     formatted_datetime_column = _get_column_dict('dates', Datetime(datetime_format='%Y-%m%d'))
-    assert _is_datetime(formatted_datetime_column)
+    assert _is_col_datetime(formatted_datetime_column)
 
     instantiated_datetime_column = _get_column_dict('dates', Datetime())
-    assert _is_datetime(instantiated_datetime_column)
+    assert _is_col_datetime(instantiated_datetime_column)
 
     nl_column = _get_column_dict('text', NaturalLanguage)
-    assert not _is_datetime(nl_column)
+    assert not _is_col_datetime(nl_column)
 
     double_column = _get_column_dict('floats', Double)
-    assert not _is_datetime(double_column)
+    assert not _is_col_datetime(double_column)
