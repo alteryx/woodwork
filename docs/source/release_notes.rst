@@ -8,8 +8,10 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update branch reference in release notes check (:pr:`270`)
 
 .. Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
