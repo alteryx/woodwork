@@ -8,7 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Update branch reference in release notes check (:pr:`270`)
+        * Update branch reference in release notes check (:pr:`552`)
 
 .. Thanks to the following people for contributing to this release:
     :user:`gsheni`
