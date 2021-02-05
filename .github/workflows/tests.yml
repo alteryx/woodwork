@@ -17,8 +17,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Install woodwork with doc requirements
+      - name: Setup pandoc 2.9
         uses: docker://pandoc/core:2.9
+      - name: Install woodwork with doc requirements
         run: |
           sudo apt update
           sudo apt install -y openjdk-11-jre-headless
@@ -28,7 +29,6 @@ jobs:
           python -m pip install -e .
           python -m pip install -r dev-requirements.txt
       - name: Build docs
-        uses: docker://pandoc/core:2.9
         run: |
           make -C docs/ html
           ls docs/build/html
