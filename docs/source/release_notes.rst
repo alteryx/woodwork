@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.0.9 February 5, 2021**
     * Enhancements
         * Add Python 3.9 support without Koalas testing (:pr:`511`)
         * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
@@ -10,16 +19,14 @@ Release Notes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)
         * Support numpy 1.20.0 by restricting version for koalas and changing serialization error message (:pr:`532`)
         * Move Koalas option setting to DataTable init instead of import (:pr:`543`)
-    * Changes
     * Documentation Changes
         * Add Alteryx OSS Twitter link (:pr:`519`)
         * Update logo and add new favicon (:pr:`521`)
         * Multiple improvements to Getting Started page and guides (:pr:`527`)
         * Clean up API Reference and docstrings (:pr:`536`)
         * Added Open Graph for Twitter and Facebook (:pr:`544`)
-    * Testing Changes
 
-Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.8 January 25, 2021**
