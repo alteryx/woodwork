@@ -21,7 +21,6 @@ jobs:
         uses: docker://pandoc/core:2.9
         run: |
           sudo apt update
-          sudo apt install -y pandoc
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           pip config --site set global.progress_bar off
