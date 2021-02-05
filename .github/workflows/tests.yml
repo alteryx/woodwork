@@ -17,8 +17,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Setup pandoc 2.9
-        uses: docker://pandoc/core:2.9
+      - name: Setup pandoc latest
+        uses: docker://pandoc/core:latest
       - name: Install woodwork with doc requirements
         run: |
           sudo apt update
