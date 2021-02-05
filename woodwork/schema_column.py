@@ -1,8 +1,7 @@
 import woodwork as ww
+from woodwork.logical_types import Boolean, Datetime, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
-
-from woodwork.logical_types import Boolean, Datetime, Ordinal
 
 
 def _get_column_dict(name,

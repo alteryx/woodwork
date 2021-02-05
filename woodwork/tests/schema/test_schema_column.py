@@ -3,7 +3,15 @@ import re
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import Boolean, Categorical, Datetime, Double, Integer, NaturalLanguage, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage,
+    Ordinal
+)
 from woodwork.schema_column import (
     _get_column_dict,
     _is_col_boolean,
@@ -12,7 +20,7 @@ from woodwork.schema_column import (
     _is_col_numeric,
     _validate_description,
     _validate_logical_type,
-    _validate_metadata,
+    _validate_metadata
 )
 
 
