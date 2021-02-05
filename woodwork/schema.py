@@ -241,9 +241,9 @@ class Schema(object):
         new_semantic_tags = {}
         new_column_descriptions = {}
         new_column_metadata = {}
-        for col_name, col in self.columns.items():
-            if col_name not in subset_cols:
-                continue
+        for col_name in subset_cols:
+            col = col = self.columns[col_name]
+
             new_logical_types[col_name] = col['logical_type']
             new_semantic_tags[col_name] = col['semantic_tags']
             new_column_descriptions[col_name] = col['description']
