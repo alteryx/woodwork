@@ -133,8 +133,7 @@ class WoodworkTableAccessor:
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): Logical
-                types, semantic tags to include
-                in the DataFrame.
+                types, semantic tags to include in the DataFrame.
 
         Returns:
             DataFrame: The subset of the original DataFrame that contains just the

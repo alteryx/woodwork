@@ -180,15 +180,12 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
 
     filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
     filtered_log_type = schema._filter_cols(include=NaturalLanguage)
+    expected = {'full_name', 'email', 'phone_number'}
     assert filtered_log_type == filtered_log_type_string
+    assert set(filtered_log_type) == expected
 
     filtered_semantic_tag = schema._filter_cols(include='numeric')
     assert filtered_semantic_tag == ['age']
-
-    filtered_multiple = schema._filter_cols(include=['numeric'])
-    expected = ['phone_number', 'age']
-    for col in filtered_multiple:
-        assert col in expected
 
     # --> add back in when describe is implemented
     # filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)

@@ -184,7 +184,7 @@ class Schema(object):
 
     def _filter_cols(self, include):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
-        then semantic tag then column name.
+        then semantic tag.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
@@ -230,7 +230,7 @@ class Schema(object):
 
     def _get_subset_schema(self, subset_cols):
         '''
-        Creates a new Schema with specified columns, retainig typing information.
+        Creates a new Schema with specified columns, retaining typing information.
 
         Args:
             subset_cols (list[str]): subset of columns from which to create the new Schema
