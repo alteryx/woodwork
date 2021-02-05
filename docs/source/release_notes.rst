@@ -2,7 +2,7 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
@@ -10,7 +10,7 @@ Release Notes
     * Testing Changes
         * Update branch reference in release notes check (:pr:`552`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`gsheni`
 
 **v0.0.9 February 5, 2021**
