@@ -303,11 +303,11 @@ def df_same_mi(request):
 @pytest.fixture()
 def df_mi_pandas():
     return pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
+        'ints': pd.Series([1, 2, 1]),
         'bools': pd.Series([True, False, True]),
         'strs2': pd.Series(['bye', 'hi', 'bye']),
         'strs': pd.Series(['hi', 'hi', 'hi']),
-        'dates': pd.Series(['2020-01-01', '2019-01-02', '1997-01-04'])
+        'dates': pd.Series(['2020-01-01', '2020-01-01', '1997-01-04'])
     })
 
 

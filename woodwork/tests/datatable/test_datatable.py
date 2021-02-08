@@ -2617,6 +2617,10 @@ def test_mutual_info_sort(df_mi):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
 
 
+def test_mutual_info_unique(df_mi):
+    pass
+
+
 def test_mutual_info_dict(df_mi):
     dt = DataTable(df_mi)
     mi_dict = dt.mutual_information_dict()

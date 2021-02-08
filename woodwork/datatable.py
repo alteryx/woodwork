@@ -1027,6 +1027,8 @@ class DataTable(object):
         if nrows is not None and nrows < data.shape[0]:
             data = data.sample(nrows)
 
+        not_unique_cols = [col for col in data.columns if data[col].unique]
+        data = data[not_unique_cols]
         data = self._handle_nans_for_mutual_info(data)
         data = self._make_categorical_for_mutual_info(data, num_bins)
 
