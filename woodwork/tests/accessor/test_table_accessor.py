@@ -1235,3 +1235,30 @@ def test_select_semantic_tags_no_match(sample_df):
 
     df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', ZIPCode, Integer])
     assert len(df_unused_ltype.columns) == 3
+
+
+def test_select_repetitive(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(time_index='signup_date',
+                      index='id',
+                      name='df_name',
+                      logical_types={
+                          'full_name': FullName,
+                          'email': EmailAddress,
+                          'phone_number': PhoneNumber,
+                          'signup_date': Datetime(datetime_format='%Y-%m-%d'),
+                      }, semantic_tags={
+                          'full_name': ['new_tag', 'tag2'],
+                          'age': 'numeric',
+                          'signup_date': 'date_of_birth',
+                          'email': 'tag2'
+                      })
+    df_repeat_tags = schema_df.ww.select(['new_tag', 'new_tag'])
+    assert len(df_repeat_tags.columns) == 1
+    assert set(df_repeat_tags.columns) == {'full_name'}
+
+    df_repeat_ltypes = schema_df.ww.select(['PhoneNumber', PhoneNumber, 'phone_number'])
+    assert len(df_repeat_ltypes.columns) == 1
+    assert set(df_repeat_ltypes.columns) == {'phone_number'}

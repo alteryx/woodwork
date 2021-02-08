@@ -247,7 +247,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
         'column_descriptions': {'age': 'this is a description'}
     }
 
-    # Confirm all possible params to DataTable init are present with non-default values where possible
+    # Confirm all possible params to Schema init are present with non-default values where possible
     assert set(possible_dt_params) == set(kwargs.keys())
 
     schema = Schema(**kwargs)
