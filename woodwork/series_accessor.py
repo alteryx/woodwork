@@ -17,14 +17,20 @@ class WoodworkSeriesAccessor:
         self._series = series
         self._schema = None
 
-    def init(self, name=None, logical_type=None, **kwargs):
+    def init(self, name=None, logical_type=None, semantic_tags=None,
+             use_standard_tags=True, description=None, metadata=None):
         # validate params
         self._set_name(name)
 
         # logic should be in DataColumn - throws ColumnNameMismatchWarning if it needs to be changed
         logical_type = _get_column_logical_type(self._series, logical_type, self.name)
 
-        self._schema = _get_column_dict(name=self.name, logical_type=logical_type, **kwargs)
+        self._schema = _get_column_dict(name=self.name,
+                                        logical_type=logical_type,
+                                        semantic_tags=semantic_tags,
+                                        use_standard_tags=use_standard_tags,
+                                        description=description,
+                                        metadata=metadata)
 
     @property
     def description(self):
