@@ -65,7 +65,7 @@ def test_get_column_dict_standard_tags():
 
 
 def test_get_column_dict_params():
-    column = _get_column_dict('column', Integer, column_description='this is a column!', column_metadata={'created_by': 'user1'})
+    column = _get_column_dict('column', Integer, description='this is a column!', metadata={'created_by': 'user1'})
 
     assert column.get('description') == 'this is a column!'
     assert column.get('metadata') == {'created_by': 'user1'}

@@ -162,8 +162,8 @@ class Schema(object):
                                              logical_types.get(name),
                                              semantic_tags=semantic_tags_for_col,
                                              use_standard_tags=use_standard_tags,
-                                             column_description=description,
-                                             column_metadata=metadata_for_col)
+                                             description=description,
+                                             metadata=metadata_for_col)
         return columns
 
     def _set_index_tags(self, index):

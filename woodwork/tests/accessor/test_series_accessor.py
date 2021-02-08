@@ -1,7 +1,16 @@
+import pandas as pd
 import pytest
 
 from woodwork.exceptions import ColumnNameMismatchWarning
-from woodwork.logical_types import Categorical
+from woodwork.logical_types import (
+    Categorical,
+    CountryCode,
+    Double,
+    Integer,
+    Ordinal,
+    SubRegionCode,
+    ZIPCode
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -36,19 +45,11 @@ def test_accessor_init(sample_series):
 #     assert data_col.semantic_tags == set()
 
 
-# def test_datacolumn_init_with_semantic_tags(sample_series):
-#     semantic_tags = ['tag1', 'tag2']
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
-#     assert data_col.semantic_tags == set(semantic_tags)
-
-
-# def test_datacolumn_init_wrong_series():
-#     error = 'Series must be one of: pandas.Series, dask.Series, koalas.Series, numpy.ndarray, or pandas.ExtensionArray'
-#     with pytest.raises(TypeError, match=error):
-#         DataColumn([1, 2, 3, 4])
-
-#     with pytest.raises(TypeError, match=error):
-#         DataColumn({1, 2, 3, 4})
+def test_accessor_init_with_semantic_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    semantic_tags = ['tag1', 'tag2']
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert sample_series.ww.semantic_tags == set(semantic_tags)
 
 
 def test_accessor_init_with_name(sample_series):
@@ -109,75 +110,71 @@ def test_accessor_init_with_falsy_name(sample_series):
 #     assert data_col_different_ltype.dtype == 'string'
 
 
-# def test_datacolumn_init_with_numpy_array():
-#     numpy_array = np.array([1, 2, 3, 4])
-#     expected_series = pd.Series([1, 2, 3, 4], dtype='Int64')
+def test_accessor_with_alternate_semantic_tags_input(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.copy()
+    semantic_tags = 'custom_tag'
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert series.ww.semantic_tags == {'custom_tag'}
 
-#     dc = DataColumn(numpy_array)
-#     assert dc.name is None
-#     assert dc.logical_type == Integer
-#     assert dc.semantic_tags == {'numeric'}
-#     assert dc.dtype == 'Int64'
-#     assert dc._series.equals(expected_series)
-
-#     dc = DataColumn(numpy_array, logical_type='NaturalLanguage', name='test_col')
-#     expected_series.name = 'test_col'
-
-#     assert dc.name == 'test_col'
-#     assert dc.logical_type == NaturalLanguage
-#     assert dc.semantic_tags == set()
-#     assert dc.dtype == 'string'
-#     assert dc._series.equals(expected_series.astype('string'))
+    series = sample_series.copy()
+    semantic_tags = {'custom_tag', 'numeric'}
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert series.ww.semantic_tags == semantic_tags
 
 
-# def test_datacolumn_with_alternate_semantic_tags_input(sample_series):
-#     semantic_tags = 'custom_tag'
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
-#     assert data_col.semantic_tags == {'custom_tag'}
+def test_logical_type_errors(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    error_message = "Invalid logical type specified for 'sample_series'"
+    with pytest.raises(TypeError, match=error_message):
+        sample_series.ww.init(logical_type=int)
 
-#     semantic_tags = {'custom_tag', 'numeric'}
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
-#     assert data_col.semantic_tags == semantic_tags
-
-
-# def test_invalid_logical_type(sample_series):
-#     error_message = "Invalid logical type specified for 'sample_series'"
-#     with pytest.raises(TypeError, match=error_message):
-#         DataColumn(sample_series, int)
-
-#     error_message = "String naturalllanguage is not a valid logical type"
-#     with pytest.raises(ValueError, match=error_message):
-#         DataColumn(sample_series, 'naturalllanguage')
+    error_message = "String naturalllanguage is not a valid logical type"
+    with pytest.raises(ValueError, match=error_message):
+        sample_series.ww.init(logical_type='naturalllanguage')
 
 
-# def test_semantic_tag_errors(sample_series):
-#     error_message = "semantic_tags must be a string, set or list"
-#     with pytest.raises(TypeError, match=error_message):
-#         DataColumn(sample_series, semantic_tags=int)
+def test_semantic_tag_errors(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    error_message = "semantic_tags for sample_series must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        sample_series.ww.init(semantic_tags=int)
 
-#     error_message = "semantic_tags must be a string, set or list"
-#     with pytest.raises(TypeError, match=error_message):
-#         DataColumn(sample_series, semantic_tags={'index': {}, 'time_index': {}})
+    error_message = "semantic_tags for sample_series must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        sample_series.ww.init(semantic_tags={'index': {}, 'time_index': {}})
 
-#     error_message = "semantic_tags must contain only strings"
-#     with pytest.raises(TypeError, match=error_message):
-#         DataColumn(sample_series, semantic_tags=['index', 1])
-
-
-# def test_datacolumn_description(sample_series):
-#     column_description = "custom description"
-#     data_col = DataColumn(sample_series, description=column_description)
-#     assert data_col.description == column_description
-
-#     new_description = "updated description text"
-#     data_col.description = new_description
-#     assert data_col.description == new_description
+    error_message = "semantic_tags for sample_series must contain only strings"
+    with pytest.raises(TypeError, match=error_message):
+        sample_series.ww.init(semantic_tags=['index', 1])
 
 
-# def test_datacolumn_description_error(sample_series):
-#     err_msg = "Column description must be a string"
-#     with pytest.raises(TypeError, match=err_msg):
-#         DataColumn(sample_series, description=123)
+def test_accessor_description(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.copy()
+
+    column_description = "custom description"
+    series.ww.init(description=column_description)
+    assert series.ww.description == column_description
+
+    new_description = "updated description text"
+    series.ww.description = new_description
+    assert series.ww.description == new_description
+
+
+def test_description_error_on_init(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    err_msg = "Column description must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.init(description=123)
+
+
+def test_description_error_on_update(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    sample_series.ww.init()
+    err_msg = "Column description must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.description = 123
 
 
 # def test_datacolumn_repr(sample_series):
@@ -226,34 +223,34 @@ def test_accessor_init_with_falsy_name(sample_series):
 #     assert new_col2.semantic_tags == {'new_tag'}
 
 
-# def test_adds_numeric_standard_tag():
-#     series = pd.Series([1, 2, 3])
-#     semantic_tags = 'custom_tag'
+def test_adds_numeric_standard_tag():
+    series = pd.Series([1, 2, 3])
+    semantic_tags = 'custom_tag'
 
-#     logical_types = [Integer, Double]
-#     for logical_type in logical_types:
-#         data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
-#         assert data_col.semantic_tags == {'custom_tag', 'numeric'}
-
-
-# def test_adds_category_standard_tag():
-#     series = pd.Series([1, 2, 3])
-#     semantic_tags = 'custom_tag'
-
-#     logical_types = [Categorical, CountryCode, Ordinal(order=(1, 2, 3)), SubRegionCode, ZIPCode]
-#     for logical_type in logical_types:
-#         data_col = DataColumn(series, logical_type=logical_type, semantic_tags=semantic_tags)
-#         assert data_col.semantic_tags == {'custom_tag', 'category'}
+    logical_types = [Integer, Double]
+    for logical_type in logical_types:
+        series = series.astype(logical_type.pandas_dtype)
+        series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
+        assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
 
 
-# def test_does_not_add_standard_tags():
-#     series = pd.Series([1, 2, 3])
-#     semantic_tags = 'custom_tag'
-#     data_col = DataColumn(series,
-#                           logical_type=Double,
-#                           semantic_tags=semantic_tags,
-#                           use_standard_tags=False)
-#     assert data_col.semantic_tags == {'custom_tag'}
+def test_adds_category_standard_tag():
+    semantic_tags = 'custom_tag'
+
+    logical_types = [Categorical, CountryCode, Ordinal(order=(1, 2, 3)), SubRegionCode, ZIPCode]
+    for logical_type in logical_types:
+        series = pd.Series([1, 2, 3], dtype='category')
+        series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
+        assert series.ww.semantic_tags == {'custom_tag', 'category'}
+
+
+def test_does_not_add_standard_tags():
+    series = pd.Series([1, 2, 3])
+    semantic_tags = 'custom_tag'
+    series.ww.init(logical_type=Double,
+                   semantic_tags=semantic_tags,
+                   use_standard_tags=False)
+    assert series.ww.semantic_tags == {'custom_tag'}
 
 
 # def test_add_custom_tags(sample_series):
@@ -628,28 +625,40 @@ def test_accessor_init_with_falsy_name(sample_series):
 #         assert str_col == null_col
 
 
-# def test_datacolumn_metadata(sample_series):
-#     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
+def test_accessor_metadata(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
-#     data_col = DataColumn(sample_series)
-#     assert data_col.metadata == {}
+    series = sample_series.copy()
+    series.ww.init()
+    assert series.ww.metadata == {}
 
-#     data_col = DataColumn(sample_series, metadata=column_metadata)
-#     assert data_col.metadata == column_metadata
+    series = sample_series.copy()
+    series.ww.init(metadata=column_metadata)
+    assert series.ww.metadata == column_metadata
 
-#     new_metadata = {'date_created': '1/1/19', 'created_by': 'user1'}
+    new_metadata = {'date_created': '1/1/19', 'created_by': 'user1'}
 
-#     data_col.metadata = {**data_col.metadata, **new_metadata}
-#     assert data_col.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'created_by': 'user1'}
+    series.ww.metadata = {**series.ww.metadata, **new_metadata}
+    assert series.ww.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'created_by': 'user1'}
 
-#     data_col.metadata.pop('created_by')
-#     assert data_col.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3]}
+    series.ww.metadata.pop('created_by')
+    assert series.ww.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3]}
 
-#     data_col.metadata['number'] = 1012034
-#     assert data_col.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}
+    series.ww.metadata['number'] = 1012034
+    assert series.ww.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}
 
 
-# def test_datacolumn_metadata_error(sample_series):
-#     err_msg = "Column metadata must be a dictionary"
-#     with pytest.raises(TypeError, match=err_msg):
-#         DataColumn(sample_series, metadata=123)
+def test_accessor_metadata_error_on_init(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    err_msg = "Column metadata must be a dictionary"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.init(metadata=123)
+
+
+def test_accessor_metadata_error_on_update(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    sample_series.ww.init()
+    err_msg = "Column metadata must be a dictionary"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.metadata = 123
