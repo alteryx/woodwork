@@ -2572,11 +2572,11 @@ def test_datatable_mutual_information(df_mi):
     mi = dt.mutual_information()
     assert mi.shape[0] == 10
 
-    np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
+    np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 1.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 1.0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'bools', mi), 0.734, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 0.274, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'bools', mi), 0.274, 3)
 
     mi_many_rows = dt.mutual_information(nrows=100000)
     pd.testing.assert_frame_equal(mi, mi_many_rows)
@@ -2587,11 +2587,11 @@ def test_datatable_mutual_information(df_mi):
 
     mi = dt.mutual_information(num_bins=2)
     assert mi.shape[0] == 10
-    np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
-    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 1.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'strs', mi), 0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), .274, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'strs', mi), 1.0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 1.0, 3)
 
     # Confirm that none of this changed the DataTable's underlying df
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(original_df))
@@ -2617,8 +2617,15 @@ def test_mutual_info_sort(df_mi):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
 
 
-def test_mutual_info_unique(df_mi):
-    pass
+def test_mutual_info_unique(df_mi_unique):
+    dt = DataTable(df_mi_unique)
+    mi = dt.mutual_information()
+
+    cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
+    assert 'unique' not in cols_used
+    assert 'unique_with_one_nan' not in cols_used
+    assert 'unique_with_nans' in cols_used
+    assert 'ints' in cols_used
 
 
 def test_mutual_info_dict(df_mi):
