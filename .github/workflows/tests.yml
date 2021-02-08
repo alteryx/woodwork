@@ -77,6 +77,12 @@ jobs:
           ref = basename("${{ github.event.ref }}")
           is_dev = not any(pattern.match(ref) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}	
+        name: Checkout repository	
+        uses: actions/checkout@v2	
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}	
+        name: Check if release notes were updated	
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
 
   unit_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
