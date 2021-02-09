@@ -9,7 +9,7 @@ from woodwork.tests.testing_utils import (
 )
 
 
-def test_accessor_handle_nans_for_mutual_info():
+def test_accessor_replace_nans_for_mutual_info():
     df_nans = pd.DataFrame({
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
@@ -53,7 +53,7 @@ def test_accessor_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['dates'].equals(pd.Series([2, 1, 3, 0], dtype='int8'))
 
 
-def test_accessor_same_mutual_information(df_same_mi):
+def test_mutual_info_same(df_same_mi):
     xfail_dask_and_koalas(df_same_mi)
 
     df_same_mi.ww.init()
@@ -67,7 +67,7 @@ def test_accessor_same_mutual_information(df_same_mi):
     assert mi_between_cols('floats', 'ints', mi) == 1.0
 
 
-def test_accessor_mutual_information(df_mi):
+def test_mutual_info(df_mi):
     xfail_dask_and_koalas(df_mi)
 
     df_mi.ww.init(logical_types={'dates': Datetime(datetime_format='%Y-%m-%d')})
@@ -138,7 +138,7 @@ def test_mutual_info_dict(df_mi):
     pd.testing.assert_frame_equal(pd.DataFrame(mi_dict), mi)
 
 
-def test_mutual_info_unique(df_mi_unique):
+def test_mutual_info_unique_cols(df_mi_unique):
     xfail_dask_and_koalas(df_mi_unique)
 
     df_mi_unique.ww.init()

@@ -298,7 +298,7 @@ class WoodworkTableAccessor:
 
     def mutual_information_dict(self, num_bins=10, nrows=None):
         """
-        Calculates mutual information between all pairs of columns in the DataTable that
+        Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
         SubRegionCode, and ZIPCode
@@ -307,7 +307,7 @@ class WoodworkTableAccessor:
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical.
             nrows (int): The number of rows to sample for when determining mutual info.
-                If specified, samples the desired number of rows from the data.
+            If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
 
         Returns:
@@ -361,7 +361,7 @@ class WoodworkTableAccessor:
 
     def mutual_information(self, num_bins=10, nrows=None):
         """
-        Calculates mutual information between all pairs of columns in the DataTable that
+        Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
         SubRegionCode, and ZIPCode
@@ -374,7 +374,7 @@ class WoodworkTableAccessor:
                 Defaults to using all rows.
 
         Returns:
-            pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
+            pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
