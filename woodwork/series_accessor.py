@@ -41,8 +41,8 @@ class WoodworkSeriesAccessor:
 
         logical_type = _get_column_logical_type(self._series, logical_type, self.name)
         if logical_type.pandas_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot initialize Woodwork. Series dtype is incompatible with {logical_type} dtype. " \
-                f"Try converting series dtype to {logical_type.pandas_dtype} before initializing.")
+            raise ValueError(f"Cannot initialize Woodwork. Series dtype is incompatible with {logical_type} dtype. "
+                             f"Try converting series dtype to {logical_type.pandas_dtype} before initializing.")
 
         self._schema = _get_column_dict(name=self.name,
                                         logical_type=logical_type,
