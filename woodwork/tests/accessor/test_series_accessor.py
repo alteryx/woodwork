@@ -7,6 +7,7 @@ from woodwork.logical_types import (
     CountryCode,
     Double,
     Integer,
+    NaturalLanguage,
     Ordinal,
     SubRegionCode,
     ZIPCode
@@ -31,18 +32,31 @@ def test_accessor_init(sample_series):
     assert sample_series.ww.semantic_tags == {'category'}
 
 
-# def test_datacolumn_init_with_logical_type(sample_series):
-#     data_col = DataColumn(sample_series, NaturalLanguage)
-#     assert data_col.logical_type == NaturalLanguage
-#     assert data_col.semantic_tags == set()
+def test_accessor_init_with_logical_type(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.copy().astype('string')
+    series.ww.init(logical_type=NaturalLanguage)
+    assert series.ww.logical_type == NaturalLanguage
+    assert series.ww.semantic_tags == set()
 
-#     data_col = DataColumn(sample_series, "natural_language")
-#     assert data_col.logical_type == NaturalLanguage
-#     assert data_col.semantic_tags == set()
+    series = sample_series.copy().astype('string')
+    series.ww.init(logical_type="natural_language")
+    assert series.ww.logical_type == NaturalLanguage
+    assert series.ww.semantic_tags == set()
 
-#     data_col = DataColumn(sample_series, "NaturalLanguage")
-#     assert data_col.logical_type == NaturalLanguage
-#     assert data_col.semantic_tags == set()
+    series = sample_series.copy().astype('string')
+    series.ww.init(logical_type="NaturalLanguage")
+    assert series.ww.logical_type == NaturalLanguage
+    assert series.ww.semantic_tags == set()
+
+
+def test_accessor_init_with_invalid_logical_type(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series
+    error_message = "Cannot initialize Woodwork. Series dtype is incompatible with NaturalLanguage dtype. " \
+        "Try converting series dtype to string before initializing."
+    with pytest.raises(ValueError, match=error_message):
+        series.ww.init(logical_type=NaturalLanguage)
 
 
 def test_accessor_init_with_semantic_tags(sample_series):
