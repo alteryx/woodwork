@@ -19,6 +19,24 @@ class WoodworkSeriesAccessor:
 
     def init(self, name=None, logical_type=None, semantic_tags=None,
              use_standard_tags=True, description=None, metadata=None):
+        """Initializes Woodwork typing information for a Series.
+
+        Args:
+            name (str, optional): Name of Series. Will overwrite Series name, if it exists.
+            logical_type (LogicalType or str, optional): The logical type that should be assigned
+                to the series. If no value is provided, the LogicalType for the series will
+                be inferred. If the LogicalType provided or inferred does not have a dtype that
+                is compatible with the series dtype, an error will be raised.
+            semantic_tags (str or list or set, optional): Semantic tags to assign to the series.
+                Defaults to an empty set if not specified. There are two options for
+                specifying the semantic tags:
+                (str) If only one semantic tag is being set, a single string can be passed.
+                (list or set) If multiple tags are being set, a list or set of strings can be passed.
+            use_standard_tags (bool, optional): If True, will add standard semantic tags to the series
+                based on the inferred or specified logical type of the series. Defaults to True.
+            description (str, optional): Optional text describing the contents of the series.
+            metadata (dict[str -> json serializable], optional): Metadata associated with the series.
+        """
         self._set_name(name)
 
         logical_type = _get_column_logical_type(self._series, logical_type, self.name)
@@ -35,6 +53,7 @@ class WoodworkSeriesAccessor:
 
     @property
     def description(self):
+        """The description of the series"""
         return self._schema['description']
 
     @description.setter
@@ -44,10 +63,12 @@ class WoodworkSeriesAccessor:
 
     @property
     def logical_type(self):
+        """The logical type of the series"""
         return self._schema['logical_type']
 
     @property
     def metadata(self):
+        """The metadata of the series"""
         return self._schema['metadata']
 
     @metadata.setter
@@ -57,6 +78,7 @@ class WoodworkSeriesAccessor:
 
     @property
     def name(self):
+        """The name of the series"""
         return self._series.name
 
     @property
@@ -65,6 +87,7 @@ class WoodworkSeriesAccessor:
 
     @property
     def semantic_tags(self):
+        """The semantic tags assigned to the series"""
         return self._schema['semantic_tags']
 
     def _set_name(self, name=None):
