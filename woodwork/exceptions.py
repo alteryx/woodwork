@@ -27,3 +27,10 @@ class OutdatedSchemaWarning(UserWarning):
                 '%s is no longer supported by this version '
                 'of woodwork. Attempting to load woodwork.DataTable ...'
                 % (saved_version_str))
+
+
+class TypingInfoMismatchWarning(UserWarning):
+    def get_warning_message(self, attr, invalid_reason):
+        return (f'Operation performed by {attr} has invalidated the Woodwork typing information:\n '
+                f'{invalid_reason}.\n '
+                'Please initialize Woodwork with DataFrame.ww.init')

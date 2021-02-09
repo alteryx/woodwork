@@ -3,9 +3,21 @@ import re
 import pytest
 
 import woodwork as ww
-from woodwork.logical_types import Integer, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage,
+    Ordinal
+)
 from woodwork.schema_column import (
     _get_column_dict,
+    _is_col_boolean,
+    _is_col_categorical,
+    _is_col_datetime,
+    _is_col_numeric,
     _validate_description,
     _validate_logical_type,
     _validate_metadata
@@ -85,7 +97,7 @@ def test_raises_error_setting_index_tag_directly():
     #     schema.set_semantic_tags({'id': 'index'})
 
 
-def test_raises_error_setting_time_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+def test_raises_error_setting_time_index_tag_directly():
     error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
                           "use Schema.set_time_index() instead.")
     with pytest.raises(ValueError, match=error_msg):
@@ -97,3 +109,71 @@ def test_raises_error_setting_time_index_tag_directly(sample_column_names, sampl
     #     schema.add_semantic_tags({'signup_date': 'time_index'})
     # with pytest.raises(ValueError, match=error_msg):
     #     schema.set_semantic_tags({'signup_date': 'time_index'})
+
+
+def test_is_col_numeric():
+    int_column = _get_column_dict('ints', Integer)
+    assert _is_col_numeric(int_column)
+
+    double_column = _get_column_dict('floats', Double)
+    assert _is_col_numeric(double_column)
+
+    nl_column = _get_column_dict('text', NaturalLanguage)
+    assert not _is_col_numeric(nl_column)
+
+    manually_added = _get_column_dict('text', NaturalLanguage, semantic_tags='numeric')
+    assert not _is_col_numeric(manually_added)
+
+    no_standard_tags = _get_column_dict('ints', Integer, use_standard_tags=False)
+    assert _is_col_numeric(no_standard_tags)
+
+    instantiated_column = _get_column_dict('ints', Integer())
+    assert _is_col_numeric(instantiated_column)
+
+
+def test_is_col_categorical():
+    categorical_column = _get_column_dict('cats', Categorical)
+    assert _is_col_categorical(categorical_column)
+
+    ordinal_column = _get_column_dict('ordinal', Ordinal(order=['a', 'b']))
+    assert _is_col_categorical(ordinal_column)
+
+    nl_column = _get_column_dict('text', NaturalLanguage)
+    assert not _is_col_categorical(nl_column)
+
+    manually_added = _get_column_dict('text', NaturalLanguage, semantic_tags='category')
+    assert not _is_col_categorical(manually_added)
+
+    no_standard_tags = _get_column_dict('cats', Categorical, use_standard_tags=False)
+    assert _is_col_categorical(no_standard_tags)
+
+
+def test_is_col_boolean():
+    boolean_column = _get_column_dict('bools', Boolean)
+    assert _is_col_boolean(boolean_column)
+
+    instantiated_column = _get_column_dict('bools', Boolean())
+    assert _is_col_boolean(instantiated_column)
+
+    ordinal_column = _get_column_dict('ordinal', Ordinal(order=['a', 'b']))
+    assert not _is_col_boolean(ordinal_column)
+
+    nl_column = _get_column_dict('text', NaturalLanguage)
+    assert not _is_col_boolean(nl_column)
+
+
+def test_is_col_datetime():
+    datetime_column = _get_column_dict('dates', Datetime)
+    assert _is_col_datetime(datetime_column)
+
+    formatted_datetime_column = _get_column_dict('dates', Datetime(datetime_format='%Y-%m%d'))
+    assert _is_col_datetime(formatted_datetime_column)
+
+    instantiated_datetime_column = _get_column_dict('dates', Datetime())
+    assert _is_col_datetime(instantiated_datetime_column)
+
+    nl_column = _get_column_dict('text', NaturalLanguage)
+    assert not _is_col_datetime(nl_column)
+
+    double_column = _get_column_dict('floats', Double)
+    assert not _is_col_datetime(double_column)

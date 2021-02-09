@@ -1,4 +1,5 @@
 import woodwork as ww
+from woodwork.logical_types import Boolean, Datetime, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
@@ -53,7 +54,7 @@ def _validate_logical_type(logical_type):
 
     if ltype_class not in ww.type_system.registered_types:
         raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
-    if ltype_class == ww.logical_types.Ordinal and not isinstance(logical_type, ww.logical_types.Ordinal):
+    if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
         raise TypeError("Must use an Ordinal instance with order values defined")
 
 
@@ -75,3 +76,19 @@ def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):
         semantic_tags = semantic_tags.union(logical_type.standard_tags)
 
     return semantic_tags
+
+
+def _is_col_numeric(col_dict):
+    return 'numeric' in col_dict['logical_type'].standard_tags
+
+
+def _is_col_categorical(col_dict):
+    return 'category' in col_dict['logical_type'].standard_tags
+
+
+def _is_col_datetime(col_dict):
+    return _get_ltype_class(col_dict['logical_type']) == Datetime
+
+
+def _is_col_boolean(col_dict):
+    return _get_ltype_class(col_dict['logical_type']) == Boolean
