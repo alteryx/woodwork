@@ -303,11 +303,11 @@ def df_same_mi(request):
 @pytest.fixture()
 def df_mi_pandas():
     return pd.DataFrame({
-        'ints': pd.Series([1, 2, 3]),
+        'ints': pd.Series([1, 2, 1]),
         'bools': pd.Series([True, False, True]),
         'strs2': pd.Series(['bye', 'hi', 'bye']),
         'strs': pd.Series(['hi', 'hi', 'hi']),
-        'dates': pd.Series(['2020-01-01', '2019-01-02', '1997-01-04'])
+        'dates': pd.Series(['2020-01-01', '2020-01-01', '1997-01-04'])
     })
 
 
@@ -325,6 +325,33 @@ def df_mi_koalas(df_mi_pandas):
 
 @pytest.fixture(params=['df_mi_pandas', 'df_mi_dask', 'df_mi_koalas'])
 def df_mi(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def df_mi_unique_pandas():
+    return pd.DataFrame({
+        'unique': pd.Series(['hi', 'bye', 'hello', 'goodbye']),
+        'unique_with_one_nan': pd.Series(['hi', 'bye', None, 'goodbye']),
+        'unique_with_nans': pd.Series([1, None, None, 2]),
+        'ints': pd.Series([1, 2, 1, 2]),
+    })
+
+
+@pytest.fixture()
+def df_mi_unique_dask(df_mi_unique_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(df_mi_unique_pandas, npartitions=1)
+
+
+@pytest.fixture()
+def df_mi_unique_koalas(df_mi_unique_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(df_mi_unique_pandas)
+
+
+@pytest.fixture(params=['df_mi_unique_pandas', 'df_mi_unique_dask', 'df_mi_unique_koalas'])
+def df_mi_unique(request):
     return request.getfixturevalue(request.param)
 
 

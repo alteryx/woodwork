@@ -6,13 +6,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`)
         * Fixed text on back arrow on install page (:pr:`564`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`tamargrey`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
