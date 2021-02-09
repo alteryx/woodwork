@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from woodwork.utils import import_or_none
 
@@ -68,3 +69,8 @@ def check_column_order(dt, new_dt):
     assert all(dt.types.index == new_dt.types.index)
     # Confirm types df matches column order
     assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+
+
+def xfail_dask_and_koalas(df):
+    if dd and isinstance(df, dd.DataFrame) or ks and isinstance(df, ks.DataFrame):
+        pytest.xfail('Dask and Koalas Accessors not yet supported.')
