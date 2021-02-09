@@ -125,6 +125,24 @@ class WoodworkTableAccessor:
     def schema(self):
         return self._schema
 
+    def select(self, include):
+        """Create a DataFrame with Woodowork typing information initialized
+        that includes only columns whose Logical Type and semantic tags are
+        specified in the list of types and tags to include.
+        If no matching columns are found, an empty DataFrame will be returned.
+
+        Args:
+            include (str or LogicalType or list[str or LogicalType]): Logical
+                types, semantic tags to include in the DataFrame.
+
+        Returns:
+            DataFrame: The subset of the original DataFrame that contains just the
+            logical types and semantic tags in ``include``. Has Woodwork typing
+            information initialized.
+        """
+        cols_to_include = self._schema._filter_cols(include)
+        return self._get_subset_df_with_schema(cols_to_include)
+
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
@@ -198,6 +216,21 @@ class WoodworkTableAccessor:
             return wrapper
         # Directly return non-callable DataFrame attributes
         return dataframe_attr
+
+    def _get_subset_df_with_schema(self, cols_to_include):
+        '''
+        Creates a new DataFrame from a list of column names with Woodwork initialized,
+        retaining all typing information and maintaining the DataFrame's column order.
+        '''
+        assert all([col_name in self._schema.columns for col_name in cols_to_include])
+        cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
+
+        new_schema = self._schema._get_subset_schema(cols_to_include)
+
+        new_df = self._dataframe[cols_to_include]
+        new_df.ww.init(schema=new_schema)
+
+        return new_df
 
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):
