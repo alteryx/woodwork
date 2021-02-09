@@ -1023,10 +1023,15 @@ class DataTable(object):
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
             data = data.sample(nrows)
+
         # remove fully null columns
-        data = data.loc[:, data.columns[data.notnull().any()]]
-        # Don't calculate mutual info for columns that aren't unique
-        data = data.loc[:, [col for col in data.columns if not data[col].is_unique]]
+        not_null_cols = data.columns[data.notnull().any()]
+        if set(not_null_cols) != set(valid_columns):
+            data = data.loc[:, not_null_cols]
+        # remove columns that are unique
+        not_unique_cols = [col for col in data.columns if not data[col].is_unique]
+        if set(not_unique_cols) != set(valid_columns):
+            data = data.loc[:, not_unique_cols]
 
         data = self._replace_nans_for_mutual_info(data)
         data = self._make_categorical_for_mutual_info(data, num_bins)
