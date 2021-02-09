@@ -1,9 +1,14 @@
+import inspect
+
 import pandas as pd
+import pytest
 
 from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,
+    Double,
+    EmailAddress,
     Integer,
     NaturalLanguage
 )
@@ -162,3 +167,90 @@ def test_schema_column_metadata(sample_column_names, sample_inferred_logical_typ
 
     schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata={'id': column_metadata})
     assert schema.columns['id']['metadata'] == column_metadata
+
+
+def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='dt_name')
+
+    filtered = schema._filter_cols(include=Datetime)
+    assert filtered == ['signup_date']
+
+    filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
+    filtered_log_type = schema._filter_cols(include=NaturalLanguage)
+    expected = {'full_name', 'email', 'phone_number'}
+    assert filtered_log_type == filtered_log_type_string
+    assert set(filtered_log_type) == expected
+
+    filtered_semantic_tag = schema._filter_cols(include='numeric')
+    assert filtered_semantic_tag == ['age']
+
+    # --> add back in when describe is implemented
+    # filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
+    # expected = ['full_name', 'phone_number', 'email']
+    # for col in filtered_multiple_overlap:
+    #     assert col in expected
+
+
+def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='dt_name')
+
+    filter_no_matches = schema._filter_cols(include='nothing')
+    assert filter_no_matches == []
+
+    filter_empty_list = schema._filter_cols(include=[])
+    assert filter_empty_list == []
+
+
+def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='dt_name')
+
+    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(include=['boolean', 'index', Double, 1])
+
+    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(Datetime())
+
+
+def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    new_schema = schema._get_subset_schema(sample_column_names[1:4])
+    for col in new_schema.columns:
+        assert new_schema.semantic_tags[col] == schema.semantic_tags[col]
+        assert new_schema.logical_types[col] == schema.logical_types[col]
+
+
+def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logical_types):
+    # The first element is self, so it won't be included in kwargs
+    possible_dt_params = inspect.getfullargspec(Schema.__init__)[0][1:]
+
+    kwargs = {
+        'column_names': sample_column_names,
+        'logical_types': {**sample_inferred_logical_types, **{'email': EmailAddress}},
+        'name': 'test_dt',
+        'index': 'id',
+        'time_index': 'signup_date',
+        'semantic_tags': {'age': 'test_tag'},
+        'table_metadata': {'created_by': 'user1'},
+        'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
+        'use_standard_tags': False,
+        'column_descriptions': {'age': 'this is a description'}
+    }
+
+    # Confirm all possible params to Schema init are present with non-default values where possible
+    assert set(possible_dt_params) == set(kwargs.keys())
+
+    schema = Schema(**kwargs)
+    copy_schema = schema._get_subset_schema(sample_column_names)
+
+    assert schema == copy_schema

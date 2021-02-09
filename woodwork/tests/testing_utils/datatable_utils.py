@@ -18,6 +18,16 @@ def validate_subset_dt(subset_dt, dt):
         assert to_pandas(subset_col.to_series()).equals(to_pandas(col.to_series()))
 
 
+def validate_subset_schema(subset_schema, schema):
+    assert subset_schema.name == schema.name
+    for subset_col_name, subset_col in subset_schema.columns.items():
+        assert subset_col_name in schema.columns
+        col = schema.columns[subset_col_name]
+        assert subset_col['logical_type'] == col['logical_type']
+        assert subset_col['semantic_tags'] == col['semantic_tags']
+        assert subset_col['dtype'] == col['dtype']
+
+
 def mi_between_cols(col1, col2, df):
     mi_series = df.loc[df['column_1'] == col1].loc[df['column_2'] == col2]['mutual_info']
 

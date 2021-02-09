@@ -47,6 +47,7 @@ class Schema(object):
                          table_metadata, column_metadata, semantic_tags, column_descriptions)
 
         self.name = name
+        self.use_standard_tags = use_standard_tags
 
         # Infer logical types and create columns
         self.columns = self._create_columns(column_names,
@@ -180,6 +181,91 @@ class Schema(object):
 
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
+
+    def _filter_cols(self, include):
+        """Return list of columns filtered in specified way. In case of collision, favors logical types
+        then semantic tag.
+
+        Args:
+            include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
+                filter columns by. Can be Logical Types or Semantic Tags.
+
+        Returns:
+            List[str] of column names that fit into filter.
+        """
+        if not isinstance(include, list):
+            include = [include]
+
+        ltypes_used = set()
+        ltypes_in_schema = {_get_ltype_class(col['logical_type']) for col in self.columns.values()}
+
+        tags_used = set()
+        tags_in_schema = {tag for col in self.columns.values() for tag in col['semantic_tags']}
+
+        cols_to_include = set()
+
+        for selector in include:
+            if _get_ltype_class(selector) in ww.type_system.registered_types:
+                if selector not in ww.type_system.registered_types:
+                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
+                if selector in ltypes_in_schema:
+                    ltypes_used.add(selector)
+            elif isinstance(selector, str):
+                # If the str is a viable ltype, it'll take precedence
+                # but if it's not present, we'll check if it's a tag
+                ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
+                if ltype and ltype in ltypes_in_schema:
+                    ltypes_used.add(ltype)
+                    continue
+                elif selector in tags_in_schema:
+                    tags_used.add(selector)
+            else:
+                raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
+
+        for col_name, col in self.columns.items():
+            if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
+                cols_to_include.add(col_name)
+
+        return list(cols_to_include)
+
+    def _get_subset_schema(self, subset_cols):
+        '''
+        Creates a new Schema with specified columns, retaining typing information.
+
+        Args:
+            subset_cols (list[str]): subset of columns from which to create the new Schema
+        Returns:
+            Schema: New Schema with attributes from original Schema
+        '''
+        new_logical_types = {}
+        new_semantic_tags = {}
+        new_column_descriptions = {}
+        new_column_metadata = {}
+        for col_name in subset_cols:
+            col = col = self.columns[col_name]
+
+            new_logical_types[col_name] = col['logical_type']
+            new_semantic_tags[col_name] = col['semantic_tags']
+            new_column_descriptions[col_name] = col['description']
+            new_column_metadata[col_name] = col['metadata']
+
+        new_index = self.index if self.index in subset_cols else None
+        new_time_index = self.time_index if self.time_index in subset_cols else None
+        if new_index is not None:
+            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+        if new_time_index is not None:
+            new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+
+        return Schema(subset_cols,
+                      new_logical_types,
+                      name=self.name,
+                      index=new_index,
+                      time_index=new_time_index,
+                      semantic_tags=new_semantic_tags,
+                      use_standard_tags=self.use_standard_tags,
+                      table_metadata=self.metadata,
+                      column_metadata=new_column_metadata,
+                      column_descriptions=new_column_descriptions)
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,
