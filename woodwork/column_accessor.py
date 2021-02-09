@@ -13,7 +13,7 @@ from woodwork.utils import _get_column_logical_type
 
 
 @pd.api.extensions.register_series_accessor('ww')
-class WoodworkSeriesAccessor:
+class WoodworkColumnAccessor:
     def __init__(self, series):
         self._series = series
         self._schema = None

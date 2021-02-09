@@ -6,6 +6,6 @@ from .type_sys.utils import list_logical_types, list_semantic_tags
 from .utils import read_csv, read_csv_to_accessor
 from .version import __version__
 
+import woodwork.column_accessor
 import woodwork.demo
-import woodwork.series_accessor
 import woodwork.table_accessor
