@@ -25,11 +25,12 @@ def xfail_dask_and_koalas(series):
 
 def test_accessor_init(sample_series):
     xfail_dask_and_koalas(sample_series)
-    assert sample_series.ww.schema is None
-    sample_series.ww.init()
-    assert isinstance(sample_series.ww.schema, dict)
-    assert sample_series.ww.logical_type == Categorical
-    assert sample_series.ww.semantic_tags == {'category'}
+    series = sample_series.astype('category')
+    assert series.ww.schema is None
+    series.ww.init()
+    assert isinstance(series.ww.schema, dict)
+    assert series.ww.logical_type == Categorical
+    assert series.ww.semantic_tags == {'category'}
 
 
 def test_accessor_init_with_logical_type(sample_series):
@@ -61,9 +62,10 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
 
 def test_accessor_init_with_semantic_tags(sample_series):
     xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
     semantic_tags = ['tag1', 'tag2']
-    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
-    assert sample_series.ww.semantic_tags == set(semantic_tags)
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert series.ww.semantic_tags == set(semantic_tags)
 
 
 def test_accessor_init_with_name(sample_series):
@@ -71,11 +73,11 @@ def test_accessor_init_with_name(sample_series):
     name = 'sample_series'
     changed_name = 'changed_name'
 
-    use_series_name = sample_series.copy()
+    use_series_name = sample_series.copy().astype('category')
     assert use_series_name.name == name
     assert use_series_name.ww.name == name
 
-    use_input_name = sample_series.copy()
+    use_input_name = sample_series.copy().astype('category')
     warning = 'Name mismatch between sample_series and changed_name. Series name is now changed_name'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
         use_input_name.ww.init(name=changed_name)
@@ -86,7 +88,7 @@ def test_accessor_init_with_name(sample_series):
 def test_accessor_init_with_falsy_name(sample_series):
     xfail_dask_and_koalas(sample_series)
     falsy_name = 0
-    falsy_name_series = sample_series.copy()
+    falsy_name_series = sample_series.copy().astype('category')
     warning = 'Name mismatch between sample_series and 0. Series name is now 0'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
         falsy_name_series.ww.init(name=falsy_name)
@@ -126,12 +128,12 @@ def test_accessor_init_with_falsy_name(sample_series):
 
 def test_accessor_with_alternate_semantic_tags_input(sample_series):
     xfail_dask_and_koalas(sample_series)
-    series = sample_series.copy()
+    series = sample_series.copy().astype('category')
     semantic_tags = 'custom_tag'
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
     assert series.ww.semantic_tags == {'custom_tag'}
 
-    series = sample_series.copy()
+    series = sample_series.copy().astype('category')
     semantic_tags = {'custom_tag', 'numeric'}
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
     assert series.ww.semantic_tags == semantic_tags
@@ -150,22 +152,23 @@ def test_logical_type_errors(sample_series):
 
 def test_semantic_tag_errors(sample_series):
     xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
     error_message = "semantic_tags for sample_series must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        sample_series.ww.init(semantic_tags=int)
+        series.ww.init(semantic_tags=int)
 
     error_message = "semantic_tags for sample_series must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        sample_series.ww.init(semantic_tags={'index': {}, 'time_index': {}})
+        series.ww.init(semantic_tags={'index': {}, 'time_index': {}})
 
     error_message = "semantic_tags for sample_series must contain only strings"
     with pytest.raises(TypeError, match=error_message):
-        sample_series.ww.init(semantic_tags=['index', 1])
+        series.ww.init(semantic_tags=['index', 1])
 
 
 def test_accessor_description(sample_series):
     xfail_dask_and_koalas(sample_series)
-    series = sample_series.copy()
+    series = sample_series.copy().astype('category')
 
     column_description = "custom description"
     series.ww.init(description=column_description)
@@ -178,17 +181,19 @@ def test_accessor_description(sample_series):
 
 def test_description_error_on_init(sample_series):
     xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
     err_msg = "Column description must be a string"
     with pytest.raises(TypeError, match=err_msg):
-        sample_series.ww.init(description=123)
+        series.ww.init(description=123)
 
 
 def test_description_error_on_update(sample_series):
     xfail_dask_and_koalas(sample_series)
-    sample_series.ww.init()
+    series = sample_series.astype('category')
+    series.ww.init()
     err_msg = "Column description must be a string"
     with pytest.raises(TypeError, match=err_msg):
-        sample_series.ww.description = 123
+        series.ww.description = 123
 
 
 # def test_datacolumn_repr(sample_series):
@@ -259,7 +264,7 @@ def test_adds_category_standard_tag():
 
 
 def test_does_not_add_standard_tags():
-    series = pd.Series([1, 2, 3])
+    series = pd.Series([1.1, 2, 3])
     semantic_tags = 'custom_tag'
     series.ww.init(logical_type=Double,
                    semantic_tags=semantic_tags,
@@ -484,14 +489,6 @@ def test_does_not_add_standard_tags():
 #     assert 'time_index' in data_col.semantic_tags
 
 
-# def test_to_series(sample_series):
-#     data_col = DataColumn(sample_series)
-#     series = data_col.to_series()
-
-#     assert series is data_col._series
-#     pd.testing.assert_series_equal(to_pandas(series), to_pandas(data_col._series))
-
-
 # def test_shape(sample_series):
 #     col = DataColumn(sample_series)
 #     col_shape = col.shape
@@ -522,12 +519,13 @@ def test_does_not_add_standard_tags():
 #     assert dc._series.dtype == 'float64'
 
 
-# def test_ordinal_requires_instance_on_init(sample_series):
-#     error_msg = 'Must use an Ordinal instance with order values defined'
-#     with pytest.raises(TypeError, match=error_msg):
-#         DataColumn(sample_series, logical_type=Ordinal)
-#     with pytest.raises(TypeError, match=error_msg):
-#         DataColumn(sample_series, logical_type="Ordinal")
+def test_ordinal_requires_instance_on_init(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        sample_series.ww.init(logical_type=Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        sample_series.ww.init(logical_type="Ordinal")
 
 
 # def test_ordinal_requires_instance_on_update(sample_series):
@@ -643,11 +641,11 @@ def test_accessor_metadata(sample_series):
     xfail_dask_and_koalas(sample_series)
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
-    series = sample_series.copy()
+    series = sample_series.copy().astype('category')
     series.ww.init()
     assert series.ww.metadata == {}
 
-    series = sample_series.copy()
+    series = sample_series.copy().astype('category')
     series.ww.init(metadata=column_metadata)
     assert series.ww.metadata == column_metadata
 
@@ -665,14 +663,16 @@ def test_accessor_metadata(sample_series):
 
 def test_accessor_metadata_error_on_init(sample_series):
     xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
-        sample_series.ww.init(metadata=123)
+        series.ww.init(metadata=123)
 
 
 def test_accessor_metadata_error_on_update(sample_series):
     xfail_dask_and_koalas(sample_series)
-    sample_series.ww.init()
+    series = sample_series.astype('category')
+    series.ww.init()
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
-        sample_series.ww.metadata = 123
+        series.ww.metadata = 123
