@@ -1,3 +1,6 @@
+import re
+
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -5,6 +8,7 @@ from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
+    Datetime,
     Double,
     Integer,
     NaturalLanguage,
@@ -196,15 +200,17 @@ def test_description_error_on_update(sample_series):
         series.ww.description = 123
 
 
-# def test_datacolumn_repr(sample_series):
-#     data_col = DataColumn(sample_series, use_standard_tags=False)
-#     # Koalas doesn't support categorical
-#     if ks and isinstance(sample_series, ks.Series):
-#         dtype = 'object'
-#     else:
-#         dtype = 'category'
-#     assert data_col.__repr__() == f'<DataColumn: sample_series (Physical Type = {dtype}) ' \
-#         '(Logical Type = Categorical) (Semantic Tags = set())>'
+def test_accessor_repr(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(use_standard_tags=False)
+    # Koalas doesn't support categorical
+    if ks and isinstance(series, ks.Series):
+        dtype = 'object'
+    else:
+        dtype = 'category'
+    assert series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
+        '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
 # def test_set_semantic_tags(sample_series):
@@ -553,23 +559,24 @@ def test_ordinal_requires_instance_on_init(sample_series):
 #     assert new_dc.logical_type.order == ['a', 'b', 'c']
 
 
-# def test_ordinal_with_incomplete_ranking(sample_series):
-#     if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
-#         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
+def test_ordinal_with_incomplete_ranking(sample_series):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
 
-#     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
-#     error_msg = re.escape("Ordinal column sample_series contains values that are not "
-#                           "present in the order values provided: ['c']")
-#     with pytest.raises(ValueError, match=error_msg):
-#         DataColumn(sample_series, logical_type=ordinal_incomplete_order)
+    series = sample_series.astype('category')
+    ordinal_incomplete_order = Ordinal(order=['a', 'b'])
+    error_msg = re.escape("Ordinal column sample_series contains values that are not "
+                          "present in the order values provided: ['c']")
+    with pytest.raises(ValueError, match=error_msg):
+        series.ww.init(logical_type=ordinal_incomplete_order)
 
 
-# def test_ordinal_with_nan_values():
-#     nan_series = pd.Series(['a', 'b', np.nan, 'a'])
-#     ordinal_with_order = Ordinal(order=['a', 'b'])
-#     dc = DataColumn(nan_series, logical_type=ordinal_with_order)
-#     assert isinstance(dc.logical_type, Ordinal)
-#     assert dc.logical_type.order == ['a', 'b']
+def test_ordinal_with_nan_values():
+    nan_series = pd.Series(['a', 'b', np.nan, 'a']).astype('category')
+    ordinal_with_order = Ordinal(order=['a', 'b'])
+    nan_series.ww.init(logical_type=ordinal_with_order)
+    assert isinstance(nan_series.ww.logical_type, Ordinal)
+    assert nan_series.ww.logical_type.order == ['a', 'b']
 
 
 # def test_latlong_formatting(latlongs):
@@ -588,53 +595,70 @@ def test_ordinal_requires_instance_on_init(sample_series):
 #         assert dc == expected_dc
 
 
-# def test_datacolumn_equality(sample_series, sample_datetime_series):
-#     # Check different parameters to DataColumn
-#     str_col = DataColumn(sample_series, logical_type='Categorical')
-#     str_col_2 = DataColumn(sample_series, logical_type=Categorical)
-#     str_col_diff_tags = DataColumn(sample_series, logical_type=Categorical, semantic_tags={'test'})
-#     diff_name_col = DataColumn(sample_datetime_series, logical_type=Categorical)
-#     diff_dtype_col = DataColumn(sample_series, logical_type=NaturalLanguage)
-#     diff_description_col = DataColumn(sample_series, logical_type='Categorical', description='description')
-#     diff_metadata_col = DataColumn(sample_series, logical_type='Categorical', metadata={'interesting_values': ['a', 'b']})
+def test_accessor_equality(sample_series, sample_datetime_series):
+    xfail_dask_and_koalas(sample_series)
+    xfail_dask_and_koalas(sample_datetime_series)
 
-#     assert str_col == str_col_2
-#     assert str_col != str_col_diff_tags
-#     assert str_col != diff_name_col
-#     assert str_col != diff_dtype_col
-#     assert str_col != diff_description_col
-#     assert str_col != diff_metadata_col
+    # Check different parameters to DataColumn
+    str_col = sample_series.astype('category')
+    str_col.ww.init(logical_type='Categorical')
+    str_col_2 = sample_series.astype('category')
+    str_col_2.ww.init(logical_type=Categorical)
+    str_col_diff_tags = sample_series.astype('category')
+    str_col_diff_tags.ww.init(logical_type=Categorical, semantic_tags={'test'})
+    diff_name_col = sample_datetime_series.astype('category')
+    diff_name_col.ww.init(logical_type=Categorical)
+    diff_dtype_col = sample_series.astype('string')
+    diff_dtype_col.ww.init(logical_type=NaturalLanguage)
+    diff_description_col = sample_series.astype('category')
+    diff_description_col.ww.init(logical_type='Categorical', description='description')
+    diff_metadata_col = sample_series.astype('category')
+    diff_metadata_col.ww.init(logical_type='Categorical', metadata={'interesting_values': ['a', 'b']})
 
-#     # Check columns with same logical types but different parameters
-#     ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
-#     ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
-#     ordinal_col_1 = DataColumn(sample_series, logical_type=ordinal_ltype_1)
-#     ordinal_col_2 = DataColumn(sample_series, logical_type=ordinal_ltype_2)
+    assert str_col.ww == str_col_2.ww
+    assert str_col.ww != str_col_diff_tags.ww
+    assert str_col.ww != diff_name_col.ww
+    assert str_col.ww != diff_dtype_col.ww
+    assert str_col.ww != diff_description_col.ww
+    assert str_col.ww != diff_metadata_col.ww
 
-#     assert str_col != ordinal_col_1
-#     assert ordinal_col_1 != ordinal_col_2
-#     assert ordinal_col_1 == ordinal_col_1
+    # Check columns with same logical types but different parameters
+    ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
+    ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
+    ordinal_col_1 = sample_series.astype('category')
+    ordinal_col_2 = sample_series.astype('category')
+    ordinal_col_1.ww.init(logical_type=ordinal_ltype_1)
+    ordinal_col_2.ww.init(logical_type=ordinal_ltype_2)
 
-#     datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
-#     datetime_col_format = DataColumn(sample_datetime_series, logical_type=datetime_ltype_instantiated)
-#     datetime_col_param = DataColumn(sample_datetime_series, logical_type=Datetime(datetime_format=None))
-#     datetime_col_instantiated = DataColumn(sample_datetime_series, logical_type=Datetime())
-#     datetime_col = DataColumn(sample_datetime_series, logical_type=Datetime)
+    assert str_col.ww != ordinal_col_1.ww
+    assert ordinal_col_1.ww != ordinal_col_2.ww
+    assert ordinal_col_1.ww == ordinal_col_1.ww
 
-#     assert datetime_col != datetime_col_instantiated
-#     assert datetime_col_instantiated != datetime_col_format
-#     assert datetime_col_instantiated == datetime_col_param
+    datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
+    datetime_col_format = sample_datetime_series.astype('datetime64[ns]')
+    datetime_col_param = sample_datetime_series.astype('datetime64[ns]')
+    datetime_col_instantiated = sample_datetime_series.astype('datetime64[ns]')
+    datetime_col = sample_datetime_series.astype('datetime64[ns]')
+    datetime_col_format.ww.init(logical_type=datetime_ltype_instantiated)
+    datetime_col_param.ww.init(logical_type=Datetime(datetime_format=None))
+    datetime_col_instantiated.ww.init(logical_type=Datetime())
+    datetime_col.ww.init(logical_type=Datetime)
 
-#     # Check different underlying series
-#     str_col = DataColumn(sample_series, logical_type='NaturalLanguage')
-#     changed_series = sample_series.copy().replace(to_replace='a', value='test')
-#     null_col = DataColumn(changed_series, logical_type='NaturalLanguage')
+    assert datetime_col.ww != datetime_col_instantiated.ww
+    assert datetime_col_instantiated.ww != datetime_col_format.ww
+    assert datetime_col_instantiated.ww == datetime_col_param.ww
 
-#     # We only check underlying data for equality with pandas dataframes
-#     if isinstance(str_col.to_series(), pd.Series):
-#         assert str_col != null_col
-#     else:
-#         assert str_col == null_col
+    # Check different underlying series
+    str_col = sample_series.astype('string')
+    str_col.ww.init(logical_type='NaturalLanguage')
+    changed_series = sample_series.copy().replace(to_replace='a', value='test').astype('string')
+    changed_series.ww.init(logical_type='NaturalLanguage')
+
+    # We only check underlying data for equality with pandas dataframes
+    if isinstance(str_col, pd.Series):
+        assert str_col.ww != changed_series.ww
+    else:
+        assert str_col.ww == changed_series.ww
 
 
 def test_accessor_metadata(sample_series):

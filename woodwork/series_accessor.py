@@ -3,6 +3,7 @@ import warnings
 import pandas as pd
 
 from woodwork.exceptions import ColumnNameMismatchWarning
+from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
     _get_column_dict,
     _validate_description,
@@ -40,9 +41,8 @@ class WoodworkSeriesAccessor:
         self._set_name(name)
 
         logical_type = _get_column_logical_type(self._series, logical_type, self.name)
-        if logical_type.pandas_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot initialize Woodwork. Series dtype is incompatible with {logical_type} dtype. "
-                             f"Try converting series dtype to {logical_type.pandas_dtype} before initializing.")
+
+        self._validate_logical_type(logical_type)
 
         self._schema = _get_column_dict(name=self.name,
                                         logical_type=logical_type,
@@ -90,9 +90,31 @@ class WoodworkSeriesAccessor:
         """The semantic tags assigned to the series"""
         return self._schema['semantic_tags']
 
+    def __eq__(self, other):
+        if self.schema != other.schema:
+            return False
+        return self._series.equals(other._series)
+
+    def __repr__(self):
+        msg = u"<Series: {} ".format(self.name)
+        msg += u"(Physical Type = {}) ".format(self._series.dtype)
+        msg += u"(Logical Type = {}) ".format(self.logical_type)
+        msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
+        return msg
+
     def _set_name(self, name=None):
         if name is not None and self._series.name is not None and name != self._series.name:
             warnings.warn(ColumnNameMismatchWarning().get_warning_message(self._series.name, name),
                           ColumnNameMismatchWarning)
         if name is not None:
             self._series.name = name
+
+    def _validate_logical_type(self, logical_type):
+        """Validates that a logical type is consistent with the series dtype. Performs additional type
+        specific validation, as required."""
+        if logical_type.pandas_dtype != str(self._series.dtype):
+            raise ValueError(f"Cannot initialize Woodwork. Series dtype is incompatible with {logical_type} dtype. "
+                             f"Try converting series dtype to {logical_type.pandas_dtype} before initializing.")
+
+        if isinstance(logical_type, Ordinal):
+            logical_type._validate_data(self._series)
