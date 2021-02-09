@@ -11,6 +11,7 @@ WoodworkTableAccessor
 
     WoodworkTableAccessor
     WoodworkTableAccessor.init
+    WoodworkTableAccessor.select
 
 
 Schema
