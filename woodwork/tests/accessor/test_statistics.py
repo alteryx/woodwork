@@ -11,7 +11,6 @@ from woodwork.tests.testing_utils import (
 
 def test_accessor_handle_nans_for_mutual_info():
     df_nans = pd.DataFrame({
-        'nans': pd.Series([None, None, None, None]),
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
@@ -21,11 +20,10 @@ def test_accessor_handle_nans_for_mutual_info():
         'dates': pd.Series(['2020-01-01', None, '2020-01-02', '2020-01-03'])
     })
     df_nans.ww.init()
-    formatted_df = df_nans.ww._handle_nans_for_mutual_info(df_nans.copy())
+    formatted_df = df_nans.ww._replace_nans_for_mutual_info(df_nans.copy())
 
     assert isinstance(formatted_df, pd.DataFrame)
 
-    assert 'nans' not in formatted_df.columns
     assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
     assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
@@ -77,26 +75,25 @@ def test_accessor_mutual_information(df_mi):
     mi = df_mi.ww.mutual_information()
     assert mi.shape[0] == 10
 
-    np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 0.734, 3)
+    np.testing.assert_almost_equal(mi_between_cols('ints', 'bools', mi), 1.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('ints', 'strs', mi), 0.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('strs', 'bools', mi), 0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 1.0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'bools', mi), 0.734, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 0.274, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'bools', mi), 0.274, 3)
 
     mi_many_rows = df_mi.ww.mutual_information(nrows=100000)
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = df_mi.ww.mutual_information(nrows=1)
-    assert mi.shape[0] == 10
-    assert (mi['mutual_info'] == 1.0).all()
+    assert mi.shape[0] == 0
 
     mi = df_mi.ww.mutual_information(num_bins=2)
     assert mi.shape[0] == 10
-    np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), .274, 3)
-    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('bools', 'ints', mi), 0.0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('strs', 'ints', mi), 1.0, 3)
     np.testing.assert_almost_equal(mi_between_cols('bools', 'strs', mi), 0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'strs', mi), 0, 3)
-    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), .274, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'strs', mi), 1.0, 3)
+    np.testing.assert_almost_equal(mi_between_cols('dates', 'ints', mi), 1.0, 3)
 
     # Confirm that none of this changed the underlying df
     pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
@@ -139,3 +136,16 @@ def test_mutual_info_dict(df_mi):
     mi = df_mi.ww.mutual_information()
 
     pd.testing.assert_frame_equal(pd.DataFrame(mi_dict), mi)
+
+
+def test_mutual_info_unique(df_mi_unique):
+    xfail_dask_and_koalas(df_mi_unique)
+
+    df_mi_unique.ww.init()
+    mi = df_mi_unique.ww.mutual_information()
+
+    cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
+    assert 'unique' not in cols_used
+    assert 'unique_with_one_nan' not in cols_used
+    assert 'unique_with_nans' in cols_used
+    assert 'ints' in cols_used
