@@ -41,18 +41,8 @@ def _get_column_dict(name,
 
 def _validate_tags(semantic_tags):
     """Verify user has not supplied tags that cannot be set directly"""
-    if 'index' in semantic_tags:
-        raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
                          "use Schema.set_index() instead.")
-    if 'time_index' in semantic_tags:
-        raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                         "use Schema.set_time_index() instead.")
 
-
-def _validate_logical_type(logical_type):
-    ltype_class = _get_ltype_class(logical_type)
-
-    if ltype_class not in ww.type_system.registered_types:
         raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
     if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
         raise TypeError("Must use an Ordinal instance with order values defined")
@@ -70,6 +60,7 @@ def _validate_metadata(column_metadata):
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):
     semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}')
+
     _validate_tags(semantic_tags)
 
     if use_standard_tags:

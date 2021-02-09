@@ -26,8 +26,6 @@ from woodwork.utils import (
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-if ks:
-    ks.set_option('compute.ops_on_diff_frames', True)
 
 
 class DataTable(object):
@@ -83,6 +81,8 @@ class DataTable(object):
                          table_metadata, column_metadata, semantic_tags, make_index, column_descriptions)
 
         self._dataframe = dataframe
+        if ks and isinstance(dataframe, ks.DataFrame) and not ks.get_option('compute.ops_on_diff_frames'):
+            ks.set_option('compute.ops_on_diff_frames', True)
 
         self.make_index = make_index or None
         if self.make_index:
@@ -491,6 +491,9 @@ class DataTable(object):
 
         Args:
             time_index (str): The name of the column to set as the time index.
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified time index column set.
         """
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         _update_time_index(new_dt, time_index, self.time_index)
@@ -930,7 +933,7 @@ class DataTable(object):
             val_counts[col] = dt_list
         return val_counts
 
-    def _handle_nans_for_mutual_info(self, data):
+    def _replace_nans_for_mutual_info(self, data):
         """
         Remove NaN values in the dataframe so that mutual information can be calculated
 
@@ -938,12 +941,9 @@ class DataTable(object):
             data (pd.DataFrame): dataframe to use for calculating mutual information
 
         Returns:
-            pd.DataFrame: data with fully null columns removed and nans filled in
-                with either mean or mode
+            pd.DataFrame: data with nans replaced with either mean or mode
 
         """
-        # remove fully null columns
-        data = data.loc[:, data.columns[data.notnull().any()]]
 
         # replace or remove null values
         for column_name in data.columns[data.isnull().any()]:
@@ -1024,7 +1024,16 @@ class DataTable(object):
         if nrows is not None and nrows < data.shape[0]:
             data = data.sample(nrows)
 
-        data = self._handle_nans_for_mutual_info(data)
+        # remove fully null columns
+        not_null_cols = data.columns[data.notnull().any()]
+        if set(not_null_cols) != set(valid_columns):
+            data = data.loc[:, not_null_cols]
+        # remove columns that are unique
+        not_unique_cols = [col for col in data.columns if not data[col].is_unique]
+        if set(not_unique_cols) != set(valid_columns):
+            data = data.loc[:, not_unique_cols]
+
+        data = self._replace_nans_for_mutual_info(data)
         data = self._make_categorical_for_mutual_info(data, num_bins)
 
         # calculate mutual info for all pairs of columns

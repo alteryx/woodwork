@@ -15,7 +15,7 @@ setup(
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     license='BSD 3-clause',
-    version='0.0.8',
+    version='0.0.9',
     description='a two-dimensional data object with labeled axes and typing information',
     url='https://github.com/alteryx/woodwork/',
     classifiers=[
@@ -25,7 +25,7 @@ setup(
          'Programming Language :: Python :: 3.6',
          'Programming Language :: Python :: 3.7',
          'Programming Language :: Python :: 3.8',
-         'Programming Language :: Python :: 3.9'
+         'Programming Language :: Python :: 3.9',
     ],
     packages=find_packages(),
     install_requires=open('requirements.txt').readlines(),
