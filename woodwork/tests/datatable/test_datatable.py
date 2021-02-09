@@ -2508,9 +2508,8 @@ def test_value_counts(categorical_df):
         assert len(val_cts_2[col]) == 2
 
 
-def test_datatable_handle_nans_for_mutual_info():
+def test_datatable_replace_nans_for_mutual_info():
     df_nans = pd.DataFrame({
-        'nans': pd.Series([None, None, None, None]),
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
@@ -2520,11 +2519,10 @@ def test_datatable_handle_nans_for_mutual_info():
         'dates': pd.Series(['2020-01-01', None, '2020-01-02', '2020-01-03'])
     })
     dt_nans = DataTable(df_nans)
-    formatted_df = dt_nans._handle_nans_for_mutual_info(dt_nans.to_dataframe().copy())
+    formatted_df = dt_nans._replace_nans_for_mutual_info(dt_nans.to_dataframe().copy())
 
     assert isinstance(formatted_df, pd.DataFrame)
 
-    assert 'nans' not in formatted_df.columns
     assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
     assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
@@ -2582,8 +2580,7 @@ def test_datatable_mutual_information(df_mi):
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = dt.mutual_information(nrows=1)
-    assert mi.shape[0] == 10
-    assert (mi['mutual_info'] == 1.0).all()
+    assert mi.shape[0] == 0
 
     mi = dt.mutual_information(num_bins=2)
     assert mi.shape[0] == 10

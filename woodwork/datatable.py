@@ -933,7 +933,7 @@ class DataTable(object):
             val_counts[col] = dt_list
         return val_counts
 
-    def _handle_nans_for_mutual_info(self, data):
+    def _replace_nans_for_mutual_info(self, data):
         """
         Remove NaN values in the dataframe so that mutual information can be calculated
 
@@ -941,12 +941,9 @@ class DataTable(object):
             data (pd.DataFrame): dataframe to use for calculating mutual information
 
         Returns:
-            pd.DataFrame: data with fully null columns removed and nans filled in
-                with either mean or mode
+            pd.DataFrame: data with nans replaced with either mean or mode
 
         """
-        # remove fully null columns
-        data = data.loc[:, data.columns[data.notnull().any()]]
 
         # replace or remove null values
         for column_name in data.columns[data.isnull().any()]:
@@ -1023,14 +1020,15 @@ class DataTable(object):
         if ks and isinstance(self._dataframe, ks.DataFrame):
             data = data.to_pandas()
 
-        # Dpn't calculate mutual info for columns that aren't unique
-        data = data[[col for col in data.columns if not data[col].is_unique]]
-
         # cut off data if necessary
         if nrows is not None and nrows < data.shape[0]:
             data = data.sample(nrows)
+        # remove fully null columns
+        data = data.loc[:, data.columns[data.notnull().any()]]
+        # Don't calculate mutual info for columns that aren't unique
+        data = data.loc[:, [col for col in data.columns if not data[col].is_unique]]
 
-        data = self._handle_nans_for_mutual_info(data)
+        data = self._replace_nans_for_mutual_info(data)
         data = self._make_categorical_for_mutual_info(data, num_bins)
 
         # calculate mutual info for all pairs of columns
