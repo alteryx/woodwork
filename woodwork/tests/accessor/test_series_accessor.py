@@ -30,9 +30,9 @@ def xfail_dask_and_koalas(series):
 def test_accessor_init(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
-    assert series.ww.schema is None
+    assert series.ww._schema is None
     series.ww.init()
-    assert isinstance(series.ww.schema, dict)
+    assert isinstance(series.ww._schema, dict)
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
 

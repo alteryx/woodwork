@@ -82,16 +82,12 @@ class WoodworkColumnAccessor:
         return self._series.name
 
     @property
-    def schema(self):
-        return self._schema
-
-    @property
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
         return self._schema['semantic_tags']
 
     def __eq__(self, other):
-        if self.schema != other.schema:
+        if self._schema != other._schema:
             return False
         return self._series.equals(other._series)
 
