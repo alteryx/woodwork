@@ -14,6 +14,7 @@ Release Notes
         * Add ability to call pandas methods from Accessor (:pr:`538`)
         * Add helpers for checking if a column is one of Boolean, Datetime, numeric, or categorical (:pr:`553`)
         * Add ability to load demo retail dataset with a Woodwork Accessor (:pr:`556`)
+        * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
         * Add WoodworkSeriesAccessor class (:pr:`562`)
     * Fixes
         * Handle missing values in Datetime columns when calculating mutual information (:pr:`516`)

@@ -314,8 +314,8 @@ def test_new_dt_including(sample_df_pandas):
     dt = ww.DataTable(sample_df_pandas)
     new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
     for col in new_dt.columns:
-        assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
-        assert new_dt.logical_types[col] == new_dt.logical_types[col]
+        assert new_dt.semantic_tags[col] == dt.semantic_tags[col]
+        assert new_dt.logical_types[col] == dt.logical_types[col]
 
 
 def test_new_dt_including_all_params(sample_df):
