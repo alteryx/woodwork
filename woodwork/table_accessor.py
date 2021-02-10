@@ -316,8 +316,8 @@ class WoodworkTableAccessor:
             (perfect dependency).
         """
         valid_types = get_valid_mi_types()
-        valid_columns = [col['name'] for col in self._schema.columns.values() if (
-            col['name'] != self._schema.index and _get_ltype_class(col['logical_type']) in valid_types)]
+        valid_columns = [col_name for col_name, col in self._schema.columns.items() if (
+            col_name != self._schema.index and _get_ltype_class(col['logical_type']) in valid_types)]
 
         data = self._dataframe[valid_columns]
         if dd and isinstance(data, dd.DataFrame):
