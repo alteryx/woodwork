@@ -30,7 +30,6 @@ def _get_column_dict(name,
     semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name)
 
     return {
-        'name': name,
         'dtype': logical_type.pandas_dtype,
         'logical_type': logical_type,
         'semantic_tags': semantic_tags,
