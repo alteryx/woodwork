@@ -277,11 +277,10 @@ class WoodworkTableAccessor:
                 numeric features into categorical.
 
         Returns:
-            data (pd.DataFrame): Transformed data
+            pd.DataFrame: data with values transformed and binned into numeric categorical values
         """
 
-        col_names = data.columns.to_list()
-        for col_name in col_names:
+        for col_name in data.columns:
             column = self._schema.columns[col_name]
             if _is_col_numeric(column):
                 # bin numeric features to make categories
