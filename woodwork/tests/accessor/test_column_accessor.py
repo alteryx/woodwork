@@ -58,8 +58,8 @@ def test_accessor_init_with_logical_type(sample_series):
 def test_accessor_init_with_invalid_logical_type(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series
-    error_message = "Cannot initialize Woodwork. Series dtype is incompatible with NaturalLanguage dtype. " \
-        "Try converting series dtype to string before initializing."
+    error_message = "Cannot initialize Woodwork. Series dtype 'object' is incompatible with NaturalLanguage dtype. " \
+        "Try converting series dtype to 'string' before initializing."
     with pytest.raises(ValueError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
 
@@ -599,7 +599,7 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     xfail_dask_and_koalas(sample_series)
     xfail_dask_and_koalas(sample_datetime_series)
 
-    # Check different parameters to DataColumn
+    # Check different parameters
     str_col = sample_series.astype('category')
     str_col.ww.init(logical_type='Categorical')
     str_col_2 = sample_series.astype('category')
