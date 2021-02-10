@@ -136,7 +136,7 @@ def read_csv_to_accessor(filepath=None,
             information on available keywords refer to the pandas documentation.
 
     Returns:
-        woodwork.DataTable: DataTable created from the specified CSV file
+        DataFrame: DataFrame created from the specified CSV file with Woodwork typing information initialized.
     """
     dataframe = pd.read_csv(filepath, **kwargs)
     dataframe.ww.init(name=name,
