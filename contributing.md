@@ -4,13 +4,16 @@
 
 Whether you are a novice or experienced software developer, all contributions and suggestions are welcome!
 
+#### 0. Fork repo
+* The code is hosted on GitHub, so you will need to fork the project before cloning
+
 #### 1. Clone repo
 
-* The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
+* Use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
 * You can run the following steps to clone the code, create a separate virtual environment, and install woodwork in editable mode.
 
   ```bash
-  git clone https://github.com/alteryx/woodwork.git
+  git clone https://github.com/[your github username]/woodwork.git
   cd woodwork
   python -m venv venv
   source venv/bin/activate
