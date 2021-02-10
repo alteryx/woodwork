@@ -1,6 +1,6 @@
 class ColumnNameMismatchWarning(UserWarning):
     def get_warning_message(self, lose_col, keep_col):
-        return f'Name mismatch between {lose_col} and {keep_col}. DataColumn and underlying series name are now {keep_col}'
+        return f'Name mismatch between {lose_col} and {keep_col}. Series name is now {keep_col}'
 
 
 class DuplicateTagsWarning(UserWarning):

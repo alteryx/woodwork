@@ -1527,7 +1527,7 @@ def test_setitem_different_name(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
-    warning = 'Name mismatch between wrong and id. DataColumn and underlying series name are now id'
+    warning = 'Name mismatch between wrong and id. Series name is now id'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
         dt['id'] = DataColumn(new_series,
                               use_standard_tags=False)
@@ -1541,7 +1541,7 @@ def test_setitem_different_name(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series2 = ks.Series(new_series2)
 
-    warning = 'Name mismatch between wrong2 and new_col. DataColumn and underlying series name are now new_col'
+    warning = 'Name mismatch between wrong2 and new_col. Series name is now new_col'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
         dt['new_col'] = DataColumn(new_series2,
                                    use_standard_tags=False)
@@ -1551,7 +1551,7 @@ def test_setitem_different_name(sample_df):
     assert dt.to_dataframe()['new_col'].name == 'new_col'
     assert 'wrong2' not in dt.columns
 
-    warning = 'Name mismatch between wrong and col_with_name. DataColumn and underlying series name are now col_with_name'
+    warning = 'Name mismatch between wrong and col_with_name. Series name is now col_with_name'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
         dt['col_with_name'] = DataColumn(new_series,
                                          use_standard_tags=False, name='wrong')

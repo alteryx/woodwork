@@ -274,15 +274,15 @@ def test_semantic_tags_during_init(sample_column_names, sample_inferred_logical_
 
 
 def test_semantic_tag_errors(sample_column_names, sample_inferred_logical_types):
-    error_message = "semantic_tags for column id must be a string, set or list"
+    error_message = "semantic_tags for id must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': int})
 
-    error_message = "semantic_tags for column id must be a string, set or list"
+    error_message = "semantic_tags for id must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': {'index': {}, 'time_index': {}}})
 
-    error_message = "semantic_tags for column id must contain only strings"
+    error_message = "semantic_tags for id must contain only strings"
     with pytest.raises(TypeError, match=error_message):
         Schema(sample_column_names, sample_inferred_logical_types, semantic_tags={'id': ['index', 1]})
 
