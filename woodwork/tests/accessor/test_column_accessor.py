@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -70,34 +69,6 @@ def test_accessor_init_with_semantic_tags(sample_series):
     semantic_tags = ['tag1', 'tag2']
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
     assert series.ww.semantic_tags == set(semantic_tags)
-
-
-def test_accessor_init_with_name(sample_series):
-    xfail_dask_and_koalas(sample_series)
-    name = 'sample_series'
-    changed_name = 'changed_name'
-
-    use_series_name = sample_series.copy().astype('category')
-    assert use_series_name.name == name
-    assert use_series_name.ww.name == name
-
-    use_input_name = sample_series.copy().astype('category')
-    warning = 'Name mismatch between sample_series and changed_name. Series name is now changed_name'
-    with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        use_input_name.ww.init(name=changed_name)
-    assert use_input_name.name == changed_name
-    assert use_input_name.ww.name == changed_name
-
-
-def test_accessor_init_with_falsy_name(sample_series):
-    xfail_dask_and_koalas(sample_series)
-    falsy_name = 0
-    falsy_name_series = sample_series.copy().astype('category')
-    warning = 'Name mismatch between sample_series and 0. Series name is now 0'
-    with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        falsy_name_series.ww.init(name=falsy_name)
-    assert falsy_name_series.name == falsy_name
-    assert falsy_name_series.ww.name == falsy_name
 
 
 # def test_datacolumn_init_with_extension_array():

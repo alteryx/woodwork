@@ -1,8 +1,5 @@
-import warnings
-
 import pandas as pd
 
-from woodwork.exceptions import ColumnNameMismatchWarning
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
     _get_column_dict,
@@ -18,12 +15,11 @@ class WoodworkColumnAccessor:
         self._series = series
         self._schema = None
 
-    def init(self, name=None, logical_type=None, semantic_tags=None,
+    def init(self, logical_type=None, semantic_tags=None,
              use_standard_tags=True, description=None, metadata=None):
         """Initializes Woodwork typing information for a Series.
 
         Args:
-            name (str, optional): Name of Series. Will overwrite Series name, if it exists.
             logical_type (LogicalType or str, optional): The logical type that should be assigned
                 to the series. If no value is provided, the LogicalType for the series will
                 be inferred. If the LogicalType provided or inferred does not have a dtype that
@@ -38,13 +34,11 @@ class WoodworkColumnAccessor:
             description (str, optional): Optional text describing the contents of the series.
             metadata (dict[str -> json serializable], optional): Metadata associated with the series.
         """
-        self._set_name(name)
-
-        logical_type = _get_column_logical_type(self._series, logical_type, self.name)
+        logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
         self._validate_logical_type(logical_type)
 
-        self._schema = _get_column_dict(name=self.name,
+        self._schema = _get_column_dict(name=self._series.name,
                                         logical_type=logical_type,
                                         semantic_tags=semantic_tags,
                                         use_standard_tags=use_standard_tags,
@@ -77,11 +71,6 @@ class WoodworkColumnAccessor:
         self._schema['metadata'] = metadata
 
     @property
-    def name(self):
-        """The name of the series"""
-        return self._series.name
-
-    @property
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
         return self._schema['semantic_tags']
@@ -92,18 +81,11 @@ class WoodworkColumnAccessor:
         return self._series.equals(other._series)
 
     def __repr__(self):
-        msg = u"<Series: {} ".format(self.name)
+        msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
-
-    def _set_name(self, name=None):
-        if name is not None and self._series.name is not None and name != self._series.name:
-            warnings.warn(ColumnNameMismatchWarning().get_warning_message(self._series.name, name),
-                          ColumnNameMismatchWarning)
-        if name is not None:
-            self._series.name = name
 
     def _validate_logical_type(self, logical_type):
         """Validates that a logical type is consistent with the series dtype. Performs additional type
