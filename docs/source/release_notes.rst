@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add semantic tag update methods to column accessor (:pr:`573`)
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
@@ -13,7 +14,7 @@ Release Notes
         * Fixed text on back arrow on install page (:pr:`564`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
