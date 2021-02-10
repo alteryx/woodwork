@@ -1,12 +1,18 @@
+import warnings
+
 import pandas as pd
 
+from woodwork.exceptions import (
+    DuplicateTagsWarning,
+    StandardTagsRemovalWarning
+)
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
     _get_column_dict,
     _validate_description,
     _validate_metadata
 )
-from woodwork.utils import _get_column_logical_type
+from woodwork.utils import _convert_input_to_set, _get_column_logical_type
 
 
 @pd.api.extensions.register_series_accessor('ww')
@@ -37,11 +43,12 @@ class WoodworkColumnAccessor:
         logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
         self._validate_logical_type(logical_type)
+        self.use_standard_tags = use_standard_tags
 
         self._schema = _get_column_dict(name=self._series.name,
                                         logical_type=logical_type,
                                         semantic_tags=semantic_tags,
-                                        use_standard_tags=use_standard_tags,
+                                        use_standard_tags=self.use_standard_tags,
                                         description=description,
                                         metadata=metadata)
 
@@ -97,3 +104,61 @@ class WoodworkColumnAccessor:
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
+
+    def add_semantic_tags(self, semantic_tags):
+        """Add the specified semantic tags to the set of tags.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to add
+        """
+        new_tags = _convert_input_to_set(semantic_tags)
+
+        duplicate_tags = sorted(list(self.semantic_tags.intersection(new_tags)))
+        if duplicate_tags:
+            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, self._series.name),
+                          DuplicateTagsWarning)
+        updated_tags = self.semantic_tags.union(new_tags)
+
+        self._schema['semantic_tags'] = updated_tags
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Removes specified semantic tags from column and returns a new column.
+
+        Args:
+            semantic_tags (str/list/set): Semantic tag(s) to remove from the column.
+        """
+        tags_to_remove = _convert_input_to_set(semantic_tags)
+        invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
+        if invalid_tags:
+            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self._series.name}'")
+        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags)))
+        if standard_tags_to_remove and self.use_standard_tags:
+            warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, self._series.name),
+                          StandardTagsRemovalWarning)
+        new_tags = self.semantic_tags.difference(tags_to_remove)
+        self._schema['semantic_tags'] = new_tags
+
+    def reset_semantic_tags(self):
+        """Reset the semantic tags to the default values. The default values
+        will be either an empty set or a set of the standard tags based on the
+        column logical type, controlled by the use_standard_tags property.
+        """
+        if self.use_standard_tags:
+            self._schema['semantic_tags'] = self.logical_type.standard_tags
+        else:
+            self._schema['semantic_tags'] = set()
+
+    def set_semantic_tags(self, semantic_tags):
+        """Replace current semantic tags with new values. If `use_standard_tags` is set
+        to True for the series, any standard tags associated with the LogicalType of the
+        series will be added as well.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to set for column
+        """
+        semantic_tags = _convert_input_to_set(semantic_tags)
+
+        if self.use_standard_tags:
+            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
+
+        self._schema['semantic_tags'] = semantic_tags
