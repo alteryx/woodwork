@@ -13,6 +13,15 @@ WoodworkTableAccessor
     WoodworkTableAccessor.init
     WoodworkTableAccessor.select
 
+WoodworkColumnAccessor
+======================
+
+.. currentmodule:: woodwork.column_accessor
+.. autosummary::
+    :toctree: generated/
+
+    WoodworkColumnAccessor
+    WoodworkColumnAccessor.init
 
 Schema
 ======

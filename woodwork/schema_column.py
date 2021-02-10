@@ -8,8 +8,8 @@ def _get_column_dict(name,
                      logical_type,
                      semantic_tags=None,
                      use_standard_tags=True,
-                     column_description=None,
-                     column_metadata=None):
+                     description=None,
+                     metadata=None):
     """Creates a dictionary that contains the typing information for a Schema column
     Args:
         name (str): The name of the column.
@@ -17,25 +17,24 @@ def _get_column_dict(name,
         semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
         use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
                 specified logical type. Defaults to True.
-        column_description (str, optional): User description of the column.
-        column_metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
+        description (str, optional): User description of the column.
+        metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
     """
     _validate_logical_type(logical_type)
-    _validate_description(column_description)
+    _validate_description(description)
 
-    if column_metadata is None:
-        column_metadata = {}
-    _validate_metadata(column_metadata)
+    if metadata is None:
+        metadata = {}
+    _validate_metadata(metadata)
 
     semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name)
 
     return {
-        'name': name,
         'dtype': logical_type.pandas_dtype,
         'logical_type': logical_type,
         'semantic_tags': semantic_tags,
-        'description': column_description,
-        'metadata': column_metadata
+        'description': description,
+        'metadata': metadata
     }
 
 
@@ -69,7 +68,8 @@ def _validate_metadata(column_metadata):
 
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for column {name}')
+    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}')
+
     _validate_tags(semantic_tags)
 
     if use_standard_tags:

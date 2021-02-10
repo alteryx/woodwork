@@ -93,8 +93,8 @@ def test_load_retail_to_accessor():
         'cancelled': Boolean,
     }
 
-    for column in df.ww.columns.values():
-        assert column['logical_type'] == expected_logical_types[column['name']]
+    for col_name, column in df.ww.columns.items():
+        assert column['logical_type'] == expected_logical_types[col_name]
 
     assert df.ww.index == 'order_product_id'
     assert df.ww.time_index == 'order_date'
