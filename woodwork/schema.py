@@ -116,32 +116,32 @@ class Schema(object):
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
-        return {col['name']: col['logical_type'] for col in self.columns.values()}
+        return {col_name: col['logical_type'] for col_name, col in self.columns.items()}
 
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
-        return {col['name']: col['dtype'] for col in self.columns.values()}
+        return {col_name: col['dtype'] for col_name, col in self.columns.items()}
 
     @property
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
-        return {col['name']: col['semantic_tags'] for col in self.columns.values()}
+        return {col_name: col['semantic_tags'] for col_name, col in self.columns.items()}
 
     @property
     def index(self):
         """The index column for the table"""
-        for column in self.columns.values():
+        for col_name, column in self.columns.items():
             if 'index' in column['semantic_tags']:
-                return column['name']
+                return col_name
         return None
 
     @property
     def time_index(self):
         """The time index column for the table"""
-        for column in self.columns.values():
+        for col_name, column in self.columns.items():
             if 'time_index' in column['semantic_tags']:
-                return column['name']
+                return col_name
         return None
 
     def _create_columns(self,
@@ -163,8 +163,8 @@ class Schema(object):
                                              logical_types.get(name),
                                              semantic_tags=semantic_tags_for_col,
                                              use_standard_tags=use_standard_tags,
-                                             column_description=description,
-                                             column_metadata=metadata_for_col)
+                                             description=description,
+                                             metadata=metadata_for_col)
         return columns
 
     def _set_index_tags(self, index):
