@@ -109,8 +109,9 @@ class WoodworkColumnAccessor:
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
         if logical_type.pandas_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot initialize Woodwork. Series dtype is incompatible with {logical_type} dtype. "
-                             f"Try converting series dtype to {logical_type.pandas_dtype} before initializing.")
+            raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
+                             f"incompatible with {logical_type} dtype. Try converting series "
+                             f"dtype to '{logical_type.pandas_dtype}' before initializing.")
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
