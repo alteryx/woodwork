@@ -44,7 +44,7 @@ def _update_dtype(series, logical_type):
 def init_series(series, logical_type=None, semantic_tags=None,
                 use_standard_tags=True, description=None, metadata=None):
     """Initializes Woodwork typing information for a Series, returning a new Series. The dtype
-    of the series will be converted to match the dtype associated with the LogicalType.
+    of the returned series will be converted to match the dtype associated with the LogicalType.
 
     Args:
         logical_type (LogicalType or str, optional): The logical type that should be assigned
@@ -62,7 +62,7 @@ def init_series(series, logical_type=None, semantic_tags=None,
 
     Returns:
         Series: A series with Woodwork typing information initialized
-        """
+    """
     logical_type = _get_column_logical_type(series, logical_type, series.name)
 
     new_series = _update_dtype(series, logical_type)
