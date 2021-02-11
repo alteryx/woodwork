@@ -30,6 +30,24 @@ def test_init_series_with_datetime(sample_datetime_series):
     assert series.ww.logical_type == Datetime
 
 
+def test_init_series_all_parameters(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    metadata = {'meta_key': 'meta_value'}
+    description = 'custom description'
+    series = init_series(sample_series,
+                         logical_type='categorical',
+                         semantic_tags=['custom_tag'],
+                         metadata=metadata,
+                         description=description,
+                         use_standard_tags=False)
+    assert series is not sample_series
+    assert series.dtype == 'category'
+    assert series.ww.logical_type == Categorical
+    assert series.ww.semantic_tags == {'custom_tag'}
+    assert series.ww.metadata == metadata
+    assert series.ww.description == description
+
+
 def test_init_series_error_on_invalid_conversion(sample_series):
     xfail_dask_and_koalas(sample_series)
     error_message = "Error converting datatype for sample_series from type object to type Int64. " \
