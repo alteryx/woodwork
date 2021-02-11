@@ -11,9 +11,10 @@ Release Notes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`)
         * Fixed text on back arrow on install page (:pr:`564`)
+        * Refactor test_datatable.py (:pr:`574`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`johnbridstrup`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
