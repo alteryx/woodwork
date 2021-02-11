@@ -4,8 +4,8 @@
 
 Whether you are a novice or experienced software developer, all contributions and suggestions are welcome!
 
-#### 0. Fork repo
-* The code is hosted on GitHub, so you will need to fork the project before cloning
+#### 0. Fork repo (optional)
+* The code is hosted on GitHub, it helps keep things clean if you fork it first and clone from there
 
 #### 1. Clone repo
 
@@ -13,6 +13,8 @@ Whether you are a novice or experienced software developer, all contributions an
 * You can run the following steps to clone the code, create a separate virtual environment, and install woodwork in editable mode.
 
   ```bash
+  git clone https://github.com/alteryx/woodwork.git
+  OR (if forked)
   git clone https://github.com/[your github username]/woodwork.git
   cd woodwork
   python -m venv venv
