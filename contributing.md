@@ -12,6 +12,7 @@ Whether you are a novice or experienced software developer, all contributions an
 
 * Use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
 * You can run the following steps to clone the code, create a separate virtual environment, and install woodwork in editable mode.
+* Remember to create a new branch indicating the issue number with a descriptive name
 
   ```bash
   git clone https://github.com/alteryx/woodwork.git
@@ -21,6 +22,7 @@ Whether you are a novice or experienced software developer, all contributions an
   python -m venv venv
   source venv/bin/activate
   make installdeps
+  git checkout -b issue####-branch_name
   ```
 
 #### 2. Implement your Pull Request
