@@ -33,16 +33,15 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
+from woodwork.tests.testing_utils import (
+    to_pandas,
+    validate_subset_schema,
+    xfail_dask_and_koalas
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-
-
-def xfail_dask_and_koalas(df):
-    if dd and isinstance(df, dd.DataFrame) or ks and isinstance(df, ks.DataFrame):
-        pytest.xfail('Dask and Koalas Accessors not yet supported.')
 
 
 def test_check_index_errors(sample_df):
