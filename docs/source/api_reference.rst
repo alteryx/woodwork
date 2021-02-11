@@ -150,6 +150,14 @@ General Utils
     get_valid_mi_types
     read_csv
 
+.. currentmodule:: woodwork.accessor_utils
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    init_series
+
 Demo Data
 =========
 
