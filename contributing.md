@@ -5,7 +5,8 @@
 Whether you are a novice or experienced software developer, all contributions and suggestions are welcome!
 
 #### 0. Fork repo (optional)
-* The code is hosted on GitHub, it helps keep things clean if you fork it first and clone from there
+* The code is hosted on GitHub, it helps keep things clean if you fork it first and clone from there.
+* Otherwise, just clone directly from the repo
 
 #### 1. Clone repo
 
