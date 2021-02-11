@@ -15,15 +15,11 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
+from woodwork.tests.testing_utils import xfail_dask_and_koalas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-
-
-def xfail_dask_and_koalas(series):
-    if dd and isinstance(series, dd.Series) or ks and isinstance(series, ks.Series):
-        pytest.xfail('Dask and Koalas Accessors not yet supported.')
 
 
 def test_accessor_init(sample_series):
