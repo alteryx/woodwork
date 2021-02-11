@@ -1,11 +1,14 @@
-import pandas as pd
+import numpy as np
 
 from woodwork.logical_types import Datetime, LatLong
-from woodwork.schema_column import _is_col_boolean, _is_col_categorical, _is_col_datetime, _is_col_numeric
-from woodwork.utils import (
-    _get_mode,
-    import_or_none
+from woodwork.schema_column import (
+    _is_col_boolean,
+    _is_col_categorical,
+    _is_col_datetime,
+    _is_col_numeric
 )
+from woodwork.type_sys.utils import _get_ltype_class
+from woodwork.utils import _get_mode, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')

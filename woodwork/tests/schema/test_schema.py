@@ -216,9 +216,13 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
                     index='id',
                     name='dt_name')
 
-    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    err_msg = "Invalid selector used in include: 1 must be a string, LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(include=['boolean', 'index', Double, 1])
+
+    err_msg = "Invalid selector used in include: 1 must be a string, LogicalType, or valid column name"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(include=['boolean', 'index', Double, 1], col_names=True)
 
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
@@ -238,7 +242,7 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
 
     filter_full_name_with_name_cols = schema._filter_cols(include=['full_name', 'is_registered'], col_names=True)
     # Since logical type and semantic tag are given priority, we don't get the columns with those names
-    assert filter_full_name_with_name_cols == ['age', 'id']
+    assert set(filter_full_name_with_name_cols) == {'age', 'id'}
 
 
 def test_filter_schema_non_string_cols():

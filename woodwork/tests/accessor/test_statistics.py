@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -13,7 +14,6 @@ from woodwork.logical_types import (
     Integer,
     IPAddress,
     LatLong,
-    LogicalType,
     NaturalLanguage,
     Ordinal,
     PhoneNumber,
@@ -21,12 +21,12 @@ from woodwork.logical_types import (
     Timedelta,
     ZIPCode
 )
+from woodwork.statistics_utils import _get_describe_dict
 from woodwork.tests.testing_utils import (
     mi_between_cols,
     to_pandas,
     xfail_dask_and_koalas
 )
-from woodwork.statistics_utils import _get_describe_dict
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')

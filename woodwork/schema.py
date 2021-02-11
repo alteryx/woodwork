@@ -228,8 +228,8 @@ class Schema(object):
                 if col_names and selector in self.columns:
                     cols_to_include.add(selector)
                 else:
-                    raise TypeError(f"Invalid selector used in include: {selector} must be a string or LogicalType "
-                                    "if not using column names or, additionally, a valid column name if using column names.")
+                    raise TypeError(f"Invalid selector used in include: {selector} must be a "
+                                    "string, LogicalType, or valid column name")
 
         for col_name, col in self.columns.items():
             if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
