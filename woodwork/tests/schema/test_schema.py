@@ -216,13 +216,13 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
                     index='id',
                     name='dt_name')
 
-    err_msg = "Invalid selector used in include: 1 must be a string, LogicalType, or valid column name"
+    err_msg = "Invalid selector used in include: {} must be a string, LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
-        schema._filter_cols(include=['boolean', 'index', Double, 1])
+        schema._filter_cols(include=['boolean', 'index', Double, {}])
 
-    err_msg = "Invalid selector used in include: 1 must be a string, LogicalType, or valid column name"
+    err_msg = "Invalid selector used in include: {} must be a string, LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
-        schema._filter_cols(include=['boolean', 'index', Double, 1], col_names=True)
+        schema._filter_cols(include=['boolean', 'index', Double, {}], col_names=True)
 
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
@@ -235,19 +235,18 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
     filter_name_ltype_overlap = schema._filter_cols(include='full_name')
     assert filter_name_ltype_overlap == []
 
+    filter_overlap_with_name = schema._filter_cols(include='full_name', col_names=True)
+    assert filter_overlap_with_name == ['full_name']
+
     schema = Schema(sample_column_names,
                     {**sample_inferred_logical_types, 'full_name': Categorical, 'age': FullName},
-                    semantic_tags={'id': 'is_registered'})
+                    semantic_tags={'id': 'full_name'})
 
-    filter_full_name_ltype = schema._filter_cols(include='full_name')
-    assert filter_full_name_ltype == ['age']
+    filter_tag_and_ltype = schema._filter_cols(include='full_name')
+    assert set(filter_tag_and_ltype) == {'id', 'age'}
 
-    filter_full_name_tag = schema._filter_cols(include='is_registered')
-    assert filter_full_name_tag == ['id']
-
-    filter_full_name_with_name_cols = schema._filter_cols(include=['full_name', 'is_registered'], col_names=True)
-    # Since logical type and semantic tag are given priority, we don't get the columns with those names
-    assert set(filter_full_name_with_name_cols) == {'age', 'id'}
+    filter_all_three = schema._filter_cols(include='full_name', col_names=True)
+    assert set(filter_all_three) == {'id', 'age', 'full_name'}
 
 
 def test_filter_schema_non_string_cols():

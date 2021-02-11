@@ -1,3 +1,5 @@
+import collections
+
 import pandas as pd
 
 import woodwork as ww
@@ -207,29 +209,32 @@ class Schema(object):
         cols_to_include = set()
 
         for selector in include:
-            if _get_ltype_class(selector) in ww.type_system.registered_types:
-                if selector not in ww.type_system.registered_types:
-                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
-                if selector in ltypes_in_schema:
-                    ltypes_used.add(selector)
+            print(selector)
+            maybe_ltype = _get_ltype_class(selector)
+            if maybe_ltype in ww.logical_types.LogicalType.__subclasses__():
+                if maybe_ltype in ww.type_system.registered_types:
+                    if selector not in ww.type_system.registered_types:
+                        raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
+                    if selector in ltypes_in_schema:
+                        ltypes_used.add(selector)
+                else:
+                    raise TypeError(f"Specified LogicalType selector {selector} is not registered in Woodwork's type system.")
             elif isinstance(selector, str):
-                # If the str is a viable ltype, it'll take precedence
-                # but if it's not present, we'll check if it's a tag
+                # String can be interpreted as a LogicalType
                 ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
                 if ltype and ltype in ltypes_in_schema:
                     ltypes_used.add(ltype)
-                    continue
-                elif selector in tags_in_schema:
+                # String can be interpreted as a semantic tag
+                if selector in tags_in_schema:
                     tags_used.add(selector)
-                elif col_names and selector in self.columns:
-                    cols_to_include.add(selector)
-            else:
-                # Non-string column names are relevant if using col_names
-                if col_names and selector in self.columns:
-                    cols_to_include.add(selector)
-                else:
-                    raise TypeError(f"Invalid selector used in include: {selector} must be a "
-                                    "string, LogicalType, or valid column name")
+
+            if not isinstance(selector, collections.Hashable):
+                raise TypeError(f"Invalid selector used in include: {selector} must be a "
+                                "string, LogicalType, or valid column name")
+
+            # Check if column name
+            if col_names and selector in self.columns:
+                cols_to_include.add(selector)
 
         for col_name, col in self.columns.items():
             if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
