@@ -180,7 +180,7 @@ def test_describe_dict(describe_df):
 
     describe_df.ww.init(index='index_col')
 
-    stats_dict = _get_describe_dict(describe_df, describe_df.ww.schema)
+    stats_dict = _get_describe_dict(describe_df)
     index_order = ['physical_type',
                    'logical_type',
                    'semantic_tags',
@@ -456,7 +456,7 @@ def test_describe_with_improper_tags(describe_df):
     assert stats_df['natural_language_col'][['mean', 'std', 'min', 'max']].isnull().all()
 
 
-def test_datatable_describe_with_no_semantic_tags(describe_df):
+def test_describe_with_no_semantic_tags(describe_df):
     xfail_dask_and_koalas(describe_df)
 
     df = describe_df.copy()[['category_col', 'numeric_col']]
@@ -479,7 +479,7 @@ def test_datatable_describe_with_no_semantic_tags(describe_df):
     np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 20.85714, 5)
 
 
-def test_datatable_describe_with_include(sample_df):
+def test_describe_with_include(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     semantic_tags = {

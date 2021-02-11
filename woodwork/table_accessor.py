@@ -397,7 +397,7 @@ class WoodworkTableAccessor:
             matching the logical types, semantic tags or column names specified in ``include``, paired
             with a value containing a dictionary containing relevant statistics for that column.
         """
-        return _get_describe_dict(self._dataframe, self._schema, include=include)
+        return _get_describe_dict(self._dataframe, include=include)
 
     def describe(self, include=None):
         """Calculates statistics for data contained in the DataFrame.
@@ -414,7 +414,7 @@ class WoodworkTableAccessor:
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = _get_describe_dict(self._dataframe, self._schema, include=include)
+        results = _get_describe_dict(self._dataframe, include=include)
         index_order = [
             'physical_type',
             'logical_type',

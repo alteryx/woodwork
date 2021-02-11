@@ -11,12 +11,11 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-def _get_describe_dict(dataframe, schema, include=None):
+def _get_describe_dict(dataframe, include=None):
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
     Args:
-        dataframe (pd.DataFrame): DataFrame to be described
-        schema (woodwork.Schema): Typing information for the DataFrame
+        dataframe (pd.DataFrame): DataFrame to be described with Woodwork typing information initialized
         include (list[str or LogicalType], optional): filter for what columns to include in the
         statistics returned. Can be a list of column names, semantic tags, logical types, or a list
         combining any of the three. It follows the most broad specification. Favors logical types
@@ -34,10 +33,10 @@ def _get_describe_dict(dataframe, schema, include=None):
         Datetime: ["count", "max", "min", "nunique", "mean"],
     }
     if include is not None:
-        filtered_cols = schema._filter_cols(include, col_names=True)
-        cols_to_include = [(k, v) for k, v in schema.columns.items() if k in filtered_cols]
+        filtered_cols = dataframe.ww._filter_cols(include, col_names=True)
+        cols_to_include = [(k, v) for k, v in dataframe.ww.columns.items() if k in filtered_cols]
     else:
-        cols_to_include = schema.columns.items()
+        cols_to_include = dataframe.ww.columns.items()
 
     results = {}
 
@@ -50,7 +49,7 @@ def _get_describe_dict(dataframe, schema, include=None):
 
         # Any LatLong columns will be using lists, which we must convert
         # back to tuples so we can calculate the mode, which requires hashable values
-        latlong_columns = [col_name for col_name, col in schema.columns.items() if _get_ltype_class(col['logical_type']) == LatLong]
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col['logical_type']) == LatLong]
         df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
     else:
         df = dataframe
