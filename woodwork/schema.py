@@ -182,13 +182,15 @@ class Schema(object):
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
-    def _filter_cols(self, include):
+    def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
         then semantic tag.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
                 filter columns by. Can be Logical Types or Semantic Tags.
+
+            col_names (bool): Specifies whether to filter columns by name. Defaults to False.
 
         Returns:
             List[str] of column names that fit into filter.
@@ -219,6 +221,12 @@ class Schema(object):
                     continue
                 elif selector in tags_in_schema:
                     tags_used.add(selector)
+                # --> we want it to be considered a col name last bc this gets us the most cols
+                #  if you had a col named 'numeric' then you'd miss all the numeric columns
+                # --> maybe we want to also check if it';s a col name - in case a full_name named col didnt have ltype
+                # --> test selector with non string col names
+                elif col_names and selector in self.columns:
+                    cols_to_include.add(selector)
             else:
                 raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
 

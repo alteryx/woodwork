@@ -178,6 +178,10 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
     filtered = schema._filter_cols(include=Datetime)
     assert filtered == ['signup_date']
 
+# --> add back in
+    # filtered = dt._filter_cols(include='email', col_names=True)
+    # assert filtered == ['email']
+
     filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
     filtered_log_type = schema._filter_cols(include=NaturalLanguage)
     expected = {'full_name', 'email', 'phone_number'}
@@ -220,6 +224,10 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(Datetime())
+
+
+def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferred_logical_types):
+    pass
 
 
 def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
