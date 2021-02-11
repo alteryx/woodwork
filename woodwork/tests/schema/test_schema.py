@@ -230,6 +230,11 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
 
 
 def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    filter_name_ltype_overlap = schema._filter_cols(include='full_name')
+    assert filter_name_ltype_overlap == []
+
     schema = Schema(sample_column_names,
                     {**sample_inferred_logical_types, 'full_name': Categorical, 'age': FullName},
                     semantic_tags={'id': 'is_registered'})
