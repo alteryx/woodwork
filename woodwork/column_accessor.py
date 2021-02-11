@@ -1,18 +1,16 @@
-import warnings
-
 import pandas as pd
 
-from woodwork.exceptions import (
-    DuplicateTagsWarning,
-    StandardTagsRemovalWarning
-)
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
+    _add_semantic_tags,
     _get_column_dict,
+    _remove_semantic_tags,
+    _reset_semantic_tags,
+    _set_semantic_tags,
     _validate_description,
     _validate_metadata
 )
-from woodwork.utils import _convert_input_to_set, _get_column_logical_type
+from woodwork.utils import _get_column_logical_type
 
 
 @pd.api.extensions.register_series_accessor('ww')
@@ -111,42 +109,29 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add
         """
-        new_tags = _convert_input_to_set(semantic_tags)
-
-        duplicate_tags = sorted(list(self.semantic_tags.intersection(new_tags)))
-        if duplicate_tags:
-            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, self._series.name),
-                          DuplicateTagsWarning)
-        updated_tags = self.semantic_tags.union(new_tags)
-
-        self._schema['semantic_tags'] = updated_tags
+        self._schema['semantic_tags'] = _add_semantic_tags(semantic_tags,
+                                                           self.semantic_tags,
+                                                           self._series.name)
 
     def remove_semantic_tags(self, semantic_tags):
-        """Removes specified semantic tags from column and returns a new column.
+        """Removes specified semantic tags from the current tags.
 
         Args:
-            semantic_tags (str/list/set): Semantic tag(s) to remove from the column.
+            semantic_tags (str/list/set): Semantic tag(s) to remove.
         """
-        tags_to_remove = _convert_input_to_set(semantic_tags)
-        invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
-        if invalid_tags:
-            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{self._series.name}'")
-        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags)))
-        if standard_tags_to_remove and self.use_standard_tags:
-            warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, self._series.name),
-                          StandardTagsRemovalWarning)
-        new_tags = self.semantic_tags.difference(tags_to_remove)
-        self._schema['semantic_tags'] = new_tags
+        self._schema['semantic_tags'] = _remove_semantic_tags(semantic_tags,
+                                                              self.semantic_tags,
+                                                              self._series.name,
+                                                              self.logical_type.standard_tags,
+                                                              self.use_standard_tags)
 
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
         will be either an empty set or a set of the standard tags based on the
         column logical type, controlled by the use_standard_tags property.
         """
-        if self.use_standard_tags:
-            self._schema['semantic_tags'] = self.logical_type.standard_tags
-        else:
-            self._schema['semantic_tags'] = set()
+        self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
+                                                             self.use_standard_tags)
 
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set
@@ -154,11 +139,8 @@ class WoodworkColumnAccessor:
         series will be added as well.
 
         Args:
-            semantic_tags (str/list/set): New semantic tag(s) to set for column
+            semantic_tags (str/list/set): New semantic tag(s) to set
         """
-        semantic_tags = _convert_input_to_set(semantic_tags)
-
-        if self.use_standard_tags:
-            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
-
-        self._schema['semantic_tags'] = semantic_tags
+        self._schema['semantic_tags'] = _set_semantic_tags(semantic_tags,
+                                                           self.logical_type.standard_tags,
+                                                           self.use_standard_tags)
