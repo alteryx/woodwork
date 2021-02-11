@@ -9,6 +9,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     EmailAddress,
+    FullName,
     Integer,
     NaturalLanguage
 )
@@ -49,7 +50,7 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     sample_column_names.append('formatted_date')
 
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'formatted_date': ymd_format}})
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, 'formatted_date': ymd_format})
 
     returned_types = schema.types
     assert isinstance(returned_types, pd.DataFrame)
@@ -132,7 +133,7 @@ def test_schema_equality(sample_column_names, sample_inferred_logical_types):
     assert schema_time_index != schema_numeric_time_index
 
     schema_with_ltypes = Schema(sample_column_names,
-                                logical_types={**sample_inferred_logical_types, **{'full_name': Categorical}},
+                                logical_types={**sample_inferred_logical_types, 'full_name': Categorical},
                                 time_index='signup_date')
     assert schema_with_ltypes != schema_time_index
 
@@ -178,9 +179,8 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
     filtered = schema._filter_cols(include=Datetime)
     assert filtered == ['signup_date']
 
-# --> add back in
-    # filtered = dt._filter_cols(include='email', col_names=True)
-    # assert filtered == ['email']
+    filtered = schema._filter_cols(include='email', col_names=True)
+    assert filtered == ['email']
 
     filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
     filtered_log_type = schema._filter_cols(include=NaturalLanguage)
@@ -191,11 +191,10 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
     filtered_semantic_tag = schema._filter_cols(include='numeric')
     assert filtered_semantic_tag == ['age']
 
-    # --> add back in when describe is implemented
-    # filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
-    # expected = ['full_name', 'phone_number', 'email']
-    # for col in filtered_multiple_overlap:
-    #     assert col in expected
+    filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
+    expected = ['full_name', 'phone_number', 'email']
+    for col in filtered_multiple_overlap:
+        assert col in expected
 
 
 def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
@@ -227,7 +226,29 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
 
 
 def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferred_logical_types):
-    pass
+    schema = Schema(sample_column_names,
+                    {**sample_inferred_logical_types, 'full_name': Categorical, 'age': FullName},
+                    semantic_tags={'id': 'is_registered'})
+
+    filter_full_name_ltype = schema._filter_cols(include='full_name')
+    assert filter_full_name_ltype == ['age']
+
+    filter_full_name_tag = schema._filter_cols(include='is_registered')
+    assert filter_full_name_tag == ['id']
+
+    filter_full_name_with_name_cols = schema._filter_cols(include=['full_name', 'is_registered'], col_names=True)
+    # Since logical type and semantic tag are given priority, we don't get the columns with those names
+    assert filter_full_name_with_name_cols == ['age', 'id']
+
+
+def test_filter_schema_non_string_cols():
+    schema = Schema(column_names=[0, 1, 2, 3], logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double})
+
+    filter_types_and_tags = schema._filter_cols(include=[Integer, 'category'])
+    assert filter_types_and_tags == [0, 1]
+
+    filter_by_name = schema._filter_cols(include=[0, 1], col_names=True)
+    assert filter_by_name == [0, 1]
 
 
 def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
@@ -244,7 +265,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
 
     kwargs = {
         'column_names': sample_column_names,
-        'logical_types': {**sample_inferred_logical_types, **{'email': EmailAddress}},
+        'logical_types': {**sample_inferred_logical_types, 'email': EmailAddress},
         'name': 'test_dt',
         'index': 'id',
         'time_index': 'signup_date',

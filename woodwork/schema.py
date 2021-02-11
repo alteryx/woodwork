@@ -221,14 +221,15 @@ class Schema(object):
                     continue
                 elif selector in tags_in_schema:
                     tags_used.add(selector)
-                # --> we want it to be considered a col name last bc this gets us the most cols
-                #  if you had a col named 'numeric' then you'd miss all the numeric columns
-                # --> maybe we want to also check if it';s a col name - in case a full_name named col didnt have ltype
-                # --> test selector with non string col names
                 elif col_names and selector in self.columns:
                     cols_to_include.add(selector)
             else:
-                raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
+                # Non-string column names are relevant if using col_names
+                if col_names and selector in self.columns:
+                    cols_to_include.add(selector)
+                else:
+                    raise TypeError(f"Invalid selector used in include: {selector} must be a string or LogicalType "
+                                    "if not using column names or, additionally, a valid column name if using column names.")
 
         for col_name, col in self.columns.items():
             if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
