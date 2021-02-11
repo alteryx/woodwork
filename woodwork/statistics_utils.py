@@ -1,6 +1,7 @@
 import pandas as pd
 
-from woodwork.logical_types import LatLong
+from woodwork.logical_types import Datetime, LatLong
+from woodwork.schema_column import _is_col_boolean, _is_col_categorical, _is_col_datetime, _is_col_numeric
 from woodwork.utils import (
     _get_mode,
     import_or_none
