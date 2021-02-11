@@ -184,7 +184,7 @@ class Schema(object):
 
     def _filter_cols(self, include, col_names=False):
         """Return list of columns filtered in specified way. In case of collision, favors logical types
-        then semantic tag.
+        then semantic tag and then column name.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to

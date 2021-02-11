@@ -10,17 +10,15 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-# --> move _get_mode
-
 
 def _get_describe_dict(dataframe, schema, include=None):
-    # --> should tell you what happens to each col
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
     Args:
-        data (pd.DataFrame): DataFrame with Woodwork typing information
+        dataframe (pd.DataFrame): DataFrame to be described
+        schema (woodwork.Schema): Typing information for the DataFrame
         include (list[str or LogicalType], optional): filter for what columns to include in the
-        statistics returned. Can be a list of columns, semantic tags, logical types, or a list
+        statistics returned. Can be a list of column names, semantic tags, logical types, or a list
         combining any of the three. It follows the most broad specification. Favors logical types
         then semantic tag then column name. If no matching columns are found, an empty DataFrame
         will be returned.
@@ -36,7 +34,6 @@ def _get_describe_dict(dataframe, schema, include=None):
         Datetime: ["count", "max", "min", "nunique", "mean"],
     }
     if include is not None:
-        # --> add col_names back in to filter
         filtered_cols = schema._filter_cols(include, col_names=True)
         cols_to_include = [(k, v) for k, v in schema.columns.items() if k in filtered_cols]
     else:

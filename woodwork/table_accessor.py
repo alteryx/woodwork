@@ -383,6 +383,20 @@ class WoodworkTableAccessor:
         return pd.DataFrame(mutual_info)
 
     def describe_dict(self, include=None):
+        """Calculates statistics for data contained in the DataFrame.
+
+        Args:
+            include (list[str or LogicalType], optional): filter for what columns to include in the
+            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name. If no matching columns are found, an empty DataFrame
+            will be returned.
+
+        Returns:
+            dict[str -> dict]: A dictionary with a key for each column in the data or for each column
+            matching the logical types, semantic tags or column names specified in ``include``, paired
+            with a value containing a dictionary containing relevant statistics for that column.
+        """
         return _get_describe_dict(self._dataframe, self._schema, include=include)
 
     def describe(self, include=None):
@@ -390,14 +404,14 @@ class WoodworkTableAccessor:
 
         Args:
             include (list[str or LogicalType], optional): filter for what columns to include in the
-            statistics returned. Can be a list of columns, semantic tags, logical types, or a list
+            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
             combining any of the three. It follows the most broad specification. Favors logical types
             then semantic tag then column name. If no matching columns are found, an empty DataFrame
             will be returned.
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
-            DataTable that contains the logical types, semantic tags, or column names specified
+            DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
         results = _get_describe_dict(self._dataframe, self._schema, include=include)
