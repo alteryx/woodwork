@@ -15,6 +15,7 @@ Release Notes
         * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
         * Add ``mutual_information`` to WoodworkTableAccessor (:pr:`571`)
         * Add WoodworkColumnAccessor class (:pr:`562`)
+        * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
@@ -24,7 +25,7 @@ Release Notes
         * Fixed text on back arrow on install page (:pr:`564`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
