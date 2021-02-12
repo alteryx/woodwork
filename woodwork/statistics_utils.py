@@ -1,6 +1,7 @@
 import numpy as np
+import pandas as pd
 
-from woodwork.logical_types import Datetime, LatLong
+from woodwork.logical_types import Datetime, Double, LatLong
 from woodwork.schema_column import (
     _is_col_boolean,
     _is_col_categorical,
@@ -8,7 +9,7 @@ from woodwork.schema_column import (
     _is_col_numeric
 )
 from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import _get_mode, import_or_none
+from woodwork.utils import _get_mode, import_or_none  # --> move over get mode
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -98,3 +99,61 @@ def _get_describe_dict(dataframe, include=None):
         values["semantic_tags"] = semantic_tags
         results[column_name] = values
     return results
+
+
+def _replace_nans_for_mutual_info(schema, data):
+    """
+    Replace NaN values in the dataframe so that mutual information can be calculated
+
+    Args:
+        schema (woodwork.Schema): Woodwork typing info for the data
+        data (pd.DataFrame): dataframe to use for calculating mutual information
+
+    Returns:
+        pd.DataFrame: data with nans replaced with either mean or mode
+
+    """
+    # replace or remove null values
+    for column_name in data.columns[data.isnull().any()]:
+        column = schema.columns[column_name]
+        series = data[column_name]
+
+        if _is_col_numeric(column) or _is_col_datetime(column):
+            mean = series.mean()
+            if isinstance(mean, float) and not _get_ltype_class(column['logical_type']) == Double:
+                data[column_name] = series.astype('float')
+            data[column_name] = series.fillna(mean)
+        elif _is_col_categorical(column) or _is_col_boolean(column):
+            mode = _get_mode(series)
+            data[column_name] = series.fillna(mode)
+    return data
+
+
+def _make_categorical_for_mutual_info(schema, data, num_bins):
+    """Transforms dataframe columns into numeric categories so that
+    mutual information can be calculated
+
+    Args:
+        schema (woodwork.Schema): Woodwork typing info for the data
+        data (pd.DataFrame): dataframe to use for caculating mutual information
+        num_bins (int): Determines number of bins to use for converting
+            numeric features into categorical.
+
+    Returns:
+        pd.DataFrame: data with values transformed and binned into numeric categorical values
+    """
+
+    for col_name in data.columns:
+        column = schema.columns[col_name]
+        if _is_col_numeric(column):
+            # bin numeric features to make categories
+            data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
+        # Convert Datetimes to total seconds - an integer - and bin
+        if _is_col_datetime(column):
+            data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
+        # convert categories to integers
+        new_col = data[col_name]
+        if str(new_col.dtype) != 'category':
+            new_col = new_col.astype('category')
+        data[col_name] = new_col.cat.codes
+    return data

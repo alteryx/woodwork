@@ -5,15 +5,13 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _update_column_dtype
 from woodwork.exceptions import TypingInfoMismatchWarning
-from woodwork.logical_types import Datetime, Double
+from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
-from woodwork.schema_column import (
-    _is_col_boolean,
-    _is_col_categorical,
-    _is_col_datetime,
-    _is_col_numeric
+from woodwork.statistics_utils import (
+    _get_describe_dict,
+    _make_categorical_for_mutual_info,
+    _replace_nans_for_mutual_info
 )
-from woodwork.statistics_utils import _get_describe_dict
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -21,7 +19,6 @@ from woodwork.type_sys.utils import (
 )
 from woodwork.utils import (
     _get_column_logical_type,
-    _get_mode,
     get_valid_mi_types,
     import_or_none
 )
@@ -240,60 +237,6 @@ class WoodworkTableAccessor:
 
         return new_df
 
-    def _replace_nans_for_mutual_info(self, data):
-        """
-        Replace NaN values in the dataframe so that mutual information can be calculated
-
-        Args:
-            data (pd.DataFrame): dataframe to use for calculating mutual information
-
-        Returns:
-            pd.DataFrame: data with nans replaced with either mean or mode
-
-        """
-        # replace or remove null values
-        for column_name in data.columns[data.isnull().any()]:
-            column = self._schema.columns[column_name]
-            series = data[column_name]
-
-            if _is_col_numeric(column) or _is_col_datetime(column):
-                mean = series.mean()
-                if isinstance(mean, float) and not _get_ltype_class(column['logical_type']) == Double:
-                    data[column_name] = series.astype('float')
-                data[column_name] = series.fillna(mean)
-            elif _is_col_categorical(column) or _is_col_boolean(column):
-                mode = _get_mode(series)
-                data[column_name] = series.fillna(mode)
-        return data
-
-    def _make_categorical_for_mutual_info(self, data, num_bins):
-        """Transforms dataframe columns into numeric categories so that
-        mutual information can be calculated
-
-        Args:
-            data (pd.DataFrame): dataframe to use for caculating mutual information
-            num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
-
-        Returns:
-            pd.DataFrame: data with values transformed and binned into numeric categorical values
-        """
-
-        for col_name in data.columns:
-            column = self._schema.columns[col_name]
-            if _is_col_numeric(column):
-                # bin numeric features to make categories
-                data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
-            # Convert Datetimes to total seconds - an integer - and bin
-            if _is_col_datetime(column):
-                data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
-            # convert categories to integers
-            new_col = data[col_name]
-            if str(new_col.dtype) != 'category':
-                new_col = new_col.astype('category')
-            data[col_name] = new_col.cat.codes
-        return data
-
     def mutual_information_dict(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
@@ -337,8 +280,8 @@ class WoodworkTableAccessor:
         if set(not_unique_cols) != set(valid_columns):
             data = data.loc[:, not_unique_cols]
 
-        data = self._replace_nans_for_mutual_info(data)
-        data = self._make_categorical_for_mutual_info(data, num_bins)
+        data = _replace_nans_for_mutual_info(self._schema, data)
+        data = _make_categorical_for_mutual_info(self._schema, data, num_bins)
 
         # calculate mutual info for all pairs of columns
         mutual_info = []
