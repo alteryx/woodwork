@@ -14,6 +14,7 @@ from woodwork.logical_types import (
     NaturalLanguage
 )
 from woodwork.schema import Schema
+from woodwork import type_system
 
 
 def test_schema_physical_types(sample_column_names, sample_inferred_logical_types):
@@ -209,6 +210,9 @@ def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logi
     filter_empty_list = schema._filter_cols(include=[])
     assert filter_empty_list == []
 
+    filter_non_string = schema._filter_cols(include=1)
+    assert filter_non_string == []
+
 
 def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types,
@@ -216,17 +220,27 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
                     index='id',
                     name='dt_name')
 
-    err_msg = "Invalid selector used in include: {} must be a string, LogicalType, or valid column name"
+    err_msg = "Invalid selector used in include: {} must be a string, uninstantiated and registered LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(include=['boolean', 'index', Double, {}])
 
-    err_msg = "Invalid selector used in include: {} must be a string, LogicalType, or valid column name"
+    err_msg = "Invalid selector used in include: {} must be a string, uninstantiated and registered LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(include=['boolean', 'index', Double, {}], col_names=True)
 
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(Datetime())
+
+    type_system.remove_type(EmailAddress)
+    err_msg = "Specified LogicalType selector EmailAddress is not registered in Woodwork's type system."
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(EmailAddress)
+
+    err_msg = "Invalid selector used in include: EmailAddress must be a string, uninstantiated and registered LogicalType, or valid column name"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(EmailAddress())
+    type_system.reset_defaults()
 
 
 def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferred_logical_types):
