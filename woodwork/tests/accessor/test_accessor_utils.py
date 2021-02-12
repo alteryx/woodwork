@@ -1,6 +1,7 @@
 import pytest
 
 from woodwork.accessor_utils import init_series
+from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import Categorical, Datetime, NaturalLanguage
 from woodwork.tests.testing_utils import xfail_dask_and_koalas
 
@@ -58,5 +59,5 @@ def test_init_series_error_on_invalid_conversion(sample_series):
     xfail_dask_and_koalas(sample_series)
     error_message = "Error converting datatype for sample_series from type object to type Int64. " \
         "Please confirm the underlying data is consistent with logical type Integer."
-    with pytest.raises(TypeError, match=error_message):
+    with pytest.raises(TypeConversionError, match=error_message):
         init_series(sample_series, logical_type='integer')

@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.exceptions import TypingInfoMismatchWarning
+from woodwork.exceptions import TypeConversionError, TypingInfoMismatchWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -601,7 +601,7 @@ def test_invalid_dtype_casting():
     }
     err_msg = 'Error converting datatype for test_series from type object to type ' \
         'float64. Please confirm the underlying data is consistent with logical type Double.'
-    with pytest.raises(TypeError, match=err_msg):
+    with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
     # --> add back when schema updates are implemented
@@ -623,7 +623,7 @@ def test_invalid_dtype_casting():
     }
     err_msg = 'Error converting datatype for test_series from type object to type ' \
         'Int64. Please confirm the underlying data is consistent with logical type Integer.'
-    with pytest.raises(TypeError, match=err_msg):
+    with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
 

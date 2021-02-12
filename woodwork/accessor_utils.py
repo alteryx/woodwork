@@ -1,5 +1,6 @@
 import pandas as pd
 
+from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import Datetime, LatLong, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import (
@@ -87,5 +88,5 @@ def _update_column_dtype(series, logical_type):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
                 f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
                 f'logical type {logical_type}.'
-            raise TypeError(error_msg)
+            raise TypeConversionError(error_msg)
     return series
