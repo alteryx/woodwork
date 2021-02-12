@@ -1,7 +1,6 @@
 import warnings
 
 import pandas as pd
-from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _update_column_dtype
 from woodwork.exceptions import TypingInfoMismatchWarning
@@ -9,6 +8,7 @@ from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
     _get_describe_dict,
+    _get_mutual_information_dict,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info
 )
@@ -19,7 +19,6 @@ from woodwork.type_sys.utils import (
 )
 from woodwork.utils import (
     _get_column_logical_type,
-    get_valid_mi_types,
     import_or_none
 )
 
@@ -257,48 +256,7 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        valid_types = get_valid_mi_types()
-        valid_columns = [col_name for col_name, col in self._schema.columns.items() if (
-            col_name != self._schema.index and _get_ltype_class(col['logical_type']) in valid_types)]
-
-        data = self._dataframe[valid_columns]
-        if dd and isinstance(data, dd.DataFrame):
-            data = data.compute()
-        if ks and isinstance(self._dataframe, ks.DataFrame):
-            data = data.to_pandas()
-
-        # cut off data if necessary
-        if nrows is not None and nrows < data.shape[0]:
-            data = data.sample(nrows)
-
-        # remove fully null columns
-        not_null_cols = data.columns[data.notnull().any()]
-        if set(not_null_cols) != set(valid_columns):
-            data = data.loc[:, not_null_cols]
-        # remove columns that are unique
-        not_unique_cols = [col for col in data.columns if not data[col].is_unique]
-        if set(not_unique_cols) != set(valid_columns):
-            data = data.loc[:, not_unique_cols]
-
-        data = _replace_nans_for_mutual_info(self._schema, data)
-        data = _make_categorical_for_mutual_info(self._schema, data, num_bins)
-
-        # calculate mutual info for all pairs of columns
-        mutual_info = []
-        col_names = data.columns.to_list()
-        for i, a_col in enumerate(col_names):
-            for j in range(i, len(col_names)):
-                b_col = col_names[j]
-                if a_col == b_col:
-                    # Ignore because the mutual info for a column with itself will always be 1
-                    continue
-                else:
-                    mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
-                    mutual_info.append(
-                        {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
-                    )
-        mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
-        return mutual_info
+        return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
 
     def mutual_information(self, num_bins=10, nrows=None):
         """
@@ -320,7 +278,7 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        mutual_info = self.mutual_information_dict(num_bins, nrows)
+        mutual_info = _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
         return pd.DataFrame(mutual_info)
 
     def describe_dict(self, include=None):
