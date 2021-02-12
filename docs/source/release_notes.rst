@@ -21,6 +21,7 @@ Release Notes
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
+        * Move mutual information logic to statistics utils file (:pr:`584`)
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`)
