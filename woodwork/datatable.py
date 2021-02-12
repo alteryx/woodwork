@@ -399,6 +399,9 @@ class DataTable(object):
             woodwork.DataColumn: DataColumn including logical type and semantic tags.
         """
         col = self[column_name]
+        if 'index' in col.semantic_tags:
+            self._dataframe = self._dataframe.reset_index(drop=True)
+
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
