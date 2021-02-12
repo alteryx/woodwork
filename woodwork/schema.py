@@ -209,7 +209,6 @@ class Schema(object):
         cols_to_include = set()
 
         for selector in include:
-            print(selector)
             maybe_ltype = _get_ltype_class(selector)
             if maybe_ltype in ww.logical_types.LogicalType.__subclasses__():
                 if maybe_ltype in ww.type_system.registered_types:
@@ -232,7 +231,6 @@ class Schema(object):
                 raise TypeError(f"Invalid selector used in include: {selector} must be a "
                                 "string, LogicalType, or valid column name")
 
-            # Check if column name
             if col_names and selector in self.columns:
                 cols_to_include.add(selector)
 
