@@ -15,10 +15,7 @@ from woodwork.type_sys.utils import (
     _is_numeric_series,
     col_is_datetime
 )
-from woodwork.utils import (
-    _get_column_logical_type,
-    import_or_none
-)
+from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
