@@ -15,6 +15,8 @@ Release Notes
         * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
         * Add ``mutual_information`` to WoodworkTableAccessor (:pr:`571`)
         * Add WoodworkColumnAccessor class (:pr:`562`)
+        * Add semantic tag update methods to column accessor (:pr:`573`)
+        * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
         * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
     * Fixes
     * Changes

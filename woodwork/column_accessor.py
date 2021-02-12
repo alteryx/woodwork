@@ -2,7 +2,11 @@ import pandas as pd
 
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
+    _add_semantic_tags,
     _get_column_dict,
+    _remove_semantic_tags,
+    _reset_semantic_tags,
+    _set_semantic_tags,
     _validate_description,
     _validate_metadata
 )
@@ -37,11 +41,12 @@ class WoodworkColumnAccessor:
         logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
         self._validate_logical_type(logical_type)
+        self.use_standard_tags = use_standard_tags
 
         self._schema = _get_column_dict(name=self._series.name,
                                         logical_type=logical_type,
                                         semantic_tags=semantic_tags,
-                                        use_standard_tags=use_standard_tags,
+                                        use_standard_tags=self.use_standard_tags,
                                         description=description,
                                         metadata=metadata)
 
@@ -98,3 +103,45 @@ class WoodworkColumnAccessor:
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
+
+    def add_semantic_tags(self, semantic_tags):
+        """Add the specified semantic tags to the set of tags.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to add
+        """
+        self._schema['semantic_tags'] = _add_semantic_tags(semantic_tags,
+                                                           self.semantic_tags,
+                                                           self._series.name)
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Removes specified semantic tags from the current tags.
+
+        Args:
+            semantic_tags (str/list/set): Semantic tag(s) to remove.
+        """
+        self._schema['semantic_tags'] = _remove_semantic_tags(semantic_tags,
+                                                              self.semantic_tags,
+                                                              self._series.name,
+                                                              self.logical_type.standard_tags,
+                                                              self.use_standard_tags)
+
+    def reset_semantic_tags(self):
+        """Reset the semantic tags to the default values. The default values
+        will be either an empty set or a set of the standard tags based on the
+        column logical type, controlled by the use_standard_tags property.
+        """
+        self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
+                                                             self.use_standard_tags)
+
+    def set_semantic_tags(self, semantic_tags):
+        """Replace current semantic tags with new values. If `use_standard_tags` is set
+        to True for the series, any standard tags associated with the LogicalType of the
+        series will be added as well.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to set
+        """
+        self._schema['semantic_tags'] = _set_semantic_tags(semantic_tags,
+                                                           self.logical_type.standard_tags,
+                                                           self.use_standard_tags)

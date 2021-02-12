@@ -1,4 +1,10 @@
+import warnings
+
 import woodwork as ww
+from woodwork.exceptions import (
+    DuplicateTagsWarning,
+    StandardTagsRemovalWarning
+)
 from woodwork.logical_types import Boolean, Datetime, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
@@ -92,3 +98,72 @@ def _is_col_datetime(col_dict):
 
 def _is_col_boolean(col_dict):
     return _get_ltype_class(col_dict['logical_type']) == Boolean
+
+
+def _add_semantic_tags(new_tags, current_tags, name):
+    """Add the specified semantic tags to the current set of tags
+
+    Args:
+        new_tags (str/list/set): The new tags to add
+        current_tags (set): Current set of semantic tags
+        name (str): Name of the column to use in warning
+    """
+    new_tags = _convert_input_to_set(new_tags)
+
+    duplicate_tags = sorted(list(current_tags.intersection(new_tags)))
+    if duplicate_tags:
+        warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
+                      DuplicateTagsWarning)
+    return current_tags.union(new_tags)
+
+
+def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use_standard_tags):
+    """Removes specified semantic tags from from the current set of tags'
+
+    Args:
+        tags_to_remove (str/list/set): The tags to remove
+        current_tags (set): Current set of semantic tags
+        name (str): Name of the column to use in warning
+        standard_tags (set): Set of standard tags for the column logical type
+        use_standard_tags (bool): If True, warn if user attempts to remove a standard tag
+    """
+    tags_to_remove = _convert_input_to_set(tags_to_remove)
+    invalid_tags = sorted(list(tags_to_remove.difference(current_tags)))
+    if invalid_tags:
+        raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
+    standard_tags_to_remove = sorted(list(tags_to_remove.intersection(standard_tags)))
+    if standard_tags_to_remove and use_standard_tags:
+        warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, name),
+                      StandardTagsRemovalWarning)
+    return current_tags.difference(tags_to_remove)
+
+
+def _reset_semantic_tags(standard_tags, use_standard_tags):
+    """Reset the set of semantic tags to the default values. The default values
+    will be either an empty set or the standard tags, controlled by the
+    use_standard_tags boolean.
+
+    Args:
+        standard_tags (set): Set of standard tags for the column logical type
+        use_standard_tags (bool): If True, retain standard tags after reset
+    """
+    if use_standard_tags:
+        return standard_tags
+    return set()
+
+
+def _set_semantic_tags(semantic_tags, standard_tags, use_standard_tags):
+    """Replace current semantic tags with new values. If use_standard_tags is set
+    to True, standard tags will be added as well.
+
+    Args:
+        semantic_tags (str/list/set): New semantic tag(s) to set
+        standard_tags (set): Set of standard tags for the column logical type
+        use_standard_tags (bool): If True, retain standard tags after reset
+    """
+    semantic_tags = _convert_input_to_set(semantic_tags)
+
+    if use_standard_tags:
+        semantic_tags = semantic_tags.union(standard_tags)
+
+    return semantic_tags

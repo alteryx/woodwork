@@ -13,6 +13,7 @@ from woodwork.schema_column import (
     _is_col_datetime,
     _is_col_numeric
 )
+from woodwork.statistics_utils import _get_describe_dict
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -380,6 +381,59 @@ class WoodworkTableAccessor:
         """
         mutual_info = self.mutual_information_dict(num_bins, nrows)
         return pd.DataFrame(mutual_info)
+
+    def describe_dict(self, include=None):
+        """Calculates statistics for data contained in the DataFrame.
+
+        Args:
+            include (list[str or LogicalType], optional): filter for what columns to include in the
+            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name. If no matching columns are found, an empty DataFrame
+            will be returned.
+
+        Returns:
+            dict[str -> dict]: A dictionary with a key for each column in the data or for each column
+            matching the logical types, semantic tags or column names specified in ``include``, paired
+            with a value containing a dictionary containing relevant statistics for that column.
+        """
+        return _get_describe_dict(self._dataframe, include=include)
+
+    def describe(self, include=None):
+        """Calculates statistics for data contained in the DataFrame.
+
+        Args:
+            include (list[str or LogicalType], optional): filter for what columns to include in the
+            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name. If no matching columns are found, an empty DataFrame
+            will be returned.
+
+        Returns:
+            pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
+            DataFrame that contains the logical types, semantic tags, or column names specified
+            in ``include``.
+        """
+        results = _get_describe_dict(self._dataframe, include=include)
+        index_order = [
+            'physical_type',
+            'logical_type',
+            'semantic_tags',
+            'count',
+            'nunique',
+            'nan_count',
+            'mean',
+            'mode',
+            'std',
+            'min',
+            'first_quartile',
+            'second_quartile',
+            'third_quartile',
+            'max',
+            'num_true',
+            'num_false',
+        ]
+        return pd.DataFrame(results).reindex(index_order)
 
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):
