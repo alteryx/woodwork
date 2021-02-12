@@ -16,15 +16,11 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
+from woodwork.tests.testing_utils import xfail_dask_and_koalas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-
-
-def xfail_dask_and_koalas(series):
-    if dd and isinstance(series, dd.Series) or ks and isinstance(series, ks.Series):
-        pytest.xfail('Dask and Koalas Accessors not yet supported.')
 
 
 def test_accessor_init(sample_series):
@@ -58,8 +54,9 @@ def test_accessor_init_with_logical_type(sample_series):
 def test_accessor_init_with_invalid_logical_type(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series
-    error_message = "Cannot initialize Woodwork. Series dtype 'object' is incompatible with NaturalLanguage dtype. " \
-        "Try converting series dtype to 'string' before initializing."
+    error_message = "Cannot initialize Woodwork. Series dtype 'object' is incompatible with " \
+        "NaturalLanguage dtype. Try converting series dtype to 'string' before initializing " \
+        "or use the woodwork.init_series function to initialize."
     with pytest.raises(ValueError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
 
