@@ -15,6 +15,7 @@ Release Notes
         * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
         * Add ``mutual_information`` to WoodworkTableAccessor (:pr:`571`)
         * Add WoodworkColumnAccessor class (:pr:`562`)
+        * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)

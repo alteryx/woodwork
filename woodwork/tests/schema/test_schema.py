@@ -3,12 +3,14 @@ import inspect
 import pandas as pd
 import pytest
 
+from woodwork import type_system
 from woodwork.logical_types import (
     Boolean,
     Categorical,
     Datetime,
     Double,
     EmailAddress,
+    FullName,
     Integer,
     NaturalLanguage
 )
@@ -49,7 +51,7 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     sample_column_names.append('formatted_date')
 
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'formatted_date': ymd_format}})
+    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, 'formatted_date': ymd_format})
 
     returned_types = schema.types
     assert isinstance(returned_types, pd.DataFrame)
@@ -132,7 +134,7 @@ def test_schema_equality(sample_column_names, sample_inferred_logical_types):
     assert schema_time_index != schema_numeric_time_index
 
     schema_with_ltypes = Schema(sample_column_names,
-                                logical_types={**sample_inferred_logical_types, **{'full_name': Categorical}},
+                                logical_types={**sample_inferred_logical_types, 'full_name': Categorical},
                                 time_index='signup_date')
     assert schema_with_ltypes != schema_time_index
 
@@ -178,6 +180,9 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
     filtered = schema._filter_cols(include=Datetime)
     assert filtered == ['signup_date']
 
+    filtered = schema._filter_cols(include='email', col_names=True)
+    assert filtered == ['email']
+
     filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
     filtered_log_type = schema._filter_cols(include=NaturalLanguage)
     expected = {'full_name', 'email', 'phone_number'}
@@ -187,11 +192,10 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
     filtered_semantic_tag = schema._filter_cols(include='numeric')
     assert filtered_semantic_tag == ['age']
 
-    # --> add back in when describe is implemented
-    # filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
-    # expected = ['full_name', 'phone_number', 'email']
-    # for col in filtered_multiple_overlap:
-    #     assert col in expected
+    filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
+    expected = ['full_name', 'phone_number', 'email']
+    for col in filtered_multiple_overlap:
+        assert col in expected
 
 
 def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
@@ -206,6 +210,9 @@ def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logi
     filter_empty_list = schema._filter_cols(include=[])
     assert filter_empty_list == []
 
+    filter_non_string = schema._filter_cols(include=1)
+    assert filter_non_string == []
+
 
 def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types,
@@ -213,13 +220,57 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
                     index='id',
                     name='dt_name')
 
-    err_msg = "Invalid selector used in include: 1 must be either a string or LogicalType"
+    err_msg = "Invalid selector used in include: {} must be a string, uninstantiated and registered LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
-        schema._filter_cols(include=['boolean', 'index', Double, 1])
+        schema._filter_cols(include=['boolean', 'index', Double, {}])
+
+    err_msg = "Invalid selector used in include: {} must be a string, uninstantiated and registered LogicalType, or valid column name"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(include=['boolean', 'index', Double, {}], col_names=True)
 
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(Datetime())
+
+    type_system.remove_type(EmailAddress)
+    err_msg = "Specified LogicalType selector EmailAddress is not registered in Woodwork's type system."
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(EmailAddress)
+
+    err_msg = "Invalid selector used in include: EmailAddress must be a string, uninstantiated and registered LogicalType, or valid column name"
+    with pytest.raises(TypeError, match=err_msg):
+        schema._filter_cols(EmailAddress())
+    type_system.reset_defaults()
+
+
+def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    filter_name_ltype_overlap = schema._filter_cols(include='full_name')
+    assert filter_name_ltype_overlap == []
+
+    filter_overlap_with_name = schema._filter_cols(include='full_name', col_names=True)
+    assert filter_overlap_with_name == ['full_name']
+
+    schema = Schema(sample_column_names,
+                    {**sample_inferred_logical_types, 'full_name': Categorical, 'age': FullName},
+                    semantic_tags={'id': 'full_name'})
+
+    filter_tag_and_ltype = schema._filter_cols(include='full_name')
+    assert set(filter_tag_and_ltype) == {'id', 'age'}
+
+    filter_all_three = schema._filter_cols(include='full_name', col_names=True)
+    assert set(filter_all_three) == {'id', 'age', 'full_name'}
+
+
+def test_filter_schema_non_string_cols():
+    schema = Schema(column_names=[0, 1, 2, 3], logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double})
+
+    filter_types_and_tags = schema._filter_cols(include=[Integer, 'category'])
+    assert filter_types_and_tags == [0, 1]
+
+    filter_by_name = schema._filter_cols(include=[0, 1], col_names=True)
+    assert filter_by_name == [0, 1]
 
 
 def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
@@ -236,7 +287,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
 
     kwargs = {
         'column_names': sample_column_names,
-        'logical_types': {**sample_inferred_logical_types, **{'email': EmailAddress}},
+        'logical_types': {**sample_inferred_logical_types, 'email': EmailAddress},
         'name': 'test_dt',
         'index': 'id',
         'time_index': 'signup_date',
