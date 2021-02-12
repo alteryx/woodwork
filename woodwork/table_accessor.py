@@ -8,9 +8,7 @@ from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
     _get_describe_dict,
-    _get_mutual_information_dict,
-    _make_categorical_for_mutual_info,
-    _replace_nans_for_mutual_info
+    _get_mutual_information_dict
 )
 from woodwork.type_sys.utils import (
     _get_ltype_class,
