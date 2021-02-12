@@ -3,8 +3,9 @@ import warnings
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
+from woodwork.accessor_utils import _update_column_dtype
 from woodwork.exceptions import TypingInfoMismatchWarning
-from woodwork.logical_types import Datetime, Double, LatLong, Ordinal
+from woodwork.logical_types import Datetime, Double
 from woodwork.schema import Schema
 from woodwork.schema_column import (
     _is_col_boolean,
@@ -21,7 +22,6 @@ from woodwork.type_sys.utils import (
 from woodwork.utils import (
     _get_column_logical_type,
     _get_mode,
-    _reformat_to_latlong,
     get_valid_mi_types,
     import_or_none
 )
@@ -99,7 +99,7 @@ class WoodworkTableAccessor:
                 logical_type = _get_column_logical_type(series, logical_type, name)
                 parsed_logical_types[name] = logical_type
 
-                updated_series = _update_column_dtype(series, logical_type, name)
+                updated_series = _update_column_dtype(series, logical_type)
                 if updated_series is not series:
                     self._dataframe[name] = updated_series
 
@@ -512,52 +512,6 @@ def _make_index(dataframe, index):
         raise TypeError('Cannot make index on a Koalas DataFrame.')
     else:
         dataframe.insert(0, index, range(len(dataframe)))
-
-
-def _update_column_dtype(series, logical_type, name):
-    """Update the dtype of the underlying series to match the dtype corresponding
-    to the LogicalType for the column."""
-    if isinstance(logical_type, Ordinal):
-        logical_type._validate_data(series)
-    elif _get_ltype_class(logical_type) == LatLong:
-        # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
-        if dd and isinstance(series, dd.Series):
-            name = series.name
-            meta = (series, tuple([float, float]))
-            series = series.apply(_reformat_to_latlong, meta=meta)
-            series.name = name
-        elif ks and isinstance(series, ks.Series):
-            formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
-            series = ks.from_pandas(formatted_series)
-        else:
-            series = series.apply(_reformat_to_latlong)
-
-    if logical_type.pandas_dtype != str(series.dtype):
-        # Update the underlying series
-        try:
-            if _get_ltype_class(logical_type) == Datetime:
-                if dd and isinstance(series, dd.Series):
-                    name = series.name
-                    series = dd.to_datetime(series, format=logical_type.datetime_format)
-                    series.name = name
-                elif ks and isinstance(series, ks.Series):
-                    series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                      format=logical_type.datetime_format),
-                                       name=series.name)
-                else:
-                    series = pd.to_datetime(series, format=logical_type.datetime_format)
-            else:
-                if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
-                    new_dtype = logical_type.backup_dtype
-                else:
-                    new_dtype = logical_type.pandas_dtype
-                series = series.astype(new_dtype)
-        except (TypeError, ValueError):
-            error_msg = f'Error converting datatype for column {name} from type {str(series.dtype)} ' \
-                f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
-                f'logical type {logical_type}.'
-            raise TypeError(error_msg)
-    return series
 
 
 def _get_invalid_schema_message(dataframe, schema):

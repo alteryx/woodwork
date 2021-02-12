@@ -71,6 +71,7 @@ def check_column_order(dt, new_dt):
     assert all(new_dt.to_dataframe().columns == new_dt.types.index)
 
 
-def xfail_dask_and_koalas(df):
-    if dd and isinstance(df, dd.DataFrame) or ks and isinstance(df, ks.DataFrame):
+def xfail_dask_and_koalas(input):
+    if dd and isinstance(input, (dd.DataFrame, dd.Series)) or \
+            ks and isinstance(input, (ks.DataFrame, ks.Series)):
         pytest.xfail('Dask and Koalas Accessors not yet supported.')

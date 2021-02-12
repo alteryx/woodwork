@@ -34,3 +34,7 @@ class TypingInfoMismatchWarning(UserWarning):
         return (f'Operation performed by {attr} has invalidated the Woodwork typing information:\n '
                 f'{invalid_reason}.\n '
                 'Please initialize Woodwork with DataFrame.ww.init')
+
+
+class TypeConversionError(Exception):
+    pass
