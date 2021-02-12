@@ -16,6 +16,7 @@ Release Notes
         * Add ``mutual_information`` to WoodworkTableAccessor (:pr:`571`)
         * Add WoodworkColumnAccessor class (:pr:`562`)
         * Add semantic tag update methods to column accessor (:pr:`573`)
+        * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)

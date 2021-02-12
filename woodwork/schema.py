@@ -1,3 +1,5 @@
+import collections
+
 import pandas as pd
 
 import woodwork as ww
@@ -182,13 +184,14 @@ class Schema(object):
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
-    def _filter_cols(self, include):
-        """Return list of columns filtered in specified way. In case of collision, favors logical types
-        then semantic tag.
+    def _filter_cols(self, include, col_names=False):
+        """Return list of columns filtered with any of: semantic tags, LogicalTypes, column names
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
                 filter columns by. Can be Logical Types or Semantic Tags.
+
+            col_names (bool): Specifies whether to filter columns by name. Defaults to False.
 
         Returns:
             List[str] of column names that fit into filter.
@@ -205,22 +208,32 @@ class Schema(object):
         cols_to_include = set()
 
         for selector in include:
-            if _get_ltype_class(selector) in ww.type_system.registered_types:
-                if selector not in ww.type_system.registered_types:
-                    raise TypeError(f"Invalid selector used in include: {selector} cannot be instantiated")
-                if selector in ltypes_in_schema:
-                    ltypes_used.add(selector)
-            elif isinstance(selector, str):
-                # If the str is a viable ltype, it'll take precedence
-                # but if it's not present, we'll check if it's a tag
-                ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
-                if ltype and ltype in ltypes_in_schema:
-                    ltypes_used.add(ltype)
-                    continue
-                elif selector in tags_in_schema:
-                    tags_used.add(selector)
-            else:
-                raise TypeError(f"Invalid selector used in include: {selector} must be either a string or LogicalType")
+            # Determine if the selector is a registered, uninstantiated LogicalType
+            maybe_ltype = selector
+            if isinstance(selector, str):
+                # Convert possible string to LogicalType - unregistered LogicalTypes return None
+                maybe_ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
+            # Get the class - unregistered LogicalTypes return LogicalTypeMetaClass
+            maybe_ltype_class = _get_ltype_class(maybe_ltype)
+
+            if maybe_ltype_class in ww.type_system.registered_types:
+                if maybe_ltype not in ww.type_system.registered_types:
+                    raise TypeError(f"Invalid selector used in include: {maybe_ltype} cannot be instantiated")
+                if maybe_ltype in ltypes_in_schema:
+                    ltypes_used.add(maybe_ltype)
+            elif maybe_ltype_class == ww.logical_types.LogicalType.__class__:
+                raise TypeError(f"Specified LogicalType selector {maybe_ltype} is not registered in Woodwork's type system.")
+
+            # Hashability as a proxy for whether a selector is possibly a semantic tag or column name
+            if not isinstance(selector, collections.Hashable):
+                raise TypeError(f"Invalid selector used in include: {selector} must be a "
+                                "string, uninstantiated and registered LogicalType, or valid column name")
+            # Determine if the selector is a semantic tag
+            if selector in tags_in_schema:
+                tags_used.add(selector)
+            # Determine if the selector is a column name
+            if col_names and selector in self.columns:
+                cols_to_include.add(selector)
 
         for col_name, col in self.columns.items():
             if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
