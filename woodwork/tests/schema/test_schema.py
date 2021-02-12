@@ -3,6 +3,7 @@ import inspect
 import pandas as pd
 import pytest
 
+from woodwork import type_system
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -14,7 +15,6 @@ from woodwork.logical_types import (
     NaturalLanguage
 )
 from woodwork.schema import Schema
-from woodwork import type_system
 
 
 def test_schema_physical_types(sample_column_names, sample_inferred_logical_types):

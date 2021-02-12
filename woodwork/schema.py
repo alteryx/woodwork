@@ -185,8 +185,7 @@ class Schema(object):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
     def _filter_cols(self, include, col_names=False):
-        """Return list of columns filtered in specified way. In case of collision, favors logical types
-        then semantic tag and then column name.
+        """Return list of columns filtered with any of: semantic tags, LogicalTypes, column names
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
@@ -222,7 +221,7 @@ class Schema(object):
                     raise TypeError(f"Invalid selector used in include: {maybe_ltype} cannot be instantiated")
                 if maybe_ltype in ltypes_in_schema:
                     ltypes_used.add(maybe_ltype)
-            elif maybe_ltype_class == type(ww.logical_types.LogicalType):
+            elif maybe_ltype_class == ww.logical_types.LogicalType.__class__:
                 raise TypeError(f"Specified LogicalType selector {maybe_ltype} is not registered in Woodwork's type system.")
 
             # Hashability as a proxy for whether a selector is possibly a semantic tag or column name
