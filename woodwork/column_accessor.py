@@ -93,7 +93,7 @@ class WoodworkColumnAccessor:
         if logical_type.pandas_dtype != str(self._series.dtype):
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
-                             f"dtype to '{logical_type.pandas_dtype}' before initializing or use the"
+                             f"dtype to '{logical_type.pandas_dtype}' before initializing or use the "
                              "woodwork.init_series function to initialize.")
 
         if isinstance(logical_type, Ordinal):
