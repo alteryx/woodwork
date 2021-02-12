@@ -1,7 +1,7 @@
 import pytest
 
 from woodwork.accessor_utils import init_series
-from woodwork.logical_types import Categorical, Datetime
+from woodwork.logical_types import Categorical, Datetime, NaturalLanguage
 from woodwork.tests.testing_utils import xfail_dask_and_koalas
 
 
@@ -12,6 +12,12 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
     assert series.dtype == 'category'
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
+
+    series = init_series(sample_series, logical_type='natural_language')
+    assert series is not sample_series
+    assert series.dtype == 'string'
+    assert series.ww.logical_type == NaturalLanguage
+    assert series.ww.semantic_tags == set()
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
