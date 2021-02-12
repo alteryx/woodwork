@@ -9,7 +9,7 @@ from woodwork.schema_column import (
     _is_col_numeric
 )
 from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import _get_mode, import_or_none  # --> move over get mode
+from woodwork.utils import import_or_none  # --> move over get mode
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -99,6 +99,14 @@ def _get_describe_dict(dataframe, include=None):
         values["semantic_tags"] = semantic_tags
         results[column_name] = values
     return results
+
+
+def _get_mode(series):
+    """Get the mode value for a series"""
+    mode_values = series.mode()
+    if len(mode_values) > 0:
+        return mode_values[0]
+    return None
 
 
 def _replace_nans_for_mutual_info(schema, data):
