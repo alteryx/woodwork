@@ -385,10 +385,6 @@ class DataTable(object):
                 new_df = self._dataframe.set_index(self.index, drop=False)
                 # Drop index name to not overlap with the original column
                 new_df.index.name = None
-            # Only reset the index if the index isn't a RangeIndex
-            elif not isinstance(self._dataframe.index, pd.RangeIndex):
-                needs_update = True
-                new_df = self._dataframe.reset_index(drop=True)
 
         self._dataframe = new_df
         return needs_update
