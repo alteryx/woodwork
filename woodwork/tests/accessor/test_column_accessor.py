@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.exceptions import DuplicateTagsWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -184,39 +185,28 @@ def test_accessor_repr(sample_series):
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
-# def test_set_semantic_tags(sample_series):
-#     semantic_tags = {'tag1', 'tag2'}
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
-#     assert data_col.semantic_tags == semantic_tags
+def test_set_semantic_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    semantic_tags = {'tag1', 'tag2'}
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert series.ww.semantic_tags == semantic_tags
 
-#     new_tags = ['new_tag']
-#     new_col = data_col.set_semantic_tags(new_tags)
-#     assert new_col is not data_col
-#     assert new_col.semantic_tags == set(new_tags)
-
-
-# def test_set_semantic_tags_with_index(sample_series):
-#     semantic_tags = {'tag1', 'tag2'}
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
-#     data_col._set_as_index()
-#     assert data_col.semantic_tags == {'tag1', 'tag2', 'index'}
-#     new_tags = ['new_tag']
-#     new_col = data_col.set_semantic_tags(new_tags)
-#     assert new_col.semantic_tags == {'index', 'new_tag'}
-#     new_col2 = new_col.set_semantic_tags(new_tags, retain_index_tags=False)
-#     assert new_col2.semantic_tags == {'new_tag'}
+    new_tags = ['new_tag']
+    series.ww.set_semantic_tags(new_tags)
+    assert series.ww.semantic_tags == set(new_tags)
 
 
-# def test_set_semantic_tags_with_time_index(sample_datetime_series):
-#     semantic_tags = {'tag1', 'tag2'}
-#     data_col = DataColumn(sample_datetime_series, semantic_tags=semantic_tags, use_standard_tags=False)
-#     data_col._set_as_time_index()
-#     assert data_col.semantic_tags == {'tag1', 'tag2', 'time_index'}
-#     new_tags = ['new_tag']
-#     new_col = data_col.set_semantic_tags(new_tags)
-#     assert new_col.semantic_tags == {'time_index', 'new_tag'}
-#     new_col2 = new_col.set_semantic_tags(new_tags, retain_index_tags=False)
-#     assert new_col2.semantic_tags == {'new_tag'}
+def test_set_semantic_tags_with_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    semantic_tags = {'tag1', 'tag2'}
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=True)
+    assert series.ww.semantic_tags == semantic_tags.union({'category'})
+
+    new_tags = ['new_tag']
+    series.ww.set_semantic_tags(new_tags)
+    assert series.ww.semantic_tags == set(new_tags).union({'category'})
 
 
 def test_adds_numeric_standard_tag():
@@ -249,30 +239,33 @@ def test_does_not_add_standard_tags():
     assert series.ww.semantic_tags == {'custom_tag'}
 
 
-# def test_add_custom_tags(sample_series):
-#     semantic_tags = 'initial_tag'
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
+def test_add_custom_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    semantic_tags = 'initial_tag'
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
 
-#     new_col = data_col.add_semantic_tags('string_tag')
-#     assert new_col is not data_col
-#     assert new_col.semantic_tags == {'initial_tag', 'string_tag'}
+    series.ww.add_semantic_tags('string_tag')
+    assert series.ww.semantic_tags == {'initial_tag', 'string_tag'}
 
-#     new_col2 = new_col.add_semantic_tags(['list_tag'])
-#     assert new_col2.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
+    series.ww.add_semantic_tags(['list_tag'])
+    assert series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
 
-#     new_col3 = new_col2.add_semantic_tags({'set_tag'})
-#     assert new_col3.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
+    series.ww.add_semantic_tags({'set_tag'})
+    assert series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
 
 
-# def test_warns_on_setting_duplicate_tag(sample_series):
-#     semantic_tags = ['first_tag', 'second_tag']
-#     data_col = DataColumn(sample_series, semantic_tags=semantic_tags, use_standard_tags=False)
+def test_warns_on_setting_duplicate_tag(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    semantic_tags = ['first_tag', 'second_tag']
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
 
-#     expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
-#     with pytest.warns(DuplicateTagsWarning) as record:
-#         data_col.add_semantic_tags(['first_tag', 'second_tag'])
-#     assert len(record) == 1
-#     assert record[0].message.args[0] == expected_message
+    expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
+    with pytest.warns(DuplicateTagsWarning) as record:
+        series.ww.add_semantic_tags(['first_tag', 'second_tag'])
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
 
 
 # def test_set_logical_type_with_standard_tags(sample_series):
@@ -329,141 +322,72 @@ def test_does_not_add_standard_tags():
 #     assert new_col.semantic_tags == set()
 
 
-# def test_reset_semantic_tags_with_standard_tags(sample_series):
-#     semantic_tags = 'initial_tag'
-#     data_col = DataColumn(sample_series,
-#                           semantic_tags=semantic_tags,
-#                           logical_type=Categorical,
-#                           use_standard_tags=True)
+def test_reset_semantic_tags_with_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    semantic_tags = 'initial_tag'
+    series.ww.init(semantic_tags=semantic_tags,
+                   logical_type=Categorical,
+                   use_standard_tags=True)
 
-#     new_col = data_col.reset_semantic_tags()
-#     assert new_col is not data_col
-#     assert new_col.semantic_tags == Categorical.standard_tags
-
-
-# def test_reset_semantic_tags_without_standard_tags(sample_series):
-#     semantic_tags = 'initial_tag'
-#     data_col = DataColumn(sample_series,
-#                           semantic_tags=semantic_tags,
-#                           use_standard_tags=False)
-
-#     new_col = data_col.reset_semantic_tags()
-#     assert new_col is not data_col
-#     assert new_col.semantic_tags == set()
+    series.ww.reset_semantic_tags()
+    assert series.ww.semantic_tags == Categorical.standard_tags
 
 
-# def test_reset_semantic_tags_with_index(sample_series):
-#     semantic_tags = 'initial_tag'
-#     data_col = DataColumn(sample_series,
-#                           semantic_tags=semantic_tags,
-#                           use_standard_tags=False)
+def test_reset_semantic_tags_without_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    semantic_tags = 'initial_tag'
+    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
 
-#     data_col._set_as_index()
-#     new_col = data_col.reset_semantic_tags(retain_index_tags=True)
-#     assert new_col.semantic_tags == {'index'}
-#     new_col = data_col.reset_semantic_tags()
-#     assert new_col.semantic_tags == set()
+    series.ww.reset_semantic_tags()
+    assert series.ww.semantic_tags == set()
 
 
-# def test_reset_semantic_tags_with_time_index(sample_datetime_series):
-#     semantic_tags = 'initial_tag'
-#     data_col = DataColumn(sample_datetime_series,
-#                           semantic_tags=semantic_tags,
-#                           use_standard_tags=False)
+def test_remove_semantic_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    tags_to_remove = [
+        'tag1',
+        ['tag1'],
+        {'tag1'}
+    ]
 
-#     data_col._set_as_time_index()
-#     new_col = data_col.reset_semantic_tags(retain_index_tags=True)
-#     assert new_col.semantic_tags == {'time_index'}
-#     new_col = data_col.reset_semantic_tags()
-#     assert new_col.semantic_tags == set()
-
-
-# def test_remove_semantic_tags(sample_series):
-#     tags_to_remove = [
-#         'tag1',
-#         ['tag1'],
-#         {'tag1'}
-#     ]
-
-#     data_col = DataColumn(sample_series,
-#                           semantic_tags=['tag1', 'tag2'],
-#                           use_standard_tags=False)
-
-#     for tag in tags_to_remove:
-#         new_col = data_col.remove_semantic_tags(tag)
-#         assert new_col is not data_col
-#         assert new_col.semantic_tags == {'tag2'}
+    for tag in tags_to_remove:
+        series = sample_series.astype('category')
+        series.ww.init(semantic_tags=['tag1', 'tag2'], use_standard_tags=False)
+        series.ww.remove_semantic_tags(tag)
+        assert series.ww.semantic_tags == {'tag2'}
 
 
-# def test_remove_standard_semantic_tag(sample_series):
-#     # Check that warning is raised if use_standard_tags is True - tag should be removed
-#     data_col = DataColumn(sample_series,
-#                           logical_type=Categorical,
-#                           semantic_tags='tag1',
-#                           use_standard_tags=True)
-#     expected_message = "Removing standard semantic tag(s) 'category' from column 'sample_series'"
-#     with pytest.warns(UserWarning) as record:
-#         new_col = data_col.remove_semantic_tags(['tag1', 'category'])
-#     assert len(record) == 1
-#     assert record[0].message.args[0] == expected_message
-#     assert new_col.semantic_tags == set()
+def test_remove_standard_semantic_tag(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    # Check that warning is raised if use_standard_tags is True - tag should be removed
+    series.ww.init(logical_type=Categorical, semantic_tags='tag1', use_standard_tags=True)
+    expected_message = "Removing standard semantic tag(s) 'category' from column 'sample_series'"
+    with pytest.warns(UserWarning) as record:
+        series.ww.remove_semantic_tags(['tag1', 'category'])
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
+    assert series.ww.semantic_tags == set()
 
-#     # Check that warning is not raised if use_standard_tags is False - tag should be removed
-#     data_col = DataColumn(sample_series,
-#                           logical_type=Categorical,
-#                           semantic_tags=['category', 'tag1'],
-#                           use_standard_tags=False)
+    # Check that warning is not raised if use_standard_tags is False - tag should be removed
+    series = sample_series.astype('category')
+    series.ww.init(logical_type=Categorical, semantic_tags=['category', 'tag1'], use_standard_tags=False)
 
-#     with pytest.warns(None) as record:
-#         new_col = data_col.remove_semantic_tags(['tag1', 'category'])
-#     assert len(record) == 0
-#     assert new_col.semantic_tags == set()
+    with pytest.warns(None) as record:
+        series.ww.remove_semantic_tags(['tag1', 'category'])
+    assert len(record) == 0
+    assert series.ww.semantic_tags == set()
 
 
-# def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           semantic_tags='tag1')
-#     error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
-#     with pytest.raises(LookupError, match=error_msg):
-#         data_col.remove_semantic_tags('invalid_tagname')
-
-
-# def test_raises_error_setting_index_tag_directly(sample_series):
-#     error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
-#                           "use DataTable.set_index() instead.")
-#     with pytest.raises(ValueError, match=error_msg):
-#         DataColumn(sample_series, semantic_tags='index')
-
-#     data_col = DataColumn(sample_series)
-#     with pytest.raises(ValueError, match=error_msg):
-#         data_col.add_semantic_tags('index')
-#     with pytest.raises(ValueError, match=error_msg):
-#         data_col.set_semantic_tags('index')
-
-
-# def test_raises_error_setting_time_index_tag_directly(sample_series):
-#     error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
-#                           "use DataTable.set_time_index() instead.")
-#     with pytest.raises(ValueError, match=error_msg):
-#         DataColumn(sample_series, semantic_tags='time_index')
-
-#     data_col = DataColumn(sample_series)
-#     with pytest.raises(ValueError, match=error_msg):
-#         data_col.add_semantic_tags('time_index')
-#     with pytest.raises(ValueError, match=error_msg):
-#         data_col.set_semantic_tags('time_index')
-
-
-# def test_set_as_index(sample_series):
-#     data_col = DataColumn(sample_series)
-#     data_col._set_as_index()
-#     assert 'index' in data_col.semantic_tags
-
-
-# def test_set_as_time_index(sample_series):
-#     data_col = DataColumn(sample_series)
-#     data_col._set_as_time_index()
-#     assert 'time_index' in data_col.semantic_tags
+def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(semantic_tags='tag1')
+    error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
+    with pytest.raises(LookupError, match=error_msg):
+        series.ww.remove_semantic_tags('invalid_tagname')
 
 
 # def test_shape(sample_series):
