@@ -599,7 +599,7 @@ def test_invalid_dtype_casting():
     ltypes = {
         column_name: Double,
     }
-    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+    err_msg = 'Error converting datatype for test_series from type object to type ' \
         'float64. Please confirm the underlying data is consistent with logical type Double.'
     with pytest.raises(TypeError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
@@ -621,7 +621,7 @@ def test_invalid_dtype_casting():
     ltypes = {
         column_name: Integer,
     }
-    err_msg = 'Error converting datatype for column test_series from type object to type ' \
+    err_msg = 'Error converting datatype for test_series from type object to type ' \
         'Int64. Please confirm the underlying data is consistent with logical type Integer.'
     with pytest.raises(TypeError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
