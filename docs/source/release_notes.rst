@@ -15,6 +15,7 @@ Release Notes
         * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
         * Add ``mutual_information`` to WoodworkTableAccessor (:pr:`571`)
         * Add WoodworkColumnAccessor class (:pr:`562`)
+        * Add semantic tag update methods to column accessor (:pr:`573`)
         * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
     * Fixes
     * Changes
@@ -26,7 +27,7 @@ Release Notes
         * Refactor test_datatable.py (:pr:`574`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`johnbridstrup`
+    :user:`gsheni`, :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
