@@ -3,8 +3,9 @@ import collections
 import pandas as pd
 
 import woodwork as ww
-from woodwork.schema_column import _get_column_dict
+from woodwork.schema_column import _get_column_dict, _set_semantic_tags, _add_semantic_tags, _reset_semantic_tags, _remove_semantic_tags
 from woodwork.type_sys.utils import _get_ltype_class
+from woodwork.utils import _convert_input_to_set
 
 
 class Schema(object):
@@ -145,6 +146,107 @@ class Schema(object):
             if 'time_index' in column['semantic_tags']:
                 return col_name
         return None
+
+    # --> see if we can use a standardized helper
+    def set_types(self, semantic_tags=None, retain_index_tags=True):
+        """Update the logical type and semantic tags for any columns names in the provided types
+        dictionary. Replaces existing columns with new DataColumn objects and returns a new
+        DataTable object.
+
+        Args:
+            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+                specified columns.
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
+                True.
+
+        Returns:
+            woodwork.DataTable: DataTable with updated logical types and specified semantic tags set.
+        """
+        # --> in the future will just allow setting logical type but will need to be called by table_accessor
+        _check_semantic_tags(self.columns.keys(), semantic_tags)
+
+        pass
+    # --> for each col do _set_semantic_tags passing semantic tags, standard tags, and use standard tags
+
+    def add_semantic_tags(self, semantic_tags):
+        """Adds specified semantic tags to columns. Will retain any previously set values.
+        Replaces updated columns with new DataColumn objects and returns a new DataTable object.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataTable to the tags that should be added to the column
+
+        Returns:
+            woodwork.DataTable: DataTable with semantic tags added
+        """
+        _check_semantic_tags(self.columns.keys(), semantic_tags)
+        # --> should also be checking for index tags in this and all places!!!
+        for col_name, new_tags in semantic_tags.items():
+            new_semantic_tags = _add_semantic_tags(new_tags, self.semantic_tags[col_name], col_name)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
+            # --> each col takes in new tags and current tags and name
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Remove the semantic tags for any column names in the provided semantic_tags
+        dictionary. Replaces the column with a new DataColumn object and return a new DataTable
+        object.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataTable to the tags that should be removed to the column
+
+        Returns:
+            woodwork.DataTable: DataTable with the specified semantic tags removed
+        """
+        _check_semantic_tags(self.columns.keys(), semantic_tags)
+        for col_name, tags_to_remove in semantic_tags.items():
+            # --> might need to handle removing index tags or standard tags??
+            new_semantic_tags = _remove_semantic_tags(tags_to_remove,
+                                                      self.semantic_tags[col_name],
+                                                      col_name,
+                                                      self.logical_types[col_name].standard_tags,
+                                                      self.use_standard_tags)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+    # --> each col takes in tags to remove current tags name standard tags and use standard tags
+
+    def reset_semantic_tags(self, columns=None, retain_index_tags=True):
+        """Reset the semantic tags for the specified columns to the default values and
+        return a new DataTable. The default values will be either an empty set or a set
+        of the standard tags based on the column logical type, controlled by the
+        use_standard_tags property on the table. Columns names can be provided as a
+        single string, a list of strings or a set of strings. If columns is not specified,
+        tags will be reset for all columns.
+
+        Args:
+            columns (str/list/set, optional): The columns for which the semantic tags should be reset.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will clear all semantic tags. Defaults to
+                False.
+
+        Returns:
+            woodwork.DataTable: DataTable with semantic tags reset to default values
+        """
+        columns = _convert_input_to_set(columns, "columns")
+        cols_not_found = sorted(list(columns.difference(set(self.columns.keys()))))
+        if cols_not_found:
+            raise LookupError("Input contains columns that are not present in "
+                              f"dataframe: '{', '.join(cols_not_found)}'")
+        if not columns:
+            columns = self.columns.keys()
+
+        for col_name in columns:
+            new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags)
+            # --> why is the set here necessary????
+            self.columns[col_name]['semantic_tags'] = set(new_semantic_tags)
+
+# --> det how to handle retain index tags param
+    # --> pass standard tags and use standard tags
+
+    # --> consider having a helper function to set tags for each column
 
     def _create_columns(self,
                         column_names,
