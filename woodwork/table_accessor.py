@@ -273,7 +273,7 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        mutual_info = _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
+        mutual_info = self.mutual_information_dict(num_bins, nrows)
         return pd.DataFrame(mutual_info)
 
     def describe_dict(self, include=None):
