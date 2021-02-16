@@ -21,7 +21,12 @@ from woodwork.logical_types import (
     Timedelta,
     ZIPCode
 )
-from woodwork.statistics_utils import _get_describe_dict
+from woodwork.statistics_utils import (
+    _get_describe_dict,
+    _get_mode,
+    _make_categorical_for_mutual_info,
+    _replace_nans_for_mutual_info
+)
 from woodwork.tests.testing_utils import (
     mi_between_cols,
     to_pandas,
@@ -31,6 +36,27 @@ from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
+
+
+def test_get_mode():
+    series_list = [
+        pd.Series([1, 2, 3, 4, 2, 2, 3]),
+        pd.Series(['a', 'b', 'b', 'c', 'b']),
+        pd.Series([3, 2, 3, 2]),
+        pd.Series([np.nan, np.nan, np.nan]),
+        pd.Series([pd.NA, pd.NA, pd.NA]),
+        pd.Series([1, 2, np.nan, 2, np.nan, 3, 2]),
+        pd.Series([1, 2, pd.NA, 2, pd.NA, 3, 2])
+    ]
+
+    answer_list = [2, 'b', 2, None, None, 2, 2]
+
+    for series, answer in zip(series_list, answer_list):
+        mode = _get_mode(series)
+        if answer is None:
+            assert mode is None
+        else:
+            assert mode == answer
 
 
 def test_accessor_replace_nans_for_mutual_info():
@@ -44,7 +70,7 @@ def test_accessor_replace_nans_for_mutual_info():
         'dates': pd.Series(['2020-01-01', None, '2020-01-02', '2020-01-03'])
     })
     df_nans.ww.init()
-    formatted_df = df_nans.ww._replace_nans_for_mutual_info(df_nans.copy())
+    formatted_df = _replace_nans_for_mutual_info(df_nans.ww.schema, df_nans.copy())
 
     assert isinstance(formatted_df, pd.DataFrame)
 
@@ -66,7 +92,7 @@ def test_accessor_make_categorical_for_mutual_info():
         'dates': pd.Series(['2020-01-01', '2019-01-02', '2020-08-03', '1997-01-04'])
     })
     df.ww.init()
-    formatted_num_bins_df = df.ww._make_categorical_for_mutual_info(df.copy(), num_bins=4)
+    formatted_num_bins_df = _make_categorical_for_mutual_info(df.ww.schema, df.copy(), num_bins=4)
 
     assert isinstance(formatted_num_bins_df, pd.DataFrame)
 

@@ -1,30 +1,21 @@
 import warnings
 
 import pandas as pd
-from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _update_column_dtype
 from woodwork.exceptions import TypingInfoMismatchWarning
-from woodwork.logical_types import Datetime, Double
+from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
-from woodwork.schema_column import (
-    _is_col_boolean,
-    _is_col_categorical,
-    _is_col_datetime,
-    _is_col_numeric
+from woodwork.statistics_utils import (
+    _get_describe_dict,
+    _get_mutual_information_dict
 )
-from woodwork.statistics_utils import _get_describe_dict
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
     col_is_datetime
 )
-from woodwork.utils import (
-    _get_column_logical_type,
-    _get_mode,
-    get_valid_mi_types,
-    import_or_none
-)
+from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -240,60 +231,6 @@ class WoodworkTableAccessor:
 
         return new_df
 
-    def _replace_nans_for_mutual_info(self, data):
-        """
-        Replace NaN values in the dataframe so that mutual information can be calculated
-
-        Args:
-            data (pd.DataFrame): dataframe to use for calculating mutual information
-
-        Returns:
-            pd.DataFrame: data with nans replaced with either mean or mode
-
-        """
-        # replace or remove null values
-        for column_name in data.columns[data.isnull().any()]:
-            column = self._schema.columns[column_name]
-            series = data[column_name]
-
-            if _is_col_numeric(column) or _is_col_datetime(column):
-                mean = series.mean()
-                if isinstance(mean, float) and not _get_ltype_class(column['logical_type']) == Double:
-                    data[column_name] = series.astype('float')
-                data[column_name] = series.fillna(mean)
-            elif _is_col_categorical(column) or _is_col_boolean(column):
-                mode = _get_mode(series)
-                data[column_name] = series.fillna(mode)
-        return data
-
-    def _make_categorical_for_mutual_info(self, data, num_bins):
-        """Transforms dataframe columns into numeric categories so that
-        mutual information can be calculated
-
-        Args:
-            data (pd.DataFrame): dataframe to use for caculating mutual information
-            num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
-
-        Returns:
-            pd.DataFrame: data with values transformed and binned into numeric categorical values
-        """
-
-        for col_name in data.columns:
-            column = self._schema.columns[col_name]
-            if _is_col_numeric(column):
-                # bin numeric features to make categories
-                data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
-            # Convert Datetimes to total seconds - an integer - and bin
-            if _is_col_datetime(column):
-                data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
-            # convert categories to integers
-            new_col = data[col_name]
-            if str(new_col.dtype) != 'category':
-                new_col = new_col.astype('category')
-            data[col_name] = new_col.cat.codes
-        return data
-
     def mutual_information_dict(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
@@ -314,48 +251,7 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        valid_types = get_valid_mi_types()
-        valid_columns = [col_name for col_name, col in self._schema.columns.items() if (
-            col_name != self._schema.index and _get_ltype_class(col['logical_type']) in valid_types)]
-
-        data = self._dataframe[valid_columns]
-        if dd and isinstance(data, dd.DataFrame):
-            data = data.compute()
-        if ks and isinstance(self._dataframe, ks.DataFrame):
-            data = data.to_pandas()
-
-        # cut off data if necessary
-        if nrows is not None and nrows < data.shape[0]:
-            data = data.sample(nrows)
-
-        # remove fully null columns
-        not_null_cols = data.columns[data.notnull().any()]
-        if set(not_null_cols) != set(valid_columns):
-            data = data.loc[:, not_null_cols]
-        # remove columns that are unique
-        not_unique_cols = [col for col in data.columns if not data[col].is_unique]
-        if set(not_unique_cols) != set(valid_columns):
-            data = data.loc[:, not_unique_cols]
-
-        data = self._replace_nans_for_mutual_info(data)
-        data = self._make_categorical_for_mutual_info(data, num_bins)
-
-        # calculate mutual info for all pairs of columns
-        mutual_info = []
-        col_names = data.columns.to_list()
-        for i, a_col in enumerate(col_names):
-            for j in range(i, len(col_names)):
-                b_col = col_names[j]
-                if a_col == b_col:
-                    # Ignore because the mutual info for a column with itself will always be 1
-                    continue
-                else:
-                    mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
-                    mutual_info.append(
-                        {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
-                    )
-        mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
-        return mutual_info
+        return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
 
     def mutual_information(self, num_bins=10, nrows=None):
         """
