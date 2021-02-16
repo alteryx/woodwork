@@ -173,6 +173,7 @@ class Schema(object):
             new_semantic_tags = _set_semantic_tags(semantic_tags[col_name],
                                                    self.logical_types[col_name].standard_tags,
                                                    self.use_standard_tags)
+            _validate_not_setting_index_tags(new_semantic_tags, col_name)
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
     # --> for each col do _set_semantic_tags passing semantic tags, standard tags, and use standard tags
@@ -192,6 +193,7 @@ class Schema(object):
         # --> should also be checking for index tags in this and all places!!!
         for col_name, new_tags in semantic_tags.items():
             new_semantic_tags = _add_semantic_tags(new_tags, self.semantic_tags[col_name], col_name)
+            _validate_not_setting_index_tags(new_semantic_tags, col_name)
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
             # --> each col takes in new tags and current tags and name
@@ -266,9 +268,11 @@ class Schema(object):
         """
         columns = {}
         for name in column_names:
-            semantic_tags_for_col = (semantic_tags or {}).get(name)
+            semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name))
+            _validate_not_setting_index_tags(semantic_tags_for_col, name)
             description = (column_descriptions or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)
+
             columns[name] = _get_column_dict(name,
                                              logical_types.get(name),
                                              semantic_tags=semantic_tags_for_col,
@@ -502,3 +506,13 @@ def _update_time_index(schema, column_names, time_index, old_time_index=None):
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
+
+
+def _validate_not_setting_index_tags(semantic_tags, col_name):
+    """Verify user has not supplied tags that cannot be set directly"""
+    if 'index' in semantic_tags:
+        raise ValueError(f"Cannot add 'index' tag directly for column {col_name}. To set a column as the index, "
+                         "use DataFrame.ww.set_index() instead.")
+    if 'time_index' in semantic_tags:
+        raise ValueError(f"Cannot add 'time_index' tag directly for column {col_name}. To set a column as the time index, "
+                         "use DataFrame.ww.set_time_index() instead.")

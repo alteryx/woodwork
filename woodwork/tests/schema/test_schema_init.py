@@ -222,6 +222,28 @@ def test_schema_init_with_logical_type_classes(sample_column_names, sample_infer
     assert schema.logical_types == full_logical_types
 
 
+def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+    error_msg = re.escape("Cannot add 'index' tag directly for column id. To set a column as the index, "
+                          "use DataFrame.ww.set_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        semantic_tags = {'id': 'index'}
+        schema = Schema(sample_column_names, sample_inferred_logical_types,
+                        name='schema',
+                        semantic_tags=semantic_tags,
+                        use_standard_tags=False)
+
+
+def test_raises_error_setting_time_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+    error_msg = re.escape("Cannot add 'time_index' tag directly for column signup_date. To set a column as the time index, "
+                          "use DataFrame.ww.set_time_index() instead.")
+    with pytest.raises(ValueError, match=error_msg):
+        semantic_tags = {'signup_date': 'time_index'}
+        schema = Schema(sample_column_names, sample_inferred_logical_types,
+                        name='schema',
+                        semantic_tags=semantic_tags,
+                        use_standard_tags=False)
+
+
 def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_logical_types):
     semantic_tags = {'id': 'custom_tag'}
     schema = Schema(sample_column_names, sample_inferred_logical_types,

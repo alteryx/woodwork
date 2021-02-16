@@ -1,4 +1,5 @@
 import inspect
+import re
 
 import pandas as pd
 import pytest
@@ -330,30 +331,34 @@ def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['age'] == {'numeric'}
 
 
-# def test_set_semantic_tags_with_index(sample_df):
-#     dt = DataTable(sample_df, index='id', use_standard_tags=False)
-#     assert dt.columns['id'].semantic_tags == {'index'}
+def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=False)
+    assert schema.semantic_tags['id'] == {'index'}
 
-#     new_tags = {
-#         'id': 'new_tag',
-#     }
-#     dt = dt.set_types(semantic_tags=new_tags)
-#     assert dt.columns['id'].semantic_tags == {'index', 'new_tag'}
-#     dt = dt.set_types(semantic_tags=new_tags, retain_index_tags=False)
-#     assert dt.columns['id'].semantic_tags == {'new_tag'}
+    new_tags = {
+        'id': 'new_tag',
+    }
+    schema.set_types(semantic_tags=new_tags)
+    assert schema.semantic_tags['id'] == {'index', 'new_tag'}
+    # --> deal with retain index tags - is it only relevant at table and not columns?
+    # schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
+    # assert schema.semantic_tags['id'] == {'new_tag'}
 
 
-# def test_set_semantic_tags_with_time_index(sample_df):
-#     dt = DataTable(sample_df, time_index='signup_date', use_standard_tags=False)
-#     assert dt.columns['signup_date'].semantic_tags == {'time_index'}
+def test_set_semantic_tags_with_time_index(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date', use_standard_tags=False)
+    assert schema.semantic_tags['signup_date'] == {'time_index'}
 
-#     new_tags = {
-#         'signup_date': 'new_tag',
-#     }
-#     dt = dt.set_types(semantic_tags=new_tags)
-#     assert dt.columns['signup_date'].semantic_tags == {'time_index', 'new_tag'}
-#     dt = dt.set_types(semantic_tags=new_tags, retain_index_tags=False)
-#     assert dt.columns['signup_date'].semantic_tags == {'new_tag'}
+    new_tags = {
+        'signup_date': 'new_tag',
+    }
+    schema.set_types(semantic_tags=new_tags)
+    assert schema.semantic_tags['signup_date'] == {'time_index', 'new_tag'}
+    # --> deal with retain index tags - is it only relevant at table and not columns?
+    # schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
+    # assert schema.semantic_tags['signup_date'] == {'new_tag'}
 
 
 def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
@@ -388,34 +393,36 @@ def test_reset_all_semantic_tags(sample_column_names, sample_inferred_logical_ty
     assert schema.semantic_tags['age'] == {'numeric'}
 
 
-# def test_reset_semantic_tags_with_index(sample_df):
-#     semantic_tags = {
-#         'id': 'tag1',
-#     }
-#     dt = DataTable(sample_df,
-#                    index='id',
-#                    semantic_tags=semantic_tags,
-#                    use_standard_tags=False)
-#     assert dt['id'].semantic_tags == {'index', 'tag1'}
-#     dt = dt.reset_semantic_tags('id', retain_index_tags=True)
-#     assert dt['id'].semantic_tags == {'index'}
-#     dt = dt.reset_semantic_tags('id')
-#     assert dt['id'].semantic_tags == set()
+def test_reset_semantic_tags_with_index(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'id': 'tag1',
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id',
+                    semantic_tags=semantic_tags,
+                    use_standard_tags=False)
+    assert schema.semantic_tags['id'] == {'index', 'tag1'}
+    # --> add back in once deal with index
+    # dt = dt.reset_semantic_tags('id', retain_index_tags=True)
+    # assert dt['id'].semantic_tags == {'index'}
+    schema.reset_semantic_tags('id')
+    assert schema.semantic_tags['id'] == set()
 
 
-# def test_reset_semantic_tags_with_time_index(sample_df):
-#     semantic_tags = {
-#         'signup_date': 'tag1',
-#     }
-#     dt = DataTable(sample_df,
-#                    time_index='signup_date',
-#                    semantic_tags=semantic_tags,
-#                    use_standard_tags=False)
-#     assert dt['signup_date'].semantic_tags == {'time_index', 'tag1'}
-#     dt = dt.reset_semantic_tags('signup_date', retain_index_tags=True)
-#     assert dt['signup_date'].semantic_tags == {'time_index'}
-#     dt = dt.reset_semantic_tags('signup_date')
-#     assert dt['signup_date'].semantic_tags == set()
+def test_reset_semantic_tags_with_time_index(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'signup_date': 'tag1',
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    semantic_tags=semantic_tags,
+                    use_standard_tags=False)
+    assert schema.semantic_tags['signup_date'] == {'time_index', 'tag1'}
+    # --> deal with time index
+    # schema.reset_semantic_tags('signup_date', retain_index_tags=True)
+    # assert schema['signup_date'].semantic_tags == {'time_index'}
+    schema.reset_semantic_tags('signup_date')
+    assert schema.semantic_tags['signup_date'] == set()
 
 
 def test_reset_semantic_tags_invalid_column(sample_column_names, sample_inferred_logical_types):
@@ -442,4 +449,25 @@ def test_remove_semantic_tags(sample_column_names, sample_inferred_logical_types
     assert schema.semantic_tags['age'] == {'age'}
     assert schema.semantic_tags['id'] == {'tag2'}
 
-# --> add test where we set index and time index tags directly
+
+def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+    error_msg = re.escape("Cannot add 'index' tag directly for column id. To set a column as the index, "
+                          "use DataFrame.ww.set_index() instead.")
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    with pytest.raises(ValueError, match=error_msg):
+        schema.add_semantic_tags({'id': 'index'})
+    with pytest.raises(ValueError, match=error_msg):
+        schema.set_types(semantic_tags={'id': 'index'})
+
+
+def test_raises_error_setting_time_index_tag_directly(sample_column_names, sample_inferred_logical_types):
+    error_msg = re.escape("Cannot add 'time_index' tag directly for column signup_date. To set a column as the time index, "
+                          "use DataFrame.ww.set_time_index() instead.")
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    with pytest.raises(ValueError, match=error_msg):
+        schema.add_semantic_tags({'signup_date': 'time_index'})
+    with pytest.raises(ValueError, match=error_msg):
+        schema.set_types(semantic_tags={'signup_date': 'time_index'})
