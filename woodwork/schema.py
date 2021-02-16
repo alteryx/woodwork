@@ -166,9 +166,15 @@ class Schema(object):
             woodwork.DataTable: DataTable with updated logical types and specified semantic tags set.
         """
         # --> in the future will just allow setting logical type but will need to be called by table_accessor
+        semantic_tags = semantic_tags or {}
         _check_semantic_tags(self.columns.keys(), semantic_tags)
 
-        pass
+        for col_name, new_tags in semantic_tags.items():
+            new_semantic_tags = _set_semantic_tags(semantic_tags[col_name],
+                                                   self.logical_types[col_name].standard_tags,
+                                                   self.use_standard_tags)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
     # --> for each col do _set_semantic_tags passing semantic tags, standard tags, and use standard tags
 
     def add_semantic_tags(self, semantic_tags):
