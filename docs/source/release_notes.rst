@@ -22,6 +22,7 @@ Release Notes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
+        * Move mutual information logic to statistics utils file (:pr:`584`)
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
