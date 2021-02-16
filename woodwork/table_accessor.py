@@ -28,8 +28,6 @@ from woodwork.utils import (
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-if ks:
-    ks.set_option('compute.ops_on_diff_frames', True)
 
 
 @pd.api.extensions.register_dataframe_accessor('ww')
