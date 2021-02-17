@@ -484,6 +484,50 @@ def test_raises_error_setting_time_index_tag_directly(sample_column_names, sampl
         schema.set_types(semantic_tags={'signup_date': 'time_index'})
 
 
-# --> test directly setting index tags and directly removing index tags
-def test_removes_indices_via_tags(sample_column_names, sample_inferred_logical_types):
-    pass
+def test_removes_index_via_tags(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    schema.set_types(semantic_tags={'id': 'new_tag'}, retain_index_tags=False)
+    assert schema.semantic_tags['id'] == {'numeric', 'new_tag'}
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='full_name')
+    schema.set_types(semantic_tags={'full_name': 'new_tag'}, retain_index_tags=False)
+    assert schema.semantic_tags['full_name'] == {'new_tag'}
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    schema.remove_semantic_tags(semantic_tags={'id': 'index'})
+    assert schema.semantic_tags['id'] == {'numeric'}
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='full_name')
+    schema.remove_semantic_tags(semantic_tags={'full_name': 'index'})
+    assert schema.semantic_tags['full_name'] == set()
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    schema.reset_semantic_tags('id')
+    assert schema.semantic_tags['id'] == {'numeric'}
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='full_name')
+    schema.reset_semantic_tags('full_name')
+    assert schema.semantic_tags['full_name'] == set()
+    assert schema.index is None
+
+
+def test_removes_time_index_via_tags(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema.set_types(semantic_tags={'signup_date': 'new_tag'}, retain_index_tags=False)
+    assert schema.semantic_tags['signup_date'] == {'new_tag'}
+    assert schema.time_index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema.remove_semantic_tags(semantic_tags={'signup_date': 'time_index'})
+    assert schema.semantic_tags['signup_date'] == set()
+    assert schema.time_index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema.reset_semantic_tags('signup_date')
+    assert schema.semantic_tags['signup_date'] == set()
+    assert schema.time_index is None

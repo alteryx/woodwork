@@ -22,7 +22,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     type_string = ClassNameDescriptor()
     pandas_dtype = 'string'
     backup_dtype = None
-    standard_tags = {}
+    standard_tags = set()
 
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__) and _get_specified_ltype_params(other) == _get_specified_ltype_params(self)

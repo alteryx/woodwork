@@ -198,7 +198,6 @@ class Schema(object):
             woodwork.DataTable: DataTable with semantic tags added
         """
         _check_semantic_tags(self.columns.keys(), semantic_tags)
-        # --> should also be checking for index tags in this and all places!!!
         for col_name, tags_to_add in semantic_tags.items():
             tags_to_add = _convert_input_to_set(tags_to_add)
             _validate_not_setting_index_tags(tags_to_add, col_name)
@@ -222,14 +221,21 @@ class Schema(object):
         # --> make sure to add to documentation that adding an index tag will set index to none
         _check_semantic_tags(self.columns.keys(), semantic_tags)
         for col_name, tags_to_remove in semantic_tags.items():
-            # --> might need to handle removing index tags or standard tags??
+            standard_tags = self.logical_types[col_name].standard_tags
+            tags_to_remove = _convert_input_to_set(tags_to_remove)
+
             new_semantic_tags = _remove_semantic_tags(tags_to_remove,
                                                       self.semantic_tags[col_name],
                                                       col_name,
-                                                      self.logical_types[col_name].standard_tags,
+                                                      standard_tags,
                                                       self.use_standard_tags)
+            # If the index is removed, reinsert any standard tags not explicetly removed
+            original_tags = self.semantic_tags[col_name]
+            if 'index' in original_tags and 'index' not in new_semantic_tags:
+                standard_tags_removed = tags_to_remove.intersection(standard_tags)
+                standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
+                new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
-    # --> each col takes in tags to remove current tags name standard tags and use standard tags
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
@@ -259,8 +265,7 @@ class Schema(object):
         for col_name in columns:
             original_tags = self.semantic_tags[col_name]
             new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags)
-            # --> why is the set here necessary????
-            self.columns[col_name]['semantic_tags'] = set(new_semantic_tags)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)
