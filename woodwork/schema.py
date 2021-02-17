@@ -3,7 +3,13 @@ import collections
 import pandas as pd
 
 import woodwork as ww
-from woodwork.schema_column import _get_column_dict, _set_semantic_tags, _add_semantic_tags, _reset_semantic_tags, _remove_semantic_tags
+from woodwork.schema_column import (
+    _add_semantic_tags,
+    _get_column_dict,
+    _remove_semantic_tags,
+    _reset_semantic_tags,
+    _set_semantic_tags
+)
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
@@ -231,7 +237,7 @@ class Schema(object):
                                                       self.use_standard_tags)
             # If the index is removed, reinsert any standard tags not explicetly removed
             original_tags = self.semantic_tags[col_name]
-            if 'index' in original_tags and 'index' not in new_semantic_tags:
+            if self.use_standard_tags and 'index' in original_tags and 'index' not in new_semantic_tags:
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
                 standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
                 new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
@@ -286,7 +292,8 @@ class Schema(object):
         """
         columns = {}
         for name in column_names:
-            semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name))
+            semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name),
+                                                          error_language=f'semantic_tags for {name}')
             _validate_not_setting_index_tags(semantic_tags_for_col, name)
             description = (column_descriptions or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)

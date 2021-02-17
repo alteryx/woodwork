@@ -343,9 +343,7 @@ def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logic
     assert schema.semantic_tags['id'] == {'index', 'new_tag'}
 
     schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
-    # --> should this add the numeric tag????????
     assert schema.semantic_tags['id'] == {'new_tag'}
-# --> do this in a situation where standard tags change? Is that even possible??
 
 
 def test_set_semantic_tags_with_time_index(sample_column_names, sample_inferred_logical_types):
@@ -384,9 +382,6 @@ def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['id'] == {'set_tag', 'index'}
 
 
-# --> add check where were setting on an index or time index column
-
-
 def test_reset_all_semantic_tags(sample_column_names, sample_inferred_logical_types):
     semantic_tags = {
         'full_name': 'tag1',
@@ -412,7 +407,6 @@ def test_reset_semantic_tags_with_index(sample_column_names, sample_inferred_log
     schema.reset_semantic_tags('id', retain_index_tags=True)
     assert schema.semantic_tags['id'] == {'index'}
 
-    # --> this should probably have numeric as a tag????
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == set()
 
@@ -458,8 +452,6 @@ def test_remove_semantic_tags(sample_column_names, sample_inferred_logical_types
     assert schema.semantic_tags['age'] == {'age'}
     assert schema.semantic_tags['id'] == {'tag2'}
 
-# --> test removing semantic tags that's an index????
-
 
 def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
     error_msg = re.escape("Cannot add 'index' tag directly for column id. To set a column as the index, "
@@ -485,32 +477,59 @@ def test_raises_error_setting_time_index_tag_directly(sample_column_names, sampl
 
 
 def test_removes_index_via_tags(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    # Check setting tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=True)
     schema.set_types(semantic_tags={'id': 'new_tag'}, retain_index_tags=False)
     assert schema.semantic_tags['id'] == {'numeric', 'new_tag'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='full_name')
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=False)
+    schema.set_types(semantic_tags={'id': 'new_tag'}, retain_index_tags=False)
+    assert schema.semantic_tags['id'] == {'new_tag'}
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='full_name', use_standard_tags=True)
     schema.set_types(semantic_tags={'full_name': 'new_tag'}, retain_index_tags=False)
     assert schema.semantic_tags['full_name'] == {'new_tag'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    # Check removing tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=True)
     schema.remove_semantic_tags(semantic_tags={'id': 'index'})
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='full_name')
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=False)
+    schema.remove_semantic_tags(semantic_tags={'id': 'index'})
+    assert schema.semantic_tags['id'] == set()
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='full_name', use_standard_tags=True)
     schema.remove_semantic_tags(semantic_tags={'full_name': 'index'})
     assert schema.semantic_tags['full_name'] == set()
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    # Check resetting tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=True,)
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='full_name')
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', use_standard_tags=False)
+    schema.reset_semantic_tags('id')
+    assert schema.semantic_tags['id'] == set()
+    assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='full_name', use_standard_tags=True)
     schema.reset_semantic_tags('full_name')
     assert schema.semantic_tags['full_name'] == set()
     assert schema.index is None
