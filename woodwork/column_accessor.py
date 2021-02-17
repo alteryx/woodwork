@@ -92,7 +92,7 @@ class WoodworkColumnAccessor:
     def __getattr__(self, attr):
         '''
             If the method is present on the Accessor, uses that method.
-            If the method is present on DataFrame, uses that method.
+            If the method is present on Series, uses that method.
         '''
         if self._schema is None:
             raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
