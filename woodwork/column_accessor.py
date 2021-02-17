@@ -1,5 +1,9 @@
+import copy
+import warnings
+
 import pandas as pd
 
+from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
     _add_semantic_tags,
@@ -85,12 +89,58 @@ class WoodworkColumnAccessor:
             return False
         return self._series.equals(other._series)
 
+    def __getattr__(self, attr):
+        '''
+            If the method is present on the Accessor, uses that method.
+            If the method is present on Series, uses that method.
+        '''
+        if self._schema is None:
+            raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
+        if hasattr(self._series, attr):
+            return self._make_series_call(attr)
+        else:
+            raise AttributeError(f"Woodwork has no attribute '{attr}'")
+
     def __repr__(self):
         msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
+
+    def _make_series_call(self, attr):
+        '''
+        Forwards the requested attribute onto the series object.
+        Intercepts return value, attempting to initialize Woodwork with the current schema
+        when a new Series is returned.
+        Confirms schema is still valid for the original Series.
+        '''
+        series_attr = getattr(self._series, attr)
+
+        if callable(series_attr):
+            def wrapper(*args, **kwargs):
+                # Make Series call and intercept the result
+                result = series_attr(*args, **kwargs)
+
+                # Try to initialize Woodwork with the existing Schema
+                if isinstance(result, pd.Series):
+                    if result.dtype == self._schema['logical_type'].pandas_dtype:
+                        schema = copy.deepcopy(self._schema)
+                        # We don't need to pass dtype from the schema to init
+                        del schema['dtype']
+                        result.ww.init(**schema)
+                    else:
+                        invalid_schema_message = 'dtype mismatch between original dtype, ' \
+                            f'{self._schema["logical_type"].pandas_dtype}, and returned dtype, {result.dtype}'
+                        warning_message = TypingInfoMismatchWarning().get_warning_message(attr,
+                                                                                          invalid_schema_message,
+                                                                                          'Series')
+                        warnings.warn(warning_message, TypingInfoMismatchWarning)
+                # Always return the results of the Series operation whether or not Woodwork is initialized
+                return result
+            return wrapper
+        # Directly return non-callable Series attributes
+        return series_attr
 
     def _validate_logical_type(self, logical_type):
         """Validates that a logical type is consistent with the series dtype. Performs additional type

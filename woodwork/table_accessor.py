@@ -197,7 +197,7 @@ class WoodworkTableAccessor:
                 if isinstance(result, pd.DataFrame):
                     invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                     if invalid_schema_message:
-                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message),
+                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
                         result.ww.init(schema=self._schema)
@@ -206,7 +206,7 @@ class WoodworkTableAccessor:
                     # Important for inplace operations
                     invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
                     if invalid_schema_message:
-                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message),
+                        warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                         self._schema = None
 
