@@ -343,6 +343,7 @@ def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logic
     assert schema.semantic_tags['id'] == {'index', 'new_tag'}
 
     schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
+    # --> should this add the numeric tag????????
     assert schema.semantic_tags['id'] == {'new_tag'}
 # --> do this in a situation where standard tags change? Is that even possible??
 
@@ -411,6 +412,7 @@ def test_reset_semantic_tags_with_index(sample_column_names, sample_inferred_log
     schema.reset_semantic_tags('id', retain_index_tags=True)
     assert schema.semantic_tags['id'] == {'index'}
 
+    # --> this should probably have numeric as a tag????
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == set()
 
@@ -426,7 +428,7 @@ def test_reset_semantic_tags_with_time_index(sample_column_names, sample_inferre
     assert schema.semantic_tags['signup_date'] == {'time_index', 'tag1'}
 
     schema.reset_semantic_tags('signup_date', retain_index_tags=True)
-    assert schema['signup_date'].semantic_tags == {'time_index'}
+    assert schema.semantic_tags['signup_date'] == {'time_index'}
 
     schema.reset_semantic_tags('signup_date')
     assert schema.semantic_tags['signup_date'] == set()

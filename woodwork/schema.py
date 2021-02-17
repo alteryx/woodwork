@@ -170,15 +170,18 @@ class Schema(object):
         _check_semantic_tags(self.columns.keys(), semantic_tags)
 
         for col_name, new_tags in semantic_tags.items():
-            new_semantic_tags = _set_semantic_tags(semantic_tags[col_name],
+            original_tags = self.semantic_tags[col_name]
+            # --> Will add standard tags back in, so we need to remove them below if we retain index tags
+            # Also means numeric will propogate if we don't retain index tags -- need to confirm we want this
+            new_semantic_tags = _set_semantic_tags(new_tags,
                                                    self.logical_types[col_name].standard_tags,
                                                    self.use_standard_tags)
             _validate_not_setting_index_tags(new_semantic_tags, col_name)
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
-            if retain_index_tags and self.index == col_name:
+            if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)
-            if retain_index_tags and self.time_index == col_name:
+            if retain_index_tags and 'time_index' in original_tags:
                 self._set_time_index_tags(col_name)
 
     # --> for each col do _set_semantic_tags passing semantic tags, standard tags, and use standard tags
@@ -199,9 +202,7 @@ class Schema(object):
         for col_name, tags_to_add in semantic_tags.items():
             tags_to_add = _convert_input_to_set(tags_to_add)
             _validate_not_setting_index_tags(tags_to_add, col_name)
-            # --> going to cause a problem if the index is set
             new_semantic_tags = _add_semantic_tags(tags_to_add, self.semantic_tags[col_name], col_name)
-            # --> if its' the index column retain tags
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
             # --> each col takes in new tags and current tags and name
@@ -218,6 +219,7 @@ class Schema(object):
         Returns:
             woodwork.DataTable: DataTable with the specified semantic tags removed
         """
+        # --> make sure to add to documentation that adding an index tag will set index to none
         _check_semantic_tags(self.columns.keys(), semantic_tags)
         for col_name, tags_to_remove in semantic_tags.items():
             # --> might need to handle removing index tags or standard tags??
@@ -255,20 +257,17 @@ class Schema(object):
             columns = self.columns.keys()
 
         for col_name in columns:
+            original_tags = self.semantic_tags[col_name]
             new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags)
-            # retain index tags possibly - add back in if the col is an index
             # --> why is the set here necessary????
             self.columns[col_name]['semantic_tags'] = set(new_semantic_tags)
 
-            if retain_index_tags and self.index == col_name:
+            if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)
-            if retain_index_tags and self.time_index == col_name:
+            if retain_index_tags and 'time_index' in original_tags:
                 self._set_time_index_tags(col_name)
 
-# --> det how to handle retain index tags param
-    # --> pass standard tags and use standard tags
-
-    # --> consider having a helper function to set tags for each column
+    # --> consider having a helper function to set tags for each column - reuse code!!!!!
 
     def _create_columns(self,
                         column_names,
@@ -297,7 +296,8 @@ class Schema(object):
 
     def _set_index_tags(self, index):
         '''
-        Updates the semantic tags of the index.
+        Updates the semantic tags of the index by removing any standard tags
+        before adding the 'index' tag.
         '''
         column_dict = self.columns[index]
 
