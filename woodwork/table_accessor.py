@@ -200,7 +200,8 @@ class WoodworkTableAccessor:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
-                        result.ww.init(schema=self._schema)
+                        copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
+                        result.ww.init(schema=copied_schema)
                 else:
                     # Confirm that the Schema is still valid on original DataFrame
                     # Important for inplace operations

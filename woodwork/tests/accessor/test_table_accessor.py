@@ -862,7 +862,7 @@ def test_dataframe_methods_on_accessor(sample_df):
     copied_df = schema_df.ww.copy()
 
     assert schema_df is not copied_df
-    assert isinstance(copied_df.ww.schema, Schema)
+    assert schema_df.ww.schema is not copied_df.ww.schema
     assert copied_df.ww.schema == schema_df.ww.schema
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
@@ -875,6 +875,11 @@ def test_dataframe_methods_on_accessor(sample_df):
     assert new_df['id'].dtype == 'string'
     assert new_df.ww.schema is None
     assert schema_df.ww.schema is not None
+
+
+def test_dataframe_methods_on_accessor_new_schema_object(sample_df):
+    pass
+    # --> make changes to column descriptions and metadata and col metadata and confirm things don't propogate
 
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):

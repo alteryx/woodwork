@@ -382,14 +382,14 @@ class Schema(object):
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
         return Schema(subset_cols,
-                      new_logical_types,
+                      new_logical_types,  # --> might also be worth a copy here
                       name=self.name,
                       index=new_index,
                       time_index=new_time_index,
-                      semantic_tags=new_semantic_tags,
+                      semantic_tags=new_semantic_tags.copy(),  # --> might need to deep copy all of these
                       use_standard_tags=self.use_standard_tags,
-                      table_metadata=self.metadata,
-                      column_metadata=new_column_metadata,
+                      table_metadata=self.metadata.copy(),
+                      column_metadata=new_column_metadata.copy(),
                       column_descriptions=new_column_descriptions)
 
 

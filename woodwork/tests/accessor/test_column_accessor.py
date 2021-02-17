@@ -469,6 +469,11 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     assert series.nunique() == series.ww.nunique()
 
 
+def test_series_methods_on_accessor_new_schema_dict(sample_series):
+    pass
+    # --> confirm that the object is different and thant changing metadata or semantic tags doesnt happen to both
+
+
 def test_series_getattr_errors(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
