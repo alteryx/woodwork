@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import DuplicateTagsWarning
+from woodwork.exceptions import DuplicateTagsWarning, TypingInfoMismatchWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -370,20 +370,26 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
         series.ww.remove_semantic_tags('invalid_tagname')
 
 
-# def test_shape(sample_series):
-#     col = DataColumn(sample_series)
-#     col_shape = col.shape
-#     series_shape = col.to_series().shape
-#     if dd and isinstance(sample_series, dd.Series):
-#         col_shape = (col_shape[0].compute(),)
-#         series_shape = (series_shape[0].compute(),)
-#     assert col_shape == (4,)
-#     assert col_shape == series_shape
+def test_series_methods_on_accessor(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    copied_series = series.ww.copy()
+    assert copied_series is not series
+    assert copied_series.ww._schema == series.ww._schema
+    pd.testing.assert_series_equal(series, copied_series)
 
 
-# def test_len(sample_series):
-#     col = DataColumn(sample_series)
-#     assert len(col) == len(sample_series) == 4
+def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    sorted_series = series.ww.sort_values()
+    assert sorted_series.ww._schema == series.ww._schema
+    assert sorted_series.ww._schema is not series.ww._schema
+    pd.testing.assert_series_equal(sorted_series, series.sort_values())
 
 
 def test_ordinal_requires_instance_on_init(sample_series):
