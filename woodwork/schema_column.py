@@ -44,16 +44,6 @@ def _get_column_dict(name,
     }
 
 
-def _validate_tags(semantic_tags):
-    """Verify user has not supplied tags that cannot be set directly"""
-    if 'index' in semantic_tags:
-        raise ValueError("Cannot add 'index' tag directly. To set a column as the index, "
-                         "use Schema.set_index() instead.")
-    if 'time_index' in semantic_tags:
-        raise ValueError("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                         "use Schema.set_time_index() instead.")
-
-
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
 
@@ -75,8 +65,6 @@ def _validate_metadata(column_metadata):
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):
     semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}')
-
-    _validate_tags(semantic_tags)
 
     if use_standard_tags:
         semantic_tags = semantic_tags.union(logical_type.standard_tags)
