@@ -98,8 +98,8 @@ def test_underlying_index_no_index(sample_df):
     assert type(sample_df.index) == pd.Int64Index
     dt = DataTable(sample_df)
 
-    assert type(dt._dataframe.index) == pd.RangeIndex
-    assert type(dt.to_dataframe().index) == pd.RangeIndex
+    assert type(dt._dataframe.index) == pd.Int64Index
+    assert type(dt.to_dataframe().index) == pd.Int64Index
 
 
 def test_underlying_index(sample_df):
