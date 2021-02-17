@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
+        * Preserve underlying index (:pr:`588`)
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`)
