@@ -54,9 +54,9 @@ def test_accessor_init_with_logical_type(sample_series):
 def test_accessor_init_with_invalid_logical_type(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series
-    error_message = "Cannot initialize Woodwork. Series dtype 'object' is incompatible with " \
-        "NaturalLanguage dtype. Try converting series dtype to 'string' before initializing " \
-        "or use the woodwork.init_series function to initialize."
+    error_message = "Cannot set the specified LogicalType. Series dtype 'object' is incompatible with " \
+        "NaturalLanguage dtype. Try converting series dtype to 'string' " \
+        "or use the woodwork.init_series function to initialize a new series."
     with pytest.raises(ValueError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
 
@@ -291,6 +291,17 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert series.ww.semantic_tags == set()
 
 
+def test_accessor_set_logical_type_warning(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
+    error_message = "Cannot set the specified LogicalType. Series dtype 'category' is incompatible " \
+        "with NaturalLanguage dtype. Try converting series dtype to 'string' or use the " \
+        "woodwork.init_series function to initialize a new series."
+    with pytest.raises(ValueError, match=error_message):
+        series.ww.set_logical_type(logical_type=NaturalLanguage)
+
+
 def test_reset_semantic_tags_with_standard_tags(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
@@ -384,29 +395,33 @@ def test_ordinal_requires_instance_on_init(sample_series):
         sample_series.ww.init(logical_type="Ordinal")
 
 
-# def test_ordinal_requires_instance_on_update(sample_series):
-#     dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+def test_ordinal_requires_instance_on_update(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type="Categorical")
 
-#     error_msg = 'Must use an Ordinal instance with order values defined'
-#     with pytest.raises(TypeError, match=error_msg):
-#         dc.set_logical_type(Ordinal)
-#     with pytest.raises(TypeError, match=error_msg):
-#         dc.set_logical_type("Ordinal")
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        series.ww.set_logical_type(Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        series.ww.set_logical_type("Ordinal")
 
 
-# def test_ordinal_with_order(sample_series):
-#     if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
-#         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
+def test_ordinal_with_order(sample_series):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
-#     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
-#     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
-#     assert isinstance(dc.logical_type, Ordinal)
-#     assert dc.logical_type.order == ['a', 'b', 'c']
+    series = sample_series.astype('category')
+    ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
+    series.ww.init(logical_type=ordinal_with_order)
+    assert isinstance(series.ww.logical_type, Ordinal)
+    assert series.ww.logical_type.order == ['a', 'b', 'c']
 
-#     dc = DataColumn(sample_series, logical_type="NaturalLanguage")
-#     new_dc = dc.set_logical_type(ordinal_with_order)
-#     assert isinstance(new_dc.logical_type, Ordinal)
-#     assert new_dc.logical_type.order == ['a', 'b', 'c']
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
+    series.ww.set_logical_type(ordinal_with_order)
+    assert isinstance(series.ww.logical_type, Ordinal)
+    assert series.ww.logical_type.order == ['a', 'b', 'c']
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):

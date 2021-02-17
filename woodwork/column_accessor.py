@@ -96,10 +96,10 @@ class WoodworkColumnAccessor:
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
         if logical_type.pandas_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
+            raise ValueError(f"Cannot set the specified LogicalType. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
-                             f"dtype to '{logical_type.pandas_dtype}' before initializing or use the "
-                             "woodwork.init_series function to initialize.")
+                             f"dtype to '{logical_type.pandas_dtype}' or use the "
+                             "woodwork.init_series function to initialize a new series.")
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
@@ -143,8 +143,7 @@ class WoodworkColumnAccessor:
             logical_type (LogicalType, str): The new logical type to set for the series.
         """
         logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
-        if self._series.dtype != logical_type.pandas_dtype:
-            raise TypeError
+        self._validate_logical_type(logical_type)
 
         self._schema['logical_type'] = logical_type
         self.reset_semantic_tags()
