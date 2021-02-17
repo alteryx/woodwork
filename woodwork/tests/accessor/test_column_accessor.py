@@ -54,9 +54,9 @@ def test_accessor_init_with_logical_type(sample_series):
 def test_accessor_init_with_invalid_logical_type(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series
-    error_message = "Cannot set the specified LogicalType. Series dtype 'object' is incompatible with " \
-        "NaturalLanguage dtype. Try converting series dtype to 'string' " \
-        "or use the woodwork.init_series function to initialize a new series."
+    error_message = "Cannot initialize Woodwork. Series dtype 'object' is incompatible " \
+        "with NaturalLanguage dtype. Try converting series dtype to 'string' before initializing " \
+        "or use the woodwork.init_series function to initialize."
     with pytest.raises(ValueError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
 
@@ -273,9 +273,10 @@ def test_set_logical_type_with_standard_tags(sample_series):
                    semantic_tags='original_tag',
                    use_standard_tags=True)
 
-    series.ww.set_logical_type('CountryCode')
-    assert series.ww.logical_type == CountryCode
-    assert series.ww.semantic_tags == {'category'}
+    new_series = series.ww.set_logical_type('CountryCode')
+    assert series.ww.logical_type == Categorical
+    assert new_series.ww.logical_type == CountryCode
+    assert new_series.ww.semantic_tags == {'category'}
 
 
 def test_set_logical_type_without_standard_tags(sample_series):
@@ -286,20 +287,10 @@ def test_set_logical_type_without_standard_tags(sample_series):
                    semantic_tags='original_tag',
                    use_standard_tags=False)
 
-    series.ww.set_logical_type('CountryCode')
-    assert series.ww.logical_type == CountryCode
-    assert series.ww.semantic_tags == set()
-
-
-def test_accessor_set_logical_type_warning(sample_series):
-    xfail_dask_and_koalas(sample_series)
-    series = sample_series.astype('category')
-    series.ww.init(logical_type='Categorical')
-    error_message = "Cannot set the specified LogicalType. Series dtype 'category' is incompatible " \
-        "with NaturalLanguage dtype. Try converting series dtype to 'string' or use the " \
-        "woodwork.init_series function to initialize a new series."
-    with pytest.raises(ValueError, match=error_message):
-        series.ww.set_logical_type(logical_type=NaturalLanguage)
+    new_series = series.ww.set_logical_type('CountryCode')
+    assert series.ww.logical_type == Categorical
+    assert new_series.ww.logical_type == CountryCode
+    assert new_series.ww.semantic_tags == set()
 
 
 def test_reset_semantic_tags_with_standard_tags(sample_series):
@@ -392,6 +383,60 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     pd.testing.assert_series_equal(sorted_series, series.sort_values())
 
 
+def test_series_methods_on_accessor_inplace(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    original_schema = series.ww._schema.copy()
+    val = series.ww.pop(0)
+    assert series.ww._schema == original_schema
+    assert len(series) == 3
+    assert val == 'a'
+
+
+def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    warning = "Operation performed by astype has invalidated the Woodwork typing information:\n " \
+        "dtype mismatch between original dtype, category, and returned dtype, string.\n " \
+        "Please initialize Woodwork with Series.ww.init"
+
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        new_series = series.ww.astype('string')
+
+    assert new_series.ww._schema is None
+
+
+def test_series_methods_on_accessor_other_returns(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+    col_shape = series.ww.shape
+    series_shape = series.shape
+    assert col_shape == (4,)
+    assert col_shape == series_shape
+
+    assert series.name == series.ww.name
+    assert series.nunique() == series.ww.nunique()
+
+
+def test_series_getattr_errors(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+
+    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=error_message):
+        series.ww.shape
+
+    series.ww.init()
+    error_message = "Woodwork has no attribute 'invalid_attr'"
+    with pytest.raises(AttributeError, match=error_message):
+        series.ww.invalid_attr
+
+
 def test_ordinal_requires_instance_on_init(sample_series):
     xfail_dask_and_koalas(sample_series)
     error_msg = 'Must use an Ordinal instance with order values defined'
@@ -425,9 +470,9 @@ def test_ordinal_with_order(sample_series):
 
     series = sample_series.astype('category')
     series.ww.init(logical_type='Categorical')
-    series.ww.set_logical_type(ordinal_with_order)
-    assert isinstance(series.ww.logical_type, Ordinal)
-    assert series.ww.logical_type.order == ['a', 'b', 'c']
+    new_series = series.ww.set_logical_type(ordinal_with_order)
+    assert isinstance(new_series.ww.logical_type, Ordinal)
+    assert new_series.ww.logical_type.order == ['a', 'b', 'c']
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):

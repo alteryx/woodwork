@@ -3,6 +3,7 @@ import warnings
 
 import pandas as pd
 
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
@@ -146,10 +147,10 @@ class WoodworkColumnAccessor:
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
         if logical_type.pandas_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot set the specified LogicalType. Series dtype '{self._series.dtype}' is "
+            raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
-                             f"dtype to '{logical_type.pandas_dtype}' or use the "
-                             "woodwork.init_series function to initialize a new series.")
+                             f"dtype to '{logical_type.pandas_dtype}' before initializing or use the "
+                             "woodwork.init_series function to initialize.")
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
@@ -185,18 +186,23 @@ class WoodworkColumnAccessor:
                                                              self.use_standard_tags)
 
     def set_logical_type(self, logical_type):
-        """Update the logical type for the series. If the dtype of the new logical type
-        is not compatible with the current series dtype, an error will be raised. Changing
-        the logical type of a column will cause any previously set semantic tags to be cleared.
+        """Update the logical type for the series, clearing any previously set semantic tags,
+        and returning a new Series.
 
         Args:
             logical_type (LogicalType, str): The new logical type to set for the series.
+
+        Returns:
+            Series: A new series with the updated logical type.
         """
         logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
-        self._validate_logical_type(logical_type)
 
-        self._schema['logical_type'] = logical_type
-        self.reset_semantic_tags()
+        return init_series(self._series,
+                           logical_type=logical_type,
+                           semantic_tags=None,
+                           use_standard_tags=self.use_standard_tags,
+                           description=self.description,
+                           metadata=copy.deepcopy(self.metadata))
 
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set
