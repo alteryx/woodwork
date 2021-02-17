@@ -127,15 +127,15 @@ class WoodworkColumnAccessor:
                     if result.dtype == self._schema['logical_type'].pandas_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
-                        _ = schema.pop('dtype')
+                        del schema['dtype']
                         result.ww.init(**schema)
                     else:
-                        invalid_schema_message = f'Operation performed by {attr} has invalidated the Woodwork ' \
-                            'typing information:\n' \
-                            f'dtype mismatch between original dtype, {self._schema["logical_type"].pandas_dtype}, ' \
-                            f'and returned dtype, {result.dtype}.\n' \
-                            'Please initialize Woodwork with Series.ww.init'
-                        warnings.warn(invalid_schema_message, TypingInfoMismatchWarning)
+                        invalid_schema_message = 'dtype mismatch between original dtype, ' \
+                            f'{self._schema["logical_type"].pandas_dtype}, and returned dtype, {result.dtype}'
+                        warning_message = TypingInfoMismatchWarning().get_warning_message(attr,
+                                                                                          invalid_schema_message,
+                                                                                          'Series')
+                        warnings.warn(warning_message, TypingInfoMismatchWarning)
                 # Always return the results of the Series operation whether or not Woodwork is initialized
                 return result
             return wrapper

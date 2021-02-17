@@ -426,8 +426,8 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
     series = sample_series.astype('category')
     series.ww.init()
 
-    warning = "Operation performed by astype has invalidated the Woodwork typing information:\n" \
-        "dtype mismatch between original dtype, category, and returned dtype, string.\n" \
+    warning = "Operation performed by astype has invalidated the Woodwork typing information:\n " \
+        "dtype mismatch between original dtype, category, and returned dtype, string.\n " \
         "Please initialize Woodwork with Series.ww.init"
 
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
