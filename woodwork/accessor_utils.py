@@ -63,29 +63,29 @@ def _update_column_dtype(series, logical_type):
             series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
-
-    # Update the underlying series
-    try:
-        if _get_ltype_class(logical_type) == Datetime:
-            if dd and isinstance(series, dd.Series):
-                name = series.name
-                series = dd.to_datetime(series, format=logical_type.datetime_format)
-                series.name = name
-            elif ks and isinstance(series, ks.Series):
-                series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                  format=logical_type.datetime_format),
-                                   name=series.name)
+    if logical_type.pandas_dtype != str(series.dtype):
+        # Update the underlying series
+        try:
+            if _get_ltype_class(logical_type) == Datetime:
+                if dd and isinstance(series, dd.Series):
+                    name = series.name
+                    series = dd.to_datetime(series, format=logical_type.datetime_format)
+                    series.name = name
+                elif ks and isinstance(series, ks.Series):
+                    series = ks.Series(ks.to_datetime(series.to_numpy(),
+                                                      format=logical_type.datetime_format),
+                                       name=series.name)
+                else:
+                    series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
-                series = pd.to_datetime(series, format=logical_type.datetime_format)
-        else:
-            if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
-                new_dtype = logical_type.backup_dtype
-            else:
-                new_dtype = logical_type.pandas_dtype
-            series = series.astype(new_dtype)
-    except (TypeError, ValueError):
-        error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-            f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
-            f'logical type {logical_type}.'
-        raise TypeConversionError(error_msg)
+                if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
+                    new_dtype = logical_type.backup_dtype
+                else:
+                    new_dtype = logical_type.pandas_dtype
+                series = series.astype(new_dtype)
+        except (TypeError, ValueError):
+            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
+                f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                f'logical type {logical_type}.'
+            raise TypeConversionError(error_msg)
     return series

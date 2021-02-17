@@ -195,7 +195,11 @@ class WoodworkColumnAccessor:
         Returns:
             Series: A new series with the updated logical type.
         """
-        return init_series(self._series,
+        # Create a new series without a schema to prevent new series from sharing a common
+        # schema with current series
+        new_series = self._series.copy()
+        new_series._schema = None
+        return init_series(new_series,
                            logical_type=logical_type,
                            semantic_tags=None,
                            use_standard_tags=self.use_standard_tags,
