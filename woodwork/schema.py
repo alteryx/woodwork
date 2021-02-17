@@ -229,7 +229,7 @@ class Schema(object):
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
     # --> each col takes in tags to remove current tags name standard tags and use standard tags
 
-    def reset_semantic_tags(self, columns=None, retain_index_tags=True):
+    def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
         return a new DataTable. The default values will be either an empty set or a set
         of the standard tags based on the column logical type, controlled by the

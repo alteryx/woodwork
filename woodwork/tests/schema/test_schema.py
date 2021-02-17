@@ -341,9 +341,9 @@ def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logic
     }
     schema.set_types(semantic_tags=new_tags)
     assert schema.semantic_tags['id'] == {'index', 'new_tag'}
-    # --> deal with retain index tags - is it only relevant at table and not columns?
-    # schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
-    # assert schema.semantic_tags['id'] == {'new_tag'}
+
+    schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
+    assert schema.semantic_tags['id'] == {'new_tag'}
 # --> do this in a situation where standard tags change? Is that even possible??
 
 
@@ -357,9 +357,9 @@ def test_set_semantic_tags_with_time_index(sample_column_names, sample_inferred_
     }
     schema.set_types(semantic_tags=new_tags)
     assert schema.semantic_tags['signup_date'] == {'time_index', 'new_tag'}
-    # --> deal with retain index tags - is it only relevant at table and not columns?
-    # schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
-    # assert schema.semantic_tags['signup_date'] == {'new_tag'}
+
+    schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
+    assert schema.semantic_tags['signup_date'] == {'new_tag'}
 
 
 def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
@@ -368,7 +368,8 @@ def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
         'age': ['numeric', 'age']
     }
     schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=False)
+                    semantic_tags=semantic_tags, use_standard_tags=False,
+                    index='id')
 
     new_tags = {
         'full_name': ['list_tag'],
@@ -379,7 +380,9 @@ def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
 
     assert schema.semantic_tags['full_name'] == {'tag1', 'list_tag'}
     assert schema.semantic_tags['age'] == {'numeric', 'age', 'str_tag'}
-    assert schema.semantic_tags['id'] == {'set_tag'}
+    assert schema.semantic_tags['id'] == {'set_tag', 'index'}
+
+
 # --> add check where were setting on an index or time index column
 
 
@@ -404,9 +407,10 @@ def test_reset_semantic_tags_with_index(sample_column_names, sample_inferred_log
                     semantic_tags=semantic_tags,
                     use_standard_tags=False)
     assert schema.semantic_tags['id'] == {'index', 'tag1'}
-    # --> add back in once deal with index
-    # dt = dt.reset_semantic_tags('id', retain_index_tags=True)
-    # assert dt['id'].semantic_tags == {'index'}
+
+    schema.reset_semantic_tags('id', retain_index_tags=True)
+    assert schema.semantic_tags['id'] == {'index'}
+
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == set()
 
@@ -420,9 +424,10 @@ def test_reset_semantic_tags_with_time_index(sample_column_names, sample_inferre
                     semantic_tags=semantic_tags,
                     use_standard_tags=False)
     assert schema.semantic_tags['signup_date'] == {'time_index', 'tag1'}
-    # --> deal with time index
-    # schema.reset_semantic_tags('signup_date', retain_index_tags=True)
-    # assert schema['signup_date'].semantic_tags == {'time_index'}
+
+    schema.reset_semantic_tags('signup_date', retain_index_tags=True)
+    assert schema['signup_date'].semantic_tags == {'time_index'}
+
     schema.reset_semantic_tags('signup_date')
     assert schema.semantic_tags['signup_date'] == set()
 
