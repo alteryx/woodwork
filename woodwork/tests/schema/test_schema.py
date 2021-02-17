@@ -517,7 +517,7 @@ def test_removes_index_via_tags(sample_column_names, sample_inferred_logical_typ
 
     # Check resetting tags
     schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=True,)
+                    index='id', use_standard_tags=True)
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.index is None

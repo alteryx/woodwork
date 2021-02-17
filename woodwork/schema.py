@@ -154,12 +154,10 @@ class Schema(object):
         return None
 
     def set_types(self, semantic_tags=None, retain_index_tags=True):
-        """Update the logical type and semantic tags for any columns names in the provided types
-        dictionary, updating the Woodwork typing information for the DataFrame.
+        """Update the semantic tags for any columns names in the provided types dictionary,
+        updating the Woodwork typing information for the DataFrame.
 
         Args:
-            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
-                specified columns.
             semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
@@ -184,7 +182,7 @@ class Schema(object):
                 self._set_time_index_tags(col_name)
 
     def add_semantic_tags(self, semantic_tags):
-        """Adds specified semantic tags to columns, updating the Woodwork typing infromation.
+        """Adds specified semantic tags to columns, updating the Woodwork typing information.
         Will retain any previously set values.
 
         Args:
@@ -205,7 +203,7 @@ class Schema(object):
 
         Args:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
-                in the DataFrame to the tags that should be removed to the column's semantic tags
+                in the DataFrame to the tags that should be removed from the column's semantic tags
         """
         _check_semantic_tags(self.columns.keys(), semantic_tags)
         for col_name, tags_to_remove in semantic_tags.items():
@@ -217,7 +215,7 @@ class Schema(object):
                                                       col_name,
                                                       standard_tags,
                                                       self.use_standard_tags)
-            # If the index is removed, reinsert any standard tags not explicetly removed
+            # If the index is removed, reinsert any standard tags not explicitly removed
             original_tags = self.semantic_tags[col_name]
             if self.use_standard_tags and 'index' in original_tags and 'index' not in new_semantic_tags:
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
@@ -229,7 +227,7 @@ class Schema(object):
         """Reset the semantic tags for the specified columns to the default values.
         The default values will be either an empty set or a set of the standard tags
         based on the column logical type, controlled by the use_standard_tags property on the table.
-        Columns names can be provided as a single string, a list of strings or a set of strings.
+        Column names can be provided as a single string, a list of strings or a set of strings.
         If columns is not specified, tags will be reset for all columns.
 
         Args:
