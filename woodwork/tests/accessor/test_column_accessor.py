@@ -4,7 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import DuplicateTagsWarning, TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    DuplicateTagsWarning,
+    TypeConversionError,
+    TypingInfoMismatchWarning
+)
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -291,6 +295,28 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert series.ww.logical_type == Categorical
     assert new_series.ww.logical_type == CountryCode
     assert new_series.ww.semantic_tags == set()
+
+
+def test_set_logical_type_valid_dtype_change(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
+
+    new_series = series.ww.set_logical_type('NaturalLanguage')
+    assert series.ww.logical_type == Categorical
+    assert series.dtype == 'category'
+    assert new_series.ww.logical_type == NaturalLanguage
+    assert new_series.dtype == 'string'
+
+
+def test_set_logical_type_invalid_dtype_change(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
+    error_message = "Error converting datatype for sample_series from type category to " \
+        "type Int64. Please confirm the underlying data is consistent with logical type Integer."
+    with pytest.raises(TypeConversionError, match=error_message):
+        series.ww.set_logical_type('Integer')
 
 
 def test_reset_semantic_tags_with_standard_tags(sample_series):
