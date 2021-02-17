@@ -134,7 +134,6 @@ def test_init_accessor_with_schema(sample_df):
 
     iloc_df = schema_df.iloc[2:]
     assert iloc_df.ww.schema is None
-    # iloc_df.ww.init(schema=schema, logical_types={'id': NaturalLanguage})
     iloc_df.ww.init(schema=schema)
 
     assert iloc_df.ww.name == 'test_schema'
