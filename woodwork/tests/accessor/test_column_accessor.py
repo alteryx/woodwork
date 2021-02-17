@@ -291,34 +291,6 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert series.ww.semantic_tags == set()
 
 
-# def test_set_logical_type_retains_index_tag(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           logical_type=NaturalLanguage,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=False)
-
-#     data_col._set_as_index()
-#     assert data_col.semantic_tags == {'index', 'original_tag'}
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert new_col.semantic_tags == {'index'}
-#     new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
-#     assert new_col.semantic_tags == set()
-
-
-# def test_set_logical_type_retains_time_index_tag(sample_datetime_series):
-#     data_col = DataColumn(sample_datetime_series,
-#                           logical_type=Datetime,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=False)
-
-#     data_col._set_as_time_index()
-#     assert data_col.semantic_tags == {'time_index', 'original_tag'}
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert new_col.semantic_tags == {'time_index'}
-#     new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
-#     assert new_col.semantic_tags == set()
-
-
 def test_reset_semantic_tags_with_standard_tags(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
@@ -401,20 +373,6 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
 # def test_len(sample_series):
 #     col = DataColumn(sample_series)
 #     assert len(col) == len(sample_series) == 4
-
-
-# def test_dtype_update_on_init(sample_datetime_series):
-#     dc = DataColumn(sample_datetime_series,
-#                     logical_type='DateTime')
-#     assert dc._series.dtype == 'datetime64[ns]'
-
-
-# def test_dtype_update_on_ltype_change():
-#     dc = DataColumn(pd.Series([1, 2, 3]),
-#                     logical_type='Integer')
-#     assert dc._series.dtype == 'Int64'
-#     dc = dc.set_logical_type('Double')
-#     assert dc._series.dtype == 'float64'
 
 
 def test_ordinal_requires_instance_on_init(sample_series):
