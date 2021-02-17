@@ -134,7 +134,8 @@ def test_init_accessor_with_schema(sample_df):
 
     iloc_df = schema_df.iloc[2:]
     assert iloc_df.ww.schema is None
-    iloc_df.ww.init(schema=schema, logical_types={'id': NaturalLanguage})
+    # iloc_df.ww.init(schema=schema, logical_types={'id': NaturalLanguage})
+    iloc_df.ww.init(schema=schema)
 
     assert iloc_df.ww.name == 'test_schema'
     assert iloc_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
@@ -160,6 +161,21 @@ def test_init_accessor_with_schema_errors(sample_df):
              "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
+
+
+def test_accessor_with_schema_parameter_warning(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
+    schema = schema_df.ww.schema
+
+    head_df = schema_df.head(2)
+    assert head_df.ww.schema is None
+
+    warning = "A schema was provided and the following parameters were ignored: index, semantic_tags"
+    with pytest.warns(Warning, match=warning):
+        head_df.ww.init(index='id', semantic_tags={'id': 'test_tag'}, schema=schema)
 
 
 def test_accessor_getattr(sample_df):

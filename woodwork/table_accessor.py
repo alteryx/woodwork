@@ -72,6 +72,24 @@ class WoodworkTableAccessor:
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
         if schema is not None:
             self._schema = schema
+            extra_params = []
+            if index is not None:
+                extra_params.append('index')
+                print('index')
+            if make_index:
+                extra_params.append('make_index')
+                print('make_index')
+            if time_index is not None:
+                extra_params.append('time_index')
+                print('time_index')
+            if logical_types is not None:
+                extra_params.append('logical_types')
+            for key in kwargs:
+                extra_params.append(key)
+            if extra_params:
+                print(extra_params)
+                warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), Warning)
+
         else:
             if make_index:
                 _make_index(self._dataframe, index)
