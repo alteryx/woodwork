@@ -265,30 +265,30 @@ def test_warns_on_setting_duplicate_tag(sample_series):
     assert record[0].message.args[0] == expected_message
 
 
-# def test_set_logical_type_with_standard_tags(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           logical_type=NaturalLanguage,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=True)
+def test_set_logical_type_with_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
 
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert isinstance(new_col, DataColumn)
-#     assert new_col is not data_col
-#     assert new_col.logical_type == Categorical
-#     assert new_col.semantic_tags == {'category'}
+    series.ww.init(logical_type='Categorical',
+                   semantic_tags='original_tag',
+                   use_standard_tags=True)
+
+    series.ww.set_logical_type('CountryCode')
+    assert series.ww.logical_type == CountryCode
+    assert series.ww.semantic_tags == {'category'}
 
 
-# def test_set_logical_type_without_standard_tags(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           logical_type=NaturalLanguage,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=False)
+def test_set_logical_type_without_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
 
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert isinstance(new_col, DataColumn)
-#     assert new_col is not data_col
-#     assert new_col.logical_type == Categorical
-#     assert new_col.semantic_tags == set()
+    series.ww.init(logical_type='Categorical',
+                   semantic_tags='original_tag',
+                   use_standard_tags=False)
+
+    series.ww.set_logical_type('CountryCode')
+    assert series.ww.logical_type == CountryCode
+    assert series.ww.semantic_tags == set()
 
 
 # def test_set_logical_type_retains_index_tag(sample_series):

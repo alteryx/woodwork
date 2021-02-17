@@ -134,6 +134,21 @@ class WoodworkColumnAccessor:
         self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
                                                              self.use_standard_tags)
 
+    def set_logical_type(self, logical_type):
+        """Update the logical type for the series. If the dtype of the new logical type
+        is not compatible with the current series dtype, an error will be raised. Changing
+        the logical type of a column will cause any previously set semantic tags to be cleared.
+
+        Args:
+            logical_type (LogicalType, str): The new logical type to set for the series.
+        """
+        logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
+        if self._series.dtype != logical_type.pandas_dtype:
+            raise TypeError
+
+        self._schema['logical_type'] = logical_type
+        self.reset_semantic_tags()
+
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set
         to True for the series, any standard tags associated with the LogicalType of the
