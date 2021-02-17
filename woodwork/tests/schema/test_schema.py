@@ -344,6 +344,7 @@ def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logic
     # --> deal with retain index tags - is it only relevant at table and not columns?
     # schema.set_types(semantic_tags=new_tags, retain_index_tags=False)
     # assert schema.semantic_tags['id'] == {'new_tag'}
+# --> do this in a situation where standard tags change? Is that even possible??
 
 
 def test_set_semantic_tags_with_time_index(sample_column_names, sample_inferred_logical_types):
@@ -379,6 +380,7 @@ def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['full_name'] == {'tag1', 'list_tag'}
     assert schema.semantic_tags['age'] == {'numeric', 'age', 'str_tag'}
     assert schema.semantic_tags['id'] == {'set_tag'}
+# --> add check where were setting on an index or time index column
 
 
 def test_reset_all_semantic_tags(sample_column_names, sample_inferred_logical_types):
@@ -449,6 +451,8 @@ def test_remove_semantic_tags(sample_column_names, sample_inferred_logical_types
     assert schema.semantic_tags['age'] == {'age'}
     assert schema.semantic_tags['id'] == {'tag2'}
 
+# --> test removing semantic tags that's an index????
+
 
 def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
     error_msg = re.escape("Cannot add 'index' tag directly for column id. To set a column as the index, "
@@ -471,3 +475,8 @@ def test_raises_error_setting_time_index_tag_directly(sample_column_names, sampl
         schema.add_semantic_tags({'signup_date': 'time_index'})
     with pytest.raises(ValueError, match=error_msg):
         schema.set_types(semantic_tags={'signup_date': 'time_index'})
+
+
+# --> test directly setting index tags and directly removing index tags
+def test_removes_indices_via_tags(sample_column_names, sample_inferred_logical_types):
+    pass
