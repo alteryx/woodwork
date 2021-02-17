@@ -18,7 +18,7 @@ Release Notes
         * Add semantic tag update methods to column accessor (:pr:`573`)
         * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
         * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
-
+        * Add semantic tag update methods to table schema (:pr:`591`)
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
