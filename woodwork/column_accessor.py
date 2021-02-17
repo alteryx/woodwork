@@ -1,3 +1,4 @@
+import copy
 import warnings
 
 import pandas as pd
@@ -124,8 +125,9 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing Schema
                 if isinstance(result, pd.Series):
                     if result.dtype == self._schema['logical_type'].pandas_dtype:
+                        schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
-                        schema = {key: value for key, value in self._schema.items() if key != 'dtype'}
+                        _ = schema.pop('dtype')
                         result.ww.init(**schema)
                     else:
                         invalid_schema_message = f'Operation performed by {attr} has invalidated the Woodwork ' \
