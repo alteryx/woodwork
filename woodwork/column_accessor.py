@@ -195,8 +195,6 @@ class WoodworkColumnAccessor:
         Returns:
             Series: A new series with the updated logical type.
         """
-        logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
-
         return init_series(self._series,
                            logical_type=logical_type,
                            semantic_tags=None,
