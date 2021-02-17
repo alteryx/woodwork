@@ -50,7 +50,7 @@ def test_datatable_getitem_list_input(sample_df):
     new_dt = dt[columns]
     assert new_dt is not dt
     assert new_dt.to_dataframe() is not df
-    pd.testing.assert_frame_equal(to_pandas(df[columns]).reset_index(drop=True), to_pandas(new_dt.to_dataframe()))
+    pd.testing.assert_frame_equal(to_pandas(df[columns]), to_pandas(new_dt.to_dataframe()))
     assert all(new_dt.to_dataframe().columns == ['age', 'full_name'])
     assert set(new_dt.columns.keys()) == {'age', 'full_name'}
     assert new_dt.index is None
