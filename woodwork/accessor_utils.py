@@ -73,8 +73,8 @@ def _update_column_dtype(series, logical_type):
                 series.name = name
             elif ks and isinstance(series, ks.Series):
                 series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                    format=logical_type.datetime_format),
-                                    name=series.name)
+                                                  format=logical_type.datetime_format),
+                                   name=series.name)
             else:
                 series = pd.to_datetime(series, format=logical_type.datetime_format)
         else:
