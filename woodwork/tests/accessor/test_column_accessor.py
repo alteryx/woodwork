@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import DuplicateTagsWarning
+from woodwork.exceptions import DuplicateTagsWarning, TypingInfoMismatchWarning
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -387,26 +387,80 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
         series.ww.remove_semantic_tags('invalid_tagname')
 
 
-# def test_shape(sample_series):
-#     col = DataColumn(sample_series)
-#     col_shape = col.shape
-#     series_shape = col.to_series().shape
-#     if dd and isinstance(sample_series, dd.Series):
-#         col_shape = (col_shape[0].compute(),)
-#         series_shape = (series_shape[0].compute(),)
-#     assert col_shape == (4,)
-#     assert col_shape == series_shape
+def test_series_methods_on_accessor(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    copied_series = series.ww.copy()
+    assert copied_series is not series
+    assert copied_series.ww._schema == series.ww._schema
+    pd.testing.assert_series_equal(series, copied_series)
 
 
-# def test_len(sample_series):
-#     col = DataColumn(sample_series)
-#     assert len(col) == len(sample_series) == 4
+def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    sorted_series = series.ww.sort_values()
+    assert sorted_series.ww._schema == series.ww._schema
+    assert sorted_series.ww._schema is not series.ww._schema
+    pd.testing.assert_series_equal(sorted_series, series.sort_values())
 
 
-# def test_dtype_update_on_init(sample_datetime_series):
-#     dc = DataColumn(sample_datetime_series,
-#                     logical_type='DateTime')
-#     assert dc._series.dtype == 'datetime64[ns]'
+def test_series_methods_on_accessor_inplace(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    original_schema = series.ww._schema.copy()
+    val = series.ww.pop(0)
+    assert series.ww._schema == original_schema
+    assert len(series) == 3
+    assert val == 'a'
+
+
+def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+
+    warning = "Operation performed by astype has invalidated the Woodwork typing information:\n " \
+        "dtype mismatch between original dtype, category, and returned dtype, string.\n " \
+        "Please initialize Woodwork with Series.ww.init"
+
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        new_series = series.ww.astype('string')
+
+    assert new_series.ww._schema is None
+
+
+def test_series_methods_on_accessor_other_returns(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init()
+    col_shape = series.ww.shape
+    series_shape = series.shape
+    assert col_shape == (4,)
+    assert col_shape == series_shape
+
+    assert series.name == series.ww.name
+    assert series.nunique() == series.ww.nunique()
+
+
+def test_series_getattr_errors(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+
+    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=error_message):
+        series.ww.shape
+
+    series.ww.init()
+    error_message = "Woodwork has no attribute 'invalid_attr'"
+    with pytest.raises(AttributeError, match=error_message):
+        series.ww.invalid_attr
 
 
 # def test_dtype_update_on_ltype_change():

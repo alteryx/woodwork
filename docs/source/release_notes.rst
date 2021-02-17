@@ -9,7 +9,7 @@ Release Notes
         * Add WoodworkTableAccessor class that performs type inference and stores Schema (:pr:`514`)
         * Allow initializing Accessor schema with a valid Schema object (:pr:`522`)
         * Add ability to read in a csv and create a DataFrame with an initialized Woodwork Schema (:pr:`534`)
-        * Add ability to call pandas methods from Accessor (:pr:`538`)
+        * Add ability to call pandas methods from Accessor (:pr:`538`, :pr:`589`)
         * Add helpers for checking if a column is one of Boolean, Datetime, numeric, or categorical (:pr:`553`)
         * Add ability to load demo retail dataset with a Woodwork Accessor (:pr:`556`)
         * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
@@ -18,6 +18,7 @@ Release Notes
         * Add semantic tag update methods to column accessor (:pr:`573`)
         * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
         * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
+
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
