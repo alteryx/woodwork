@@ -572,7 +572,7 @@ class DataTable(object):
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         dt = self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
-        for _, tags in semantic_tags.items():
+        for tags in semantic_tags.values():
             if 'index' in tags:
                 dt._dataframe = dt._dataframe.reset_index(drop=True)
                 break
