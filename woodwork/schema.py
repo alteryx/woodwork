@@ -1,4 +1,5 @@
 import collections
+import copy
 
 import pandas as pd
 
@@ -386,10 +387,10 @@ class Schema(object):
                       name=self.name,
                       index=new_index,
                       time_index=new_time_index,
-                      semantic_tags=new_semantic_tags,
+                      semantic_tags=copy.deepcopy(new_semantic_tags),
                       use_standard_tags=self.use_standard_tags,
-                      table_metadata=self.metadata,
-                      column_metadata=new_column_metadata,
+                      table_metadata=copy.deepcopy(self.metadata),
+                      column_metadata=copy.deepcopy(new_column_metadata),
                       column_descriptions=new_column_descriptions)
 
 
