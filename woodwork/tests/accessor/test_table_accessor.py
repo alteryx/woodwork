@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.exceptions import TypeConversionError, TypingInfoMismatchWarning
+from woodwork.exceptions import TypeConversionError, TypingInfoMismatchWarning, ParametersIgnoredWarning
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -170,11 +170,13 @@ def test_accessor_with_schema_parameter_warning(sample_df):
     schema = schema_df.ww.schema
 
     head_df = schema_df.head(2)
-    assert head_df.ww.schema is None
 
     warning = "A schema was provided and the following parameters were ignored: index, semantic_tags"
-    with pytest.warns(Warning, match=warning):
-        head_df.ww.init(index='id', semantic_tags={'id': 'test_tag'}, schema=schema)
+    with pytest.warns(ParametersIgnoredWarning, match=warning):
+        head_df.ww.init(index='ignored_id', semantic_tags={'ignored_id': 'ignored_test_tag'}, schema=schema)
+
+    assert head_df.ww.name == 'test_schema'
+    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
 
 
 def test_accessor_getattr(sample_df):

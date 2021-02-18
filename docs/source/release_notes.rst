@@ -20,7 +20,6 @@ Release Notes
         * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
         * Add semantic tag update methods to table schema (:pr:`591`)
         * Add warning if additional parameters are passed along with schema (:pr:`593`)
-
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
