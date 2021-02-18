@@ -602,7 +602,7 @@ class DataTable(object):
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
             columns = self._dataframe.columns
-        dt = self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)        
+        dt = self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
         if self.index is not None and not retain_index_tags:
             dt._dataframe = dt._dataframe.reset_index(drop=True)
         return dt
