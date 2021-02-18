@@ -22,6 +22,7 @@ Release Notes
         * Add semantic tag update methods to table schema (:pr:`591`)
         * Better warning when accessing column properties before init (:pr:`596`)
     * Fixes
+        * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Move mutual information logic to statistics utils file (:pr:`584`)
