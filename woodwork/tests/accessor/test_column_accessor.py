@@ -4,7 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.exceptions import DuplicateTagsWarning, TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    DuplicateTagsWarning,
+    TypeConversionError,
+    TypingInfoMismatchWarning
+)
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
@@ -67,6 +71,26 @@ def test_accessor_init_with_semantic_tags(sample_series):
     semantic_tags = ['tag1', 'tag2']
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
     assert series.ww.semantic_tags == set(semantic_tags)
+
+
+def test_accessor_warnings_accessing_properties_before_init(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.__repr__()
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.description
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.logical_type
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.metadata
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.semantic_tags
 
 
 # def test_datacolumn_init_with_extension_array():
@@ -265,58 +289,54 @@ def test_warns_on_setting_duplicate_tag(sample_series):
     assert record[0].message.args[0] == expected_message
 
 
-# def test_set_logical_type_with_standard_tags(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           logical_type=NaturalLanguage,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=True)
+def test_set_logical_type_with_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
 
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert isinstance(new_col, DataColumn)
-#     assert new_col is not data_col
-#     assert new_col.logical_type == Categorical
-#     assert new_col.semantic_tags == {'category'}
+    series.ww.init(logical_type='Categorical',
+                   semantic_tags='original_tag',
+                   use_standard_tags=True)
 
-
-# def test_set_logical_type_without_standard_tags(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           logical_type=NaturalLanguage,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=False)
-
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert isinstance(new_col, DataColumn)
-#     assert new_col is not data_col
-#     assert new_col.logical_type == Categorical
-#     assert new_col.semantic_tags == set()
+    new_series = series.ww.set_logical_type('CountryCode')
+    assert series.ww.logical_type == Categorical
+    assert new_series.ww.logical_type == CountryCode
+    assert new_series.ww.semantic_tags == {'category'}
 
 
-# def test_set_logical_type_retains_index_tag(sample_series):
-#     data_col = DataColumn(sample_series,
-#                           logical_type=NaturalLanguage,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=False)
+def test_set_logical_type_without_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
 
-#     data_col._set_as_index()
-#     assert data_col.semantic_tags == {'index', 'original_tag'}
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert new_col.semantic_tags == {'index'}
-#     new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
-#     assert new_col.semantic_tags == set()
+    series.ww.init(logical_type='Categorical',
+                   semantic_tags='original_tag',
+                   use_standard_tags=False)
+
+    new_series = series.ww.set_logical_type('CountryCode')
+    assert series.ww.logical_type == Categorical
+    assert new_series.ww.logical_type == CountryCode
+    assert new_series.ww.semantic_tags == set()
 
 
-# def test_set_logical_type_retains_time_index_tag(sample_datetime_series):
-#     data_col = DataColumn(sample_datetime_series,
-#                           logical_type=Datetime,
-#                           semantic_tags='original_tag',
-#                           use_standard_tags=False)
+def test_set_logical_type_valid_dtype_change(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
 
-#     data_col._set_as_time_index()
-#     assert data_col.semantic_tags == {'time_index', 'original_tag'}
-#     new_col = data_col.set_logical_type(Categorical)
-#     assert new_col.semantic_tags == {'time_index'}
-#     new_col = data_col.set_logical_type(Categorical, retain_index_tags=False)
-#     assert new_col.semantic_tags == set()
+    new_series = series.ww.set_logical_type('NaturalLanguage')
+    assert series.ww.logical_type == Categorical
+    assert series.dtype == 'category'
+    assert new_series.ww.logical_type == NaturalLanguage
+    assert new_series.dtype == 'string'
+
+
+def test_set_logical_type_invalid_dtype_change(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
+    error_message = "Error converting datatype for sample_series from type category to " \
+        "type Int64. Please confirm the underlying data is consistent with logical type Integer."
+    with pytest.raises(TypeConversionError, match=error_message):
+        series.ww.set_logical_type('Integer')
 
 
 def test_reset_semantic_tags_with_standard_tags(sample_series):
@@ -449,6 +469,26 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     assert series.nunique() == series.ww.nunique()
 
 
+def test_series_methods_on_accessor_new_schema_dict(sample_series):
+    xfail_dask_and_koalas(sample_series)
+
+    series = sample_series.astype('category')
+    series.ww.init(semantic_tags=['new_tag', 'tag2'], metadata={'important_keys': [1, 2, 3]})
+
+    copied_series = series.ww.copy()
+
+    assert copied_series.ww._schema == series.ww._schema
+    assert copied_series.ww._schema is not series.ww._schema
+
+    copied_series.ww.metadata['important_keys'].append(4)
+    assert copied_series.ww.metadata['important_keys'] == [1, 2, 3, 4]
+    assert series.ww.metadata['important_keys'] == [1, 2, 3]
+
+    copied_series.ww.add_semantic_tags(['tag3'])
+    assert copied_series.ww.semantic_tags == {'category', 'new_tag', 'tag2', 'tag3'}
+    assert series.ww.semantic_tags == {'category', 'new_tag', 'tag2'}
+
+
 def test_series_getattr_errors(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
@@ -463,14 +503,6 @@ def test_series_getattr_errors(sample_series):
         series.ww.invalid_attr
 
 
-# def test_dtype_update_on_ltype_change():
-#     dc = DataColumn(pd.Series([1, 2, 3]),
-#                     logical_type='Integer')
-#     assert dc._series.dtype == 'Int64'
-#     dc = dc.set_logical_type('Double')
-#     assert dc._series.dtype == 'float64'
-
-
 def test_ordinal_requires_instance_on_init(sample_series):
     xfail_dask_and_koalas(sample_series)
     error_msg = 'Must use an Ordinal instance with order values defined'
@@ -480,29 +512,33 @@ def test_ordinal_requires_instance_on_init(sample_series):
         sample_series.ww.init(logical_type="Ordinal")
 
 
-# def test_ordinal_requires_instance_on_update(sample_series):
-#     dc = DataColumn(sample_series, logical_type="NaturalLanguage")
+def test_ordinal_requires_instance_on_update(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(logical_type="Categorical")
 
-#     error_msg = 'Must use an Ordinal instance with order values defined'
-#     with pytest.raises(TypeError, match=error_msg):
-#         dc.set_logical_type(Ordinal)
-#     with pytest.raises(TypeError, match=error_msg):
-#         dc.set_logical_type("Ordinal")
+    error_msg = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error_msg):
+        series.ww.set_logical_type(Ordinal)
+    with pytest.raises(TypeError, match=error_msg):
+        series.ww.set_logical_type("Ordinal")
 
 
-# def test_ordinal_with_order(sample_series):
-#     if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
-#         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
+def test_ordinal_with_order(sample_series):
+    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
-#     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
-#     dc = DataColumn(sample_series, logical_type=ordinal_with_order)
-#     assert isinstance(dc.logical_type, Ordinal)
-#     assert dc.logical_type.order == ['a', 'b', 'c']
+    series = sample_series.astype('category')
+    ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
+    series.ww.init(logical_type=ordinal_with_order)
+    assert isinstance(series.ww.logical_type, Ordinal)
+    assert series.ww.logical_type.order == ['a', 'b', 'c']
 
-#     dc = DataColumn(sample_series, logical_type="NaturalLanguage")
-#     new_dc = dc.set_logical_type(ordinal_with_order)
-#     assert isinstance(new_dc.logical_type, Ordinal)
-#     assert new_dc.logical_type.order == ['a', 'b', 'c']
+    series = sample_series.astype('category')
+    series.ww.init(logical_type='Categorical')
+    new_series = series.ww.set_logical_type(ordinal_with_order)
+    assert isinstance(new_series.ww.logical_type, Ordinal)
+    assert new_series.ww.logical_type.order == ['a', 'b', 'c']
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):

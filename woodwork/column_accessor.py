@@ -3,6 +3,7 @@ import warnings
 
 import pandas as pd
 
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
@@ -57,6 +58,8 @@ class WoodworkColumnAccessor:
     @property
     def description(self):
         """The description of the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['description']
 
     @description.setter
@@ -67,11 +70,15 @@ class WoodworkColumnAccessor:
     @property
     def logical_type(self):
         """The logical type of the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['logical_type']
 
     @property
     def metadata(self):
         """The metadata of the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['metadata']
 
     @metadata.setter
@@ -82,6 +89,8 @@ class WoodworkColumnAccessor:
     @property
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['semantic_tags']
 
     def __eq__(self, other):
@@ -95,13 +104,15 @@ class WoodworkColumnAccessor:
             If the method is present on Series, uses that method.
         '''
         if self._schema is None:
-            raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
+            _raise_init_error()
         if hasattr(self._series, attr):
             return self._make_series_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
     def __repr__(self):
+        if self._schema is None:
+            _raise_init_error()
         msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
@@ -184,6 +195,27 @@ class WoodworkColumnAccessor:
         self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
                                                              self.use_standard_tags)
 
+    def set_logical_type(self, logical_type):
+        """Update the logical type for the series, clearing any previously set semantic tags,
+        and returning a new Series.
+
+        Args:
+            logical_type (LogicalType, str): The new logical type to set for the series.
+
+        Returns:
+            Series: A new series with the updated logical type.
+        """
+        # Create a new series without a schema to prevent new series from sharing a common
+        # schema with current series
+        new_series = self._series.copy()
+        new_series._schema = None
+        return init_series(new_series,
+                           logical_type=logical_type,
+                           semantic_tags=None,
+                           use_standard_tags=self.use_standard_tags,
+                           description=self.description,
+                           metadata=copy.deepcopy(self.metadata))
+
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set
         to True for the series, any standard tags associated with the LogicalType of the
@@ -195,3 +227,7 @@ class WoodworkColumnAccessor:
         self._schema['semantic_tags'] = _set_semantic_tags(semantic_tags,
                                                            self.logical_type.standard_tags,
                                                            self.use_standard_tags)
+
+
+def _raise_init_error():
+    raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")

@@ -284,7 +284,7 @@ def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
 
 def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logical_types):
     # The first element is self, so it won't be included in kwargs
-    possible_dt_params = inspect.getfullargspec(Schema.__init__)[0][1:]
+    possible_schema_params = inspect.getfullargspec(Schema.__init__)[0][1:]
 
     kwargs = {
         'column_names': sample_column_names,
@@ -300,12 +300,13 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
     }
 
     # Confirm all possible params to Schema init are present with non-default values where possible
-    assert set(possible_dt_params) == set(kwargs.keys())
+    assert set(possible_schema_params) == set(kwargs.keys())
 
     schema = Schema(**kwargs)
     copy_schema = schema._get_subset_schema(sample_column_names)
 
     assert schema == copy_schema
+    assert schema is not copy_schema
 
 
 def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
