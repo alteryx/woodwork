@@ -67,7 +67,9 @@ class WoodworkTableAccessor:
                 specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             schema (Woodwork.Schema, optional): Typing information to use for the DataFrame instead of performing inference.
-                Any other arguments provided will be ignored.
+                Any other arguments provided will be ignored. Note that any changes made to the schema object after
+                initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
+                the same schema object should not be shared between DataFrames.
         '''
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
         if schema is not None:
@@ -122,7 +124,10 @@ class WoodworkTableAccessor:
 
     @property
     def schema(self):
-        return self._schema
+        ''' A copy of the Woodwork typing information for the DataFrame.
+        '''
+        if self._schema:
+            return self._schema._get_subset_schema(list(self.columns.keys()))
 
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized
@@ -200,7 +205,8 @@ class WoodworkTableAccessor:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
-                        result.ww.init(schema=self._schema)
+                        copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
+                        result.ww.init(schema=copied_schema)
                 else:
                     # Confirm that the Schema is still valid on original DataFrame
                     # Important for inplace operations
