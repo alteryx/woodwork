@@ -110,6 +110,8 @@ class WoodworkColumnAccessor:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
     def __repr__(self):
+        if self._schema is None:
+            _raise_init_warning()
         msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
