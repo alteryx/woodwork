@@ -3,8 +3,15 @@ import collections
 import pandas as pd
 
 import woodwork as ww
-from woodwork.schema_column import _get_column_dict
+from woodwork.schema_column import (
+    _add_semantic_tags,
+    _get_column_dict,
+    _remove_semantic_tags,
+    _reset_semantic_tags,
+    _set_semantic_tags
+)
 from woodwork.type_sys.utils import _get_ltype_class
+from woodwork.utils import _convert_input_to_set
 
 
 class Schema(object):
@@ -146,6 +153,107 @@ class Schema(object):
                 return col_name
         return None
 
+    def set_types(self, semantic_tags=None, retain_index_tags=True):
+        """Update the semantic tags for any columns names in the provided types dictionary,
+        updating the Woodwork typing information for the DataFrame.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
+                True.
+
+        """
+        semantic_tags = semantic_tags or {}
+        _check_semantic_tags(self.columns.keys(), semantic_tags)
+
+        for col_name, new_tags in semantic_tags.items():
+            original_tags = self.semantic_tags[col_name]
+            new_semantic_tags = _set_semantic_tags(new_tags,
+                                                   self.logical_types[col_name].standard_tags,
+                                                   self.use_standard_tags)
+            _validate_not_setting_index_tags(new_semantic_tags, col_name)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
+            if retain_index_tags and 'index' in original_tags:
+                self._set_index_tags(col_name)
+            if retain_index_tags and 'time_index' in original_tags:
+                self._set_time_index_tags(col_name)
+
+    def add_semantic_tags(self, semantic_tags):
+        """Adds specified semantic tags to columns, updating the Woodwork typing information.
+        Will retain any previously set values.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataFrame to the tags that should be added to the column's semantic tags
+        """
+        _check_semantic_tags(self.columns.keys(), semantic_tags)
+        for col_name, tags_to_add in semantic_tags.items():
+            tags_to_add = _convert_input_to_set(tags_to_add)
+            _validate_not_setting_index_tags(tags_to_add, col_name)
+            new_semantic_tags = _add_semantic_tags(tags_to_add, self.semantic_tags[col_name], col_name)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Remove the semantic tags for any column names in the provided semantic_tags
+        dictionary, updating the Woodwork typing information. Including `index` or `time_index`
+        tags will set the Woodwork index or time index to None for the DataFrame.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataFrame to the tags that should be removed from the column's semantic tags
+        """
+        _check_semantic_tags(self.columns.keys(), semantic_tags)
+        for col_name, tags_to_remove in semantic_tags.items():
+            standard_tags = self.logical_types[col_name].standard_tags
+            tags_to_remove = _convert_input_to_set(tags_to_remove)
+
+            new_semantic_tags = _remove_semantic_tags(tags_to_remove,
+                                                      self.semantic_tags[col_name],
+                                                      col_name,
+                                                      standard_tags,
+                                                      self.use_standard_tags)
+            # If the index is removed, reinsert any standard tags not explicitly removed
+            original_tags = self.semantic_tags[col_name]
+            if self.use_standard_tags and 'index' in original_tags and 'index' not in new_semantic_tags:
+                standard_tags_removed = tags_to_remove.intersection(standard_tags)
+                standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
+                new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
+    def reset_semantic_tags(self, columns=None, retain_index_tags=False):
+        """Reset the semantic tags for the specified columns to the default values.
+        The default values will be either an empty set or a set of the standard tags
+        based on the column logical type, controlled by the use_standard_tags property on the table.
+        Column names can be provided as a single string, a list of strings or a set of strings.
+        If columns is not specified, tags will be reset for all columns.
+
+        Args:
+            columns (str/list/set, optional): The columns for which the semantic tags should be reset.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will clear all semantic tags. Defaults to
+                False.
+        """
+        columns = _convert_input_to_set(columns, "columns")
+        cols_not_found = sorted(list(columns.difference(set(self.columns.keys()))))
+        if cols_not_found:
+            raise LookupError("Input contains columns that are not present in "
+                              f"dataframe: '{', '.join(cols_not_found)}'")
+        if not columns:
+            columns = self.columns.keys()
+
+        for col_name in columns:
+            original_tags = self.semantic_tags[col_name]
+            new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags)
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
+            if retain_index_tags and 'index' in original_tags:
+                self._set_index_tags(col_name)
+            if retain_index_tags and 'time_index' in original_tags:
+                self._set_time_index_tags(col_name)
+
     def _create_columns(self,
                         column_names,
                         logical_types,
@@ -158,9 +266,12 @@ class Schema(object):
         """
         columns = {}
         for name in column_names:
-            semantic_tags_for_col = (semantic_tags or {}).get(name)
+            semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name),
+                                                          error_language=f'semantic_tags for {name}')
+            _validate_not_setting_index_tags(semantic_tags_for_col, name)
             description = (column_descriptions or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)
+
             columns[name] = _get_column_dict(name,
                                              logical_types.get(name),
                                              semantic_tags=semantic_tags_for_col,
@@ -171,7 +282,8 @@ class Schema(object):
 
     def _set_index_tags(self, index):
         '''
-        Updates the semantic tags of the index.
+        Updates the semantic tags of the index by removing any standard tags
+        before adding the 'index' tag.
         '''
         column_dict = self.columns[index]
 
@@ -394,3 +506,13 @@ def _update_time_index(schema, column_names, time_index, old_time_index=None):
     # if old_time_index is not None:
     #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
     schema._set_time_index_tags(time_index)
+
+
+def _validate_not_setting_index_tags(semantic_tags, col_name):
+    """Verify user has not supplied tags that cannot be set directly"""
+    if 'index' in semantic_tags:
+        raise ValueError(f"Cannot add 'index' tag directly for column {col_name}. To set a column as the index, "
+                         "use DataFrame.ww.set_index() instead.")
+    if 'time_index' in semantic_tags:
+        raise ValueError(f"Cannot add 'time_index' tag directly for column {col_name}. To set a column as the time index, "
+                         "use DataFrame.ww.set_time_index() instead.")

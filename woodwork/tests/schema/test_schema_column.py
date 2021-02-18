@@ -82,34 +82,6 @@ def test_get_column_dict_params():
     assert column.get('metadata') == {'created_by': 'user1'}
 
 
-def test_raises_error_setting_index_tag_directly():
-    error_msg = re.escape("Cannot add 'index' tag directly. To set a column as the index, "
-                          "use Schema.set_index() instead.")
-    with pytest.raises(ValueError, match=error_msg):
-        _get_column_dict('column', Integer, semantic_tags='index')
-
-    # --> add back when schema updates are implemented
-    # Schema = Schema(sample_df)
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.add_semantic_tags({'id': 'index'})
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.set_semantic_tags({'id': 'index'})
-
-
-def test_raises_error_setting_time_index_tag_directly():
-    error_msg = re.escape("Cannot add 'time_index' tag directly. To set a column as the time index, "
-                          "use Schema.set_time_index() instead.")
-    with pytest.raises(ValueError, match=error_msg):
-        _get_column_dict('column', Integer, semantic_tags='time_index')
-
-    # --> add back when schema updates are implemented
-    # schema = Schema(sample_series)
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.add_semantic_tags({'signup_date': 'time_index'})
-    # with pytest.raises(ValueError, match=error_msg):
-    #     schema.set_semantic_tags({'signup_date': 'time_index'})
-
-
 def test_is_col_numeric():
     int_column = _get_column_dict('ints', Integer)
     assert _is_col_numeric(int_column)
