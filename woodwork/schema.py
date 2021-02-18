@@ -1,4 +1,5 @@
 import collections
+import copy
 
 import pandas as pd
 
@@ -382,14 +383,14 @@ class Schema(object):
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
         return Schema(subset_cols,
-                      new_logical_types,  # --> might also be worth a copy here
+                      new_logical_types,
                       name=self.name,
                       index=new_index,
                       time_index=new_time_index,
-                      semantic_tags=new_semantic_tags.copy(),  # --> might need to deep copy all of these
+                      semantic_tags=copy.deepcopy(new_semantic_tags),
                       use_standard_tags=self.use_standard_tags,
-                      table_metadata=self.metadata.copy(),
-                      column_metadata=new_column_metadata.copy(),
+                      table_metadata=copy.deepcopy(self.metadata),
+                      column_metadata=copy.deepcopy(new_column_metadata),
                       column_descriptions=new_column_descriptions)
 
 

@@ -470,8 +470,23 @@ def test_series_methods_on_accessor_other_returns(sample_series):
 
 
 def test_series_methods_on_accessor_new_schema_dict(sample_series):
-    pass
-    # --> confirm that the object is different and thant changing metadata or semantic tags doesnt happen to both
+    xfail_dask_and_koalas(sample_series)
+
+    series = sample_series.astype('category')
+    series.ww.init(semantic_tags=['new_tag', 'tag2'], metadata={'important_keys': [1, 2, 3]})
+
+    copied_series = series.ww.copy()
+
+    assert copied_series.ww._schema == series.ww._schema
+    assert copied_series.ww._schema is not series.ww._schema
+
+    copied_series.ww.metadata['important_keys'].append(4)
+    assert copied_series.ww.metadata['important_keys'] == [1, 2, 3, 4]
+    assert series.ww.metadata['important_keys'] == [1, 2, 3]
+
+    copied_series.ww.add_semantic_tags(['tag3'])
+    assert copied_series.ww.semantic_tags == {'category', 'new_tag', 'tag2', 'tag3'}
+    assert series.ww.semantic_tags == {'category', 'new_tag', 'tag2'}
 
 
 def test_series_getattr_errors(sample_series):
