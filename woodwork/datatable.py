@@ -566,7 +566,12 @@ class DataTable(object):
             woodwork.DataTable: DataTable with the specified semantic tags removed
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
-        return self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
+        dt = self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
+        for _, tags in semantic_tags.items():
+            if 'index' in tags:
+                dt._dataframe = dt._dataframe.reset_index(drop=True)
+                break
+        return dt
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
