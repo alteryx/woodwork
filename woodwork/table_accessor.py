@@ -3,7 +3,10 @@ import warnings
 import pandas as pd
 
 from woodwork.accessor_utils import _update_column_dtype
-from woodwork.exceptions import TypingInfoMismatchWarning, ParametersIgnoredWarning
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    TypingInfoMismatchWarning
+)
 from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
