@@ -74,6 +74,9 @@ def test_accessor_warnings_accessing_properties_before_init(sample_series):
     error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
 
     with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.__repr__()
+
+    with pytest.raises(AttributeError, match=error_message):
         sample_series.ww.description
 
     with pytest.raises(AttributeError, match=error_message):
