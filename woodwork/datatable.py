@@ -527,11 +527,12 @@ class DataTable(object):
 
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
+        reset_index = False
         for col_name, col in new_dt.columns.items():
             if col_name not in logical_types and col_name not in semantic_tags:
                 continue
             if 'index' in col.semantic_tags and not retain_index_tags:
-                new_dt._dataframe = new_dt._dataframe.reset_index(drop=True)               
+                reset_index = True
             if col_name in logical_types:
                 col = col.set_logical_type(logical_types[col_name], retain_index_tags)
             if col_name in semantic_tags:
@@ -539,6 +540,8 @@ class DataTable(object):
             cols_to_update[col_name] = col
 
         new_dt._update_columns(cols_to_update)
+        if reset_index:
+            new_dt._dataframe = new_dt._dataframe.reset_index(drop=True)
         return new_dt
 
     def add_semantic_tags(self, semantic_tags):
