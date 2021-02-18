@@ -58,6 +58,8 @@ class WoodworkColumnAccessor:
     @property
     def description(self):
         """The description of the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['description']
 
     @description.setter
@@ -68,11 +70,15 @@ class WoodworkColumnAccessor:
     @property
     def logical_type(self):
         """The logical type of the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['logical_type']
 
     @property
     def metadata(self):
         """The metadata of the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['metadata']
 
     @metadata.setter
@@ -83,6 +89,8 @@ class WoodworkColumnAccessor:
     @property
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema['semantic_tags']
 
     def __eq__(self, other):
@@ -96,13 +104,15 @@ class WoodworkColumnAccessor:
             If the method is present on Series, uses that method.
         '''
         if self._schema is None:
-            raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
+            _raise_init_error()
         if hasattr(self._series, attr):
             return self._make_series_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
     def __repr__(self):
+        if self._schema is None:
+            _raise_init_error()
         msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
@@ -217,3 +227,7 @@ class WoodworkColumnAccessor:
         self._schema['semantic_tags'] = _set_semantic_tags(semantic_tags,
                                                            self.logical_type.standard_tags,
                                                            self.use_standard_tags)
+
+
+def _raise_init_error():
+    raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
