@@ -3,6 +3,7 @@ import warnings
 
 import pandas as pd
 
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.logical_types import Ordinal
 from woodwork.schema_column import (
@@ -183,6 +184,27 @@ class WoodworkColumnAccessor:
         """
         self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
                                                              self.use_standard_tags)
+
+    def set_logical_type(self, logical_type):
+        """Update the logical type for the series, clearing any previously set semantic tags,
+        and returning a new Series.
+
+        Args:
+            logical_type (LogicalType, str): The new logical type to set for the series.
+
+        Returns:
+            Series: A new series with the updated logical type.
+        """
+        # Create a new series without a schema to prevent new series from sharing a common
+        # schema with current series
+        new_series = self._series.copy()
+        new_series._schema = None
+        return init_series(new_series,
+                           logical_type=logical_type,
+                           semantic_tags=None,
+                           use_standard_tags=self.use_standard_tags,
+                           description=self.description,
+                           metadata=copy.deepcopy(self.metadata))
 
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set

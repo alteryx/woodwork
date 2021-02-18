@@ -63,7 +63,6 @@ def _update_column_dtype(series, logical_type):
             series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
-
     if logical_type.pandas_dtype != str(series.dtype):
         # Update the underlying series
         try:
