@@ -84,6 +84,8 @@ class WoodworkTableAccessor:
                 extra_params.append('time_index')
             if logical_types is not None:
                 extra_params.append('logical_types')
+            if already_sorted:
+                extra_params.append('already_sorted')
             for key in kwargs:
                 extra_params.append(key)
             if extra_params:
