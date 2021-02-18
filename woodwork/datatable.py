@@ -376,8 +376,7 @@ class DataTable(object):
         '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
 
         If the DataTable has an index, will be set to that index.
-        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
-        meaning that the index will be a pd.RangeIndex starting from zero.
+        If no index is specified, the DataFrame's index will remain the same.
         '''
         needs_update = False
         new_df = self._dataframe
