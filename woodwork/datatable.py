@@ -530,6 +530,8 @@ class DataTable(object):
         for col_name, col in new_dt.columns.items():
             if col_name not in logical_types and col_name not in semantic_tags:
                 continue
+            if 'index' in col.semantic_tags and not retain_index_tags:
+                new_dt._dataframe = new_dt._dataframe.reset_index(drop=True)               
             if col_name in logical_types:
                 col = col.set_logical_type(logical_types[col_name], retain_index_tags)
             if col_name in semantic_tags:
@@ -597,7 +599,10 @@ class DataTable(object):
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
             columns = self._dataframe.columns
-        return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
+        dt = self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)        
+        if self.index is not None and not retain_index_tags:
+            dt._dataframe = dt._dataframe.reset_index(drop=True)
+        return dt
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
         """Helper method that can be used for updating columns by calling the column method
