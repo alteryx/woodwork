@@ -423,7 +423,7 @@ class DataTable(object):
             raise ValueError(f'{not_present} not found in DataTable')
 
         dt = self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
-        if any('index' in self[column].semantic_tags for column in columns):
+        if self.index in columns:
             dt._dataframe = dt._dataframe.reset_index(drop=True)
 
         return dt
