@@ -177,7 +177,6 @@ def test_accessor_with_schema_parameter_warning(sample_df):
         head_df.ww.init(index='id', semantic_tags={'id': 'test_tag'}, schema=schema)
 
 
-
 def test_accessor_getattr(sample_df):
     xfail_dask_and_koalas(sample_df)
 
