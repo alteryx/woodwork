@@ -22,7 +22,6 @@ Release Notes
         * Add semantic tag update methods to table schema (:pr:`591`)
         * Add warning if additional parameters are passed along with schema (:pr:`593`)
         * Better warning when accessing column properties before init (:pr:`596`)
-
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
