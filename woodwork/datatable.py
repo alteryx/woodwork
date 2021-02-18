@@ -381,12 +381,11 @@ class DataTable(object):
         '''
         needs_update = False
         new_df = self._dataframe
-        if isinstance(self._dataframe, pd.DataFrame):
-            if self.index is not None:
-                needs_update = True
-                new_df = self._dataframe.set_index(self.index, drop=False)
-                # Drop index name to not overlap with the original column
-                new_df.index.name = None
+        if isinstance(self._dataframe, pd.DataFrame) and self.index is not None:
+            needs_update = True
+            new_df = self._dataframe.set_index(self.index, drop=False)
+            # Drop index name to not overlap with the original column
+            new_df.index.name = None
 
         self._dataframe = new_df
         return needs_update
