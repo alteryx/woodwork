@@ -306,6 +306,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
     copy_schema = schema._get_subset_schema(sample_column_names)
 
     assert schema == copy_schema
+    assert schema is not copy_schema
 
 
 def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
