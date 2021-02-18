@@ -69,6 +69,23 @@ def test_accessor_init_with_semantic_tags(sample_series):
     assert series.ww.semantic_tags == set(semantic_tags)
 
 
+def test_accessor_warnings_accessing_properties_before_init(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.description
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.logical_type
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.metadata
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.semantic_tags
+
+
 # def test_datacolumn_init_with_extension_array():
 #     series_categories = pd.Series([1, 2, 3], dtype='category')
 #     extension_categories = pd.Categorical([1, 2, 3])
