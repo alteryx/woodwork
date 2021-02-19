@@ -551,3 +551,35 @@ def test_removes_time_index_via_tags(sample_column_names, sample_inferred_logica
     schema.reset_semantic_tags('signup_date')
     assert schema.semantic_tags['signup_date'] == set()
     assert schema.time_index is None
+
+
+def test_set_index(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    assert schema.index is None
+    assert schema.semantic_tags['id'] == {'numeric'}
+    assert schema.semantic_tags['age'] == {'numeric'}
+
+    schema.set_index('id')
+    assert schema.index == 'id'
+    assert schema.semantic_tags['id'] == {'index'}
+
+    schema.set_index('age')
+    assert schema.index == 'age'
+    assert schema.semantic_tags['age'] == {'index'}
+    assert schema.semantic_tags['id'] == {'numeric'}
+
+    schema.set_index(None)
+    assert schema.index is None
+    assert schema.semantic_tags['age'] == {'numeric'}
+    assert schema.semantic_tags['id'] == {'numeric'}
+
+
+def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    schema.set_index(None)
+    assert schema.index is None
+
+    error = re.escape("Specified index column `testing` not found in Schema.")
+    with pytest.raises(LookupError, match=error):
+        schema.set_index('testing')
