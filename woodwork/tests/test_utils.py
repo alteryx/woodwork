@@ -441,9 +441,9 @@ def test_is_null_latlong():
 def test_is_valid_latlong_value():
     values = [
         (1.0, 2.0),
-        (np.nan, np.nan),
-        [1.0, 2.0],
         np.nan,
+        [1.0, 2.0],
+        (np.nan, np.nan),
         ('a', 2.0),
         (1.0, 2.0, 3.0),
         None
