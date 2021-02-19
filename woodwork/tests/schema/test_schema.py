@@ -583,12 +583,12 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
 
 
 def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
-
-    original_schema = schema._get_subset_schema(list(schema.columns.keys()))
-
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
     schema.set_index(None)
     assert schema.index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    original_schema = schema._get_subset_schema(list(schema.columns.keys()))
 
     schema.set_index('id')
     assert schema.index == 'id'
