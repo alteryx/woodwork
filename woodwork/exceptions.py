@@ -38,3 +38,7 @@ class TypingInfoMismatchWarning(UserWarning):
 
 class TypeConversionError(Exception):
     pass
+
+
+class ParametersIgnoredWarning(UserWarning):
+    pass
