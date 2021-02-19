@@ -159,7 +159,6 @@ class WoodworkTableAccessor:
         """
         self._schema.set_index(new_index)
 
-        # --> by putting this after it follows separation paradigm but means the error message we get will come from schema
         if new_index is not None:
             _check_index(self._dataframe, new_index)
         self._set_underlying_index()
