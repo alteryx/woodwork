@@ -159,8 +159,8 @@ class WoodworkTableAccessor:
         """
         self._schema.set_index(new_index)
 
-        if new_index is not None:
-            _check_index(self._dataframe, new_index)
+        if self._schema.index is not None:
+            _check_index(self._dataframe, self._schema.index)
         self._set_underlying_index()
 
     def select(self, include):

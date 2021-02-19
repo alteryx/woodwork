@@ -1348,6 +1348,20 @@ def test_accessor_set_index(sample_df):
     # --> add setter test
 
 
+def test_accessor_set_index_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    error = 'Specified index column `testing` not found in Schema.'
+    with pytest.raises(LookupError, match=error):
+        sample_df.ww.set_index('testing')
+
+    error = "Index column must be unique"
+    with pytest.raises(LookupError, match=error):
+        sample_df.ww.set_index('age')
+
+
 # def test_set_index(sample_df):
 #     # Test setting index with set_index()
 #     dt = DataTable(sample_df)
