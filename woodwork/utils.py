@@ -264,6 +264,28 @@ def _to_latlong_float(val):
         raise ValueError(f'Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {val} cannot be converted to a float.')
 
 
+def _is_valid_latlong_series(series):
+    '''Returns True if all elements in the series contain properly formatted LatLong values,
+    otherwise returns False'''
+    if series.apply(_is_valid_latlong_value).all():
+        return True
+    return False
+
+
+def _is_valid_latlong_value(val):
+    '''Returns True if the value provided is a properly formatted LatLong value, otherwise
+    returns False.'''
+    if isinstance(val, tuple) and len(val) == 2:
+        latitude, longitude = val
+        if isinstance(latitude, float) and isinstance(longitude, float):
+            if pd.isnull(latitude) and pd.isnull(longitude):
+                return False
+            return True
+    elif isinstance(val, float) and pd.isnull(val):
+        return True
+    return False
+
+
 def _is_null_latlong(val):
     if isinstance(val, str):
         return val == 'None' or val == 'nan' or val == 'NaN'
