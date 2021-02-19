@@ -32,6 +32,8 @@ from woodwork.utils import (
     _is_null_latlong,
     _is_s3,
     _is_url,
+    _is_valid_latlong_series,
+    _is_valid_latlong_value,
     _new_dt_including,
     _reformat_to_latlong,
     _to_latlong_float,
@@ -434,6 +436,39 @@ def test_is_null_latlong():
     assert not _is_null_latlong('none')
     assert not _is_null_latlong(0)
     assert not _is_null_latlong(False)
+
+
+def test_is_valid_latlong_value():
+    values = [
+        (1.0, 2.0),
+        (np.nan, np.nan),
+        [1.0, 2.0],
+        np.nan,
+        ('a', 2.0),
+        (1.0, 2.0, 3.0),
+        None
+    ]
+
+    expected_values = [
+        True,
+        True,
+        False,
+        False,
+        False,
+        False,
+        False
+    ]
+
+    for index, value in enumerate(values):
+        assert _is_valid_latlong_value(value) is expected_values[index]
+
+
+def test_is_valid_latlong_series():
+    valid_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
+    invalid_series = pd.Series([(1.0, 2.0), (3.0, '4.0')])
+
+    assert _is_valid_latlong_series(valid_series) is True
+    assert _is_valid_latlong_series(invalid_series) is False
 
 
 def test_get_valid_mi_types():

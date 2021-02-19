@@ -459,6 +459,7 @@ def latlong_df(request):
 @pytest.fixture
 def pandas_latlongs():
     return [
+        pd.Series([(1.0, 2.0), (3.0, 4.0)]),
         pd.Series([('1', '2'), ('3', '4')]),
         pd.Series([['1', '2'], ['3', '4']]),
         pd.Series([(1, 2), (3, 4)]),
