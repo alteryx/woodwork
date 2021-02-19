@@ -21,6 +21,7 @@ Release Notes
         * Add ``set_logical_type`` method to WoodworkColumnAccessor (:pr:`590`)
         * Add semantic tag update methods to table schema (:pr:`591`)
         * Better warning when accessing column properties before init (:pr:`596`)
+        * Update column accessor to work with LatLong columns (:pr:`598`)
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
