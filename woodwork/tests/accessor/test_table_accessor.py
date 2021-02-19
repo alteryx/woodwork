@@ -705,21 +705,18 @@ def test_underlying_index(sample_df):
 
     schema_df = sample_df.copy()
     schema_df.ww.init(index='full_name')
+    assert 'full_name' in schema_df.columns
     assert schema_df.index.name is None
-    assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
+    assert (schema_df.index == schema_df['full_name']).all()
     assert type(schema_df.index) == specified_index
 
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='id')
     schema_df.ww.set_index('full_name')
+    assert 'full_name' in schema_df.columns
     assert (schema_df.index == schema_df['full_name']).all()
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
-
-    # --> add back in with setter
-    # schema.index = 'id'
-    # assert (schema._dataframe.index == [0, 1, 2, 3]).all()
-    # assert schema._dataframe.index.name is None
-    # assert type(schema._dataframe.index) == specified_index
-    # assert type(schema.to_dataframe().index) == specified_index
 
     # test removing index removes the dataframe's index
     schema_df.ww.set_index(None)
@@ -727,6 +724,7 @@ def test_underlying_index(sample_df):
 
     schema_df = sample_df.copy()
     schema_df.ww.init(index='made_index', make_index=True)
+    assert 'made_index' in schema_df
     assert (schema_df.index == [0, 1, 2, 3]).all()
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
@@ -1335,7 +1333,7 @@ def test_accessor_set_index(sample_df):
 
     sample_df.ww.set_index('id')
     assert sample_df.ww.index == 'id'
-    assert (sample_df.index == [0, 1, 2, 3]).all()
+    assert (sample_df.index == sample_df['id']).all()
 
     sample_df.ww.set_index('full_name')
     assert sample_df.ww.index == 'full_name'
@@ -1343,9 +1341,7 @@ def test_accessor_set_index(sample_df):
 
     sample_df.ww.set_index(None)
     assert sample_df.ww.index is None
-    assert (sample_df.index == [0, 1, 2, 3]).all()
-
-    # --> add setter test
+    assert (sample_df.index == range(4)).all()
 
 
 def test_accessor_set_index_errors(sample_df):
@@ -1360,44 +1356,3 @@ def test_accessor_set_index_errors(sample_df):
     error = "Index column must be unique"
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('age')
-
-
-# def test_set_index(sample_df):
-#     # Test setting index with set_index()
-#     dt = DataTable(sample_df)
-#     new_dt = dt.set_index('id')
-#     assert new_dt is not dt
-#     assert new_dt.index == 'id'
-#     assert dt.index is None
-#     assert new_dt.columns['id'].semantic_tags == {'index'}
-#     non_index_cols = [col for col in new_dt.columns.values() if col.name != 'id']
-#     assert all(['index' not in col.semantic_tags for col in non_index_cols])
-#     # Test changing index with set_index()
-#     new_dt2 = new_dt.set_index('full_name')
-#     assert new_dt.index == 'id'
-#     assert new_dt2.columns['full_name'].semantic_tags == {'index'}
-#     non_index_cols = [col for col in new_dt2.columns.values() if col.name != 'full_name']
-#     assert all(['index' not in col.semantic_tags for col in non_index_cols])
-
-#     # Test setting index using setter
-#     dt = DataTable(sample_df)
-#     dt.index = 'id'
-#     assert dt.index == 'id'
-#     assert 'index' in dt.columns['id'].semantic_tags
-#     non_index_cols = [col for col in dt.columns.values() if col.name != 'id']
-#     assert all(['index' not in col.semantic_tags for col in non_index_cols])
-#     # Test changing index with setter
-#     dt.index = 'full_name'
-#     assert 'index' in dt.columns['full_name'].semantic_tags
-#     non_index_cols = [col for col in dt.columns.values() if col.name != 'full_name']
-#     assert all(['index' not in col.semantic_tags for col in non_index_cols])
-
-#     # Test changing index also changes underlying DataFrame - pandas only
-#     if isinstance(sample_df, pd.DataFrame):
-#         dt = DataTable(sample_df)
-#         dt.index = 'id'
-#         assert (dt.to_dataframe().index == [0, 1, 2, 3]).all()
-#         assert (dt._dataframe.index == [0, 1, 2, 3]).all()
-#         dt.index = 'full_name'
-#         assert (dt.to_dataframe().index == dt.to_dataframe()['full_name']).all()
-#         assert (dt._dataframe.index == dt.to_dataframe()['full_name']).all()

@@ -44,7 +44,7 @@ Schema
     Schema.add_semantic_tags
     Schema.remove_semantic_tags
     Schema.reset_semantic_tags
-    Schema.set_semantic_tags
+    Schema.set_types
 
 
 DataTable

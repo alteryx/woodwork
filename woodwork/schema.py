@@ -282,7 +282,7 @@ class Schema(object):
         return columns
 
     def set_index(self, new_index):
-        '''Sets the index. Handles creating a new index, updating the index, or removing the index.
+        '''Sets the index. Handles setting a new index, updating the index, or removing the index.
 
         Args:
             new_index (str): Name of the new index column. Must be present in the Schema.
