@@ -5,7 +5,11 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.exceptions import TypeConversionError, TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    TypeConversionError,
+    TypingInfoMismatchWarning
+)
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -144,7 +148,7 @@ def test_init_accessor_with_schema(sample_df):
 
     iloc_df = schema_df.iloc[2:]
     assert iloc_df.ww.schema is None
-    iloc_df.ww.init(schema=schema, logical_types={'id': NaturalLanguage})
+    iloc_df.ww.init(schema=schema)
 
     assert iloc_df.ww._schema is schema
     assert iloc_df.ww.name == 'test_schema'
@@ -171,6 +175,26 @@ def test_init_accessor_with_schema_errors(sample_df):
              "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
+
+
+def test_accessor_with_schema_parameter_warning(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
+    schema = schema_df.ww.schema
+
+    head_df = schema_df.head(2)
+
+    warning = "A schema was provided and the following parameters were ignored: index, make_index, " \
+              "time_index, logical_types, already_sorted, semantic_tags"
+    with pytest.warns(ParametersIgnoredWarning, match=warning):
+        head_df.ww.init(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
+                        make_index=True, already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
+                        schema=schema)
+
+    assert head_df.ww.name == 'test_schema'
+    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
 
 
 def test_accessor_getattr(sample_df):
