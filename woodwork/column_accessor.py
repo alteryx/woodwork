@@ -5,7 +5,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
-from woodwork.logical_types import Ordinal
+from woodwork.logical_types import LatLong, Ordinal
 from woodwork.schema_column import (
     _add_semantic_tags,
     _get_column_dict,
@@ -15,7 +15,7 @@ from woodwork.schema_column import (
     _validate_description,
     _validate_metadata
 )
-from woodwork.utils import _get_column_logical_type
+from woodwork.utils import _get_column_logical_type, _is_valid_latlong_series
 
 
 @pd.api.extensions.register_series_accessor('ww')
@@ -164,6 +164,11 @@ class WoodworkColumnAccessor:
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
+        elif logical_type == LatLong:
+            if not _is_valid_latlong_series(self._series):
+                raise ValueError("Cannot initialize Woodwork. Series does not contain properly formatted "
+                                 "LatLong data. Try reformatting before initializing or use the "
+                                 "woodwork.init_series function to initialize.")
 
     def add_semantic_tags(self, semantic_tags):
         """Add the specified semantic tags to the set of tags.

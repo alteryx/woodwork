@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     DuplicateTagsWarning,
     TypeConversionError,
@@ -15,6 +16,7 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
+    LatLong,
     NaturalLanguage,
     Ordinal,
     SubRegionCode,
@@ -561,20 +563,37 @@ def test_ordinal_with_nan_values():
     assert nan_series.ww.logical_type.order == ['a', 'b']
 
 
-# def test_latlong_formatting(latlongs):
-#     expected_series = pd.Series([(1, 2), (3, 4)])
-#     if ks and isinstance(latlongs[0], ks.Series):
-#         expected_series = ks.Series([[1, 2], [3, 4]])
-#     elif dd and isinstance(latlongs[0], dd.Series):
-#         expected_series = dd.from_pandas(expected_series, npartitions=2)
+def test_latlong_init_with_valid_series(latlongs):
+    xfail_dask_and_koalas(latlongs[0])
+    series = latlongs[0]
+    series.ww.init(logical_type="LatLong")
+    assert series.ww.logical_type == LatLong
 
-#     expected_dc = DataColumn(expected_series, logical_type='LatLong', name='test_series')
 
-#     for series in latlongs:
-#         dc = DataColumn(series, logical_type='LatLong', name='test_series')
-#         pd.testing.assert_series_equal(to_pandas(dc.to_series()), to_pandas(expected_series))
+def test_latlong_init_error_with_invalid_series(latlongs):
+    xfail_dask_and_koalas(latlongs[0])
+    series = latlongs[1]
+    error_message = "Cannot initialize Woodwork. Series does not contain properly formatted " \
+        "LatLong data. Try reformatting before initializing or use the " \
+        "woodwork.init_series function to initialize."
+    with pytest.raises(ValueError, match=error_message):
+        series.ww.init(logical_type="LatLong")
 
-#         assert dc == expected_dc
+
+def test_latlong_formatting_with_init_series(latlongs):
+    xfail_dask_and_koalas(latlongs[0])
+    expected_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
+    # if ks and isinstance(latlongs[0], ks.Series):
+    #     expected_series = ks.Series([[1, 2], [3, 4]])
+    # elif dd and isinstance(latlongs[0], dd.Series):
+    #     expected_series = dd.from_pandas(expected_series, npartitions=2)
+
+    expected_series.ww.init(logical_type=LatLong)
+    for series in latlongs:
+        new_series = init_series(series, logical_type=LatLong)
+        assert new_series.ww.logical_type == LatLong
+        pd.testing.assert_series_equal(new_series, expected_series)
+        assert expected_series.ww._schema == new_series.ww._schema
 
 
 def test_accessor_equality(sample_series, sample_datetime_series):
