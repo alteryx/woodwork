@@ -148,6 +148,21 @@ class WoodworkTableAccessor:
         if self._schema:
             return self._schema._get_subset_schema(list(self.columns.keys()))
 
+    def set_index(self, new_index):
+        """Sets the index column of the DataFrame. Adds the 'index' semantic tag to the column
+        and clears the tag from any previously set index column.
+        Setting a column as the index column will also cause any previously set standard
+        tags for the column to be removed.
+
+        Args:
+            index (str): The name of the column to set as the index
+        """
+        self._schema.set_index(new_index)
+
+        if self._schema.index is not None:
+            _check_index(self._dataframe, self._schema.index)
+        self._set_underlying_index()
+
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized
         that includes only columns whose Logical Type and semantic tags are

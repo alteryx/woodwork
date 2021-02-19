@@ -701,39 +701,35 @@ def test_underlying_index(sample_df):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
     specified_index = pd.Index
+    unspecified_index = pd.RangeIndex
 
     schema_df = sample_df.copy()
     schema_df.ww.init(index='full_name')
+    assert 'full_name' in schema_df.columns
     assert schema_df.index.name is None
-    assert (schema_df.index == ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner']).all()
+    assert (schema_df.index == schema_df['full_name']).all()
     assert type(schema_df.index) == specified_index
 
-    # --> add back when schema updates are implemented
-    # schema = Schema(sample_df.copy())
-    # schema = schema.set_index('full_name')
-    # assert (schema._dataframe.index == schema.to_dataframe()['full_name']).all()
-    # assert schema._dataframe.index.name is None
-    # assert type(schema._dataframe.index) == specified_index
-    # assert type(schema.to_dataframe().index) == specified_index
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='id')
+    schema_df.ww.set_index('full_name')
+    assert 'full_name' in schema_df.columns
+    assert (schema_df.index == schema_df['full_name']).all()
+    assert schema_df.index.name is None
+    assert type(schema_df.index) == specified_index
 
-    # schema.index = 'id'
-    # assert (schema._dataframe.index == [0, 1, 2, 3]).all()
-    # assert schema._dataframe.index.name is None
-    # assert type(schema._dataframe.index) == specified_index
-    # assert type(schema.to_dataframe().index) == specified_index
-
-    # # test removing index removes the dataframe's index
-    # schema.index = None
-    # assert type(schema._dataframe.index) == unspecified_index
-    # assert type(schema.to_dataframe().index) == unspecified_index
+    # test removing index removes the dataframe's index
+    schema_df.ww.set_index(None)
+    assert type(schema_df.index) == unspecified_index
 
     schema_df = sample_df.copy()
     schema_df.ww.init(index='made_index', make_index=True)
+    assert 'made_index' in schema_df
     assert (schema_df.index == [0, 1, 2, 3]).all()
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
 
-    # --> add back when schema updates are implemented
+    # --> add back when df.ww.drop is implemented
     # schema_dropped = schema.drop('made_index')
     # assert 'made_index' not in schema_dropped.columns
     # assert 'made_index' not in schema_dropped._dataframe.columns
@@ -1328,3 +1324,35 @@ def test_select_repetitive(sample_df):
     df_repeat_ltypes = schema_df.ww.select(['PhoneNumber', PhoneNumber, 'phone_number'])
     assert len(df_repeat_ltypes.columns) == 1
     assert set(df_repeat_ltypes.columns) == {'phone_number'}
+
+
+def test_accessor_set_index(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    sample_df.ww.set_index('id')
+    assert sample_df.ww.index == 'id'
+    assert (sample_df.index == sample_df['id']).all()
+
+    sample_df.ww.set_index('full_name')
+    assert sample_df.ww.index == 'full_name'
+    assert (sample_df.index == sample_df['full_name']).all()
+
+    sample_df.ww.set_index(None)
+    assert sample_df.ww.index is None
+    assert (sample_df.index == range(4)).all()
+
+
+def test_accessor_set_index_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    error = 'Specified index column `testing` not found in Schema.'
+    with pytest.raises(LookupError, match=error):
+        sample_df.ww.set_index('testing')
+
+    error = "Index column must be unique"
+    with pytest.raises(LookupError, match=error):
+        sample_df.ww.set_index('age')
