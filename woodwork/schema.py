@@ -1,4 +1,5 @@
 import collections
+import copy
 
 import pandas as pd
 
@@ -66,7 +67,7 @@ class Schema(object):
                                             column_descriptions,
                                             column_metadata)
         if index is not None:
-            _update_index(self, column_names, index)
+            self.set_index(index)
 
         if time_index is not None:
             _update_time_index(self, column_names, time_index)
@@ -280,6 +281,19 @@ class Schema(object):
                                              metadata=metadata_for_col)
         return columns
 
+    def set_index(self, new_index):
+        '''Sets the index. Handles setting a new index, updating the index, or removing the index.
+
+        Args:
+            new_index (str): Name of the new index column. Must be present in the Schema.
+        '''
+        old_index = self.index
+        if old_index is not None:
+            self.remove_semantic_tags({old_index: 'index'})
+        if new_index is not None:
+            _check_index(self.columns.keys(), new_index)
+            self._set_index_tags(new_index)
+
     def _set_index_tags(self, index):
         '''
         Updates the semantic tags of the index by removing any standard tags
@@ -386,10 +400,10 @@ class Schema(object):
                       name=self.name,
                       index=new_index,
                       time_index=new_time_index,
-                      semantic_tags=new_semantic_tags,
+                      semantic_tags=copy.deepcopy(new_semantic_tags),
                       use_standard_tags=self.use_standard_tags,
-                      table_metadata=self.metadata,
-                      column_metadata=new_column_metadata,
+                      table_metadata=copy.deepcopy(self.metadata),
+                      column_metadata=copy.deepcopy(new_column_metadata),
                       column_descriptions=new_column_descriptions)
 
 
@@ -484,17 +498,6 @@ def _check_column_metadata(column_names, column_metadata):
     if cols_not_found:
         raise LookupError('column_metadata contains columns that do not exist: '
                           f'{sorted(list(cols_not_found))}')
-
-
-def _update_index(schema, column_names, index, old_index=None):
-    """Add the `index` tag to the specified index column and remove the tag from the
-    old_index column, if specified. Also checks that the specified index column
-    can be used as an index."""
-    _check_index(column_names, index)
-    # --> when schema updates are implemented need a way of removing the old index
-    # if old_index is not None:
-    #     schema._update_columns({old_index: schema.columns[old_index].remove_semantic_tags('index')})
-    schema._set_index_tags(index)
 
 
 def _update_time_index(schema, column_names, time_index, old_time_index=None):

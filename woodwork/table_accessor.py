@@ -3,7 +3,10 @@ import warnings
 import pandas as pd
 
 from woodwork.accessor_utils import _update_column_dtype
-from woodwork.exceptions import TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    TypingInfoMismatchWarning
+)
 from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
@@ -67,11 +70,29 @@ class WoodworkTableAccessor:
                 specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             schema (Woodwork.Schema, optional): Typing information to use for the DataFrame instead of performing inference.
-                Any other arguments provided will be ignored.
+                Any other arguments provided will be ignored. Note that any changes made to the schema object after
+                initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
+                the same schema object should not be shared between DataFrames.
         '''
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
         if schema is not None:
             self._schema = schema
+            extra_params = []
+            if index is not None:
+                extra_params.append('index')
+            if make_index:
+                extra_params.append('make_index')
+            if time_index is not None:
+                extra_params.append('time_index')
+            if logical_types is not None:
+                extra_params.append('logical_types')
+            if already_sorted:
+                extra_params.append('already_sorted')
+            for key in kwargs:
+                extra_params.append(key)
+            if extra_params:
+                warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
+
         else:
             if make_index:
                 _make_index(self._dataframe, index)
@@ -122,7 +143,25 @@ class WoodworkTableAccessor:
 
     @property
     def schema(self):
-        return self._schema
+        ''' A copy of the Woodwork typing information for the DataFrame.
+        '''
+        if self._schema:
+            return self._schema._get_subset_schema(list(self.columns.keys()))
+
+    def set_index(self, new_index):
+        """Sets the index column of the DataFrame. Adds the 'index' semantic tag to the column
+        and clears the tag from any previously set index column.
+        Setting a column as the index column will also cause any previously set standard
+        tags for the column to be removed.
+
+        Args:
+            index (str): The name of the column to set as the index
+        """
+        self._schema.set_index(new_index)
+
+        if self._schema.index is not None:
+            _check_index(self._dataframe, self._schema.index)
+        self._set_underlying_index()
 
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized
@@ -200,7 +239,8 @@ class WoodworkTableAccessor:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
-                        result.ww.init(schema=self._schema)
+                        copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
+                        result.ww.init(schema=copied_schema)
                 else:
                     # Confirm that the Schema is still valid on original DataFrame
                     # Important for inplace operations
@@ -334,19 +374,21 @@ def _validate_accessor_params(dataframe, index, make_index, time_index, logical_
     _check_unique_column_names(dataframe)
     if schema is not None:
         _check_schema(dataframe, schema)
-    if index is not None or make_index:
-        _check_index(dataframe, index, make_index)
-    if logical_types:
-        _check_logical_types(dataframe.columns, logical_types)
-    if time_index is not None:
-        datetime_format = None
-        logical_type = None
-        if logical_types is not None and time_index in logical_types:
-            logical_type = logical_types[time_index]
-            if _get_ltype_class(logical_types[time_index]) == Datetime:
-                datetime_format = logical_types[time_index].datetime_format
+    else:
+        # We ignore these parameters if a schema is passed
+        if index is not None or make_index:
+            _check_index(dataframe, index, make_index)
+        if logical_types:
+            _check_logical_types(dataframe.columns, logical_types)
+        if time_index is not None:
+            datetime_format = None
+            logical_type = None
+            if logical_types is not None and time_index in logical_types:
+                logical_type = logical_types[time_index]
+                if _get_ltype_class(logical_types[time_index]) == Datetime:
+                    datetime_format = logical_types[time_index].datetime_format
 
-        _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
+            _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
 
 
 def _check_unique_column_names(dataframe):

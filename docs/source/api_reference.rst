@@ -10,8 +10,13 @@ WoodworkTableAccessor
     :toctree: generated/
 
     WoodworkTableAccessor
+    WoodworkTableAccessor.describe
+    WoodworkTableAccessor.describe_dict
     WoodworkTableAccessor.init
+    WoodworkTableAccessor.mutual_information_dict
+    WoodworkTableAccessor.mutual_information
     WoodworkTableAccessor.select
+    WoodworkTableAccessor.set_index
 
 WoodworkColumnAccessor
 ======================
@@ -22,6 +27,11 @@ WoodworkColumnAccessor
 
     WoodworkColumnAccessor
     WoodworkColumnAccessor.init
+    WoodworkColumnAccessor.add_semantic_tags
+    WoodworkColumnAccessor.remove_semantic_tags
+    WoodworkColumnAccessor.reset_semantic_tags
+    WoodworkColumnAccessor.set_logical_type
+    WoodworkColumnAccessor.set_semantic_tags
 
 Schema
 ======
@@ -31,6 +41,10 @@ Schema
     :toctree: generated/
 
     Schema
+    Schema.add_semantic_tags
+    Schema.remove_semantic_tags
+    Schema.reset_semantic_tags
+    Schema.set_types
 
 
 DataTable

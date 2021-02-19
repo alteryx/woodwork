@@ -20,9 +20,12 @@ Release Notes
         * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
         * Add ``set_logical_type`` method to WoodworkColumnAccessor (:pr:`590`)
         * Add semantic tag update methods to table schema (:pr:`591`)
+        * Add warning if additional parameters are passed along with schema (:pr:`593`)
         * Better warning when accessing column properties before init (:pr:`596`)
         * Update column accessor to work with LatLong columns (:pr:`598`)
+        * Add ``set_index`` to WoodworkTableAccessor (:pr:`603`)
     * Fixes
+        * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Move mutual information logic to statistics utils file (:pr:`584`)
