@@ -10,7 +10,7 @@ Release Notes
         * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
     * Documentation Changes
     * Testing Changes
-        * Update branch reference in tests workflow (:pr:`552`)
+        * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
         * Fixed text on back arrow on install page (:pr:`564`)
         * Refactor test_datatable.py (:pr:`574`)
 
