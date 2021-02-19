@@ -9,7 +9,7 @@ Release Notes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
     * Documentation Changes
     * Testing Changes
-        * Update branch reference in tests workflow (:pr:`552`)
+        * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
         * Fixed text on back arrow on install page (:pr:`564`)
         * Refactor test_datatable.py (:pr:`574`)
 
