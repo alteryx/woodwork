@@ -220,10 +220,24 @@ class WoodworkTableAccessor:
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         # --> add dosctring
-        pass
-        # --> set schema
+        logical_types = logical_types or {}
+        # --> this is a little ackward bc we definitely dont want to infer
+        logical_types = {col_name: _get_column_logical_type(None, ltype, col_name) for col_name, ltype in logical_types.items()}
+
+        original_index = self._schema.index
+        self._schema.set_types(logical_types=logical_types,
+                               semantic_tags=semantic_tags,
+                               retain_index_tags=retain_index_tags)
         # go through changed ltypes and update dtype if necessary
+        for col_name, logical_type in logical_types.items():
+            series = self._dataframe[col_name]
+            updated_series = _update_column_dtype(series, logical_type)
+            if updated_series is not series:
+                self._dataframe[col_name] = updated_series
+
         # if index has been reset, reset underlying index via _set_underlying_index
+        if original_index is not None and self._schema.index is None:
+            self._set_underlying_index()
 
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized

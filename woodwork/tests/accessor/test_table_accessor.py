@@ -1350,3 +1350,36 @@ def test_accessor_set_index_errors(sample_df):
     error = "Index column must be unique"
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('age')
+
+
+def test_set_types(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='full_name')
+
+    sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
+    assert sample_df['is_registered'].dtype == 'Int64'
+
+    sample_df.ww.set_types(logical_types={'full_name': 'Categorical'}, retain_index_tags=False)
+    assert type(sample_df.index) == pd.RangeIndex
+
+
+def test_set_types_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='full_name')
+
+    error = "String invalid is not a valid logical type"
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.set_types(logical_types={'id': 'invalid'})
+
+    error = f'Error converting datatype for email from type string ' \
+        f'to type float64. Please confirm the underlying data is consistent with ' \
+        f'logical type Double.'
+    with pytest.raises(TypeConversionError, match=error):
+        sample_df.ww.set_types(logical_types={'email': 'Double'})
+
+    error = re.escape(f"Cannot add 'index' tag directly for column email. To set a column as the index, "
+                      "use DataFrame.ww.set_index() instead.")
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.set_types(semantic_tags={'email': 'index'})
