@@ -183,7 +183,7 @@ class WoodworkColumnAccessor:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
                         del schema['dtype']
-                        result.ww.init(**schema)
+                        result.ww.init(**schema, use_standard_tags=self.use_standard_tags)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{self._schema["logical_type"].pandas_dtype}, and returned dtype, {result.dtype}'

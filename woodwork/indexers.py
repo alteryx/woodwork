@@ -81,15 +81,10 @@ def _process_selection(selection, original_data):
         #     logical_type = self.ww_data.logical_types.get(col_name, None)
         #     semantic_tags = self.ww_data.semantic_tags.get(col_name, None)
         # else:
-        logical_type = original_data.ww.logical_type or None
-        semantic_tags = original_data.ww.semantic_tags.copy() or None
-        # if semantic_tags is not None:
-        #     semantic_tags = semantic_tags - {'index'} - {'time_index'}
-        selection.ww.init(logical_type=logical_type,
-                          semantic_tags=semantic_tags,
-                          use_standard_tags=original_data.ww.use_standard_tags,
-                          description=original_data.ww.description,
-                          metadata=copy.deepcopy(original_data.ww.metadata))
+        schema = copy.deepcopy(original_data.ww._schema)
+        del schema['dtype']
+        selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
+
         return selection
     # elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
     #     return _new_dt_including(self.ww_data, selection)

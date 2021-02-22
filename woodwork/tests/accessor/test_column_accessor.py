@@ -390,6 +390,17 @@ def test_series_methods_on_accessor(sample_series):
     pd.testing.assert_series_equal(series, copied_series)
 
 
+def test_series_methods_on_accessor_without_standard_tags(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    series.ww.init(use_standard_tags=False)
+
+    copied_series = series.ww.copy()
+    assert copied_series is not series
+    assert copied_series.ww._schema == series.ww._schema
+    pd.testing.assert_series_equal(series, copied_series)
+
+
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
