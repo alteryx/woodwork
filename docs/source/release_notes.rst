@@ -25,6 +25,7 @@ Release Notes
         * Update column accessor to work with LatLong columns (:pr:`598`)
         * Add ``set_index`` to WoodworkTableAccessor (:pr:`603`)
         * Implement ``loc`` and ``iloc`` for WoodworkColumnAccessor (:pr:`613`)
+        * Add ``set_time_index`` to WoodworkTableAccessor (:pr:`603`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
