@@ -1,17 +1,8 @@
 import pandas as pd
 import pytest
 
-import woodwork as ww
-from woodwork import DataColumn, DataTable
 from woodwork.indexers import _iLocIndexerAccessor
-from woodwork.logical_types import (
-    Categorical,
-    Datetime,
-    Double,
-    EmailAddress,
-    Integer,
-    PhoneNumber
-)
+from woodwork.logical_types import Categorical
 from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
 from woodwork.utils import import_or_none
 

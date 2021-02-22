@@ -5,6 +5,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
+from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import LatLong, Ordinal
 from woodwork.schema_column import (
     _add_semantic_tags,
@@ -16,7 +17,6 @@ from woodwork.schema_column import (
     _validate_metadata
 )
 from woodwork.utils import _get_column_logical_type, _is_valid_latlong_series
-from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 
 
 @pd.api.extensions.register_series_accessor('ww')
@@ -87,7 +87,6 @@ class WoodworkColumnAccessor:
         """
         return _iLocIndexerAccessor(self._series)
 
-    
     @property
     def loc(self):
         """

@@ -69,10 +69,9 @@ class _locIndexerAccessor:
         return _process_selection(selection, self.data)
 
 
-
 def _process_selection(selection, original_data):
     if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
-        col_name = selection.name
+        # col_name = selection.name
         # if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
         #     # return selection as series if series of one row.
         #     return selection
