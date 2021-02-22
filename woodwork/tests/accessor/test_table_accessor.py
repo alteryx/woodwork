@@ -317,21 +317,16 @@ def test_accessor_with_numeric_time_index(time_index_df):
     with pytest.raises(TypeError, match=error_msg):
         time_index_df.ww.init(time_index='letters', logical_types={'strs': 'Integer'})
 
-    # --> add back when schema updates are implemented
-    # # Change time index to normal datetime time index
-    # schema = schema.set_time_index('times')
-    # date_col = schema['ints']
-    # assert schema.time_index == 'times'
-    # assert date_col.logical_type == Double
-    # assert date_col.semantic_tags == {'numeric'}
+    # Change time index to normal datetime time index
+    schema_df = time_index_df.copy()
+    schema_df.ww.init(logical_types={'ints': 'Double'})
+    assert schema_df.ww.time_index is None
 
-    # Set numeric time index after init
-    # schema = Schema(time_index_df, logical_types={'ints': 'Double'})
-    # schema = schema.set_time_index('ints')
-    # date_col = schema['ints']
-    # assert schema.time_index == 'ints'
-    # assert date_col.logical_type == Double
-    # assert date_col.semantic_tags == {'time_index', 'numeric'}
+    schema_df.ww.set_time_index('ints')
+    date_col = schema_df.ww.columns['ints']
+    assert schema_df.ww.time_index == 'ints'
+    assert date_col['logical_type'] == Double
+    assert date_col['semantic_tags'] == {'numeric', 'time_index'}
 
 
 def test_accessor_init_with_invalid_string_time_index(sample_df):
@@ -821,15 +816,14 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     assert schema_df.ww.index == 0
     assert schema_df.ww.time_index == ''
 
+    schema_df.ww.set_time_index(None)
+    assert schema_df.ww.time_index is None
+
     # --> add back in when series accessor is implemented
     # for col_name in falsy_names_df.columns:
     #     dc = dt[col_name]
     #     assert dc.name == col_name
     #     assert dc._series.name == col_name
-
-    # --> add back in once schema updates are implemented
-    # dt.time_index = None
-    # assert dt.time_index is None
 
     # --> add back in once pop and rename are implemented on the accessor
     # popped_col = dt.pop('')
@@ -1356,3 +1350,32 @@ def test_accessor_set_index_errors(sample_df):
     error = "Index column must be unique"
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('age')
+
+
+def test_accessor_set_time_index(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    sample_df.ww.set_time_index('signup_date')
+    assert sample_df.ww.time_index == 'signup_date'
+
+    sample_df.ww.set_time_index('age')
+    assert sample_df.ww.time_index == 'age'
+
+    sample_df.ww.set_time_index(None)
+    assert sample_df.ww.time_index is None
+
+
+def test_accessor_set_time_index_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    error = 'Specified time index column `testing` not found in Schema'
+    with pytest.raises(LookupError, match=error):
+        sample_df.ww.set_time_index('testing')
+
+    error = "Time index column must be a Datetime or numeric column."
+    with pytest.raises(TypeError, match=error):
+        sample_df.ww.set_time_index('email')
