@@ -13,7 +13,8 @@ from woodwork.logical_types import (
     EmailAddress,
     FullName,
     Integer,
-    NaturalLanguage
+    NaturalLanguage,
+    PhoneNumber
 )
 from woodwork.schema import Schema
 
@@ -307,6 +308,111 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
 
     assert schema == copy_schema
     assert schema is not copy_schema
+
+
+def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'signup_date': {'secondary_time_index'},
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=True)
+
+    schema.set_types(logical_types={
+        'full_name': Categorical,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+    })
+
+    assert schema.logical_types['full_name'] == Categorical
+    assert schema.logical_types['email'] == EmailAddress
+    assert schema.logical_types['phone_number'] == PhoneNumber
+    assert schema.logical_types['age'] == Double
+
+    # Verify semantic tags were reset to standard tags in columns with Logical Type changes
+    assert schema.semantic_tags['full_name'] == {'category'}
+    assert schema.semantic_tags['email'] == set()
+    assert schema.semantic_tags['phone_number'] == set()
+    assert schema.semantic_tags['age'] == {'numeric'}
+
+    # Verify signup date column was unchanged
+    assert schema.logical_types['signup_date'] == Datetime
+    assert schema.semantic_tags['signup_date'] == {'secondary_time_index'}
+
+
+# def test_set_logical_types_invalid_data(sample_df):
+#     dt = DataTable(sample_df)
+#     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday']")
+#     with pytest.raises(LookupError, match=error_message):
+#         dt.set_types(logical_types={'birthday': Double})
+
+    # --> test in table accessor along with correct dtype change to dataframe
+    # error_message = "Invalid logical type specified for 'age'"
+    # with pytest.raises(TypeError, match=error_message):
+    #     dt.set_types(logical_types={'age': int})
+
+
+def test_set_logical_types_of_indices(sample_column_names, sample_inferred_logical_types):
+    pass
+
+
+def test_set_types_combined(sample_df):
+    # test that the resetting of indices when ltype changes doesnt touch index??
+    semantic_tags = {
+        'id': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'signup_date': {'secondary_time_index'},
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=True,
+                    index='id')
+
+    schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'email': 'new_tag'},
+                     logical_types={'id': Double, 'age': Double, 'email': Categorical})
+
+    # replaces existing tags and keeps index
+    assert schema.semantic_tags['id'] == {'new_tag', 'index'}
+    # keeps standard tag
+    assert schema.semantic_tags['age'] == {'numeric', 'new_tag'}
+    # Adds new standard tag
+    assert schema.semantic_tags['email'] == {'new_tag', 'category'}
+
+
+#     dt = DataTable(sample_df, index='id', time_index='signup_date')
+#     assert dt['signup_date'].semantic_tags == set(['time_index'])
+#     assert dt['signup_date'].logical_type == Datetime
+#     assert dt['age'].semantic_tags == set(['numeric'])
+#     assert dt['age'].logical_type == Integer
+#     assert dt['is_registered'].semantic_tags == set()
+#     assert dt['is_registered'].logical_type == Boolean
+#     assert dt['email'].logical_type == NaturalLanguage
+#     assert dt['phone_number'].logical_type == NaturalLanguage
+
+#     semantic_tags = {
+#         'signup_date': ['test1'],
+#         'age': [],
+#         'is_registered': 'test2'
+#     }
+
+#     logical_types = {
+#         'email': 'EmailAddress',
+#         'phone_number': PhoneNumber,
+#         'age': 'Double'
+#     }
+
+#     dt = dt.set_types(logical_types=logical_types, semantic_tags=semantic_tags)
+#     assert dt['signup_date'].semantic_tags == set(['test1', 'time_index'])
+#     assert dt['signup_date'].logical_type == Datetime
+#     assert dt['age'].semantic_tags == set(['numeric'])
+#     assert dt['age'].logical_type == Double
+#     assert dt['is_registered'].semantic_tags == set(['test2'])
+#     assert dt['is_registered'].logical_type == Boolean
+#     assert dt['email'].logical_type == EmailAddress
+#     assert dt['phone_number'].logical_type == PhoneNumber
 
 
 def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
