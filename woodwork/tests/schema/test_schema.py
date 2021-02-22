@@ -585,7 +585,6 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
 def test_set_time_index(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types)
     assert schema.time_index is None
-    assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.semantic_tags['age'] == {'numeric'}
     assert schema.semantic_tags['signup_date'] == set()
 

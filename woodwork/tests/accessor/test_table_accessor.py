@@ -317,7 +317,7 @@ def test_accessor_with_numeric_time_index(time_index_df):
     with pytest.raises(TypeError, match=error_msg):
         time_index_df.ww.init(time_index='letters', logical_types={'strs': 'Integer'})
 
-    # Change time index to normal datetime time index
+    # Set numeric time index after init
     schema_df = time_index_df.copy()
     schema_df.ww.init(logical_types={'ints': 'Double'})
     assert schema_df.ww.time_index is None
