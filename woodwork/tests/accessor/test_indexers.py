@@ -32,12 +32,19 @@ def test_iloc_column(sample_series):
     series = sample_series.astype('category')
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
-    series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
+    description = 'custom column description'
+    metadata = {'meta_key': 'custom metadata'}
+    series.ww.init(logical_type=logical_type,
+                   semantic_tags=semantic_tags,
+                   description=description,
+                   metadata=metadata)
 
     sliced = series.ww.iloc[2:]
     assert sliced.name == "sample_series"
     assert sliced.ww.logical_type == logical_type
     assert sliced.ww.semantic_tags == {'category', 'tag1', 'tag2'}
+    assert sliced.ww.description == description
+    assert sliced.ww.metadata == metadata
     pd.testing.assert_series_equal(to_pandas(sliced), to_pandas(series.iloc[2:]))
 
     assert series.ww.iloc[0] == 'a'

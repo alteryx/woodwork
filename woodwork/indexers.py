@@ -85,7 +85,9 @@ def _process_selection(selection, original_data):
         #     semantic_tags = semantic_tags - {'index'} - {'time_index'}
         selection.ww.init(logical_type=logical_type,
                           semantic_tags=semantic_tags,
-                          use_standard_tags=original_data.ww.use_standard_tags)
+                          use_standard_tags=original_data.ww.use_standard_tags,
+                          description=original_data.ww.description,
+                          metadata=original_data.ww.metadata)
         return selection
     # elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
     #     return _new_dt_including(self.ww_data, selection)
