@@ -176,7 +176,7 @@ class Schema(object):
 
         # Set logical types
         # --> we should confirm they're ltype objects and not strings - but probably below
-        for col_name, column in self.columns.items():
+        for col_name in (logical_types.keys() | semantic_tags.keys()):
             if col_name not in logical_types and col_name not in semantic_tags:
                 continue
 

@@ -359,7 +359,7 @@ def test_set_logical_types_of_indices(sample_column_names, sample_inferred_logic
     pass
 
 
-def test_set_types_combined(sample_df):
+def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
     # test that the resetting of indices when ltype changes doesnt touch index??
     semantic_tags = {
         'id': 'tag1',
@@ -374,13 +374,33 @@ def test_set_types_combined(sample_df):
     schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'email': 'new_tag'},
                      logical_types={'id': Double, 'age': Double, 'email': Categorical})
 
-    # replaces existing tags and keeps index
     assert schema.semantic_tags['id'] == {'new_tag', 'index'}
-    # keeps standard tag
     assert schema.semantic_tags['age'] == {'numeric', 'new_tag'}
-    # Adds new standard tag
     assert schema.semantic_tags['email'] == {'new_tag', 'category'}
 
+    assert schema.logical_types['id'] == Double
+    assert schema.logical_types['age'] == Double
+    assert schema.logical_types['email'] == Categorical
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=False,
+                    index='id', time_index='signup_date')
+
+    schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'is_registered': 'new_tag'},
+                     logical_types={'id': Double, 'age': Double, 'email': Categorical}, retain_index_tags=False)
+
+    assert schema.index is None
+    assert schema.time_index == 'signup_date'
+
+    assert schema.semantic_tags['id'] == {'new_tag'}
+    assert schema.semantic_tags['age'] == {'new_tag'}
+    assert schema.semantic_tags['is_registered'] == {'new_tag'}
+    assert schema.semantic_tags['email'] == set()
+    assert schema.semantic_tags['signup_date'] == {'time_index', 'secondary_time_index'}
+
+    assert schema.logical_types['id'] == Double
+    assert schema.logical_types['age'] == Double
+    assert schema.logical_types['email'] == Categorical
 
 #     dt = DataTable(sample_df, index='id', time_index='signup_date')
 #     assert dt['signup_date'].semantic_tags == set(['time_index'])

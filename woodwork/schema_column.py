@@ -149,6 +149,7 @@ def _set_semantic_tags(semantic_tags, standard_tags, use_standard_tags):
         standard_tags (set): Set of standard tags for the column logical type
         use_standard_tags (bool): If True, retain standard tags after reset
     """
+    # --> use _get_semantic_tags here
     semantic_tags = _convert_input_to_set(semantic_tags)
 
     if use_standard_tags:
