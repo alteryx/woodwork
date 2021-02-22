@@ -95,36 +95,6 @@ def test_accessor_warnings_accessing_properties_before_init(sample_series):
         sample_series.ww.semantic_tags
 
 
-# def test_datacolumn_init_with_extension_array():
-#     series_categories = pd.Series([1, 2, 3], dtype='category')
-#     extension_categories = pd.Categorical([1, 2, 3])
-
-#     data_col = DataColumn(extension_categories)
-#     series = data_col.to_series()
-#     assert series.equals(series_categories)
-#     assert series.name is None
-#     assert data_col.name is None
-#     assert data_col.dtype == 'category'
-#     assert data_col.logical_type == Categorical
-
-#     series_ints = pd.Series([1, 2, None, 4], dtype='Int64')
-#     extension_ints = pd.arrays.IntegerArray(np.array([1, 2, 3, 4], dtype="int64"), mask=np.array([False, False, True, False]))
-
-#     data_col_with_name = DataColumn(extension_ints, name='extension')
-#     series = data_col_with_name.to_series()
-#     assert series.equals(series_ints)
-#     assert series.name == 'extension'
-#     assert data_col_with_name.name == 'extension'
-
-#     series_strs = pd.Series([1, 2, None, 4], dtype='string')
-
-#     data_col_different_ltype = DataColumn(extension_ints, logical_type='NaturalLanguage')
-#     series = data_col_different_ltype.to_series()
-#     assert series.equals(series_strs)
-#     assert data_col_different_ltype.logical_type == NaturalLanguage
-#     assert data_col_different_ltype.dtype == 'string'
-
-
 def test_accessor_with_alternate_semantic_tags_input(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.copy().astype('category')
