@@ -343,11 +343,18 @@ def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['signup_date'] == {'secondary_time_index'}
 
 
-# def test_set_logical_types_invalid_data(sample_df):
-#     dt = DataTable(sample_df)
-#     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday']")
-#     with pytest.raises(LookupError, match=error_message):
-#         dt.set_types(logical_types={'birthday': Double})
+def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday']")
+    with pytest.raises(LookupError, match=error_message):
+        schema.set_types(logical_types={'birthday': Double})
+
+    error_message = ("Logical Types must be of the LogicalType class "
+                     "and registered in Woodwork's type system. "
+                     "Double does not meet that criteria.")
+    with pytest.raises(TypeError, match=error_message):
+        schema.set_types(logical_types={'id': 'Double'})
 
     # --> test in table accessor along with correct dtype change to dataframe
     # error_message = "Invalid logical type specified for 'age'"

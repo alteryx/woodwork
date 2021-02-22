@@ -7,7 +7,6 @@ import woodwork as ww
 from woodwork.schema_column import (
     _add_semantic_tags,
     _get_column_dict,
-    _get_column_tags,
     _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags
@@ -160,7 +159,7 @@ class Schema(object):
         updating the Woodwork typing information for the DataFrame.
 
         Args:
-            # --> add ltypes param back in 
+            # --> add ltypes param back in
             semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
@@ -497,6 +496,12 @@ def _check_logical_types(column_names, logical_types, require_all_cols=True):
     if cols_not_found_in_ltypes and require_all_cols:
         raise LookupError(f'logical_types is missing columns that are present in '
                           f'Schema: {sorted(list(cols_not_found_in_ltypes))}')
+
+    for col_name, logical_type in logical_types.items():
+        if _get_ltype_class(logical_type) not in ww.type_system.registered_types:
+            raise TypeError("Logical Types must be of the LogicalType class "
+                            "and registered in Woodwork's type system. "
+                            f"{logical_type} does not meet that criteria.")
 
 
 def _check_semantic_tags(column_names, semantic_tags):
