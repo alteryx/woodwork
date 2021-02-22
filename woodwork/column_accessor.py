@@ -75,7 +75,7 @@ class WoodworkColumnAccessor:
         ``.iloc[]`` is primarily integer position based (from ``0`` to
         ``length-1`` of the axis), but may also be used with a boolean array.
 
-        If selection result is a Series, Woodwork typing information will
+        If the selection result is a Series, Woodwork typing information will
         be initialized for the returned Series.
 
         Allowed inputs are:
@@ -98,7 +98,7 @@ class WoodworkColumnAccessor:
         ``.loc[]`` is primarily label based, but may also be used with a
         boolean array.
 
-        If selection result is a Series, Woodwork typing information will
+        If the selection result is a Series, Woodwork typing information will
         be initialized for the returned Series.
 
         Allowed inputs are:
