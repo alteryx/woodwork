@@ -26,8 +26,10 @@ WoodworkColumnAccessor
     :toctree: generated/
 
     WoodworkColumnAccessor
-    WoodworkColumnAccessor.init
     WoodworkColumnAccessor.add_semantic_tags
+    WoodworkColumnAccessor.iloc
+    WoodworkColumnAccessor.init
+    WoodworkColumnAccessor.loc
     WoodworkColumnAccessor.remove_semantic_tags
     WoodworkColumnAccessor.reset_semantic_tags
     WoodworkColumnAccessor.set_logical_type
