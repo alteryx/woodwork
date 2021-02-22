@@ -218,6 +218,13 @@ class WoodworkTableAccessor:
             _check_index(self._dataframe, self._schema.index)
         self._set_underlying_index()
 
+    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
+        # --> add dosctring
+        pass
+        # --> set schema
+        # go through changed ltypes and update dtype if necessary
+        # if index has been reset, reset underlying index via _set_underlying_index
+
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized
         that includes only columns whose Logical Type and semantic tags are
