@@ -16,6 +16,7 @@ from woodwork.schema_column import (
     _validate_metadata
 )
 from woodwork.utils import _get_column_logical_type, _is_valid_latlong_series
+from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 
 
 @pd.api.extensions.register_series_accessor('ww')
@@ -66,6 +67,50 @@ class WoodworkColumnAccessor:
     def description(self, description):
         _validate_description(description)
         self._schema['description'] = description
+
+    @property
+    def iloc(self):
+        """
+        Integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
+
+        Allowed inputs are:
+            An integer, e.g. ``5``.
+            A list or array of integers, e.g. ``[4, 3, 0]``.
+            A slice object with ints, e.g. ``1:7``.
+            A boolean array.
+            A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value.
+        """
+        return _iLocIndexerAccessor(self._series)
+
+    
+    @property
+    def loc(self):
+        """
+        Access a group of rows and columns by label(s) or a boolean array.
+        ``.loc[]`` is primarily label based, but may also be used with a
+        boolean array.
+        Allowed inputs are:
+        - A single label, e.g. ``5`` or ``'a'``, (note that ``5`` is
+          interpreted as a *label* of the index, and **never** as an
+          integer position along the index).
+        - A list or array of labels, e.g. ``['a', 'b', 'c']``.
+        - A slice object with labels, e.g. ``'a':'f'``.
+          .. warning:: Note that contrary to usual python slices, **both** the
+              start and the stop are included
+        - A boolean array of the same length as the axis being sliced,
+          e.g. ``[True, False, True]``.
+        - An alignable boolean Series. The index of the key will be aligned before
+          masking.
+        - An alignable Index. The Index of the returned selection will be the input.
+        - A ``callable`` function with one argument (the calling Series or
+          DataFrame) and that returns valid output for indexing (one of the above)
+        """
+        return _locIndexerAccessor(self._series)
 
     @property
     def logical_type(self):
