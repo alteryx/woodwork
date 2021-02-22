@@ -1350,32 +1350,3 @@ def test_accessor_set_index_errors(sample_df):
     error = "Index column must be unique"
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('age')
-
-
-def test_accessor_set_time_index(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
-    sample_df.ww.init()
-
-    sample_df.ww.set_time_index('signup_date')
-    assert sample_df.ww.time_index == 'signup_date'
-
-    sample_df.ww.set_time_index('age')
-    assert sample_df.ww.time_index == 'age'
-
-    sample_df.ww.set_time_index(None)
-    assert sample_df.ww.time_index is None
-
-
-def test_accessor_set_time_index_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
-    sample_df.ww.init()
-
-    error = 'Specified time index column `testing` not found in Schema'
-    with pytest.raises(LookupError, match=error):
-        sample_df.ww.set_time_index('testing')
-
-    error = "Time index column must be a Datetime or numeric column."
-    with pytest.raises(TypeError, match=error):
-        sample_df.ww.set_time_index('email')

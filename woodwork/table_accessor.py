@@ -164,19 +164,6 @@ class WoodworkTableAccessor:
             _check_index(self._dataframe, self._schema.index)
         self._set_underlying_index()
 
-    def set_time_index(self, new_time_index):
-        '''Sets the time index column of the DataFrame. Adds the 'time index' semantic tag to the column
-        and clears the tag from any previously set time index column.
-        Clears the DataFrame's time index by passing in None.
-
-        Args:
-            new_time_index (str): The name of the column to set as the time index
-        '''
-        self._schema.set_time_index(new_time_index)
-
-        if self._schema.time_index is not None:
-            _check_time_index(self._dataframe, self._schema.time_index)
-
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized
         that includes only columns whose Logical Type and semantic tags are
