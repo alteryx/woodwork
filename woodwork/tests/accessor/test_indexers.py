@@ -57,6 +57,29 @@ def test_iloc_column(sample_series):
     assert sliced.ww.semantic_tags == set()
 
 
+def test_iloc_column_does_not_propagate_changes_to_data(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    series = sample_series.astype('category')
+    logical_type = Categorical
+    semantic_tags = ['tag1', 'tag2']
+    description = 'custom column description'
+    metadata = {'meta_key': 'custom metadata'}
+    series.ww.init(logical_type=logical_type,
+                   semantic_tags=semantic_tags,
+                   description=description,
+                   metadata=metadata,
+                   use_standard_tags=False)
+
+    sliced = series.ww.iloc[2:]
+    series.ww.add_semantic_tags('new_tag')
+    assert sliced.ww.semantic_tags == {'tag1', 'tag2'}
+    assert sliced.ww.semantic_tags is not series.ww.semantic_tags
+
+    series.ww.metadata['new_key'] = 'new_value'
+    assert sliced.ww.metadata == {'meta_key': 'custom metadata'}
+    assert sliced.ww.metadata is not series.ww.metadata
+
+
 def test_loc_column(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')
