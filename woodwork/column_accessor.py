@@ -75,6 +75,9 @@ class WoodworkColumnAccessor:
         ``.iloc[]`` is primarily integer position based (from ``0`` to
         ``length-1`` of the axis), but may also be used with a boolean array.
 
+        If selection result is a Series, Woodwork typing information will
+        be initialized for the returned Series.
+
         Allowed inputs are:
             An integer, e.g. ``5``.
             A list or array of integers, e.g. ``[4, 3, 0]``.
@@ -90,10 +93,13 @@ class WoodworkColumnAccessor:
     @property
     def loc(self):
         """
-        Access a group of rows and columns by label(s) or a boolean array.
+        Access a group of rows by label(s) or a boolean array.
 
         ``.loc[]`` is primarily label based, but may also be used with a
         boolean array.
+
+        If selection result is a Series, Woodwork typing information will
+        be initialized for the returned Series.
 
         Allowed inputs are:
             A single label, e.g. ``5`` or ``'a'``, (note that ``5`` is
