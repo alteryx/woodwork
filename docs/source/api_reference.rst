@@ -12,7 +12,9 @@ WoodworkTableAccessor
     WoodworkTableAccessor
     WoodworkTableAccessor.describe
     WoodworkTableAccessor.describe_dict
+    WoodworkTableAccessor.iloc
     WoodworkTableAccessor.init
+    WoodworkTableAccessor.loc
     WoodworkTableAccessor.mutual_information_dict
     WoodworkTableAccessor.mutual_information
     WoodworkTableAccessor.select
