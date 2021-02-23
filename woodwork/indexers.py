@@ -73,21 +73,23 @@ class _locIndexerAccessor:
 
 def _process_selection(selection, original_data):
     if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
-        # col_name = selection.name
-        # if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
-        #     # return selection as series if series of one row.
-        #     return selection
-        # if isinstance(self.ww_data, ww.DataTable):
-        #     logical_type = self.ww_data.logical_types.get(col_name, None)
-        #     semantic_tags = self.ww_data.semantic_tags.get(col_name, None)
-        # else:
-        schema = copy.deepcopy(original_data.ww._schema)
-        del schema['dtype']
-        selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
-
-        return selection
-    # elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
-    #     return _new_dt_including(self.ww_data, selection)
-    else:
-        # singular value
-        return selection
+        if isinstance(original_data, pd.DataFrame) and set(selection.index.values) == set(original_data.columns):
+            # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
+            schema = None
+        elif isinstance(original_data, pd.DataFrame):
+            # Selecting a single column from a DataFrame
+            schema = original_data.ww.schema.columns[selection.name]
+            schema['semantic_tags'] = schema['semantic_tags'] - {'index'} - {'time_index'}
+        else:
+            # Selecting a new Series from an existing Series
+            schema = copy.deepcopy(original_data.ww._schema)
+        if schema:
+            del schema['dtype']
+            selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
+    elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
+        # Selecting a new DataFrame from an existing DataFrame
+        schema = original_data.ww.schema
+        new_schema = schema._get_subset_schema(list(selection.columns))
+        selection.ww.init(schema=new_schema)
+    # Selecting a single value or return selection from above
+    return selection

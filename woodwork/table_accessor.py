@@ -7,6 +7,7 @@ from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning
 )
+from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
@@ -130,7 +131,7 @@ class WoodworkTableAccessor:
             If the method is present on DataFrame, uses that method.
         '''
         if self._schema is None:
-            raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+            _raise_init_error()
         if hasattr(self._schema, attr):
             return self._make_schema_call(attr)
         if hasattr(self._dataframe, attr):
@@ -140,6 +141,59 @@ class WoodworkTableAccessor:
 
     def __repr__(self):
         return repr(self._schema)
+
+    @property
+    def iloc(self):
+        """
+        Integer-location based indexing for selection by position.
+        ``.iloc[]`` is primarily integer position based (from ``0`` to
+        ``length-1`` of the axis), but may also be used with a boolean array.
+
+        If the selection result is a DataFrame or Series, Woodwork typing
+        information will be initialized for the returned object when possible.
+
+        Allowed inputs are:
+            An integer, e.g. ``5``.
+            A list or array of integers, e.g. ``[4, 3, 0]``.
+            A slice object with ints, e.g. ``1:7``.
+            A boolean array.
+            A ``callable`` function with one argument (the calling Series, DataFrame
+            or Panel) and that returns valid output for indexing (one of the above).
+            This is useful in method chains, when you don't have a reference to the
+            calling object, but would like to base your selection on some value.
+        """
+        if self._schema is None:
+            _raise_init_error()
+        return _iLocIndexerAccessor(self._dataframe)
+
+    @property
+    def loc(self):
+        """
+        Access a group of rows by label(s) or a boolean array.
+
+        ``.loc[]`` is primarily label based, but may also be used with a
+        boolean array.
+
+        If the selection result is a DataFrame or Series, Woodwork typing
+        information will be initialized for the returned object when possible.
+
+        Allowed inputs are:
+            A single label, e.g. ``5`` or ``'a'``, (note that ``5`` is
+            interpreted as a *label* of the index, and **never** as an
+            integer position along the index).
+            A list or array of labels, e.g. ``['a', 'b', 'c']``.
+            A slice object with labels, e.g. ``'a':'f'``.
+            A boolean array of the same length as the axis being sliced,
+            e.g. ``[True, False, True]``.
+            An alignable boolean Series. The index of the key will be aligned before
+            masking.
+            An alignable Index. The Index of the returned selection will be the input.
+            A ``callable`` function with one argument (the calling Series or
+            DataFrame) and that returns valid output for indexing (one of the above)
+        """
+        if self._schema is None:
+            _raise_init_error()
+        return _locIndexerAccessor(self._dataframe)
 
     @property
     def schema(self):
@@ -474,3 +528,7 @@ def _get_invalid_schema_message(dataframe, schema):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
             return 'Index column is not unique'
+
+
+def _raise_init_error():
+    raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
