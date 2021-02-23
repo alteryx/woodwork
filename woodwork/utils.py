@@ -326,7 +326,6 @@ def _get_column_logical_type(series, logical_type, name):
 
 
 def _parse_logical_type(logical_type, name):
-    # --> pull out parsing logic to own tests
     if isinstance(logical_type, str):
         logical_type = ww.type_system.str_to_logical_type(logical_type)
     ltype_class = ww.type_sys.utils._get_ltype_class(logical_type)
