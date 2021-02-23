@@ -203,9 +203,10 @@ class WoodworkTableAccessor:
         and clears the tag from any previously set index column.
         Setting a column as the index column will also cause any previously set standard
         tags for the column to be removed.
+        Clears the DataFrame's index by passing in None.
 
         Args:
-            index (str): The name of the column to set as the index
+            new_index (str): The name of the column to set as the index
         """
         self._schema.set_index(new_index)
 

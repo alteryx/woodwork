@@ -582,12 +582,64 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
         schema.set_index('testing')
 
 
+def test_set_time_index(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    assert schema.time_index is None
+    assert schema.semantic_tags['age'] == {'numeric'}
+    assert schema.semantic_tags['signup_date'] == set()
+
+    schema.set_time_index('signup_date')
+    assert schema.time_index == 'signup_date'
+    assert schema.semantic_tags['signup_date'] == {'time_index'}
+
+    schema.set_time_index('age')
+    assert schema.time_index == 'age'
+    assert schema.semantic_tags['age'] == {'numeric', 'time_index'}
+    assert schema.semantic_tags['signup_date'] == set()
+
+    schema.set_time_index(None)
+    assert schema.index is None
+    assert schema.semantic_tags['age'] == {'numeric'}
+    assert schema.semantic_tags['signup_date'] == set()
+
+
+def test_set_numeric_datetime_time_index(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, {**sample_inferred_logical_types, 'age': Datetime})
+
+    assert schema.logical_types['age'] == Datetime
+    assert schema.semantic_tags['age'] == set()
+
+    schema.set_time_index('age')
+    assert schema.time_index == 'age'
+    assert schema.semantic_tags['age'] == {'time_index'}
+
+    schema.set_time_index(None)
+    assert schema.time_index is None
+    assert schema.semantic_tags['age'] == set()
+
+
+def test_set_time_index_errors(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    error = re.escape("Specified time index column `testing` not found in Schema")
+    with pytest.raises(LookupError, match=error):
+        schema.set_time_index('testing')
+
+    error = re.escape("Time index column must be a Datetime or numeric column.")
+    with pytest.raises(TypeError, match=error):
+        schema.set_time_index('email')
+
+
 def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types)
     schema.set_index(None)
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id')
+    schema.set_time_index(None)
+    assert schema.time_index is None
+
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id', time_index='signup_date')
     original_schema = schema._get_subset_schema(list(schema.columns.keys()))
 
     schema.set_index('id')
@@ -595,15 +647,7 @@ def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['id'] == {'index'}
     assert schema == original_schema
 
-    # --> add time index
-#     dt_time_index_twice = dt.set_time_index('signup_date')
-#     assert 'time_index' in dt_time_index_twice['signup_date'].semantic_tags
-#     assert dt_time_index_twice.time_index == 'signup_date'
-#     assert dt_time_index_twice == dt
-#     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt_time_index_twice.df))
-
-
-#     dt.time_index = 'signup_date'
-#     assert 'time_index' in dt['signup_date'].semantic_tags
-#     assert dt.time_index == 'signup_date'
-#     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(dt.df))
+    schema.set_time_index('signup_date')
+    assert schema.time_index == 'signup_date'
+    assert schema.semantic_tags['signup_date'] == {'time_index'}
+    assert schema == original_schema
