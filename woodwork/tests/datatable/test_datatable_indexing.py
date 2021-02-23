@@ -162,6 +162,10 @@ def test_underlying_index_on_update(sample_df):
     assert type(dt._dataframe.index) == pd.Int64Index
     assert type(dt.to_dataframe().index) == pd.Int64Index
 
+    actual = dt.iloc[[0, 1]]
+    assert type(actual._dataframe.index) == pd.Index
+    assert type(actual.to_dataframe().index) == pd.Index
+
     actual = dt.select(dt.index)
     assert type(actual._dataframe.index) == pd.Int64Index
     assert type(actual.to_dataframe().index) == pd.Int64Index
