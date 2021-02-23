@@ -187,22 +187,6 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
     assert date_col['logical_type'] == Double
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-    # --> add back when schema updates are implemented
-    # # Change time index to normal datetime time index
-    # schema = schema.set_time_index('times')
-    # date_col = schema['ints']
-    # assert schema.time_index == 'times'
-    # assert date_col.logical_type == Double
-    # assert date_col.semantic_tags == {'numeric'}
-
-    # Set numeric time index after init
-    # schema = Schema(time_index_df, logical_types={'ints': 'Double'})
-    # schema = schema.set_time_index('ints')
-    # date_col = schema['ints']
-    # assert schema.time_index == 'ints'
-    # assert date_col.logical_type == Double
-    # assert date_col.semantic_tags == {'time_index', 'numeric'}
-
 
 def test_schema_init_with_logical_type_classes(sample_column_names, sample_inferred_logical_types):
     logical_types = {

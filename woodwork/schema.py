@@ -70,7 +70,7 @@ class Schema(object):
             self.set_index(index)
 
         if time_index is not None:
-            _update_time_index(self, column_names, time_index)
+            self.set_time_index(time_index)
 
         self.metadata = table_metadata or {}
 
@@ -286,6 +286,7 @@ class Schema(object):
 
         Args:
             new_index (str): Name of the new index column. Must be present in the Schema.
+                If None, will remove the index.
         '''
         old_index = self.index
         if old_index is not None:
@@ -293,6 +294,21 @@ class Schema(object):
         if new_index is not None:
             _check_index(self.columns.keys(), new_index)
             self._set_index_tags(new_index)
+
+    def set_time_index(self, new_time_index):
+        '''Set the time index. Adds the 'time_index' semantic tag to the column and
+        clears the tag from any previously set index column
+
+        Args:
+            new_time_index (str): The name of the column to set as the time index.
+                If None, will remove the time_index.
+        '''
+        old_time_index = self.time_index
+        if old_time_index is not None:
+            self.remove_semantic_tags({old_time_index: 'time_index'})
+        if new_time_index is not None:
+            _check_time_index(self.columns.keys(), new_time_index, self.logical_types.get(new_time_index))
+            self._set_time_index_tags(new_time_index)
 
     def _set_index_tags(self, index):
         '''
@@ -498,17 +514,6 @@ def _check_column_metadata(column_names, column_metadata):
     if cols_not_found:
         raise LookupError('column_metadata contains columns that do not exist: '
                           f'{sorted(list(cols_not_found))}')
-
-
-def _update_time_index(schema, column_names, time_index, old_time_index=None):
-    """Add the `time_index` tag to the specified time_index column and remove the tag from the
-    old_time_index column, if specified. Also checks that the specified time_index
-    column can be used as a time index."""
-    _check_time_index(column_names, time_index, schema.columns[time_index]['logical_type'])
-    # --> when schema updates are implemented need a way of removing the old index
-    # if old_time_index is not None:
-    #     schema._update_columns({old_time_index: schema.columns[old_time_index].remove_semantic_tags('time_index')})
-    schema._set_time_index_tags(time_index)
 
 
 def _validate_not_setting_index_tags(semantic_tags, col_name):
