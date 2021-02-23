@@ -19,7 +19,11 @@ from woodwork.type_sys.utils import (
     _is_numeric_series,
     col_is_datetime
 )
-from woodwork.utils import _get_column_logical_type, import_or_none
+from woodwork.utils import (
+    _get_column_logical_type,
+    _parse_logical_type,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -219,7 +223,7 @@ class WoodworkTableAccessor:
         self._set_underlying_index()
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
-        """Update the logical tpye and semantic tags for any columns names in the provided types dictionaries,
+        """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
         updating the Woodwork typing information for the DataFrame.
 
         Args:
@@ -232,9 +236,8 @@ class WoodworkTableAccessor:
                 semantic tags or logical type changes. Defaults to True.
         """
         logical_types = logical_types or {}
-        logical_types = {col_name: _get_column_logical_type(None, ltype, col_name) for col_name, ltype in logical_types.items()}
+        logical_types = {col_name: _parse_logical_type(ltype, col_name) for col_name, ltype in logical_types.items()}
 
-        original_index = self._schema.index
         self._schema.set_types(logical_types=logical_types,
                                semantic_tags=semantic_tags,
                                retain_index_tags=retain_index_tags)
@@ -244,10 +247,6 @@ class WoodworkTableAccessor:
             updated_series = _update_column_dtype(series, logical_type)
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
-
-        # if index has been reset, reset underlying index of DataFrame
-        if original_index is not None and self._schema.index is None:
-            self._set_underlying_index()
 
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized

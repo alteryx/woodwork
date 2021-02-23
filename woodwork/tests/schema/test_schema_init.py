@@ -90,10 +90,7 @@ def test_check_logical_types_errors(sample_column_names):
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
-    bad_logical_types_keys = {
-        'email': 1,
-
-    }
+    bad_logical_types_keys = {'email': 1}
     error_message = ("Logical Types must be of the LogicalType class "
                      "and registered in Woodwork's type system. "
                      "1 does not meet that criteria.")

@@ -796,8 +796,8 @@ def test_ordinal_with_incomplete_ranking(sample_series):
     with pytest.raises(ValueError, match=error_msg):
         schema_df.ww.init(logical_types={'sample_series': ordinal_incomplete_order})
 
+    schema_df.ww.init()
     with pytest.raises(ValueError, match=error_msg):
-        schema_df.ww.init()
         schema_df.ww.set_types(logical_types={'sample_series': ordinal_incomplete_order})
 
 
@@ -1360,7 +1360,7 @@ def test_accessor_set_index_errors(sample_df):
 def test_set_types(sample_df):
     xfail_dask_and_koalas(sample_df)
 
-    sample_df.ww.init(index='full_name')
+    sample_df.ww.init(index='full_name', time_index='signup_date')
 
     original_df = sample_df.ww.copy()
 
@@ -1371,8 +1371,11 @@ def test_set_types(sample_df):
     sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
     assert sample_df['is_registered'].dtype == 'Int64'
 
-    sample_df.ww.set_types(logical_types={'full_name': 'Categorical'}, retain_index_tags=False)
-    assert type(sample_df.index) == pd.RangeIndex
+    sample_df.ww.set_types(semantic_tags={'signup_date': ['new_tag']},
+                           logical_types={'full_name': 'Categorical'},
+                           retain_index_tags=False)
+    assert sample_df.ww.index is None
+    assert sample_df.ww.time_index is None
 
 
 def test_set_types_errors(sample_df):
