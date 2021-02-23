@@ -76,7 +76,7 @@ def _process_selection(selection, original_data):
         if isinstance(original_data, pd.DataFrame) and set(selection.index.values) == set(original_data.columns):
             # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
             schema = None
-        elif isinstance(original_data, pd.DataFrame) and set(selection.index.values) != set(original_data.columns):
+        elif isinstance(original_data, pd.DataFrame):
             # Selecting a single column from a DataFrame
             schema = original_data.ww.schema.columns[selection.name]
             schema['semantic_tags'] = schema['semantic_tags'] - {'index'} - {'time_index'}
