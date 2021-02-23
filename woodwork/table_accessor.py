@@ -149,8 +149,8 @@ class WoodworkTableAccessor:
         ``.iloc[]`` is primarily integer position based (from ``0`` to
         ``length-1`` of the axis), but may also be used with a boolean array.
 
-        If the selection result is a Series, Woodwork typing information will
-        be initialized for the returned Series.
+        If the selection result is a DataFrame or Series, Woodwork typing
+        information will be initialized for the returned object when possible.
 
         Allowed inputs are:
             An integer, e.g. ``5``.
@@ -172,8 +172,8 @@ class WoodworkTableAccessor:
         ``.loc[]`` is primarily label based, but may also be used with a
         boolean array.
 
-        If the selection result is a Series, Woodwork typing information will
-        be initialized for the returned Series.
+        If the selection result is a DataFrame or Series, Woodwork typing
+        information will be initialized for the returned object when possible.
 
         Allowed inputs are:
             A single label, e.g. ``5`` or ``'a'``, (note that ``5`` is
