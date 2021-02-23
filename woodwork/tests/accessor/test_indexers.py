@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from woodwork.indexers import _iLocIndexerAccessor
+from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import Categorical
 from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
 from woodwork.utils import import_or_none
@@ -17,14 +17,22 @@ def test_iLocIndexer_class_error(sample_df_dask, sample_series_dask):
         _iLocIndexerAccessor(sample_series_dask)
 
 
-# def test_iLocIndexer_class(sample_df):
-#     if dd and isinstance(sample_df, dd.DataFrame):
-#         pytest.xfail('iloc is not supported with Dask inputs')
-#     dt = ww.DataTable(sample_df)
-#     ind = _iLocIndexer(dt)
-#     pd.testing.assert_frame_equal(to_pandas(ind.underlying_data), to_pandas(sample_df))
-#     pd.testing.assert_frame_equal(to_pandas(ind[1:2].to_dataframe()), to_pandas(sample_df.iloc[1:2]))
-#     assert ind[0, 0] == 0
+def test_iLocIndexer_class(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    # if dd and isinstance(sample_df, dd.DataFrame):
+    #     pytest.xfail('iloc is not supported with Dask inputs')
+    ind = _iLocIndexerAccessor(sample_df)
+    pd.testing.assert_frame_equal(to_pandas(ind.data), to_pandas(sample_df))
+    pd.testing.assert_frame_equal(to_pandas(ind[1:2]), to_pandas(sample_df.iloc[1:2]))
+    assert ind[0, 0] == 0
+
+
+def test_locIndexer_class(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    ind = _locIndexerAccessor(sample_df)
+    pd.testing.assert_frame_equal(to_pandas(ind.data), to_pandas(sample_df))
+    pd.testing.assert_frame_equal(to_pandas(ind[1:2]), to_pandas(sample_df.loc[1:2]))
+    assert ind[0, 'id'] == 0
 
 
 def test_iloc_column(sample_series):
@@ -103,15 +111,28 @@ def test_loc_column(sample_series):
     assert sliced.ww.semantic_tags == set()
 
 
-# def test_iloc_indices_column(sample_df):
-#     if dd and isinstance(sample_df, dd.DataFrame):
-#         pytest.xfail('iloc is not supported with Dask inputs')
-#     dt_indices = DataTable(sample_df, index='id', time_index='signup_date')
-#     sliced_index = dt_indices.iloc[:, 0]
-#     assert sliced_index.semantic_tags == {'numeric'}
+def test_iloc_indices_column(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    # if dd and isinstance(sample_df, dd.DataFrame):
+    #     pytest.xfail('iloc is not supported with Dask inputs')
+    sample_df.ww.init(index='id', time_index='signup_date')
+    sliced_index = sample_df.ww.iloc[:, 0]
+    assert sliced_index.ww.semantic_tags == {'numeric'}
 
-#     sliced_time_index = dt_indices.iloc[:, 5]
-#     assert sliced_time_index.semantic_tags == set()
+    sliced_time_index = sample_df.ww.iloc[:, 5]
+    assert sliced_time_index.ww.semantic_tags == set()
+
+
+def test_loc_indices_column(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    # if dd and isinstance(sample_df, dd.DataFrame):
+    #     pytest.xfail('iloc is not supported with Dask inputs')
+    sample_df.ww.init(index='id', time_index='signup_date')
+    sliced_index = sample_df.ww.loc[:, 'id']
+    assert sliced_index.ww.semantic_tags == {'numeric'}
+
+    sliced_time_index = sample_df.ww.loc[:, 'signup_date']
+    assert sliced_time_index.ww.semantic_tags == set()
 
 
 # def test_iloc_with_properties(sample_df):

@@ -73,21 +73,24 @@ class _locIndexerAccessor:
 
 def _process_selection(selection, original_data):
     if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
-        # col_name = selection.name
         # if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
-        #     # return selection as series if series of one row.
+        #     # Selecting a single row from a DataFrame, returned as Series
         #     return selection
-        # if isinstance(self.ww_data, ww.DataTable):
-        #     logical_type = self.ww_data.logical_types.get(col_name, None)
-        #     semantic_tags = self.ww_data.semantic_tags.get(col_name, None)
-        # else:
-        schema = copy.deepcopy(original_data.ww._schema)
+        col_name = selection.name
+        if isinstance(original_data, pd.DataFrame):
+            # Selecting a single column from a DataFrame
+            schema = original_data.ww.schema.columns[col_name]
+            schema['semantic_tags'] = schema['semantic_tags'] - {'index'} - {'time_index'}
+        else:
+            # Selecting a new Series from an existing Series
+            schema = copy.deepcopy(original_data.ww._schema)
         del schema['dtype']
         selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
 
         return selection
     # elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
+    #     # Selecting a new DataFrame from an existing DataFrame
     #     return _new_dt_including(self.ww_data, selection)
     else:
-        # singular value
+        # Selecting a singular value
         return selection
