@@ -352,11 +352,6 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
                     index='full_name',
                     semantic_tags=semantic_tags, use_standard_tags=True)
 
-    # If the tags for a column are None, nothing should change
-    schema.set_types(semantic_tags={'full_name': None}, retain_index_tags=False)
-    assert schema.logical_types['full_name'] == NaturalLanguage
-    assert schema.semantic_tags['full_name'] == {'index', 'tag1'}
-
     # An empty set should reset the tags
     schema.set_types(semantic_tags={'full_name': set()}, retain_index_tags=False)
     assert schema.logical_types['full_name'] == NaturalLanguage
@@ -385,6 +380,10 @@ def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_log
                      "<class 'int'> does not meet that criteria.")
     with pytest.raises(TypeError, match=error_message):
         schema.set_types(logical_types={'age': int})
+
+    error_message = "semantic_tags for full_name must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        schema.set_types(semantic_tags={'full_name': None})
 
 
 def test_set_types_combined(sample_column_names, sample_inferred_logical_types):

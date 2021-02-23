@@ -124,6 +124,10 @@ def test_check_semantic_tags_errors(sample_column_names):
     with pytest.raises(LookupError, match=error_message):
         _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
 
+    error_message = "semantic_tags for id must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        _check_semantic_tags(sample_column_names, {'id': 1})
+
 
 def test_check_table_metadata_errors():
     error_message = 'Table metadata must be a dictionary.'

@@ -177,7 +177,6 @@ class Schema(object):
             original_tags = self.semantic_tags[col_name]
 
             # Update Logical Type for the Schema, getting new semantic tags
-            ltype_update_tags = original_tags
             new_logical_type = logical_types.get(col_name)
             if new_logical_type is not None:
                 self.columns[col_name]['logical_type'] = new_logical_type
@@ -516,6 +515,10 @@ def _check_semantic_tags(column_names, semantic_tags):
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that do not exist: '
                           f'{sorted(list(cols_not_found))}')
+
+    for col_name, col_tags in semantic_tags.items():
+        if not isinstance(col_tags, (str, list, set)):
+            raise TypeError(f"semantic_tags for {col_name} must be a string, set or list")
 
 
 def _check_column_descriptions(column_names, column_descriptions):
