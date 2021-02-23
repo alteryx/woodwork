@@ -73,13 +73,12 @@ class _locIndexerAccessor:
 
 def _process_selection(selection, original_data):
     if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
-        # if isinstance(self.ww_data, ww.DataTable) and set(selection.index.values) == set(self.ww_data.columns):
-        #     # Selecting a single row from a DataFrame, returned as Series
-        #     return selection
-        col_name = selection.name
+        if isinstance(original_data, pd.DataFrame) and set(selection.index.values) == set(original_data.columns):
+            # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
+            return selection
         if isinstance(original_data, pd.DataFrame):
             # Selecting a single column from a DataFrame
-            schema = original_data.ww.schema.columns[col_name]
+            schema = original_data.ww.schema.columns[selection.name]
             schema['semantic_tags'] = schema['semantic_tags'] - {'index'} - {'time_index'}
         else:
             # Selecting a new Series from an existing Series
@@ -88,9 +87,12 @@ def _process_selection(selection, original_data):
         selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
 
         return selection
-    # elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
-    #     # Selecting a new DataFrame from an existing DataFrame
-    #     return _new_dt_including(self.ww_data, selection)
+    elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
+        # Selecting a new DataFrame from an existing DataFrame
+        schema = original_data.ww.schema
+        new_schema = schema._get_subset_schema(list(selection.columns))
+        selection.ww.init(schema=new_schema)
+        return selection
     else:
-        # Selecting a singular value
+        # Selecting a single value
         return selection
