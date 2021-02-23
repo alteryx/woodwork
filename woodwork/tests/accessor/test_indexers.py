@@ -44,6 +44,28 @@ def test_locIndexer_class(sample_df):
     assert ind[0, 'id'] == 0
 
 
+def test_error_before_table_init(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    error_message = "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_df.ww.iloc[:, :]
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_df.ww.loc[:, :]
+
+
+def test_error_before_column_init(sample_series):
+    xfail_dask_and_koalas(sample_series)
+    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.iloc[:]
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_series.ww.loc[:]
+
+
 def test_iloc_column(sample_series):
     xfail_dask_and_koalas(sample_series)
     series = sample_series.astype('category')

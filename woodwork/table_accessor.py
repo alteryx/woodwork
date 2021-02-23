@@ -131,7 +131,7 @@ class WoodworkTableAccessor:
             If the method is present on DataFrame, uses that method.
         '''
         if self._schema is None:
-            raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+            _raise_init_error()
         if hasattr(self._schema, attr):
             return self._make_schema_call(attr)
         if hasattr(self._dataframe, attr):
@@ -162,6 +162,8 @@ class WoodworkTableAccessor:
             This is useful in method chains, when you don't have a reference to the
             calling object, but would like to base your selection on some value.
         """
+        if self._schema is None:
+            _raise_init_error()
         return _iLocIndexerAccessor(self._dataframe)
 
     @property
@@ -189,6 +191,8 @@ class WoodworkTableAccessor:
             A ``callable`` function with one argument (the calling Series or
             DataFrame) and that returns valid output for indexing (one of the above)
         """
+        if self._schema is None:
+            _raise_init_error()
         return _locIndexerAccessor(self._dataframe)
 
     @property
@@ -524,3 +528,7 @@ def _get_invalid_schema_message(dataframe, schema):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
             return 'Index column is not unique'
+
+
+def _raise_init_error():
+    raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")

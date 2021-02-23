@@ -88,6 +88,8 @@ class WoodworkColumnAccessor:
             This is useful in method chains, when you don't have a reference to the
             calling object, but would like to base your selection on some value.
         """
+        if self._schema is None:
+            _raise_init_error()
         return _iLocIndexerAccessor(self._series)
 
     @property
@@ -115,6 +117,8 @@ class WoodworkColumnAccessor:
             A ``callable`` function with one argument (the calling Series or
             DataFrame) and that returns valid output for indexing (one of the above)
         """
+        if self._schema is None:
+            _raise_init_error()
         return _locIndexerAccessor(self._series)
 
     @property
