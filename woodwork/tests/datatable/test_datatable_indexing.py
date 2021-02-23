@@ -98,8 +98,8 @@ def test_underlying_index_no_index(sample_df):
     assert type(sample_df.index) == pd.Int64Index
     dt = DataTable(sample_df)
 
-    assert type(dt._dataframe.index) == pd.RangeIndex
-    assert type(dt.to_dataframe().index) == pd.RangeIndex
+    assert type(dt._dataframe.index) == pd.Int64Index
+    assert type(dt.to_dataframe().index) == pd.Int64Index
 
 
 def test_underlying_index(sample_df):
@@ -161,6 +161,34 @@ def test_underlying_index_on_update(sample_df):
     assert dt._dataframe.index.name is None
     assert type(dt._dataframe.index) == pd.Int64Index
     assert type(dt.to_dataframe().index) == pd.Int64Index
+
+    actual = dt.iloc[[0, 1]]
+    assert type(actual._dataframe.index) == pd.Index
+    assert type(actual.to_dataframe().index) == pd.Index
+
+    actual = dt.select(dt.index)
+    assert type(actual._dataframe.index) == pd.Int64Index
+    assert type(actual.to_dataframe().index) == pd.Int64Index
+
+    actual = dt[['age']]
+    assert type(actual._dataframe.index) == pd.Int64Index
+    assert type(actual.to_dataframe().index) == pd.Int64Index
+
+    actual = dt.drop(dt.index)
+    assert type(actual._dataframe.index) == pd.RangeIndex
+    assert type(actual.to_dataframe().index) == pd.RangeIndex
+
+    actual = dt.reset_semantic_tags(retain_index_tags=False)
+    assert type(actual._dataframe.index) == pd.RangeIndex
+    assert type(actual.to_dataframe().index) == pd.RangeIndex
+
+    actual = dt.set_types(retain_index_tags=False, semantic_tags={'id': 'numeric'})
+    assert type(actual._dataframe.index) == pd.RangeIndex
+    assert type(actual.to_dataframe().index) == pd.RangeIndex
+
+    dt.pop(dt.index)
+    assert type(dt._dataframe.index) == pd.RangeIndex
+    assert type(dt.to_dataframe().index) == pd.RangeIndex
 
 
 def test_set_time_index(sample_df):

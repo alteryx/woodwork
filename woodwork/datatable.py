@@ -321,6 +321,8 @@ class DataTable(object):
         if self.index is not None and index is None:
             updated_index_col = self.columns[self.index].remove_semantic_tags('index')
             self._update_columns({self.index: updated_index_col})
+            self._dataframe = self._dataframe.reset_index(drop=True)
+
         elif index is not None:
             _update_index(self, index, self.index)
         # Update the underlying index
@@ -374,21 +376,15 @@ class DataTable(object):
         '''Sets the index of a DataTable's underlying dataframe on pandas DataTables.
 
         If the DataTable has an index, will be set to that index.
-        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
-        meaning that the index will be a pd.RangeIndex starting from zero.
+        If no index is specified, the DataFrame's index will remain the same.
         '''
         needs_update = False
         new_df = self._dataframe
-        if isinstance(self._dataframe, pd.DataFrame):
-            if self.index is not None:
-                needs_update = True
-                new_df = self._dataframe.set_index(self.index, drop=False)
-                # Drop index name to not overlap with the original column
-                new_df.index.name = None
-            # Only reset the index if the index isn't a RangeIndex
-            elif not isinstance(self._dataframe.index, pd.RangeIndex):
-                needs_update = True
-                new_df = self._dataframe.reset_index(drop=True)
+        if isinstance(self._dataframe, pd.DataFrame) and self.index is not None:
+            needs_update = True
+            new_df = self._dataframe.set_index(self.index, drop=False)
+            # Drop index name to not overlap with the original column
+            new_df.index.name = None
 
         self._dataframe = new_df
         return needs_update
@@ -403,6 +399,9 @@ class DataTable(object):
             woodwork.DataColumn: DataColumn including logical type and semantic tags.
         """
         col = self[column_name]
+        if 'index' in col.semantic_tags:
+            self._dataframe = self._dataframe.reset_index(drop=True)
+
         del self.columns[column_name]
         self._dataframe = self._dataframe.drop(column_name, axis=1)
         return col
@@ -423,7 +422,10 @@ class DataTable(object):
         if not_present:
             raise ValueError(f'{not_present} not found in DataTable')
 
-        return self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
+        dt = self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
+        if dt.index is None and self.index is not None:
+            dt._dataframe = dt._dataframe.reset_index(drop=True)
+        return dt
 
     def rename(self, columns):
         """Renames columns in a DataTable
@@ -534,6 +536,8 @@ class DataTable(object):
             cols_to_update[col_name] = col
 
         new_dt._update_columns(cols_to_update)
+        if new_dt.index is None and self.index is not None:
+            new_dt._dataframe = new_dt._dataframe.reset_index(drop=True)
         return new_dt
 
     def add_semantic_tags(self, semantic_tags):
@@ -563,7 +567,10 @@ class DataTable(object):
             woodwork.DataTable: DataTable with the specified semantic tags removed
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
-        return self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
+        dt = self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
+        if dt.index is None and self.index is not None:
+            dt._dataframe = dt._dataframe.reset_index(drop=True)
+        return dt
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values and
@@ -589,7 +596,10 @@ class DataTable(object):
                               f"dataframe: '{', '.join(cols_not_found)}'")
         if not columns:
             columns = self._dataframe.columns
-        return self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
+        dt = self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
+        if dt.index is None and self.index is not None:
+            dt._dataframe = dt._dataframe.reset_index(drop=True)
+        return dt
 
     def _update_cols_and_get_new_dt(self, method, new_values, *args):
         """Helper method that can be used for updating columns by calling the column method

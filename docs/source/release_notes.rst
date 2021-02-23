@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
+        * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
@@ -14,7 +15,7 @@ Release Notes
         * Refactor test_datatable.py (:pr:`574`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`johnbridstrup`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
