@@ -425,7 +425,6 @@ class DataTable(object):
         dt = self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
         if dt.index is None and self.index is not None:
             dt._dataframe = dt._dataframe.reset_index(drop=True)
-
         return dt
 
     def rename(self, columns):
@@ -571,7 +570,6 @@ class DataTable(object):
         dt = self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
         if dt.index is None and self.index is not None:
             dt._dataframe = dt._dataframe.reset_index(drop=True)
-
         return dt
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
@@ -599,7 +597,7 @@ class DataTable(object):
         if not columns:
             columns = self._dataframe.columns
         dt = self._update_cols_and_get_new_dt('reset_semantic_tags', columns, retain_index_tags)
-        if self.index is not None and not retain_index_tags:
+        if dt.index is None and self.index is not None:
             dt._dataframe = dt._dataframe.reset_index(drop=True)
         return dt
 
