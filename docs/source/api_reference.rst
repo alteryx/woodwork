@@ -46,6 +46,8 @@ Schema
     Schema.add_semantic_tags
     Schema.remove_semantic_tags
     Schema.reset_semantic_tags
+    Schema.set_index
+    Schema.set_time_index
     Schema.set_types
 
 
