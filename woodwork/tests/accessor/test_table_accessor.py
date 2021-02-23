@@ -634,17 +634,14 @@ def test_invalid_dtype_casting():
     with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
-    # --> add back when schema updates are implemented
-    # # Cannot cast Datetime to Double
-    # series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
-    # ltypes = {
-    #     column_name: Datetime,
-    # }
-    # schema = Schema(pd.DataFrame(series), logical_types=ltypes)
-    # err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
-    #     'float64. Please confirm the underlying data is consistent with logical type Double.'
-    # with pytest.raises(TypeError, match=re.escape(err_msg)):
-    #     schema.set_types(logical_types={column_name: Double})
+    # Cannot cast Datetime to Double
+    df = pd.DataFrame({column_name: ['2020-01-01', '2020-01-02', '2020-01-03']})
+    df.ww.init(logical_types={column_name: Datetime})
+
+    err_msg = 'Error converting datatype for test_series from type datetime64[ns] to type ' \
+        'float64. Please confirm the underlying data is consistent with logical type Double.'
+    with pytest.raises(TypeConversionError, match=re.escape(err_msg)):
+        df.ww.set_types(logical_types={column_name: Double})
 
     # Cannot cast invalid strings to integers
     series = pd.Series(['1', 'two', '3'], name=column_name)
@@ -777,11 +774,13 @@ def test_ordinal_with_order(sample_series):
     assert isinstance(column_logical_type, Ordinal)
     assert column_logical_type.order == ['a', 'b', 'c']
 
-    # --> add back when schema updates are implemented
-    # dc = DataColumn(sample_series, logical_type="NaturalLanguage")
-    # new_dc = dc.set_logical_type(ordinal_with_order)
-    # assert isinstance(new_dc.logical_type, Ordinal)
-    # assert new_dc.logical_type.order == ['a', 'b', 'c']
+    schema_df = pd.DataFrame(sample_series)
+    schema_df.ww.init()
+
+    schema_df.ww.set_types(logical_types={'sample_series': ordinal_with_order})
+    logical_type = schema_df.ww.logical_types['sample_series']
+    assert isinstance(logical_type, Ordinal)
+    assert logical_type.order == ['a', 'b', 'c']
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
@@ -791,9 +790,15 @@ def test_ordinal_with_incomplete_ranking(sample_series):
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")
+
+    schema_df = pd.DataFrame(sample_series)
+
     with pytest.raises(ValueError, match=error_msg):
-        schema_df = pd.DataFrame(sample_series)
         schema_df.ww.init(logical_types={'sample_series': ordinal_incomplete_order})
+
+    with pytest.raises(ValueError, match=error_msg):
+        schema_df.ww.init()
+        schema_df.ww.set_types(logical_types={'sample_series': ordinal_incomplete_order})
 
 
 def test_ordinal_with_nan_values():

@@ -155,7 +155,7 @@ class Schema(object):
         return None
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
-        """Update the logical tpye and semantic tags for any columns names in the provided types dictionaries,
+        """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
         updating the Schema at those columns.
 
         Args:
