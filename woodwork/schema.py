@@ -156,7 +156,8 @@ class Schema(object):
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         """Update the semantic tags for any columns names in the provided types dictionary,
-        updating the Woodwork typing information for the DataFrame.
+        updating the Woodwork typing information for the DataFrame. Any columns whose Logical Type
+        or semantic tags are updated will have its existing semantic tags reset.
 
         Args:
             # --> add ltypes param back in
@@ -173,28 +174,33 @@ class Schema(object):
         semantic_tags = semantic_tags or {}
         _check_semantic_tags(self.columns.keys(), semantic_tags)
 
-        # Set logical types
-        # --> we should confirm they're ltype objects and not strings - but probably below
         for col_name in (logical_types.keys() | semantic_tags.keys()):
-            if col_name not in logical_types and col_name not in semantic_tags:
-                continue
-
             original_tags = self.semantic_tags[col_name]
-            if col_name in logical_types:
-                self.columns[col_name]['logical_type'] = logical_types.get(col_name)
-                # Changing the logical type resets the semantic tags
-                self.reset_semantic_tags(col_name, retain_index_tags=retain_index_tags)
-            if col_name in semantic_tags:
-                new_semantic_tags = _set_semantic_tags(semantic_tags.get(col_name),
+
+            # Update Logical Type for the Schema, getting new semantic tags
+            ltype_update_tags = original_tags
+            new_logical_type = logical_types.get(col_name)
+            if new_logical_type is not None:
+                self.columns[col_name]['logical_type'] = new_logical_type
+                ltype_update_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags)
+
+            # Get new semantic tags, removing existing tags
+            new_semantic_tags = semantic_tags.get(col_name)
+            if new_semantic_tags is not None:
+                new_semantic_tags = _set_semantic_tags(new_semantic_tags,
                                                        self.logical_types[col_name].standard_tags,
                                                        self.use_standard_tags)
                 _validate_not_setting_index_tags(new_semantic_tags, col_name)
-                self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
-                if retain_index_tags and 'index' in original_tags:
-                    self._set_index_tags(col_name)
-                if retain_index_tags and 'time_index' in original_tags:
-                    self._set_time_index_tags(col_name)
+            # Update the tags for the Schema
+            if new_semantic_tags is None:
+                new_semantic_tags = ltype_update_tags
+            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+
+            if retain_index_tags and 'index' in original_tags:
+                self._set_index_tags(col_name)
+            if retain_index_tags and 'time_index' in original_tags:
+                self._set_time_index_tags(col_name)
 
     def add_semantic_tags(self, semantic_tags):
         """Adds specified semantic tags to columns, updating the Woodwork typing information.

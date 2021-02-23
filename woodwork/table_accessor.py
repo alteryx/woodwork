@@ -235,7 +235,7 @@ class WoodworkTableAccessor:
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
-        # if index has been reset, reset underlying index via _set_underlying_index
+        # if index has been reset, reset underlying index of DataFrame
         if original_index is not None and self._schema.index is None:
             self._set_underlying_index()
 

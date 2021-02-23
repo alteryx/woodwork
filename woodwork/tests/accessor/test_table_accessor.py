@@ -1357,6 +1357,12 @@ def test_set_types(sample_df):
 
     sample_df.ww.init(index='full_name')
 
+    original_df = sample_df.ww.copy()
+
+    sample_df.ww.set_types()
+    assert original_df.ww.schema == sample_df.ww.schema
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
+
     sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
     assert sample_df['is_registered'].dtype == 'Int64'
 
@@ -1373,13 +1379,13 @@ def test_set_types_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(logical_types={'id': 'invalid'})
 
-    error = f'Error converting datatype for email from type string ' \
-        f'to type float64. Please confirm the underlying data is consistent with ' \
-        f'logical type Double.'
+    error = 'Error converting datatype for email from type string ' \
+        'to type float64. Please confirm the underlying data is consistent with ' \
+        'logical type Double.'
     with pytest.raises(TypeConversionError, match=error):
         sample_df.ww.set_types(logical_types={'email': 'Double'})
 
-    error = re.escape(f"Cannot add 'index' tag directly for column email. To set a column as the index, "
+    error = re.escape("Cannot add 'index' tag directly for column email. To set a column as the index, "
                       "use DataFrame.ww.set_index() instead.")
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(semantic_tags={'email': 'index'})

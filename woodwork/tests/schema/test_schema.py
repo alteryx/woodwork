@@ -343,6 +343,30 @@ def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['signup_date'] == {'secondary_time_index'}
 
 
+def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': 'test_tag'
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='full_name',
+                    semantic_tags=semantic_tags, use_standard_tags=True)
+
+    # If the tags for a column are None, nothing should change
+    schema.set_types(semantic_tags={'full_name': None}, retain_index_tags=False)
+    assert schema.logical_types['full_name'] == NaturalLanguage
+    assert schema.semantic_tags['full_name'] == {'index', 'tag1'}
+
+    # An empty set should reset the tags
+    schema.set_types(semantic_tags={'full_name': set()}, retain_index_tags=False)
+    assert schema.logical_types['full_name'] == NaturalLanguage
+    assert schema.semantic_tags['full_name'] == set()
+
+    schema.set_types(semantic_tags={'age': set()})
+    assert schema.logical_types['age'] == Integer
+    assert schema.semantic_tags['age'] == {'numeric'}
+
+
 def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types)
 
@@ -370,6 +394,7 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
         'phone_number': ['tag3', 'tag2'],
         'signup_date': {'secondary_time_index'},
     }
+    # use standard tags and keep index tags
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     semantic_tags=semantic_tags, use_standard_tags=True,
                     index='id')
@@ -385,6 +410,19 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
     assert schema.logical_types['age'] == Double
     assert schema.logical_types['email'] == Categorical
 
+    # use standard tags and lose index tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=True,
+                    index='id', time_index='age')
+
+    schema.set_types(semantic_tags={'age': 'new_tag'},
+                     logical_types={'id': Double},
+                     retain_index_tags=False)
+
+    assert schema.semantic_tags['id'] == {'numeric'}
+    assert schema.semantic_tags['age'] == {'numeric', 'new_tag'}
+
+    # don't use standard tags and lose index tags
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     semantic_tags=semantic_tags, use_standard_tags=False,
                     index='id', time_index='signup_date')
