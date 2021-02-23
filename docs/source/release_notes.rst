@@ -27,6 +27,7 @@ Release Notes
         * Implement ``loc`` and ``iloc`` for WoodworkColumnAccessor (:pr:`613`)
         * Add ``set_time_index`` to WoodworkTableAccessor (:pr:`612`)
         * Implement ``loc`` and ``iloc`` for WoodworkTableAccessor (:pr:`618`)
+        * Allow updating logical types with ``set_types`` and make relevant DataFrame changes (:pr:`619`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
