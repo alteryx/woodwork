@@ -13,7 +13,8 @@ from woodwork.logical_types import (
     EmailAddress,
     FullName,
     Integer,
-    NaturalLanguage
+    NaturalLanguage,
+    PhoneNumber
 )
 from woodwork.schema import Schema
 
@@ -307,6 +308,140 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
 
     assert schema == copy_schema
     assert schema is not copy_schema
+
+
+def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'signup_date': {'secondary_time_index'},
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=True)
+
+    schema.set_types(logical_types={
+        'full_name': Categorical,
+        'email': EmailAddress,
+        'phone_number': PhoneNumber,
+        'age': Double,
+    })
+
+    assert schema.logical_types['full_name'] == Categorical
+    assert schema.logical_types['email'] == EmailAddress
+    assert schema.logical_types['phone_number'] == PhoneNumber
+    assert schema.logical_types['age'] == Double
+
+    # Verify semantic tags were reset to standard tags in columns with Logical Type changes
+    assert schema.semantic_tags['full_name'] == {'category'}
+    assert schema.semantic_tags['email'] == set()
+    assert schema.semantic_tags['phone_number'] == set()
+    assert schema.semantic_tags['age'] == {'numeric'}
+
+    # Verify signup date column was unchanged
+    assert schema.logical_types['signup_date'] == Datetime
+    assert schema.semantic_tags['signup_date'] == {'secondary_time_index'}
+
+
+def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': 'test_tag'
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='full_name',
+                    semantic_tags=semantic_tags, use_standard_tags=True)
+
+    # An empty set should reset the tags
+    schema.set_types(semantic_tags={'full_name': set()}, retain_index_tags=False)
+    assert schema.logical_types['full_name'] == NaturalLanguage
+    assert schema.semantic_tags['full_name'] == set()
+
+    schema.set_types(semantic_tags={'age': set()})
+    assert schema.logical_types['age'] == Integer
+    assert schema.semantic_tags['age'] == {'numeric'}
+
+
+def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday']")
+    with pytest.raises(LookupError, match=error_message):
+        schema.set_types(logical_types={'birthday': Double})
+
+    error_message = ("Logical Types must be of the LogicalType class "
+                     "and registered in Woodwork's type system. "
+                     "Double does not meet that criteria.")
+    with pytest.raises(TypeError, match=error_message):
+        schema.set_types(logical_types={'id': 'Double'})
+
+    error_message = ("Logical Types must be of the LogicalType class "
+                     "and registered in Woodwork's type system. "
+                     "<class 'int'> does not meet that criteria.")
+    with pytest.raises(TypeError, match=error_message):
+        schema.set_types(logical_types={'age': int})
+
+    error_message = "semantic_tags for full_name must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        schema.set_types(semantic_tags={'full_name': None})
+
+
+def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
+    # test that the resetting of indices when ltype changes doesnt touch index??
+    semantic_tags = {
+        'id': 'tag1',
+        'email': ['tag2'],
+        'phone_number': ['tag3', 'tag2'],
+        'signup_date': {'secondary_time_index'},
+    }
+    # use standard tags and keep index tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=True,
+                    index='id')
+
+    schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'email': 'new_tag'},
+                     logical_types={'id': Double, 'age': Double, 'email': Categorical})
+
+    assert schema.semantic_tags['id'] == {'new_tag', 'index'}
+    assert schema.semantic_tags['age'] == {'numeric', 'new_tag'}
+    assert schema.semantic_tags['email'] == {'new_tag', 'category'}
+
+    assert schema.logical_types['id'] == Double
+    assert schema.logical_types['age'] == Double
+    assert schema.logical_types['email'] == Categorical
+
+    # use standard tags and lose index tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=True,
+                    index='id', time_index='age')
+
+    schema.set_types(semantic_tags={'age': 'new_tag'},
+                     logical_types={'id': Double},
+                     retain_index_tags=False)
+
+    assert schema.semantic_tags['id'] == {'numeric'}
+    assert schema.semantic_tags['age'] == {'numeric', 'new_tag'}
+
+    # don't use standard tags and lose index tags
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=False,
+                    index='id', time_index='signup_date')
+
+    schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'is_registered': 'new_tag'},
+                     logical_types={'id': Double, 'age': Double, 'email': Categorical}, retain_index_tags=False)
+
+    assert schema.index is None
+    assert schema.time_index == 'signup_date'
+
+    assert schema.semantic_tags['id'] == {'new_tag'}
+    assert schema.semantic_tags['age'] == {'new_tag'}
+    assert schema.semantic_tags['is_registered'] == {'new_tag'}
+    assert schema.semantic_tags['email'] == set()
+    assert schema.semantic_tags['signup_date'] == {'time_index', 'secondary_time_index'}
+
+    assert schema.logical_types['id'] == Double
+    assert schema.logical_types['age'] == Double
+    assert schema.logical_types['email'] == Categorical
 
 
 def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):

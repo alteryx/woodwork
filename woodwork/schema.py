@@ -154,27 +154,44 @@ class Schema(object):
                 return col_name
         return None
 
-    def set_types(self, semantic_tags=None, retain_index_tags=True):
-        """Update the semantic tags for any columns names in the provided types dictionary,
-        updating the Woodwork typing information for the DataFrame.
+    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
+        """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
+        updating the Schema at those columns.
 
         Args:
+            logical_types (dict[str -> LogicalType], optional): A dictionary defining the new logical types for the
+                specified columns.
             semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
-                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
-                True.
-
+                semantic tags set on the column. If False, will replace all semantic tags any time a column's
+                semantic tags or logical type changes. Defaults to True.
         """
+        logical_types = logical_types or {}
+        _check_logical_types(self.columns.keys(), logical_types, require_all_cols=False)
+
         semantic_tags = semantic_tags or {}
         _check_semantic_tags(self.columns.keys(), semantic_tags)
 
-        for col_name, new_tags in semantic_tags.items():
+        for col_name in (logical_types.keys() | semantic_tags.keys()):
             original_tags = self.semantic_tags[col_name]
-            new_semantic_tags = _set_semantic_tags(new_tags,
-                                                   self.logical_types[col_name].standard_tags,
-                                                   self.use_standard_tags)
-            _validate_not_setting_index_tags(new_semantic_tags, col_name)
+
+            # Update Logical Type for the Schema, getting new semantic tags
+            new_logical_type = logical_types.get(col_name)
+            if new_logical_type is not None:
+                self.columns[col_name]['logical_type'] = new_logical_type
+
+            # Get new semantic tags, removing existing tags
+            new_semantic_tags = semantic_tags.get(col_name)
+            if new_semantic_tags is None:
+                new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags)
+            else:
+                new_semantic_tags = _set_semantic_tags(new_semantic_tags,
+                                                       self.logical_types[col_name].standard_tags,
+                                                       self.use_standard_tags)
+                _validate_not_setting_index_tags(new_semantic_tags, col_name)
+
+            # Update the tags for the Schema
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
@@ -468,7 +485,7 @@ def _check_time_index(column_names, time_index, logical_type):
         raise TypeError('Time index column must be a Datetime or numeric column.')
 
 
-def _check_logical_types(column_names, logical_types):
+def _check_logical_types(column_names, logical_types, require_all_cols=True):
     if not isinstance(logical_types, dict):
         raise TypeError('logical_types must be a dictionary')
     cols_in_ltypes = set(logical_types.keys())
@@ -479,9 +496,15 @@ def _check_logical_types(column_names, logical_types):
         raise LookupError('logical_types contains columns that are not present in '
                           f'Schema: {sorted(list(cols_not_found_in_schema))}')
     cols_not_found_in_ltypes = cols_in_schema.difference(cols_in_ltypes)
-    if cols_not_found_in_ltypes:
+    if cols_not_found_in_ltypes and require_all_cols:
         raise LookupError(f'logical_types is missing columns that are present in '
                           f'Schema: {sorted(list(cols_not_found_in_ltypes))}')
+
+    for col_name, logical_type in logical_types.items():
+        if _get_ltype_class(logical_type) not in ww.type_system.registered_types:
+            raise TypeError("Logical Types must be of the LogicalType class "
+                            "and registered in Woodwork's type system. "
+                            f"{logical_type} does not meet that criteria.")
 
 
 def _check_semantic_tags(column_names, semantic_tags):
@@ -491,6 +514,10 @@ def _check_semantic_tags(column_names, semantic_tags):
     if cols_not_found:
         raise LookupError('semantic_tags contains columns that do not exist: '
                           f'{sorted(list(cols_not_found))}')
+
+    for col_name, col_tags in semantic_tags.items():
+        if not isinstance(col_tags, (str, list, set)):
+            raise TypeError(f"semantic_tags for {col_name} must be a string, set or list")
 
 
 def _check_column_descriptions(column_names, column_descriptions):

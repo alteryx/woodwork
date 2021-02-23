@@ -634,17 +634,14 @@ def test_invalid_dtype_casting():
     with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
-    # --> add back when schema updates are implemented
-    # # Cannot cast Datetime to Double
-    # series = pd.Series(['2020-01-01', '2020-01-02', '2020-01-03'], name=column_name)
-    # ltypes = {
-    #     column_name: Datetime,
-    # }
-    # schema = Schema(pd.DataFrame(series), logical_types=ltypes)
-    # err_msg = 'Error converting datatype for column test_series from type datetime64[ns] to type ' \
-    #     'float64. Please confirm the underlying data is consistent with logical type Double.'
-    # with pytest.raises(TypeError, match=re.escape(err_msg)):
-    #     schema.set_types(logical_types={column_name: Double})
+    # Cannot cast Datetime to Double
+    df = pd.DataFrame({column_name: ['2020-01-01', '2020-01-02', '2020-01-03']})
+    df.ww.init(logical_types={column_name: Datetime})
+
+    err_msg = 'Error converting datatype for test_series from type datetime64[ns] to type ' \
+        'float64. Please confirm the underlying data is consistent with logical type Double.'
+    with pytest.raises(TypeConversionError, match=re.escape(err_msg)):
+        df.ww.set_types(logical_types={column_name: Double})
 
     # Cannot cast invalid strings to integers
     series = pd.Series(['1', 'two', '3'], name=column_name)
@@ -777,11 +774,13 @@ def test_ordinal_with_order(sample_series):
     assert isinstance(column_logical_type, Ordinal)
     assert column_logical_type.order == ['a', 'b', 'c']
 
-    # --> add back when schema updates are implemented
-    # dc = DataColumn(sample_series, logical_type="NaturalLanguage")
-    # new_dc = dc.set_logical_type(ordinal_with_order)
-    # assert isinstance(new_dc.logical_type, Ordinal)
-    # assert new_dc.logical_type.order == ['a', 'b', 'c']
+    schema_df = pd.DataFrame(sample_series)
+    schema_df.ww.init()
+
+    schema_df.ww.set_types(logical_types={'sample_series': ordinal_with_order})
+    logical_type = schema_df.ww.logical_types['sample_series']
+    assert isinstance(logical_type, Ordinal)
+    assert logical_type.order == ['a', 'b', 'c']
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
@@ -791,9 +790,15 @@ def test_ordinal_with_incomplete_ranking(sample_series):
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")
+
+    schema_df = pd.DataFrame(sample_series)
+
     with pytest.raises(ValueError, match=error_msg):
-        schema_df = pd.DataFrame(sample_series)
         schema_df.ww.init(logical_types={'sample_series': ordinal_incomplete_order})
+
+    schema_df.ww.init()
+    with pytest.raises(ValueError, match=error_msg):
+        schema_df.ww.set_types(logical_types={'sample_series': ordinal_incomplete_order})
 
 
 def test_ordinal_with_nan_values():
@@ -1350,3 +1355,45 @@ def test_accessor_set_index_errors(sample_df):
     error = "Index column must be unique"
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('age')
+
+
+def test_set_types(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='full_name', time_index='signup_date')
+
+    original_df = sample_df.ww.copy()
+
+    sample_df.ww.set_types()
+    assert original_df.ww.schema == sample_df.ww.schema
+    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
+
+    sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
+    assert sample_df['is_registered'].dtype == 'Int64'
+
+    sample_df.ww.set_types(semantic_tags={'signup_date': ['new_tag']},
+                           logical_types={'full_name': 'Categorical'},
+                           retain_index_tags=False)
+    assert sample_df.ww.index is None
+    assert sample_df.ww.time_index is None
+
+
+def test_set_types_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='full_name')
+
+    error = "String invalid is not a valid logical type"
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.set_types(logical_types={'id': 'invalid'})
+
+    error = 'Error converting datatype for email from type string ' \
+        'to type float64. Please confirm the underlying data is consistent with ' \
+        'logical type Double.'
+    with pytest.raises(TypeConversionError, match=error):
+        sample_df.ww.set_types(logical_types={'email': 'Double'})
+
+    error = re.escape("Cannot add 'index' tag directly for column email. To set a column as the index, "
+                      "use DataFrame.ww.set_index() instead.")
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.set_types(semantic_tags={'email': 'index'})

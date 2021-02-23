@@ -90,6 +90,24 @@ def test_check_logical_types_errors(sample_column_names):
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
+    bad_logical_types_keys = {'email': 1}
+    error_message = ("Logical Types must be of the LogicalType class "
+                     "and registered in Woodwork's type system. "
+                     "1 does not meet that criteria.")
+
+    with pytest.raises(TypeError, match=error_message):
+        _check_logical_types(sample_column_names, bad_logical_types_keys, require_all_cols=False)
+
+    bad_logical_types_keys = {
+        'email': 'NaturalLanguage',
+    }
+    error_message = ("Logical Types must be of the LogicalType class "
+                     "and registered in Woodwork's type system. "
+                     "NaturalLanguage does not meet that criteria.")
+
+    with pytest.raises(TypeError, match=error_message):
+        _check_logical_types(sample_column_names, bad_logical_types_keys, require_all_cols=False)
+
 
 def test_check_semantic_tags_errors(sample_column_names):
     error_message = 'semantic_tags must be a dictionary'
@@ -105,6 +123,10 @@ def test_check_semantic_tags_errors(sample_column_names):
     error_message = re.escape("semantic_tags contains columns that do not exist: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
+
+    error_message = "semantic_tags for id must be a string, set or list"
+    with pytest.raises(TypeError, match=error_message):
+        _check_semantic_tags(sample_column_names, {'id': 1})
 
 
 def test_check_table_metadata_errors():

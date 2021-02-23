@@ -19,6 +19,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.mutual_information
     WoodworkTableAccessor.select
     WoodworkTableAccessor.set_index
+    WoodworkTableAccessor.set_types
 
 WoodworkColumnAccessor
 ======================

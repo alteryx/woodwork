@@ -19,7 +19,11 @@ from woodwork.type_sys.utils import (
     _is_numeric_series,
     col_is_datetime
 )
-from woodwork.utils import _get_column_logical_type, import_or_none
+from woodwork.utils import (
+    _get_column_logical_type,
+    _parse_logical_type,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -217,6 +221,32 @@ class WoodworkTableAccessor:
         if self._schema.index is not None:
             _check_index(self._dataframe, self._schema.index)
         self._set_underlying_index()
+
+    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
+        """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
+        updating the Woodwork typing information for the DataFrame.
+
+        Args:
+            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+                specified columns.
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will replace all semantic tags any time a column's
+                semantic tags or logical type changes. Defaults to True.
+        """
+        logical_types = logical_types or {}
+        logical_types = {col_name: _parse_logical_type(ltype, col_name) for col_name, ltype in logical_types.items()}
+
+        self._schema.set_types(logical_types=logical_types,
+                               semantic_tags=semantic_tags,
+                               retain_index_tags=retain_index_tags)
+        # go through changed ltypes and update dtype if necessary
+        for col_name, logical_type in logical_types.items():
+            series = self._dataframe[col_name]
+            updated_series = _update_column_dtype(series, logical_type)
+            if updated_series is not series:
+                self._dataframe[col_name] = updated_series
 
     def select(self, include):
         """Create a DataFrame with Woodowork typing information initialized
