@@ -423,7 +423,7 @@ class DataTable(object):
             raise ValueError(f'{not_present} not found in DataTable')
 
         dt = self._new_dt_from_cols([col for col in self._dataframe.columns if col not in columns])
-        if self.index in columns:
+        if dt.index is None and self.index is not None:
             dt._dataframe = dt._dataframe.reset_index(drop=True)
 
         return dt
@@ -527,12 +527,9 @@ class DataTable(object):
 
         new_dt = self._new_dt_from_cols(self._dataframe.columns)
         cols_to_update = {}
-        reset_index = False
         for col_name, col in new_dt.columns.items():
             if col_name not in logical_types and col_name not in semantic_tags:
                 continue
-            if 'index' in col.semantic_tags and not retain_index_tags:
-                reset_index = True
             if col_name in logical_types:
                 col = col.set_logical_type(logical_types[col_name], retain_index_tags)
             if col_name in semantic_tags:
@@ -540,7 +537,7 @@ class DataTable(object):
             cols_to_update[col_name] = col
 
         new_dt._update_columns(cols_to_update)
-        if reset_index:
+        if new_dt.index is None and self.index is not None:
             new_dt._dataframe = new_dt._dataframe.reset_index(drop=True)
         return new_dt
 
@@ -572,10 +569,9 @@ class DataTable(object):
         """
         _check_semantic_tags(self._dataframe, semantic_tags)
         dt = self._update_cols_and_get_new_dt('remove_semantic_tags', semantic_tags)
-        for tags in semantic_tags.values():
-            if 'index' in tags:
-                dt._dataframe = dt._dataframe.reset_index(drop=True)
-                break
+        if dt.index is None and self.index is not None:
+            dt._dataframe = dt._dataframe.reset_index(drop=True)
+
         return dt
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
