@@ -380,10 +380,11 @@ def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_log
     with pytest.raises(TypeError, match=error_message):
         schema.set_types(logical_types={'id': 'Double'})
 
-    # --> test in table accessor along with correct dtype change to dataframe
-    # error_message = "Invalid logical type specified for 'age'"
-    # with pytest.raises(TypeError, match=error_message):
-    #     dt.set_types(logical_types={'age': int})
+    error_message = ("Logical Types must be of the LogicalType class "
+                     "and registered in Woodwork's type system. "
+                     "<class 'int'> does not meet that criteria.")
+    with pytest.raises(TypeError, match=error_message):
+        schema.set_types(logical_types={'age': int})
 
 
 def test_set_types_combined(sample_column_names, sample_inferred_logical_types):

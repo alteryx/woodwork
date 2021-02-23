@@ -219,9 +219,19 @@ class WoodworkTableAccessor:
         self._set_underlying_index()
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
-        # --> add dosctring
+        """Update the logical tpye and semantic tags for any columns names in the provided types dictionaries,
+        updating the Woodwork typing information for the DataFrame.
+
+        Args:
+            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+                specified columns.
+            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
+                specified columns.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will replace all semantic tags any time a column's
+                semantic tags or logical type changes. Defaults to True.
+        """
         logical_types = logical_types or {}
-        # --> this is a little ackward bc we definitely dont want to infer
         logical_types = {col_name: _get_column_logical_type(None, ltype, col_name) for col_name, ltype in logical_types.items()}
 
         original_index = self._schema.index

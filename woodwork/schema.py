@@ -155,18 +155,17 @@ class Schema(object):
         return None
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
-        """Update the semantic tags for any columns names in the provided types dictionary,
-        updating the Woodwork typing information for the DataFrame. Any columns whose Logical Type
-        or semantic tags are updated will have its existing semantic tags reset.
+        """Update the logical tpye and semantic tags for any columns names in the provided types dictionaries,
+        updating the Schema at those columns.
 
         Args:
-            # --> add ltypes param back in
+            logical_types (dict[str -> LogicalType], optional): A dictionary defining the new logical types for the
+                specified columns.
             semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
-                semantic tags set on the column. If False, will replace all semantic tags. Defaults to
-                True.
-
+                semantic tags set on the column. If False, will replace all semantic tags any time a column's
+                semantic tags or logical type changes. Defaults to True.
         """
         logical_types = logical_types or {}
         _check_logical_types(self.columns.keys(), logical_types, require_all_cols=False)
