@@ -180,19 +180,18 @@ class Schema(object):
             new_logical_type = logical_types.get(col_name)
             if new_logical_type is not None:
                 self.columns[col_name]['logical_type'] = new_logical_type
-                ltype_update_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags)
 
             # Get new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
-            if new_semantic_tags is not None:
+            if new_semantic_tags is None:
+                new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags)
+            else:
                 new_semantic_tags = _set_semantic_tags(new_semantic_tags,
                                                        self.logical_types[col_name].standard_tags,
                                                        self.use_standard_tags)
                 _validate_not_setting_index_tags(new_semantic_tags, col_name)
 
             # Update the tags for the Schema
-            if new_semantic_tags is None:
-                new_semantic_tags = ltype_update_tags
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
