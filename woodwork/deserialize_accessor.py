@@ -11,7 +11,7 @@ import pandas as pd
 import woodwork as ww
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serialize import FORMATS, SCHEMA_VERSION
+from woodwork.serialize_accessor import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
