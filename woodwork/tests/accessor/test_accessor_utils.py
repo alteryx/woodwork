@@ -1,10 +1,6 @@
 import pytest
 
-from woodwork.accessor_utils import (
-    _is_series,
-    _is_dataframe,
-    init_series
-)
+from woodwork.accessor_utils import _is_dataframe, _is_series, init_series
 from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import Categorical, Datetime, NaturalLanguage
 from woodwork.tests.testing_utils import xfail_koalas
