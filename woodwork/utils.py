@@ -267,6 +267,9 @@ def _to_latlong_float(val):
 def _is_valid_latlong_series(series):
     '''Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False'''
+    dd = import_or_none('dask.dataframe')
+    if dd and isinstance(series, dd.Series):
+        series = series.compute()
     if series.apply(_is_valid_latlong_value).all():
         return True
     return False
