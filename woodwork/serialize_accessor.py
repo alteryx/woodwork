@@ -137,7 +137,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
     if format == 'csv':
         compression = kwargs['compression']
         if ks and isinstance(dataframe, ks.DataFrame):
-            dataframe = dataframe.copy()
+            dataframe = dataframe.ww.copy()
             columns = list(dataframe.select_dtypes('object').columns)
             dataframe[columns] = dataframe[columns].astype(str)
             compression = str(compression)
@@ -157,7 +157,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
     elif format == 'parquet':
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
-        dataframe = dataframe.copy()
+        dataframe = dataframe.ww.copy()
         latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col['logical_type']) == ww.logical_types.LatLong]
         dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
 
