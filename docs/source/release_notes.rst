@@ -28,6 +28,7 @@ Release Notes
         * Add ``set_time_index`` to WoodworkTableAccessor (:pr:`612`)
         * Implement ``loc`` and ``iloc`` for WoodworkTableAccessor (:pr:`618`)
         * Allow updating logical types with ``set_types`` and make relevant DataFrame changes (:pr:`619`)
+        * Allow serialization of WoodworkColumnAccessor to csv, pickle, and parquet (:pr:`624`)
         * Add DaskColumnAccessor (:pr:`625`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
