@@ -275,6 +275,8 @@ class WoodworkTableAccessor:
         Returns:
             description (dict) : Description of the typing information.
         '''
+        if self._schema is None:
+            _raise_init_error()
         return serialize.typing_info_to_dict(self._dataframe)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
@@ -290,6 +292,8 @@ class WoodworkTableAccessor:
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
+        if self._schema is None:
+            _raise_init_error()
         serialize.write_woodwork_table(self._dataframe, path, format='csv', index=False,
                                        sep=sep, encoding=encoding, engine=engine,
                                        compression=compression, profile_name=profile_name)
@@ -304,6 +308,8 @@ class WoodworkTableAccessor:
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
+        if self._schema is None:
+            _raise_init_error()
         serialize.write_woodwork_table(self._dataframe, path, format='pickle',
                                        compression=compression, profile_name=profile_name)
 
@@ -321,6 +327,9 @@ class WoodworkTableAccessor:
                 compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
+        if self._schema is None:
+            _raise_init_error()
+
         import_error_message = (
             "The pyarrow library is required to serialize to parquet.\n"
             "Install via pip:\n"

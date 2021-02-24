@@ -17,8 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-# --> not sure if we should go to 6 or 1
-SCHEMA_VERSION = '1.0.0'
+SCHEMA_VERSION = '6.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
@@ -26,7 +25,6 @@ def typing_info_to_dict(dataframe):
     '''Gets the description for a Woodwork table, including typing information for each column
     and loading information.
     '''
-    # --> confirm schema is initialized
     ordered_columns = dataframe.columns
     column_typing_info = [
         {'name': col_name,

@@ -15,7 +15,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_1.0.0.tar"
+TEST_FILE = "test_serialization_woodwork_table_schema_6.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -25,6 +25,23 @@ def xfail_tmp_disappears(dataframe):
     # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
     if not isinstance(dataframe, pd.DataFrame):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
+
+
+def test_error_before_table_init(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
+    error_message = "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_df.ww.to_dictionary()
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_df.ww.to_pickle(str(tmpdir))
+
+    with pytest.raises(AttributeError, match=error_message):
+        sample_df.ww.to_parquet(str(tmpdir))
 
 
 def test_to_dictionary(sample_df):
@@ -46,7 +63,7 @@ def test_to_dictionary(sample_df):
     cat_val = 'category'
     string_val = 'string'
     bool_val = 'boolean'
-    expected = {'schema_version': '1.0.0',
+    expected = {'schema_version': '6.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -126,7 +143,7 @@ def test_unserializable_table(sample_df, tmpdir):
 
     sample_df.ww.init(table_metadata={'not_serializable': sample_df['is_registered'].dtype})
 
-    error = "DataTable is not json serializable. Check table and column metadata for values that may not be serializable."
+    error = "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
     with pytest.raises(TypeError, match=error):
         sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
 
@@ -392,12 +409,12 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     sample_df.ww.init()
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
-    with open(str(write_path.join('table_description.json')), 'w') as f:
+    with open(str(write_path.join('woodwork_typing_info.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
     compression = None
     serialize.write_woodwork_table(sample_df, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
     assert os.path.exists(str(test_dir))
-    with open(str(write_path.join('table_description.json')), 'r') as f:
+    with open(str(write_path.join('woodwork_typing_info.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
