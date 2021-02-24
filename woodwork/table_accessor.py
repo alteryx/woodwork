@@ -145,6 +145,13 @@ class WoodworkTableAccessor:
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
+    def __getitem__(self, key):
+        if isinstance(key, list):
+            df = self._dataframe[key]
+            schema = self._schema._get_subset_schema(key)
+            df.ww.init(schema=schema)
+            return df
+
     def __repr__(self):
         return repr(self._schema)
 
