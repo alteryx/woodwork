@@ -421,9 +421,9 @@ def test_check_later_schema_version():
     def test_version(major, minor, patch, raises=True):
         version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
-            warning_text = ('The schema version of the saved woodwork.DataTable '
+            warning_text = ('The schema version of the saved Woodwork table '
                             '%s is greater than the latest supported %s. '
-                            'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
+                            'You may need to upgrade woodwork. Attempting to load Woodwork table ...'
                             % (version_to_check, serialize.SCHEMA_VERSION))
             with pytest.warns(UpgradeSchemaWarning, match=warning_text):
                 deserialize._check_schema_version(version_to_check)

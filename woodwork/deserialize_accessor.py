@@ -16,13 +16,13 @@ from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
 def read_table_typing_information(path):
-    '''Read DataTable description from disk, S3 path, or URL.
+    '''Read Woodwork typing information from disk, S3 path, or URL.
 
         Args:
             path (str): Location on disk, S3 path, or URL to read `table_description.json`.
 
         Returns:
-            description (dict) : Description for :class:`.Datatable`.
+            description (dict) : Woodwork typing information
     '''
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
@@ -34,14 +34,14 @@ def read_table_typing_information(path):
 
 
 def typing_information_to_woodwork_table(table_typing_info, **kwargs):
-    '''Deserialize DataTable from table description.
+    '''Deserialize Woodwork table from table description.
 
     Args:
-        table_typing_info (dict) : Description of a :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_description`
+        table_typing_info (dict) : Woodwork typing information. Likely generated using :meth:`.serialize.typing_info_to_dict`
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
-        datatable (woodwork.DataTable) : Instance of :class:`.DataTable`.
+        dataframe (pd.DataFrame,dd.DataFrame,ks.DataFrame) : DataFrame with Woodwork typing information initialized.
     '''
     _check_schema_version(table_typing_info['schema_version'])
 
@@ -59,7 +59,7 @@ def typing_information_to_woodwork_table(table_typing_info, **kwargs):
     compression = kwargs['compression']
     if table_type == 'dask':
         DASK_ERR_MSG = (
-            'Cannot load Dask DataTable - unable to import Dask.\n\n'
+            'Cannot load Dask DataFrame - unable to import Dask.\n\n'
             'Please install with pip or conda:\n\n'
             'python -m pip install "woodwork[dask]"\n\n'
             'conda install dask'
@@ -67,7 +67,7 @@ def typing_information_to_woodwork_table(table_typing_info, **kwargs):
         lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
     elif table_type == 'koalas':
         KOALAS_ERR_MSG = (
-            'Cannot load Koalas DataTable - unable to import Koalas.\n\n'
+            'Cannot load Koalas DataFrame - unable to import Koalas.\n\n'
             'Please install with pip or conda:\n\n'
             'python -m pip install "woodwork[koalas]"\n\n'
             'conda install koalas\n\n'
@@ -127,7 +127,7 @@ def typing_information_to_woodwork_table(table_typing_info, **kwargs):
 
 
 def read_woodwork_table(path, profile_name=None, **kwargs):
-    '''Read DataTable from disk, S3 path, or URL.
+    '''Read Woodwork table from disk, S3 path, or URL.
 
         Args:
             path (str): Directory on disk, S3 path, or URL to read `table_description.json`.
