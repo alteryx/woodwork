@@ -67,11 +67,11 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
     '''Serialize Woodwork table and write to disk or S3 path.
 
     Args:
-    dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
-    path (str) : Location on disk to write the Woodwork table.
-    profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
-            Set to False to use an anonymous profile.
-    kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
+        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
+        path (str) : Location on disk to write the Woodwork table.
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                Set to False to use an anonymous profile.
+        kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
