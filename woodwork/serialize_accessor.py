@@ -97,10 +97,10 @@ def dump_table(dataframe, path, **kwargs):
     typing_info = typing_info_to_dict(dataframe)
     typing_info['loading_info'].update(loading_info)
 
-    write_schema(typing_info, path)
+    write_typing_info(typing_info, path)
 
 
-def write_schema(typing_info, path):
+def write_typing_info(typing_info, path):
     '''Writes Woodwork typing information to the specified path at woodwork_typing_info.json
     '''
     try:
