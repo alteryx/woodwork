@@ -16,7 +16,11 @@ from woodwork.schema_column import (
     _validate_description,
     _validate_metadata
 )
-from woodwork.utils import _get_column_logical_type, _is_valid_latlong_series, import_or_none
+from woodwork.utils import (
+    _get_column_logical_type,
+    _is_valid_latlong_series,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 
@@ -151,7 +155,9 @@ class WoodworkColumnAccessor:
     def __eq__(self, other):
         if self._schema != other._schema:
             return False
-        return self._series.equals(other._series)
+        if isinstance(self._series, pd.Series):
+            return self._series.equals(other._series)
+        return True
 
     def __getattr__(self, attr):
         '''
@@ -189,7 +195,7 @@ class WoodworkColumnAccessor:
                 result = series_attr(*args, **kwargs)
 
                 # Try to initialize Woodwork with the existing Schema
-                if isinstance(result, pd.Series):
+                if isinstance(result, pd.Series) or dd and isinstance(result, dd.Series):
                     if result.dtype == self._schema['logical_type'].pandas_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
