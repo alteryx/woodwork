@@ -27,7 +27,6 @@ def typing_info_to_dict(dataframe):
     and loading information.
     '''
     # --> confirm schema is initialized
-    schema = dataframe.ww.schema
     ordered_columns = dataframe.columns
     column_typing_info = [
         {'name': col_name,
@@ -43,7 +42,7 @@ def typing_info_to_dict(dataframe):
             'description': col['description'],
             'metadata': col['metadata']
          }
-        for col_name, col in schema.columns.items()
+        for col_name, col in dataframe.ww.columns.items()
     ]
 
     if dd and isinstance(dataframe, dd.DataFrame):
@@ -55,18 +54,18 @@ def typing_info_to_dict(dataframe):
 
     return {
         'schema_version': SCHEMA_VERSION,
-        'name': schema.name,
-        'index': schema.index,
-        'time_index': schema.time_index,
+        'name': dataframe.ww.name,
+        'index': dataframe.ww.index,
+        'time_index': dataframe.ww.time_index,
         'column_typing_info': column_typing_info,
         'loading_info': {
             'table_type': table_type
         },
-        'table_metadata': schema.metadata
+        'table_metadata': dataframe.ww.metadata
     }
 
 
-def write_datatable(datatable, path, profile_name=None, **kwargs):
+def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
     '''Serialize datatable and write to disk or S3 path.
 
     Args:
@@ -79,7 +78,7 @@ def write_datatable(datatable, path, profile_name=None, **kwargs):
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
-            dump_table(datatable, tmpdir, **kwargs)
+            dump_table(dataframe, tmpdir, **kwargs)
             file_path = create_archive(tmpdir)
 
             transport_params = get_transport_params(profile_name)
@@ -89,15 +88,15 @@ def write_datatable(datatable, path, profile_name=None, **kwargs):
     else:
         path = os.path.abspath(path)
         os.makedirs(os.path.join(path, 'data'), exist_ok=True)
-        dump_table(datatable, path, **kwargs)
+        dump_table(dataframe, path, **kwargs)
 
 
-def dump_table(datatable, path, **kwargs):
+def dump_table(dataframe, path, **kwargs):
     '''Writes datatable description to table_description.json at the specified path.
     '''
-    loading_info = write_dataframe(datatable, path, **kwargs)
+    loading_info = write_dataframe(dataframe, path, **kwargs)
 
-    description = typing_info_to_dict(datatable)
+    description = typing_info_to_dict(dataframe)
     description['loading_info'].update(loading_info)
 
     write_schema(description, path)
@@ -113,7 +112,7 @@ def write_schema(description, path):
         raise TypeError('DataTable is not json serializable. Check table and column metadata for values that may not be serializable.')
 
 
-def write_dataframe(datatable, path, format='csv', **kwargs):
+def write_dataframe(dataframe, path, format='csv', **kwargs):
     '''Write underlying datatable data to disk or S3 path.
 
     Args:
@@ -127,24 +126,23 @@ def write_dataframe(datatable, path, format='csv', **kwargs):
     '''
     format = format.lower()
 
-    dt_name = datatable.name or 'data'
-    df = datatable.to_dataframe()
+    ww_name = dataframe.ww.name or 'data'
 
-    if dd and isinstance(df, dd.DataFrame) and format == 'csv':
-        basename = "{}-*.{}".format(dt_name, format)
+    if dd and isinstance(dataframe, dd.DataFrame) and format == 'csv':
+        basename = "{}-*.{}".format(ww_name, format)
     else:
-        basename = '.'.join([dt_name, format])
+        basename = '.'.join([ww_name, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
 
     if format == 'csv':
         compression = kwargs['compression']
-        if ks and isinstance(df, ks.DataFrame):
-            df = df.copy()
-            columns = list(df.select_dtypes('object').columns)
-            df[columns] = df[columns].astype(str)
+        if ks and isinstance(dataframe, ks.DataFrame):
+            dataframe = dataframe.copy()
+            columns = list(dataframe.select_dtypes('object').columns)
+            dataframe[columns] = dataframe[columns].astype(str)
             compression = str(compression)
-        df.to_csv(
+        dataframe.to_csv(
             file,
             index=kwargs['index'],
             sep=kwargs['sep'],
@@ -153,18 +151,18 @@ def write_dataframe(datatable, path, format='csv', **kwargs):
         )
     elif format == 'pickle':
         # Dask and Koalas currently do not support to_pickle
-        if not isinstance(df, pd.DataFrame):
+        if not isinstance(dataframe, pd.DataFrame):
             msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
             raise ValueError(msg)
-        df.to_pickle(file, **kwargs)
+        dataframe.to_pickle(file, **kwargs)
     elif format == 'parquet':
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
-        df = df.copy()
-        latlong_columns = [col_name for col_name, col in datatable.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
-        df[latlong_columns] = df[latlong_columns].astype(str)
+        dataframe = dataframe.copy()
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col['logical_type']) == ww.logical_types.LatLong]
+        dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
 
-        df.to_parquet(file, **kwargs)
+        dataframe.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
@@ -174,7 +172,7 @@ def write_dataframe(datatable, path, format='csv', **kwargs):
 def create_archive(tmpdir):
     '''When seralizing to an S3 URL, writes a tar archive.
     '''
-    file_name = "dt-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
+    file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')
     tar.add(str(tmpdir) + '/table_description.json', arcname='/table_description.json')

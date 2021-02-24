@@ -1,16 +1,12 @@
 import json
 import os
 
-import boto3
 import pandas as pd
 import pytest
 
-import woodwork.deserialize as deserialize
-import woodwork.serialize as serialize
-from woodwork import DataTable
-from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
+import woodwork.serialize_accessor as serialize
 from woodwork.logical_types import Ordinal
-from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
+from woodwork.tests.testing_utils import xfail_dask_and_koalas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -125,39 +121,46 @@ def test_to_dictionary(sample_df):
     assert description == expected
 
 
-# def test_unserializable_table(sample_df, tmpdir):
-#     dt = DataTable(sample_df, table_metadata={'not_serializable': sample_df['is_registered'].dtype})
+def test_unserializable_table(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
 
-#     error = "DataTable is not json serializable. Check table and column metadata for values that may not be serializable."
-#     with pytest.raises(TypeError, match=error):
-#         dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    sample_df.ww.init(table_metadata={'not_serializable': sample_df['is_registered'].dtype})
 
-
-# def test_serialize_wrong_format(sample_df, tmpdir):
-#     dt = DataTable(sample_df)
-
-#     error = 'must be one of the following formats: csv, pickle, parquet'
-#     with pytest.raises(ValueError, match=error):
-#         serialize.write_datatable(dt, str(tmpdir), format='test')
+    error = "DataTable is not json serializable. Check table and column metadata for values that may not be serializable."
+    with pytest.raises(TypeError, match=error):
+        sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
 
 
-# def test_to_csv(sample_df, tmpdir):
-#     dt = DataTable(sample_df,
-#                    name='test_data',
-#                    index='id',
-#                    semantic_tags={'id': 'tag1'},
-#                    logical_types={'age': Ordinal(order=[25, 33, 57])},
-#                    column_descriptions={'signup_date': 'original signup date',
-#                                         'age': 'age of the user'},
-#                    column_metadata={'id': {'is_sorted': True},
-#                                     'age': {'interesting_values': [33, 57]}})
+def test_serialize_wrong_format(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
 
-#     dt.to_csv(str(tmpdir), encoding='utf-8', engine='python')
-#     _dt = deserialize.read_datatable(str(tmpdir))
+    sample_df.ww.init()
 
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index, sort_index=True),
-#                                   to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-#     assert dt == _dt
+    error = 'must be one of the following formats: csv, pickle, parquet'
+    with pytest.raises(ValueError, match=error):
+        serialize.write_woodwork_table(sample_df, str(tmpdir), format='test')
+
+
+def test_to_csv(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(
+        name='test_data',
+        index='id',
+        semantic_tags={'id': 'tag1'},
+        logical_types={'age': Ordinal(order=[25, 33, 57])},
+        column_descriptions={'signup_date': 'original signup date',
+                             'age': 'age of the user'},
+        column_metadata={'id': {'is_sorted': True},
+                         'age': {'interesting_values': [33, 57]}})
+
+    sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+# --> add back in at serialization
+    # _dt = deserialize.read_datatable(str(tmpdir))
+
+    # pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index, sort_index=True),
+    #                               to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
+    # assert dt == _dt
 
 
 # def test_to_csv_with_latlong(latlong_df, tmpdir):
@@ -374,24 +377,28 @@ def test_to_dictionary(sample_df):
 #     assert dt == _dt
 
 
-# def test_serialize_url_csv(sample_df):
-#     dt = DataTable(sample_df)
-#     error_text = "Writing to URLs is not supported"
-#     with pytest.raises(ValueError, match=error_text):
-#         dt.to_csv(URL, encoding='utf-8', engine='python')
+def test_serialize_url_csv(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        sample_df.ww.to_csv(URL, encoding='utf-8', engine='python')
 
 
-# def test_serialize_subdirs_not_removed(sample_df, tmpdir):
-#     dt = DataTable(sample_df)
-#     write_path = tmpdir.mkdir("test")
-#     test_dir = write_path.mkdir("test_dir")
-#     with open(str(write_path.join('table_description.json')), 'w') as f:
-#         json.dump('__SAMPLE_TEXT__', f)
-#     compression = None
-#     serialize.write_datatable(dt, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
-#     assert os.path.exists(str(test_dir))
-#     with open(str(write_path.join('table_description.json')), 'r') as f:
-#         assert '__SAMPLE_TEXT__' not in json.load(f)
+def test_serialize_subdirs_not_removed(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+    write_path = tmpdir.mkdir("test")
+    test_dir = write_path.mkdir("test_dir")
+    with open(str(write_path.join('table_description.json')), 'w') as f:
+        json.dump('__SAMPLE_TEXT__', f)
+    compression = None
+    serialize.write_woodwork_table(sample_df, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
+    assert os.path.exists(str(test_dir))
+    with open(str(write_path.join('table_description.json')), 'r') as f:
+        assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
 # def test_deserialize_url_csv(sample_df_pandas):
