@@ -20,6 +20,10 @@ WoodworkTableAccessor
     WoodworkTableAccessor.select
     WoodworkTableAccessor.set_index
     WoodworkTableAccessor.set_types
+    WoodworkColumnAccessor.to_csv
+    WoodworkColumnAccessor.to_dictionary
+    WoodworkColumnAccessor.to_parquet
+    WoodworkColumnAccessor.to_pickle
 
 WoodworkColumnAccessor
 ======================
@@ -53,6 +57,27 @@ Schema
     Schema.set_time_index
     Schema.set_types
 
+Serialization
+=============
+
+.. currentmodule:: woodwork.serialize_accessor
+.. autosummary::
+    :toctree: generated/
+    
+    typing_info_to_dict
+    write_dataframe
+    write_typing_info
+    write_woodwork_table
+
+Deserialization
+===============
+
+.. currentmodule:: woodwork.deserialize_accessor
+.. autosummary::
+    :toctree: generated/
+
+    read_table_typing_information
+    read_woodwork_table
 
 DataTable
 =========

@@ -233,7 +233,6 @@ def test_to_parquet(sample_df, tmpdir):
     xfail_dask_and_koalas(sample_df)
 
     sample_df.ww.init(index='id')
-    print(sample_df.ww.index)
     sample_df.ww.to_parquet(str(tmpdir))
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
     pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),

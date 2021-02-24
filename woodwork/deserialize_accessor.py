@@ -19,10 +19,10 @@ def read_table_typing_information(path):
     '''Read Woodwork typing information from disk, S3 path, or URL.
 
         Args:
-            path (str): Location on disk, S3 path, or URL to read `table_description.json`.
+            path (str): Location on disk, S3 path, or URL to read `woodwork_typing_info.json`.
 
         Returns:
-            description (dict) : Woodwork typing information
+            dict: Woodwork typing information dictionary
     '''
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
@@ -33,7 +33,7 @@ def read_table_typing_information(path):
     return typing_info
 
 
-def typing_information_to_woodwork_table(table_typing_info, **kwargs):
+def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
     '''Deserialize Woodwork table from table description.
 
     Args:
@@ -130,10 +130,13 @@ def read_woodwork_table(path, profile_name=None, **kwargs):
     '''Read Woodwork table from disk, S3 path, or URL.
 
         Args:
-            path (str): Directory on disk, S3 path, or URL to read `table_description.json`.
+            path (str): Directory on disk, S3 path, or URL to read `woodwork_typing_info.json`.
             profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
+
+        Returns:
+            dataframe  (pd.DataFrame,dd.DataFrame,ks.DataFrame): DataFrame with Woodwork typing information initialized.
     '''
     if _is_url(path) or _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -149,10 +152,10 @@ def read_woodwork_table(path, profile_name=None, **kwargs):
                 tar.extractall(path=tmpdir)
 
             table_typing_info = read_table_typing_information(tmpdir)
-            return typing_information_to_woodwork_table(table_typing_info, **kwargs)
+            return _typing_information_to_woodwork_table(table_typing_info, **kwargs)
     else:
         table_typing_info = read_table_typing_information(path)
-        return typing_information_to_woodwork_table(table_typing_info, **kwargs)
+        return _typing_information_to_woodwork_table(table_typing_info, **kwargs)
 
 
 def _check_schema_version(saved_version_str):
