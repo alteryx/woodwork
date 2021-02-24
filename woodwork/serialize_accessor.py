@@ -23,7 +23,7 @@ FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def typing_info_to_dict(dataframe):
-    '''Gets the description for a DataTable, including typing information for each column
+    '''Gets the description for a Woodwork table, including typing information for each column
     and loading information.
     '''
     # --> confirm schema is initialized
@@ -66,11 +66,11 @@ def typing_info_to_dict(dataframe):
 
 
 def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
-    '''Serialize datatable and write to disk or S3 path.
+    '''Serialize Woodwork table and write to disk or S3 path.
 
     Args:
-    datatable (DataTable) : Instance of :class:`.DataTable`.
-    path (str) : Location on disk to write datatable data and description.
+    dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
+    path (str) : Location on disk to write the Woodwork table.
     profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
     kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
@@ -92,37 +92,38 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
 
 
 def dump_table(dataframe, path, **kwargs):
-    '''Writes datatable description to table_description.json at the specified path.
+    '''Writes Woodwork table the specified path, including both the data and the typing information.
     '''
     loading_info = write_dataframe(dataframe, path, **kwargs)
 
-    description = typing_info_to_dict(dataframe)
-    description['loading_info'].update(loading_info)
+    typing_info = typing_info_to_dict(dataframe)
+    typing_info['loading_info'].update(loading_info)
 
-    write_schema(description, path)
+    write_schema(typing_info, path)
 
 
-def write_schema(description, path):
-    # --> add docstring
+def write_schema(typing_info, path):
+    '''Writes Woodwork typing information to the specified path at woodwork_typing_info.json
+    '''
     try:
-        file = os.path.join(path, 'table_description.json')
+        file = os.path.join(path, 'woodwork_typing_info.json')
         with open(file, 'w') as file:
-            json.dump(description, file)
+            json.dump(typing_info, file)
     except TypeError:
-        raise TypeError('DataTable is not json serializable. Check table and column metadata for values that may not be serializable.')
+        raise TypeError('Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable.')
 
 
 def write_dataframe(dataframe, path, format='csv', **kwargs):
-    '''Write underlying datatable data to disk or S3 path.
+    '''Write underlying DataFrame data to disk or S3 path.
 
     Args:
-        datatable (DataTable) : Instance of :class:`.DataTable`.
-        path (str) : Location on disk to write datatable data.
-        format (str) : Format to use for writing datatable data. Defaults to csv.
+        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
+        path (str) : Location on disk to write the Woodwork table.
+        format (str) : Format to use for writing Woodwork data. Defaults to csv.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
 
     Returns:
-        loading_info (dict) : Information on storage location and format of datatable data.
+        loading_info (dict) : Information on storage location and format of data.
     '''
     format = format.lower()
 
@@ -175,7 +176,7 @@ def create_archive(tmpdir):
     file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')
-    tar.add(str(tmpdir) + '/table_description.json', arcname='/table_description.json')
+    tar.add(str(tmpdir) + '/woodwork_typing_info.json', arcname='/woodwork_typing_info.json')
     tar.add(str(tmpdir) + '/data', arcname='/data')
     tar.close()
     return file_path

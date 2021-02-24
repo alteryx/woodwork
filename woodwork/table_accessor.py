@@ -270,15 +270,15 @@ class WoodworkTableAccessor:
 
     def to_dictionary(self):
         '''
-        Get a DataTable's description
+        Get a dictionary representation of the Woodwork typing information.
 
         Returns:
-            description (dict) : Description of :class:`.Schema`.
+            description (dict) : Description of the typing information.
         '''
         return serialize.typing_info_to_dict(self._dataframe)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
-        '''Write DataTable to disk in the CSV format, location specified by `path`.
+        '''Write Woodwork table to disk in the CSV format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
@@ -295,7 +295,7 @@ class WoodworkTableAccessor:
                                        compression=compression, profile_name=profile_name)
 
     def to_pickle(self, path, compression=None, profile_name=None):
-        '''Write DataTable to disk in the pickle format, location specified by `path`.
+        '''Write Woodwork table to disk in the pickle format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
@@ -308,7 +308,7 @@ class WoodworkTableAccessor:
                                        compression=compression, profile_name=profile_name)
 
     def to_parquet(self, path, compression=None, profile_name=None):
-        '''Write DataTable to disk in the parquet format, location specified by `path`.
+        '''Write Woodwork table to disk in the parquet format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
