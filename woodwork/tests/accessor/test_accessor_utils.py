@@ -1,6 +1,10 @@
 import pytest
 
-from woodwork.accessor_utils import init_series
+from woodwork.accessor_utils import (
+    _is_series,
+    _is_dataframe,
+    init_series
+)
 from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import Categorical, Datetime, NaturalLanguage
 from woodwork.tests.testing_utils import xfail_koalas
@@ -66,3 +70,13 @@ def test_init_series_error_on_invalid_conversion(sample_series):
         "Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_message):
         init_series(sample_series, logical_type='integer')
+
+
+def test_is_series(sample_series, sample_df):
+    assert _is_series(sample_series)
+    assert not _is_series(sample_df)
+
+
+def test_is_dataframe(sample_series, sample_df):
+    assert _is_dataframe(sample_df)
+    assert not _is_dataframe(sample_series)

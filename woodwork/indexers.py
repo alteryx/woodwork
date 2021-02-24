@@ -3,6 +3,7 @@ import copy
 import pandas as pd
 
 import woodwork as ww
+from woodwork.accessor_utils import _is_dataframe, _is_series
 from woodwork.utils import _new_dt_including, import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -93,23 +94,3 @@ def _process_selection(selection, original_data):
         selection.ww.init(schema=new_schema)
     # Selecting a single value or return selection from above
     return selection
-
-
-def _is_series(data):
-    if isinstance(data, pd.Series):
-        return True
-    elif dd and isinstance(data, dd.Series):
-        return True
-    elif ks and isinstance(data, ks.Series):
-        return True
-    return False
-
-
-def _is_dataframe(data):
-    if isinstance(data, pd.DataFrame):
-        return True
-    elif dd and isinstance(data, dd.DataFrame):
-        return True
-    elif ks and isinstance(data, ks.DataFrame):
-        return True
-    return False

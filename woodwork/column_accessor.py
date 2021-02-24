@@ -3,7 +3,7 @@ import warnings
 
 import pandas as pd
 
-from woodwork.accessor_utils import init_series
+from woodwork.accessor_utils import _is_series, init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import LatLong, Ordinal
@@ -195,7 +195,7 @@ class WoodworkColumnAccessor:
                 result = series_attr(*args, **kwargs)
 
                 # Try to initialize Woodwork with the existing Schema
-                if isinstance(result, pd.Series) or dd and isinstance(result, dd.Series):
+                if _is_series(result):
                     if result.dtype == self._schema['logical_type'].pandas_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
