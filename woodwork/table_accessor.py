@@ -10,6 +10,7 @@ from woodwork.exceptions import (
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
+import woodwork.serialize_accessor as serialize
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict
@@ -265,6 +266,15 @@ class WoodworkTableAccessor:
         """
         cols_to_include = self._schema._filter_cols(include)
         return self._get_subset_df_with_schema(cols_to_include)
+
+    def to_dictionary(self):
+        '''
+        Get a DataTable's description
+
+        Returns:
+            description (dict) : Description of :class:`.Schema`.
+        '''
+        return serialize.typing_info_to_dict(self._dataframe)
 
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
