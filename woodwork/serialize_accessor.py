@@ -33,12 +33,12 @@ def typing_info_to_dict(dataframe):
              'parameters': _get_specified_ltype_params(col['logical_type']),
              'type': str(_get_ltype_class(col['logical_type']))
          },
-            'physical_type': {
-            'type': str(col['dtype'])
+         'physical_type': {
+             'type': str(col['dtype'])
          },
-            'semantic_tags': sorted(list(col['semantic_tags'])),
-            'description': col['description'],
-            'metadata': col['metadata']
+         'semantic_tags': sorted(list(col['semantic_tags'])),
+         'description': col['description'],
+         'metadata': col['metadata']
          }
         for col_name, col in dataframe.ww.columns.items()
     ]
@@ -90,7 +90,7 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
 
 
 def dump_table(dataframe, path, **kwargs):
-    '''Writes Woodwork table the specified path, including both the data and the typing information.
+    '''Writes Woodwork table at the specified path, including both the data and the typing information.
     '''
     loading_info = write_dataframe(dataframe, path, **kwargs)
 
