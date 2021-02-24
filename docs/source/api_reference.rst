@@ -20,10 +20,10 @@ WoodworkTableAccessor
     WoodworkTableAccessor.select
     WoodworkTableAccessor.set_index
     WoodworkTableAccessor.set_types
-    WoodworkColumnAccessor.to_csv
-    WoodworkColumnAccessor.to_dictionary
-    WoodworkColumnAccessor.to_parquet
-    WoodworkColumnAccessor.to_pickle
+    WoodworkTableAccessor.to_csv
+    WoodworkTableAccessor.to_dictionary
+    WoodworkTableAccessor.to_parquet
+    WoodworkTableAccessor.to_pickle
 
 WoodworkColumnAccessor
 ======================
