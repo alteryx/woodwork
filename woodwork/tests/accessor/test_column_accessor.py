@@ -415,8 +415,9 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
 
 
 def test_series_methods_on_accessor_inplace(sample_series):
+    # TODO: Try to find a supported inplace method for Dask, if one exists
     if dd and isinstance(sample_series, dd.Series):
-        pytest.xfail('Dask does not support pop. TODO: Find a supported inplace method for Dask')
+        pytest.xfail('Dask does not support pop.')
     xfail_koalas(sample_series)
     series = sample_series.astype('category')
     series.ww.init()
