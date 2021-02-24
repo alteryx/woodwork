@@ -278,8 +278,6 @@ def make_public(s3_client, s3_bucket):
 
 
 def test_to_csv_S3(sample_df, s3_client, s3_bucket):
-    xfail_dask_and_koalas(sample_df)
-
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init(
@@ -309,8 +307,6 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
 
 
 def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
-    xfail_dask_and_koalas(sample_df)
-
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
@@ -324,8 +320,6 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
 
 
 def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-    xfail_dask_and_koalas(sample_df)
-
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init(
@@ -355,8 +349,6 @@ def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
 
 
 def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
-    xfail_dask_and_koalas(sample_df)
-
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
@@ -410,8 +402,6 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
-    xfail_dask_and_koalas(sample_df)
-
     xfail_tmp_disappears(sample_df)
     sample_df.ww.init()
     sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
