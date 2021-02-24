@@ -15,17 +15,17 @@ class StandardTagsRemovalWarning(UserWarning):
 
 class UpgradeSchemaWarning(UserWarning):
     def get_warning_message(self, saved_version_str, current_schema_version):
-        return ('The schema version of the saved woodwork.DataTable '
+        return ('The schema version of the saved Woodwork table '
                 '%s is greater than the latest supported %s. '
-                'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
+                'You may need to upgrade woodwork. Attempting to load Woodwork table ...'
                 % (saved_version_str, current_schema_version))
 
 
 class OutdatedSchemaWarning(UserWarning):
     def get_warning_message(self, saved_version_str):
-        return ('The schema version of the saved woodwork.DataTable '
+        return ('The schema version of the saved Woodwork table '
                 '%s is no longer supported by this version '
-                'of woodwork. Attempting to load woodwork.DataTable ...'
+                'of woodwork. Attempting to load Woodwork table ...'
                 % (saved_version_str))
 
 

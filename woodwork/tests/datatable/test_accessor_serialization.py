@@ -1,12 +1,15 @@
 import json
 import os
 
+import boto3
 import pandas as pd
 import pytest
 
+import woodwork.deserialize_accessor as deserialize
 import woodwork.serialize_accessor as serialize
+from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import Ordinal
-from woodwork.tests.testing_utils import xfail_dask_and_koalas
+from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -172,226 +175,240 @@ def test_to_csv(sample_df, tmpdir):
                          'age': {'interesting_values': [33, 57]}})
 
     sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
-# --> add back in at serialization
-    # _dt = deserialize.read_datatable(str(tmpdir))
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
-    # pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index, sort_index=True),
-    #                               to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-    # assert dt == _dt
-
-
-# def test_to_csv_with_latlong(latlong_df, tmpdir):
-#     dt = DataTable(latlong_df, index='tuple_ints', logical_types={col: 'LatLong' for col in latlong_df.columns})
-#     dt.to_csv(str(tmpdir))
-#     _dt = deserialize.read_datatable(str(tmpdir))
-
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
-#                                   to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-#     assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                  to_pandas(sample_df, index=sample_df.ww.index, sort_index=True))
+    assert deserialized_df.ww.schema == sample_df.ww.schema
 
 
-# def test_to_pickle(sample_df, tmpdir):
-#     dt = DataTable(sample_df)
-#     if not isinstance(sample_df, pd.DataFrame):
-#         msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
-#         with pytest.raises(ValueError, match=msg):
-#             dt.to_pickle(str(tmpdir))
-#     else:
-#         dt.to_pickle(str(tmpdir))
-#         _dt = deserialize.read_datatable(str(tmpdir))
+def test_to_csv_with_latlong(latlong_df, tmpdir):
+    xfail_dask_and_koalas(latlong_df)
 
-#         pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index),
-#                                       to_pandas(_dt.to_dataframe(), index=_dt.index))
-#         assert dt == _dt
+    latlong_df.ww.init(index='tuple_ints', logical_types={col: 'LatLong' for col in latlong_df.columns})
+    latlong_df.ww.to_csv(str(tmpdir))
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                  to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True))
+    assert deserialized_df.ww.schema == latlong_df.ww.schema
 
 
-# def test_to_pickle_with_latlong(latlong_df, tmpdir):
-#     dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
-#     if not isinstance(latlong_df, pd.DataFrame):
-#         msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
-#         with pytest.raises(ValueError, match=msg):
-#             dt.to_pickle(str(tmpdir))
-#     else:
-#         dt.to_pickle(str(tmpdir))
-#         _dt = deserialize.read_datatable(str(tmpdir))
+def test_to_pickle(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
 
-#         pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
-#                                       to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-#         assert dt == _dt
+    sample_df.ww.init()
+    # if not isinstance(sample_df, pd.DataFrame):
+    #     msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+    #     with pytest.raises(ValueError, match=msg):
+    #         dt.to_pickle(str(tmpdir))
+    # else:
 
+    sample_df.ww.to_pickle(str(tmpdir))
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
-# def test_to_parquet(sample_df, tmpdir):
-#     dt = DataTable(sample_df, index='id')
-#     dt.to_parquet(str(tmpdir))
-#     _dt = deserialize.read_datatable(str(tmpdir))
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
-#                                   to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-#     assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                  to_pandas(sample_df, index=sample_df.ww.index, sort_index=True))
+    assert deserialized_df.ww.schema == sample_df.ww.schema
 
 
-# def test_to_parquet_with_latlong(latlong_df, tmpdir):
-#     dt = DataTable(latlong_df, logical_types={col: 'LatLong' for col in latlong_df.columns})
-#     dt.to_parquet(str(tmpdir))
-#     _dt = deserialize.read_datatable(str(tmpdir))
+def test_to_pickle_with_latlong(latlong_df, tmpdir):
+    xfail_dask_and_koalas(latlong_df)
 
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index, sort_index=True),
-#                                   to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-#     assert dt == _dt
+    latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
+    if not isinstance(latlong_df, pd.DataFrame):
+        msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            latlong_df.ww.to_pickle(str(tmpdir))
+    else:
+        latlong_df.ww.to_pickle(str(tmpdir))
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
-
-# @pytest.fixture
-# def s3_client():
-#     # TODO: Fix Moto tests needing to explicitly set permissions for objects
-#     _environ = os.environ.copy()
-#     from moto import mock_s3
-#     with mock_s3():
-#         s3 = boto3.resource('s3')
-#         yield s3
-#     os.environ.clear()
-#     os.environ.update(_environ)
+        pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
+                                      to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+        assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
-# @pytest.fixture
-# def s3_bucket(s3_client):
-#     s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
-#     s3_bucket = s3_client.Bucket(BUCKET_NAME)
-#     yield s3_bucket
+def test_to_parquet(sample_df, tmpdir):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='id')
+    sample_df.ww.to_parquet(str(tmpdir))
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-# def make_public(s3_client, s3_bucket):
-#     obj = list(s3_bucket.objects.all())[0].key
-#     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+def test_to_parquet_with_latlong(latlong_df, tmpdir):
+    xfail_dask_and_koalas(latlong_df)
+
+    latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
+    latlong_df.ww.to_parquet(str(tmpdir))
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
-# def test_to_csv_S3(sample_df, s3_client, s3_bucket):
-#     xfail_tmp_disappears(sample_df)
-
-#     dt = DataTable(sample_df,
-#                    name='test_data',
-#                    index='id',
-#                    semantic_tags={'id': 'tag1'},
-#                    logical_types={'age': Ordinal(order=[25, 33, 57])})
-#     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
-#     make_public(s3_client, s3_bucket)
-
-#     _dt = deserialize.read_datatable(TEST_S3_URL)
-
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
+@pytest.fixture
+def s3_client():
+    # TODO: Fix Moto tests needing to explicitly set permissions for objects
+    _environ = os.environ.copy()
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
 
 
-# def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
-#     pandas_dt = DataTable(sample_df_pandas)
-#     pandas_dt.to_pickle(TEST_S3_URL)
-#     make_public(s3_client, s3_bucket)
-#     _dt = deserialize.read_datatable(TEST_S3_URL)
-
-#     pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert pandas_dt == _dt
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
 
 
-# def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
-#     xfail_tmp_disappears(sample_df)
-
-#     dt = DataTable(sample_df)
-#     dt.to_parquet(TEST_S3_URL)
-#     make_public(s3_client, s3_bucket)
-#     _dt = deserialize.read_datatable(TEST_S3_URL)
-
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
+def make_public(s3_client, s3_bucket):
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
-# def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-#     xfail_tmp_disappears(sample_df)
+def test_to_csv_S3(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
 
-#     dt = DataTable(sample_df,
-#                    name='test_data',
-#                    index='id',
-#                    time_index='signup_date',
-#                    semantic_tags={'id': 'tag1'},
-#                    logical_types={'age': Ordinal(order=[25, 33, 57])})
-#     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
-#     make_public(s3_client, s3_bucket)
+    sample_df.ww.init(
+        name='test_data',
+        index='id',
+        semantic_tags={'id': 'tag1'},
+        logical_types={'age': Ordinal(order=[25, 33, 57])})
+    sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+    make_public(s3_client, s3_bucket)
 
-#     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
 
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
-
-
-# def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
-#     pandas_dt = DataTable(sample_df_pandas)
-#     pandas_dt.to_pickle(TEST_S3_URL, profile_name=False)
-#     make_public(s3_client, s3_bucket)
-#     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
-
-#     pd.testing.assert_frame_equal(to_pandas(pandas_dt.to_dataframe(), index=pandas_dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert pandas_dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-# def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
-#     xfail_tmp_disappears(sample_df)
+def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+    sample_df_pandas.ww.init()
+    sample_df_pandas.ww.to_pickle(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
 
-#     dt = DataTable(sample_df)
-#     dt.to_parquet(TEST_S3_URL, profile_name=False)
-#     make_public(s3_client, s3_bucket)
-#     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name=False)
-
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
-
-
-# def create_test_credentials(test_path):
-#     with open(test_path, "w+") as f:
-#         f.write("[test]\n")
-#         f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
-#         f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+    pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-# def create_test_config(test_path_config):
-#     with open(test_path_config, "w+") as f:
-#         f.write("[profile test]\n")
-#         f.write("region=us-east-2\n")
-#         f.write("output=text\n")
+def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
+
+    sample_df.ww.init()
+    sample_df.ww.to_parquet(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
+
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-# @pytest.fixture
-# def setup_test_profile(monkeypatch, tmpdir):
-#     cache = str(tmpdir.join('.cache').mkdir())
-#     test_path = os.path.join(cache, 'test_credentials')
-#     test_path_config = os.path.join(cache, 'test_config')
-#     monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
-#     monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
-#     monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
-#     monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
-#     monkeypatch.setenv("AWS_PROFILE", "test")
+def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
 
-#     try:
-#         os.remove(test_path)
-#     except OSError:
-#         pass
-#     try:
-#         os.remove(test_path_config)
-#     except OSError:
-#         pass
+    sample_df.ww.init(
+        name='test_data',
+        index='id',
+        time_index='signup_date',
+        semantic_tags={'id': 'tag1'},
+        logical_types={'age': Ordinal(order=[25, 33, 57])})
+    sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    make_public(s3_client, s3_bucket)
 
-#     create_test_credentials(test_path)
-#     create_test_config(test_path_config)
-#     yield
-#     os.remove(test_path)
-#     os.remove(test_path_config)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-# def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
-#     xfail_tmp_disappears(sample_df)
-#     dt = DataTable(sample_df)
-#     dt.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
-#     make_public(s3_client, s3_bucket)
-#     _dt = deserialize.read_datatable(TEST_S3_URL, profile_name='test')
+def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
+    sample_df_pandas.ww.init()
+    sample_df_pandas.ww.to_pickle(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
 
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
+    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
+
+
+def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
+    xfail_tmp_disappears(sample_df)
+
+    sample_df.ww.init()
+    sample_df.ww.to_parquet(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
+
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+def create_test_credentials(test_path):
+    with open(test_path, "w+") as f:
+        f.write("[test]\n")
+        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+
+
+def create_test_config(test_path_config):
+    with open(test_path_config, "w+") as f:
+        f.write("[profile test]\n")
+        f.write("region=us-east-2\n")
+        f.write("output=text\n")
+
+
+@pytest.fixture
+def setup_test_profile(monkeypatch, tmpdir):
+    cache = str(tmpdir.join('.cache').mkdir())
+    test_path = os.path.join(cache, 'test_credentials')
+    test_path_config = os.path.join(cache, 'test_config')
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    try:
+        os.remove(test_path)
+    except OSError:
+        pass
+    try:
+        os.remove(test_path_config)
+    except OSError:
+        pass
+
+    create_test_credentials(test_path)
+    create_test_config(test_path_config)
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)
+
+
+def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
+    xfail_tmp_disappears(sample_df)
+    sample_df.ww.init()
+    sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+    make_public(s3_client, s3_bucket)
+    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name='test')
+
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
 def test_serialize_url_csv(sample_df):
@@ -418,70 +435,70 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
-# def test_deserialize_url_csv(sample_df_pandas):
-#     dt = DataTable(sample_df_pandas, index='id')
-#     _dt = deserialize.read_datatable(URL)
+def test_deserialize_url_csv(sample_df_pandas):
+    sample_df_pandas.ww.init(index='id')
+    deserialized_df = deserialize.read_woodwork_table(URL)
 
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
-
-
-# def test_deserialize_url_csv_anon(sample_df_pandas):
-#     dt = DataTable(sample_df_pandas, index='id')
-#     _dt = deserialize.read_datatable(URL, profile_name=False)
-
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
+    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-# def test_deserialize_s3_csv(sample_df_pandas):
-#     dt = DataTable(sample_df_pandas, index='id')
-#     _dt = deserialize.read_datatable(S3_URL)
+def test_deserialize_url_csv_anon(sample_df_pandas):
+    sample_df_pandas.ww.init(index='id')
+    deserialized_df = deserialize.read_woodwork_table(URL, profile_name=False)
 
-#     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=dt.index), to_pandas(_dt.to_dataframe(), index=_dt.index))
-#     assert dt == _dt
-
-
-# def test_check_later_schema_version():
-#     def test_version(major, minor, patch, raises=True):
-#         version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
-#         if raises:
-#             warning_text = ('The schema version of the saved woodwork.DataTable '
-#                             '%s is greater than the latest supported %s. '
-#                             'You may need to upgrade woodwork. Attempting to load woodwork.DataTable ...'
-#                             % (version_to_check, serialize.SCHEMA_VERSION))
-#             with pytest.warns(UpgradeSchemaWarning, match=warning_text):
-#                 deserialize._check_schema_version(version_to_check)
-#         else:
-#             with pytest.warns(None) as record:
-#                 deserialize._check_schema_version(version_to_check)
-#             assert len(record) == 0
-
-#     major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split('.')]
-
-#     test_version(major + 1, minor, patch)
-#     test_version(major, minor + 1, patch)
-#     test_version(major, minor, patch + 1)
-#     test_version(major, minor - 1, patch + 1, raises=False)
+    pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
+    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-# def test_earlier_schema_version():
-#     def test_version(major, minor, patch, raises=True):
-#         version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
-#         if raises:
-#             warning_text = ('The schema version of the saved woodwork.DataTable '
-#                             '%s is no longer supported by this version '
-#                             'of woodwork. Attempting to load woodwork.DataTable ...'
-#                             % (version_to_check))
-#             with pytest.warns(OutdatedSchemaWarning, match=warning_text):
-#                 deserialize._check_schema_version(version_to_check)
-#         else:
-#             with pytest.warns(None) as record:
-#                 deserialize._check_schema_version(version_to_check)
-#             assert len(record) == 0
+def test_deserialize_s3_csv(sample_df_pandas):
+    sample_df_pandas.ww.init(index='id')
+    deserialized_df = deserialize.read_woodwork_table(S3_URL)
 
-#     major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split('.')]
+    pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
+    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
-#     test_version(major - 1, minor, patch)
-#     test_version(major, minor - 1, patch, raises=False)
-#     test_version(major, minor, patch - 1, raises=False)
+
+def test_check_later_schema_version():
+    def test_version(major, minor, patch, raises=True):
+        version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            warning_text = ('The schema version of the saved Woodwork table '
+                            '%s is greater than the latest supported %s. '
+                            'You may need to upgrade woodwork. Attempting to load Woodwork table ...'
+                            % (version_to_check, serialize.SCHEMA_VERSION))
+            with pytest.warns(UpgradeSchemaWarning, match=warning_text):
+                deserialize._check_schema_version(version_to_check)
+        else:
+            with pytest.warns(None) as record:
+                deserialize._check_schema_version(version_to_check)
+            assert len(record) == 0
+
+    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split('.')]
+
+    test_version(major + 1, minor, patch)
+    test_version(major, minor + 1, patch)
+    test_version(major, minor, patch + 1)
+    test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_earlier_schema_version():
+    def test_version(major, minor, patch, raises=True):
+        version_to_check = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            warning_text = ('The schema version of the saved Woodwork table '
+                            '%s is no longer supported by this version '
+                            'of woodwork. Attempting to load Woodwork table ...'
+                            % (version_to_check))
+            with pytest.warns(OutdatedSchemaWarning, match=warning_text):
+                deserialize._check_schema_version(version_to_check)
+        else:
+            with pytest.warns(None) as record:
+                deserialize._check_schema_version(version_to_check)
+            assert len(record) == 0
+
+    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split('.')]
+
+    test_version(major - 1, minor, patch)
+    test_version(major, minor - 1, patch, raises=False)
+    test_version(major, minor, patch - 1, raises=False)

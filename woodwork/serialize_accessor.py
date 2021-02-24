@@ -67,17 +67,17 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
     '''Serialize Woodwork table and write to disk or S3 path.
 
     Args:
-    dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
-    path (str) : Location on disk to write the Woodwork table.
-    profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
-            Set to False to use an anonymous profile.
-    kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
+        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
+        path (str) : Location on disk to write the Woodwork table.
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                Set to False to use an anonymous profile.
+        kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
-            dump_table(dataframe, tmpdir, **kwargs)
-            file_path = create_archive(tmpdir)
+            _dump_table(dataframe, tmpdir, **kwargs)
+            file_path = _create_archive(tmpdir)
 
             transport_params = get_transport_params(profile_name)
             use_smartopen(file_path, path, read=False, transport_params=transport_params)
@@ -86,10 +86,10 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
     else:
         path = os.path.abspath(path)
         os.makedirs(os.path.join(path, 'data'), exist_ok=True)
-        dump_table(dataframe, path, **kwargs)
+        _dump_table(dataframe, path, **kwargs)
 
 
-def dump_table(dataframe, path, **kwargs):
+def _dump_table(dataframe, path, **kwargs):
     '''Writes Woodwork table at the specified path, including both the data and the typing information.
     '''
     loading_info = write_dataframe(dataframe, path, **kwargs)
@@ -168,7 +168,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
     return {'location': location, 'type': format, 'params': kwargs}
 
 
-def create_archive(tmpdir):
+def _create_archive(tmpdir):
     '''When seralizing to an S3 URL, writes a tar archive.
     '''
     file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
