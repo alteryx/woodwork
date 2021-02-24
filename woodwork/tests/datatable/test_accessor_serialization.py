@@ -4,9 +4,10 @@ import os
 import pandas as pd
 import pytest
 
+import woodwork.deserialize_accessor as deserialize
 import woodwork.serialize_accessor as serialize
 from woodwork.logical_types import Ordinal
-from woodwork.tests.testing_utils import xfail_dask_and_koalas
+from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -172,12 +173,11 @@ def test_to_csv(sample_df, tmpdir):
                          'age': {'interesting_values': [33, 57]}})
 
     sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
-# --> add back in at serialization
-    # _dt = deserialize.read_datatable(str(tmpdir))
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
-    # pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe(), index=_dt.index, sort_index=True),
-    #                               to_pandas(_dt.to_dataframe(), index=_dt.index, sort_index=True))
-    # assert dt == _dt
+    pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                  to_pandas(sample_df, index=sample_df.ww.index, sort_index=True))
+    assert deserialized_df.ww.schema == sample_df.ww.schema
 
 
 # def test_to_csv_with_latlong(latlong_df, tmpdir):
