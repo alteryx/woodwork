@@ -72,11 +72,11 @@ class _locIndexerAccessor:
 
 
 def _process_selection(selection, original_data):
-    if isinstance(selection, pd.Series) or (ks and isinstance(selection, ks.Series)):
-        if isinstance(original_data, pd.DataFrame) and set(selection.index.values) == set(original_data.columns):
+    if _is_series(selection):
+        if _is_dataframe(original_data) and set(selection.index.values) == set(original_data.columns):
             # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
             schema = None
-        elif isinstance(original_data, pd.DataFrame):
+        elif _is_dataframe(original_data):
             # Selecting a single column from a DataFrame
             schema = original_data.ww.schema.columns[selection.name]
             schema['semantic_tags'] = schema['semantic_tags'] - {'index'} - {'time_index'}
@@ -86,10 +86,30 @@ def _process_selection(selection, original_data):
         if schema:
             del schema['dtype']
             selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
-    elif isinstance(selection, pd.DataFrame) or (ks and isinstance(selection, ks.DataFrame)):
+    elif _is_dataframe(selection):
         # Selecting a new DataFrame from an existing DataFrame
         schema = original_data.ww.schema
         new_schema = schema._get_subset_schema(list(selection.columns))
         selection.ww.init(schema=new_schema)
     # Selecting a single value or return selection from above
     return selection
+
+
+def _is_series(data):
+    if isinstance(data, pd.Series):
+        return True
+    elif dd and isinstance(data, dd.Series):
+        return True
+    elif ks and isinstance(data, ks.Series):
+        return True
+    return False
+
+
+def _is_dataframe(data):
+    if isinstance(data, pd.DataFrame):
+        return True
+    elif dd and isinstance(data, dd.DataFrame):
+        return True
+    elif ks and isinstance(data, ks.DataFrame):
+        return True
+    return False
