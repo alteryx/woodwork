@@ -16,10 +16,11 @@ from woodwork.schema_column import (
     _validate_description,
     _validate_metadata
 )
-from woodwork.utils import _get_column_logical_type, _is_valid_latlong_series
+from woodwork.utils import _get_column_logical_type, _is_valid_latlong_series, import_or_none
+
+dd = import_or_none('dask.dataframe')
 
 
-@pd.api.extensions.register_series_accessor('ww')
 class WoodworkColumnAccessor:
     def __init__(self, series):
         self._series = series
@@ -290,3 +291,14 @@ class WoodworkColumnAccessor:
 
 def _raise_init_error():
     raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
+
+
+@pd.api.extensions.register_series_accessor('ww')
+class PandasColumnAccessor(WoodworkColumnAccessor):
+    pass
+
+
+if dd:
+    @dd.extensions.register_series_accessor('ww')
+    class DaskColumnAccessor(WoodworkColumnAccessor):
+        pass
