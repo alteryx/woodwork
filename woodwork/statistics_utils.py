@@ -232,3 +232,48 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None):
                 )
     mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
     return mutual_info
+
+
+def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
+    """Returns a list of dictionaries with counts for the most frequent values in each column (only
+        for columns with `category` as a standard tag).
+
+
+    Args:
+        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): Data from which to count values.
+        ascending (bool): Defines whether each list of values should be sorted most frequent
+            to least frequent value (False), or least frequent to most frequent value (True).
+            Defaults to False.
+
+        top_n (int): the number of top values to retrieve. Defaults to 10.
+
+        dropna (bool): determines whether to remove NaN values when finding frequency. Defaults
+            to False.
+
+    Returns:
+        top_list (list(dict)): a list of dictionaries for each categorical column with keys `count`
+            and `value`.
+    """
+    val_counts = {}
+    valid_cols = [col for col, column in dataframe.ww.columns.items() if _is_col_categorical(column)]
+    data = dataframe[valid_cols]
+    is_ks = False
+    if dd and isinstance(data, dd.DataFrame):
+        data = data.compute()
+    if ks and isinstance(data, ks.DataFrame):
+        data = data.to_pandas()
+        is_ks = True
+
+    for col in valid_cols:
+        if dropna and is_ks:
+            # Koalas categorical columns will have missing values replaced with the string 'None'
+            # Replace them with np.nan so dropna work
+            datacol = data[col].replace(to_replace='None', value=np.nan)
+        else:
+            datacol = data[col]
+        frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
+        df = frequencies[:top_n].reset_index()
+        df.columns = ["value", "count"]
+        dt_list = list(df.to_dict(orient="index").values())
+        val_counts[col] = dt_list
+    return val_counts
