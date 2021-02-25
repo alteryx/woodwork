@@ -68,11 +68,11 @@ def test_init_series_error_on_invalid_conversion(sample_series):
         init_series(sample_series, logical_type='integer')
 
 
-def test_is_series(sample_series, sample_df):
-    assert _is_series(sample_series)
+def test_is_series(sample_df):
+    assert _is_series(sample_df['id'])
     assert not _is_series(sample_df)
 
 
-def test_is_dataframe(sample_series, sample_df):
+def test_is_dataframe(sample_df):
     assert _is_dataframe(sample_df)
-    assert not _is_dataframe(sample_series)
+    assert not _is_dataframe(sample_df['id'])
