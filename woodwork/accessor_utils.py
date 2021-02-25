@@ -122,5 +122,5 @@ def _get_valid_dtype(series, logical_type):
             valid_dtype = backup_dtype
     else:
         valid_dtype = logical_type.pandas_dtype
-    
+
     return valid_dtype

@@ -3,11 +3,7 @@ import warnings
 
 import pandas as pd
 
-from woodwork.accessor_utils import (
-    _get_valid_dtype,
-    _is_series,
-    init_series
-)
+from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import LatLong, Ordinal

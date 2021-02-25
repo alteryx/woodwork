@@ -1,8 +1,18 @@
 import pytest
 
-from woodwork.accessor_utils import _get_valid_dtype, _is_dataframe, _is_series, init_series
+from woodwork.accessor_utils import (
+    _get_valid_dtype,
+    _is_dataframe,
+    _is_series,
+    init_series
+)
 from woodwork.exceptions import TypeConversionError
-from woodwork.logical_types import Boolean, Categorical, Datetime, NaturalLanguage
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    NaturalLanguage
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
