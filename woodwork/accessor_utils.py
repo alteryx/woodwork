@@ -116,7 +116,7 @@ def _get_valid_dtype(series, logical_type):
     with the given logical_type'''
     backup_dtype = logical_type.backup_dtype
     if ks and isinstance(series, ks.Series) and backup_dtype:
-        if backup_dtype == 'str': 
+        if backup_dtype == 'str':
             # Koalas will have a dtype of object even after `ks.Series.astype('str')`
             valid_dtype = 'object'
         else:
