@@ -75,3 +75,8 @@ def xfail_dask_and_koalas(input):
     if dd and isinstance(input, (dd.DataFrame, dd.Series)) or \
             ks and isinstance(input, (ks.DataFrame, ks.Series)):
         pytest.xfail('Dask and Koalas Accessors not yet supported.')
+
+
+def xfail_koalas(input):
+    if ks and isinstance(input, (ks.DataFrame, ks.Series)):
+        pytest.xfail('Koalas Accessors not yet supported.')
