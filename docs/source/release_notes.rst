@@ -2,14 +2,20 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.0.10 February 25, 2021**
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
         * Add blank issue template for creating issues (:pr:`630`)
-    * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
         * Fixed text on back arrow on install page (:pr:`564`)
