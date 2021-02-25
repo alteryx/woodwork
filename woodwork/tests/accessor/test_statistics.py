@@ -533,3 +533,49 @@ def test_describe_with_include(sample_df):
         assert col_name in multi_params_df.columns
     multi_params_df['full_name'].equals(col_name_df['full_name'])
     multi_params_df['full_name'].equals(sample_df.ww.describe()['full_name'])
+
+
+def test_value_counts(categorical_df):
+    xfail_dask_and_koalas(categorical_df)
+
+    logical_types = {
+        'ints': Integer,
+        'categories1': Categorical,
+        'bools': Boolean,
+        'categories2': Categorical,
+        'categories3': Categorical,
+    }
+    categorical_df.ww.init(logical_types=logical_types)
+    val_cts = categorical_df.ww.value_counts()
+    for col in categorical_df.ww.columns:
+        if col in ['ints', 'bools']:
+            assert col not in val_cts
+        else:
+            assert col in val_cts
+
+    none_val = np.nan
+    expected_cat1 = [{'value': 200, 'count': 4}, {'value': 100, 'count': 3}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
+    # Koalas converts numeric categories to strings, so we need to update the expected values for this
+    # Koalas will result in `None` instead of `np.nan` in categorical columns
+    if ks and isinstance(categorical_df, ks.DataFrame):
+        updated_results = []
+        for items in expected_cat1:
+            updated_results.append({k: (str(v) if k == 'value' else v) for k, v in items.items()})
+        expected_cat1 = updated_results
+        none_val = 'None'
+
+    assert val_cts['categories1'] == expected_cat1
+    assert val_cts['categories2'] == [{'value': none_val, 'count': 6}, {'value': 'test', 'count': 3}, {'value': 'test2', 'count': 1}]
+    assert val_cts['categories3'] == [{'value': none_val, 'count': 7}, {'value': 'test', 'count': 3}]
+
+    val_cts_descending = categorical_df.ww.value_counts(ascending=True)
+    for col, vals in val_cts_descending.items():
+        for i in range(len(vals)):
+            assert vals[i]['count'] == val_cts[col][-i - 1]['count']
+
+    val_cts_dropna = categorical_df.ww.value_counts(dropna=True)
+    assert val_cts_dropna['categories3'] == [{'value': 'test', 'count': 3}]
+
+    val_cts_2 = categorical_df.ww.value_counts(top_n=2)
+    for col in val_cts_2:
+        assert len(val_cts_2[col]) == 2
