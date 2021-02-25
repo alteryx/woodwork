@@ -10,7 +10,11 @@ from woodwork.logical_types import (
     Integer,
     PhoneNumber
 )
-from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
+from woodwork.tests.testing_utils import (
+    to_pandas,
+    xfail_dask_and_koalas,
+    xfail_koalas
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -56,7 +60,7 @@ def test_error_before_table_init(sample_df):
 
 
 def test_error_before_column_init(sample_series):
-    xfail_dask_and_koalas(sample_series)
+    xfail_koalas(sample_series)
     error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
 
     with pytest.raises(AttributeError, match=error_message):
@@ -67,7 +71,9 @@ def test_error_before_column_init(sample_series):
 
 
 def test_iloc_column(sample_series):
-    xfail_dask_and_koalas(sample_series)
+    xfail_koalas(sample_series)
+    if dd and isinstance(sample_series, dd.Series):
+        pytest.xfail('iloc is not supported with Dask inputs')
     series = sample_series.astype('category')
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
@@ -97,7 +103,9 @@ def test_iloc_column(sample_series):
 
 
 def test_iloc_column_does_not_propagate_changes_to_data(sample_series):
-    xfail_dask_and_koalas(sample_series)
+    xfail_koalas(sample_series)
+    if dd and isinstance(sample_series, dd.Series):
+        pytest.xfail('iloc is not supported with Dask inputs')
     series = sample_series.astype('category')
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
@@ -120,7 +128,7 @@ def test_iloc_column_does_not_propagate_changes_to_data(sample_series):
 
 
 def test_loc_column(sample_series):
-    xfail_dask_and_koalas(sample_series)
+    xfail_koalas(sample_series)
     series = sample_series.astype('category')
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
@@ -132,7 +140,14 @@ def test_loc_column(sample_series):
     assert sliced.ww.semantic_tags == {'category', 'tag1', 'tag2'}
     pd.testing.assert_series_equal(to_pandas(sliced), to_pandas(series.loc[2:]))
 
-    assert series.ww.loc[0] == 'a'
+    single_val = series.ww.loc[0]
+
+    if dd and isinstance(series, dd.Series):
+        # Dask returns a series - convert to pandas to check the value
+        single_val = single_val.compute()
+        assert len(single_val) == 1
+        single_val = single_val.loc[0]
+    assert single_val == 'a'
 
     series = sample_series.astype('category')
     series.ww.init(use_standard_tags=False)

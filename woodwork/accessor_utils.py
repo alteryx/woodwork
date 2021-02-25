@@ -89,3 +89,23 @@ def _update_column_dtype(series, logical_type):
                 f'logical type {logical_type}.'
             raise TypeConversionError(error_msg)
     return series
+
+
+def _is_series(data):
+    if isinstance(data, pd.Series):
+        return True
+    elif dd and isinstance(data, dd.Series):
+        return True
+    elif ks and isinstance(data, ks.Series):
+        return True
+    return False
+
+
+def _is_dataframe(data):
+    if isinstance(data, pd.DataFrame):
+        return True
+    elif dd and isinstance(data, dd.DataFrame):
+        return True
+    elif ks and isinstance(data, ks.DataFrame):
+        return True
+    return False
