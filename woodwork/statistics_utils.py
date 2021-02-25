@@ -251,7 +251,7 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
             to False.
 
     Returns:
-        top_list (list(dict)): a list of dictionaries for each categorical column with keys `count`
+        list(dict): a list of dictionaries for each categorical column with keys `count`
             and `value`.
     """
     val_counts = {}

@@ -547,7 +547,7 @@ class WoodworkTableAccessor:
                 to False.
 
         Returns:
-            top_list (list(dict)): a list of dictionaries for each categorical column with keys `count`
+           list(dict): a list of dictionaries for each categorical column with keys `count`
                 and `value`.
         """
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
