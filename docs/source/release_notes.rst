@@ -31,7 +31,7 @@ Release Notes
         * Allow serialization of WoodworkColumnAccessor to csv, pickle, and parquet (:pr:`624`)
         * Add DaskColumnAccessor (:pr:`625`)
         * Allow deserialization from csv, pickle, and parquet to Woodwork table (:pr:`626`)
-        * Adds ``__getitem__`` to table accessor (:pr:`632`)
+        * Adds ``__getitem__`` to table accessor (:pr:`633`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
