@@ -1,6 +1,6 @@
 ---
 name: Blank Issue
-about:
+about: Create a blank issue
 title: ''
 labels: ''
 assignees: ''
