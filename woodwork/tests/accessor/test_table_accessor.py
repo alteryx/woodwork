@@ -222,6 +222,13 @@ def test_accessor_getattr(sample_df):
         sample_df.ww.init()
         sample_df.ww.not_present
 
+def test_accessor_getitem(sample_df):
+    xfail_dask_and_koalas(sample_df)
+    df = sample_df.copy()
+    df.ww.init()
+    assert list(df.columns) == list(df.ww.schema.columns)
+    subset = ['id', 'full_name', 'email']
+    assert subset == list(df.ww[subset].ww.schema.columns)
 
 def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
     xfail_dask_and_koalas(sample_df)
