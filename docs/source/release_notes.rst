@@ -32,6 +32,7 @@ Release Notes
         * Add DaskColumnAccessor (:pr:`625`)
         * Allow deserialization from csv, pickle, and parquet to Woodwork table (:pr:`626`)
         * Add ``value_counts`` to WoodworkTableAccessor (:pr:`632`)
+        * Add ``pop`` to WoodworkTableAccessor (:pr:`636`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
