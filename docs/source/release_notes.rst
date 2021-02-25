@@ -29,6 +29,7 @@ Release Notes
         * Implement ``loc`` and ``iloc`` for WoodworkTableAccessor (:pr:`618`)
         * Allow updating logical types with ``set_types`` and make relevant DataFrame changes (:pr:`619`)
         * Allow serialization of WoodworkColumnAccessor to csv, pickle, and parquet (:pr:`624`)
+        * Addes ``__getitem__`` to table accessor (:pr:`632`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
