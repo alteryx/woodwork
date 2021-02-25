@@ -3,7 +3,11 @@ import warnings
 
 import pandas as pd
 
-from woodwork.accessor_utils import _is_series, init_series
+from woodwork.accessor_utils import (
+    _get_valid_dtype,
+    _is_series,
+    init_series
+)
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import LatLong, Ordinal
@@ -23,6 +27,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 class WoodworkColumnAccessor:
@@ -196,14 +201,15 @@ class WoodworkColumnAccessor:
 
                 # Try to initialize Woodwork with the existing Schema
                 if _is_series(result):
-                    if result.dtype == self._schema['logical_type'].pandas_dtype:
+                    valid_dtype = _get_valid_dtype(result, self._schema['logical_type'])
+                    if result.dtype == valid_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
                         del schema['dtype']
                         result.ww.init(**schema, use_standard_tags=self.use_standard_tags)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
-                            f'{self._schema["logical_type"].pandas_dtype}, and returned dtype, {result.dtype}'
+                            f'{valid_dtype}, and returned dtype, {result.dtype}'
                         warning_message = TypingInfoMismatchWarning().get_warning_message(attr,
                                                                                           invalid_schema_message,
                                                                                           'Series')
@@ -217,10 +223,15 @@ class WoodworkColumnAccessor:
     def _validate_logical_type(self, logical_type):
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
-        if logical_type.pandas_dtype != str(self._series.dtype):
+        valid_dtype = _get_valid_dtype(self._series, logical_type)
+        if valid_dtype != str(self._series.dtype):
+            if ks and isinstance(self._series, ks.Series) and logical_type.backup_dtype:
+                convert_dtype = logical_type.backup_dtype
+            else:
+                convert_dtype = logical_type.pandas_dtype
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
-                             f"dtype to '{logical_type.pandas_dtype}' before initializing or use the "
+                             f"dtype to '{convert_dtype}' before initializing or use the "
                              "woodwork.init_series function to initialize.")
 
         if isinstance(logical_type, Ordinal):
@@ -307,4 +318,12 @@ class PandasColumnAccessor(WoodworkColumnAccessor):
 if dd:
     @dd.extensions.register_series_accessor('ww')
     class DaskColumnAccessor(WoodworkColumnAccessor):
+        pass
+
+
+if ks:
+    from databricks.koalas.extensions import register_series_accessor
+
+    @register_series_accessor('ww')
+    class KoalasColumnAccessor(WoodworkColumnAccessor):
         pass

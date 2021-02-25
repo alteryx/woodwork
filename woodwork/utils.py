@@ -268,17 +268,27 @@ def _is_valid_latlong_series(series):
     '''Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False'''
     dd = import_or_none('dask.dataframe')
+    ks = import_or_none('databricks.koalas')
     if dd and isinstance(series, dd.Series):
         series = series.compute()
-    if series.apply(_is_valid_latlong_value).all():
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+        series_type = 'koalas'
+    else:
+        series_type = 'pandas'
+    if series.apply(_is_valid_latlong_value, args=(series_type,)).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val):
-    '''Returns True if the value provided is a properly formatted LatLong value, otherwise
-    returns False.'''
-    if isinstance(val, tuple) and len(val) == 2:
+def _is_valid_latlong_value(val, series_type='pandas'):
+    '''Returns True if the value provided is a properly formatted LatLong value for a
+    pandas or Dask Series, otherwise returns False.'''
+    if series_type == 'koalas':
+        valid_type = list
+    else:
+        valid_type = tuple
+    if isinstance(val, valid_type) and len(val) == 2:
         latitude, longitude = val
         if isinstance(latitude, float) and isinstance(longitude, float):
             if pd.isnull(latitude) and pd.isnull(longitude):
