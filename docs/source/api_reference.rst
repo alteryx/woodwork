@@ -17,6 +17,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.loc
     WoodworkTableAccessor.mutual_information_dict
     WoodworkTableAccessor.mutual_information
+    WoodworkTableAccessor.pop
     WoodworkTableAccessor.select
     WoodworkTableAccessor.set_index
     WoodworkTableAccessor.set_types

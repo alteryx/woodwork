@@ -433,6 +433,30 @@ class WoodworkTableAccessor:
 
         return new_df
 
+    def pop(self, column_name):
+        """Return a Series with Woodwork typing information and remove it from the DataFrame.
+
+        Args:
+            column (str): Name of the column to pop.
+
+        Returns:
+            (pd.Series, ks.Series): Popped series with Woodwork initialized
+        """
+        if column_name not in self._dataframe.columns:
+            raise LookupError(f'Column with name {column_name} not found in DataFrame')
+
+        series = self._dataframe.pop(column_name)
+
+        # Initialize Woodwork typing info for series
+        col_schema = self._schema.columns[column_name]
+        del col_schema['dtype']
+        series.ww.init(**col_schema, use_standard_tags=self.use_standard_tags)
+
+        # Update schema to not include popped column
+        del self._schema.columns[column_name]
+
+        return series
+
     def mutual_information_dict(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that

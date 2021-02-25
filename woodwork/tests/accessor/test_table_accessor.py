@@ -824,18 +824,20 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     schema_df.ww.set_time_index(None)
     assert schema_df.ww.time_index is None
 
-    # --> add back in when series accessor is implemented
-    # for col_name in falsy_names_df.columns:
-    #     dc = dt[col_name]
-    #     assert dc.name == col_name
-    #     assert dc._series.name == col_name
+    schema_df.ww.set_time_index('')
+    assert schema_df.ww.time_index == ''
 
-    # --> add back in once pop and rename are implemented on the accessor
-    # popped_col = dt.pop('')
+    schema_df.ww.pop('')
+    assert '' not in schema_df
+    assert '' not in schema_df.ww.columns
+    assert schema_df.ww.time_index is None
+
+    # --> add back in if setitem is implemented
     # dt[''] = popped_col
     # assert dt[''].name == ''
     # assert dt['']._series.name == ''
 
+    # --> add back in once rename is implemented on the accessor
     # dt = dt.rename({'': 'col_with_name'})
     # assert '' not in dt.columns
     # assert 'col_with_name' in dt.columns
@@ -975,14 +977,6 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     memory = schema_df.ww.memory_usage()
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(memory, schema_df.memory_usage())
-
-    warning = "Operation performed by pop has invalidated the Woodwork typing information:\n "
-    "The following columns in the typing information were missing from the DataFrame: {'id'}.\n "
-    "Please initialize Woodwork with DataFrame.ww.init"
-    with pytest.warns(TypingInfoMismatchWarning, match=warning):
-        schema_df.ww.pop('id')
-    assert 'id' not in schema_df.columns
-    assert schema_df.ww.schema is None
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
@@ -1397,3 +1391,65 @@ def test_set_types_errors(sample_df):
                       "use DataFrame.ww.set_index() instead.")
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(semantic_tags={'email': 'index'})
+
+
+def test_pop(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(
+        name='table',
+        logical_types={'age': Integer},
+        semantic_tags={'age': 'custom_tag'},
+        use_standard_tags=True)
+    original_schema = schema_df.ww.schema
+
+    popped_series = schema_df.ww.pop('age')
+
+    assert isinstance(popped_series, pd.Series)
+    assert popped_series.ww.semantic_tags == {'custom_tag', 'numeric'}
+    assert all(to_pandas(popped_series).values == [33, 25, 33, 57])
+    assert popped_series.ww.logical_type == Integer
+
+    assert 'age' not in schema_df.columns
+    assert 'age' not in schema_df.ww.columns
+
+    assert 'age' not in schema_df.ww.logical_types.keys()
+    assert 'age' not in schema_df.ww.semantic_tags.keys()
+
+    assert schema_df.ww.schema == original_schema._get_subset_schema(list(schema_df.columns))
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(
+        name='table',
+        logical_types={'age': Integer},
+        semantic_tags={'age': 'custom_tag'},
+        use_standard_tags=False)
+
+    popped_series = schema_df.ww.pop('age')
+
+    assert popped_series.ww.semantic_tags == {'custom_tag'}
+    assert schema_df.ww.semantic_tags['id'] == set()
+
+
+def test_pop_index(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='id', name='dt_name')
+    assert sample_df.ww.index == 'id'
+    id_col = sample_df.ww.pop('id')
+    assert sample_df.ww.index is None
+    assert 'index' in id_col.ww.semantic_tags
+
+
+def test_pop_error(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(
+        name='table',
+        logical_types={'age': Integer},
+        semantic_tags={'age': 'custom_tag'},
+        use_standard_tags=True)
+
+    with pytest.raises(LookupError, match="Column with name missing not found in DataFrame"):
+        sample_df.ww.pop("missing")
