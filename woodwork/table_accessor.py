@@ -13,7 +13,8 @@ from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
     _get_describe_dict,
-    _get_mutual_information_dict
+    _get_mutual_information_dict,
+    _get_value_counts
 )
 from woodwork.type_sys.utils import (
     _get_ltype_class,
@@ -536,6 +537,27 @@ class WoodworkTableAccessor:
             'num_false',
         ]
         return pd.DataFrame(results).reindex(index_order)
+
+    def value_counts(self, ascending=False, top_n=10, dropna=False):
+        """Returns a list of dictionaries with counts for the most frequent values in each column (only
+            for columns with `category` as a standard tag).
+
+
+        Args:
+            ascending (bool): Defines whether each list of values should be sorted most frequent
+                to least frequent value (False), or least frequent to most frequent value (True).
+                Defaults to False.
+
+            top_n (int): the number of top values to retrieve. Defaults to 10.
+
+            dropna (bool): determines whether to remove NaN values when finding frequency. Defaults
+                to False.
+
+        Returns:
+           list(dict): a list of dictionaries for each categorical column with keys `count`
+                and `value`.
+        """
+        return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
 
 def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):

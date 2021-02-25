@@ -24,6 +24,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.to_dictionary
     WoodworkTableAccessor.to_parquet
     WoodworkTableAccessor.to_pickle
+    WoodworkTableAccessor.value_counts
 
 WoodworkColumnAccessor
 ======================
