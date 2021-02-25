@@ -1397,11 +1397,7 @@ def test_pop(sample_df):
     xfail_dask_and_koalas(sample_df)
 
     schema_df = sample_df.copy()
-    schema_df.ww.init(
-        name='table',
-        logical_types={'age': Integer},
-        semantic_tags={'age': 'custom_tag'},
-        use_standard_tags=True)
+    schema_df.ww.init(semantic_tags={'age': 'custom_tag'})
     original_schema = schema_df.ww.schema
 
     popped_series = schema_df.ww.pop('age')
@@ -1429,7 +1425,6 @@ def test_pop(sample_df):
     popped_series = schema_df.ww.pop('age')
 
     assert popped_series.ww.semantic_tags == {'custom_tag'}
-    assert schema_df.ww.semantic_tags['id'] == set()
 
 
 def test_pop_index(sample_df):

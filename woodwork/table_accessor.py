@@ -440,7 +440,7 @@ class WoodworkTableAccessor:
             column (str): Name of the column to pop.
 
         Returns:
-            (pd.Series, ks.Series): Popped series with Woodwork initialized
+            (pd.Series): Popped series with Woodwork initialized
         """
         if column_name not in self._dataframe.columns:
             raise LookupError(f'Column with name {column_name} not found in DataFrame')
