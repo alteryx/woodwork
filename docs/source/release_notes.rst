@@ -8,6 +8,7 @@ Release Notes
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
+        * Add blank issue template for creating issues (:pr:`630`)
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
