@@ -2,7 +2,7 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
@@ -41,7 +41,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes
