@@ -38,6 +38,7 @@ Release Notes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
         * Move mutual information logic to statistics utils file (:pr:`584`)
+        * Bump min Koalas version to 1.4.0 (:pr:``)
     * Documentation Changes
     * Testing Changes
 
