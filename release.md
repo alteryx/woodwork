@@ -20,7 +20,7 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
 #### Create release branch
 
-1. Branch off of Woodwork `main` and name the branch the release version number (e.g. release_0_13_3)
+1. Branch off of Woodwork `main`. For the branch name, please use "release_vX.Y.Z" as the naming scheme (e.g. "release_v0.13.3"). Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 #### Bump version number
 
