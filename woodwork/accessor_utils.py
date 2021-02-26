@@ -109,3 +109,19 @@ def _is_dataframe(data):
     elif ks and isinstance(data, ks.DataFrame):
         return True
     return False
+
+
+def _get_valid_dtype(series, logical_type):
+    '''Return the dtype that is considered valid for a series
+    with the given logical_type'''
+    backup_dtype = logical_type.backup_dtype
+    if ks and isinstance(series, ks.Series) and backup_dtype:
+        if backup_dtype == 'str':
+            # Koalas will have a dtype of object even after `ks.Series.astype('str')`
+            valid_dtype = 'object'
+        else:
+            valid_dtype = backup_dtype
+    else:
+        valid_dtype = logical_type.pandas_dtype
+
+    return valid_dtype
