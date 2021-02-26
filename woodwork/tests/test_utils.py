@@ -486,7 +486,7 @@ def test_is_valid_latlong_value_koalas():
     ]
 
     for index, value in enumerate(values):
-        assert _is_valid_latlong_value(value, series_type='koalas') is expected_values[index]
+        assert _is_valid_latlong_value(value, bracket_type=list) is expected_values[index]
 
 
 def test_is_valid_latlong_series():

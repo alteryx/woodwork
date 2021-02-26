@@ -273,22 +273,18 @@ def _is_valid_latlong_series(series):
         series = series.compute()
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
-        series_type = 'koalas'
+        bracket_type = list
     else:
-        series_type = 'pandas'
-    if series.apply(_is_valid_latlong_value, args=(series_type,)).all():
+        bracket_type = tuple
+    if series.apply(_is_valid_latlong_value, args=(bracket_type,)).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val, series_type='pandas'):
+def _is_valid_latlong_value(val, bracket_type=tuple):
     '''Returns True if the value provided is a properly formatted LatLong value for a
     pandas or Dask Series, otherwise returns False.'''
-    if series_type == 'koalas':
-        valid_type = list
-    else:
-        valid_type = tuple
-    if isinstance(val, valid_type) and len(val) == 2:
+    if isinstance(val, bracket_type) and len(val) == 2:
         latitude, longitude = val
         if isinstance(latitude, float) and isinstance(longitude, float):
             if pd.isnull(latitude) and pd.isnull(longitude):
