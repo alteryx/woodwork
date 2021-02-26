@@ -2,7 +2,7 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
@@ -38,10 +38,12 @@ Release Notes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
         * Move mutual information logic to statistics utils file (:pr:`584`)
+        * Bump min Koalas version to 1.4.0 (:pr:`638`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes
@@ -54,7 +56,7 @@ Release Notes
         * Refactor test_datatable.py (:pr:`574`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
