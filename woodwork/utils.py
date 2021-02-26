@@ -283,7 +283,7 @@ def _is_valid_latlong_series(series):
 
 def _is_valid_latlong_value(val, bracket_type=tuple):
     '''Returns True if the value provided is a properly formatted LatLong value for a
-    pandas or Dask Series, otherwise returns False.'''
+    pandas, Dask or Koalas Series, otherwise returns False.'''
     if isinstance(val, bracket_type) and len(val) == 2:
         latitude, longitude = val
         if isinstance(latitude, float) and isinstance(longitude, float):
