@@ -34,6 +34,7 @@ Release Notes
         * Add ``value_counts`` to WoodworkTableAccessor (:pr:`632`)
         * Add KoalasColumnAccessor (:pr:`634`)
         * Add ``pop`` to WoodworkTableAccessor (:pr:`636`)
+        * Add ``drop`` to WoodworkTableAccessor (:pr:`640`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
