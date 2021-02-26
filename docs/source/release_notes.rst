@@ -10,6 +10,7 @@ Release Notes
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)
+        * Update release branch naming instructions (:pr:`644`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
