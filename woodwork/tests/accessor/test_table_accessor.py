@@ -721,7 +721,7 @@ def test_underlying_index(sample_df):
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
 
-    # --> add back when df.ww.drop is implemented
+    # --> add back when we figure out how to handle removing indices
     # schema_dropped = schema.drop('made_index')
     # assert 'made_index' not in schema_dropped.columns
     # assert 'made_index' not in schema_dropped._dataframe.columns
@@ -1453,17 +1453,16 @@ def test_pop_error(sample_df):
 def test_accessor_drop(sample_df):
     xfail_dask_and_koalas(sample_df)
 
-    original_columns = sample_df.columns.copy()
     schema_df = sample_df.copy()
     schema_df.ww.init()
 
     single_input_df = schema_df.ww.drop('is_registered')
-    assert len(single_input_df.ww.columns) == (len(original_columns) - 1)
+    assert len(single_input_df.ww.columns) == (len(schema_df.columns) - 1)
     assert 'is_registered' not in single_input_df.ww.columns
     assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(single_input_df))
 
     list_input_df = schema_df.ww.drop(['is_registered'])
-    assert len(list_input_df.ww.columns) == (len(original_columns) - 1)
+    assert len(list_input_df.ww.columns) == (len(schema_df.columns) - 1)
     assert 'is_registered' not in list_input_df.ww.columns
     assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(list_input_df))
     # should be equal to the single input example above
@@ -1471,7 +1470,7 @@ def test_accessor_drop(sample_df):
     assert to_pandas(single_input_df).equals(to_pandas(list_input_df))
 
     multiple_list_df = schema_df.ww.drop(['age', 'full_name', 'is_registered'])
-    assert len(multiple_list_df.ww.columns) == (len(original_columns) - 3)
+    assert len(multiple_list_df.ww.columns) == (len(schema_df.columns) - 3)
     assert 'is_registered' not in multiple_list_df.ww.columns
     assert 'full_name' not in multiple_list_df.ww.columns
     assert 'age' not in multiple_list_df.ww.columns
@@ -1482,10 +1481,6 @@ def test_accessor_drop(sample_df):
     different_order_df = schema_df.ww.drop(['is_registered', 'age', 'full_name'])
     assert different_order_df.ww.schema == multiple_list_df.ww.schema
     assert to_pandas(multiple_list_df).equals(to_pandas(different_order_df))
-
-
-def test_accessor_drop_rows(sample_df):
-    xfail_dask_and_koalas(sample_df)
 
 
 def test_accessor_drop_indices(sample_df):

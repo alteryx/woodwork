@@ -468,7 +468,8 @@ class WoodworkTableAccessor:
 
         Note:
             This method is used for removing columns only. To remove rows with ``drop``, go through the
-            DataFrame directly instead of calling ``DataFrame.ww.drop``.
+            DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
+            instead of calling ``DataFrame.ww.drop``.
         """
         if not isinstance(columns, (list, set)):
             columns = [columns]
