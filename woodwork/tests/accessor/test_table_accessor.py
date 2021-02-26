@@ -813,7 +813,7 @@ def test_ordinal_with_nan_values():
 
 def test_accessor_with_falsy_column_names(falsy_names_df):
     if dd and isinstance(falsy_names_df, dd.DataFrame):
-        pytest.xfail('Dask DataTables cannot handle integer column names')
+        pytest.xfail('Dask DataFrames cannot handle integer column names')
     xfail_dask_and_koalas(falsy_names_df)
 
     schema_df = falsy_names_df.copy()
@@ -1448,3 +1448,76 @@ def test_pop_error(sample_df):
 
     with pytest.raises(LookupError, match="Column with name missing not found in DataFrame"):
         sample_df.ww.pop("missing")
+
+
+def test_accessor_drop(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    original_columns = sample_df.columns.copy()
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    single_input_df = schema_df.ww.drop('is_registered')
+    assert len(single_input_df.ww.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in single_input_df.ww.columns
+    assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(single_input_df))
+
+    list_input_df = schema_df.ww.drop(['is_registered'])
+    assert len(list_input_df.ww.columns) == (len(original_columns) - 1)
+    assert 'is_registered' not in list_input_df.ww.columns
+    assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(list_input_df))
+    # should be equal to the single input example above
+    assert single_input_df.ww.schema == list_input_df.ww.schema
+    assert to_pandas(single_input_df).equals(to_pandas(list_input_df))
+
+    multiple_list_df = schema_df.ww.drop(['age', 'full_name', 'is_registered'])
+    assert len(multiple_list_df.ww.columns) == (len(original_columns) - 3)
+    assert 'is_registered' not in multiple_list_df.ww.columns
+    assert 'full_name' not in multiple_list_df.ww.columns
+    assert 'age' not in multiple_list_df.ww.columns
+
+    assert to_pandas(schema_df).drop(['is_registered', 'age', 'full_name'], axis='columns').equals(to_pandas(multiple_list_df))
+
+    # Drop the same columns in a different order and confirm resulting DataFrame column order doesn't change
+    different_order_df = schema_df.ww.drop(['is_registered', 'age', 'full_name'])
+    assert different_order_df.ww.schema == multiple_list_df.ww.schema
+    assert to_pandas(multiple_list_df).equals(to_pandas(different_order_df))
+
+
+def test_accessor_drop_rows(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+
+def test_accessor_drop_indices(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(index='id', time_index='signup_date')
+    assert sample_df.ww.index == 'id'
+    assert sample_df.ww.time_index == 'signup_date'
+
+    dropped_index_df = sample_df.ww.drop('id')
+    assert 'id' not in dropped_index_df.ww.columns
+    assert dropped_index_df.ww.index is None
+    assert dropped_index_df.ww.time_index == 'signup_date'
+
+    dropped_time_index_df = sample_df.ww.drop(['signup_date'])
+    assert 'signup_date' not in dropped_time_index_df.ww.columns
+    assert dropped_time_index_df.ww.time_index is None
+    assert dropped_time_index_df.ww.index == 'id'
+
+
+def test_accessor_drop_errors(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init()
+
+    error = re.escape("['not_present'] not found in DataFrame")
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.drop('not_present')
+
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.drop(['age', 'not_present'])
+
+    error = re.escape("['not_present1', 4] not found in DataFrame")
+    with pytest.raises(ValueError, match=error):
+        sample_df.ww.drop(['not_present1', 4])
