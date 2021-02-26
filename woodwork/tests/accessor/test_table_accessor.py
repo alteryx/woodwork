@@ -721,13 +721,6 @@ def test_underlying_index(sample_df):
     assert schema_df.index.name is None
     assert type(schema_df.index) == specified_index
 
-    # --> add back when we figure out how to handle removing indices
-    # schema_dropped = schema.drop('made_index')
-    # assert 'made_index' not in schema_dropped.columns
-    # assert 'made_index' not in schema_dropped._dataframe.columns
-    # assert type(schema_dropped._dataframe.index) == unspecified_index
-    # assert type(schema_dropped.to_dataframe().index) == unspecified_index
-
 
 def test_accessor_already_sorted(sample_unsorted_df):
     if dd and isinstance(sample_unsorted_df, dd.DataFrame):
