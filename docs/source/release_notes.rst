@@ -56,7 +56,7 @@ Release Notes
         * Refactor test_datatable.py (:pr:`574`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`
 
 **v0.0.9 February 5, 2021**
     * Enhancements
