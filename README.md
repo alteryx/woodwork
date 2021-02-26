@@ -3,6 +3,9 @@
     <a href="https://github.com/alteryx/woodwork/actions?query=branch%3Amain+workflow%3ATests" target="_blank">
         <img src="https://github.com/alteryx/woodwork/workflows/Tests/badge.svg?branch=main" alt="Tests" />
     </a>
+    <a href="https://codecov.io/gh/alteryx/woodwork">
+        <img src="https://codecov.io/gh/alteryx/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP"/>
+    </a>
     <a href="https://woodwork.alteryx.com/en/latest/?badge=stable" target="_blank">
         <img src="https://readthedocs.com/projects/feature-labs-inc-datatables/badge/?version=stable" alt="Documentation Status" />
     </a>
