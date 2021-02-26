@@ -457,6 +457,33 @@ class WoodworkTableAccessor:
 
         return series
 
+    def drop(self, columns):
+        """Drop specified columns from a DataFrame.
+
+        Args:
+            columns (str or list[str]): Column name or names to drop. Must be present in the DataTable.
+
+        Returns:
+            (pd.DataFrame): DataFrame with the specified columns removed, maintaining Woodwork typing information.
+
+        Note:
+            This method is used for removing columns only. To remove rows with ``drop``, go through the
+            DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
+            instead of calling ``DataFrame.ww.drop``.
+        """
+        if not isinstance(columns, (list, set)):
+            columns = [columns]
+
+        not_present = [col for col in columns if col not in self._dataframe.columns]
+        if not_present:
+            raise ValueError(f'{not_present} not found in DataFrame')
+
+        new_schema = self._schema._get_subset_schema([col for col in self._dataframe.columns if col not in columns])
+        new_df = self._dataframe.drop(columns, axis=1)
+        new_df.ww.init(schema=new_schema)
+
+        return new_df
+
     def mutual_information_dict(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
