@@ -1,7 +1,10 @@
 on:
   pull_request:
     types: [opened, synchronize]
-
+  push:
+    branches:
+      - main
+      
 name: Tests
 jobs:
   build_docs:
@@ -59,32 +62,6 @@ jobs:
       - name: Run lint test
         run: make lint
 
-  release_notes_updated:
-    name: release notes updated
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check for development branch
-        id: branch
-        shell: python
-        run: |
-          from re import compile
-          main = '^main$'
-          release = '^release_\d+\_\d+\_\d+$'
-          dep_update = '^dep-update-[a-f0-9]{7}$'
-          regex = main, release, dep_update
-          patterns = list(map(compile, regex))
-          ref = "${{ github.event.pull_request.head.ref }}"
-          is_dev = not any(pattern.match(ref) for pattern in patterns)
-          print('::set-output name=is_dev::' + str(is_dev))
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
-        name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
-        name: Check if release notes were updated
-        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
   unit_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
     runs-on: ubuntu-latest

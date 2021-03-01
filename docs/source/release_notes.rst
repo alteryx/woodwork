@@ -44,9 +44,12 @@ Release Notes
         * Bump min Koalas version to 1.4.0 (:pr:`638`)
     * Documentation Changes
     * Testing Changes
+        * Update branch reference in tests to run on main (:pr:`641`)
+        * Make release notes updated check separate from unit tests (:pr:`642`)
+        * Update release branch naming instructions (:pr:`644`)
 
     Thanks to the following people for contributing to this release:
-    :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`johnbridstrup`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes
