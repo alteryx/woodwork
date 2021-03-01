@@ -825,15 +825,17 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     assert '' not in schema_df.ww.columns
     assert schema_df.ww.time_index is None
 
+    schema_df.ww.set_index(None)
+    assert schema_df.ww.index is None
+
     # --> add back in if setitem is implemented
     # dt[''] = popped_col
     # assert dt[''].name == ''
     # assert dt['']._series.name == ''
 
-    # --> add back in once rename is implemented on the accessor
-    # dt = dt.rename({'': 'col_with_name'})
-    # assert '' not in dt.columns
-    # assert 'col_with_name' in dt.columns
+    renamed_df = schema_df.ww.rename({0: 'col_with_name'})
+    assert 0 not in renamed_df.columns
+    assert 'col_with_name' in renamed_df.columns
 
 
 def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_types):
@@ -947,11 +949,11 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(['full_name'])))
 
-    warning = "Operation performed by rename has invalidated the Woodwork typing information:\n "
+    warning = "Operation performed by insert has invalidated the Woodwork typing information:\n "
     "The following columns in the DataFrame were missing from the typing information: {'new_name'}.\n "
     "Please initialize Woodwork with DataFrame.ww.init"
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
-        schema_df.ww.rename({'id': 'new_name'}, inplace=True, axis=1)
+        schema_df.ww.insert(loc=0, column="new_name", value=[1, 2, 3, 4])
     assert 'new_name' in schema_df.columns
     assert schema_df.ww.schema is None
 
@@ -1509,3 +1511,45 @@ def test_accessor_drop_errors(sample_df):
     error = re.escape("['not_present1', 4] not found in DataFrame")
     with pytest.raises(ValueError, match=error):
         sample_df.ww.drop(['not_present1', 4])
+
+
+def test_accessor_rename(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    table_metadata = {'table_info': 'this is text'}
+    id_description = 'the id of the row'
+    sample_df.ww.init(index='id',
+                      time_index='signup_date',
+                      table_metadata=table_metadata,
+                      column_descriptions={'id': id_description},
+                      semantic_tags={'age': 'test_tag'},
+                      logical_types={'age': Double})
+    original_df = sample_df.ww.copy()
+
+    new_df = sample_df.ww.rename({'age': 'birthday'})
+
+    assert to_pandas(sample_df.rename({'age': 'birthday'}, axis=1)).equals(to_pandas(new_df))
+    # Confirm original dataframe hasn't changed
+    assert to_pandas(sample_df).equals(original_df)
+    assert sample_df.ww.schema == original_df.ww.schema
+
+    assert original_df.columns.get_loc('age') == new_df.columns.get_loc('birthday')
+    pd.testing.assert_series_equal(original_df['age'], new_df['birthday'], check_names=False)
+
+    # confirm that metadata and descriptions are there
+    assert new_df.ww.metadata == table_metadata
+    assert new_df.ww.columns['id']['description'] == id_description
+
+    old_col = sample_df.ww.columns['age']
+    new_col = new_df.ww.columns['birthday']
+    assert old_col['logical_type'] == new_col['logical_type']
+    assert old_col['semantic_tags'] == new_col['semantic_tags']
+    assert old_col['dtype'] == new_col['dtype']
+
+    new_df = sample_df.ww.rename({'age': 'full_name', 'full_name': 'age'})
+
+    pd.testing.assert_series_equal(original_df['age'], new_df['full_name'], check_names=False)
+    pd.testing.assert_series_equal(original_df['full_name'], new_df['age'], check_names=False)
+
+    assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
+    assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')

@@ -786,3 +786,61 @@ def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
     assert schema.time_index == 'signup_date'
     assert schema.semantic_tags['signup_date'] == {'time_index'}
     assert schema == original_schema
+
+
+def test_schema_rename_errors(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id', time_index='signup_date')
+
+    error = "columns must be a dictionary"
+    with pytest.raises(TypeError, match=error):
+        schema.rename(1)
+
+    error = 'New columns names must be unique from one another.'
+    with pytest.raises(ValueError, match=error):
+        schema.rename({'age': 'test', 'full_name': 'test'})
+
+    error = 'Column to rename must be present. not_present cannot be found.'
+    with pytest.raises(KeyError, match=error):
+        schema.rename({'not_present': 'test'})
+
+    error = 'Cannot rename index or time index columns such as id.'
+    with pytest.raises(KeyError, match=error):
+        schema.rename({'id': 'test', 'age': 'test2'})
+
+    error = 'The column email is already present. Please choose another name to rename age to or also rename age.'
+    with pytest.raises(ValueError, match=error):
+        schema.rename({'age': 'email'})
+
+
+def test_schema_rename(sample_column_names, sample_inferred_logical_types):
+
+    table_metadata = {'table_info': 'this is text'}
+    id_description = 'the id of the row'
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id',
+                    time_index='signup_date',
+                    table_metadata=table_metadata,
+                    column_descriptions={'id': id_description})
+    original_schema = schema._get_subset_schema(list(schema.columns.keys()))
+
+    renamed_schema = schema.rename({'age': 'birthday'})
+
+    # Confirm underlying data of original datatable hasn't changed
+    assert schema == original_schema
+
+    assert 'age' not in renamed_schema.columns
+    assert 'birthday' in renamed_schema.columns
+
+    # confirm that metadata and descriptions are there
+    assert renamed_schema.metadata == table_metadata
+    assert schema.columns['id']['description'] == id_description
+
+    old_col = schema.columns['age']
+    new_col = renamed_schema.columns['birthday']
+    assert old_col['logical_type'] == new_col['logical_type']
+    assert old_col['semantic_tags'] == new_col['semantic_tags']
+    assert old_col['dtype'] == new_col['dtype']
+
+    swapped_schema = schema.rename({'age': 'full_name', 'full_name': 'age'})
+    swapped_back_schema = swapped_schema.rename({'age': 'full_name', 'full_name': 'age'})
+    assert swapped_back_schema == schema

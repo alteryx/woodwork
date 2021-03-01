@@ -484,6 +484,25 @@ class WoodworkTableAccessor:
 
         return new_df
 
+    def rename(self, columns):
+        """Renames columns in a DataFrame, maintaining Woodwork typing information.
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping columns whose names
+                we'd like to change to the name to which we'd like to change them.
+
+        Returns:
+            pd.DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
+
+        Note:
+            Index and time index columns cannot be renamed.
+        """
+        new_schema = self._schema.rename(columns)
+        new_df = self._dataframe.rename(columns, axis=1)
+
+        new_df.ww.init(schema=new_schema)
+        return new_df
+
     def mutual_information_dict(self, num_bins=10, nrows=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
