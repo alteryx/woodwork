@@ -464,6 +464,31 @@ def test_is_valid_latlong_value():
         assert _is_valid_latlong_value(value) is expected_values[index]
 
 
+def test_is_valid_latlong_value_koalas():
+    values = [
+        (1.0, 2.0),
+        np.nan,
+        [1.0, 2.0],
+        (np.nan, np.nan),
+        ('a', 2.0),
+        (1.0, 2.0, 3.0),
+        None
+    ]
+
+    expected_values = [
+        False,
+        True,
+        True,
+        False,
+        False,
+        False,
+        False
+    ]
+
+    for index, value in enumerate(values):
+        assert _is_valid_latlong_value(value, bracket_type=list) is expected_values[index]
+
+
 def test_is_valid_latlong_series():
     valid_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
     invalid_series = pd.Series([(1.0, 2.0), (3.0, '4.0')])

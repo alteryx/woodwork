@@ -32,21 +32,38 @@ Release Notes
         * Add DaskColumnAccessor (:pr:`625`)
         * Allow deserialization from csv, pickle, and parquet to Woodwork table (:pr:`626`)
         * Add ``value_counts`` to WoodworkTableAccessor (:pr:`632`)
+        * Add KoalasColumnAccessor (:pr:`634`)
+        * Add ``pop`` to WoodworkTableAccessor (:pr:`636`)
+        * Add ``drop`` to WoodworkTableAccessor (:pr:`640`)
+        * Add ``rename`` to WoodworkTableAccessor (:pr:`646`)
+        * Add DaskTableAccessor (:pr:`648`)
         * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
+        * Move mutual information logic to statistics utils file (:pr:`584`)
+        * Bump min Koalas version to 1.4.0 (:pr:`638`)
+    * Documentation Changes
+    * Testing Changes
+        * Update branch reference in tests to run on main (:pr:`641`)
+        * Make release notes updated check separate from unit tests (:pr:`642`)
+        * Update release branch naming instructions (:pr:`644`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`johnbridstrup`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+**v0.0.10 February 25, 2021**
+    * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
-        * Move mutual information logic to statistics utils file (:pr:`584`)
-    * Documentation Changes
+        * Add blank issue template for creating issues (:pr:`630`)
     * Testing Changes
         * Update branch reference in tests workflow (:pr:`552`, :pr:`601`)
         * Fixed text on back arrow on install page (:pr:`564`)
         * Refactor test_datatable.py (:pr:`574`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`
 
 **v0.0.9 February 5, 2021**
     * Enhancements

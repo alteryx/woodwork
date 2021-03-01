@@ -41,7 +41,7 @@ def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
-        dataframe (pd.DataFrame,dd.DataFrame,ks.DataFrame) : DataFrame with Woodwork typing information initialized.
+        DataFrame: DataFrame with Woodwork typing information initialized.
     '''
     _check_schema_version(table_typing_info['schema_version'])
 
@@ -136,7 +136,7 @@ def read_woodwork_table(path, profile_name=None, **kwargs):
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
 
         Returns:
-            dataframe  (pd.DataFrame,dd.DataFrame,ks.DataFrame): DataFrame with Woodwork typing information initialized.
+            DataFrame: DataFrame with Woodwork typing information initialized.
     '''
     if _is_url(path) or _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:

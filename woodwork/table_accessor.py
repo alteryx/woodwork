@@ -3,7 +3,7 @@ import warnings
 import pandas as pd
 
 import woodwork.serialize_accessor as serialize
-from woodwork.accessor_utils import _update_column_dtype
+from woodwork.accessor_utils import _is_dataframe, _update_column_dtype
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning
@@ -32,7 +32,6 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-@pd.api.extensions.register_dataframe_accessor('ww')
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe = dataframe
@@ -409,7 +408,7 @@ class WoodworkTableAccessor:
                 result = dataframe_attr(*args, **kwargs)
 
                 # Try to initialize Woodwork with the existing Schema
-                if isinstance(result, pd.DataFrame):
+                if _is_dataframe(result):
                     invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                     if invalid_schema_message:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
@@ -445,6 +444,72 @@ class WoodworkTableAccessor:
         new_df = self._dataframe[cols_to_include]
         new_df.ww.init(schema=new_schema)
 
+        return new_df
+
+    def pop(self, column_name):
+        """Return a Series with Woodwork typing information and remove it from the DataFrame.
+
+        Args:
+            column (str): Name of the column to pop.
+
+        Returns:
+            Series: Popped series with Woodwork initialized
+        """
+        if column_name not in self._dataframe.columns:
+            raise LookupError(f'Column with name {column_name} not found in DataFrame')
+
+        series = self._dataframe.pop(column_name)
+
+        # Initialize Woodwork typing info for series
+        col_schema = self._schema.columns[column_name]
+        del col_schema['dtype']
+        series.ww.init(**col_schema, use_standard_tags=self.use_standard_tags)
+
+        # Update schema to not include popped column
+        del self._schema.columns[column_name]
+
+        return series
+
+    def drop(self, columns):
+        """Drop specified columns from a DataFrame.
+
+        Args:
+            columns (str or list[str]): Column name or names to drop. Must be present in the DataFrame.
+
+        Returns:
+            DataFrame: DataFrame with the specified columns removed, maintaining Woodwork typing information.
+
+        Note:
+            This method is used for removing columns only. To remove rows with ``drop``, go through the
+            DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
+            instead of calling ``DataFrame.ww.drop``.
+        """
+        if not isinstance(columns, (list, set)):
+            columns = [columns]
+
+        not_present = [col for col in columns if col not in self._dataframe.columns]
+        if not_present:
+            raise ValueError(f'{not_present} not found in DataFrame')
+
+        new_schema = self._schema._get_subset_schema([col for col in self._dataframe.columns if col not in columns])
+        new_df = self._dataframe.drop(columns, axis=1)
+        new_df.ww.init(schema=new_schema)
+
+        return new_df
+
+    def rename(self, columns):
+        """Renames columns in a DataFrame, maintaining Woodwork typing information.
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping current column names to new column names.
+
+        Returns:
+            DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
+        """
+        new_schema = self._schema.rename(columns)
+        new_df = self._dataframe.rename(columns=columns)
+
+        new_df.ww.init(schema=new_schema)
         return new_df
 
     def mutual_information_dict(self, num_bins=10, nrows=None):
@@ -665,7 +730,8 @@ def _get_invalid_schema_message(dataframe, schema):
         if df_dtype != schema_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {schema_dtype}'
-    if schema.index is not None:
+    if schema.index is not None and not (dd and isinstance(dataframe, dd.DataFrame)):
+        # Dask index is a delayed object, can't validate without a compute() operation
         if not all(dataframe.index == dataframe[schema.index]):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
@@ -674,3 +740,22 @@ def _get_invalid_schema_message(dataframe, schema):
 
 def _raise_init_error():
     raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+
+
+@pd.api.extensions.register_dataframe_accessor('ww')
+class PandasTableAccessor(WoodworkTableAccessor):
+    pass
+
+
+if dd:
+    @dd.extensions.register_dataframe_accessor('ww')
+    class DaskTableAccessor(WoodworkTableAccessor):
+        pass
+
+
+if ks:
+    from databricks.koalas.extensions import register_dataframe_accessor
+
+    @register_dataframe_accessor('ww')
+    class KoalasTableAccessor(WoodworkTableAccessor):
+        pass
