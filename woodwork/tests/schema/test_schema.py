@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from woodwork import type_system
+from woodwork.exceptions import ColumnNotPresentError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -800,7 +801,7 @@ def test_schema_rename_errors(sample_column_names, sample_inferred_logical_types
         schema.rename({'age': 'test', 'full_name': 'test'})
 
     error = 'Column to rename must be present. not_present cannot be found.'
-    with pytest.raises(KeyError, match=error):
+    with pytest.raises(ColumnNotPresentError, match=error):
         schema.rename({'not_present': 'test'})
 
     error = 'Cannot rename index or time index columns such as id.'

@@ -4,6 +4,7 @@ import copy
 import pandas as pd
 
 import woodwork as ww
+from woodwork.exceptions import ColumnNotPresentError
 from woodwork.schema_column import (
     _add_semantic_tags,
     _get_column_dict,
@@ -344,7 +345,7 @@ class Schema(object):
 
         for old_name, new_name in columns.items():
             if old_name not in self.columns:
-                raise KeyError(f"Column to rename must be present. {old_name} cannot be found.")
+                raise ColumnNotPresentError(f"Column to rename must be present. {old_name} cannot be found.")
             if new_name in self.columns and new_name not in columns.keys():
                 raise ValueError(f"The column {new_name} is already present. Please choose another name to rename {old_name} to or also rename {old_name}.")
             if old_name == self.index or old_name == self.time_index:
