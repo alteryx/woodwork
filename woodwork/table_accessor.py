@@ -439,7 +439,7 @@ class WoodworkTableAccessor:
             column (str): Name of the column to pop.
 
         Returns:
-            (pd.Series): Popped series with Woodwork initialized
+            Series: Popped series with Woodwork initialized
         """
         if column_name not in self._dataframe.columns:
             raise LookupError(f'Column with name {column_name} not found in DataFrame')
@@ -463,7 +463,7 @@ class WoodworkTableAccessor:
             columns (str or list[str]): Column name or names to drop. Must be present in the DataTable.
 
         Returns:
-            (pd.DataFrame): DataFrame with the specified columns removed, maintaining Woodwork typing information.
+            DataFrame: DataFrame with the specified columns removed, maintaining Woodwork typing information.
 
         Note:
             This method is used for removing columns only. To remove rows with ``drop``, go through the
