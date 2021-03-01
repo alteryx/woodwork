@@ -804,10 +804,6 @@ def test_schema_rename_errors(sample_column_names, sample_inferred_logical_types
     with pytest.raises(ColumnNotPresentError, match=error):
         schema.rename({'not_present': 'test'})
 
-    error = 'Cannot rename index or time index columns such as id.'
-    with pytest.raises(KeyError, match=error):
-        schema.rename({'id': 'test', 'age': 'test2'})
-
     error = 'The column email is already present. Please choose another name to rename age to or also rename age.'
     with pytest.raises(ValueError, match=error):
         schema.rename({'age': 'email'})
@@ -845,3 +841,18 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
     swapped_schema = schema.rename({'age': 'full_name', 'full_name': 'age'})
     swapped_back_schema = swapped_schema.rename({'age': 'full_name', 'full_name': 'age'})
     assert swapped_back_schema == schema
+
+
+def test_schema_rename_indices(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    index='id',
+                    time_index='signup_date')
+
+    renamed_schema = schema.rename({'id': 'renamed_index', 'signup_date': 'renamed_time_index'})
+    assert 'id' not in renamed_schema.columns
+    assert 'signup_date' not in renamed_schema.columns
+    assert 'renamed_index' in renamed_schema.columns
+    assert 'renamed_time_index' in renamed_schema.columns
+
+    assert renamed_schema.index == 'renamed_index'
+    assert renamed_schema.time_index == 'renamed_time_index'

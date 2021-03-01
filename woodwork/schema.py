@@ -336,9 +336,6 @@ class Schema(object):
 
         Returns:
             woodwork.Schema: Schema with the specified columns renamed.
-
-        Note:
-            Index and time index columns cannot be renamed.
         """
         if not isinstance(columns, dict):
             raise TypeError('columns must be a dictionary')
@@ -348,8 +345,6 @@ class Schema(object):
                 raise ColumnNotPresentError(f"Column to rename must be present. {old_name} cannot be found.")
             if new_name in self.columns and new_name not in columns.keys():
                 raise ValueError(f"The column {new_name} is already present. Please choose another name to rename {old_name} to or also rename {old_name}.")
-            if old_name == self.index or old_name == self.time_index:
-                raise KeyError(f"Cannot rename index or time index columns such as {old_name}.")
 
         if len(columns) != len(set(columns.values())):
             raise ValueError('New columns names must be unique from one another.')

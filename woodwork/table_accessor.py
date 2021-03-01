@@ -492,9 +492,6 @@ class WoodworkTableAccessor:
 
         Returns:
             DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
-
-        Note:
-            Index and time index columns cannot be renamed.
         """
         new_schema = self._schema.rename(columns)
         new_df = self._dataframe.rename(columns=columns)

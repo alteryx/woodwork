@@ -1553,3 +1553,22 @@ def test_accessor_rename(sample_df):
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
+
+
+def test_accessor_rename_indices(sample_df):
+    xfail_dask_and_koalas(sample_df)
+
+    sample_df.ww.init(
+        index='id',
+        time_index='signup_date')
+
+    renamed_df = sample_df.ww.rename({'id': 'renamed_index', 'signup_date': 'renamed_time_index'})
+    assert 'id' not in renamed_df.columns
+    assert 'signup_date' not in renamed_df.columns
+    assert 'renamed_index' in renamed_df.columns
+    assert 'renamed_time_index' in renamed_df.columns
+
+    assert all(renamed_df.index == renamed_df['renamed_index'])
+
+    assert renamed_df.ww.index == 'renamed_index'
+    assert renamed_df.ww.time_index == 'renamed_time_index'
