@@ -226,10 +226,16 @@ def test_accessor_getattr(sample_df):
 def test_accessor_getitem(sample_df):
     xfail_dask_and_koalas(sample_df)
     df = sample_df.copy()
+
     df.ww.init()
     assert list(df.columns) == list(df.ww.schema.columns)
     subset = ['id', 'full_name', 'email']
     assert subset == list(df.ww[subset].ww.schema.columns)
+
+    series = df.ww['age']
+    assert isinstance(series, pd.Series)
+    assert series.ww.logical_type == Integer
+    assert series.ww.semantic_tags == {'numeric'}
 
 
 def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
