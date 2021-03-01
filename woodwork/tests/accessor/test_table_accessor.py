@@ -233,7 +233,6 @@ def test_accessor_getitem(sample_df):
     assert subset == list(df.ww[subset].ww.schema.columns)
 
     series = df.ww['age']
-    assert isinstance(series, pd.Series)
     assert series.ww.logical_type == Integer
     assert series.ww.semantic_tags == {'numeric'}
 
