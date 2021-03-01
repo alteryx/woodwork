@@ -460,7 +460,7 @@ class WoodworkTableAccessor:
         """Drop specified columns from a DataFrame.
 
         Args:
-            columns (str or list[str]): Column name or names to drop. Must be present in the DataTable.
+            columns (str or list[str]): Column name or names to drop. Must be present in the DataFrame.
 
         Returns:
             DataFrame: DataFrame with the specified columns removed, maintaining Woodwork typing information.
@@ -481,6 +481,21 @@ class WoodworkTableAccessor:
         new_df = self._dataframe.drop(columns, axis=1)
         new_df.ww.init(schema=new_schema)
 
+        return new_df
+
+    def rename(self, columns):
+        """Renames columns in a DataFrame, maintaining Woodwork typing information.
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping current column names to new column names.
+
+        Returns:
+            DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
+        """
+        new_schema = self._schema.rename(columns)
+        new_df = self._dataframe.rename(columns=columns)
+
+        new_df.ww.init(schema=new_schema)
         return new_df
 
     def mutual_information_dict(self, num_bins=10, nrows=None):

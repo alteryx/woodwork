@@ -4,6 +4,7 @@ import copy
 import pandas as pd
 
 import woodwork as ww
+from woodwork.exceptions import ColumnNotPresentError
 from woodwork.schema_column import (
     _add_semantic_tags,
     _get_column_dict,
@@ -326,6 +327,37 @@ class Schema(object):
         if new_time_index is not None:
             _check_time_index(self.columns.keys(), new_time_index, self.logical_types.get(new_time_index))
             self._set_time_index_tags(new_time_index)
+
+    def rename(self, columns):
+        """Renames columns in a Schema
+
+        Args:
+            columns (dict[str -> str]): A dictionary mapping current column names to new column names.
+
+        Returns:
+            woodwork.Schema: Schema with the specified columns renamed.
+        """
+        if not isinstance(columns, dict):
+            raise TypeError('columns must be a dictionary')
+
+        for old_name, new_name in columns.items():
+            if old_name not in self.columns:
+                raise ColumnNotPresentError(f"Column to rename must be present. {old_name} cannot be found.")
+            if new_name in self.columns and new_name not in columns.keys():
+                raise ValueError(f"The column {new_name} is already present. Please choose another name to rename {old_name} to or also rename {old_name}.")
+
+        if len(columns) != len(set(columns.values())):
+            raise ValueError('New columns names must be unique from one another.')
+
+        new_schema = self._get_subset_schema(list(self.columns.keys()))
+
+        cols_to_update = {}
+        for old_name, new_name in columns.items():
+            col = new_schema.columns.pop(old_name)
+            cols_to_update[new_name] = col
+
+        new_schema.columns.update(cols_to_update)
+        return new_schema
 
     def _set_index_tags(self, index):
         '''

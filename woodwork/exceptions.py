@@ -42,3 +42,7 @@ class TypeConversionError(Exception):
 
 class ParametersIgnoredWarning(UserWarning):
     pass
+
+
+class ColumnNotPresentError(KeyError):
+    pass
