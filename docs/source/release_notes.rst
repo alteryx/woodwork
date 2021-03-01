@@ -36,6 +36,7 @@ Release Notes
         * Add ``pop`` to WoodworkTableAccessor (:pr:`636`)
         * Add ``drop`` to WoodworkTableAccessor (:pr:`640`)
         * Add ``rename`` to WoodworkTableAccessor (:pr:`646`)
+        * Add DaskTableAccessor (:pr:`648`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes

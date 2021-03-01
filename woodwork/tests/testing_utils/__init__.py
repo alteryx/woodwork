@@ -6,6 +6,5 @@ from .datatable_utils import (
     to_pandas,
     validate_subset_dt,
     validate_subset_schema,
-    xfail_dask_and_koalas,
     xfail_koalas
 )

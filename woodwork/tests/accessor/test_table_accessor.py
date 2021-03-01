@@ -40,7 +40,7 @@ from woodwork.table_accessor import (
 from woodwork.tests.testing_utils import (
     to_pandas,
     validate_subset_schema,
-    xfail_dask_and_koalas
+    xfail_koalas
 )
 from woodwork.utils import import_or_none
 
@@ -103,7 +103,7 @@ def test_check_unique_column_names_errors(sample_df):
 
 
 def test_accessor_init(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     assert sample_df.ww.schema is None
     sample_df.ww.init()
@@ -111,7 +111,7 @@ def test_accessor_init(sample_df):
 
 
 def test_accessor_schema_property(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
 
@@ -120,7 +120,7 @@ def test_accessor_schema_property(sample_df):
 
 
 def test_accessor_separation_of_params(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     # mix up order of acccessor and schema params
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_name', index='id', semantic_tags={'id': 'test_tag'}, time_index='signup_date')
@@ -132,7 +132,7 @@ def test_accessor_separation_of_params(sample_df):
 
 
 def test_init_accessor_with_schema(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
@@ -146,7 +146,7 @@ def test_init_accessor_with_schema(sample_df):
     assert head_df.ww.name == 'test_schema'
     assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
 
-    iloc_df = schema_df.iloc[2:]
+    iloc_df = schema_df.loc[[2, 3]]
     assert iloc_df.ww.schema is None
     iloc_df.ww.init(schema=schema)
 
@@ -158,7 +158,7 @@ def test_init_accessor_with_schema(sample_df):
 
 
 def test_init_accessor_with_schema_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init()
@@ -178,7 +178,7 @@ def test_init_accessor_with_schema_errors(sample_df):
 
 
 def test_accessor_with_schema_parameter_warning(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
@@ -198,7 +198,7 @@ def test_accessor_with_schema_parameter_warning(sample_df):
 
 
 def test_accessor_getattr(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
 
@@ -224,7 +224,7 @@ def test_accessor_getattr(sample_df):
 
 
 def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     comparison_schema = Schema(sample_column_names, sample_inferred_logical_types)
 
     schema_df = sample_df.copy()
@@ -259,7 +259,7 @@ def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_in
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):
-    xfail_dask_and_koalas(time_index_df)
+    xfail_koalas(time_index_df)
 
     time_index_df.ww.init(name='schema',
                           index='id',
@@ -272,7 +272,7 @@ def test_accessor_init_with_valid_string_time_index(time_index_df):
 
 
 def test_accessor_init_with_numeric_datetime_time_index(time_index_df):
-    xfail_dask_and_koalas(time_index_df)
+    xfail_koalas(time_index_df)
     schema_df = time_index_df.copy()
     schema_df.ww.init(time_index='ints', logical_types={'ints': Datetime})
 
@@ -285,7 +285,7 @@ def test_accessor_init_with_numeric_datetime_time_index(time_index_df):
 
 
 def test_accessor_with_numeric_time_index(time_index_df):
-    xfail_dask_and_koalas(time_index_df)
+    xfail_koalas(time_index_df)
     # Set a numeric time index on init
     schema_df = time_index_df.copy()
     schema_df.ww.init(time_index='ints')
@@ -330,14 +330,14 @@ def test_accessor_with_numeric_time_index(time_index_df):
 
 
 def test_accessor_init_with_invalid_string_time_index(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
         sample_df.ww.init(name='schema', time_index='full_name')
 
 
 def test_accessor_init_with_string_logical_types(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     logical_types = {
         'full_name': 'natural_language',
         'age': 'Double'
@@ -487,7 +487,7 @@ def test_sets_category_dtype_on_init():
 
 
 def test_sets_object_dtype_on_init(latlong_df):
-    xfail_dask_and_koalas(latlong_df)
+    xfail_koalas(latlong_df)
     for column_name in latlong_df.columns:
         ltypes = {
             column_name: LatLong,
@@ -497,8 +497,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         assert df.ww.columns[column_name]['logical_type'] == LatLong
         assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
         assert df[column_name].dtype == LatLong.pandas_dtype
-
-        assert df[column_name].iloc[-1] == (3, 4)
+        df_pandas = to_pandas(df[column_name])
+        assert df_pandas.iloc[-1] == (3, 4)
 
 
 def test_sets_string_dtype_on_init():
@@ -655,7 +655,7 @@ def test_invalid_dtype_casting():
 
 
 def test_make_index(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(index='new_index', make_index=True)
@@ -807,7 +807,7 @@ def test_ordinal_with_nan_values():
 def test_accessor_with_falsy_column_names(falsy_names_df):
     if dd and isinstance(falsy_names_df, dd.DataFrame):
         pytest.xfail('Dask DataFrames cannot handle integer column names')
-    xfail_dask_and_koalas(falsy_names_df)
+    xfail_koalas(falsy_names_df)
 
     schema_df = falsy_names_df.copy()
     schema_df.ww.init(index=0, time_index='')
@@ -839,7 +839,7 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
 
 
 def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_types):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema = Schema(sample_column_names, sample_inferred_logical_types)
     sample_df.ww.init()
@@ -848,7 +848,7 @@ def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_t
 
 
 def test_get_invalid_schema_message(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
@@ -858,16 +858,26 @@ def test_get_invalid_schema_message(sample_df):
     assert (_get_invalid_schema_message(sample_df, schema) ==
             'dtype mismatch for column id between DataFrame dtype, int64, and Double dtype, float64')
 
-    sampled_df = schema_df.sample(2)
+    sampled_df = schema_df.sample(frac=0.3)
     assert _get_invalid_schema_message(sampled_df, schema) is None
 
     dropped_df = schema_df.drop('id', axis=1)
     assert (_get_invalid_schema_message(dropped_df, schema) ==
             "The following columns in the typing information were missing from the DataFrame: {'id'}")
 
-    renamed_df = schema_df.rename({'id': 'new_col'}, axis=1)
+    renamed_df = schema_df.rename(columns={'id': 'new_col'})
     assert (_get_invalid_schema_message(renamed_df, schema) ==
             "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
+
+
+def test_get_invalid_schema_message_index_checks(sample_df):
+    xfail_koalas(sample_df)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Index validation not performed for Dask DataFrames')
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
+    schema = schema_df.ww.schema
 
     different_underlying_index_df = schema_df.copy()
     different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
@@ -881,7 +891,7 @@ def test_get_invalid_schema_message(sample_df):
 
 
 def test_dataframe_methods_on_accessor(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema')
@@ -905,7 +915,7 @@ def test_dataframe_methods_on_accessor(sample_df):
 
 
 def test_dataframe_methods_on_accessor_new_schema_object(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(index='id', semantic_tags={'email': 'new_tag'},
                       table_metadata={'contributors': ['user1', 'user2'],
@@ -937,8 +947,10 @@ def test_dataframe_methods_on_accessor_new_schema_object(sample_df):
 
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):
-    xfail_dask_and_koalas(sample_df)
-
+    xfail_koalas(sample_df)
+    # TODO: Try to find a supported inplace method for Dask, if one exists
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Dask does not support sort_values or rename inplace.')
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema')
 
@@ -959,7 +971,7 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
 
 def test_dataframe_methods_on_accessor_returning_series(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema')
@@ -971,25 +983,29 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
 
     memory = schema_df.ww.memory_usage()
     assert schema_df.ww.name == 'test_schema'
-    pd.testing.assert_series_equal(memory, schema_df.memory_usage())
+    pd.testing.assert_series_equal(to_pandas(memory), to_pandas(schema_df.memory_usage()))
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema')
 
     shape = schema_df.ww.shape
 
     assert schema_df.ww.name == 'test_schema'
-    assert shape == schema_df.shape
-
+    if dd and isinstance(sample_df, dd.DataFrame):
+        shape = (shape[0].compute(), shape[1])
+    assert shape == to_pandas(schema_df).shape
     assert schema_df.ww.name == 'test_schema'
-    pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
+
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        # keys() not supported with Dask
+        pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
 
 
 def test_get_subset_df_with_schema(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(time_index='signup_date',
@@ -1008,30 +1024,30 @@ def test_get_subset_df_with_schema(sample_df):
     empty_df = schema_df.ww._get_subset_df_with_schema([])
     assert len(empty_df.columns) == 0
     assert empty_df.ww.schema is not None
-    pd.testing.assert_frame_equal(empty_df, schema_df[[]])
+    pd.testing.assert_frame_equal(to_pandas(empty_df), to_pandas(schema_df[[]]))
     validate_subset_schema(empty_df.ww.schema, schema)
 
     just_index = schema_df.ww._get_subset_df_with_schema(['id'])
     assert just_index.ww.index == schema.index
     assert just_index.ww.time_index is None
-    pd.testing.assert_frame_equal(just_index, schema_df[['id']])
+    pd.testing.assert_frame_equal(to_pandas(just_index), to_pandas(schema_df[['id']]))
     validate_subset_schema(just_index.ww.schema, schema)
 
     just_time_index = schema_df.ww._get_subset_df_with_schema(['signup_date'])
     assert just_time_index.ww.time_index == schema.time_index
     assert just_time_index.ww.index is None
-    pd.testing.assert_frame_equal(just_time_index, schema_df[['signup_date']])
+    pd.testing.assert_frame_equal(to_pandas(just_time_index), to_pandas(schema_df[['signup_date']]))
     validate_subset_schema(just_time_index.ww.schema, schema)
 
     transfer_schema = schema_df.ww._get_subset_df_with_schema(['phone_number'])
     assert transfer_schema.ww.index is None
     assert transfer_schema.ww.time_index is None
-    pd.testing.assert_frame_equal(transfer_schema, schema_df[['phone_number']])
+    pd.testing.assert_frame_equal(to_pandas(transfer_schema), to_pandas(schema_df[['phone_number']]))
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
 def test_select_ltypes_no_match_and_all(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types={'full_name': FullName,
@@ -1052,7 +1068,7 @@ def test_select_ltypes_no_match_and_all(sample_df):
 
 
 def test_select_ltypes_strings(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types={'full_name': FullName,
@@ -1072,7 +1088,7 @@ def test_select_ltypes_strings(sample_df):
 
 
 def test_select_ltypes_objects(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types={'full_name': FullName,
@@ -1092,7 +1108,7 @@ def test_select_ltypes_objects(sample_df):
 
 
 def test_select_ltypes_mixed(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types={'full_name': FullName,
@@ -1108,7 +1124,7 @@ def test_select_ltypes_mixed(sample_df):
 
 
 def test_select_ltypes_table(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='testing',
@@ -1138,7 +1154,7 @@ def test_select_ltypes_table(sample_df):
 
 
 def test_select_semantic_tags(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(semantic_tags={'full_name': 'tag1',
@@ -1181,7 +1197,7 @@ def test_select_semantic_tags(sample_df):
 
 
 def test_select_single_inputs(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(time_index='signup_date',
@@ -1218,7 +1234,7 @@ def test_select_single_inputs(sample_df):
 
 
 def test_select_list_inputs(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(time_index='signup_date',
@@ -1260,7 +1276,7 @@ def test_select_list_inputs(sample_df):
 
 
 def test_select_semantic_tags_no_match(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(time_index='signup_date',
@@ -1288,7 +1304,7 @@ def test_select_semantic_tags_no_match(sample_df):
 
 
 def test_select_repetitive(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(time_index='signup_date',
@@ -1315,25 +1331,31 @@ def test_select_repetitive(sample_df):
 
 
 def test_accessor_set_index(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
 
     sample_df.ww.set_index('id')
     assert sample_df.ww.index == 'id'
-    assert (sample_df.index == sample_df['id']).all()
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert (sample_df.index == sample_df['id']).all()
 
     sample_df.ww.set_index('full_name')
     assert sample_df.ww.index == 'full_name'
-    assert (sample_df.index == sample_df['full_name']).all()
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert (sample_df.index == sample_df['full_name']).all()
 
     sample_df.ww.set_index(None)
     assert sample_df.ww.index is None
-    assert (sample_df.index == range(4)).all()
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert (sample_df.index == range(4)).all()
 
 
 def test_accessor_set_index_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
 
@@ -1341,13 +1363,15 @@ def test_accessor_set_index_errors(sample_df):
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('testing')
 
-    error = "Index column must be unique"
-    with pytest.raises(LookupError, match=error):
-        sample_df.ww.set_index('age')
+    if isinstance(sample_df, pd.DataFrame):
+        # Index uniqueness not validate for Dask/Koalas
+        error = "Index column must be unique"
+        with pytest.raises(LookupError, match=error):
+            sample_df.ww.set_index('age')
 
 
 def test_set_types(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(index='full_name', time_index='signup_date')
 
@@ -1368,7 +1392,7 @@ def test_set_types(sample_df):
 
 
 def test_set_types_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(index='full_name')
 
@@ -1376,11 +1400,13 @@ def test_set_types_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(logical_types={'id': 'invalid'})
 
-    error = 'Error converting datatype for email from type string ' \
-        'to type float64. Please confirm the underlying data is consistent with ' \
-        'logical type Double.'
-    with pytest.raises(TypeConversionError, match=error):
-        sample_df.ww.set_types(logical_types={'email': 'Double'})
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        # Dask does not error on invalid type conversion until compute
+        error = 'Error converting datatype for email from type string ' \
+            'to type float64. Please confirm the underlying data is consistent with ' \
+            'logical type Double.'
+        with pytest.raises(TypeConversionError, match=error):
+            sample_df.ww.set_types(logical_types={'email': 'Double'})
 
     error = re.escape("Cannot add 'index' tag directly for column email. To set a column as the index, "
                       "use DataFrame.ww.set_index() instead.")
@@ -1389,7 +1415,7 @@ def test_set_types_errors(sample_df):
 
 
 def test_pop(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init(semantic_tags={'age': 'custom_tag'})
@@ -1397,7 +1423,7 @@ def test_pop(sample_df):
 
     popped_series = schema_df.ww.pop('age')
 
-    assert isinstance(popped_series, pd.Series)
+    assert isinstance(popped_series, type(sample_df['age']))
     assert popped_series.ww.semantic_tags == {'custom_tag', 'numeric'}
     assert all(to_pandas(popped_series).values == [33, 25, 33, 57])
     assert popped_series.ww.logical_type == Integer
@@ -1423,7 +1449,7 @@ def test_pop(sample_df):
 
 
 def test_pop_index(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(index='id', name='dt_name')
     assert sample_df.ww.index == 'id'
@@ -1433,7 +1459,7 @@ def test_pop_index(sample_df):
 
 
 def test_pop_error(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(
         name='table',
@@ -1446,7 +1472,7 @@ def test_pop_error(sample_df):
 
 
 def test_accessor_drop(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     schema_df = sample_df.copy()
     schema_df.ww.init()
@@ -1479,7 +1505,7 @@ def test_accessor_drop(sample_df):
 
 
 def test_accessor_drop_indices(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(index='id', time_index='signup_date')
     assert sample_df.ww.index == 'id'
@@ -1497,7 +1523,7 @@ def test_accessor_drop_indices(sample_df):
 
 
 def test_accessor_drop_errors(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
 
@@ -1514,7 +1540,7 @@ def test_accessor_drop_errors(sample_df):
 
 
 def test_accessor_rename(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     table_metadata = {'table_info': 'this is text'}
     id_description = 'the id of the row'
@@ -1528,13 +1554,15 @@ def test_accessor_rename(sample_df):
 
     new_df = sample_df.ww.rename({'age': 'birthday'})
 
-    assert to_pandas(sample_df.rename({'age': 'birthday'}, axis=1)).equals(to_pandas(new_df))
+    assert to_pandas(sample_df.rename(columns={'age': 'birthday'})).equals(to_pandas(new_df))
     # Confirm original dataframe hasn't changed
-    assert to_pandas(sample_df).equals(original_df)
+    assert to_pandas(sample_df).equals(to_pandas(original_df))
     assert sample_df.ww.schema == original_df.ww.schema
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('birthday')
-    pd.testing.assert_series_equal(original_df['age'], new_df['birthday'], check_names=False)
+    pd.testing.assert_series_equal(to_pandas(original_df['age']),
+                                   to_pandas(new_df['birthday']),
+                                   check_names=False)
 
     # confirm that metadata and descriptions are there
     assert new_df.ww.metadata == table_metadata
@@ -1548,15 +1576,19 @@ def test_accessor_rename(sample_df):
 
     new_df = sample_df.ww.rename({'age': 'full_name', 'full_name': 'age'})
 
-    pd.testing.assert_series_equal(original_df['age'], new_df['full_name'], check_names=False)
-    pd.testing.assert_series_equal(original_df['full_name'], new_df['age'], check_names=False)
+    pd.testing.assert_series_equal(to_pandas(original_df['age']),
+                                   to_pandas(new_df['full_name']),
+                                   check_names=False)
+    pd.testing.assert_series_equal(to_pandas(original_df['full_name']),
+                                   to_pandas(new_df['age']),
+                                   check_names=False)
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
 
 def test_accessor_rename_indices(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(
         index='id',
@@ -1568,7 +1600,9 @@ def test_accessor_rename_indices(sample_df):
     assert 'renamed_index' in renamed_df.columns
     assert 'renamed_time_index' in renamed_df.columns
 
-    assert all(renamed_df.index == renamed_df['renamed_index'])
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert all(renamed_df.index == renamed_df['renamed_index'])
 
     assert renamed_df.ww.index == 'renamed_index'
     assert renamed_df.ww.time_index == 'renamed_time_index'
