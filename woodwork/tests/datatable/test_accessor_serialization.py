@@ -9,7 +9,7 @@ import woodwork.deserialize_accessor as deserialize
 import woodwork.serialize_accessor as serialize
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import Ordinal
-from woodwork.tests.testing_utils import to_pandas, xfail_dask_and_koalas
+from woodwork.tests.testing_utils import to_pandas, xfail_koalas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -31,7 +31,7 @@ def xfail_tmp_disappears(dataframe):
 
 
 def test_error_before_table_init(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     error_message = "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
 
     with pytest.raises(AttributeError, match=error_message):
@@ -48,7 +48,7 @@ def test_error_before_table_init(sample_df, tmpdir):
 
 
 def test_to_dictionary(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     # if dd and isinstance(sample_df, dd.DataFrame):
     #     table_type = 'dask'
     # elif ks and isinstance(sample_df, ks.DataFrame):
@@ -142,7 +142,7 @@ def test_to_dictionary(sample_df):
 
 
 def test_unserializable_table(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(table_metadata={'not_serializable': sample_df['is_registered'].dtype})
 
@@ -152,7 +152,7 @@ def test_unserializable_table(sample_df, tmpdir):
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
 
@@ -162,7 +162,7 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
 
 def test_to_csv(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(
         name='test_data',
@@ -183,7 +183,7 @@ def test_to_csv(sample_df, tmpdir):
 
 
 def test_to_csv_with_latlong(latlong_df, tmpdir):
-    xfail_dask_and_koalas(latlong_df)
+    xfail_koalas(latlong_df)
 
     latlong_df.ww.init(index='tuple_ints', logical_types={col: 'LatLong' for col in latlong_df.columns})
     latlong_df.ww.to_csv(str(tmpdir))
@@ -195,7 +195,7 @@ def test_to_csv_with_latlong(latlong_df, tmpdir):
 
 
 def test_to_pickle(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
     # if not isinstance(sample_df, pd.DataFrame):
@@ -213,7 +213,7 @@ def test_to_pickle(sample_df, tmpdir):
 
 
 def test_to_pickle_with_latlong(latlong_df, tmpdir):
-    xfail_dask_and_koalas(latlong_df)
+    xfail_koalas(latlong_df)
 
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
     if not isinstance(latlong_df, pd.DataFrame):
@@ -230,7 +230,7 @@ def test_to_pickle_with_latlong(latlong_df, tmpdir):
 
 
 def test_to_parquet(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(index='id')
     sample_df.ww.to_parquet(str(tmpdir))
@@ -241,7 +241,7 @@ def test_to_parquet(sample_df, tmpdir):
 
 
 def test_to_parquet_with_latlong(latlong_df, tmpdir):
-    xfail_dask_and_koalas(latlong_df)
+    xfail_koalas(latlong_df)
 
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
     latlong_df.ww.to_parquet(str(tmpdir))
@@ -412,7 +412,7 @@ def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
 
 
 def test_serialize_url_csv(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
     error_text = "Writing to URLs is not supported"
@@ -421,7 +421,7 @@ def test_serialize_url_csv(sample_df):
 
 
 def test_serialize_subdirs_not_removed(sample_df, tmpdir):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init()
     write_path = tmpdir.mkdir("test")

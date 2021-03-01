@@ -74,7 +74,12 @@ class _locIndexerAccessor:
 
 def _process_selection(selection, original_data):
     if _is_series(selection):
-        if _is_dataframe(original_data) and set(selection.index.values) == set(original_data.columns):
+        if isinstance(selection, dd.Series):
+            # Dask index values are a delayed object - can't compare below without computing
+            index_vals = selection.index.values.compute()
+        else:
+            index_vals = selection.index.values
+        if _is_dataframe(original_data) and set(index_vals) == set(original_data.columns):
             # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
             schema = None
         elif _is_dataframe(original_data):
