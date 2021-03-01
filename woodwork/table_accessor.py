@@ -152,6 +152,13 @@ class WoodworkTableAccessor:
             schema = self._schema._get_subset_schema(key)
             df.ww.init(schema=schema)
             return df
+        elif isinstance(key, str):
+            series = self._dataframe[key]
+            column = self._dataframe.ww.columns[key]
+            kwargs = column.copy()
+            del kwargs['dtype']
+            series.ww.init(**kwargs)
+            return series
 
     def __repr__(self):
         return repr(self._schema)
