@@ -488,17 +488,16 @@ class WoodworkTableAccessor:
         """Renames columns in a DataFrame, maintaining Woodwork typing information.
 
         Args:
-            columns (dict[str -> str]): A dictionary mapping columns whose names
-                we'd like to change to the name to which we'd like to change them.
+            columns (dict[str -> str]): A dictionary mapping current column names to new column names.
 
         Returns:
-            pd.DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
+            DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
 
         Note:
             Index and time index columns cannot be renamed.
         """
         new_schema = self._schema.rename(columns)
-        new_df = self._dataframe.rename(columns, axis=1)
+        new_df = self._dataframe.rename(columns=columns)
 
         new_df.ww.init(schema=new_schema)
         return new_df
@@ -722,7 +721,7 @@ def _get_invalid_schema_message(dataframe, schema):
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {schema_dtype}'
     if schema.index is not None:
-        if not all(dataframe.index == dataframe[schema.index]):
+        if not all(dataframe.index == dataframe[schema.index]):  # --> not rel for dask bc no underlying and isunique nto going to happen
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
             return 'Index column is not unique'

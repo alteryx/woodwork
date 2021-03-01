@@ -331,8 +331,7 @@ class Schema(object):
         """Renames columns in a Schema
 
         Args:
-            columns (dict[str -> str]): A dictionary mapping columns whose names
-                we'd like to change to the name to which we'd like to change them.
+            columns (dict[str -> str]): A dictionary mapping current column names to new column names.
 
         Returns:
             woodwork.Schema: Schema with the specified columns renamed.
