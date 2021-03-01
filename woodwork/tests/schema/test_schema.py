@@ -825,7 +825,7 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
 
     renamed_schema = schema.rename({'age': 'birthday'})
 
-    # Confirm underlying data of original datatable hasn't changed
+    # Confirm original schema hasn't changed
     assert schema == original_schema
 
     assert 'age' not in renamed_schema.columns

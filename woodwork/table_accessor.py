@@ -461,7 +461,7 @@ class WoodworkTableAccessor:
         """Drop specified columns from a DataFrame.
 
         Args:
-            columns (str or list[str]): Column name or names to drop. Must be present in the DataTable.
+            columns (str or list[str]): Column name or names to drop. Must be present in the DataFrame.
 
         Returns:
             (pd.DataFrame): DataFrame with the specified columns removed, maintaining Woodwork typing information.
