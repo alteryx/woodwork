@@ -74,7 +74,7 @@ class _locIndexerAccessor:
 
 def _process_selection(selection, original_data):
     if _is_series(selection):
-        if isinstance(selection, dd.Series):
+        if dd and isinstance(selection, dd.Series):
             # Dask index values are a delayed object - can't compare below without computing
             index_vals = selection.index.values.compute()
         else:

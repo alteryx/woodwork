@@ -49,12 +49,12 @@ def test_error_before_table_init(sample_df, tmpdir):
 
 def test_to_dictionary(sample_df):
     xfail_koalas(sample_df)
-    # if dd and isinstance(sample_df, dd.DataFrame):
-    #     table_type = 'dask'
+    if dd and isinstance(sample_df, dd.DataFrame):
+        table_type = 'dask'
     # elif ks and isinstance(sample_df, ks.DataFrame):
     #     table_type = 'koalas'
-    # else:
-    table_type = 'pandas'
+    else:
+        table_type = 'pandas'
 
     # if ks and isinstance(sample_df, ks.DataFrame):
     #     int_val = 'int64'
@@ -198,18 +198,17 @@ def test_to_pickle(sample_df, tmpdir):
     xfail_koalas(sample_df)
 
     sample_df.ww.init()
-    # if not isinstance(sample_df, pd.DataFrame):
-    #     msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
-    #     with pytest.raises(ValueError, match=msg):
-    #         dt.to_pickle(str(tmpdir))
-    # else:
+    if not isinstance(sample_df, pd.DataFrame):
+        msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            sample_df.ww.to_pickle(str(tmpdir))
+    else:
+        sample_df.ww.to_pickle(str(tmpdir))
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
-    sample_df.ww.to_pickle(str(tmpdir))
-    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
-
-    pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
-                                  to_pandas(sample_df, index=sample_df.ww.index, sort_index=True))
-    assert deserialized_df.ww.schema == sample_df.ww.schema
+        pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                      to_pandas(sample_df, index=sample_df.ww.index, sort_index=True))
+        assert deserialized_df.ww.schema == sample_df.ww.schema
 
 
 def test_to_pickle_with_latlong(latlong_df, tmpdir):

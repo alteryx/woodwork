@@ -497,8 +497,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         assert df.ww.columns[column_name]['logical_type'] == LatLong
         assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
         assert df[column_name].dtype == LatLong.pandas_dtype
-
-        assert df[column_name].iloc[-1] == (3, 4)
+        df_pandas = to_pandas(df[column_name])
+        assert df_pandas.iloc[-1] == (3, 4)
 
 
 def test_sets_string_dtype_on_init():
@@ -856,16 +856,26 @@ def test_get_invalid_schema_message(sample_df):
     assert (_get_invalid_schema_message(sample_df, schema) ==
             'dtype mismatch for column id between DataFrame dtype, int64, and Double dtype, float64')
 
-    sampled_df = schema_df.sample(2)
+    sampled_df = schema_df.sample(frac=0.3)
     assert _get_invalid_schema_message(sampled_df, schema) is None
 
     dropped_df = schema_df.drop('id', axis=1)
     assert (_get_invalid_schema_message(dropped_df, schema) ==
             "The following columns in the typing information were missing from the DataFrame: {'id'}")
 
-    renamed_df = schema_df.rename({'id': 'new_col'}, axis=1)
+    renamed_df = schema_df.rename(columns={'id': 'new_col'})
     assert (_get_invalid_schema_message(renamed_df, schema) ==
             "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
+
+
+def test_get_invalid_schema_message_index_checks(sample_df):
+    xfail_koalas(sample_df)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Index validation not performed for Dask DataFrames')
+
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
+    schema = schema_df.ww.schema
 
     different_underlying_index_df = schema_df.copy()
     different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
@@ -971,7 +981,7 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
 
     memory = schema_df.ww.memory_usage()
     assert schema_df.ww.name == 'test_schema'
-    pd.testing.assert_series_equal(memory, schema_df.memory_usage())
+    pd.testing.assert_series_equal(to_pandas(memory), to_pandas(schema_df.memory_usage()))
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
@@ -982,10 +992,14 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     shape = schema_df.ww.shape
 
     assert schema_df.ww.name == 'test_schema'
-    assert shape == schema_df.shape
-
+    if dd and isinstance(sample_df, dd.DataFrame):
+        shape = (shape[0].compute(), shape[1])
+    assert shape == to_pandas(schema_df).shape
     assert schema_df.ww.name == 'test_schema'
-    pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
+
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        # keys() not supported with Dask
+        pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
 
 
 def test_get_subset_df_with_schema(sample_df):
@@ -1008,25 +1022,25 @@ def test_get_subset_df_with_schema(sample_df):
     empty_df = schema_df.ww._get_subset_df_with_schema([])
     assert len(empty_df.columns) == 0
     assert empty_df.ww.schema is not None
-    pd.testing.assert_frame_equal(empty_df, schema_df[[]])
+    pd.testing.assert_frame_equal(to_pandas(empty_df), to_pandas(schema_df[[]]))
     validate_subset_schema(empty_df.ww.schema, schema)
 
     just_index = schema_df.ww._get_subset_df_with_schema(['id'])
     assert just_index.ww.index == schema.index
     assert just_index.ww.time_index is None
-    pd.testing.assert_frame_equal(just_index, schema_df[['id']])
+    pd.testing.assert_frame_equal(to_pandas(just_index), to_pandas(schema_df[['id']]))
     validate_subset_schema(just_index.ww.schema, schema)
 
     just_time_index = schema_df.ww._get_subset_df_with_schema(['signup_date'])
     assert just_time_index.ww.time_index == schema.time_index
     assert just_time_index.ww.index is None
-    pd.testing.assert_frame_equal(just_time_index, schema_df[['signup_date']])
+    pd.testing.assert_frame_equal(to_pandas(just_time_index), to_pandas(schema_df[['signup_date']]))
     validate_subset_schema(just_time_index.ww.schema, schema)
 
     transfer_schema = schema_df.ww._get_subset_df_with_schema(['phone_number'])
     assert transfer_schema.ww.index is None
     assert transfer_schema.ww.time_index is None
-    pd.testing.assert_frame_equal(transfer_schema, schema_df[['phone_number']])
+    pd.testing.assert_frame_equal(to_pandas(transfer_schema), to_pandas(schema_df[['phone_number']]))
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
@@ -1321,15 +1335,21 @@ def test_accessor_set_index(sample_df):
 
     sample_df.ww.set_index('id')
     assert sample_df.ww.index == 'id'
-    assert (sample_df.index == sample_df['id']).all()
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert (sample_df.index == sample_df['id']).all()
 
     sample_df.ww.set_index('full_name')
     assert sample_df.ww.index == 'full_name'
-    assert (sample_df.index == sample_df['full_name']).all()
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert (sample_df.index == sample_df['full_name']).all()
 
     sample_df.ww.set_index(None)
     assert sample_df.ww.index is None
-    assert (sample_df.index == range(4)).all()
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert (sample_df.index == range(4)).all()
 
 
 def test_accessor_set_index_errors(sample_df):
@@ -1341,9 +1361,11 @@ def test_accessor_set_index_errors(sample_df):
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('testing')
 
-    error = "Index column must be unique"
-    with pytest.raises(LookupError, match=error):
-        sample_df.ww.set_index('age')
+    if isinstance(sample_df, pd.DataFrame):
+        # Index uniqueness not validate for Dask/Koalas
+        error = "Index column must be unique"
+        with pytest.raises(LookupError, match=error):
+            sample_df.ww.set_index('age')
 
 
 def test_set_types(sample_df):
@@ -1376,11 +1398,13 @@ def test_set_types_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(logical_types={'id': 'invalid'})
 
-    error = 'Error converting datatype for email from type string ' \
-        'to type float64. Please confirm the underlying data is consistent with ' \
-        'logical type Double.'
-    with pytest.raises(TypeConversionError, match=error):
-        sample_df.ww.set_types(logical_types={'email': 'Double'})
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        # Dask does not error on invalid type conversion until compute
+        error = 'Error converting datatype for email from type string ' \
+            'to type float64. Please confirm the underlying data is consistent with ' \
+            'logical type Double.'
+        with pytest.raises(TypeConversionError, match=error):
+            sample_df.ww.set_types(logical_types={'email': 'Double'})
 
     error = re.escape("Cannot add 'index' tag directly for column email. To set a column as the index, "
                       "use DataFrame.ww.set_index() instead.")
@@ -1397,7 +1421,7 @@ def test_pop(sample_df):
 
     popped_series = schema_df.ww.pop('age')
 
-    assert isinstance(popped_series, pd.Series)
+    assert isinstance(popped_series, type(sample_df['age']))
     assert popped_series.ww.semantic_tags == {'custom_tag', 'numeric'}
     assert all(to_pandas(popped_series).values == [33, 25, 33, 57])
     assert popped_series.ww.logical_type == Integer
