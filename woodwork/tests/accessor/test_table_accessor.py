@@ -224,7 +224,7 @@ def test_accessor_getattr(sample_df):
 
 
 def test_accessor_getitem(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
     df = sample_df.copy()
 
     df.ww.init()
