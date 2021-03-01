@@ -1540,7 +1540,7 @@ def test_accessor_drop_errors(sample_df):
 
 
 def test_accessor_rename(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     table_metadata = {'table_info': 'this is text'}
     id_description = 'the id of the row'
@@ -1554,13 +1554,15 @@ def test_accessor_rename(sample_df):
 
     new_df = sample_df.ww.rename({'age': 'birthday'})
 
-    assert to_pandas(sample_df.rename({'age': 'birthday'}, axis=1)).equals(to_pandas(new_df))
+    assert to_pandas(sample_df.rename(columns={'age': 'birthday'})).equals(to_pandas(new_df))
     # Confirm original dataframe hasn't changed
-    assert to_pandas(sample_df).equals(original_df)
+    assert to_pandas(sample_df).equals(to_pandas(original_df))
     assert sample_df.ww.schema == original_df.ww.schema
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('birthday')
-    pd.testing.assert_series_equal(original_df['age'], new_df['birthday'], check_names=False)
+    pd.testing.assert_series_equal(to_pandas(original_df['age']),
+                                   to_pandas(new_df['birthday']),
+                                   check_names=False)
 
     # confirm that metadata and descriptions are there
     assert new_df.ww.metadata == table_metadata
@@ -1574,15 +1576,19 @@ def test_accessor_rename(sample_df):
 
     new_df = sample_df.ww.rename({'age': 'full_name', 'full_name': 'age'})
 
-    pd.testing.assert_series_equal(original_df['age'], new_df['full_name'], check_names=False)
-    pd.testing.assert_series_equal(original_df['full_name'], new_df['age'], check_names=False)
+    pd.testing.assert_series_equal(to_pandas(original_df['age']),
+                                   to_pandas(new_df['full_name']),
+                                   check_names=False)
+    pd.testing.assert_series_equal(to_pandas(original_df['full_name']),
+                                   to_pandas(new_df['age']),
+                                   check_names=False)
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
 
 def test_accessor_rename_indices(sample_df):
-    xfail_dask_and_koalas(sample_df)
+    xfail_koalas(sample_df)
 
     sample_df.ww.init(
         index='id',
@@ -1594,7 +1600,9 @@ def test_accessor_rename_indices(sample_df):
     assert 'renamed_index' in renamed_df.columns
     assert 'renamed_time_index' in renamed_df.columns
 
-    assert all(renamed_df.index == renamed_df['renamed_index'])
+    if isinstance(sample_df, pd.DataFrame):
+        # underlying index not set for Dask/Koalas
+        assert all(renamed_df.index == renamed_df['renamed_index'])
 
     assert renamed_df.ww.index == 'renamed_index'
     assert renamed_df.ww.time_index == 'renamed_time_index'
