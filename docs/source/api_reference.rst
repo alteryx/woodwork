@@ -12,6 +12,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor
     WoodworkTableAccessor.describe
     WoodworkTableAccessor.describe_dict
+    WoodworkTableAccessor.drop
     WoodworkTableAccessor.iloc
     WoodworkTableAccessor.init
     WoodworkTableAccessor.loc
