@@ -718,7 +718,7 @@ def _get_invalid_schema_message(dataframe, schema):
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {schema_dtype}'
     if schema.index is not None:
-        if not all(dataframe.index == dataframe[schema.index]):  # --> not rel for dask bc no underlying and isunique nto going to happen
+        if not all(dataframe.index == dataframe[schema.index]):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
             return 'Index column is not unique'
