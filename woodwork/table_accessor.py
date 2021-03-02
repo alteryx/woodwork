@@ -150,11 +150,11 @@ class WoodworkTableAccessor:
         if isinstance(key, list):
             index = pd.Index(key)
             columns = self._dataframe.columns
-            in_columns = index.isin(columns).all()
+            diff = index.difference(columns)
+            in_columns = diff.isin(columns).all()
 
             if not in_columns:
-                diff = list(index.difference(columns).sort_values())
-                raise KeyError(f"Column(s) '{diff}' not found in DataTable")
+                raise KeyError(f"Column(s) '{list(diff)}' not found in DataTable")
 
             return self._get_subset_df_with_schema(key)
 
