@@ -736,6 +736,7 @@ def _make_index(dataframe, index):
 def _get_invalid_schema_message(dataframe, schema):
     dataframe_cols = set(dataframe.columns)
     schema_cols = set(schema.columns.keys())
+
     df_cols_not_in_schema = dataframe_cols - schema_cols
     if df_cols_not_in_schema:
         return f'The following columns in the DataFrame were missing from the typing information: '\

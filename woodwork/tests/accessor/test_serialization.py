@@ -31,7 +31,6 @@ def xfail_tmp_disappears(dataframe):
 
 
 def test_error_before_table_init(sample_df, tmpdir):
-
     error_message = "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
 
     with pytest.raises(AttributeError, match=error_message):
