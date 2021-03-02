@@ -147,29 +147,28 @@ class WoodworkTableAccessor:
 
     def __getitem__(self, key):
         if isinstance(key, list):
-            index  = pd.Index(key)
+            index = pd.Index(key)
             columns = self._dataframe.columns
             in_columns = index.isin(columns).all()
 
             if not in_columns:
-                index = ', '.join(index.sort_values())
-                raise KeyError(f"Column(s) '{index}' not found in DataTable") 
+                diff = list(index.difference(columns).sort_values())
+                raise KeyError(f"Column(s) '{diff}' not found in DataTable")
 
             df = self._dataframe[key]
             schema = self._schema._get_subset_schema(key)
             df.ww.init(schema=schema)
             return df
 
-        elif isinstance(key, str):
-            if key not in self._dataframe: 
-                raise KeyError(f"Column with name '{key}' not found in DataTable") 
+        if key not in self._dataframe:
+            raise KeyError(f"Column with name '{key}' not found in DataTable")
 
-            series = self._dataframe[key]
-            column = self._dataframe.ww.columns[key].copy()
-            del column['dtype']
-            series.ww.init(**column)
-            return series
-            
+        series = self._dataframe[key]
+        column = self._dataframe.ww.columns[key].copy()
+        del column['dtype']
+        series.ww.init(**column)
+        return series
+
     def __repr__(self):
         return repr(self._schema)
 

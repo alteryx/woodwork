@@ -223,18 +223,40 @@ def test_accessor_getattr(sample_df):
         sample_df.ww.not_present
 
 
-def test_accessor_getitem(sample_df):
+def test_getitem(sample_df):
     xfail_koalas(sample_df)
     df = sample_df.copy()
-
-    df.ww.init()
+    df.ww.init(time_index='signup_date', index='id', name='dt_name')
     assert list(df.columns) == list(df.ww.schema.columns)
-    subset = ['id', 'full_name', 'email']
-    assert subset == list(df.ww[subset].ww.schema.columns)
+
+    subset = ['id', 'signup_date', 'email']
+    subset_ww = df.ww[subset].ww
+    assert subset == list(subset_ww.schema.columns)
+    assert subset_ww.index == 'id'
+    assert subset_ww.time_index == 'signup_date'
+
+    subset = df.ww[[]]
+    assert len(subset.ww.columns) == 0
+    assert subset.ww.index is None
+    assert subset.ww.time_index is None
 
     series = df.ww['age']
     assert series.ww.logical_type == Integer
     assert series.ww.semantic_tags == {'numeric'}
+
+
+def test_getitem_invalid_input(sample_df):
+    xfail_koalas(sample_df)
+    df = sample_df.copy()
+    df.ww.init()
+
+    error_msg = r"Column\(s\) '\[1, 2\]' not found in DataTable"
+    with pytest.raises(KeyError, match=error_msg):
+        df.ww[['email', 1, 2]]
+
+    error_msg = "Column with name 'invalid_column' not found in DataTable"
+    with pytest.raises(KeyError, match=error_msg):
+        df.ww['invalid_column']
 
 
 def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
