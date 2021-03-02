@@ -957,12 +957,9 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
 
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(dtypes, schema_df.dtypes)
-
-    if ks and not isinstance(sample_df, ks.DataFrame):
-        # memory_usage() not supported with Koalas
-        memory = schema_df.ww.memory_usage()
-        assert schema_df.ww.name == 'test_schema'
-        pd.testing.assert_series_equal(to_pandas(memory), to_pandas(schema_df.memory_usage()))
+    all_series = schema_df.ww.all()
+    assert schema_df.ww.name == 'test_schema'
+    pd.testing.assert_series_equal(to_pandas(all_series), to_pandas(schema_df.all()))
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
