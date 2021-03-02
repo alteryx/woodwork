@@ -855,7 +855,6 @@ def test_get_invalid_schema_message_index_checks(sample_df):
     schema = schema_df.ww.schema
 
     different_underlying_index_df = schema_df.copy()
-    new_series = pd.Series([9, 8, 7, 6], dtype='float64')
     different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
     assert (_get_invalid_schema_message(different_underlying_index_df, schema) ==
             "Index mismatch between DataFrame and typing information")
@@ -1543,8 +1542,6 @@ def test_accessor_rename_indices(sample_df):
 
 
 def test_accessor_schema_properties(sample_df):
-    xfail_koalas(sample_df)
-
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
