@@ -3,7 +3,11 @@ import warnings
 import pandas as pd
 
 import woodwork.serialize_accessor as serialize
-from woodwork.accessor_utils import _is_dataframe, _update_column_dtype
+from woodwork.accessor_utils import (
+    _get_valid_dtype,
+    _is_dataframe,
+    _update_column_dtype
+)
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning
@@ -701,7 +705,6 @@ def _make_index(dataframe, index):
 def _get_invalid_schema_message(dataframe, schema):
     dataframe_cols = set(dataframe.columns)
     schema_cols = set(schema.columns.keys())
-
     df_cols_not_in_schema = dataframe_cols - schema_cols
     if df_cols_not_in_schema:
         return f'The following columns in the DataFrame were missing from the typing information: '\
@@ -712,12 +715,12 @@ def _get_invalid_schema_message(dataframe, schema):
             f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
-        schema_dtype = schema.logical_types[name].pandas_dtype
-        if df_dtype != schema_dtype:
+        valid_dtype = _get_valid_dtype(dataframe[name], schema.logical_types[name])
+        if df_dtype != valid_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
-                f'{df_dtype}, and {schema.logical_types[name]} dtype, {schema_dtype}'
-    if schema.index is not None and not (dd and isinstance(dataframe, dd.DataFrame)):
-        # Dask index is a delayed object, can't validate without a compute() operation
+                f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
+    if schema.index is not None and isinstance(dataframe, pd.DataFrame):
+        # Index validation not performed for Dask/Koalas
         if not all(dataframe.index == dataframe[schema.index]):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
@@ -744,4 +747,7 @@ if ks:
 
     @register_dataframe_accessor('ww')
     class KoalasTableAccessor(WoodworkTableAccessor):
-        pass
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            if not ks.get_option('compute.ops_on_diff_frames'):
+                ks.set_option('compute.ops_on_diff_frames', True)

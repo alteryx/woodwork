@@ -473,7 +473,10 @@ def test_sets_object_dtype_on_init(latlong_df):
         assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
         assert df[column_name].dtype == LatLong.pandas_dtype
         df_pandas = to_pandas(df[column_name])
-        assert df_pandas.iloc[-1] == (3, 4)
+        expected_val = (3, 4)
+        if ks and isinstance(latlong_df, ks.DataFrame):
+            expected_val = [3, 4]
+        assert df_pandas.iloc[-1] == expected_val
 
 
 def test_sets_string_dtype_on_init():
@@ -630,15 +633,20 @@ def test_invalid_dtype_casting():
 
 
 def test_make_index(sample_df):
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='new_index', make_index=True)
+    if ks and isinstance(sample_df, ks.DataFrame):
+        error_msg = "Cannot make index on a Koalas DataFrame."
+        with pytest.raises(TypeError, match=error_msg):
+            sample_df.ww.init(index='new_index', make_index=True)
+    else:
+        schema_df = sample_df.copy()
+        schema_df.ww.init(index='new_index', make_index=True)
 
-    assert schema_df.ww.index == 'new_index'
-    assert 'new_index' in schema_df.ww.columns
-    assert 'new_index' in schema_df.ww.columns
-    assert to_pandas(schema_df)['new_index'].unique
-    assert to_pandas(schema_df['new_index']).is_monotonic
-    assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
+        assert schema_df.ww.index == 'new_index'
+        assert 'new_index' in schema_df.ww.columns
+        assert 'new_index' in schema_df.ww.columns
+        assert to_pandas(schema_df)['new_index'].unique
+        assert to_pandas(schema_df['new_index']).is_monotonic
+        assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
 
 
 def test_underlying_index_no_index(sample_df):
@@ -839,14 +847,15 @@ def test_get_invalid_schema_message(sample_df):
 
 
 def test_get_invalid_schema_message_index_checks(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
-        pytest.xfail('Index validation not performed for Dask DataFrames')
+    if not isinstance(sample_df, pd.DataFrame):
+        pytest.xfail('Index validation not performed for Dask or Koalas DataFrames')
 
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
     schema = schema_df.ww.schema
 
     different_underlying_index_df = schema_df.copy()
+    new_series = pd.Series([9, 8, 7, 6], dtype='float64')
     different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
     assert (_get_invalid_schema_message(different_underlying_index_df, schema) ==
             "Index mismatch between DataFrame and typing information")
@@ -869,12 +878,21 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
+    if ks and isinstance(sample_df, ks.DataFrame):
+        # Converting to type `str` results in a `object` dtype for Koalas
+        ltype_dtype = 'int64'
+        new_dtype = 'str'
+        object_dtype = 'object'
+    else:
+        ltype_dtype = 'Int64'
+        new_dtype = 'string'
+        object_dtype = 'string'
     warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
-        'dtype mismatch for column id between DataFrame dtype, string, and Integer dtype, Int64.\n '\
+        f'dtype mismatch for column id between DataFrame dtype, {object_dtype}, and Integer dtype, {ltype_dtype}.\n '\
         'Please initialize Woodwork with DataFrame.ww.init'
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
-        new_df = schema_df.ww.astype({'id': 'string'})
-    assert new_df['id'].dtype == 'string'
+        new_df = schema_df.ww.astype({'id': new_dtype})
+    assert new_df['id'].dtype == object_dtype
     assert new_df.ww.schema is None
     assert schema_df.ww.schema is not None
 
@@ -941,9 +959,11 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     assert schema_df.ww.name == 'test_schema'
     pd.testing.assert_series_equal(dtypes, schema_df.dtypes)
 
-    memory = schema_df.ww.memory_usage()
-    assert schema_df.ww.name == 'test_schema'
-    pd.testing.assert_series_equal(to_pandas(memory), to_pandas(schema_df.memory_usage()))
+    if ks and not isinstance(sample_df, ks.DataFrame):
+        # memory_usage() not supported with Koalas
+        memory = schema_df.ww.memory_usage()
+        assert schema_df.ww.name == 'test_schema'
+        pd.testing.assert_series_equal(to_pandas(memory), to_pandas(schema_df.memory_usage()))
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
@@ -1329,8 +1349,9 @@ def test_set_types_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(logical_types={'id': 'invalid'})
 
-    if dd and not isinstance(sample_df, dd.DataFrame):
+    if isinstance(sample_df, pd.DataFrame):
         # Dask does not error on invalid type conversion until compute
+        # Koalas does conversion and fills values with NaN
         error = 'Error converting datatype for email from type string ' \
             'to type float64. Please confirm the underlying data is consistent with ' \
             'logical type Double.'

@@ -34,7 +34,7 @@ def typing_info_to_dict(dataframe):
              'type': str(_get_ltype_class(col['logical_type']))
          },
          'physical_type': {
-             'type': str(col['dtype'])
+             'type': str(dataframe[col_name].dtype)
          },
          'semantic_tags': sorted(list(col['semantic_tags'])),
          'description': col['description'],
