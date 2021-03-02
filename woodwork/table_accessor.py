@@ -1,4 +1,5 @@
 import warnings
+from copy import deepcopy
 
 import pandas as pd
 
@@ -164,9 +165,9 @@ class WoodworkTableAccessor:
             raise KeyError(f"Column with name '{key}' not found in DataTable")
 
         series = self._dataframe[key]
-        column = self._dataframe.ww.columns[key].copy()
+        column = deepcopy(self._dataframe.ww.columns[key])
         del column['dtype']
-        series.ww.init(**column)
+        series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
 
     def __repr__(self):
