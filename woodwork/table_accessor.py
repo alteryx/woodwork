@@ -610,7 +610,7 @@ class WoodworkTableAccessor:
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = _get_describe_dict(self._dataframe, include=include)
+        results = self.describe_dict(include=include)
         index_order = [
             'physical_type',
             'logical_type',

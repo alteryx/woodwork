@@ -183,7 +183,7 @@ def test_mutual_info_unique_cols(df_mi_unique):
     assert 'ints' in cols_used
 
 
-def test_describe_dict(describe_df):
+def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
 
     stats_dict = _get_describe_dict(describe_df)

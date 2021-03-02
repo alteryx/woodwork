@@ -1559,3 +1559,10 @@ def test_accessor_schema_properties(sample_df):
         error = "can't set attribute"
         with pytest.raises(AttributeError, match=error):
             setattr(sample_df.ww, schema_property, 'new_value')
+
+
+def test_sets_koalas_option_on_init(sample_df_koalas):
+    if ks:
+        ks.set_option('compute.ops_on_diff_frames', False)
+        sample_df_koalas.ww.init()
+        assert ks.get_option('compute.ops_on_diff_frames') is True
