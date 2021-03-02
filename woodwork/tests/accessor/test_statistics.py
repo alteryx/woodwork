@@ -27,11 +27,7 @@ from woodwork.statistics_utils import (
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info
 )
-from woodwork.tests.testing_utils import (
-    mi_between_cols,
-    to_pandas,
-    xfail_koalas
-)
+from woodwork.tests.testing_utils import mi_between_cols, to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -104,8 +100,6 @@ def test_accessor_make_categorical_for_mutual_info():
 
 
 def test_mutual_info_same(df_same_mi):
-    xfail_koalas(df_same_mi)
-
     df_same_mi.ww.init()
 
     mi = df_same_mi.ww.mutual_information()
@@ -118,8 +112,6 @@ def test_mutual_info_same(df_same_mi):
 
 
 def test_mutual_info(df_mi):
-    xfail_koalas(df_mi)
-
     df_mi.ww.init(logical_types={'dates': Datetime(datetime_format='%Y-%m-%d')})
     original_df = df_mi.copy()
     mi = df_mi.ww.mutual_information()
@@ -150,8 +142,6 @@ def test_mutual_info(df_mi):
 
 
 def test_mutual_info_does_not_include_index(sample_df):
-    xfail_koalas(sample_df)
-
     sample_df.ww.init(index='id')
     mi = sample_df.ww.mutual_information()
 
@@ -159,8 +149,6 @@ def test_mutual_info_does_not_include_index(sample_df):
 
 
 def test_mutual_info_returns_empty_df_properly(sample_df):
-    xfail_koalas(sample_df)
-
     schema_df = sample_df[['id', 'age']]
     schema_df.ww.init(index='id')
 
@@ -169,8 +157,6 @@ def test_mutual_info_returns_empty_df_properly(sample_df):
 
 
 def test_mutual_info_sort(df_mi):
-    xfail_koalas(df_mi)
-
     df_mi.ww.init()
     mi = df_mi.ww.mutual_information()
 
@@ -179,8 +165,6 @@ def test_mutual_info_sort(df_mi):
 
 
 def test_mutual_info_dict(df_mi):
-    xfail_koalas(df_mi)
-
     df_mi.ww.init()
     mi_dict = df_mi.ww.mutual_information_dict()
     mi = df_mi.ww.mutual_information()
@@ -189,8 +173,6 @@ def test_mutual_info_dict(df_mi):
 
 
 def test_mutual_info_unique_cols(df_mi_unique):
-    xfail_koalas(df_mi_unique)
-
     df_mi_unique.ww.init()
     mi = df_mi_unique.ww.mutual_information()
 
@@ -201,9 +183,7 @@ def test_mutual_info_unique_cols(df_mi_unique):
     assert 'ints' in cols_used
 
 
-def test_describe_dict(describe_df):
-    xfail_koalas(describe_df)
-
+def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
 
     stats_dict = _get_describe_dict(describe_df)
@@ -229,16 +209,12 @@ def test_describe_dict(describe_df):
 
 
 def test_describe_does_not_include_index(describe_df):
-    xfail_koalas(describe_df)
-
     describe_df.ww.init(index='index_col')
     stats_df = describe_df.ww.describe()
     assert 'index_col' not in stats_df.columns
 
 
 def test_describe_accessor_method(describe_df):
-    xfail_koalas(describe_df)
-
     categorical_ltypes = [Categorical,
                           CountryCode,
                           Ordinal(order=('yellow', 'red', 'blue')),
@@ -291,7 +267,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'category_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['category_col'].dropna())
+        expected_vals.equals(stats_df['category_col'].dropna())
 
     # Test boolean columns
     boolean_data = describe_df[['boolean_col']]
@@ -314,7 +290,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'boolean_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['boolean_col'].dropna())
+        expected_vals.equals(stats_df['boolean_col'].dropna())
 
     # Test datetime columns
     datetime_data = describe_df[['datetime_col']]
@@ -335,7 +311,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['datetime_col'].dropna())
+        expected_vals.equals(stats_df['datetime_col'].dropna())
 
     # Test formatted datetime columns
     formatted_datetime_data = describe_df[['formatted_datetime_col']]
@@ -366,7 +342,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'formatted_datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['formatted_datetime_col'].dropna())
+        expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
 
     # Test timedelta columns - Skip for Koalas
     if not (ks and isinstance(describe_df, ks.DataFrame)):
@@ -385,7 +361,7 @@ def test_describe_accessor_method(describe_df):
             assert isinstance(stats_df, pd.DataFrame)
             assert set(stats_df.columns) == {'col'}
             assert stats_df.index.tolist() == expected_index
-            pd.testing.assert_series_equal(expected_vals, stats_df['col'].dropna())
+            expected_vals.equals(stats_df['col'].dropna())
 
     # Test numeric columns
     numeric_data = describe_df[['numeric_col']]
@@ -410,7 +386,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'numeric_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['numeric_col'].dropna(), check_exact=False)
+        expected_vals.equals(stats_df['numeric_col'].dropna())
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
@@ -433,7 +409,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'natural_language_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['natural_language_col'].dropna())
+        expected_vals.equals(stats_df['natural_language_col'].dropna())
 
     # Test latlong columns
     latlong_data = describe_df[['latlong_col']]
@@ -454,12 +430,10 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'latlong_col'}
         assert stats_df.index.tolist() == expected_index
-        pd.testing.assert_series_equal(expected_vals, stats_df['latlong_col'].dropna())
+        expected_vals.equals(stats_df['latlong_col'].dropna())
 
 
 def test_describe_with_improper_tags(describe_df):
-    xfail_koalas(describe_df)
-
     df = describe_df.copy()[['boolean_col', 'natural_language_col']]
 
     logical_types = {
@@ -483,8 +457,6 @@ def test_describe_with_improper_tags(describe_df):
 
 
 def test_describe_with_no_semantic_tags(describe_df):
-    xfail_koalas(describe_df)
-
     df = describe_df.copy()[['category_col', 'numeric_col']]
 
     logical_types = {
@@ -506,8 +478,6 @@ def test_describe_with_no_semantic_tags(describe_df):
 
 
 def test_describe_with_include(sample_df):
-    xfail_koalas(sample_df)
-
     semantic_tags = {
         'full_name': 'tag1',
         'email': ['tag2'],
@@ -536,8 +506,6 @@ def test_describe_with_include(sample_df):
 
 
 def test_value_counts(categorical_df):
-    xfail_koalas(categorical_df)
-
     logical_types = {
         'ints': Integer,
         'categories1': Categorical,
