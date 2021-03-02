@@ -19,6 +19,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.mutual_information_dict
     WoodworkTableAccessor.mutual_information
     WoodworkTableAccessor.pop
+    WoodworkTableAccessor.rename
     WoodworkTableAccessor.select
     WoodworkTableAccessor.set_index
     WoodworkTableAccessor.set_types
@@ -54,6 +55,7 @@ Schema
 
     Schema
     Schema.add_semantic_tags
+    Schema.rename
     Schema.remove_semantic_tags
     Schema.reset_semantic_tags
     Schema.set_index

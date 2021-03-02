@@ -1642,3 +1642,25 @@ def test_accessor_rename_indices(sample_df):
 
     assert renamed_df.ww.index == 'renamed_index'
     assert renamed_df.ww.time_index == 'renamed_time_index'
+
+
+def test_accessor_schema_properties(sample_df):
+    xfail_koalas(sample_df)
+
+    sample_df.ww.init(index='id',
+                      time_index='signup_date')
+
+    schema_properties = ['types', 'logical_types', 'physical_types', 'semantic_tags', 'index', 'time_index']
+    for schema_property in schema_properties:
+        prop_from_accessor = getattr(sample_df.ww, schema_property)
+        prop_from_schema = getattr(sample_df.ww.schema, schema_property)
+
+        if schema_property == 'types':
+            pd.testing.assert_frame_equal(prop_from_accessor, prop_from_schema)
+        else:
+            assert prop_from_accessor == prop_from_schema
+
+        # Assumes we don't have setters for any of these attributes
+        error = "can't set attribute"
+        with pytest.raises(AttributeError, match=error):
+            setattr(sample_df.ww, schema_property, 'new_value')
