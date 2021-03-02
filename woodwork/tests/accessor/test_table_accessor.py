@@ -229,7 +229,7 @@ def test_getitem(sample_df):
     df.ww.init(time_index='signup_date', index='id', name='dt_name')
     assert list(df.columns) == list(df.ww.schema.columns)
 
-    subset = ['id', 'signup_date', 'email']
+    subset = ['id', 'email', 'signup_date']
     subset_ww = df.ww[subset].ww
     assert subset == list(subset_ww.schema.columns)
     assert subset_ww.index == 'id'

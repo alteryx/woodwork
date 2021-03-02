@@ -156,16 +156,13 @@ class WoodworkTableAccessor:
                 diff = list(index.difference(columns).sort_values())
                 raise KeyError(f"Column(s) '{diff}' not found in DataTable")
 
-            df = self._dataframe[key]
-            schema = self._schema._get_subset_schema(key)
-            df.ww.init(schema=schema)
-            return df
+            return self._get_subset_df_with_schema(key)
 
         if key not in self._dataframe:
             raise KeyError(f"Column with name '{key}' not found in DataTable")
 
         series = self._dataframe[key]
-        column = deepcopy(self._dataframe.ww.columns[key])
+        column = deepcopy(self._schema.columns[key])
         del column['dtype']
         series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
