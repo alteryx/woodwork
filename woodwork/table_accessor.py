@@ -208,6 +208,37 @@ class WoodworkTableAccessor:
         if self._schema:
             return self._schema._get_subset_schema(list(self.columns.keys()))
 
+    @property
+    def types(self):
+        """DataFrame containing the physical dtypes, logical types and semantic
+        tags for the Schema."""
+        return self._schema.types
+
+    @property
+    def logical_types(self):
+        """A dictionary containing logical types for each column"""
+        return self._schema.logical_types
+
+    @property
+    def physical_types(self):
+        """A dictionary containing physical types for each column"""
+        return self._schema.physical_types
+
+    @property
+    def semantic_tags(self):
+        """A dictionary containing semantic tags for each column"""
+        return self._schema.semantic_tags
+
+    @property
+    def index(self):
+        """The index column for the table"""
+        return self._schema.index
+
+    @property
+    def time_index(self):
+        """The time index column for the table"""
+        return self._schema.time_index
+
     def set_index(self, new_index):
         """Sets the index column of the DataFrame. Adds the 'index' semantic tag to the column
         and clears the tag from any previously set index column.
