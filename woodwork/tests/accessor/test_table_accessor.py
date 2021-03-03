@@ -208,7 +208,6 @@ def test_accessor_getattr(sample_df):
 
 
 def test_getitem(sample_df):
-    xfail_koalas(sample_df)
     df = sample_df.copy()
     df.ww.init(time_index='signup_date', index='id', name='dt_name')
     assert list(df.columns) == list(df.ww.schema.columns)
@@ -244,7 +243,6 @@ def test_getitem(sample_df):
 
 
 def test_getitem_invalid_input(sample_df):
-    xfail_koalas(sample_df)
     df = sample_df.copy()
     df.ww.init()
 
