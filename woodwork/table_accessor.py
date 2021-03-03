@@ -166,6 +166,7 @@ class WoodworkTableAccessor:
         series = self._dataframe[key]
         column = self.schema.columns[key]
         del column['dtype']
+        column['semantic_tags'] -= {'index', 'time_index'}
         series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
 
