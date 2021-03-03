@@ -229,11 +229,19 @@ def test_getitem(sample_df):
     df.ww.init(time_index='signup_date', index='id', name='dt_name')
     assert list(df.columns) == list(df.ww.schema.columns)
 
-    subset = ['id', 'email', 'signup_date']
-    subset_ww = df.ww[subset].ww
-    assert subset == list(subset_ww.schema.columns)
-    assert subset_ww.index == 'id'
-    assert subset_ww.time_index == 'signup_date'
+    subset = ['id', 'signup_date']
+    df_subset = df.ww[subset]
+    pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
+    assert subset == list(df_subset.ww._schema.columns)
+    assert df_subset.ww.index == 'id'
+    assert df_subset.ww.time_index == 'signup_date'
+
+    subset = ['age', 'email']
+    df_subset = df.ww[subset]
+    pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
+    assert subset == list(df_subset.ww._schema.columns)
+    assert df_subset.ww.index == None
+    assert df_subset.ww.time_index == None
 
     subset = df.ww[[]]
     assert len(subset.ww.columns) == 0
@@ -241,8 +249,14 @@ def test_getitem(sample_df):
     assert subset.ww.time_index is None
 
     series = df.ww['age']
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['age']))
     assert series.ww.logical_type == Integer
     assert series.ww.semantic_tags == {'numeric'}
+
+    series = df.ww['id']
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
+    assert series.ww.logical_type == Integer
+    assert series.ww.semantic_tags == {'index', 'numeric'}
 
 
 def test_getitem_invalid_input(sample_df):

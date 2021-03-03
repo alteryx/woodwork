@@ -475,7 +475,7 @@ class WoodworkTableAccessor:
         retaining all typing information and maintaining the DataFrame's column order.
         '''
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
-        cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
+        cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
 
