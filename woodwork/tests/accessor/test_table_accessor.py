@@ -6,6 +6,7 @@ import pytest
 
 import woodwork as ww
 from woodwork.exceptions import (
+    ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
@@ -265,11 +266,11 @@ def test_getitem_invalid_input(sample_df):
     df.ww.init()
 
     error_msg = r"Column\(s\) '\[1, 2\]' not found in DataFrame"
-    with pytest.raises(KeyError, match=error_msg):
+    with pytest.raises(ColumnNotPresentError, match=error_msg):
         df.ww[['email', 2, 1]]
 
     error_msg = "Column with name 'invalid_column' not found in DataFrame"
-    with pytest.raises(KeyError, match=error_msg):
+    with pytest.raises(ColumnNotPresentError, match=error_msg):
         df.ww['invalid_column']
 
 

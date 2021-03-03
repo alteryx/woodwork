@@ -6,6 +6,7 @@ import pandas as pd
 import woodwork.serialize_accessor as serialize
 from woodwork.accessor_utils import _is_dataframe, _update_column_dtype
 from woodwork.exceptions import (
+    ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning
 )
@@ -152,12 +153,12 @@ class WoodworkTableAccessor:
             diff = list(set(key).difference(columns))
 
             if diff:
-                raise KeyError(f"Column(s) '{sorted(diff)}' not found in DataFrame")
+                raise ColumnNotPresentError(sorted(diff))
 
             return self._get_subset_df_with_schema(key)
 
         if key not in self._dataframe:
-            raise KeyError(f"Column with name '{key}' not found in DataFrame")
+            raise ColumnNotPresentError(key)
 
         series = self._dataframe[key]
         column = deepcopy(self._schema.columns[key])
