@@ -158,7 +158,7 @@ class WoodworkTableAccessor:
             if diff:
                 raise ColumnNotPresentError(sorted(diff))
 
-            return self._get_subset_df_with_schema(key)
+            return self._get_subset_df_with_schema(key, use_dataframe_order=False)
 
         if key not in self._dataframe:
             raise ColumnNotPresentError(key)
@@ -472,16 +472,19 @@ class WoodworkTableAccessor:
         # Directly return non-callable DataFrame attributes
         return dataframe_attr
 
-    def _get_subset_df_with_schema(self, cols_to_include):
+    def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True):
         '''
         Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order.
         '''
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
-        cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
+
+        if use_dataframe_order:
+            cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
+        else:
+            cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
-
         new_df = self._dataframe[cols_to_include]
         new_df.ww.init(schema=new_schema)
 
