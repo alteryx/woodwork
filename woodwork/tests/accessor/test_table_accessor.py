@@ -264,11 +264,11 @@ def test_getitem_invalid_input(sample_df):
     df = sample_df.copy()
     df.ww.init()
 
-    error_msg = r"Column\(s\) '\[1, 2\]' not found in DataTable"
+    error_msg = r"Column\(s\) '\[1, 2\]' not found in DataFrame"
     with pytest.raises(KeyError, match=error_msg):
         df.ww[['email', 2, 1]]
 
-    error_msg = "Column with name 'invalid_column' not found in DataTable"
+    error_msg = "Column with name 'invalid_column' not found in DataFrame"
     with pytest.raises(KeyError, match=error_msg):
         df.ww['invalid_column']
 
