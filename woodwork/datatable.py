@@ -753,7 +753,7 @@ class DataTable(object):
                 cols_to_include.add(col_name)
 
         # Maintain column order by using underlying data
-        return [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
+        return [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
 
     def _new_dt_from_cols(self, cols_to_include):
         """Creates a new DataTable from a list of column names, retaining all types,
