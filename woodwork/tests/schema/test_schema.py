@@ -19,13 +19,13 @@ from woodwork.logical_types import (
 )
 from woodwork.schema import Schema
 
-
-def test_schema_physical_types(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
-    assert isinstance(schema.physical_types, dict)
-    assert set(schema.physical_types.keys()) == set(sample_column_names)
-    for k, v in schema.physical_types.items():
-        assert v == schema.columns[k]['logical_type'].primary_dtype
+# --> add to table accessor tests
+# def test_schema_physical_types(sample_column_names, sample_inferred_logical_types):
+#     schema = Schema(sample_column_names, sample_inferred_logical_types)
+#     assert isinstance(schema.physical_types, dict)
+#     assert set(schema.physical_types.keys()) == set(sample_column_names)
+#     for k, v in schema.physical_types.items():
+#         assert v == schema.columns[k]['logical_type'].pandas_dtype
 
 
 def test_schema_logical_types(sample_column_names, sample_inferred_logical_types):
@@ -836,7 +836,6 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
     new_col = renamed_schema.columns['birthday']
     assert old_col['logical_type'] == new_col['logical_type']
     assert old_col['semantic_tags'] == new_col['semantic_tags']
-    assert old_col['dtype'] == new_col['dtype']
 
     swapped_schema = schema.rename({'age': 'full_name', 'full_name': 'age'})
     swapped_back_schema = swapped_schema.rename({'age': 'full_name', 'full_name': 'age'})

@@ -109,7 +109,8 @@ class Schema(object):
         typing_info = {}
         for col_name, col_dict in self.columns.items():
 
-            types = [col_dict['dtype'], col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
+            # --> shouldn't have physical type in schema!!!!!!!!!!!! - should have own mehtod that adds onto this one!!
+            types = [col_dict['logical_type'].pandas_dtype, col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
             typing_info[col_name] = types
 
         columns = ['Physical Type', 'Logical Type', 'Semantic Tag(s)']
@@ -126,10 +127,10 @@ class Schema(object):
         """A dictionary containing logical types for each column"""
         return {col_name: col['logical_type'] for col_name, col in self.columns.items()}
 
-    @property
-    def physical_types(self):
-        """A dictionary containing physical types for each column"""
-        return {col_name: col['dtype'] for col_name, col in self.columns.items()}
+    # @property #--> add to table accessor
+    # def physical_types(self):
+    #     """A dictionary containing physical types for each column"""
+    #     return {col_name: col['dtype'] for col_name, col in self.columns.items()}
 
     @property
     def semantic_tags(self):
