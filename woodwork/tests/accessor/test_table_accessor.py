@@ -1068,6 +1068,18 @@ def test_get_subset_df_with_schema(sample_df):
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
+def test_use_dataframe_order(sample_df):
+    df = sample_df.copy()
+    columns = list(df.columns)
+    df.ww.init()
+
+    reverse = list(reversed(columns))
+    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=True)
+    assert list(actual.columns) == columns
+    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=False)
+    assert list(actual.columns) == reverse
+
+
 def test_select_ltypes_no_match_and_all(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types={'full_name': FullName,
