@@ -240,8 +240,8 @@ def test_getitem(sample_df):
     df_subset = df.ww[subset]
     pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
     assert subset == list(df_subset.ww._schema.columns)
-    assert df_subset.ww.index == None
-    assert df_subset.ww.time_index == None
+    assert df_subset.ww.index is None
+    assert df_subset.ww.time_index is None
 
     subset = df.ww[[]]
     assert len(subset.ww.columns) == 0
