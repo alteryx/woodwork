@@ -1,5 +1,4 @@
 import warnings
-from copy import deepcopy
 
 import pandas as pd
 
@@ -161,7 +160,7 @@ class WoodworkTableAccessor:
             raise ColumnNotPresentError(key)
 
         series = self._dataframe[key]
-        column = deepcopy(self._schema.columns[key])
+        column = self.schema.columns[key]
         del column['dtype']
         series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
