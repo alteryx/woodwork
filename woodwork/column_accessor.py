@@ -195,8 +195,6 @@ class WoodworkColumnAccessor:
                     valid_dtype = _get_valid_dtype(type(result), self._schema['logical_type'])
                     if str(result.dtype) == valid_dtype:
                         schema = copy.deepcopy(self._schema)
-                        # We don't need to pass dtype from the schema to init
-                        del schema['dtype']
                         result.ww.init(**schema, use_standard_tags=self.use_standard_tags)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
