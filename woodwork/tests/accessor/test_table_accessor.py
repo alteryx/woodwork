@@ -1454,7 +1454,7 @@ def test_accessor_set_index(sample_df):
     assert sample_df.ww.index is None
     if isinstance(sample_df, pd.DataFrame):
         # underlying index not set for Dask/Koalas
-        assert (sample_df.index == range(4)).all()
+        assert (sample_df.index == sample_df['full_name']).all()
 
 
 def test_accessor_set_index_errors(sample_df):
