@@ -208,7 +208,7 @@ def test_accessor_getattr(sample_df):
 
 
 def test_getitem(sample_df):
-    df = sample_df.copy()
+    df = sample_df
     df.ww.init(
         time_index='signup_date',
         index='id', name='dt_name',
@@ -250,7 +250,7 @@ def test_getitem(sample_df):
 
 
 def test_getitem_invalid_input(sample_df):
-    df = sample_df.copy()
+    df = sample_df
     df.ww.init()
 
     error_msg = r"Column\(s\) '\[1, 2\]' not found in DataFrame"
@@ -1076,7 +1076,7 @@ def test_get_subset_df_with_schema(sample_df):
 
 
 def test_use_dataframe_order(sample_df):
-    df = sample_df.copy()
+    df = sample_df
     columns = list(df.columns)
     df.ww.init()
 
