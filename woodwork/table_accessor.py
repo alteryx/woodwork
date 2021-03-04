@@ -231,20 +231,24 @@ class WoodworkTableAccessor:
             return self._schema._get_subset_schema(list(self.columns.keys()))
 
     @property
+    def physical_types(self):
+        """A dictionary containing physical types for each column"""
+        if ks and isinstance(self._dataframe, ks.DataFrame):
+            return {col_name: self.schema.logical_types[col_name].backup_dtype for col_name in self._dataframe.columns}
+        else:
+            return {col_name: self.schema.logical_types[col_name].pandas_dtype for col_name in self._dataframe.columns}
+
+    @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
+        # --> should be its own things where it adds ptypes
         return self._schema.types
 
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
         return self._schema.logical_types
-
-    @property
-    def physical_types(self):
-        """A dictionary containing physical types for each column"""
-        return self._schema.physical_types
 
     @property
     def semantic_tags(self):
@@ -542,7 +546,6 @@ class WoodworkTableAccessor:
 
         # Initialize Woodwork typing info for series
         col_schema = self._schema.columns[column_name]
-        del col_schema['dtype']
         series.ww.init(**col_schema, use_standard_tags=self.use_standard_tags)
 
         # Update schema to not include popped column
