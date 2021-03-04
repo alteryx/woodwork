@@ -776,10 +776,21 @@ def test_underlying_index_reset(sample_df):
     sample_df.ww.set_index('full_name')
     assert type(sample_df.index) == specified_index
 
+    copied_df = sample_df.ww.copy()
+    warning = ("Index mismatch between DataFrame and typing information")
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        copied_df.ww.reset_index(drop=True, inplace=True)
+    assert copied_df.ww.schema is None
+    assert type(copied_df.index) == unspecified_index
+
     sample_df.ww.set_index(None)
     assert type(sample_df.index) == specified_index
 
     # Use pandas operation to reset index
+    reset_df = sample_df.ww.reset_index(drop=True, inplace=False)
+    assert type(sample_df.index) == specified_index
+    assert type(reset_df.index) == unspecified_index
+
     sample_df.ww.reset_index(drop=True, inplace=True)
     assert type(sample_df.index) == unspecified_index
 
