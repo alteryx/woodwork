@@ -168,7 +168,22 @@ class WoodworkTableAccessor:
         return series
 
     def __repr__(self):
-        return repr(self.types)
+        return repr(self._get_typing_info())
+
+    def _repr_html_(self):
+        '''An HTML representation of a Schema for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data.
+        '''
+        return self._get_typing_info().to_html()
+
+    def _get_typing_info(self):
+        '''Creates a DataFrame that contains the typing information for a Woodwork table.
+        '''
+        typing_info = self._schema._get_typing_info().copy()
+        typing_info.insert(0, 'Physical Type', pd.Series(self.physical_types))
+        # Maintain the same column order used in the DataFrame
+        typing_info = typing_info.loc[list(self._dataframe.columns), :]
+        return typing_info
 
     @property
     def iloc(self):
@@ -232,20 +247,13 @@ class WoodworkTableAccessor:
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
-        if ks and isinstance(self._dataframe, ks.DataFrame):
-            return {col_name: self.schema.logical_types[col_name].backup_dtype for col_name in self._dataframe.columns}
-        else:
-            return {col_name: self.schema.logical_types[col_name].primary_dtype for col_name in self._dataframe.columns}
+        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self.schema.logical_types[col_name]) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
-        repr_df = self._schema._get_typing_info()
-        # Maintain the same column order used in the DataFrame
-        repr_df = repr_df.loc[list(self._dataframe.columns), :]
-
-        return repr_df
+        return self._get_typing_info()
 
     @property
     def logical_types(self):
