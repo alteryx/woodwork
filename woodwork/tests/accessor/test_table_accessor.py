@@ -1075,7 +1075,7 @@ def test_get_subset_df_with_schema(sample_df):
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
-def test_use_dataframe_order(sample_df):
+def test_get_subset_df_use_dataframe_order(sample_df):
     df = sample_df
     columns = list(df.columns)
     df.ww.init()
