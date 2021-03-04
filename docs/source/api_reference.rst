@@ -14,19 +14,26 @@ WoodworkTableAccessor
     WoodworkTableAccessor.describe_dict
     WoodworkTableAccessor.drop
     WoodworkTableAccessor.iloc
+    WoodworkTableAccessor.index
     WoodworkTableAccessor.init
     WoodworkTableAccessor.loc
-    WoodworkTableAccessor.mutual_information_dict
+    WoodworkTableAccessor.logical_types
     WoodworkTableAccessor.mutual_information
+    WoodworkTableAccessor.mutual_information_dict
+    WoodworkTableAccessor.physical_types
     WoodworkTableAccessor.pop
     WoodworkTableAccessor.rename
+    WoodworkTableAccessor.schema
     WoodworkTableAccessor.select
+    WoodworkTableAccessor.semantic_tags
     WoodworkTableAccessor.set_index
     WoodworkTableAccessor.set_types
+    WoodworkTableAccessor.time_index
     WoodworkTableAccessor.to_csv
     WoodworkTableAccessor.to_dictionary
     WoodworkTableAccessor.to_parquet
     WoodworkTableAccessor.to_pickle
+    WoodworkTableAccessor.types
     WoodworkTableAccessor.value_counts
 
 WoodworkColumnAccessor
@@ -38,11 +45,15 @@ WoodworkColumnAccessor
 
     WoodworkColumnAccessor
     WoodworkColumnAccessor.add_semantic_tags
+    WoodworkColumnAccessor.description
     WoodworkColumnAccessor.iloc
     WoodworkColumnAccessor.init
     WoodworkColumnAccessor.loc
+    WoodworkColumnAccessor.logical_type
+    WoodworkColumnAccessor.metadata
     WoodworkColumnAccessor.remove_semantic_tags
     WoodworkColumnAccessor.reset_semantic_tags
+    WoodworkColumnAccessor.semantic_tags
     WoodworkColumnAccessor.set_logical_type
     WoodworkColumnAccessor.set_semantic_tags
 
@@ -55,12 +66,18 @@ Schema
 
     Schema
     Schema.add_semantic_tags
+    Schema.index
+    Schema.logical_types
+    Schema.physical_types
     Schema.rename
     Schema.remove_semantic_tags
     Schema.reset_semantic_tags
+    Schema.semantic_tags
     Schema.set_index
     Schema.set_time_index
     Schema.set_types
+    Schema.time_index
+    Schema.types
 
 Serialization
 =============
@@ -200,6 +217,7 @@ General Utils
 
     get_valid_mi_types
     read_csv
+    read_csv_to_accessor
 
 .. currentmodule:: woodwork.accessor_utils
 
