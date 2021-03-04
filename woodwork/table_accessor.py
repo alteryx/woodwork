@@ -50,7 +50,7 @@ class WoodworkTableAccessor:
              already_sorted=False,
              schema=None,
              **kwargs):
-        '''Initializes Woodwork typing information for a DataFrame.
+        """Initializes Woodwork typing information for a DataFrame.
 
         Args:
             index (str, optional): Name of the index column.
@@ -85,7 +85,7 @@ class WoodworkTableAccessor:
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between DataFrames.
-        '''
+        """
         _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
         if schema is not None:
             self._schema = schema
@@ -136,11 +136,9 @@ class WoodworkTableAccessor:
                 self._sort_columns(already_sorted)
 
     def __getattr__(self, attr):
-        '''
-            If the method is present on the Accessor, uses that method.
-            If the method is present on Schema, uses that method.
-            If the method is present on DataFrame, uses that method.
-        '''
+        # If the method is present on the Accessor, uses that method.
+        # If the method is present on Schema, uses that method.
+        # If the method is present on DataFrame, uses that method.
         if self._schema is None:
             _raise_init_error()
         if hasattr(self._schema, attr):
@@ -228,8 +226,7 @@ class WoodworkTableAccessor:
 
     @property
     def schema(self):
-        ''' A copy of the Woodwork typing information for the DataFrame.
-        '''
+        """A copy of the Woodwork typing information for the DataFrame."""
         if self._schema:
             return self._schema._get_subset_schema(list(self.columns.keys()))
 
@@ -267,8 +264,10 @@ class WoodworkTableAccessor:
     def set_index(self, new_index):
         """Sets the index column of the DataFrame. Adds the 'index' semantic tag to the column
         and clears the tag from any previously set index column.
+
         Setting a column as the index column will also cause any previously set standard
         tags for the column to be removed.
+
         Clears the DataFrame's index by passing in None.
 
         Args:
@@ -279,6 +278,16 @@ class WoodworkTableAccessor:
         if self._schema.index is not None:
             _check_index(self._dataframe, self._schema.index)
         self._set_underlying_index()
+
+    def set_time_index(self, new_time_index):
+        """Set the time index. Adds the 'time_index' semantic tag to the column and
+        clears the tag from any previously set index column
+
+        Args:
+            new_time_index (str): The name of the column to set as the time index.
+                If None, will remove the time_index.
+        """
+        self._schema.set_time_index(new_time_index)
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
@@ -307,9 +316,10 @@ class WoodworkTableAccessor:
                 self._dataframe[col_name] = updated_series
 
     def select(self, include):
-        """Create a DataFrame with Woodowork typing information initialized
+        """Create a DataFrame with Woodwork typing information initialized
         that includes only columns whose Logical Type and semantic tags are
         specified in the list of types and tags to include.
+
         If no matching columns are found, an empty DataFrame will be returned.
 
         Args:
@@ -324,19 +334,54 @@ class WoodworkTableAccessor:
         cols_to_include = self._schema._filter_cols(include)
         return self._get_subset_df_with_schema(cols_to_include)
 
+    def add_semantic_tags(self, semantic_tags):
+        """Adds specified semantic tags to columns, updating the Woodwork typing information.
+        Will retain any previously set values.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataFrame to the tags that should be added to the column's semantic tags
+        """
+        self._schema.add_semantic_tags(semantic_tags)
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Remove the semantic tags for any column names in the provided semantic_tags
+        dictionary, updating the Woodwork typing information. Including `index` or `time_index`
+        tags will set the Woodwork index or time index to None for the DataFrame.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataFrame to the tags that should be removed from the column's semantic tags
+        """
+        self._schema.remove_semantic_tags(semantic_tags)
+
+    def reset_semantic_tags(self, columns=None, retain_index_tags=False):
+        """Reset the semantic tags for the specified columns to the default values.
+        The default values will be either an empty set or a set of the standard tags
+        based on the column logical type, controlled by the use_standard_tags property on the table.
+        Column names can be provided as a single string, a list of strings or a set of strings.
+        If columns is not specified, tags will be reset for all columns.
+
+        Args:
+            columns (str/list/set, optional): The columns for which the semantic tags should be reset.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will clear all semantic tags. Defaults to
+                False.
+        """
+        self._schema.reset_semantic_tags(columns=columns, retain_index_tags=retain_index_tags)
+
     def to_dictionary(self):
-        '''
-        Get a dictionary representation of the Woodwork typing information.
+        """Get a dictionary representation of the Woodwork typing information.
 
         Returns:
-            description (dict) : Description of the typing information.
-        '''
+            dict: Description of the typing information.
+        """
         if self._schema is None:
             _raise_init_error()
         return serialize.typing_info_to_dict(self._dataframe)
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
-        '''Write Woodwork table to disk in the CSV format, location specified by `path`.
+        """Write Woodwork table to disk in the CSV format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
@@ -347,7 +392,7 @@ class WoodworkTableAccessor:
                 engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-        '''
+        """
         if self._schema is None:
             _raise_init_error()
         serialize.write_woodwork_table(self._dataframe, path, format='csv', index=False,
@@ -355,7 +400,7 @@ class WoodworkTableAccessor:
                                        compression=compression, profile_name=profile_name)
 
     def to_pickle(self, path, compression=None, profile_name=None):
-        '''Write Woodwork table to disk in the pickle format, location specified by `path`.
+        """Write Woodwork table to disk in the pickle format, location specified by `path`.
             Path could be a local path or a S3 path.
             If writing to S3 a tar archive of files will be written.
 
@@ -363,15 +408,17 @@ class WoodworkTableAccessor:
                 path (str) : Location on disk to write to (will be created as a directory)
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-        '''
+        """
         if self._schema is None:
             _raise_init_error()
         serialize.write_woodwork_table(self._dataframe, path, format='pickle',
                                        compression=compression, profile_name=profile_name)
 
     def to_parquet(self, path, compression=None, profile_name=None):
-        '''Write Woodwork table to disk in the parquet format, location specified by `path`.
+        """Write Woodwork table to disk in the parquet format, location specified by `path`.
+
             Path could be a local path or a S3 path.
+
             If writing to S3 a tar archive of files will be written.
 
             Note:
@@ -382,7 +429,7 @@ class WoodworkTableAccessor:
                 path (str): location on disk to write to (will be created as a directory)
                 compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-        '''
+        """
         if self._schema is None:
             _raise_init_error()
 
@@ -408,11 +455,11 @@ class WoodworkTableAccessor:
             self._dataframe.sort_values(sort_cols, inplace=True)
 
     def _set_underlying_index(self):
-        '''Sets the index of the underlying DataFrame.
+        """Sets the index of the underlying DataFrame.
         If there is an index specified for the Schema, will be set to that index.
         If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
         meaning that the index will be a pd.RangeIndex starting from zero.
-        '''
+        """
         if isinstance(self._dataframe, pd.DataFrame):
             if self._schema.index is not None:
                 self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
@@ -423,10 +470,8 @@ class WoodworkTableAccessor:
                 self._dataframe.reset_index(drop=True, inplace=True)
 
     def _make_schema_call(self, attr):
-        '''
-        Forwards the requested attribute onto the schema object.
-        Results are that of the Woodwork.Schema class.
-        '''
+        """Forwards the requested attribute onto the schema object.
+        Results are that of the Woodwork.Schema class."""
         schema_attr = getattr(self._schema, attr)
 
         if callable(schema_attr):
@@ -436,12 +481,9 @@ class WoodworkTableAccessor:
         return schema_attr
 
     def _make_dataframe_call(self, attr):
-        '''
-        Forwards the requested attribute onto the dataframe object.
-        Intercepts return value, attempting to initialize Woodwork with the current schema
-        when a new DataFrame is returned.
-        Confirms schema is still valid for the original DataFrame.
-        '''
+        """Forwards the requested attribute onto the dataframe object. Intercepts return value,
+        attempting to initialize Woodwork with the current schema when a new DataFrame is returned.
+        Confirms schema is still valid for the original DataFrame."""
         dataframe_attr = getattr(self._dataframe, attr)
 
         if callable(dataframe_attr):
@@ -474,10 +516,8 @@ class WoodworkTableAccessor:
         return dataframe_attr
 
     def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True):
-        '''
-        Creates a new DataFrame from a list of column names with Woodwork initialized,
-        retaining all typing information and maintaining the DataFrame's column order.
-        '''
+        """Creates a new DataFrame from a list of column names with Woodwork initialized,
+        retaining all typing information and maintaining the DataFrame's column order."""
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
         if use_dataframe_order:
@@ -580,8 +620,7 @@ class WoodworkTableAccessor:
         return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
 
     def mutual_information(self, num_bins=10, nrows=None):
-        """
-        Calculates mutual information between all pairs of columns in the DataFrame that
+        """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
         SubRegionCode, and ZIPCode
@@ -607,10 +646,10 @@ class WoodworkTableAccessor:
 
         Args:
             include (list[str or LogicalType], optional): filter for what columns to include in the
-            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
-            combining any of the three. It follows the most broad specification. Favors logical types
-            then semantic tag then column name. If no matching columns are found, an empty DataFrame
-            will be returned.
+                statistics returned. Can be a list of column names, semantic tags, logical types, or a list
+                combining any of the three. It follows the most broad specification. Favors logical types
+                then semantic tag then column name. If no matching columns are found, an empty DataFrame
+                will be returned.
 
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -624,10 +663,10 @@ class WoodworkTableAccessor:
 
         Args:
             include (list[str or LogicalType], optional): filter for what columns to include in the
-            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
-            combining any of the three. It follows the most broad specification. Favors logical types
-            then semantic tag then column name. If no matching columns are found, an empty DataFrame
-            will be returned.
+                statistics returned. Can be a list of column names, semantic tags, logical types, or a list
+                combining any of the three. It follows the most broad specification. Favors logical types
+                then semantic tag then column name. If no matching columns are found, an empty DataFrame
+                will be returned.
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
@@ -671,8 +710,8 @@ class WoodworkTableAccessor:
                 to False.
 
         Returns:
-           list(dict): a list of dictionaries for each categorical column with keys `count`
-                and `value`.
+            list(dict): a list of dictionaries for each categorical column with keys `count`
+            and `value`.
         """
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
