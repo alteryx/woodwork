@@ -1832,7 +1832,30 @@ def test_accessor_types(sample_df):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
-    # --> need to check physical types with koalas
+
+    if ks and isinstance(sample_df, ks.DataFrame):
+        string_dtype = 'str'
+        boolean_dtype = 'bool'
+        int_dtype = 'int64'
+    else:
+        string_dtype = 'string'
+        boolean_dtype = 'boolean'
+        int_dtype = 'Int64'
+
+    correct_physical_types = {
+        'id': int_dtype,
+        'full_name': string_dtype,
+        'email': string_dtype,
+        'phone_number': string_dtype,
+        'age': int_dtype,
+        'signup_date': 'datetime64[ns]',
+        'is_registered': boolean_dtype,
+    }
+    correct_physical_types = pd.Series(list(correct_physical_types.values()),
+                                       index=list(correct_physical_types.keys()))
+    print(returned_types['Physical Type'])
+    assert correct_physical_types.equals(returned_types['Physical Type'])
+
     correct_logical_types = {
         'id': Integer,
         'full_name': NaturalLanguage,
@@ -1861,6 +1884,7 @@ def test_accessor_types(sample_df):
 
 
 def test_accessor_repr(small_df):
+    # --> koalas is broken need to actually look at repr
     small_df.ww.init()
 
     table_repr = repr(small_df.ww)
@@ -1872,11 +1896,8 @@ def test_accessor_repr(small_df):
     assert table_html_repr == expected_repr
 
 
-def test_accessor_repr_empty():
-    # --> confirm this is how we do things with dask and koalas - from dt file
-    df = pd.DataFrame()
-    df.ww.init()
+def test_accessor_repr_empty(empty_df):
+    empty_df.ww.init()
 
-    assert repr(df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
-
-    assert df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
+    assert repr(empty_df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
+    assert empty_df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
