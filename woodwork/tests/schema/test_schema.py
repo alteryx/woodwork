@@ -50,10 +50,9 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
 
     returned_types = schema.types
     assert isinstance(returned_types, pd.DataFrame)
-    assert 'Physical Type' in returned_types.columns
     assert 'Logical Type' in returned_types.columns
     assert 'Semantic Tag(s)' in returned_types.columns
-    assert returned_types.shape[1] == 3
+    assert returned_types.shape[1] == 2
     assert len(returned_types.index) == len(sample_column_names)
     correct_logical_types = {
         'id': Integer,

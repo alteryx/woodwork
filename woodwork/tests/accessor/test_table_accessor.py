@@ -125,8 +125,6 @@ def test_accessor_physical_types_property(sample_df):
             assert v == logical_type.pandas_dtype
 
 
-# --> add test for tyypes property
-
 def test_accessor_separation_of_params(sample_df):
     # mix up order of acccessor and schema params
     schema_df = sample_df.copy()
@@ -286,10 +284,6 @@ def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_in
 
     # eq not implemented on Accessor class, so Schema's eq is called
     assert schema_df.ww.__eq__(comparison_schema)
-
-    # Since there's a repr on Accessor, it gets called
-    assert schema_df.ww._repr_html_() == comparison_schema._repr_html_()
-    assert schema_df.ww.__repr__() == comparison_schema.__repr__()
 
     logical_types = {
         'id': Double,
@@ -976,13 +970,6 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     renamed_df = schema_df.ww.rename({0: 'col_with_name'})
     assert 0 not in renamed_df.columns
     assert 'col_with_name' in renamed_df.columns
-
-
-def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
-    sample_df.ww.init()
-
-    assert repr(schema) == repr(sample_df.ww)
 
 
 def test_get_invalid_schema_message(sample_df):
@@ -1766,15 +1753,12 @@ def test_accessor_schema_properties(sample_df):
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
-    schema_properties = ['types', 'logical_types', 'semantic_tags', 'index', 'time_index']
+    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index']
     for schema_property in schema_properties:
         prop_from_accessor = getattr(sample_df.ww, schema_property)
         prop_from_schema = getattr(sample_df.ww.schema, schema_property)
 
-        if schema_property == 'types':
-            pd.testing.assert_frame_equal(prop_from_accessor, prop_from_schema)
-        else:
-            assert prop_from_accessor == prop_from_schema
+        assert prop_from_accessor == prop_from_schema
 
         # Assumes we don't have setters for any of these attributes
         error = "can't set attribute"
@@ -1787,3 +1771,63 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         ks.set_option('compute.ops_on_diff_frames', False)
         sample_df_koalas.ww.init()
         assert ks.get_option('compute.ops_on_diff_frames') is True
+
+
+def test_accessor_types(sample_df):
+    sample_df.ww.init()
+
+    returned_types = sample_df.ww.types
+    assert isinstance(returned_types, pd.DataFrame)
+    assert 'Physical Type' in returned_types.columns
+    assert 'Logical Type' in returned_types.columns
+    assert 'Semantic Tag(s)' in returned_types.columns
+    assert returned_types.shape[1] == 3
+    assert len(returned_types.index) == len(sample_df.columns)
+    # --> need to check physical types with koalas
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean,
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(returned_types['Logical Type'])
+
+    correct_semantic_tags = {
+        'id': "['numeric']",
+        'full_name': "[]",
+        'email': "[]",
+        'phone_number': "[]",
+        'age': "['numeric']",
+        'signup_date': "[]",
+        'is_registered': "[]",
+    }
+    correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
+                                      index=list(correct_semantic_tags.keys()))
+    assert correct_semantic_tags.equals(returned_types['Semantic Tag(s)'])
+
+
+def test_accessor_repr(small_df):
+    small_df.ww.init()
+
+    table_repr = repr(small_df.ww)
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    assert table_repr == expected_repr
+
+    table_html_repr = small_df.ww._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    assert table_html_repr == expected_repr
+
+
+def test_accessor_repr_empty():
+    # --> confirm this is how we do things with dask and koalas - from dt file
+    df = pd.DataFrame()
+    df.ww.init()
+
+    assert repr(df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
+
+    assert df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'

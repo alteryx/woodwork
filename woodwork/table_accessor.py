@@ -169,7 +169,21 @@ class WoodworkTableAccessor:
         return series
 
     def __repr__(self):
-        return repr(self._schema)
+        return repr(self._get_typing_info())
+
+    def _repr_html_(self):
+        '''An HTML representation of a Schema for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data.
+        '''
+        return self._get_typing_info().to_html()
+
+    def _get_typing_info(self):
+        '''Creates a DataFrame that contains the typing information for a Woodwork table.
+        '''
+        typing_info = self._schema._get_typing_info().copy()
+        typing_info.insert(0, 'Physical Type', pd.Series(self.physical_types))
+
+        return typing_info
 
     @property
     def iloc(self):
@@ -242,8 +256,7 @@ class WoodworkTableAccessor:
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
-        # --> should be its own things where it adds ptypes
-        return self._schema.types
+        return self._get_typing_info()
 
     @property
     def logical_types(self):
