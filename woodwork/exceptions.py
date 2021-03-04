@@ -45,4 +45,8 @@ class ParametersIgnoredWarning(UserWarning):
 
 
 class ColumnNotPresentError(KeyError):
-    pass
+    def __init__(self, column):
+        if isinstance(column, str):
+            return super().__init__(f"Column with name '{column}' not found in DataFrame")
+        elif isinstance(column, list):
+            return super().__init__(f"Column(s) '{column}' not found in DataFrame")

@@ -39,6 +39,7 @@ Release Notes
         * Add DaskTableAccessor (:pr:`648`)
         * Add Schema properties to WoodworkTableAccessor (:pr:`651`)
         * Add KoalasTableAccessor (:pr:`652`)
+        * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
@@ -46,6 +47,7 @@ Release Notes
         * Bump min Koalas version to 1.4.0 (:pr:`638`)
     * Documentation Changes
         * Update Understanding Types and Tags guide to use accessor (:pr:`657`)
+        * Update docstrings and API Reference page (:pr:`660`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)

@@ -111,8 +111,7 @@ def _get_mode(series):
 
 
 def _replace_nans_for_mutual_info(schema, data):
-    """
-    Replace NaN values in the dataframe so that mutual information can be calculated
+    """Replace NaN values in the dataframe so that mutual information can be calculated
 
     Args:
         schema (woodwork.Schema): Woodwork typing info for the data
@@ -122,7 +121,6 @@ def _replace_nans_for_mutual_info(schema, data):
         pd.DataFrame: data with nans replaced with either mean or mode
 
     """
-    # replace or remove null values
     for column_name in data.columns[data.isnull().any()]:
         column = schema.columns[column_name]
         series = data[column_name]
@@ -144,7 +142,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
 
     Args:
         schema (woodwork.Schema): Woodwork typing info for the data
-        data (pd.DataFrame): dataframe to use for caculating mutual information
+        data (pd.DataFrame): dataframe to use for calculating mutual information
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.
 
@@ -169,8 +167,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
 
 
 def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None):
-    """
-    Calculates mutual information between all pairs of columns in the DataFrame that
+    """Calculates mutual information between all pairs of columns in the DataFrame that
     support mutual information. Logical Types that support mutual information are as
     follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
     SubRegionCode, and ZIPCode
@@ -181,7 +178,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None):
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.
         nrows (int): The number of rows to sample for when determining mutual info.
-        If specified, samples the desired number of rows from the data.
+            If specified, samples the desired number of rows from the data.
             Defaults to using all rows.
 
     Returns:
@@ -252,7 +249,7 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
 
     Returns:
         list(dict): a list of dictionaries for each categorical column with keys `count`
-            and `value`.
+        and `value`.
     """
     val_counts = {}
     valid_cols = [col for col, column in dataframe.ww.columns.items() if _is_col_categorical(column)]
