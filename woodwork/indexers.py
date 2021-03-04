@@ -90,7 +90,6 @@ def _process_selection(selection, original_data):
             # Selecting a new Series from an existing Series
             schema = copy.deepcopy(original_data.ww._schema)
         if schema:
-            del schema['dtype']
             selection.ww.init(**schema, use_standard_tags=original_data.ww.use_standard_tags)
     elif _is_dataframe(selection):
         # Selecting a new DataFrame from an existing DataFrame

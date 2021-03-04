@@ -112,6 +112,21 @@ def test_accessor_schema_property(sample_df):
     assert sample_df.ww._schema == sample_df.ww.schema
 
 
+def test_accessor_physical_types_property(sample_df):
+    sample_df.ww.init()
+
+    assert isinstance(sample_df.ww.physical_types, dict)
+    assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
+    for k, v in sample_df.ww.physical_types.items():
+        logical_type = sample_df.ww.columns[k]['logical_type']
+        if ks and isinstance(sample_df, ks.DataFrame):
+            assert v == logical_type.backup_dtype
+        else:
+            assert v == logical_type.primary_dtype
+
+
+# --> add test for tyypes property
+
 def test_accessor_separation_of_params(sample_df):
     # mix up order of acccessor and schema params
     schema_df = sample_df.copy()
@@ -514,7 +529,6 @@ def test_sets_category_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -526,10 +540,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == LatLong
-        assert df.ww.columns[column_name]['dtype'] == LatLong.primary_dtype
         assert df[column_name].dtype == LatLong.primary_dtype
-        df_pandas = to_pandas(df[column_name])
-        expected_val = (3, 4)
+
         if ks and isinstance(latlong_df, ks.DataFrame):
             expected_val = [3, 4]
         assert df_pandas.iloc[-1] == expected_val
@@ -562,7 +574,6 @@ def test_sets_string_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -584,7 +595,6 @@ def test_sets_boolean_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -607,7 +617,6 @@ def test_sets_int64_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -628,7 +637,6 @@ def test_sets_float64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -651,12 +659,7 @@ def test_sets_datetime64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
         assert df[column_name].dtype == logical_type.primary_dtype
-
-
-def test_invalid_dtype_casting():
-    column_name = 'test_series'
 
     # Cannot cast a column with pd.NA to Double
     series = pd.Series([1.1, pd.NA, 3], name=column_name)
@@ -1684,7 +1687,6 @@ def test_accessor_rename(sample_df):
     new_col = new_df.ww.columns['birthday']
     assert old_col['logical_type'] == new_col['logical_type']
     assert old_col['semantic_tags'] == new_col['semantic_tags']
-    assert old_col['dtype'] == new_col['dtype']
 
     new_df = sample_df.ww.rename({'age': 'full_name', 'full_name': 'age'})
 
@@ -1722,7 +1724,7 @@ def test_accessor_schema_properties(sample_df):
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
-    schema_properties = ['types', 'logical_types', 'physical_types', 'semantic_tags', 'index', 'time_index']
+    schema_properties = ['types', 'logical_types', 'semantic_tags', 'index', 'time_index']
     for schema_property in schema_properties:
         prop_from_accessor = getattr(sample_df.ww, schema_property)
         prop_from_schema = getattr(sample_df.ww.schema, schema_property)

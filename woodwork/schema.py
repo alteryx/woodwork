@@ -110,7 +110,7 @@ class Schema(object):
         for col_name, col_dict in self.columns.items():
 
             # --> shouldn't have physical type in schema!!!!!!!!!!!! - should have own mehtod that adds onto this one!!
-            types = [col_dict['logical_type'].pandas_dtype, col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
+            types = [col_dict['logical_type'].primary_dtype, col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
             typing_info[col_name] = types
 
         columns = ['Physical Type', 'Logical Type', 'Semantic Tag(s)']
