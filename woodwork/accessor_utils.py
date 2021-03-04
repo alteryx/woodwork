@@ -19,6 +19,8 @@ def init_series(series, logical_type=None, semantic_tags=None,
     of the returned series will be converted to match the dtype associated with the LogicalType.
 
     Args:
+        series (pd.Series, dd.Series, or ks.Series): The original series from which to create
+            the Woodwork initialized series.
         logical_type (LogicalType or str, optional): The logical type that should be assigned
             to the series. If no value is provided, the LogicalType for the series will
             be inferred.
@@ -112,8 +114,8 @@ def _is_dataframe(data):
 
 
 def _get_valid_dtype(series, logical_type):
-    '''Return the dtype that is considered valid for a series
-    with the given logical_type'''
+    """Return the dtype that is considered valid for a series
+    with the given logical_type"""
     backup_dtype = logical_type.backup_dtype
     if ks and isinstance(series, ks.Series) and backup_dtype:
         if backup_dtype == 'str':
