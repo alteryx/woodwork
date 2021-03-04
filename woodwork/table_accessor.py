@@ -246,10 +246,14 @@ class WoodworkTableAccessor:
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
+        # --> probably a cleaner way to do this--also look at when we want the underlying dtype vs when we want the woodwork dtype
+
+        physical_types = {col_name: self.schema.logical_types[col_name].pandas_dtype for col_name in self._dataframe.columns}
         if ks and isinstance(self._dataframe, ks.DataFrame):
-            return {col_name: self.schema.logical_types[col_name].backup_dtype for col_name in self._dataframe.columns}
-        else:
-            return {col_name: self.schema.logical_types[col_name].pandas_dtype for col_name in self._dataframe.columns}
+            backup_dtypes = {col_name: self.schema.logical_types[col_name].backup_dtype for col_name in self._dataframe.columns if self.schema.logical_types[col_name].backup_dtype is not None}
+            physical_types = {**physical_types, **backup_dtypes}
+
+        return physical_types
 
     @property
     def types(self):

@@ -119,7 +119,7 @@ def test_accessor_physical_types_property(sample_df):
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
     for k, v in sample_df.ww.physical_types.items():
         logical_type = sample_df.ww.columns[k]['logical_type']
-        if ks and isinstance(sample_df, ks.DataFrame):
+        if ks and isinstance(sample_df, ks.DataFrame) and logical_type.backup_dtype is not None:
             assert v == logical_type.backup_dtype
         else:
             assert v == logical_type.pandas_dtype
@@ -1804,7 +1804,6 @@ def test_accessor_types(sample_df):
     }
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
                                        index=list(correct_physical_types.keys()))
-    print(returned_types['Physical Type'])
     assert correct_physical_types.equals(returned_types['Physical Type'])
 
     correct_logical_types = {
