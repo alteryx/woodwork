@@ -795,7 +795,7 @@ def test_underlying_index_reset(sample_df):
     assert type(sample_df.index) == unspecified_index
 
 
-def test_underlying_index_after_updates(sample_df):
+def test_underlying_index_unchanged_after_updates(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
     if ks and isinstance(sample_df, ks.DataFrame):
@@ -1465,6 +1465,7 @@ def test_accessor_set_index(sample_df):
     assert sample_df.ww.index is None
     if isinstance(sample_df, pd.DataFrame):
         # underlying index not set for Dask/Koalas
+        # Check that underlying index doesn't get reset when Woodworki index is removed
         assert (sample_df.index == sample_df['full_name']).all()
 
 
