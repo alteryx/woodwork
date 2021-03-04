@@ -127,11 +127,6 @@ class Schema(object):
         """A dictionary containing logical types for each column"""
         return {col_name: col['logical_type'] for col_name, col in self.columns.items()}
 
-    # @property #--> add to table accessor
-    # def physical_types(self):
-    #     """A dictionary containing physical types for each column"""
-    #     return {col_name: col['dtype'] for col_name, col in self.columns.items()}
-
     @property
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
