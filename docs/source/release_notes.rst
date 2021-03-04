@@ -39,6 +39,7 @@ Release Notes
         * Add DaskTableAccessor (:pr:`648`)
         * Add Schema properties to WoodworkTableAccessor (:pr:`651`)
         * Add KoalasTableAccessor (:pr:`652`)
+        * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes

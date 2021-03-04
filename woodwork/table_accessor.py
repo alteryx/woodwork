@@ -9,6 +9,7 @@ from woodwork.accessor_utils import (
     _update_column_dtype
 )
 from woodwork.exceptions import (
+    ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning
 )
@@ -146,6 +147,26 @@ class WoodworkTableAccessor:
             return self._make_dataframe_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
+
+    def __getitem__(self, key):
+        if isinstance(key, list):
+            columns = set(self._dataframe.columns)
+            diff = list(set(key).difference(columns))
+
+            if diff:
+                raise ColumnNotPresentError(sorted(diff))
+
+            return self._get_subset_df_with_schema(key, use_dataframe_order=False)
+
+        if key not in self._dataframe:
+            raise ColumnNotPresentError(key)
+
+        series = self._dataframe[key]
+        column = self.schema.columns[key]
+        del column['dtype']
+        column['semantic_tags'] -= {'index', 'time_index'}
+        series.ww.init(**column, use_standard_tags=self.use_standard_tags)
+        return series
 
     def __repr__(self):
         return repr(self._schema)
@@ -494,14 +515,17 @@ class WoodworkTableAccessor:
         # Directly return non-callable DataFrame attributes
         return dataframe_attr
 
-    def _get_subset_df_with_schema(self, cols_to_include):
+    def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True):
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order."""
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
-        cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
+
+        if use_dataframe_order:
+            cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
+        else:
+            cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
-
         new_df = self._dataframe[cols_to_include]
         new_df.ww.init(schema=new_schema)
 

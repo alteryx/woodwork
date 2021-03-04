@@ -6,6 +6,7 @@ import pytest
 
 import woodwork as ww
 from woodwork.exceptions import (
+    ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
@@ -204,6 +205,61 @@ def test_accessor_getattr(sample_df):
     with pytest.raises(AttributeError, match=error):
         sample_df.ww.init()
         sample_df.ww.not_present
+
+
+def test_getitem(sample_df):
+    df = sample_df
+    df.ww.init(
+        time_index='signup_date',
+        index='id', name='dt_name',
+        logical_types={'age': 'Double'},
+        semantic_tags={'age': {'custom_tag'}},
+    )
+    assert list(df.columns) == list(df.ww.schema.columns)
+
+    subset = ['id', 'signup_date']
+    df_subset = df.ww[subset]
+    pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
+    assert subset == list(df_subset.ww._schema.columns)
+    assert df_subset.ww.index == 'id'
+    assert df_subset.ww.time_index == 'signup_date'
+
+    subset = ['age', 'email']
+    df_subset = df.ww[subset]
+    pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
+    assert subset == list(df_subset.ww._schema.columns)
+    assert df_subset.ww.index is None
+    assert df_subset.ww.time_index is None
+    assert df_subset.ww.logical_types['age'] == Double
+    assert df_subset.ww.semantic_tags['age'] == {'custom_tag', 'numeric'}
+
+    subset = df.ww[[]]
+    assert len(subset.ww.columns) == 0
+    assert subset.ww.index is None
+    assert subset.ww.time_index is None
+
+    series = df.ww['age']
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['age']))
+    assert series.ww.logical_type == Double
+    assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
+
+    series = df.ww['id']
+    pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
+    assert series.ww.logical_type == Integer
+    assert series.ww.semantic_tags == {'numeric'}
+
+
+def test_getitem_invalid_input(sample_df):
+    df = sample_df
+    df.ww.init()
+
+    error_msg = r"Column\(s\) '\[1, 2\]' not found in DataFrame"
+    with pytest.raises(ColumnNotPresentError, match=error_msg):
+        df.ww[['email', 2, 1]]
+
+    error_msg = "Column with name 'invalid_column' not found in DataFrame"
+    with pytest.raises(ColumnNotPresentError, match=error_msg):
+        df.ww['invalid_column']
 
 
 def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
@@ -1017,6 +1073,18 @@ def test_get_subset_df_with_schema(sample_df):
     assert transfer_schema.ww.time_index is None
     pd.testing.assert_frame_equal(to_pandas(transfer_schema), to_pandas(schema_df[['phone_number']]))
     validate_subset_schema(transfer_schema.ww.schema, schema)
+
+
+def test_get_subset_df_use_dataframe_order(sample_df):
+    df = sample_df
+    columns = list(df.columns)
+    df.ww.init()
+
+    reverse = list(reversed(columns))
+    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=True)
+    assert list(actual.columns) == columns
+    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=False)
+    assert list(actual.columns) == reverse
 
 
 def test_select_ltypes_no_match_and_all(sample_df):
