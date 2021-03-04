@@ -784,6 +784,65 @@ def test_underlying_index_reset(sample_df):
     assert type(sample_df.index) == unspecified_index
 
 
+def test_underlying_index_after_updates(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    sample_df.ww.init(index='full_name')
+    assert 'full_name' in sample_df
+    assert sample_df.ww.index == 'full_name'
+    assert (sample_df.index == sample_df['full_name']).all()
+
+    copied_df = sample_df.ww.copy()
+
+    dropped_df = copied_df.ww.drop('full_name')
+    assert 'full_name' not in dropped_df
+    assert dropped_df.ww.index is None
+    assert (dropped_df.index == sample_df['full_name']).all()
+
+    selected_df = copied_df.ww.select('Integer')
+    assert 'full_name' not in dropped_df
+    assert selected_df.ww.index is None
+    assert (selected_df.index == sample_df['full_name']).all()
+
+    iloc_df = copied_df.ww.iloc[:, 2:]
+    assert 'full_name' not in iloc_df
+    assert iloc_df.ww.index is None
+    assert (iloc_df.index == sample_df['full_name']).all()
+
+    loc_df = copied_df.ww.loc[:, ['id', 'email']]
+    assert 'full_name' not in loc_df
+    assert loc_df.ww.index is None
+    assert (loc_df.index == sample_df['full_name']).all()
+
+    subset_df = copied_df.ww[['id', 'email']]
+    assert 'full_name' not in subset_df
+    assert subset_df.ww.index is None
+    assert (subset_df.index == sample_df['full_name']).all()
+
+    reset_tags_df = sample_df.ww.copy()
+    reset_tags_df.ww.reset_semantic_tags('full_name', retain_index_tags=False)
+    assert reset_tags_df.ww.index is None
+    assert (reset_tags_df.index == sample_df['full_name']).all()
+
+    remove_tags_df = sample_df.ww.copy()
+    remove_tags_df.ww.remove_semantic_tags({'full_name': 'index'})
+    assert remove_tags_df.ww.index is None
+    assert (remove_tags_df.index == sample_df['full_name']).all()
+
+    set_types_df = sample_df.ww.copy()
+    set_types_df.ww.set_types(semantic_tags={'full_name': 'new_tag'}, retain_index_tags=False)
+    assert set_types_df.ww.index is None
+    assert (set_types_df.index == sample_df['full_name']).all()
+
+    popped_df = sample_df.ww.copy()
+    popped_df.ww.pop('full_name')
+    assert popped_df.ww.index is None
+    assert (popped_df.index == sample_df['full_name']).all()
+
+
 def test_accessor_already_sorted(sample_unsorted_df):
     if dd and isinstance(sample_unsorted_df, dd.DataFrame):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
