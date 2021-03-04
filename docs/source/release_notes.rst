@@ -45,6 +45,7 @@ Release Notes
         * Move mutual information logic to statistics utils file (:pr:`584`)
         * Bump min Koalas version to 1.4.0 (:pr:`638`)
     * Documentation Changes
+        * Update docstrings and API Reference page (:pr:`660`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)
