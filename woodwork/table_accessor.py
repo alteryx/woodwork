@@ -243,10 +243,10 @@ class WoodworkTableAccessor:
     def set_index(self, new_index):
         """Sets the index column of the DataFrame. Adds the 'index' semantic tag to the column
         and clears the tag from any previously set index column.
-        
+
         Setting a column as the index column will also cause any previously set standard
         tags for the column to be removed.
-        
+
         Clears the DataFrame's index by passing in None.
 
         Args:
@@ -257,6 +257,16 @@ class WoodworkTableAccessor:
         if self._schema.index is not None:
             _check_index(self._dataframe, self._schema.index)
         self._set_underlying_index()
+
+    def set_time_index(self, new_time_index):
+        """Set the time index. Adds the 'time_index' semantic tag to the column and
+        clears the tag from any previously set index column
+
+        Args:
+            new_time_index (str): The name of the column to set as the time index.
+                If None, will remove the time_index.
+        """
+        self._schema.set_time_index(new_time_index)
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
@@ -302,6 +312,42 @@ class WoodworkTableAccessor:
         """
         cols_to_include = self._schema._filter_cols(include)
         return self._get_subset_df_with_schema(cols_to_include)
+
+    def add_semantic_tags(self, semantic_tags):
+        """Adds specified semantic tags to columns, updating the Woodwork typing information.
+        Will retain any previously set values.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataFrame to the tags that should be added to the column's semantic tags
+        """
+        self._schema.add_semantic_tags(semantic_tags)
+
+    def remove_semantic_tags(self, semantic_tags):
+        """Remove the semantic tags for any column names in the provided semantic_tags
+        dictionary, updating the Woodwork typing information. Including `index` or `time_index`
+        tags will set the Woodwork index or time index to None for the DataFrame.
+
+        Args:
+            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+                in the DataFrame to the tags that should be removed from the column's semantic tags
+        """
+        self._schema.remove_semantic_tags(semantic_tags)
+
+    def reset_semantic_tags(self, columns=None, retain_index_tags=False):
+        """Reset the semantic tags for the specified columns to the default values.
+        The default values will be either an empty set or a set of the standard tags
+        based on the column logical type, controlled by the use_standard_tags property on the table.
+        Column names can be provided as a single string, a list of strings or a set of strings.
+        If columns is not specified, tags will be reset for all columns.
+
+        Args:
+            columns (str/list/set, optional): The columns for which the semantic tags should be reset.
+            retain_index_tags (bool, optional): If True, will retain any index or time_index
+                semantic tags set on the column. If False, will clear all semantic tags. Defaults to
+                False.
+        """
+        self._schema.reset_semantic_tags(columns=columns, retain_index_tags=retain_index_tags)
 
     def to_dictionary(self):
         """Get a dictionary representation of the Woodwork typing information.

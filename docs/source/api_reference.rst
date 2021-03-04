@@ -10,6 +10,7 @@ WoodworkTableAccessor
     :toctree: generated/
 
     WoodworkTableAccessor
+    WoodworkTableAccessor.add_semantic_tags
     WoodworkTableAccessor.describe
     WoodworkTableAccessor.describe_dict
     WoodworkTableAccessor.drop
@@ -22,11 +23,14 @@ WoodworkTableAccessor
     WoodworkTableAccessor.mutual_information_dict
     WoodworkTableAccessor.physical_types
     WoodworkTableAccessor.pop
+    WoodworkTableAccessor.remove_semantic_tags
     WoodworkTableAccessor.rename
+    WoodworkTableAccessor.reset_semantic_tags
     WoodworkTableAccessor.schema
     WoodworkTableAccessor.select
     WoodworkTableAccessor.semantic_tags
     WoodworkTableAccessor.set_index
+    WoodworkTableAccessor.set_time_index
     WoodworkTableAccessor.set_types
     WoodworkTableAccessor.time_index
     WoodworkTableAccessor.to_csv

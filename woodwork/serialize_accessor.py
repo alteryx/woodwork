@@ -24,7 +24,7 @@ FORMATS = ['csv', 'pickle', 'parquet']
 def typing_info_to_dict(dataframe):
     """Creates the description for a Woodwork table, including typing information for each column
     and loading information.
-    
+
     Args:
         dataframe (pd.DataFrame, dd.Dataframe, ks.DataFrame): DataFrame with Woodwork typing
             information initialized.
@@ -108,7 +108,7 @@ def _dump_table(dataframe, path, **kwargs):
 
 def write_typing_info(typing_info, path):
     """Writes Woodwork typing information to the specified path at woodwork_typing_info.json
-    
+
     Args:
         typing_info (dict): Dictionary containing Woodwork typing information.
     """
