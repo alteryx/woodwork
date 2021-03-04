@@ -455,19 +455,14 @@ class WoodworkTableAccessor:
             self._dataframe.sort_values(sort_cols, inplace=True)
 
     def _set_underlying_index(self):
-        """Sets the index of the underlying DataFrame.
-        If there is an index specified for the Schema, will be set to that index.
-        If no index is specified and the DataFrame's index isn't a RangeIndex, will reset the DataFrame's index,
-        meaning that the index will be a pd.RangeIndex starting from zero.
+        """Sets the index of the underlying DataFrame to match the index column as
+        specified by the Schema. Does not change the underlying index if no Woodwork index is
+        specified. Only sets underlying index for pandas DataFrames.
         """
-        if isinstance(self._dataframe, pd.DataFrame):
-            if self._schema.index is not None:
-                self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
-                # Drop index name to not overlap with the original column
-                self._dataframe.index.name = None
-            # Only reset the index if the index isn't a RangeIndex
-            elif not isinstance(self._dataframe.index, pd.RangeIndex):
-                self._dataframe.reset_index(drop=True, inplace=True)
+        if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
+            self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
+            # Drop index name to not overlap with the original column
+            self._dataframe.index.name = None
 
     def _make_schema_call(self, attr):
         """Forwards the requested attribute onto the schema object.
