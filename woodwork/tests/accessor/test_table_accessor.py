@@ -1465,7 +1465,7 @@ def test_accessor_set_index(sample_df):
     assert sample_df.ww.index is None
     if isinstance(sample_df, pd.DataFrame):
         # underlying index not set for Dask/Koalas
-        # Check that underlying index doesn't get reset when Woodworki index is removed
+        # Check that underlying index doesn't get reset when Woodwork index is removed
         assert (sample_df.index == sample_df['full_name']).all()
 
 
