@@ -170,6 +170,28 @@ class WoodworkTableAccessor:
         series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
 
+    def __setitem__(self, col_name, column):
+        series = tuple(pkg.Series for pkg in (pd, dd, ks) if pkg)
+        if not isinstance(column, series):
+            raise ValueError('New column must be of Series type')
+
+        # Don't allow reassigning of index or time index with setitem
+        if self.index == col_name:
+            raise KeyError('Cannot reassign index. Change column name and then use dt.set_index to reassign index.')
+        if self.time_index == col_name:
+            raise KeyError('Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.')
+
+        if column.name is not None and column.name != col_name:
+            warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
+                          ColumnNameMismatchWarning)
+
+        if column.ww._schema is None:
+            column.ww.init()
+
+        self._dataframe[col_name] = column
+        self._schema.columns[col_name] = column.ww._schema
+
+
     def __repr__(self):
         return repr(self._schema)
 
