@@ -209,7 +209,12 @@ def test_accessor_getattr(sample_df):
 
 def test_getitem(sample_df):
     df = sample_df.copy()
-    df.ww.init(time_index='signup_date', index='id', name='dt_name')
+    df.ww.init(
+        time_index='signup_date',
+        index='id', name='dt_name',
+        logical_types={'age': 'Double'},
+        semantic_tags={'age': {'custom_tag'}},
+    )
     assert list(df.columns) == list(df.ww.schema.columns)
 
     subset = ['id', 'signup_date']
@@ -225,6 +230,8 @@ def test_getitem(sample_df):
     assert subset == list(df_subset.ww._schema.columns)
     assert df_subset.ww.index is None
     assert df_subset.ww.time_index is None
+    assert df_subset.ww.logical_types['age'] == Double
+    assert df_subset.ww.semantic_tags['age'] == {'custom_tag', 'numeric'}
 
     subset = df.ww[[]]
     assert len(subset.ww.columns) == 0
@@ -233,8 +240,8 @@ def test_getitem(sample_df):
 
     series = df.ww['age']
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['age']))
-    assert series.ww.logical_type == Integer
-    assert series.ww.semantic_tags == {'numeric'}
+    assert series.ww.logical_type == Double
+    assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
 
     series = df.ww['id']
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
