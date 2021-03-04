@@ -90,14 +90,12 @@ class Schema(object):
         return True
 
     def __repr__(self):
-        '''A string representation of a Schema containing typing information.
-        '''
+        """A string representation of a Schema containing typing information."""
         return repr(self._get_typing_info())
 
     def _repr_html_(self):
-        '''An HTML representation of a Schema for IPython.display in Jupyter Notebooks
-        containing typing information and a preview of the data.
-        '''
+        """An HTML representation of a Schema for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data."""
         return self._get_typing_info().to_html()
 
     @property
@@ -107,8 +105,7 @@ class Schema(object):
         return self._get_typing_info()
 
     def _get_typing_info(self):
-        '''Creates a DataFrame that contains the typing information for a Schema.
-        '''
+        """Creates a DataFrame that contains the typing information for a Schema."""
         typing_info = {}
         for col_name, col_dict in self.columns.items():
 
@@ -281,8 +278,7 @@ class Schema(object):
                         column_descriptions,
                         column_metadata):
         """Create a dictionary with column names as keys and new column dictionaries holding
-        each column's typing information as values.
-        """
+        each column's typing information as values."""
         columns = {}
         for name in column_names:
             semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name),
@@ -300,12 +296,12 @@ class Schema(object):
         return columns
 
     def set_index(self, new_index):
-        '''Sets the index. Handles setting a new index, updating the index, or removing the index.
+        """Sets the index. Handles setting a new index, updating the index, or removing the index.
 
         Args:
             new_index (str): Name of the new index column. Must be present in the Schema.
                 If None, will remove the index.
-        '''
+        """
         old_index = self.index
         if old_index is not None:
             self.remove_semantic_tags({old_index: 'index'})
@@ -314,13 +310,13 @@ class Schema(object):
             self._set_index_tags(new_index)
 
     def set_time_index(self, new_time_index):
-        '''Set the time index. Adds the 'time_index' semantic tag to the column and
+        """Set the time index. Adds the 'time_index' semantic tag to the column and
         clears the tag from any previously set index column
 
         Args:
             new_time_index (str): The name of the column to set as the time index.
                 If None, will remove the time_index.
-        '''
+        """
         old_time_index = self.time_index
         if old_time_index is not None:
             self.remove_semantic_tags({old_time_index: 'time_index'})
@@ -360,10 +356,8 @@ class Schema(object):
         return new_schema
 
     def _set_index_tags(self, index):
-        '''
-        Updates the semantic tags of the index by removing any standard tags
-        before adding the 'index' tag.
-        '''
+        """Updates the semantic tags of the index by removing any standard tags
+        before adding the 'index' tag."""
         column_dict = self.columns[index]
 
         standard_tags = column_dict['logical_type'].standard_tags
@@ -433,14 +427,13 @@ class Schema(object):
         return list(cols_to_include)
 
     def _get_subset_schema(self, subset_cols):
-        '''
-        Creates a new Schema with specified columns, retaining typing information.
+        """Creates a new Schema with specified columns, retaining typing information.
 
         Args:
             subset_cols (list[str]): subset of columns from which to create the new Schema
         Returns:
             Schema: New Schema with attributes from original Schema
-        '''
+        """
         new_logical_types = {}
         new_semantic_tags = {}
         new_column_descriptions = {}

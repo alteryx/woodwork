@@ -10,13 +10,12 @@ import woodwork as ww
 
 
 def import_or_none(library):
-    '''
-    Attemps to import the requested library.
+    """Attempts to import the requested library.
 
     Args:
         library (str): the name of the library
     Returns: the library if it is installed, else None
-    '''
+    """
     try:
         return importlib.import_module(library)
     except ImportError:
@@ -141,8 +140,7 @@ def read_csv_to_accessor(filepath=None,
 
 
 def _new_dt_including(datatable, new_data):
-    '''
-    Creates a new DataTable with specified data and columns
+    """Creates a new DataTable with specified data and columns
 
     Args:
         datatable (DataTable): DataTable with desired information
@@ -150,7 +148,7 @@ def _new_dt_including(datatable, new_data):
         new_data (DataFrame): subset of original DataTable
     Returns:
         DataTable: New DataTable with attributes from original DataTable but data from new DataTable
-    '''
+    """
     cols = new_data.columns
 
     new_logical_types = {}
@@ -185,14 +183,13 @@ def _new_dt_including(datatable, new_data):
 
 
 def import_or_raise(library, error_msg):
-    '''
-    Attempts to import the requested library.  If the import fails, raises an
+    """Attempts to import the requested library.  If the import fails, raises an
     ImportError with the supplied error message.
 
     Args:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
-    '''
+    """
     try:
         return importlib.import_module(library)
     except ImportError:
@@ -200,24 +197,17 @@ def import_or_raise(library, error_msg):
 
 
 def _is_s3(string):
-    '''
-    Checks if the given string is a s3 path.
-    Returns a boolean.
-    '''
+    """Checks if the given string is a s3 path. Returns a boolean."""
     return "s3://" in string
 
 
 def _is_url(string):
-    '''
-    Checks if the given string is an url path.
-    Returns a boolean.
-    '''
+    """Checks if the given string is an url path. Returns a boolean."""
     return 'http' in string
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values.
-    """
+    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values."""
     if _is_null_latlong(latlong):
         return np.nan
 
@@ -252,9 +242,7 @@ def _reformat_to_latlong(latlong, use_list=False):
 
 
 def _to_latlong_float(val):
-    '''
-    Attempts to convert a value to a float, propogating null values.
-    '''
+    """Attempts to convert a value to a float, propagating null values."""
     if _is_null_latlong(val):
         return np.nan
 
@@ -265,8 +253,8 @@ def _to_latlong_float(val):
 
 
 def _is_valid_latlong_series(series):
-    '''Returns True if all elements in the series contain properly formatted LatLong values,
-    otherwise returns False'''
+    """Returns True if all elements in the series contain properly formatted LatLong values,
+    otherwise returns False"""
     dd = import_or_none('dask.dataframe')
     ks = import_or_none('databricks.koalas')
     if dd and isinstance(series, dd.Series):
@@ -282,8 +270,8 @@ def _is_valid_latlong_series(series):
 
 
 def _is_valid_latlong_value(val, bracket_type=tuple):
-    '''Returns True if the value provided is a properly formatted LatLong value for a
-    pandas, Dask or Koalas Series, otherwise returns False.'''
+    """Returns True if the value provided is a properly formatted LatLong value for a
+    pandas, Dask or Koalas Series, otherwise returns False."""
     if isinstance(val, bracket_type) and len(val) == 2:
         latitude, longitude = val
         if isinstance(latitude, float) and isinstance(longitude, float):

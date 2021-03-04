@@ -38,12 +38,11 @@ def mi_between_cols(col1, col2, df):
 
 
 def to_pandas(df, index=None, sort_index=False):
-    '''
-    Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
+    """Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
 
     Returns:
         Pandas DataFrame
-    '''
+    """
     if isinstance(df, (pd.DataFrame, pd.Series)):
         return df
 

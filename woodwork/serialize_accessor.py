@@ -22,9 +22,16 @@ FORMATS = ['csv', 'pickle', 'parquet']
 
 
 def typing_info_to_dict(dataframe):
-    '''Gets the description for a Woodwork table, including typing information for each column
+    """Creates the description for a Woodwork table, including typing information for each column
     and loading information.
-    '''
+    
+    Args:
+        dataframe (pd.DataFrame, dd.Dataframe, ks.DataFrame): DataFrame with Woodwork typing
+            information initialized.
+
+    Returns:
+        dict: Dictionary containing Woodwork typing information
+    """
     ordered_columns = dataframe.columns
     column_typing_info = [
         {'name': col_name,
@@ -64,7 +71,7 @@ def typing_info_to_dict(dataframe):
 
 
 def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
-    '''Serialize Woodwork table and write to disk or S3 path.
+    """Serialize Woodwork table and write to disk or S3 path.
 
     Args:
         dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
@@ -72,7 +79,7 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
-    '''
+    """
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
@@ -90,8 +97,7 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
 
 
 def _dump_table(dataframe, path, **kwargs):
-    '''Writes Woodwork table at the specified path, including both the data and the typing information.
-    '''
+    """Writes Woodwork table at the specified path, including both the data and the typing information."""
     loading_info = write_dataframe(dataframe, path, **kwargs)
 
     typing_info = typing_info_to_dict(dataframe)
@@ -101,8 +107,11 @@ def _dump_table(dataframe, path, **kwargs):
 
 
 def write_typing_info(typing_info, path):
-    '''Writes Woodwork typing information to the specified path at woodwork_typing_info.json
-    '''
+    """Writes Woodwork typing information to the specified path at woodwork_typing_info.json
+    
+    Args:
+        typing_info (dict): Dictionary containing Woodwork typing information.
+    """
     try:
         file = os.path.join(path, 'woodwork_typing_info.json')
         with open(file, 'w') as file:
@@ -112,7 +121,7 @@ def write_typing_info(typing_info, path):
 
 
 def write_dataframe(dataframe, path, format='csv', **kwargs):
-    '''Write underlying DataFrame data to disk or S3 path.
+    """Write underlying DataFrame data to disk or S3 path.
 
     Args:
         dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
@@ -121,8 +130,8 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
 
     Returns:
-        loading_info (dict) : Information on storage location and format of data.
-    '''
+        dict: Information on storage location and format of data.
+    """
     format = format.lower()
 
     ww_name = dataframe.ww.name or 'data'
@@ -169,8 +178,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
 
 
 def _create_archive(tmpdir):
-    '''When seralizing to an S3 URL, writes a tar archive.
-    '''
+    """When seralizing to an S3 URL, writes a tar archive."""
     file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')
