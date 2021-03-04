@@ -178,6 +178,7 @@ def test_init_accessor_with_schema_errors(sample_df):
              "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
+# --> add a test with invalid dtypes!!!!
 
 
 def test_accessor_with_schema_parameter_warning(sample_df):
@@ -1005,6 +1006,36 @@ def test_get_invalid_schema_message(sample_df):
             "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
 
 
+def test_get_invalid_schema_message_dtype_mismatch(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types={'age': 'Categorical'})
+    schema = schema_df.ww.schema
+
+    if ks and isinstance(sample_df, ks.DataFrame):
+        # all are valid backup dtypes
+        incorrect_int_dtype_df = schema_df.ww.astype({'id': 'float64'})
+        incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'str'})
+        assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
+                'dtype mismatch for column id between DataFrame dtype, float64, and Integer dtype, int64')
+        assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
+                'dtype mismatch for column is_registered between DataFrame dtype, object, and Boolean dtype, bool')
+        assert _get_invalid_schema_message(schema_df.ww.astype({'full_name': 'str'}), schema) is None
+    else:
+        incorrect_int_dtype_df = schema_df.ww.astype({'id': 'int64'})
+        incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'bool'})
+        incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})
+        incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})
+
+        assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
+                'dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64')
+        assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
+                'dtype mismatch for column is_registered between DataFrame dtype, bool, and Boolean dtype, boolean')
+        assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
+                'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
+        assert (_get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
+                'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
+
+
 def test_get_invalid_schema_message_index_checks(sample_df):
     if not isinstance(sample_df, pd.DataFrame):
         pytest.xfail('Index validation not performed for Dask or Koalas DataFrames')
@@ -1136,6 +1167,28 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     if dd and not isinstance(sample_df, dd.DataFrame):
         # keys() not supported with Dask
         pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
+
+
+def test_dataframe_methods_on_accessor_to_pandas(sample_df):
+    if isinstance(sample_df, pd.DataFrame):
+        pytest.skip("No need to test converting pandas DataFrame to pandas")
+
+    sample_df.ww.init(name='woodwork', index='id')
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pd_df = sample_df.ww.compute()
+        assert isinstance(pd_df, pd.DataFrame)
+        assert pd_df.ww.index == 'id'
+        assert pd_df.ww.name == 'woodwork'
+    elif ks and isinstance(sample_df, ks.DataFrame):
+        error = ("Operation performed by to_pandas has invalidated the Woodwork typing information:\n "
+                 "dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64.\n "
+                 "Please initialize Woodwork with DataFrame.ww.init")
+        with pytest.warns(TypingInfoMismatchWarning, match=error):
+            pd_df = sample_df.ww.to_pandas()
+
+        assert isinstance(pd_df, pd.DataFrame)
+        assert pd_df.ww.schema is None
 
 
 def test_get_subset_df_with_schema(sample_df):

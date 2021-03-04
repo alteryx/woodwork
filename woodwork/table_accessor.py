@@ -809,7 +809,7 @@ def _get_invalid_schema_message(dataframe, schema):
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
         valid_dtype = _get_valid_dtype(dataframe[name], schema.logical_types[name])
-        if df_dtype != valid_dtype:
+        if str(df_dtype) != str(valid_dtype):
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
