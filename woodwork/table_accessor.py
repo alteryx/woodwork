@@ -168,17 +168,16 @@ class WoodworkTableAccessor:
         return series
 
     def __repr__(self):
+        """A string representation of a Woodwork table containing typing information"""
         return repr(self._get_typing_info())
 
     def _repr_html_(self):
-        '''An HTML representation of a Schema for IPython.display in Jupyter Notebooks
-        containing typing information and a preview of the data.
-        '''
+        """An HTML representation of a Woodwork table for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data."""
         return self._get_typing_info().to_html()
 
     def _get_typing_info(self):
-        '''Creates a DataFrame that contains the typing information for a Woodwork table.
-        '''
+        """Creates a DataFrame that contains the typing information for a Woodwork table."""
         typing_info = self._schema._get_typing_info().copy()
         typing_info.insert(0, 'Physical Type', pd.Series(self.physical_types))
         # Maintain the same column order used in the DataFrame
