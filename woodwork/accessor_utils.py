@@ -65,7 +65,8 @@ def _update_column_dtype(series, logical_type):
             series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
-    if logical_type.pandas_dtype != str(series.dtype):
+    valid_dtype = _get_valid_dtype(ks and isinstance(series, ks.Series), logical_type)
+    if valid_dtype != str(series.dtype):
         # Update the underlying series
         try:
             if _get_ltype_class(logical_type) == Datetime:
@@ -84,7 +85,7 @@ def _update_column_dtype(series, logical_type):
                 series = series.astype(new_dtype)
         except (TypeError, ValueError):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-                f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                f'to type {valid_dtype}. Please confirm the underlying data is consistent with ' \
                 f'logical type {logical_type}.'
             raise TypeConversionError(error_msg)
     return series
