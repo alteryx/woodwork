@@ -134,4 +134,3 @@ def _get_valid_ltype_dtype(series, logical_type):
     if ks and isinstance(series, ks.Series) and backup_dtype:
         dtype = backup_dtype
     return dtype
-# --> dont pass in whole series just type?? or a needs_backup

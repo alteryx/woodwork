@@ -198,7 +198,6 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing Schema
                 if _is_series(result):
                     valid_dtype = _get_valid_underlying_dtype(result, self._schema['logical_type'])
-                    # --> test a situation where result dtype might have been int and valid might be Int
                     if str(result.dtype) == valid_dtype:
                         schema = copy.deepcopy(self._schema)
                         result.ww.init(**schema, use_standard_tags=self.use_standard_tags)

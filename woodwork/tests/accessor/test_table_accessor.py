@@ -176,7 +176,6 @@ def test_init_accessor_with_schema_errors(sample_df):
              "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
-# --> add a test with invalid dtypes!!!!
 
 
 def test_accessor_with_schema_parameter_warning(sample_df):
@@ -999,7 +998,6 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema = schema_df.ww.schema
 
     if ks and isinstance(sample_df, ks.DataFrame):
-        # all are valid backup dtypes
         incorrect_int_dtype_df = schema_df.ww.astype({'id': 'float64'})
         incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'str'})
         assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
@@ -1834,7 +1832,6 @@ def test_accessor_types(sample_df):
 
 
 def test_accessor_repr(small_df):
-    # --> koalas is broken need to actually look at repr
     small_df.ww.init()
 
     table_repr = repr(small_df.ww)

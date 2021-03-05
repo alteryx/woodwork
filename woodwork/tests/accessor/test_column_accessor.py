@@ -406,6 +406,25 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     pd.testing.assert_series_equal(to_pandas(replace_series), to_pandas(series.replace('a', 'd')))
 
 
+def test_series_methods_on_accessor_dtype_mismatch(sample_df):
+    ints_series = convert_series(sample_df['id'], Integer)
+    ints_series.ww.init()
+
+    assert ints_series.ww.logical_type == Integer
+    dtype = 'Int64'
+    if ks and isinstance(ints_series, ks.Series):
+        dtype = 'int64'
+    assert str(ints_series.dtype) == dtype
+
+    if ks and not isinstance(ints_series, ks.Series):
+        error = ("Operation performed by astype has invalidated the Woodwork typing information:\n "
+                 "dtype mismatch between original dtype, Int64, and returned dtype, int64.\n "
+                 "Please initialize Woodwork with Series.ww.init")
+        with pytest.warns(TypingInfoMismatchWarning, match=error):
+            series = ints_series.ww.astype('int64')
+        assert series.ww._schema is None
+
+
 def test_series_methods_on_accessor_inplace(sample_series):
     # TODO: Try to find a supported inplace method for Dask, if one exists
     if dd and isinstance(sample_series, dd.Series):
