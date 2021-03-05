@@ -3,7 +3,7 @@ import warnings
 
 import pandas as pd
 
-from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
+from woodwork.accessor_utils import _get_dtype_to_convert, _get_valid_dtype, _is_series, init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
 from woodwork.logical_types import LatLong, Ordinal
@@ -216,12 +216,10 @@ class WoodworkColumnAccessor:
         specific validation, as required."""
         valid_dtype = _get_valid_dtype(self._series, logical_type)
         if valid_dtype != str(self._series.dtype):
-            if ks and isinstance(self._series, ks.Series) and logical_type.backup_dtype:
-                # Koalas will have a dtype of `object` even after `ks.Series.astype('str')` but we want to inform
-                # users to try to convert to the backup dtype not the dtype considered valid for the series
-                convert_dtype = logical_type.backup_dtype
-            else:
-                convert_dtype = valid_dtype
+            # Koalas may have a dtype of `object`, but astype('object') raises an error,
+            # so users must call astype'str') in that case.
+            convert_dtype = _get_dtype_to_convert(self._series, logical_type)
+
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
                              f"dtype to '{convert_dtype}' before initializing or use the "

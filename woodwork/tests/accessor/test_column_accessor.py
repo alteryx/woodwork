@@ -60,7 +60,7 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
         # Koalas uses `object` as the dtype for NaturalLanguage, so need to use something else
         series = sample_series.astype('float')
         series_dtype = 'float64'
-        correct_dtype = 'object'
+        correct_dtype = 'str'
     else:
         series = sample_series
         series_dtype = 'object'

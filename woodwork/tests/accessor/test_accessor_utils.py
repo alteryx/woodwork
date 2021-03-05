@@ -1,6 +1,7 @@
 import pytest
 
 from woodwork.accessor_utils import (
+    _get_dtype_to_convert,
     _get_valid_dtype,
     _is_dataframe,
     _is_series,
@@ -98,6 +99,20 @@ def test_get_valid_dtype(sample_series):
         assert valid_dtype == 'category'
 
     valid_dtype = _get_valid_dtype(sample_series, Boolean)
+    if ks and isinstance(sample_series, ks.Series):
+        assert valid_dtype == 'bool'
+    else:
+        assert valid_dtype == 'boolean'
+
+
+def test_get_dtype_to_convert(sample_series):
+    convert_dtype = _get_dtype_to_convert(sample_series, Categorical)
+    if ks and isinstance(sample_series, ks.Series):
+        assert convert_dtype == 'str'
+    else:
+        assert convert_dtype == 'category'
+
+    valid_dtype = _get_dtype_to_convert(sample_series, Boolean)
     if ks and isinstance(sample_series, ks.Series):
         assert valid_dtype == 'bool'
     else:

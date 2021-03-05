@@ -114,23 +114,20 @@ def _get_valid_dtype(series, logical_type):
     """Return the dtype that is considered valid for a series
     with the given logical_type"""
     backup_dtype = logical_type.backup_dtype
+    valid_dtype = logical_type.pandas_dtype
     if ks and isinstance(series, ks.Series) and backup_dtype:
-        if backup_dtype == 'str':
-            # Koalas will have a dtype of object even after `ks.Series.astype('str')`
-            valid_dtype = 'object'
-        else:
-            valid_dtype = backup_dtype
-    else:
-        valid_dtype = logical_type.pandas_dtype
+        valid_dtype = backup_dtype
 
     return valid_dtype
 
 
 def _get_dtype_to_convert(series, logical_type):
+    """Return the dtype that should be used to convert the dtype of a series
+    to match Woodwork Logical Types"""
     backup_dtype = logical_type.backup_dtype
     if ks and isinstance(series, ks.Series) and backup_dtype:
         if backup_dtype == 'object':
-            # Koalas dtype may be 'object', but we need 'str' to convert astype()
+            # Koalas dtype may be 'object', but we need 'str' to convert with astype()
             convert_dtype = 'str'
         else:
             convert_dtype = backup_dtype
