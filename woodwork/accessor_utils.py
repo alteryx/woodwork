@@ -80,7 +80,7 @@ def _update_column_dtype(series, logical_type):
                 else:
                     series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
-                new_dtype = _get_dtype_to_convert(series, logical_type)
+                new_dtype = _get_dtype_to_convert(ks and isinstance(series, ks.Series), logical_type)
                 series = series.astype(new_dtype)
         except (TypeError, ValueError):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
@@ -110,22 +110,22 @@ def _is_dataframe(data):
     return False
 
 
-def _get_valid_dtype(series, logical_type):
+def _get_valid_dtype_for_package(needs_backup, logical_type):
     """Return the dtype that is considered valid for a series
-    with the given logical_type"""
+    with the given logical_type. To be used when grabbing series.dtype is not suffiecient."""
     backup_dtype = logical_type.backup_dtype
     valid_dtype = logical_type.pandas_dtype
-    if ks and isinstance(series, ks.Series) and backup_dtype:
+    if needs_backup and backup_dtype:
         valid_dtype = backup_dtype
 
     return valid_dtype
 
 
-def _get_dtype_to_convert(series, logical_type):
+def _get_dtype_to_convert(needs_backup, logical_type):
     """Return the dtype that should be used to convert the dtype of a series
     to match Woodwork Logical Types"""
     backup_dtype = logical_type.backup_dtype
-    if ks and isinstance(series, ks.Series) and backup_dtype:
+    if needs_backup and backup_dtype:
         if backup_dtype == 'object':
             # Koalas dtype may be 'object', but we need 'str' to convert with astype()
             convert_dtype = 'str'

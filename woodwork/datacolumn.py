@@ -130,7 +130,7 @@ class DataColumn(object):
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
-                    new_dtype = _get_dtype_to_convert(self._series, self.logical_type)
+                    new_dtype = _get_dtype_to_convert(ks and isinstance(self._series, ks.Series), self.logical_type)
                     self._series = self._series.astype(new_dtype)
             except (TypeError, ValueError):
                 error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \

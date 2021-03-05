@@ -2,7 +2,7 @@ import pytest
 
 from woodwork.accessor_utils import (
     _get_dtype_to_convert,
-    _get_valid_dtype,
+    _get_valid_dtype_for_package,
     _is_dataframe,
     _is_series,
     init_series
@@ -23,14 +23,14 @@ ks = import_or_none('databricks.koalas')
 def test_init_series_valid_conversion_specified_ltype(sample_series):
     series = init_series(sample_series, logical_type='categorical')
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, Categorical)
+    correct_dtype = _get_valid_dtype_for_package(ks and isinstance(sample_series, ks.Series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
 
     series = init_series(sample_series, logical_type='natural_language')
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, NaturalLanguage)
+    correct_dtype = _get_valid_dtype_for_package(ks and isinstance(sample_series, ks.Series), NaturalLanguage)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
@@ -39,7 +39,7 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
     series = init_series(sample_series)
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, Categorical)
+    correct_dtype = _get_valid_dtype_for_package(ks and isinstance(sample_series, ks.Series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
@@ -61,7 +61,7 @@ def test_init_series_all_parameters(sample_series):
                          description=description,
                          use_standard_tags=False)
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, Categorical)
+    correct_dtype = _get_valid_dtype_for_package(ks and isinstance(sample_series, ks.Series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'custom_tag'}
@@ -91,29 +91,31 @@ def test_is_dataframe(sample_df):
     assert not _is_dataframe(sample_df['id'])
 
 
-def test_get_valid_dtype(sample_series):
-    valid_dtype = _get_valid_dtype(sample_series, Categorical)
-    if ks and isinstance(sample_series, ks.Series):
+def test_get_valid_dtype_for_package(sample_series):
+    is_koalas = ks and isinstance(sample_series, ks.Series)
+    valid_dtype = _get_valid_dtype_for_package(is_koalas, Categorical)
+    if is_koalas:
         assert valid_dtype == 'object'
     else:
         assert valid_dtype == 'category'
 
-    valid_dtype = _get_valid_dtype(sample_series, Boolean)
-    if ks and isinstance(sample_series, ks.Series):
+    valid_dtype = _get_valid_dtype_for_package(is_koalas, Boolean)
+    if is_koalas:
         assert valid_dtype == 'bool'
     else:
         assert valid_dtype == 'boolean'
 
 
 def test_get_dtype_to_convert(sample_series):
-    convert_dtype = _get_dtype_to_convert(sample_series, Categorical)
-    if ks and isinstance(sample_series, ks.Series):
+    is_koalas = ks and isinstance(sample_series, ks.Series)
+    convert_dtype = _get_dtype_to_convert(is_koalas, Categorical)
+    if is_koalas:
         assert convert_dtype == 'str'
     else:
         assert convert_dtype == 'category'
 
-    valid_dtype = _get_dtype_to_convert(sample_series, Boolean)
-    if ks and isinstance(sample_series, ks.Series):
+    valid_dtype = _get_dtype_to_convert(is_koalas, Boolean)
+    if is_koalas:
         assert valid_dtype == 'bool'
     else:
         assert valid_dtype == 'boolean'
