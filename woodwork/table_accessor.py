@@ -9,6 +9,7 @@ from woodwork.accessor_utils import (
     _update_column_dtype
 )
 from woodwork.exceptions import (
+    ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning

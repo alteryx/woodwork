@@ -6,6 +6,7 @@ import pytest
 
 import woodwork as ww
 from woodwork.exceptions import (
+    ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypeConversionError,
@@ -1631,3 +1632,54 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         ks.set_option('compute.ops_on_diff_frames', False)
         sample_df_koalas.ww.init()
         assert ks.get_option('compute.ops_on_diff_frames') is True
+
+
+def test_setitem_invalid_input(sample_df):
+    df = sample_df.copy()
+    df.ww.init(index='id', time_index='signup_date')
+
+    error_msg = 'New column must be of Series type'
+    with pytest.raises(ValueError, match=error_msg):
+        df.ww['test'] = [1, 2, 3]
+
+    error_msg = 'Cannot reassign index. Change column name and then use dt.set_index to reassign index.'
+    with pytest.raises(KeyError, match=error_msg):
+        df.ww['id'] = df.id
+
+    error_msg = 'Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.'
+    with pytest.raises(KeyError, match=error_msg):
+        df.ww['signup_date'] = df.signup_date
+
+
+def test_setitem_different_name(sample_df):
+    df = sample_df.copy()
+    df.ww.init(index='id', time_index='signup_date')
+
+    new_series = pd.Series([1, 2, 3, 4], name='wrong', dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    warning = 'Name mismatch between wrong and right. Series name is now right'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        df.ww['right'] = new_series
+
+    assert df.ww['right'].name == 'right'
+    assert 'wrong' not in df.ww.columns
+
+    new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series2 = ks.Series(new_series2)
+
+    warning = 'Name mismatch between wrong2 and new_col. Series name is now new_col'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        df.ww['new_col'] = new_series2
+
+    assert df.ww['new_col'].name == 'new_col'
+    assert 'wrong2' not in df.ww.columns
+
+    warning = 'Name mismatch between wrong and col_with_name. Series name is now col_with_name'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        df.ww['col_with_name'] = new_series
+
+    assert df.ww['col_with_name'].name == 'col_with_name'
+    assert 'wrong' not in df.ww.columns
