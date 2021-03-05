@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 import woodwork as ww
+from woodwork.accessor_utils import _get_dtype_to_convert
 from woodwork.exceptions import (
     ColumnNameMismatchWarning,
     DuplicateTagsWarning,
@@ -129,10 +130,7 @@ class DataColumn(object):
                     else:
                         self._series = pd.to_datetime(self._series, format=self.logical_type.datetime_format)
                 else:
-                    if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
-                        new_dtype = self.logical_type.backup_dtype
-                    else:
-                        new_dtype = self.logical_type.pandas_dtype
+                    new_dtype = _get_dtype_to_convert(self._series, self.logical_type)
                     self._series = self._series.astype(new_dtype)
             except (TypeError, ValueError):
                 error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \

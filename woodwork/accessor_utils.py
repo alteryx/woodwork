@@ -80,10 +80,7 @@ def _update_column_dtype(series, logical_type):
                 else:
                     series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
-                if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
-                    new_dtype = logical_type.backup_dtype
-                else:
-                    new_dtype = logical_type.pandas_dtype
+                new_dtype = _get_dtype_to_convert(series, logical_type)
                 series = series.astype(new_dtype)
         except (TypeError, ValueError):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
@@ -127,3 +124,17 @@ def _get_valid_dtype(series, logical_type):
         valid_dtype = logical_type.pandas_dtype
 
     return valid_dtype
+
+
+def _get_dtype_to_convert(series, logical_type):
+    backup_dtype = logical_type.backup_dtype
+    if ks and isinstance(series, ks.Series) and backup_dtype:
+        if backup_dtype == 'object':
+            # Koalas dtype may be 'object', but we need 'str' to convert astype()
+            convert_dtype = 'str'
+        else:
+            convert_dtype = backup_dtype
+    else:
+        convert_dtype = logical_type.pandas_dtype
+
+    return convert_dtype
