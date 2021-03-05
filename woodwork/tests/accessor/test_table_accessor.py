@@ -1740,3 +1740,56 @@ def test_setitem_new_column(sample_df):
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
     assert df.ww['test_col3'].dtype == 'float'
+
+
+def test_setitem_overwrite_column(sample_df):
+    df = sample_df.copy()
+    df.ww.init(
+        index='id',
+        time_index='signup_date',
+        use_standard_tags=True
+    )
+
+    # Change to column no change in types
+    original_col = df['age']
+    original_col.ww.init()
+    new_series = pd.Series([1, 2, 3])
+    if ks and isinstance(sample_df, ks.DataFrame):
+        dtype = 'int64'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'Int64'
+        new_series = new_series.astype(dtype)
+
+    new_series.ww.init(use_standard_tags=True)
+    df.ww['age'] = new_series
+
+    assert 'age' in df.columns
+    assert 'age' in df.ww.columns
+    assert df.ww['age'].ww.logical_type == original_col.ww.logical_type
+    assert df.ww['age'].ww.semantic_tags == original_col.ww.semantic_tags
+    assert df.ww['age'].dtype == dtype
+    assert original_col is not df.ww['age']
+
+    # Change dtype, logical types, and tags with conflicting use_standard_tags
+    original_col = df['full_name']
+    new_series = pd.Series([True, False, False])
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+        dtype = 'bool'
+    else:
+        dtype = 'boolean'
+        new_series = new_series.astype(dtype)
+
+    new_series.ww.init(
+        use_standard_tags=False,
+        semantic_tags='test_tag',
+    )
+
+    df.ww['full_name'] = new_series
+    assert 'full_name' in df.columns
+    assert 'full_name' in df.ww.columns
+    assert df.ww['full_name'].ww.logical_type == Boolean
+    assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
+    assert df.ww['full_name'].dtype == dtype
+    assert original_col is not df.ww['full_name']
