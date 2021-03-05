@@ -136,7 +136,7 @@ def _reset_semantic_tags(standard_tags, use_standard_tags):
         use_standard_tags (bool): If True, retain standard tags after reset
     """
     if use_standard_tags:
-        return standard_tags
+        return set(standard_tags)
     return set()
 
 
