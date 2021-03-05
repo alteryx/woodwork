@@ -40,6 +40,7 @@ Release Notes
         * Add Schema properties to WoodworkTableAccessor (:pr:`651`)
         * Add KoalasTableAccessor (:pr:`652`)
         * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
+        * Adds ``__setitem__`` to WoodworkTableAccessor (:pr:`669`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
     * Changes
@@ -52,7 +53,7 @@ Release Notes
         * Update release branch naming instructions (:pr:`644`)
 
     Thanks to the following people for contributing to this release:
-    :user:`johnbridstrup`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`johnbridstrup`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes
