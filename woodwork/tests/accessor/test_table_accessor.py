@@ -1642,11 +1642,11 @@ def test_setitem_invalid_input(sample_df):
     with pytest.raises(ValueError, match=error_msg):
         df.ww['test'] = [1, 2, 3]
 
-    error_msg = 'Cannot reassign index. Change column name and then use dt.set_index to reassign index.'
+    error_msg = 'Cannot reassign index. Change column name and then use df.ww.set_index to reassign index.'
     with pytest.raises(KeyError, match=error_msg):
         df.ww['id'] = df.id
 
-    error_msg = 'Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.'
+    error_msg = 'Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.'
     with pytest.raises(KeyError, match=error_msg):
         df.ww['signup_date'] = df.signup_date
 
