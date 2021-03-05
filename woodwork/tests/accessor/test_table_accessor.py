@@ -1683,3 +1683,60 @@ def test_setitem_different_name(sample_df):
 
     assert df.ww['col_with_name'].name == 'col_with_name'
     assert 'wrong' not in df.ww.columns
+
+
+def test_setitem_new_column(sample_df):
+    df = sample_df.copy()
+    df.ww.init(use_standard_tags=False)
+
+    if ks and isinstance(sample_df, ks.DataFrame):
+        dtype = 'int64'
+        new_series = pd.Series([1, 2, 3], dtype=dtype)
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'Int64'
+        new_series = pd.Series([1, 2, 3], dtype=dtype)
+
+    df.ww['test_col2'] = new_series
+    assert 'test_col2' in df.columns
+    assert 'test_col2' in df.ww.columns
+    assert df.ww['test_col2'].ww.logical_type == Integer
+    assert df.ww['test_col2'].ww.semantic_tags == set()
+    assert df.ww['test_col2'].name == 'test_col2'
+    assert df.ww['test_col2'].dtype == dtype
+
+    # Standard tags and no logical type
+    if ks and isinstance(sample_df, ks.DataFrame):
+        dtype = 'object'
+        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'category'
+        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
+
+    new_series.ww.init()
+    df.ww['test_col'] = new_series
+    assert 'test_col' in df.columns
+    assert 'test_col' in df.ww.columns
+    assert df.ww['test_col'].ww.logical_type == Categorical
+    assert df.ww['test_col'].ww.semantic_tags == {'category'}
+    assert df.ww['test_col'].name == 'test_col'
+    assert df.ww['test_col'].dtype == dtype
+
+    new_series = pd.Series([1, 2, 3], dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    new_series.ww.init(
+        logical_type=Double,
+        use_standard_tags=False,
+        semantic_tags={'test_tag'},
+    )
+
+    df.ww['test_col3'] = new_series
+    assert 'test_col3' in df.columns
+    assert 'test_col3' in df.ww.columns
+    assert df.ww['test_col3'].ww.logical_type == Double
+    assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
+    assert df.ww['test_col3'].name == 'test_col3'
+    assert df.ww['test_col3'].dtype == 'float'

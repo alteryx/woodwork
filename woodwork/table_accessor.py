@@ -187,11 +187,10 @@ class WoodworkTableAccessor:
                           ColumnNameMismatchWarning)
 
         if column.ww._schema is None:
-            column.ww.init()
+            column.ww.init(use_standard_tags=self.use_standard_tags)
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema
-
 
     def __repr__(self):
         return repr(self._schema)
