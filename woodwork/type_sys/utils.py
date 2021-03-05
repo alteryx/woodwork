@@ -74,7 +74,7 @@ def list_logical_types():
         [{'name': ltype.__name__,
           'type_string': ltype.type_string,
           'description': ltype.__doc__,
-          'physical_type': ltype.pandas_dtype,
+          'physical_type': ltype.pandas_dtype,  # --> should we offer both pd dtype and backup?
           'standard_tags': ltype.standard_tags,
           'is_default_type': ltype in ww.type_system._default_inference_functions,
           'is_registered': ltype in ww.type_system.registered_types,

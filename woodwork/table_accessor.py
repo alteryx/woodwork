@@ -4,7 +4,8 @@ import pandas as pd
 
 import woodwork.serialize_accessor as serialize
 from woodwork.accessor_utils import (
-    _get_valid_dtype,
+    _get_valid_ltype_dtype_str,
+    _get_valid_underlying_dtype_str,
     _is_dataframe,
     _update_column_dtype
 )
@@ -245,14 +246,7 @@ class WoodworkTableAccessor:
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
-        # --> probably a cleaner way to do this--also look at when we want the underlying dtype vs when we want the woodwork dtype
-
-        physical_types = {col_name: self.schema.logical_types[col_name].pandas_dtype for col_name in self._dataframe.columns}
-        if ks and isinstance(self._dataframe, ks.DataFrame):
-            backup_dtypes = {col_name: self.schema.logical_types[col_name].backup_dtype for col_name in self._dataframe.columns if self.schema.logical_types[col_name].backup_dtype is not None}
-            physical_types = {**physical_types, **backup_dtypes}
-
-        return physical_types
+        return {col_name: _get_valid_ltype_dtype_str(self._dataframe[col_name], self.schema.logical_types[col_name]) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
@@ -823,8 +817,8 @@ def _get_invalid_schema_message(dataframe, schema):
             f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
-        valid_dtype = _get_valid_dtype(dataframe[name], schema.logical_types[name])
-        if str(df_dtype) != str(valid_dtype):
+        valid_dtype = _get_valid_underlying_dtype_str(dataframe[name], schema.logical_types[name])
+        if str(df_dtype) != valid_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):

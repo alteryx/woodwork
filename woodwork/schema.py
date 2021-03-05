@@ -100,8 +100,7 @@ class Schema(object):
 
     @property
     def types(self):
-        """DataFrame containing the physical dtypes, logical types and semantic
-        tags for the Schema."""
+        """DataFrame containing the logical types and semantic tags for the Schema."""
         return self._get_typing_info()
 
     def _get_typing_info(self):

@@ -7,6 +7,7 @@ import tempfile
 import pandas as pd
 
 import woodwork as ww
+from woodwork.accessor_utils import _get_valid_ltype_dtype_str
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import (
     _get_ltype_class,
@@ -41,7 +42,7 @@ def typing_info_to_dict(dataframe):
              'type': str(_get_ltype_class(col['logical_type']))
          },
          'physical_type': {
-             'type': str(dataframe[col_name].dtype)
+             'type': _get_valid_ltype_dtype_str(dataframe[col_name], col['logical_type'])
          },
          'semantic_tags': sorted(list(col['semantic_tags'])),
          'description': col['description'],

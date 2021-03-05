@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
+from woodwork.accessor_utils import _get_valid_ltype_dtype_str
 from woodwork.logical_types import Datetime, Double, LatLong
 from woodwork.schema_column import (
     _is_col_boolean,
@@ -89,18 +90,14 @@ def _get_describe_dict(dataframe, include=None):
             values["third_quartile"] = quant_values[2]
 
         mode = _get_mode(series)
-        # --> should have a get_user_facing_dtype????
-        physical_type = logical_type.pandas_dtype
-        if ks and isinstance(dataframe, ks.DataFrame):
-            physical_type = logical_type.backup_dtype
 
-            # The format of the mode should match its format in the DataFrame
-            if series.name in latlong_columns:
-                mode = list(mode)
+        # The format of the mode should match its format in the DataFrame
+        if ks and isinstance(dataframe, ks.DataFrame) and series.name in latlong_columns:
+            mode = list(mode)
 
         values["nan_count"] = series.isna().sum()
         values["mode"] = mode
-        values["physical_type"] = physical_type
+        values["physical_type"] = _get_valid_ltype_dtype_str(dataframe[column_name], logical_type)
         values["logical_type"] = logical_type
         values["semantic_tags"] = semantic_tags
         results[column_name] = values

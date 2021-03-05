@@ -167,7 +167,7 @@ def test_accessor_repr(sample_series):
     series.ww.init(use_standard_tags=False)
     # Koalas doesn't support categorical
     if ks and isinstance(series, ks.Series):
-        dtype = 'object'
+        dtype = 'str'
     else:
         dtype = 'category'
     assert series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
@@ -425,7 +425,7 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
     series.ww.init()
 
     if ks and isinstance(sample_series, ks.Series):
-        original_type = 'object'
+        original_type = 'str'
         new_type = 'int64'
     else:
         original_type = 'category'

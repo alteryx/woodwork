@@ -56,8 +56,8 @@ def test_to_dictionary(sample_df):
 
     if ks and isinstance(sample_df, ks.DataFrame):
         int_val = 'int64'
-        cat_val = 'object'
-        string_val = 'object'
+        cat_val = 'str'
+        string_val = 'str'
         bool_val = 'bool'
     else:
         int_val = 'Int64'
