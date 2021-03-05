@@ -179,6 +179,8 @@ class WoodworkTableAccessor:
 
     def _get_typing_info(self):
         """Creates a DataFrame that contains the typing information for a Woodwork table."""
+        if self._schema is None:
+            _raise_init_error()
         typing_info = self._schema._get_typing_info().copy()
         typing_info.insert(0, 'Physical Type', pd.Series(self.physical_types))
 

@@ -1832,6 +1832,9 @@ def test_accessor_types(sample_df):
 
 
 def test_accessor_repr(small_df):
+    error = 'Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init'
+    with pytest.raises(AttributeError, match=error):
+        repr(small_df.ww)
     small_df.ww.init()
 
     table_repr = repr(small_df.ww)
