@@ -178,9 +178,9 @@ class WoodworkTableAccessor:
 
         # Don't allow reassigning of index or time index with setitem
         if self.index == col_name:
-            raise KeyError('Cannot reassign index. Change column name and then use dt.set_index to reassign index.')
+            raise KeyError('Cannot reassign index. Change column name and then use df.ww.set_index to reassign index.')
         if self.time_index == col_name:
-            raise KeyError('Cannot reassign time index. Change column name and then use dt.set_time_index to reassign time index.')
+            raise KeyError('Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.')
 
         if column.name is not None and column.name != col_name:
             warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
