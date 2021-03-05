@@ -5,7 +5,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import (
     _get_dtype_to_convert,
-    _get_valid_dtype_for_package,
+    _get_valid_dtype,
     _is_series,
     init_series
 )
@@ -197,7 +197,7 @@ class WoodworkColumnAccessor:
 
                 # Try to initialize Woodwork with the existing Schema
                 if _is_series(result):
-                    valid_dtype = _get_valid_dtype_for_package(ks and isinstance(result, ks.Series), self._schema['logical_type'])
+                    valid_dtype = _get_valid_dtype(ks and isinstance(result, ks.Series), self._schema['logical_type'])
                     if result.dtype == valid_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
@@ -220,7 +220,7 @@ class WoodworkColumnAccessor:
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
         is_koalas = ks and isinstance(self._series, ks.Series)
-        valid_dtype = _get_valid_dtype_for_package(is_koalas, logical_type)
+        valid_dtype = _get_valid_dtype(is_koalas, logical_type)
         if valid_dtype != str(self._series.dtype):
             # Koalas may have a dtype of `object`, but astype('object') raises an error,
             # so users must call astype'str') in that case.

@@ -110,7 +110,7 @@ def _is_dataframe(data):
     return False
 
 
-def _get_valid_dtype_for_package(needs_backup, logical_type):
+def _get_valid_dtype(needs_backup, logical_type):
     """Return the dtype that is considered valid for a series
     with the given logical_type. To be used when grabbing series.dtype is not suffiecient."""
     backup_dtype = logical_type.backup_dtype

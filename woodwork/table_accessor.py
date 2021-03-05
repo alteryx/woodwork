@@ -4,7 +4,7 @@ import pandas as pd
 
 import woodwork.serialize_accessor as serialize
 from woodwork.accessor_utils import (
-    _get_valid_dtype_for_package,
+    _get_valid_dtype,
     _is_dataframe,
     _update_column_dtype
 )
@@ -805,7 +805,7 @@ def _get_invalid_schema_message(dataframe, schema):
             f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
-        valid_dtype = _get_valid_dtype_for_package(ks and isinstance(dataframe, ks.DataFrame), schema.logical_types[name])
+        valid_dtype = _get_valid_dtype(ks and isinstance(dataframe, ks.DataFrame), schema.logical_types[name])
         if df_dtype != valid_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
