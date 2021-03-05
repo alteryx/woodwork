@@ -4,8 +4,8 @@ import warnings
 import pandas as pd
 
 from woodwork.accessor_utils import (
-    _get_valid_ltype_dtype_str,
-    _get_valid_underlying_dtype_str,
+    _get_valid_ltype_dtype,
+    _get_valid_underlying_dtype,
     _is_series,
     init_series
 )
@@ -179,7 +179,7 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         msg = u"<Series: {} ".format(self._series.name)
-        msg += u"(Physical Type = {}) ".format(_get_valid_ltype_dtype_str(self._series, self.logical_type))
+        msg += u"(Physical Type = {}) ".format(_get_valid_ltype_dtype(self._series, self.logical_type))
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
@@ -197,13 +197,13 @@ class WoodworkColumnAccessor:
 
                 # Try to initialize Woodwork with the existing Schema
                 if _is_series(result):
-                    valid_dtype = _get_valid_underlying_dtype_str(result, self._schema['logical_type'])
+                    valid_dtype = _get_valid_underlying_dtype(result, self._schema['logical_type'])
                     # --> test a situation where result dtype might have been int and valid might be Int
                     if str(result.dtype) == valid_dtype:
                         schema = copy.deepcopy(self._schema)
                         result.ww.init(**schema, use_standard_tags=self.use_standard_tags)
                     else:
-                        user_dtype = _get_valid_ltype_dtype_str(result, self._schema['logical_type'])
+                        user_dtype = _get_valid_ltype_dtype(result, self._schema['logical_type'])
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{user_dtype}, and returned dtype, {result.dtype}'
                         warning_message = TypingInfoMismatchWarning().get_warning_message(attr,
@@ -219,11 +219,11 @@ class WoodworkColumnAccessor:
     def _validate_logical_type(self, logical_type):
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
-        valid_dtype = _get_valid_underlying_dtype_str(self._series, logical_type)
+        valid_dtype = _get_valid_underlying_dtype(self._series, logical_type)
         if valid_dtype != str(self._series.dtype):
             # Koalas will have a dtype of `object` even after `ks.Series.astype('str')` but we want to inform
             # users to try to convert to the Logical Type's backup dtype not the dtype considered valid for the series
-            convert_dtype = _get_valid_ltype_dtype_str(self._series, logical_type)
+            convert_dtype = _get_valid_ltype_dtype(self._series, logical_type)
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
                              f"dtype to '{convert_dtype}' before initializing or use the "

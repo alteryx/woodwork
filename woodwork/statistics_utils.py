@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
-from woodwork.accessor_utils import _get_valid_ltype_dtype_str
+from woodwork.accessor_utils import _get_valid_ltype_dtype
 from woodwork.logical_types import Datetime, Double, LatLong
 from woodwork.schema_column import (
     _is_col_boolean,
@@ -97,7 +97,7 @@ def _get_describe_dict(dataframe, include=None):
 
         values["nan_count"] = series.isna().sum()
         values["mode"] = mode
-        values["physical_type"] = _get_valid_ltype_dtype_str(dataframe[column_name], logical_type)
+        values["physical_type"] = _get_valid_ltype_dtype(dataframe[column_name], logical_type)
         values["logical_type"] = logical_type
         values["semantic_tags"] = semantic_tags
         results[column_name] = values

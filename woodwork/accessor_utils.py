@@ -80,7 +80,7 @@ def _update_column_dtype(series, logical_type):
                 else:
                     series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
-                new_dtype = _get_valid_ltype_dtype_str(series, logical_type)
+                new_dtype = _get_valid_ltype_dtype(series, logical_type)
                 series = series.astype(new_dtype)
         except (TypeError, ValueError):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
@@ -110,7 +110,7 @@ def _is_dataframe(data):
     return False
 
 
-def _get_valid_underlying_dtype_str(series, logical_type):
+def _get_valid_underlying_dtype(series, logical_type):
     """Return the dtype that is considered valid for a series
     with the given logical_type"""
     backup_dtype = logical_type.backup_dtype
@@ -126,13 +126,12 @@ def _get_valid_underlying_dtype_str(series, logical_type):
     return str(valid_dtype)
 
 
-# --> maybe pick a better name for these - also the str at the end might be redundant
-def _get_valid_ltype_dtype_str(series, logical_type):
+def _get_valid_ltype_dtype(series, logical_type):
     """Return the dtype that is considered valid for a given logical_type"""
     dtype = logical_type.pandas_dtype
 
     backup_dtype = logical_type.backup_dtype
     if ks and isinstance(series, ks.Series) and backup_dtype:
         dtype = backup_dtype
-    return str(dtype)
+    return dtype
 # --> dont pass in whole series just type?? or a needs_backup
