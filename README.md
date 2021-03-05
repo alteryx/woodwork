@@ -21,8 +21,8 @@
 </p>
 <hr>
 
-Woodwork provides you with a common typing namespace for using your existing DataFrames with Featuretools, EvalML, and general ML. A Woodwork
-DataFrame stores the physical, logical, and semantic data types present in the data. In addition, it can store metadata about the data.
+Woodwork provides a common typing namespace for using your existing DataFrames in Featuretools, EvalML, and general ML. A Woodwork
+DataFrame stores the physical, logical, and semantic data types present in the data. In addition, it can store metadata about the data, allowing you to store specific information you might need for your application.
 
 ## Installation
 
@@ -95,7 +95,7 @@ filtered_df
 99                99    536378      24.0      0.9075  21.780      False
 ```
 
-As you can see, Woodwork makes it easy to manage typing information for your data, and provides simple interfaces to access only the data you need based on the logical types or semantic tags. Please refer to the Woodwork documentation for more detail on working with Woodwork tables.
+As you can see, Woodwork makes it easy to manage typing information for your data, and provides simple interfaces to access only the data you need based on the logical types or semantic tags. Please refer to the [Woodwork documentation](https://woodwork.alteryx.com/) for more detail on working with Woodwork tables.
 
 ## Built at Alteryx Innovation Labs
 
