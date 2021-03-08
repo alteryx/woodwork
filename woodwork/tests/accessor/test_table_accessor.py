@@ -1694,7 +1694,7 @@ def test_setitem_new_column(sample_df):
 
     df.ww['test_col2'] = new_series
     assert 'test_col2' in df.columns
-    assert 'test_col2' in df.ww.columns
+    assert 'test_col2' in df.ww._schema.columns.keys()
     assert df.ww['test_col2'].ww.logical_type == Integer
     assert df.ww['test_col2'].ww.semantic_tags == set()
     assert df.ww['test_col2'].name == 'test_col2'
@@ -1712,7 +1712,7 @@ def test_setitem_new_column(sample_df):
     new_series.ww.init()
     df.ww['test_col'] = new_series
     assert 'test_col' in df.columns
-    assert 'test_col' in df.ww.columns
+    assert 'test_col' in df.ww._schema.columns.keys()
     assert df.ww['test_col'].ww.logical_type == Categorical
     assert df.ww['test_col'].ww.semantic_tags == {'category'}
     assert df.ww['test_col'].name == 'test_col'
@@ -1730,7 +1730,7 @@ def test_setitem_new_column(sample_df):
 
     df.ww['test_col3'] = new_series
     assert 'test_col3' in df.columns
-    assert 'test_col3' in df.ww.columns
+    assert 'test_col3' in df.ww._schema.columns.keys()
     assert df.ww['test_col3'].ww.logical_type == Double
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
@@ -1760,7 +1760,7 @@ def test_setitem_overwrite_column(sample_df):
     df.ww['age'] = new_series
 
     assert 'age' in df.columns
-    assert 'age' in df.ww.columns
+    assert 'age' in df.ww._schema.columns.keys()
     assert df.ww['age'].ww.logical_type == original_col.ww.logical_type
     assert df.ww['age'].ww.semantic_tags == original_col.ww.semantic_tags
     assert df.ww['age'].dtype == dtype
@@ -1783,7 +1783,7 @@ def test_setitem_overwrite_column(sample_df):
 
     df.ww['full_name'] = new_series
     assert 'full_name' in df.columns
-    assert 'full_name' in df.ww.columns
+    assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Boolean
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
     assert df.ww['full_name'].dtype == dtype
