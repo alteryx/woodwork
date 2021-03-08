@@ -1653,17 +1653,18 @@ def test_setitem_invalid_input(sample_df):
 
 def test_setitem_different_name(sample_df):
     df = sample_df.copy()
-    df.ww.init(index='id', time_index='signup_date')
+    df.ww.init()
 
     new_series = pd.Series([1, 2, 3, 4], name='wrong', dtype='float')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
-    warning = 'Name mismatch between wrong and right. Series name is now right'
+    warning = 'Name mismatch between wrong and id. Series name is now id'
     with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        df.ww['right'] = new_series
+        df.ww['id'] = new_series
 
-    assert df.ww['right'].name == 'right'
+    assert df.ww['id'].name == 'id'
+    assert 'id' in df.ww._schema.columns.keys()
     assert 'wrong' not in df.ww.columns
 
     new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='float')
@@ -1675,14 +1676,8 @@ def test_setitem_different_name(sample_df):
         df.ww['new_col'] = new_series2
 
     assert df.ww['new_col'].name == 'new_col'
+    assert 'new_col' in df.ww._schema.columns.keys()
     assert 'wrong2' not in df.ww.columns
-
-    warning = 'Name mismatch between wrong and col_with_name. Series name is now col_with_name'
-    with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        df.ww['col_with_name'] = new_series
-
-    assert df.ww['col_with_name'].name == 'col_with_name'
-    assert 'wrong' not in df.ww.columns
 
 
 def test_setitem_new_column(sample_df):
