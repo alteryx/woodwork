@@ -106,7 +106,7 @@ def _add_semantic_tags(new_tags, current_tags, name):
 
 
 def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use_standard_tags):
-    """Removes specified semantic tags from from the current set of tags'
+    """Removes specified semantic tags from from the current set of tags
 
     Args:
         tags_to_remove (str/list/set): The tags to remove
@@ -136,7 +136,7 @@ def _reset_semantic_tags(standard_tags, use_standard_tags):
         use_standard_tags (bool): If True, retain standard tags after reset
     """
     if use_standard_tags:
-        return standard_tags
+        return set(standard_tags)
     return set()
 
 

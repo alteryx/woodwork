@@ -77,12 +77,12 @@ def load_retail_to_accessor(id='demo_retail_data', nrows=None, init_woodwork=Tru
         nrows (int, optional): The number of rows to return in the dataset. If None, will
             return all possible rows. Defaults to None.
         init_woodwork (bool): If True, will return a pandas DataFrame with Woodwork
-        typing information initialized. If False, will return a DataFrame without
-        Woodwork initialized. Defaults to False.
+            typing information initialized. If False, will return a DataFrame without
+            Woodwork initialized. Defaults to False.
 
     Returns:
-         pd.DataFrame: A DataFrame containing the demo data with Woodwork typing initialized.
-            If `init_woodwork` is False, will return an uninitialized DataFrame.
+        pd.DataFrame: A DataFrame containing the demo data with Woodwork typing initialized.
+        If `init_woodwork` is False, will return an uninitialized DataFrame.
     """
     csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?version=" + ww.__version__
     csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?version=" + ww.__version__

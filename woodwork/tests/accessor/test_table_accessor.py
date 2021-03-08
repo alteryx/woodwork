@@ -706,25 +706,63 @@ def test_make_index(sample_df):
         assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
 
 
-def test_underlying_index_no_index(sample_df):
+def test_underlying_index_set_no_index_on_init(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
     if ks and isinstance(sample_df, ks.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
-    assert type(sample_df.index) == pd.RangeIndex
+    input_index = pd.Int64Index([99, 88, 77, 66])
 
     schema_df = sample_df.copy()
+    schema_df.index = input_index.copy()
+    pd.testing.assert_index_equal(input_index, schema_df.index)
+
     schema_df.ww.init()
-    assert type(schema_df.index) == pd.RangeIndex
+    assert schema_df.ww.index is None
+    pd.testing.assert_index_equal(input_index, schema_df.index)
 
-    sample_df = sample_df.sort_values('full_name')
-    assert type(sample_df.index) == pd.Int64Index
-    sample_df.ww.init()
-    assert type(sample_df.index) == pd.RangeIndex
+    sorted_df = schema_df.ww.sort_values('full_name')
+    assert sorted_df.ww.index is None
+    pd.testing.assert_index_equal(pd.Int64Index([88, 77, 99, 66]), sorted_df.index)
 
 
-def test_underlying_index(sample_df):
+def test_underlying_index_set(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    # Sets underlying index at init
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='full_name')
+    assert 'full_name' in schema_df.columns
+    assert schema_df.index.name is None
+    assert (schema_df.index == schema_df['full_name']).all()
+
+    # Sets underlying index on update
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='id')
+    schema_df.ww.set_index('full_name')
+    assert schema_df.ww.index == 'full_name'
+    assert 'full_name' in schema_df.columns
+    assert (schema_df.index == schema_df['full_name']).all()
+    assert schema_df.index.name is None
+
+    # confirm removing Woodwork index doesn't change underlying index
+    schema_df.ww.set_index(None)
+    assert schema_df.ww.index is None
+    assert (schema_df.index == schema_df['full_name']).all()
+
+    # Sets underlying index for made index
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='made_index', make_index=True)
+    assert 'made_index' in schema_df
+    assert (schema_df.index == [0, 1, 2, 3]).all()
+    assert schema_df.index.name is None
+
+
+def test_underlying_index_reset(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
     if ks and isinstance(sample_df, ks.DataFrame):
@@ -733,31 +771,88 @@ def test_underlying_index(sample_df):
     specified_index = pd.Index
     unspecified_index = pd.RangeIndex
 
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='full_name')
-    assert 'full_name' in schema_df.columns
-    assert schema_df.index.name is None
-    assert (schema_df.index == schema_df['full_name']).all()
-    assert type(schema_df.index) == specified_index
+    sample_df.ww.init()
+    assert type(sample_df.index) == unspecified_index
 
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='id')
-    schema_df.ww.set_index('full_name')
-    assert 'full_name' in schema_df.columns
-    assert (schema_df.index == schema_df['full_name']).all()
-    assert schema_df.index.name is None
-    assert type(schema_df.index) == specified_index
+    sample_df.ww.set_index('full_name')
+    assert type(sample_df.index) == specified_index
 
-    # test removing index removes the dataframe's index
-    schema_df.ww.set_index(None)
-    assert type(schema_df.index) == unspecified_index
+    copied_df = sample_df.ww.copy()
+    warning = ("Index mismatch between DataFrame and typing information")
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        copied_df.ww.reset_index(drop=True, inplace=True)
+    assert copied_df.ww.schema is None
+    assert type(copied_df.index) == unspecified_index
 
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='made_index', make_index=True)
-    assert 'made_index' in schema_df
-    assert (schema_df.index == [0, 1, 2, 3]).all()
-    assert schema_df.index.name is None
-    assert type(schema_df.index) == specified_index
+    sample_df.ww.set_index(None)
+    assert type(sample_df.index) == specified_index
+
+    # Use pandas operation to reset index
+    reset_df = sample_df.ww.reset_index(drop=True, inplace=False)
+    assert type(sample_df.index) == specified_index
+    assert type(reset_df.index) == unspecified_index
+
+    sample_df.ww.reset_index(drop=True, inplace=True)
+    assert type(sample_df.index) == unspecified_index
+
+
+def test_underlying_index_unchanged_after_updates(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    sample_df.ww.init(index='full_name')
+    assert 'full_name' in sample_df
+    assert sample_df.ww.index == 'full_name'
+    assert (sample_df.index == sample_df['full_name']).all()
+
+    copied_df = sample_df.ww.copy()
+
+    dropped_df = copied_df.ww.drop('full_name')
+    assert 'full_name' not in dropped_df
+    assert dropped_df.ww.index is None
+    assert (dropped_df.index == sample_df['full_name']).all()
+
+    selected_df = copied_df.ww.select('Integer')
+    assert 'full_name' not in dropped_df
+    assert selected_df.ww.index is None
+    assert (selected_df.index == sample_df['full_name']).all()
+
+    iloc_df = copied_df.ww.iloc[:, 2:]
+    assert 'full_name' not in iloc_df
+    assert iloc_df.ww.index is None
+    assert (iloc_df.index == sample_df['full_name']).all()
+
+    loc_df = copied_df.ww.loc[:, ['id', 'email']]
+    assert 'full_name' not in loc_df
+    assert loc_df.ww.index is None
+    assert (loc_df.index == sample_df['full_name']).all()
+
+    subset_df = copied_df.ww[['id', 'email']]
+    assert 'full_name' not in subset_df
+    assert subset_df.ww.index is None
+    assert (subset_df.index == sample_df['full_name']).all()
+
+    reset_tags_df = sample_df.ww.copy()
+    reset_tags_df.ww.reset_semantic_tags('full_name', retain_index_tags=False)
+    assert reset_tags_df.ww.index is None
+    assert (reset_tags_df.index == sample_df['full_name']).all()
+
+    remove_tags_df = sample_df.ww.copy()
+    remove_tags_df.ww.remove_semantic_tags({'full_name': 'index'})
+    assert remove_tags_df.ww.index is None
+    assert (remove_tags_df.index == sample_df['full_name']).all()
+
+    set_types_df = sample_df.ww.copy()
+    set_types_df.ww.set_types(semantic_tags={'full_name': 'new_tag'}, retain_index_tags=False)
+    assert set_types_df.ww.index is None
+    assert (set_types_df.index == sample_df['full_name']).all()
+
+    popped_df = sample_df.ww.copy()
+    popped_df.ww.pop('full_name')
+    assert popped_df.ww.index is None
+    assert (popped_df.index == sample_df['full_name']).all()
 
 
 def test_accessor_already_sorted(sample_unsorted_df):
@@ -1371,7 +1466,8 @@ def test_accessor_set_index(sample_df):
     assert sample_df.ww.index is None
     if isinstance(sample_df, pd.DataFrame):
         # underlying index not set for Dask/Koalas
-        assert (sample_df.index == range(4)).all()
+        # Check that underlying index doesn't get reset when Woodwork index is removed
+        assert (sample_df.index == sample_df['full_name']).all()
 
 
 def test_accessor_set_index_errors(sample_df):

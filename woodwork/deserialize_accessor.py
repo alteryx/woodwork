@@ -16,14 +16,14 @@ from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
 def read_table_typing_information(path):
-    '''Read Woodwork typing information from disk, S3 path, or URL.
+    """Read Woodwork typing information from disk, S3 path, or URL.
 
         Args:
             path (str): Location on disk, S3 path, or URL to read `woodwork_typing_info.json`.
 
         Returns:
             dict: Woodwork typing information dictionary
-    '''
+    """
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'woodwork_typing_info.json')
@@ -34,7 +34,7 @@ def read_table_typing_information(path):
 
 
 def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
-    '''Deserialize Woodwork table from table description.
+    """Deserialize Woodwork table from table description.
 
     Args:
         table_typing_info (dict) : Woodwork typing information. Likely generated using :meth:`.serialize.typing_info_to_dict`
@@ -42,7 +42,7 @@ def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
 
     Returns:
         DataFrame: DataFrame with Woodwork typing information initialized.
-    '''
+    """
     _check_schema_version(table_typing_info['schema_version'])
 
     path = table_typing_info['path']
@@ -127,7 +127,7 @@ def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
 
 
 def read_woodwork_table(path, profile_name=None, **kwargs):
-    '''Read Woodwork table from disk, S3 path, or URL.
+    """Read Woodwork table from disk, S3 path, or URL.
 
         Args:
             path (str): Directory on disk, S3 path, or URL to read `woodwork_typing_info.json`.
@@ -137,7 +137,7 @@ def read_woodwork_table(path, profile_name=None, **kwargs):
 
         Returns:
             DataFrame: DataFrame with Woodwork typing information initialized.
-    '''
+    """
     if _is_url(path) or _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name
@@ -159,9 +159,8 @@ def read_woodwork_table(path, profile_name=None, **kwargs):
 
 
 def _check_schema_version(saved_version_str):
-    '''Warns users if the schema used to save their data is greater than the latest
-    supported schema or if it is an outdated schema that is no longer supported.
-    '''
+    """Warns users if the schema used to save their data is greater than the latest
+    supported schema or if it is an outdated schema that is no longer supported."""
     saved = saved_version_str.split('.')
     current = SCHEMA_VERSION.split('.')
 

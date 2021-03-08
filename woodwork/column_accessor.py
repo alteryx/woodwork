@@ -161,10 +161,8 @@ class WoodworkColumnAccessor:
         return True
 
     def __getattr__(self, attr):
-        '''
-            If the method is present on the Accessor, uses that method.
-            If the method is present on Series, uses that method.
-        '''
+        # If the method is present on the Accessor, uses that method.
+        # If the method is present on Series, uses that method.
         if self._schema is None:
             _raise_init_error()
         if hasattr(self._series, attr):
@@ -182,12 +180,9 @@ class WoodworkColumnAccessor:
         return msg
 
     def _make_series_call(self, attr):
-        '''
-        Forwards the requested attribute onto the series object.
-        Intercepts return value, attempting to initialize Woodwork with the current schema
-        when a new Series is returned.
-        Confirms schema is still valid for the original Series.
-        '''
+        """Forwards the requested attribute onto the series object. Intercepts return value,
+        attempting to initialize Woodwork with the current schema when a new Series is returned.
+        Confirms schema is still valid for the original Series."""
         series_attr = getattr(self._series, attr)
 
         if callable(series_attr):
@@ -266,13 +261,16 @@ class WoodworkColumnAccessor:
         """Reset the semantic tags to the default values. The default values
         will be either an empty set or a set of the standard tags based on the
         column logical type, controlled by the use_standard_tags property.
+
+        Args:
+            None
         """
         self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
                                                              self.use_standard_tags)
 
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,
-        and returning a new Series.
+        and returning a new series with Woodwork initialied.
 
         Args:
             logical_type (LogicalType, str): The new logical type to set for the series.
