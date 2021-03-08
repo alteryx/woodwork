@@ -67,3 +67,11 @@ def check_column_order(dt, new_dt):
     assert all(dt.types.index == new_dt.types.index)
     # Confirm types df matches column order
     assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+
+
+def check_accessor_column_order(df, new_df):
+    # --> not sure if necessary
+    # confirm dataframe has the exact same column order
+    assert all(df.columns == new_df.columns)
+    # confirm types repr has the same column order
+    assert all(df.ww.types.index == new_df.ww.types.index)

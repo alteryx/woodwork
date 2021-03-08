@@ -1727,3 +1727,18 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         ks.set_option('compute.ops_on_diff_frames', False)
         sample_df_koalas.ww.init()
         assert ks.get_option('compute.ops_on_diff_frames') is True
+
+
+def test_maintain_column_order_of_dataframe(sample_df):
+    # select, drop, setitem, rename, repr, making a change directly on the schema dict
+
+    # for select make all of the dtypes the same ltype
+    # rename swap and swap back and chekc that the columns are the same - also check contents
+        # Drop the same columns in a different order and confirm resulting DataTable column order doesn't change
+    pass
+
+
+def test_maintain_column_order_of_input(sample_df):
+    # getitem, loc, iloc
+    # Test that reversed column order reverses resulting column order
+    pass
