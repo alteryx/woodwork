@@ -547,9 +547,3 @@ def test_value_counts(categorical_df):
     val_cts_2 = categorical_df.ww.value_counts(top_n=2)
     for col in val_cts_2:
         assert len(val_cts_2[col]) == 2
-
-
-def test_maintain_column_order_in_statistics(sample_df):
-    # --> do this - not sure if necessary
-    # descbribe lists ltypes, value counts returns a list of the categorical cols
-    pass

@@ -1,7 +1,6 @@
 # flake8: noqa
 from .column_utils import convert_series
 from .datatable_utils import (
-    check_accessor_column_order,
     check_column_order,
     mi_between_cols,
     to_pandas,

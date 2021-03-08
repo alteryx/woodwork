@@ -228,7 +228,7 @@ class WoodworkTableAccessor:
     def schema(self):
         """A copy of the Woodwork typing information for the DataFrame."""
         if self._schema:
-            return self._schema._get_subset_schema(list(self.columns.keys()))
+            return self._schema._get_subset_schema(list(self._dataframe.columns))
 
     @property
     def types(self):

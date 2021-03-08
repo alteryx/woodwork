@@ -38,7 +38,7 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema, check_accessor_column_order
+from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
