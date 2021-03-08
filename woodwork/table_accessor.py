@@ -169,7 +169,7 @@ class WoodworkTableAccessor:
         return series
 
     def __repr__(self):
-        return repr(self._schema)
+        return repr(self.types)
 
     @property
     def iloc(self):
@@ -234,7 +234,11 @@ class WoodworkTableAccessor:
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
-        return self._schema.types
+        repr_df = self._schema._get_typing_info()
+        # Maintain the same column order used in the DataFrame
+        repr_df = repr_df.loc[list(self._dataframe.columns), :]
+
+        return repr_df
 
     @property
     def logical_types(self):
@@ -571,11 +575,7 @@ class WoodworkTableAccessor:
         if not_present:
             raise ValueError(f'{not_present} not found in DataFrame')
 
-        new_schema = self._schema._get_subset_schema([col for col in self._dataframe.columns if col not in columns])
-        new_df = self._dataframe.drop(columns, axis=1)
-        new_df.ww.init(schema=new_schema)
-
-        return new_df
+        return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns])
 
     def rename(self, columns):
         """Renames columns in a DataFrame, maintaining Woodwork typing information.

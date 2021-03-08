@@ -38,7 +38,7 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
+from woodwork.tests.testing_utils import to_pandas, validate_subset_schema, check_accessor_column_order
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -1729,13 +1729,28 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         assert ks.get_option('compute.ops_on_diff_frames') is True
 
 
-def test_maintain_column_order_of_dataframe(sample_df):
-    # select, drop, setitem, rename, repr, making a change directly on the schema dict
-
-    # for select make all of the dtypes the same ltype
-    # rename swap and swap back and chekc that the columns are the same - also check contents
-        # Drop the same columns in a different order and confirm resulting DataTable column order doesn't change
+def test_maintain_column_order_on_type_changes(sample_df):
+    # make sure that updating tags or ltypes or index doesnt change the column order
     pass
+
+
+def test_maintain_column_order_of_dataframe(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='id')
+
+    select_df = schema_df.ww.select([NaturalLanguage, Integer, Boolean, Datetime])
+    assert all(schema_df.columns == select_df.columns)
+    assert all(schema_df.ww.types.index == select_df.ww.types.index)
+
+    renamed_df = schema_df.ww.rename({'email': 'renamed_1', 'id': 'renamed_2'})
+    renamed_cols = ['renamed_2', 'full_name', 'renamed_1', 'phone_number', 'age', 'signup_date', 'is_registered']
+    assert all(renamed_cols == renamed_df.columns)
+    assert all(renamed_cols == renamed_df.ww.types.index)
+
+    dropped_df = schema_df.ww.drop(['email', 'id', 'is_registered', 'age'])
+    cols_left_over = ['full_name', 'phone_number', 'signup_date']
+    assert all(cols_left_over == dropped_df.columns)
+    assert all(cols_left_over == dropped_df.ww.types.index)
 
 
 def test_maintain_column_order_of_input(sample_df):
