@@ -521,7 +521,6 @@ def test_value_counts(categorical_df):
         else:
             assert col in val_cts
 
-    none_val = np.nan
     expected_cat1 = [{'value': 200, 'count': 4}, {'value': 100, 'count': 3}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
     # Koalas converts numeric categories to strings, so we need to update the expected values for this
     # Koalas will result in `None` instead of `np.nan` in categorical columns
@@ -530,11 +529,10 @@ def test_value_counts(categorical_df):
         for items in expected_cat1:
             updated_results.append({k: (str(v) if k == 'value' else v) for k, v in items.items()})
         expected_cat1 = updated_results
-        none_val = 'None'
 
     assert val_cts['categories1'] == expected_cat1
-    assert val_cts['categories2'] == [{'value': none_val, 'count': 6}, {'value': 'test', 'count': 3}, {'value': 'test2', 'count': 1}]
-    assert val_cts['categories3'] == [{'value': none_val, 'count': 7}, {'value': 'test', 'count': 3}]
+    assert val_cts['categories2'] == [{'value': np.nan, 'count': 6}, {'value': 'test', 'count': 3}, {'value': 'test2', 'count': 1}]
+    assert val_cts['categories3'] == [{'value': np.nan, 'count': 7}, {'value': 'test', 'count': 3}]
 
     val_cts_descending = categorical_df.ww.value_counts(ascending=True)
     for col, vals in val_cts_descending.items():

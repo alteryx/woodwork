@@ -27,8 +27,11 @@ ks = import_or_none('databricks.koalas')
 def test_datacolumn_init(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support category dtype
-    if not (ks and isinstance(sample_series, ks.Series)):
+    if ks and isinstance(sample_series, ks.Series):
+        sample_series = sample_series.astype('string')
+    else:
         sample_series = sample_series.astype('category')
+
     pd.testing.assert_series_equal(to_pandas(data_col.to_series()), to_pandas(sample_series))
     assert data_col.name == sample_series.name
     assert data_col.logical_type == Categorical
@@ -200,7 +203,7 @@ def test_datacolumn_repr(sample_series):
     data_col = DataColumn(sample_series, use_standard_tags=False)
     # Koalas doesn't support categorical
     if ks and isinstance(sample_series, ks.Series):
-        dtype = 'object'
+        dtype = 'string'
     else:
         dtype = 'category'
     assert data_col.__repr__() == f'<DataColumn: sample_series (Physical Type = {dtype}) ' \

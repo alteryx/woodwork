@@ -193,7 +193,7 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing Schema
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(result, self._schema['logical_type'])
-                    if result.dtype == valid_dtype:
+                    if str(result.dtype) == valid_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
                         del schema['dtype']
@@ -216,15 +216,9 @@ class WoodworkColumnAccessor:
         specific validation, as required."""
         valid_dtype = _get_valid_dtype(self._series, logical_type)
         if valid_dtype != str(self._series.dtype):
-            if ks and isinstance(self._series, ks.Series) and logical_type.backup_dtype:
-                # Koalas will have a dtype of `object` even after `ks.Series.astype('str')` but we want to inform
-                # users to try to convert to the backup dtype not the dtype considered valid for the series
-                convert_dtype = logical_type.backup_dtype
-            else:
-                convert_dtype = valid_dtype
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
-                             f"dtype to '{convert_dtype}' before initializing or use the "
+                             f"dtype to '{valid_dtype}' before initializing or use the "
                              "woodwork.init_series function to initialize.")
 
         if isinstance(logical_type, Ordinal):

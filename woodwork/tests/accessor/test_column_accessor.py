@@ -56,15 +56,9 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    if ks and isinstance(sample_series, ks.Series):
-        # Koalas uses `object` as the dtype for NaturalLanguage, so need to use something else
-        series = sample_series.astype('float')
-        series_dtype = 'float64'
-        correct_dtype = 'str'
-    else:
-        series = sample_series
-        series_dtype = 'object'
-        correct_dtype = 'string'
+    series = sample_series
+    series_dtype = 'object'
+    correct_dtype = 'string'
     error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \
         f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before initializing " \
         "or use the woodwork.init_series function to initialize."
@@ -167,7 +161,7 @@ def test_accessor_repr(sample_series):
     series.ww.init(use_standard_tags=False)
     # Koalas doesn't support categorical
     if ks and isinstance(series, ks.Series):
-        dtype = 'object'
+        dtype = 'string'
     else:
         dtype = 'category'
     assert series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
@@ -286,12 +280,11 @@ def test_set_logical_type_valid_dtype_change(sample_series):
     new_series = series.ww.set_logical_type('NaturalLanguage')
 
     if ks and isinstance(sample_series, ks.Series):
-        # Koalas uses same series dtype for both
-        original_dtype = 'object'
-        new_dtype = 'object'
+        # Koalas uses string dtype for Categorical
+        original_dtype = 'string'
     else:
         original_dtype = 'category'
-        new_dtype = 'string'
+    new_dtype = 'string'
 
     assert series.ww.logical_type == Categorical
     assert series.dtype == original_dtype
@@ -397,6 +390,8 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
 
 
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
+    if ks and isinstance(sample_series, ks.Series):
+        pytest.xfail('Running replace on Koalas series changes series dtype to object, invalidating schema')
     series = convert_series(sample_series, Categorical)
     series.ww.init()
 
@@ -425,8 +420,9 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
     series.ww.init()
 
     if ks and isinstance(sample_series, ks.Series):
-        original_type = 'object'
-        new_type = 'int64'
+        # Koalas uses `string` for Categorical, so must try a different conversion
+        original_type = 'string'
+        new_type = 'Int64'
     else:
         original_type = 'category'
         new_type = 'string'

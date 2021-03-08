@@ -93,12 +93,9 @@ def test_is_dataframe(sample_df):
 def test_get_valid_dtype(sample_series):
     valid_dtype = _get_valid_dtype(sample_series, Categorical)
     if ks and isinstance(sample_series, ks.Series):
-        assert valid_dtype == 'object'
+        assert valid_dtype == 'string'
     else:
         assert valid_dtype == 'category'
 
     valid_dtype = _get_valid_dtype(sample_series, Boolean)
-    if ks and isinstance(sample_series, ks.Series):
-        assert valid_dtype == 'bool'
-    else:
-        assert valid_dtype == 'boolean'
+    assert valid_dtype == 'boolean'
