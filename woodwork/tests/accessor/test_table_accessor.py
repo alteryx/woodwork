@@ -1746,8 +1746,7 @@ def test_setitem_overwrite_column(sample_df):
     )
 
     # Change to column no change in types
-    original_col = df['age']
-    original_col.ww.init()
+    original_col = df.ww['age'] 
     new_series = pd.Series([1, 2, 3])
     if ks and isinstance(sample_df, ks.DataFrame):
         dtype = 'int64'
