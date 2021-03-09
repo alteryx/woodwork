@@ -113,7 +113,7 @@ def test_accessor_schema_property(sample_df):
 
 
 def test_accessor_physical_types_property(sample_df):
-    sample_df.ww.init()
+    sample_df.ww.init(logical_types={'age': 'Categorical'})
 
     assert isinstance(sample_df.ww.physical_types, dict)
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
