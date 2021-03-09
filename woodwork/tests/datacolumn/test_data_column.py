@@ -432,7 +432,7 @@ def test_remove_standard_semantic_tag(sample_series):
     expected_message = "Removing standard semantic tag(s) 'category' from column 'sample_series'"
     with pytest.warns(UserWarning) as record:
         new_col = data_col.remove_semantic_tags(['tag1', 'category'])
-    
+
     if ks and not isinstance(sample_series, ks.Series):
         # Koalas throws extra warnings
         assert len(record) == 1
