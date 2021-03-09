@@ -66,6 +66,10 @@ def _update_column_dtype(series, logical_type):
         else:
             series = series.apply(_reformat_to_latlong)
     if logical_type.pandas_dtype != str(series.dtype):
+        if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
+            new_dtype = logical_type.backup_dtype
+        else:
+            new_dtype = logical_type.pandas_dtype
         # Update the underlying series
         try:
             if _get_ltype_class(logical_type) == Datetime:
@@ -80,14 +84,10 @@ def _update_column_dtype(series, logical_type):
                 else:
                     series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
-                if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
-                    new_dtype = logical_type.backup_dtype
-                else:
-                    new_dtype = logical_type.pandas_dtype
                 series = series.astype(new_dtype)
         except (TypeError, ValueError):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-                f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
                 f'logical type {logical_type}.'
             raise TypeConversionError(error_msg)
     return series
@@ -118,11 +118,7 @@ def _get_valid_dtype(series, logical_type):
     with the given logical_type"""
     backup_dtype = logical_type.backup_dtype
     if ks and isinstance(series, ks.Series) and backup_dtype:
-        if backup_dtype == 'str':
-            # Koalas will have a dtype of object even after `ks.Series.astype('str')`
-            valid_dtype = 'object'
-        else:
-            valid_dtype = backup_dtype
+        valid_dtype = backup_dtype
     else:
         valid_dtype = logical_type.pandas_dtype
 

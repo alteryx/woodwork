@@ -1028,21 +1028,15 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    if ks and isinstance(sample_df, ks.DataFrame):
-        # Converting to type `str` results in a `object` dtype for Koalas
-        ltype_dtype = 'int64'
-        new_dtype = 'str'
-        object_dtype = 'object'
-    else:
-        ltype_dtype = 'Int64'
-        new_dtype = 'string'
-        object_dtype = 'string'
+    ltype_dtype = 'Int64'
+    new_dtype = 'string'
+
     warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
-        f'dtype mismatch for column id between DataFrame dtype, {object_dtype}, and Integer dtype, {ltype_dtype}.\n '\
+        f'dtype mismatch for column id between DataFrame dtype, {new_dtype}, and Integer dtype, {ltype_dtype}.\n '\
         'Please initialize Woodwork with DataFrame.ww.init'
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
         new_df = schema_df.ww.astype({'id': new_dtype})
-    assert new_df['id'].dtype == object_dtype
+    assert new_df['id'].dtype == new_dtype
     assert new_df.ww.schema is None
     assert schema_df.ww.schema is not None
 

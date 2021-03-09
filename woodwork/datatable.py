@@ -811,9 +811,7 @@ class DataTable(object):
         if dd and isinstance(self._dataframe, dd.DataFrame):
             df = self._dataframe.compute()
         elif ks and isinstance(self._dataframe, ks.DataFrame):
-            # Missing values in Koalas will be replaced with 'None' - change them to
-            # np.nan so stats are calculated properly
-            df = self._dataframe.to_pandas().replace(to_replace='None', value=np.nan)
+            df = self._dataframe.to_pandas()
 
             # Any LatLong columns will be using lists, which we must convert
             # back to tuples so we can calculate the mode, which requires hashable values

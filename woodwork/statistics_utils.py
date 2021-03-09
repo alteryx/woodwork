@@ -48,9 +48,7 @@ def _get_describe_dict(dataframe, include=None):
     if dd and isinstance(dataframe, dd.DataFrame):
         df = dataframe.compute()
     elif ks and isinstance(dataframe, ks.DataFrame):
-        # Missing values in Koalas will be replaced with 'None' - change them to
-        # np.nan so stats are calculated properly
-        df = dataframe.to_pandas().replace(to_replace='None', value=np.nan)
+        df = dataframe.to_pandas()
 
         # Any LatLong columns will be using lists, which we must convert
         # back to tuples so we can calculate the mode, which requires hashable values
