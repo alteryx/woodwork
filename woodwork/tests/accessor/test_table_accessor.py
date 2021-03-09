@@ -32,6 +32,7 @@ from woodwork.logical_types import (
 )
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
+    WoodworkTableAccessor,
     _check_index,
     _check_logical_types,
     _check_time_index,
@@ -148,59 +149,62 @@ def test_init_accessor_with_schema(sample_df):
 
 
 def test_accessor_init_errors_methods(sample_df):
+    def is_public_method(val):
+        if hasattr(WoodworkTableAccessor, val) and val[0] != '_':
+            if callable(getattr(WoodworkTableAccessor, val)):
+                return True
+        return False
+
+    methods_to_exclude = ['init']
+    methods = [method for method in dir(sample_df.ww) if is_public_method(method)]
+    methods = [method for method in methods if method not in methods_to_exclude]
+    method_args_dict = {
+        'add_semantic_tags': [{'id': 'new_tag'}],
+        'describe': None,
+        'pop': ['id'],
+        'describe': None,
+        'describe_dict': None,
+        'drop': ['id'],
+        'mutual_information': None,
+        'mutual_information_dict': None,
+        'remove_semantic_tags': [{'id': 'new_tag'}],
+        'rename': [{'id': 'new_id'}],
+        'reset_semantic_tags': None,
+        'select': [['Double']],
+        'set_index': ['id'],
+        'set_time_index': ['signup_date'],
+        'set_types': [{'id': 'Integer'}],
+        'to_csv': ['dir'],
+        'to_dictionary': None,
+        'to_parquet': ['dir'],
+        'to_pickle': ['dir'],
+        'value_counts': None,
+
+    }
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.select(include=['Double'])
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.set_index('id')
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.set_time_index('signup_date')
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.add_semantic_tags({'id': 'new_tag'})
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.remove_semantic_tags({'id': 'new_tag'})
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.reset_semantic_tags()
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.set_types({'id': 'Integer'})
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.pop('id')
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.drop('id')
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.rename({'id': 'new_id'})
+    for method in methods:
+        func = getattr(sample_df.ww, method)
+        method_args = method_args_dict[method]
+        with pytest.raises(AttributeError, match=error):
+            if method_args:
+                func(*method_args)
+            else:
+                func()
 
 
 def test_accessor_init_errors_properties(sample_df):
+    def is_prop(val):
+        if hasattr(WoodworkTableAccessor, val) and isinstance(getattr(WoodworkTableAccessor, val), property):
+            return True
+        return False
+
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    props_to_exclude = ['iloc', 'loc', 'schema']
+    props = [prop for prop in dir(sample_df.ww) if is_prop(prop) and prop not in props_to_exclude]
 
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.types
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.logical_types
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.physical_types
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.semantic_tags
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.index
-
-    with pytest.raises(AttributeError, match=error):
-        sample_df.ww.time_index
+    for prop in props:
+        with pytest.raises(AttributeError, match=error):
+            getattr(sample_df.ww, prop)
 
 
 def test_init_accessor_with_schema_errors(sample_df):
