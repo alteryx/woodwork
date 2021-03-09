@@ -541,7 +541,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == LatLong
         assert df[column_name].dtype == LatLong.primary_dtype
-
+        df_pandas = to_pandas(df[column_name])
+        expected_val = (3, 4)
         if ks and isinstance(latlong_df, ks.DataFrame):
             expected_val = [3, 4]
         assert df_pandas.iloc[-1] == expected_val
@@ -1147,6 +1148,25 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     if dd and not isinstance(sample_df, dd.DataFrame):
         # keys() not supported with Dask
         pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
+
+
+def test_dataframe_methods_on_accessor_to_pandas(sample_df):
+    if isinstance(sample_df, pd.DataFrame):
+        pytest.skip("No need to test converting pandas DataFrame to pandas")
+
+    sample_df.ww.init(name='woodwork', index='id')
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pd_df = sample_df.ww.compute()
+        assert isinstance(pd_df, pd.DataFrame)
+        assert pd_df.ww.index == 'id'
+        assert pd_df.ww.name == 'woodwork'
+
+    elif ks and isinstance(sample_df, ks.DataFrame):
+        pd_df = sample_df.ww.to_pandas()
+        assert isinstance(pd_df, pd.DataFrame)
+        assert pd_df.ww.index == 'id'
+        assert pd_df.ww.name == 'woodwork'
 
 
 def test_get_subset_df_with_schema(sample_df):
