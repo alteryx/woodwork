@@ -1833,14 +1833,9 @@ def test_accessor_types(sample_df):
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
 
-    if ks and isinstance(sample_df, ks.DataFrame):
-        string_dtype = 'str'
-        boolean_dtype = 'bool'
-        int_dtype = 'int64'
-    else:
-        string_dtype = 'string'
-        boolean_dtype = 'boolean'
-        int_dtype = 'Int64'
+    string_dtype = 'string'
+    boolean_dtype = 'boolean'
+    int_dtype = 'Int64'
 
     correct_physical_types = {
         'id': int_dtype,
@@ -1853,7 +1848,6 @@ def test_accessor_types(sample_df):
     }
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
                                        index=list(correct_physical_types.keys()))
-    print(returned_types['Physical Type'])
     assert correct_physical_types.equals(returned_types['Physical Type'])
 
     correct_logical_types = {
@@ -1884,7 +1878,6 @@ def test_accessor_types(sample_df):
 
 
 def test_accessor_repr(small_df):
-    # --> koalas is broken need to actually look at repr
     small_df.ww.init()
 
     table_repr = repr(small_df.ww)
