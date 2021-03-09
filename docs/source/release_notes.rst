@@ -51,6 +51,8 @@ Release Notes
         * Preserve pandas underlying index when not creating a Woodwork index (:pr:`664`)
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
         * Clean up dtype usage across Woodwork (:pr:`682`)
+        * Remove dtype from Schema dictionary (:pr:`685`)
+
     * Documentation Changes
         * Update docstrings and API Reference page (:pr:`660`)
     * Testing Changes
