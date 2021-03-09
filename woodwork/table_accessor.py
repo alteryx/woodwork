@@ -6,7 +6,8 @@ import woodwork.serialize_accessor as serialize
 from woodwork.accessor_utils import (
     _get_valid_dtype,
     _is_dataframe,
-    _update_column_dtype
+    _update_column_dtype,
+    init_series
 )
 from woodwork.exceptions import (
     ColumnNameMismatchWarning,
@@ -185,7 +186,7 @@ class WoodworkTableAccessor:
                           ColumnNameMismatchWarning)
 
         if column.ww._schema is None:
-            column.ww.init(use_standard_tags=self.use_standard_tags)
+            column = init_series(column, use_standard_tags=self.use_standard_tags)
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema

@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNameMismatchWarning,
     ColumnNotPresentError,
@@ -1851,7 +1852,7 @@ def test_setitem_overwrite_column(sample_df):
         dtype = 'Int64'
         new_series = new_series.astype(dtype)
 
-    new_series.ww.init(use_standard_tags=True)
+    new_series = init_series(new_series, use_standard_tags=True)
     df.ww['age'] = new_series
 
     assert 'age' in df.columns
@@ -1871,7 +1872,8 @@ def test_setitem_overwrite_column(sample_df):
         dtype = 'boolean'
         new_series = new_series.astype(dtype)
 
-    new_series.ww.init(
+    new_series = init_series(
+        new_series,
         use_standard_tags=False,
         semantic_tags='test_tag',
     )
