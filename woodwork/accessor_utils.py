@@ -65,11 +65,12 @@ def _update_column_dtype(series, logical_type):
             series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
-    if logical_type.pandas_dtype != str(series.dtype):
+    if logical_type.primary_dtype != str(series.dtype):
+        # --> replace with _get_valid_dtype
         if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
             new_dtype = logical_type.backup_dtype
         else:
-            new_dtype = logical_type.pandas_dtype
+            new_dtype = logical_type.primary_dtype
         # Update the underlying series
         try:
             if _get_ltype_class(logical_type) == Datetime:
@@ -120,6 +121,6 @@ def _get_valid_dtype(series, logical_type):
     if ks and isinstance(series, ks.Series) and backup_dtype:
         valid_dtype = backup_dtype
     else:
-        valid_dtype = logical_type.pandas_dtype
+        valid_dtype = logical_type.primary_dtype
 
     return valid_dtype

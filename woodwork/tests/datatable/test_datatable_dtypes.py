@@ -60,8 +60,8 @@ def test_sets_category_dtype_on_init():
             }
             dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
             assert dt.columns[column_name].logical_type == logical_type
-            assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-            assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+            assert dt.columns[column_name].dtype == logical_type.primary_dtype
+            assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_category_dtype_on_update():
@@ -83,8 +83,8 @@ def test_sets_category_dtype_on_update():
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         dt = dt.set_types(logical_types={column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_object_dtype_on_init(latlong_df):
@@ -94,8 +94,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         }
         dt = DataTable(latlong_df.loc[:, [column_name]], logical_types=ltypes)
         assert dt.columns[column_name].logical_type == LatLong
-        assert dt.columns[column_name].dtype == LatLong.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == LatLong.pandas_dtype
+        assert dt.columns[column_name].dtype == LatLong.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == LatLong.primary_dtype
 
 
 def test_sets_object_dtype_on_update(latlong_df):
@@ -106,8 +106,8 @@ def test_sets_object_dtype_on_update(latlong_df):
         dt = DataTable(latlong_df.loc[:, [column_name]], logical_types=ltypes)
         dt = dt.set_types(logical_types={column_name: LatLong})
         assert dt.columns[column_name].logical_type == LatLong
-        assert dt.columns[column_name].dtype == LatLong.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == LatLong.pandas_dtype
+        assert dt.columns[column_name].dtype == LatLong.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == LatLong.primary_dtype
 
 
 def test_sets_string_dtype_on_init():
@@ -136,8 +136,8 @@ def test_sets_string_dtype_on_init():
             }
             dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
             assert dt.columns[column_name].logical_type == logical_type
-            assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-            assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+            assert dt.columns[column_name].dtype == logical_type.primary_dtype
+            assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_string_dtype_on_update():
@@ -160,8 +160,8 @@ def test_sets_string_dtype_on_update():
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         dt = dt.set_types(logical_types={column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_boolean_dtype_on_init():
@@ -181,8 +181,8 @@ def test_sets_boolean_dtype_on_init():
         }
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_boolean_dtype_on_update():
@@ -195,8 +195,8 @@ def test_sets_boolean_dtype_on_update():
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
     dt = dt.set_types(logical_types={column_name: Boolean})
     assert dt.columns[column_name].logical_type == Boolean
-    assert dt.columns[column_name].dtype == Boolean.pandas_dtype
-    assert dt.to_dataframe()[column_name].dtype == Boolean.pandas_dtype
+    assert dt.columns[column_name].dtype == Boolean.primary_dtype
+    assert dt.to_dataframe()[column_name].dtype == Boolean.primary_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -217,8 +217,8 @@ def test_sets_int64_dtype_on_init():
             }
             dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_int64_dtype_on_update():
@@ -234,8 +234,8 @@ def test_sets_int64_dtype_on_update():
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         dt = dt.set_types(logical_types={column_name: logical_type})
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_float64_dtype_on_init():
@@ -254,8 +254,8 @@ def test_sets_float64_dtype_on_init():
         }
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_float64_dtype_on_update():
@@ -268,8 +268,8 @@ def test_sets_float64_dtype_on_update():
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
     dt = dt.set_types(logical_types={column_name: Double})
     assert dt.columns[column_name].logical_type == Double
-    assert dt.columns[column_name].dtype == Double.pandas_dtype
-    assert dt.to_dataframe()[column_name].dtype == Double.pandas_dtype
+    assert dt.columns[column_name].dtype == Double.primary_dtype
+    assert dt.to_dataframe()[column_name].dtype == Double.primary_dtype
 
 
 def test_sets_datetime64_dtype_on_init():
@@ -290,8 +290,8 @@ def test_sets_datetime64_dtype_on_init():
         }
         dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
         assert dt.columns[column_name].logical_type == logical_type
-        assert dt.columns[column_name].dtype == logical_type.pandas_dtype
-        assert dt.to_dataframe()[column_name].dtype == logical_type.pandas_dtype
+        assert dt.columns[column_name].dtype == logical_type.primary_dtype
+        assert dt.to_dataframe()[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_datetime_dtype_on_update():
@@ -304,8 +304,8 @@ def test_sets_datetime_dtype_on_update():
     dt = DataTable(pd.DataFrame(series), logical_types=ltypes)
     dt = dt.set_types(logical_types={column_name: Datetime})
     assert dt.columns[column_name].logical_type == Datetime
-    assert dt.columns[column_name].dtype == Datetime.pandas_dtype
-    assert dt.to_dataframe()[column_name].dtype == Datetime.pandas_dtype
+    assert dt.columns[column_name].dtype == Datetime.primary_dtype
+    assert dt.to_dataframe()[column_name].dtype == Datetime.primary_dtype
 
 
 def test_invalid_dtype_casting():

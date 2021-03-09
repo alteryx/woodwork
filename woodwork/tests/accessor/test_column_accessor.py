@@ -196,7 +196,7 @@ def test_adds_numeric_standard_tag():
 
     logical_types = [Integer, Double]
     for logical_type in logical_types:
-        series = series.astype(logical_type.pandas_dtype)
+        series = series.astype(logical_type.primary_dtype)
         series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
         assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
 

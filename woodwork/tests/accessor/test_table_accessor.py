@@ -514,8 +514,8 @@ def test_sets_category_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_object_dtype_on_init(latlong_df):
@@ -526,8 +526,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == LatLong
-        assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
-        assert df[column_name].dtype == LatLong.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == LatLong.primary_dtype
+        assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
         if ks and isinstance(latlong_df, ks.DataFrame):
@@ -562,8 +562,8 @@ def test_sets_string_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_boolean_dtype_on_init():
@@ -584,8 +584,8 @@ def test_sets_boolean_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -607,8 +607,8 @@ def test_sets_int64_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_float64_dtype_on_init():
@@ -628,8 +628,8 @@ def test_sets_float64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_datetime64_dtype_on_init():
@@ -651,8 +651,8 @@ def test_sets_datetime64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_invalid_dtype_casting():
