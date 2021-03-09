@@ -1727,3 +1727,74 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         ks.set_option('compute.ops_on_diff_frames', False)
         sample_df_koalas.ww.init()
         assert ks.get_option('compute.ops_on_diff_frames') is True
+
+
+def test_maintain_column_order_on_type_changes(sample_df):
+    sample_df.ww.init()
+    schema_df = sample_df.ww.copy()
+
+    schema_df.ww.set_types(logical_types={'email': 'Categorical', 'id': 'Double'},
+                           semantic_tags={'age': 'tag', 'email': 'tag'})
+    assert all(schema_df.columns == sample_df.columns)
+    assert all(schema_df.ww.types.index == sample_df.ww.types.index)
+
+    schema_df.ww.set_index('email')
+    assert all(schema_df.columns == sample_df.columns)
+    assert all(schema_df.ww.types.index == sample_df.ww.types.index)
+
+
+def test_maintain_column_order_of_dataframe(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    select_df = schema_df.ww.select([NaturalLanguage, Integer, Boolean, Datetime])
+    assert all(schema_df.columns == select_df.columns)
+    assert all(schema_df.ww.types.index == select_df.ww.types.index)
+
+    renamed_df = schema_df.ww.rename({'email': 'renamed_1', 'id': 'renamed_2'})
+    renamed_cols = ['renamed_2', 'full_name', 'renamed_1', 'phone_number', 'age', 'signup_date', 'is_registered']
+    assert all(renamed_cols == renamed_df.columns)
+    assert all(renamed_cols == renamed_df.ww.types.index)
+
+    dropped_df = schema_df.ww.drop(['email', 'id', 'is_registered', 'age'])
+    cols_left_over = ['full_name', 'phone_number', 'signup_date']
+    assert all(cols_left_over == dropped_df.columns)
+    assert all(cols_left_over == dropped_df.ww.types.index)
+
+
+def test_maintain_column_order_of_input(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    reversed_cols = list(schema_df.columns[::-1])
+
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        iloc_df = schema_df.ww.iloc[:, list(range(len(schema_df.columns)))[::-1]]
+        assert all(reversed_cols == iloc_df.columns)
+        assert all(reversed_cols == iloc_df.ww.types.index)
+
+    loc_df = schema_df.ww.loc[:, reversed_cols]
+    assert all(reversed_cols == loc_df.columns)
+    assert all(reversed_cols == loc_df.ww.types.index)
+
+    getitem_df = schema_df.ww[reversed_cols]
+    assert all(reversed_cols == getitem_df.columns)
+    assert all(reversed_cols == getitem_df.ww.types.index)
+
+
+def test_maintain_column_order_disordered_schema(sample_df):
+    sample_df.ww.init()
+    column_order = list(sample_df.columns)
+
+    scramble_df = sample_df.ww.copy()
+    id_col = scramble_df.ww.columns.pop('id')
+    scramble_df.ww.columns['id'] = id_col
+    assert list(scramble_df.ww.columns.keys()) != column_order
+
+    assert scramble_df.ww.schema == sample_df.ww.schema
+    assert all(scramble_df.columns == column_order)
+    assert all(scramble_df.ww.types.index == column_order)
+
+    sample_df.ww.init(schema=scramble_df.ww.schema)
+    assert all(sample_df.columns == column_order)
+    assert all(sample_df.ww.types.index == column_order)
