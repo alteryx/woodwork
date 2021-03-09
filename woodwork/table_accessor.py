@@ -450,7 +450,6 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-
         import_error_message = (
             "The pyarrow library is required to serialize to parquet.\n"
             "Install via pip:\n"
@@ -555,7 +554,6 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-
         if column_name not in self._dataframe.columns:
             raise LookupError(f'Column with name {column_name} not found in DataFrame')
 
@@ -587,7 +585,6 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-
         if not isinstance(columns, (list, set)):
             columns = [columns]
 
