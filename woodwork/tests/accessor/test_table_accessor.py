@@ -1797,24 +1797,6 @@ def test_setitem_new_column(sample_df):
     assert df.ww['test_col2'].name == 'test_col2'
     assert df.ww['test_col2'].dtype == dtype
 
-    # Standard tags and no logical type
-    if ks and isinstance(sample_df, ks.DataFrame):
-        dtype = 'object'
-        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
-        new_series = ks.Series(new_series)
-    else:
-        dtype = 'category'
-        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
-
-    new_series = init_series(new_series)
-    df.ww['test_col'] = new_series
-    assert 'test_col' in df.columns
-    assert 'test_col' in df.ww._schema.columns.keys()
-    assert df.ww['test_col'].ww.logical_type == Categorical
-    assert df.ww['test_col'].ww.semantic_tags == {'category'}
-    assert df.ww['test_col'].name == 'test_col'
-    assert df.ww['test_col'].dtype == dtype
-
     new_series = pd.Series([1, 2, 3], dtype='float')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
@@ -1833,6 +1815,27 @@ def test_setitem_new_column(sample_df):
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
     assert df.ww['test_col3'].dtype == 'float'
+
+    # Standard tags and no logical type
+    df = sample_df.copy()
+    df.ww.init(use_standard_tags=True)
+
+    if ks and isinstance(sample_df, ks.DataFrame):
+        dtype = 'object'
+        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'category'
+        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
+
+    new_series = init_series(new_series)
+    df.ww['test_col'] = new_series
+    assert 'test_col' in df.columns
+    assert 'test_col' in df.ww._schema.columns.keys()
+    assert df.ww['test_col'].ww.logical_type == Categorical
+    assert df.ww['test_col'].ww.semantic_tags == {'category'}
+    assert df.ww['test_col'].name == 'test_col'
+    assert df.ww['test_col'].dtype == dtype
 
 
 def test_setitem_overwrite_column(sample_df):
