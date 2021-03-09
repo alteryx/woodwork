@@ -299,7 +299,7 @@ def test_describe_accessor_method(describe_df):
     datetime_data = describe_df[['datetime_col']]
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
             'count': 7,
@@ -328,7 +328,7 @@ def test_describe_accessor_method(describe_df):
                                                 '2020-02-01',
                                                 '2020-01-02'])
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
             'count': 7,
@@ -352,7 +352,7 @@ def test_describe_accessor_method(describe_df):
         timedelta_data = describe_df['timedelta_col']
         for ltype in timedelta_ltypes:
             expected_vals = pd.Series({
-                'physical_type': ltype.pandas_dtype,
+                'physical_type': ltype.primary_dtype,
                 'logical_type': ltype,
                 'semantic_tags': {'custom_tag'},
                 'count': 7,
@@ -370,7 +370,7 @@ def test_describe_accessor_method(describe_df):
     numeric_data = describe_df[['numeric_col']]
     for ltype in numeric_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7,
