@@ -1864,13 +1864,9 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = df['full_name']
-    new_series = pd.Series([True, False, False])
+    new_series = pd.Series([0, 1, 2], dtype='float')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
-        dtype = 'bool'
-    else:
-        dtype = 'boolean'
-        new_series = new_series.astype(dtype)
 
     new_series = init_series(
         new_series,
@@ -1881,7 +1877,29 @@ def test_setitem_overwrite_column(sample_df):
     df.ww['full_name'] = new_series
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
-    assert df.ww['full_name'].ww.logical_type == Boolean
+    assert df.ww['full_name'].ww.logical_type == Double
+    assert df.ww['full_name'].ww.semantic_tags == {'test_tag', 'numeric'}
+    assert df.ww['full_name'].dtype == 'float'
+    assert original_col is not df.ww['full_name']
+
+    df = sample_df.copy()
+    df.ww.init(use_standard_tags=False)
+
+    original_col = df['full_name']
+    new_series = pd.Series([0, 1, 2], dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    new_series = init_series(
+        new_series,
+        use_standard_tags=True,
+        semantic_tags='test_tag',
+    )
+
+    df.ww['full_name'] = new_series
+    assert 'full_name' in df.columns
+    assert 'full_name' in df.ww._schema.columns.keys()
+    assert df.ww['full_name'].ww.logical_type == Double
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
-    assert df.ww['full_name'].dtype == dtype
+    assert df.ww['full_name'].dtype == 'float'
     assert original_col is not df.ww['full_name']

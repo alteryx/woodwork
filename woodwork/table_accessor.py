@@ -187,6 +187,12 @@ class WoodworkTableAccessor:
 
         if column.ww._schema is None:
             column = init_series(column, use_standard_tags=self.use_standard_tags)
+        elif self.use_standard_tags and not column.ww.use_standard_tags:
+            column.ww._schema['semantic_tags'] |= column.ww.logical_type.standard_tags
+            warnings.warn(f'Standard tags are used by the data frame and have been added to "{col_name}"')
+        elif not self.use_standard_tags and column.ww.use_standard_tags:
+            column.ww._schema['semantic_tags'] -= column.ww.logical_type.standard_tags
+            warnings.warn(f'Standard tags are not used by the data frame and have been removed from "{col_name}"')
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema
