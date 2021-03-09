@@ -1780,3 +1780,21 @@ def test_maintain_column_order_of_input(sample_df):
     getitem_df = schema_df.ww[reversed_cols]
     assert all(reversed_cols == getitem_df.columns)
     assert all(reversed_cols == getitem_df.ww.types.index)
+
+
+def test_maintain_column_order_disordered_schema(sample_df):
+    sample_df.ww.init()
+    column_order = list(sample_df.columns)
+
+    scramble_df = sample_df.ww.copy()
+    id_col = scramble_df.ww.columns.pop('id')
+    scramble_df.ww.columns['id'] = id_col
+    assert list(scramble_df.ww.columns.keys()) != column_order
+
+    assert scramble_df.ww.schema == sample_df.ww.schema
+    assert all(scramble_df.columns == column_order)
+    assert all(scramble_df.ww.types.index == column_order)
+
+    sample_df.ww.init(schema=scramble_df.ww.schema)
+    assert all(sample_df.columns == column_order)
+    assert all(sample_df.ww.types.index == column_order)
