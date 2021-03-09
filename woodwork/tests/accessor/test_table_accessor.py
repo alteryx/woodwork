@@ -997,6 +997,28 @@ def test_get_invalid_schema_message(sample_df):
             "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
 
 
+def test_get_invalid_schema_message_dtype_mismatch(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types={'age': 'Categorical'})
+    schema = schema_df.ww.schema
+
+    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'int64'})
+    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'bool'})
+    incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
+    incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
+
+    assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
+            'dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64')
+    assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
+            'dtype mismatch for column is_registered between DataFrame dtype, bool, and Boolean dtype, boolean')
+    # Koalas backup dtypes make these checks not relevant
+    if ks and not isinstance(sample_df, ks.DataFrame):
+        assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
+                'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
+        assert (_get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
+                'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
+
+
 def test_get_invalid_schema_message_index_checks(sample_df):
     if not isinstance(sample_df, pd.DataFrame):
         pytest.xfail('Index validation not performed for Dask or Koalas DataFrames')
