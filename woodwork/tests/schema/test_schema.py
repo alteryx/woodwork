@@ -25,7 +25,7 @@ def test_schema_physical_types(sample_column_names, sample_inferred_logical_type
     assert isinstance(schema.physical_types, dict)
     assert set(schema.physical_types.keys()) == set(sample_column_names)
     for k, v in schema.physical_types.items():
-        assert v == schema.columns[k]['logical_type'].pandas_dtype
+        assert v == schema.columns[k]['logical_type'].primary_dtype
 
 
 def test_schema_logical_types(sample_column_names, sample_inferred_logical_types):
