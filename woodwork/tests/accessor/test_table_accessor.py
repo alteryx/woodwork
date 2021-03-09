@@ -516,8 +516,8 @@ def test_sets_category_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_object_dtype_on_init(latlong_df):
@@ -528,8 +528,8 @@ def test_sets_object_dtype_on_init(latlong_df):
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == LatLong
-        assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
-        assert df[column_name].dtype == LatLong.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == LatLong.primary_dtype
+        assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
         if ks and isinstance(latlong_df, ks.DataFrame):
@@ -564,8 +564,8 @@ def test_sets_string_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_boolean_dtype_on_init():
@@ -586,8 +586,8 @@ def test_sets_boolean_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -609,8 +609,8 @@ def test_sets_int64_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_float64_dtype_on_init():
@@ -630,8 +630,8 @@ def test_sets_float64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_datetime64_dtype_on_init():
@@ -653,8 +653,8 @@ def test_sets_datetime64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_invalid_dtype_casting():
@@ -999,6 +999,28 @@ def test_get_invalid_schema_message(sample_df):
             "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
 
 
+def test_get_invalid_schema_message_dtype_mismatch(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types={'age': 'Categorical'})
+    schema = schema_df.ww.schema
+
+    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'int64'})
+    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'bool'})
+    incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
+    incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
+
+    assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
+            'dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64')
+    assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
+            'dtype mismatch for column is_registered between DataFrame dtype, bool, and Boolean dtype, boolean')
+    # Koalas backup dtypes make these checks not relevant
+    if ks and not isinstance(sample_df, ks.DataFrame):
+        assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
+                'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
+        assert (_get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
+                'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
+
+
 def test_get_invalid_schema_message_index_checks(sample_df):
     if not isinstance(sample_df, pd.DataFrame):
         pytest.xfail('Index validation not performed for Dask or Koalas DataFrames')
@@ -1030,21 +1052,15 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    if ks and isinstance(sample_df, ks.DataFrame):
-        # Converting to type `str` results in a `object` dtype for Koalas
-        ltype_dtype = 'int64'
-        new_dtype = 'str'
-        object_dtype = 'object'
-    else:
-        ltype_dtype = 'Int64'
-        new_dtype = 'string'
-        object_dtype = 'string'
+    ltype_dtype = 'Int64'
+    new_dtype = 'string'
+
     warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
-        f'dtype mismatch for column id between DataFrame dtype, {object_dtype}, and Integer dtype, {ltype_dtype}.\n '\
+        f'dtype mismatch for column id between DataFrame dtype, {new_dtype}, and Integer dtype, {ltype_dtype}.\n '\
         'Please initialize Woodwork with DataFrame.ww.init'
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
         new_df = schema_df.ww.astype({'id': new_dtype})
-    assert new_df['id'].dtype == object_dtype
+    assert new_df['id'].dtype == new_dtype
     assert new_df.ww.schema is None
     assert schema_df.ww.schema is not None
 
@@ -1907,3 +1923,74 @@ def test_setitem_overwrite_column(sample_df):
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
     assert df.ww['full_name'].dtype == 'float'
     assert original_col is not df.ww['full_name']
+
+
+def test_maintain_column_order_on_type_changes(sample_df):
+    sample_df.ww.init()
+    schema_df = sample_df.ww.copy()
+
+    schema_df.ww.set_types(logical_types={'email': 'Categorical', 'id': 'Double'},
+                           semantic_tags={'age': 'tag', 'email': 'tag'})
+    assert all(schema_df.columns == sample_df.columns)
+    assert all(schema_df.ww.types.index == sample_df.ww.types.index)
+
+    schema_df.ww.set_index('email')
+    assert all(schema_df.columns == sample_df.columns)
+    assert all(schema_df.ww.types.index == sample_df.ww.types.index)
+
+
+def test_maintain_column_order_of_dataframe(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    select_df = schema_df.ww.select([NaturalLanguage, Integer, Boolean, Datetime])
+    assert all(schema_df.columns == select_df.columns)
+    assert all(schema_df.ww.types.index == select_df.ww.types.index)
+
+    renamed_df = schema_df.ww.rename({'email': 'renamed_1', 'id': 'renamed_2'})
+    renamed_cols = ['renamed_2', 'full_name', 'renamed_1', 'phone_number', 'age', 'signup_date', 'is_registered']
+    assert all(renamed_cols == renamed_df.columns)
+    assert all(renamed_cols == renamed_df.ww.types.index)
+
+    dropped_df = schema_df.ww.drop(['email', 'id', 'is_registered', 'age'])
+    cols_left_over = ['full_name', 'phone_number', 'signup_date']
+    assert all(cols_left_over == dropped_df.columns)
+    assert all(cols_left_over == dropped_df.ww.types.index)
+
+
+def test_maintain_column_order_of_input(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    reversed_cols = list(schema_df.columns[::-1])
+
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        iloc_df = schema_df.ww.iloc[:, list(range(len(schema_df.columns)))[::-1]]
+        assert all(reversed_cols == iloc_df.columns)
+        assert all(reversed_cols == iloc_df.ww.types.index)
+
+    loc_df = schema_df.ww.loc[:, reversed_cols]
+    assert all(reversed_cols == loc_df.columns)
+    assert all(reversed_cols == loc_df.ww.types.index)
+
+    getitem_df = schema_df.ww[reversed_cols]
+    assert all(reversed_cols == getitem_df.columns)
+    assert all(reversed_cols == getitem_df.ww.types.index)
+
+
+def test_maintain_column_order_disordered_schema(sample_df):
+    sample_df.ww.init()
+    column_order = list(sample_df.columns)
+
+    scramble_df = sample_df.ww.copy()
+    id_col = scramble_df.ww.columns.pop('id')
+    scramble_df.ww.columns['id'] = id_col
+    assert list(scramble_df.ww.columns.keys()) != column_order
+
+    assert scramble_df.ww.schema == sample_df.ww.schema
+    assert all(scramble_df.columns == column_order)
+    assert all(scramble_df.ww.types.index == column_order)
+
+    sample_df.ww.init(schema=scramble_df.ww.schema)
+    assert all(sample_df.columns == column_order)
+    assert all(sample_df.ww.types.index == column_order)

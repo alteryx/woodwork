@@ -164,7 +164,7 @@ def test_updated_ltype_inference(integers, type_sys):
     type_sys.remove_type(ww.logical_types.Integer)
 
     class Integer(LogicalType):
-        pandas_dtype = 'string'
+        primary_dtype = 'string'
 
     type_sys.add_type(Integer, inference_function=inference_fn)
 
@@ -176,4 +176,4 @@ def test_updated_ltype_inference(integers, type_sys):
         for dtype in dtypes:
             inferred_type = type_sys.infer_logical_type(series.astype(dtype))
             assert inferred_type == Integer
-            assert inferred_type.pandas_dtype == 'string'
+            assert inferred_type.primary_dtype == 'string'
