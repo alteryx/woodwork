@@ -66,11 +66,7 @@ def _update_column_dtype(series, logical_type):
         else:
             series = series.apply(_reformat_to_latlong)
     if logical_type.primary_dtype != str(series.dtype):
-        # --> replace with _get_valid_dtype
-        if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
-            new_dtype = logical_type.backup_dtype
-        else:
-            new_dtype = logical_type.primary_dtype
+        new_dtype = _get_valid_dtype(type(series), logical_type)
         # Update the underlying series
         try:
             if _get_ltype_class(logical_type) == Datetime:
@@ -114,11 +110,11 @@ def _is_dataframe(data):
     return False
 
 
-def _get_valid_dtype(series, logical_type):
+def _get_valid_dtype(series_type, logical_type):
     """Return the dtype that is considered valid for a series
     with the given logical_type"""
     backup_dtype = logical_type.backup_dtype
-    if ks and isinstance(series, ks.Series) and backup_dtype:
+    if ks and series_type == ks.Series and backup_dtype:
         valid_dtype = backup_dtype
     else:
         valid_dtype = logical_type.primary_dtype
