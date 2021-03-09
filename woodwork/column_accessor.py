@@ -193,7 +193,7 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing Schema
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(result, self._schema['logical_type'])
-                    if str(result.dtype) == valid_dtype:
+                    if result.dtype == valid_dtype:
                         schema = copy.deepcopy(self._schema)
                         # We don't need to pass dtype from the schema to init
                         del schema['dtype']
