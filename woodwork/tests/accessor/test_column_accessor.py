@@ -196,7 +196,7 @@ def test_adds_numeric_standard_tag():
 
     logical_types = [Integer, Double]
     for logical_type in logical_types:
-        series = series.astype(logical_type.pandas_dtype)
+        series = series.astype(logical_type.primary_dtype)
         series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
         assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
 
@@ -399,6 +399,21 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     assert replace_series.ww._schema == series.ww._schema
     assert replace_series.ww._schema is not series.ww._schema
     pd.testing.assert_series_equal(to_pandas(replace_series), to_pandas(series.replace('a', 'd')))
+
+
+def test_series_methods_on_accessor_dtype_mismatch(sample_df):
+    ints_series = convert_series(sample_df['id'], Integer)
+    ints_series.ww.init()
+
+    assert ints_series.ww.logical_type == Integer
+    assert str(ints_series.dtype) == 'Int64'
+
+    warning = ("Operation performed by astype has invalidated the Woodwork typing information:\n "
+               "dtype mismatch between original dtype, Int64, and returned dtype, int64.\n "
+               "Please initialize Woodwork with Series.ww.init")
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        series = ints_series.ww.astype('int64')
+    assert series.ww._schema is None
 
 
 def test_series_methods_on_accessor_inplace(sample_series):

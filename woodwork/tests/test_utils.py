@@ -102,10 +102,10 @@ def test_list_logical_types_customized_type_system():
     ww.type_system.remove_type('URL')
 
     class CustomRegistered(ww.logical_types.LogicalType):
-        pandas_dtype = 'int64'
+        primary_dtype = 'int64'
 
     class CustomNotRegistered(ww.logical_types.LogicalType):
-        pandas_dtype = 'int64'
+        primary_dtype = 'int64'
 
     ww.type_system.add_type(CustomRegistered)
     all_ltypes = ww.logical_types.LogicalType.__subclasses__()
