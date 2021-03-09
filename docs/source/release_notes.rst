@@ -50,6 +50,7 @@ Release Notes
         * Bump min Koalas version to 1.4.0 (:pr:`638`)
         * Preserve pandas underlying index when not creating a Woodwork index (:pr:`664`)
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
+        * Improve error when calling accessor properties or methods before init (:pr:`683`)
     * Documentation Changes
         * Update docstrings and API Reference page (:pr:`660`)
     * Testing Changes
