@@ -93,7 +93,7 @@ def _get_describe_dict(dataframe, include=None):
 
         values["nan_count"] = series.isna().sum()
         values["mode"] = mode
-        values["physical_type"] = column['dtype']
+        values["physical_type"] = series.dtype
         values["logical_type"] = logical_type
         values["semantic_tags"] = semantic_tags
         results[column_name] = values
