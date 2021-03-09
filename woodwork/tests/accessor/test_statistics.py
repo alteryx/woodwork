@@ -1,5 +1,8 @@
+import re
+
 import numpy as np
 import pandas as pd
+import pytest
 
 from woodwork.logical_types import (
     URL,
@@ -545,3 +548,22 @@ def test_value_counts(categorical_df):
     val_cts_2 = categorical_df.ww.value_counts(top_n=2)
     for col in val_cts_2:
         assert len(val_cts_2[col]) == 2
+
+
+def test_statistics_init_errors_methods(sample_df):
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.mutual_information_dict()
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.mutual_information()
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.describe_dict()
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.describe()
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.value_counts()

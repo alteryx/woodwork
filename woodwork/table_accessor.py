@@ -277,6 +277,8 @@ class WoodworkTableAccessor:
         Args:
             new_index (str): The name of the column to set as the index
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.set_index(new_index)
 
         if self._schema.index is not None:
@@ -291,6 +293,8 @@ class WoodworkTableAccessor:
             new_time_index (str): The name of the column to set as the time index.
                 If None, will remove the time_index.
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.set_time_index(new_time_index)
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
@@ -306,6 +310,8 @@ class WoodworkTableAccessor:
                 semantic tags set on the column. If False, will replace all semantic tags any time a column's
                 semantic tags or logical type changes. Defaults to True.
         """
+        if self._schema is None:
+            _raise_init_error()
         logical_types = logical_types or {}
         logical_types = {col_name: _parse_logical_type(ltype, col_name) for col_name, ltype in logical_types.items()}
 
@@ -335,6 +341,8 @@ class WoodworkTableAccessor:
             logical types and semantic tags in ``include``. Has Woodwork typing
             information initialized.
         """
+        if self._schema is None:
+            _raise_init_error()
         cols_to_include = self._schema._filter_cols(include)
         return self._get_subset_df_with_schema(cols_to_include)
 
@@ -346,6 +354,8 @@ class WoodworkTableAccessor:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataFrame to the tags that should be added to the column's semantic tags
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.add_semantic_tags(semantic_tags)
 
     def remove_semantic_tags(self, semantic_tags):
@@ -357,6 +367,8 @@ class WoodworkTableAccessor:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataFrame to the tags that should be removed from the column's semantic tags
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.remove_semantic_tags(semantic_tags)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
@@ -372,6 +384,8 @@ class WoodworkTableAccessor:
                 semantic tags set on the column. If False, will clear all semantic tags. Defaults to
                 False.
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.reset_semantic_tags(columns=columns, retain_index_tags=retain_index_tags)
 
     def to_dictionary(self):
@@ -539,6 +553,9 @@ class WoodworkTableAccessor:
         Returns:
             Series: Popped series with Woodwork initialized
         """
+        if self._schema is None:
+            _raise_init_error()
+
         if column_name not in self._dataframe.columns:
             raise LookupError(f'Column with name {column_name} not found in DataFrame')
 
@@ -568,6 +585,9 @@ class WoodworkTableAccessor:
             DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
             instead of calling ``DataFrame.ww.drop``.
         """
+        if self._schema is None:
+            _raise_init_error()
+
         if not isinstance(columns, (list, set)):
             columns = [columns]
 
@@ -586,6 +606,8 @@ class WoodworkTableAccessor:
         Returns:
             DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
         """
+        if self._schema is None:
+            _raise_init_error()
         new_schema = self._schema.rename(columns)
         new_df = self._dataframe.rename(columns=columns)
 

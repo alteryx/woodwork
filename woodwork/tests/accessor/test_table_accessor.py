@@ -147,6 +147,62 @@ def test_init_accessor_with_schema(sample_df):
     assert iloc_df.ww.logical_types['id'] == Integer
 
 
+def test_accessor_init_errors_methods(sample_df):
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.select(include=['Double'])
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.set_index('id')
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.set_time_index('signup_date')
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.add_semantic_tags({'id': 'new_tag'})
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.remove_semantic_tags({'id': 'new_tag'})
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.reset_semantic_tags()
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.set_types({'id': 'Integer'})
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.pop('id')
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.drop('id')
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.rename({'id': 'new_id'})
+
+
+def test_accessor_init_errors_properties(sample_df):
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.types
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.logical_types
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.physical_types
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.semantic_tags
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.index
+
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww.time_index
+
+
 def test_init_accessor_with_schema_errors(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
