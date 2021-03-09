@@ -234,6 +234,8 @@ class WoodworkTableAccessor:
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
+        if self._schema is None:
+            _raise_init_error()
         repr_df = self._schema._get_typing_info()
         # Maintain the same column order used in the DataFrame
         repr_df = repr_df.loc[list(self._dataframe.columns), :]
@@ -243,26 +245,36 @@ class WoodworkTableAccessor:
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.logical_types
 
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.physical_types
 
     @property
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.semantic_tags
 
     @property
     def index(self):
         """The index column for the table"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.index
 
     @property
     def time_index(self):
         """The time index column for the table"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.time_index
 
     def set_index(self, new_index):
@@ -631,6 +643,8 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
+        if self._schema is None:
+            _raise_init_error()
         return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
 
     def mutual_information(self, num_bins=10, nrows=None):
@@ -670,6 +684,8 @@ class WoodworkTableAccessor:
             matching the logical types, semantic tags or column names specified in ``include``, paired
             with a value containing a dictionary containing relevant statistics for that column.
         """
+        if self._schema is None:
+            _raise_init_error()
         return _get_describe_dict(self._dataframe, include=include)
 
     def describe(self, include=None):
@@ -727,6 +743,8 @@ class WoodworkTableAccessor:
             list(dict): a list of dictionaries for each categorical column with keys `count`
             and `value`.
         """
+        if self._schema is None:
+            _raise_init_error()
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
 
