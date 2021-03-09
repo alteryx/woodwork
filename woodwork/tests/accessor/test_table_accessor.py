@@ -1806,7 +1806,7 @@ def test_setitem_new_column(sample_df):
         dtype = 'category'
         new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
 
-    new_series.ww.init()
+    new_series = init_series(new_series)
     df.ww['test_col'] = new_series
     assert 'test_col' in df.columns
     assert 'test_col' in df.ww._schema.columns.keys()
@@ -1819,7 +1819,8 @@ def test_setitem_new_column(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
-    new_series.ww.init(
+    new_series = init_series(
+        new_series,
         logical_type=Double,
         use_standard_tags=False,
         semantic_tags={'test_tag'},
