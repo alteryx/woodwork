@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import init_series
+from woodwork.column_accessor import WoodworkColumnAccessor
 from woodwork.exceptions import (
     DuplicateTagsWarning,
     TypeConversionError,
@@ -22,7 +23,12 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
-from woodwork.tests.testing_utils import convert_series, to_pandas
+from woodwork.tests.testing_utils import (
+    convert_series,
+    is_property,
+    is_public_method,
+    to_pandas
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -56,15 +62,9 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    if ks and isinstance(sample_series, ks.Series):
-        # Koalas uses `object` as the dtype for NaturalLanguage, so need to use something else
-        series = sample_series.astype('float')
-        series_dtype = 'float64'
-        correct_dtype = 'str'
-    else:
-        series = sample_series
-        series_dtype = 'object'
-        correct_dtype = 'string'
+    series = sample_series
+    series_dtype = 'object'
+    correct_dtype = 'string'
     error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \
         f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before initializing " \
         "or use the woodwork.init_series function to initialize."
@@ -79,23 +79,37 @@ def test_accessor_init_with_semantic_tags(sample_series):
     assert series.ww.semantic_tags == set(semantic_tags)
 
 
-def test_accessor_warnings_accessing_properties_before_init(sample_series):
-    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+def test_error_accessing_properties_before_init(sample_series):
+    props_to_exclude = ['iloc', 'loc']
+    props = [prop for prop in dir(sample_series.ww) if is_property(WoodworkColumnAccessor, prop) and prop not in props_to_exclude]
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.__repr__()
+    error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    for prop in props:
+        with pytest.raises(AttributeError, match=error):
+            getattr(sample_series.ww, prop)
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.description
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.logical_type
+def test_error_accessing_methods_before_init(sample_series):
+    methods_to_exclude = ['init']
+    public_methods = [method for method in dir(sample_series.ww) if is_public_method(WoodworkColumnAccessor, method)]
+    public_methods = [method for method in public_methods if method not in methods_to_exclude]
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.metadata
-
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.semantic_tags
+    method_args_dict = {
+        'add_semantic_tags': [{'new_tag'}],
+        'remove_semantic_tags': [{'new_tag'}],
+        'reset_semantic_tags': None,
+        'set_logical_type': ['Integer'],
+        'set_semantic_tags': [{'new_tag'}]
+    }
+    error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    for method in public_methods:
+        func = getattr(sample_series.ww, method)
+        method_args = method_args_dict[method]
+        with pytest.raises(AttributeError, match=error):
+            if method_args:
+                func(*method_args)
+            else:
+                func()
 
 
 def test_accessor_with_alternate_semantic_tags_input(sample_series):
@@ -147,6 +161,13 @@ def test_accessor_description(sample_series):
     assert series.ww.description == new_description
 
 
+def test_description_setter_error_before_init(sample_series):
+    series = convert_series(sample_series, Categorical)
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=err_msg):
+        series.ww.description = "description"
+
+
 def test_description_error_on_init(sample_series):
     series = convert_series(sample_series, Categorical)
     err_msg = "Column description must be a string"
@@ -167,11 +188,18 @@ def test_accessor_repr(sample_series):
     series.ww.init(use_standard_tags=False)
     # Koalas doesn't support categorical
     if ks and isinstance(series, ks.Series):
-        dtype = 'object'
+        dtype = 'string'
     else:
         dtype = 'category'
     assert series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
+
+
+def test_accessor_repr_error_before_init(sample_series):
+    series = convert_series(sample_series, Categorical)
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=err_msg):
+        series.ww.__repr__()
 
 
 def test_set_semantic_tags(sample_series):
@@ -202,7 +230,7 @@ def test_adds_numeric_standard_tag():
 
     logical_types = [Integer, Double]
     for logical_type in logical_types:
-        series = series.astype(logical_type.pandas_dtype)
+        series = series.astype(logical_type.primary_dtype)
         series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
         assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
 
@@ -286,12 +314,11 @@ def test_set_logical_type_valid_dtype_change(sample_series):
     new_series = series.ww.set_logical_type('NaturalLanguage')
 
     if ks and isinstance(sample_series, ks.Series):
-        # Koalas uses same series dtype for both
-        original_dtype = 'object'
-        new_dtype = 'object'
+        # Koalas uses string dtype for Categorical
+        original_dtype = 'string'
     else:
         original_dtype = 'category'
-        new_dtype = 'string'
+    new_dtype = 'string'
 
     assert series.ww.logical_type == Categorical
     assert series.dtype == original_dtype
@@ -397,6 +424,8 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
 
 
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
+    if ks and isinstance(sample_series, ks.Series):
+        pytest.xfail('Running replace on Koalas series changes series dtype to object, invalidating schema')
     series = convert_series(sample_series, Categorical)
     series.ww.init()
 
@@ -404,6 +433,21 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     assert replace_series.ww._schema == series.ww._schema
     assert replace_series.ww._schema is not series.ww._schema
     pd.testing.assert_series_equal(to_pandas(replace_series), to_pandas(series.replace('a', 'd')))
+
+
+def test_series_methods_on_accessor_dtype_mismatch(sample_df):
+    ints_series = convert_series(sample_df['id'], Integer)
+    ints_series.ww.init()
+
+    assert ints_series.ww.logical_type == Integer
+    assert str(ints_series.dtype) == 'Int64'
+
+    warning = ("Operation performed by astype has invalidated the Woodwork typing information:\n "
+               "dtype mismatch between original dtype, Int64, and returned dtype, int64.\n "
+               "Please initialize Woodwork with Series.ww.init")
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        series = ints_series.ww.astype('int64')
+    assert series.ww._schema is None
 
 
 def test_series_methods_on_accessor_inplace(sample_series):
@@ -425,8 +469,9 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
     series.ww.init()
 
     if ks and isinstance(sample_series, ks.Series):
-        original_type = 'object'
-        new_type = 'int64'
+        # Koalas uses `string` for Categorical, so must try a different conversion
+        original_type = 'string'
+        new_type = 'Int64'
     else:
         original_type = 'category'
         new_type = 'string'
@@ -665,6 +710,13 @@ def test_accessor_metadata(sample_series):
 
     series.ww.metadata['number'] = 1012034
     assert series.ww.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}
+
+
+def test_metadata_setter_error_before_init(sample_series):
+    series = convert_series(sample_series, Categorical)
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=err_msg):
+        series.ww.metadata = {"key": "val"}
 
 
 def test_accessor_metadata_error_on_init(sample_series):

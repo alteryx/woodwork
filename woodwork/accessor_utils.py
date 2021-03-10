@@ -65,7 +65,8 @@ def _update_column_dtype(series, logical_type):
             series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
-    if logical_type.pandas_dtype != str(series.dtype):
+    new_dtype = _get_valid_dtype(type(series), logical_type)
+    if new_dtype != str(series.dtype):
         # Update the underlying series
         try:
             if _get_ltype_class(logical_type) == Datetime:
@@ -80,14 +81,10 @@ def _update_column_dtype(series, logical_type):
                 else:
                     series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
-                if ks and isinstance(series, ks.Series) and logical_type.backup_dtype:
-                    new_dtype = logical_type.backup_dtype
-                else:
-                    new_dtype = logical_type.pandas_dtype
                 series = series.astype(new_dtype)
         except (TypeError, ValueError):
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-                f'to type {logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
                 f'logical type {logical_type}.'
             raise TypeConversionError(error_msg)
     return series
@@ -113,17 +110,13 @@ def _is_dataframe(data):
     return False
 
 
-def _get_valid_dtype(series, logical_type):
+def _get_valid_dtype(series_type, logical_type):
     """Return the dtype that is considered valid for a series
     with the given logical_type"""
     backup_dtype = logical_type.backup_dtype
-    if ks and isinstance(series, ks.Series) and backup_dtype:
-        if backup_dtype == 'str':
-            # Koalas will have a dtype of object even after `ks.Series.astype('str')`
-            valid_dtype = 'object'
-        else:
-            valid_dtype = backup_dtype
+    if ks and series_type == ks.Series and backup_dtype:
+        valid_dtype = backup_dtype
     else:
-        valid_dtype = logical_type.pandas_dtype
+        valid_dtype = logical_type.primary_dtype
 
     return valid_dtype

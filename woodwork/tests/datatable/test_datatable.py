@@ -587,7 +587,7 @@ def test_datatable_describe_method(describe_df):
     # Test categorical columns
     category_data = describe_df[['category_col']]
     if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'object'
+        expected_dtype = 'string'
     else:
         expected_dtype = 'category'
 
@@ -609,10 +609,7 @@ def test_datatable_describe_method(describe_df):
 
     # Test boolean columns
     boolean_data = describe_df[['boolean_col']]
-    if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'bool'
-    else:
-        expected_dtype = 'boolean'
+    expected_dtype = 'boolean'
     for ltype in boolean_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
@@ -634,7 +631,7 @@ def test_datatable_describe_method(describe_df):
     datetime_data = describe_df[['datetime_col']]
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
             'count': 7,
@@ -663,7 +660,7 @@ def test_datatable_describe_method(describe_df):
                                                 '2020-02-01',
                                                 '2020-01-02'])
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
             'semantic_tags': {'custom_tag'},
             'count': 7,
@@ -687,7 +684,7 @@ def test_datatable_describe_method(describe_df):
         timedelta_data = describe_df['timedelta_col']
         for ltype in timedelta_ltypes:
             expected_vals = pd.Series({
-                'physical_type': ltype.pandas_dtype,
+                'physical_type': ltype.primary_dtype,
                 'logical_type': ltype,
                 'semantic_tags': {'custom_tag'},
                 'count': 7,
@@ -705,7 +702,7 @@ def test_datatable_describe_method(describe_df):
     numeric_data = describe_df[['numeric_col']]
     for ltype in numeric_ltypes:
         expected_vals = pd.Series({
-            'physical_type': ltype.pandas_dtype,
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7,
@@ -728,10 +725,7 @@ def test_datatable_describe_method(describe_df):
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
-    if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'object'
-    else:
-        expected_dtype = 'string'
+    expected_dtype = 'string'
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
@@ -859,7 +853,6 @@ def test_value_counts(categorical_df):
         else:
             assert col in val_cts
 
-    none_val = np.nan
     expected_cat1 = [{'value': 200, 'count': 4}, {'value': 100, 'count': 3}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
     # Koalas converts numeric categories to strings, so we need to update the expected values for this
     # Koalas will result in `None` instead of `np.nan` in categorical columns
@@ -868,11 +861,10 @@ def test_value_counts(categorical_df):
         for items in expected_cat1:
             updated_results.append({k: (str(v) if k == 'value' else v) for k, v in items.items()})
         expected_cat1 = updated_results
-        none_val = 'None'
 
     assert val_cts['categories1'] == expected_cat1
-    assert val_cts['categories2'] == [{'value': none_val, 'count': 6}, {'value': 'test', 'count': 3}, {'value': 'test2', 'count': 1}]
-    assert val_cts['categories3'] == [{'value': none_val, 'count': 7}, {'value': 'test', 'count': 3}]
+    assert val_cts['categories2'] == [{'value': np.nan, 'count': 6}, {'value': 'test', 'count': 3}, {'value': 'test2', 'count': 1}]
+    assert val_cts['categories3'] == [{'value': np.nan, 'count': 7}, {'value': 'test', 'count': 3}]
 
     val_cts_descending = dt.value_counts(ascending=True)
     for col, vals in val_cts_descending.items():

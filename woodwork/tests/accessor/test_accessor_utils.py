@@ -22,14 +22,14 @@ ks = import_or_none('databricks.koalas')
 def test_init_series_valid_conversion_specified_ltype(sample_series):
     series = init_series(sample_series, logical_type='categorical')
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, Categorical)
+    correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
 
     series = init_series(sample_series, logical_type='natural_language')
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, NaturalLanguage)
+    correct_dtype = _get_valid_dtype(type(sample_series), NaturalLanguage)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
@@ -38,7 +38,7 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
     series = init_series(sample_series)
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, Categorical)
+    correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
@@ -60,7 +60,7 @@ def test_init_series_all_parameters(sample_series):
                          description=description,
                          use_standard_tags=False)
     assert series is not sample_series
-    correct_dtype = _get_valid_dtype(sample_series, Categorical)
+    correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'custom_tag'}
@@ -91,14 +91,11 @@ def test_is_dataframe(sample_df):
 
 
 def test_get_valid_dtype(sample_series):
-    valid_dtype = _get_valid_dtype(sample_series, Categorical)
+    valid_dtype = _get_valid_dtype(type(sample_series), Categorical)
     if ks and isinstance(sample_series, ks.Series):
-        assert valid_dtype == 'object'
+        assert valid_dtype == 'string'
     else:
         assert valid_dtype == 'category'
 
-    valid_dtype = _get_valid_dtype(sample_series, Boolean)
-    if ks and isinstance(sample_series, ks.Series):
-        assert valid_dtype == 'bool'
-    else:
-        assert valid_dtype == 'boolean'
+    valid_dtype = _get_valid_dtype(type(sample_series), Boolean)
+    assert valid_dtype == 'boolean'

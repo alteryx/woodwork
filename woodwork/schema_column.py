@@ -36,7 +36,6 @@ def _get_column_dict(name,
     semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name)
 
     return {
-        'dtype': logical_type.pandas_dtype,
         'logical_type': logical_type,
         'semantic_tags': semantic_tags,
         'description': description,
@@ -136,7 +135,7 @@ def _reset_semantic_tags(standard_tags, use_standard_tags):
         use_standard_tags (bool): If True, retain standard tags after reset
     """
     if use_standard_tags:
-        return standard_tags
+        return set(standard_tags)
     return set()
 
 

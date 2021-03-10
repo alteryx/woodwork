@@ -40,15 +40,12 @@ def test_to_dictionary(sample_df):
         table_type = 'pandas'
 
     if ks and isinstance(sample_df, ks.DataFrame):
-        int_val = 'int64'
-        cat_val = 'object'
-        string_val = 'object'
-        bool_val = 'bool'
+        cat_val = 'string'
     else:
-        int_val = 'Int64'
         cat_val = 'category'
-        string_val = 'string'
-        bool_val = 'boolean'
+    int_val = 'Int64'
+    string_val = 'string'
+    bool_val = 'boolean'
     expected = {'schema_version': '5.0.0',
                 'name': 'test_data',
                 'index': 'id',

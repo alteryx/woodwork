@@ -32,13 +32,19 @@ from woodwork.logical_types import (
 )
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
+    WoodworkTableAccessor,
     _check_index,
     _check_logical_types,
     _check_time_index,
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
+from woodwork.tests.testing_utils import (
+    is_property,
+    is_public_method,
+    to_pandas,
+    validate_subset_schema
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -112,6 +118,19 @@ def test_accessor_schema_property(sample_df):
     assert sample_df.ww._schema == sample_df.ww.schema
 
 
+def test_accessor_physical_types_property(sample_df):
+    sample_df.ww.init(logical_types={'age': 'Categorical'})
+
+    assert isinstance(sample_df.ww.physical_types, dict)
+    assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
+    for k, v in sample_df.ww.physical_types.items():
+        logical_type = sample_df.ww.columns[k]['logical_type']
+        if ks and isinstance(sample_df, ks.DataFrame) and logical_type.backup_dtype is not None:
+            assert v == logical_type.backup_dtype
+        else:
+            assert v == logical_type.primary_dtype
+
+
 def test_accessor_separation_of_params(sample_df):
     # mix up order of acccessor and schema params
     schema_df = sample_df.copy()
@@ -145,6 +164,54 @@ def test_init_accessor_with_schema(sample_df):
     assert iloc_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
     # Extra parameters do not take effect
     assert iloc_df.ww.logical_types['id'] == Integer
+
+
+def test_accessor_init_errors_methods(sample_df):
+    methods_to_exclude = ['init']
+    public_methods = [method for method in dir(sample_df.ww) if is_public_method(WoodworkTableAccessor, method)]
+    public_methods = [method for method in public_methods if method not in methods_to_exclude]
+    method_args_dict = {
+        'add_semantic_tags': [{'id': 'new_tag'}],
+        'describe': None,
+        'pop': ['id'],
+        'describe': None,
+        'describe_dict': None,
+        'drop': ['id'],
+        'mutual_information': None,
+        'mutual_information_dict': None,
+        'remove_semantic_tags': [{'id': 'new_tag'}],
+        'rename': [{'id': 'new_id'}],
+        'reset_semantic_tags': None,
+        'select': [['Double']],
+        'set_index': ['id'],
+        'set_time_index': ['signup_date'],
+        'set_types': [{'id': 'Integer'}],
+        'to_csv': ['dir'],
+        'to_dictionary': None,
+        'to_parquet': ['dir'],
+        'to_pickle': ['dir'],
+        'value_counts': None,
+
+    }
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    for method in public_methods:
+        func = getattr(sample_df.ww, method)
+        method_args = method_args_dict[method]
+        with pytest.raises(AttributeError, match=error):
+            if method_args:
+                func(*method_args)
+            else:
+                func()
+
+
+def test_accessor_init_errors_properties(sample_df):
+    props_to_exclude = ['iloc', 'loc', 'schema']
+    props = [prop for prop in dir(sample_df.ww) if is_property(WoodworkTableAccessor, prop) and prop not in props_to_exclude]
+
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    for prop in props:
+        with pytest.raises(AttributeError, match=error):
+            getattr(sample_df.ww, prop)
 
 
 def test_init_accessor_with_schema_errors(sample_df):
@@ -249,6 +316,12 @@ def test_getitem(sample_df):
     assert series.ww.semantic_tags == {'numeric'}
 
 
+def test_getitem_init_error(sample_df):
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww['age']
+
+
 def test_getitem_invalid_input(sample_df):
     df = sample_df
     df.ww.init()
@@ -270,10 +343,6 @@ def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_in
 
     # eq not implemented on Accessor class, so Schema's eq is called
     assert schema_df.ww.__eq__(comparison_schema)
-
-    # Since there's a repr on Accessor, it gets called
-    assert schema_df.ww._repr_html_() == comparison_schema._repr_html_()
-    assert schema_df.ww.__repr__() == comparison_schema.__repr__()
 
     logical_types = {
         'id': Double,
@@ -514,8 +583,7 @@ def test_sets_category_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_object_dtype_on_init(latlong_df):
@@ -526,8 +594,7 @@ def test_sets_object_dtype_on_init(latlong_df):
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == LatLong
-        assert df.ww.columns[column_name]['dtype'] == LatLong.pandas_dtype
-        assert df[column_name].dtype == LatLong.pandas_dtype
+        assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
         if ks and isinstance(latlong_df, ks.DataFrame):
@@ -562,8 +629,7 @@ def test_sets_string_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_boolean_dtype_on_init():
@@ -584,8 +650,7 @@ def test_sets_boolean_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -607,8 +672,7 @@ def test_sets_int64_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-            assert df[column_name].dtype == logical_type.pandas_dtype
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_float64_dtype_on_init():
@@ -628,8 +692,7 @@ def test_sets_float64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_datetime64_dtype_on_init():
@@ -651,8 +714,7 @@ def test_sets_datetime64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.pandas_dtype
-        assert df[column_name].dtype == logical_type.pandas_dtype
+        assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_invalid_dtype_casting():
@@ -705,25 +767,63 @@ def test_make_index(sample_df):
         assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
 
 
-def test_underlying_index_no_index(sample_df):
+def test_underlying_index_set_no_index_on_init(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
     if ks and isinstance(sample_df, ks.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
-    assert type(sample_df.index) == pd.RangeIndex
+    input_index = pd.Int64Index([99, 88, 77, 66])
 
     schema_df = sample_df.copy()
+    schema_df.index = input_index.copy()
+    pd.testing.assert_index_equal(input_index, schema_df.index)
+
     schema_df.ww.init()
-    assert type(schema_df.index) == pd.RangeIndex
+    assert schema_df.ww.index is None
+    pd.testing.assert_index_equal(input_index, schema_df.index)
 
-    sample_df = sample_df.sort_values('full_name')
-    assert type(sample_df.index) == pd.Int64Index
-    sample_df.ww.init()
-    assert type(sample_df.index) == pd.RangeIndex
+    sorted_df = schema_df.ww.sort_values('full_name')
+    assert sorted_df.ww.index is None
+    pd.testing.assert_index_equal(pd.Int64Index([88, 77, 99, 66]), sorted_df.index)
 
 
-def test_underlying_index(sample_df):
+def test_underlying_index_set(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    # Sets underlying index at init
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='full_name')
+    assert 'full_name' in schema_df.columns
+    assert schema_df.index.name is None
+    assert (schema_df.index == schema_df['full_name']).all()
+
+    # Sets underlying index on update
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='id')
+    schema_df.ww.set_index('full_name')
+    assert schema_df.ww.index == 'full_name'
+    assert 'full_name' in schema_df.columns
+    assert (schema_df.index == schema_df['full_name']).all()
+    assert schema_df.index.name is None
+
+    # confirm removing Woodwork index doesn't change underlying index
+    schema_df.ww.set_index(None)
+    assert schema_df.ww.index is None
+    assert (schema_df.index == schema_df['full_name']).all()
+
+    # Sets underlying index for made index
+    schema_df = sample_df.copy()
+    schema_df.ww.init(index='made_index', make_index=True)
+    assert 'made_index' in schema_df
+    assert (schema_df.index == [0, 1, 2, 3]).all()
+    assert schema_df.index.name is None
+
+
+def test_underlying_index_reset(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
     if ks and isinstance(sample_df, ks.DataFrame):
@@ -732,31 +832,88 @@ def test_underlying_index(sample_df):
     specified_index = pd.Index
     unspecified_index = pd.RangeIndex
 
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='full_name')
-    assert 'full_name' in schema_df.columns
-    assert schema_df.index.name is None
-    assert (schema_df.index == schema_df['full_name']).all()
-    assert type(schema_df.index) == specified_index
+    sample_df.ww.init()
+    assert type(sample_df.index) == unspecified_index
 
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='id')
-    schema_df.ww.set_index('full_name')
-    assert 'full_name' in schema_df.columns
-    assert (schema_df.index == schema_df['full_name']).all()
-    assert schema_df.index.name is None
-    assert type(schema_df.index) == specified_index
+    sample_df.ww.set_index('full_name')
+    assert type(sample_df.index) == specified_index
 
-    # test removing index removes the dataframe's index
-    schema_df.ww.set_index(None)
-    assert type(schema_df.index) == unspecified_index
+    copied_df = sample_df.ww.copy()
+    warning = ("Index mismatch between DataFrame and typing information")
+    with pytest.warns(TypingInfoMismatchWarning, match=warning):
+        copied_df.ww.reset_index(drop=True, inplace=True)
+    assert copied_df.ww.schema is None
+    assert type(copied_df.index) == unspecified_index
 
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='made_index', make_index=True)
-    assert 'made_index' in schema_df
-    assert (schema_df.index == [0, 1, 2, 3]).all()
-    assert schema_df.index.name is None
-    assert type(schema_df.index) == specified_index
+    sample_df.ww.set_index(None)
+    assert type(sample_df.index) == specified_index
+
+    # Use pandas operation to reset index
+    reset_df = sample_df.ww.reset_index(drop=True, inplace=False)
+    assert type(sample_df.index) == specified_index
+    assert type(reset_df.index) == unspecified_index
+
+    sample_df.ww.reset_index(drop=True, inplace=True)
+    assert type(sample_df.index) == unspecified_index
+
+
+def test_underlying_index_unchanged_after_updates(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Dask input')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail('Setting underlying index is not supported with Koalas input')
+
+    sample_df.ww.init(index='full_name')
+    assert 'full_name' in sample_df
+    assert sample_df.ww.index == 'full_name'
+    assert (sample_df.index == sample_df['full_name']).all()
+
+    copied_df = sample_df.ww.copy()
+
+    dropped_df = copied_df.ww.drop('full_name')
+    assert 'full_name' not in dropped_df
+    assert dropped_df.ww.index is None
+    assert (dropped_df.index == sample_df['full_name']).all()
+
+    selected_df = copied_df.ww.select('Integer')
+    assert 'full_name' not in dropped_df
+    assert selected_df.ww.index is None
+    assert (selected_df.index == sample_df['full_name']).all()
+
+    iloc_df = copied_df.ww.iloc[:, 2:]
+    assert 'full_name' not in iloc_df
+    assert iloc_df.ww.index is None
+    assert (iloc_df.index == sample_df['full_name']).all()
+
+    loc_df = copied_df.ww.loc[:, ['id', 'email']]
+    assert 'full_name' not in loc_df
+    assert loc_df.ww.index is None
+    assert (loc_df.index == sample_df['full_name']).all()
+
+    subset_df = copied_df.ww[['id', 'email']]
+    assert 'full_name' not in subset_df
+    assert subset_df.ww.index is None
+    assert (subset_df.index == sample_df['full_name']).all()
+
+    reset_tags_df = sample_df.ww.copy()
+    reset_tags_df.ww.reset_semantic_tags('full_name', retain_index_tags=False)
+    assert reset_tags_df.ww.index is None
+    assert (reset_tags_df.index == sample_df['full_name']).all()
+
+    remove_tags_df = sample_df.ww.copy()
+    remove_tags_df.ww.remove_semantic_tags({'full_name': 'index'})
+    assert remove_tags_df.ww.index is None
+    assert (remove_tags_df.index == sample_df['full_name']).all()
+
+    set_types_df = sample_df.ww.copy()
+    set_types_df.ww.set_types(semantic_tags={'full_name': 'new_tag'}, retain_index_tags=False)
+    assert set_types_df.ww.index is None
+    assert (set_types_df.index == sample_df['full_name']).all()
+
+    popped_df = sample_df.ww.copy()
+    popped_df.ww.pop('full_name')
+    assert popped_df.ww.index is None
+    assert (popped_df.index == sample_df['full_name']).all()
 
 
 def test_accessor_already_sorted(sample_unsorted_df):
@@ -874,13 +1031,6 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     assert 'col_with_name' in renamed_df.columns
 
 
-def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
-    sample_df.ww.init()
-
-    assert repr(schema) == repr(sample_df.ww)
-
-
 def test_get_invalid_schema_message(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
@@ -900,6 +1050,28 @@ def test_get_invalid_schema_message(sample_df):
     renamed_df = schema_df.rename(columns={'id': 'new_col'})
     assert (_get_invalid_schema_message(renamed_df, schema) ==
             "The following columns in the DataFrame were missing from the typing information: {'new_col'}")
+
+
+def test_get_invalid_schema_message_dtype_mismatch(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types={'age': 'Categorical'})
+    schema = schema_df.ww.schema
+
+    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'int64'})
+    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'bool'})
+    incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
+    incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
+
+    assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
+            'dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64')
+    assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
+            'dtype mismatch for column is_registered between DataFrame dtype, bool, and Boolean dtype, boolean')
+    # Koalas backup dtypes make these checks not relevant
+    if ks and not isinstance(sample_df, ks.DataFrame):
+        assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
+                'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
+        assert (_get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
+                'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
 
 
 def test_get_invalid_schema_message_index_checks(sample_df):
@@ -933,21 +1105,15 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    if ks and isinstance(sample_df, ks.DataFrame):
-        # Converting to type `str` results in a `object` dtype for Koalas
-        ltype_dtype = 'int64'
-        new_dtype = 'str'
-        object_dtype = 'object'
-    else:
-        ltype_dtype = 'Int64'
-        new_dtype = 'string'
-        object_dtype = 'string'
+    ltype_dtype = 'Int64'
+    new_dtype = 'string'
+
     warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
-        f'dtype mismatch for column id between DataFrame dtype, {object_dtype}, and Integer dtype, {ltype_dtype}.\n '\
+        f'dtype mismatch for column id between DataFrame dtype, {new_dtype}, and Integer dtype, {ltype_dtype}.\n '\
         'Please initialize Woodwork with DataFrame.ww.init'
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
         new_df = schema_df.ww.astype({'id': new_dtype})
-    assert new_df['id'].dtype == object_dtype
+    assert new_df['id'].dtype == new_dtype
     assert new_df.ww.schema is None
     assert schema_df.ww.schema is not None
 
@@ -1033,6 +1199,22 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     if dd and not isinstance(sample_df, dd.DataFrame):
         # keys() not supported with Dask
         pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
+
+
+def test_dataframe_methods_on_accessor_to_pandas(sample_df):
+    if isinstance(sample_df, pd.DataFrame):
+        pytest.skip("No need to test converting pandas DataFrame to pandas")
+
+    sample_df.ww.init(name='woodwork', index='id')
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pd_df = sample_df.ww.compute()
+    elif ks and isinstance(sample_df, ks.DataFrame):
+        pd_df = sample_df.ww.to_pandas()
+
+    assert isinstance(pd_df, pd.DataFrame)
+    assert pd_df.ww.index == 'id'
+    assert pd_df.ww.name == 'woodwork'
 
 
 def test_get_subset_df_with_schema(sample_df):
@@ -1370,7 +1552,8 @@ def test_accessor_set_index(sample_df):
     assert sample_df.ww.index is None
     if isinstance(sample_df, pd.DataFrame):
         # underlying index not set for Dask/Koalas
-        assert (sample_df.index == range(4)).all()
+        # Check that underlying index doesn't get reset when Woodwork index is removed
+        assert (sample_df.index == sample_df['full_name']).all()
 
 
 def test_accessor_set_index_errors(sample_df):
@@ -1572,7 +1755,6 @@ def test_accessor_rename(sample_df):
     new_col = new_df.ww.columns['birthday']
     assert old_col['logical_type'] == new_col['logical_type']
     assert old_col['semantic_tags'] == new_col['semantic_tags']
-    assert old_col['dtype'] == new_col['dtype']
 
     new_df = sample_df.ww.rename({'age': 'full_name', 'full_name': 'age'})
 
@@ -1610,15 +1792,12 @@ def test_accessor_schema_properties(sample_df):
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
-    schema_properties = ['types', 'logical_types', 'physical_types', 'semantic_tags', 'index', 'time_index']
+    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index']
     for schema_property in schema_properties:
         prop_from_accessor = getattr(sample_df.ww, schema_property)
         prop_from_schema = getattr(sample_df.ww.schema, schema_property)
 
-        if schema_property == 'types':
-            pd.testing.assert_frame_equal(prop_from_accessor, prop_from_schema)
-        else:
-            assert prop_from_accessor == prop_from_schema
+        assert prop_from_accessor == prop_from_schema
 
         # Assumes we don't have setters for any of these attributes
         error = "can't set attribute"
@@ -1631,3 +1810,149 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         ks.set_option('compute.ops_on_diff_frames', False)
         sample_df_koalas.ww.init()
         assert ks.get_option('compute.ops_on_diff_frames') is True
+
+
+def test_maintain_column_order_on_type_changes(sample_df):
+    sample_df.ww.init()
+    schema_df = sample_df.ww.copy()
+
+    schema_df.ww.set_types(logical_types={'email': 'Categorical', 'id': 'Double'},
+                           semantic_tags={'age': 'tag', 'email': 'tag'})
+    assert all(schema_df.columns == sample_df.columns)
+    assert all(schema_df.ww.types.index == sample_df.ww.types.index)
+
+    schema_df.ww.set_index('email')
+    assert all(schema_df.columns == sample_df.columns)
+    assert all(schema_df.ww.types.index == sample_df.ww.types.index)
+
+
+def test_maintain_column_order_of_dataframe(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    select_df = schema_df.ww.select([NaturalLanguage, Integer, Boolean, Datetime])
+    assert all(schema_df.columns == select_df.columns)
+    assert all(schema_df.ww.types.index == select_df.ww.types.index)
+
+    renamed_df = schema_df.ww.rename({'email': 'renamed_1', 'id': 'renamed_2'})
+    renamed_cols = ['renamed_2', 'full_name', 'renamed_1', 'phone_number', 'age', 'signup_date', 'is_registered']
+    assert all(renamed_cols == renamed_df.columns)
+    assert all(renamed_cols == renamed_df.ww.types.index)
+
+    dropped_df = schema_df.ww.drop(['email', 'id', 'is_registered', 'age'])
+    cols_left_over = ['full_name', 'phone_number', 'signup_date']
+    assert all(cols_left_over == dropped_df.columns)
+    assert all(cols_left_over == dropped_df.ww.types.index)
+
+
+def test_maintain_column_order_of_input(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    reversed_cols = list(schema_df.columns[::-1])
+
+    if dd and not isinstance(sample_df, dd.DataFrame):
+        iloc_df = schema_df.ww.iloc[:, list(range(len(schema_df.columns)))[::-1]]
+        assert all(reversed_cols == iloc_df.columns)
+        assert all(reversed_cols == iloc_df.ww.types.index)
+
+    loc_df = schema_df.ww.loc[:, reversed_cols]
+    assert all(reversed_cols == loc_df.columns)
+    assert all(reversed_cols == loc_df.ww.types.index)
+
+    getitem_df = schema_df.ww[reversed_cols]
+    assert all(reversed_cols == getitem_df.columns)
+    assert all(reversed_cols == getitem_df.ww.types.index)
+
+
+def test_maintain_column_order_disordered_schema(sample_df):
+    sample_df.ww.init()
+    column_order = list(sample_df.columns)
+
+    scramble_df = sample_df.ww.copy()
+    id_col = scramble_df.ww.columns.pop('id')
+    scramble_df.ww.columns['id'] = id_col
+    assert list(scramble_df.ww.columns.keys()) != column_order
+
+    assert scramble_df.ww.schema == sample_df.ww.schema
+    assert all(scramble_df.columns == column_order)
+    assert all(scramble_df.ww.types.index == column_order)
+
+    sample_df.ww.init(schema=scramble_df.ww.schema)
+    assert all(sample_df.columns == column_order)
+    assert all(sample_df.ww.types.index == column_order)
+
+
+def test_accessor_types(sample_df):
+    sample_df.ww.init()
+
+    returned_types = sample_df.ww.types
+    assert isinstance(returned_types, pd.DataFrame)
+    assert all(returned_types.columns == ['Physical Type', 'Logical Type', 'Semantic Tag(s)'])
+    assert returned_types.shape[1] == 3
+    assert len(returned_types.index) == len(sample_df.columns)
+
+    string_dtype = 'string'
+    boolean_dtype = 'boolean'
+    int_dtype = 'Int64'
+
+    correct_physical_types = {
+        'id': int_dtype,
+        'full_name': string_dtype,
+        'email': string_dtype,
+        'phone_number': string_dtype,
+        'age': int_dtype,
+        'signup_date': 'datetime64[ns]',
+        'is_registered': boolean_dtype,
+    }
+    correct_physical_types = pd.Series(list(correct_physical_types.values()),
+                                       index=list(correct_physical_types.keys()))
+    assert correct_physical_types.equals(returned_types['Physical Type'])
+
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean,
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(returned_types['Logical Type'])
+
+    correct_semantic_tags = {
+        'id': "['numeric']",
+        'full_name': "[]",
+        'email': "[]",
+        'phone_number': "[]",
+        'age': "['numeric']",
+        'signup_date': "[]",
+        'is_registered': "[]",
+    }
+    correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
+                                      index=list(correct_semantic_tags.keys()))
+    assert correct_semantic_tags.equals(returned_types['Semantic Tag(s)'])
+
+
+def test_accessor_repr(small_df):
+    error = 'Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init'
+    with pytest.raises(AttributeError, match=error):
+        repr(small_df.ww)
+    small_df.ww.init()
+
+    table_repr = repr(small_df.ww)
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    assert table_repr == expected_repr
+
+    table_html_repr = small_df.ww._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    assert table_html_repr == expected_repr
+
+
+def test_accessor_repr_empty(empty_df):
+    empty_df.ww.init()
+
+    assert repr(empty_df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
+    assert empty_df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'

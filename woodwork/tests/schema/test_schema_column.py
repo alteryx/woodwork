@@ -18,6 +18,7 @@ from woodwork.schema_column import (
     _is_col_categorical,
     _is_col_datetime,
     _is_col_numeric,
+    _reset_semantic_tags,
     _validate_description,
     _validate_logical_type,
     _validate_metadata
@@ -59,10 +60,9 @@ def test_validate_metadata_errors():
 def test_get_column_dict():
     column = _get_column_dict('column', Integer, semantic_tags='test_tag')
 
-    assert set(column.keys()) == {'dtype', 'logical_type', 'semantic_tags', 'description', 'metadata'}
+    assert set(column.keys()) == {'logical_type', 'semantic_tags', 'description', 'metadata'}
 
     assert column.get('logical_type') == Integer
-    assert column.get('dtype') == 'Int64'
     assert column.get('semantic_tags') == {'numeric', 'test_tag'}
 
     assert column.get('description') is None
@@ -148,3 +148,10 @@ def test_is_col_datetime():
 
     double_column = _get_column_dict('floats', Double)
     assert not _is_col_datetime(double_column)
+
+
+def test_reset_semantic_tags_returns_new_object():
+    standard_tags = {'tag1', 'tag2'}
+    reset_tags = _reset_semantic_tags(standard_tags, use_standard_tags=True)
+    assert reset_tags is not standard_tags
+    assert reset_tags == standard_tags

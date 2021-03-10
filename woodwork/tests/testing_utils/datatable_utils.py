@@ -25,7 +25,6 @@ def validate_subset_schema(subset_schema, schema):
         col = schema.columns[subset_col_name]
         assert subset_col['logical_type'] == col['logical_type']
         assert subset_col['semantic_tags'] == col['semantic_tags']
-        assert subset_col['dtype'] == col['dtype']
 
 
 def mi_between_cols(col1, col2, df):
@@ -67,3 +66,18 @@ def check_column_order(dt, new_dt):
     assert all(dt.types.index == new_dt.types.index)
     # Confirm types df matches column order
     assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+
+
+def is_public_method(class_to_check, name):
+    """Determine if the specified name is a public method on a class"""
+    if hasattr(class_to_check, name) and name[0] != '_':
+        if callable(getattr(class_to_check, name)):
+            return True
+    return False
+
+
+def is_property(class_to_check, name):
+    """Determine if the specified name is a property on a class"""
+    if hasattr(class_to_check, name) and isinstance(getattr(class_to_check, name), property):
+        return True
+    return False
