@@ -156,8 +156,8 @@ def test_accessor_init_errors_methods(sample_df):
         return False
 
     methods_to_exclude = ['init']
-    methods = [method for method in dir(sample_df.ww) if is_public_method(method)]
-    methods = [method for method in methods if method not in methods_to_exclude]
+    public_methods = [method for method in dir(sample_df.ww) if is_public_method(method)]
+    public_methods = [method for method in public_methods if method not in methods_to_exclude]
     method_args_dict = {
         'add_semantic_tags': [{'id': 'new_tag'}],
         'describe': None,
@@ -182,7 +182,7 @@ def test_accessor_init_errors_methods(sample_df):
 
     }
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
-    for method in methods:
+    for method in public_methods:
         func = getattr(sample_df.ww, method)
         method_args = method_args_dict[method]
         with pytest.raises(AttributeError, match=error):
@@ -198,10 +198,10 @@ def test_accessor_init_errors_properties(sample_df):
             return True
         return False
 
-    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     props_to_exclude = ['iloc', 'loc', 'schema']
     props = [prop for prop in dir(sample_df.ww) if is_prop(prop) and prop not in props_to_exclude]
 
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     for prop in props:
         with pytest.raises(AttributeError, match=error):
             getattr(sample_df.ww, prop)
