@@ -13,6 +13,7 @@ from woodwork.exceptions import (
     ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
+    StandardTagsChangedWarning,
     TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
@@ -189,10 +190,12 @@ class WoodworkTableAccessor:
             column = init_series(column, use_standard_tags=self.use_standard_tags)
         elif self.use_standard_tags and not column.ww.use_standard_tags:
             column.ww._schema['semantic_tags'] |= column.ww.logical_type.standard_tags
-            warnings.warn(f'Standard tags are used by the data frame and have been added to "{col_name}"')
+            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
+            warnings.warn(message, StandardTagsChangedWarning)
         elif not self.use_standard_tags and column.ww.use_standard_tags:
             column.ww._schema['semantic_tags'] -= column.ww.logical_type.standard_tags
-            warnings.warn(f'Standard tags are not used by the data frame and have been removed from "{col_name}"')
+            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
+            warnings.warn(message, StandardTagsChangedWarning)
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema

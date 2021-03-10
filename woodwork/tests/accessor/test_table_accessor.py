@@ -10,6 +10,7 @@ from woodwork.exceptions import (
     ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
+    StandardTagsChangedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
 )
@@ -1890,7 +1891,10 @@ def test_setitem_overwrite_column(sample_df):
         semantic_tags='test_tag',
     )
 
-    df.ww['full_name'] = new_series
+    match = 'Standard tags are used by the data frame and have been added to "full_name"'
+    with pytest.warns(StandardTagsChangedWarning, match=match):
+        df.ww['full_name'] = new_series
+
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Double
@@ -1912,7 +1916,10 @@ def test_setitem_overwrite_column(sample_df):
         semantic_tags='test_tag',
     )
 
-    df.ww['full_name'] = new_series
+    match = 'Standard tags are not used by the data frame and have been removed from "full_name"'
+    with pytest.warns(StandardTagsChangedWarning, match=match):
+        df.ww['full_name'] = new_series
+
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Double
