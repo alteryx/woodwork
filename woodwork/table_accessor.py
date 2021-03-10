@@ -149,6 +149,8 @@ class WoodworkTableAccessor:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
     def __getitem__(self, key):
+        if self._schema is None:
+            _raise_init_error()
         if isinstance(key, list):
             columns = set(self._dataframe.columns)
             diff = list(set(key).difference(columns))
@@ -248,32 +250,44 @@ class WoodworkTableAccessor:
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
+        if self._schema is None:
+            _raise_init_error()
         return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self.schema.logical_types[col_name]) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
+        if self._schema is None:
+            _raise_init_error()
         return self._get_typing_info()
 
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.logical_types
 
     @property
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.semantic_tags
 
     @property
     def index(self):
         """The index column for the table"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.index
 
     @property
     def time_index(self):
         """The time index column for the table"""
+        if self._schema is None:
+            _raise_init_error()
         return self._schema.time_index
 
     def set_index(self, new_index):
@@ -288,6 +302,8 @@ class WoodworkTableAccessor:
         Args:
             new_index (str): The name of the column to set as the index
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.set_index(new_index)
 
         if self._schema.index is not None:
@@ -302,6 +318,8 @@ class WoodworkTableAccessor:
             new_time_index (str): The name of the column to set as the time index.
                 If None, will remove the time_index.
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.set_time_index(new_time_index)
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
@@ -317,6 +335,8 @@ class WoodworkTableAccessor:
                 semantic tags set on the column. If False, will replace all semantic tags any time a column's
                 semantic tags or logical type changes. Defaults to True.
         """
+        if self._schema is None:
+            _raise_init_error()
         logical_types = logical_types or {}
         logical_types = {col_name: _parse_logical_type(ltype, col_name) for col_name, ltype in logical_types.items()}
 
@@ -346,6 +366,8 @@ class WoodworkTableAccessor:
             logical types and semantic tags in ``include``. Has Woodwork typing
             information initialized.
         """
+        if self._schema is None:
+            _raise_init_error()
         cols_to_include = self._schema._filter_cols(include)
         return self._get_subset_df_with_schema(cols_to_include)
 
@@ -357,6 +379,8 @@ class WoodworkTableAccessor:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataFrame to the tags that should be added to the column's semantic tags
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.add_semantic_tags(semantic_tags)
 
     def remove_semantic_tags(self, semantic_tags):
@@ -368,6 +392,8 @@ class WoodworkTableAccessor:
             semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataFrame to the tags that should be removed from the column's semantic tags
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.remove_semantic_tags(semantic_tags)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
@@ -383,6 +409,8 @@ class WoodworkTableAccessor:
                 semantic tags set on the column. If False, will clear all semantic tags. Defaults to
                 False.
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema.reset_semantic_tags(columns=columns, retain_index_tags=retain_index_tags)
 
     def to_dictionary(self):
@@ -447,7 +475,6 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-
         import_error_message = (
             "The pyarrow library is required to serialize to parquet.\n"
             "Install via pip:\n"
@@ -550,6 +577,8 @@ class WoodworkTableAccessor:
         Returns:
             Series: Popped series with Woodwork initialized
         """
+        if self._schema is None:
+            _raise_init_error()
         if column_name not in self._dataframe.columns:
             raise LookupError(f'Column with name {column_name} not found in DataFrame')
 
@@ -578,6 +607,8 @@ class WoodworkTableAccessor:
             DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
             instead of calling ``DataFrame.ww.drop``.
         """
+        if self._schema is None:
+            _raise_init_error()
         if not isinstance(columns, (list, set)):
             columns = [columns]
 
@@ -596,6 +627,8 @@ class WoodworkTableAccessor:
         Returns:
             DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
         """
+        if self._schema is None:
+            _raise_init_error()
         new_schema = self._schema.rename(columns)
         new_df = self._dataframe.rename(columns=columns)
 
@@ -622,6 +655,8 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
+        if self._schema is None:
+            _raise_init_error()
         return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows)
 
     def mutual_information(self, num_bins=10, nrows=None):
@@ -661,6 +696,8 @@ class WoodworkTableAccessor:
             matching the logical types, semantic tags or column names specified in ``include``, paired
             with a value containing a dictionary containing relevant statistics for that column.
         """
+        if self._schema is None:
+            _raise_init_error()
         return _get_describe_dict(self._dataframe, include=include)
 
     def describe(self, include=None):
@@ -718,6 +755,8 @@ class WoodworkTableAccessor:
             list(dict): a list of dictionaries for each categorical column with keys `count`
             and `value`.
         """
+        if self._schema is None:
+            _raise_init_error()
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
 

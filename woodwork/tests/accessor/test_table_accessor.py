@@ -32,13 +32,19 @@ from woodwork.logical_types import (
 )
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
+    WoodworkTableAccessor,
     _check_index,
     _check_logical_types,
     _check_time_index,
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
+from woodwork.tests.testing_utils import (
+    is_property,
+    is_public_method,
+    to_pandas,
+    validate_subset_schema
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -160,6 +166,54 @@ def test_init_accessor_with_schema(sample_df):
     assert iloc_df.ww.logical_types['id'] == Integer
 
 
+def test_accessor_init_errors_methods(sample_df):
+    methods_to_exclude = ['init']
+    public_methods = [method for method in dir(sample_df.ww) if is_public_method(WoodworkTableAccessor, method)]
+    public_methods = [method for method in public_methods if method not in methods_to_exclude]
+    method_args_dict = {
+        'add_semantic_tags': [{'id': 'new_tag'}],
+        'describe': None,
+        'pop': ['id'],
+        'describe': None,
+        'describe_dict': None,
+        'drop': ['id'],
+        'mutual_information': None,
+        'mutual_information_dict': None,
+        'remove_semantic_tags': [{'id': 'new_tag'}],
+        'rename': [{'id': 'new_id'}],
+        'reset_semantic_tags': None,
+        'select': [['Double']],
+        'set_index': ['id'],
+        'set_time_index': ['signup_date'],
+        'set_types': [{'id': 'Integer'}],
+        'to_csv': ['dir'],
+        'to_dictionary': None,
+        'to_parquet': ['dir'],
+        'to_pickle': ['dir'],
+        'value_counts': None,
+
+    }
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    for method in public_methods:
+        func = getattr(sample_df.ww, method)
+        method_args = method_args_dict[method]
+        with pytest.raises(AttributeError, match=error):
+            if method_args:
+                func(*method_args)
+            else:
+                func()
+
+
+def test_accessor_init_errors_properties(sample_df):
+    props_to_exclude = ['iloc', 'loc', 'schema']
+    props = [prop for prop in dir(sample_df.ww) if is_property(WoodworkTableAccessor, prop) and prop not in props_to_exclude]
+
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    for prop in props:
+        with pytest.raises(AttributeError, match=error):
+            getattr(sample_df.ww, prop)
+
+
 def test_init_accessor_with_schema_errors(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
@@ -260,6 +314,12 @@ def test_getitem(sample_df):
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
     assert series.ww.logical_type == Integer
     assert series.ww.semantic_tags == {'numeric'}
+
+
+def test_getitem_init_error(sample_df):
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    with pytest.raises(AttributeError, match=error):
+        sample_df.ww['age']
 
 
 def test_getitem_invalid_input(sample_df):
