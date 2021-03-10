@@ -71,6 +71,8 @@ class WoodworkColumnAccessor:
 
     @description.setter
     def description(self, description):
+        if self._schema is None:
+            _raise_init_error()
         _validate_description(description)
         self._schema['description'] = description
 
@@ -143,6 +145,8 @@ class WoodworkColumnAccessor:
 
     @metadata.setter
     def metadata(self, metadata):
+        if self._schema is None:
+            _raise_init_error()
         _validate_metadata(metadata)
         self._schema['metadata'] = metadata
 
@@ -235,6 +239,8 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema['semantic_tags'] = _add_semantic_tags(semantic_tags,
                                                            self.semantic_tags,
                                                            self._series.name)
@@ -245,6 +251,8 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): Semantic tag(s) to remove.
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema['semantic_tags'] = _remove_semantic_tags(semantic_tags,
                                                               self.semantic_tags,
                                                               self._series.name,
@@ -259,6 +267,8 @@ class WoodworkColumnAccessor:
         Args:
             None
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
                                                              self.use_standard_tags)
 
@@ -272,6 +282,8 @@ class WoodworkColumnAccessor:
         Returns:
             Series: A new series with the updated logical type.
         """
+        if self._schema is None:
+            _raise_init_error()
         # Create a new series without a schema to prevent new series from sharing a common
         # schema with current series
         new_series = self._series.copy()
@@ -291,6 +303,8 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to set
         """
+        if self._schema is None:
+            _raise_init_error()
         self._schema['semantic_tags'] = _set_semantic_tags(semantic_tags,
                                                            self.logical_type.standard_tags,
                                                            self.use_standard_tags)

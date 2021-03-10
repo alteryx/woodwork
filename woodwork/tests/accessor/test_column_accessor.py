@@ -141,6 +141,13 @@ def test_accessor_description(sample_series):
     assert series.ww.description == new_description
 
 
+def test_description_setter_error_before_init(sample_series):
+    series = convert_series(sample_series, Categorical)
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=err_msg):
+        series.ww.description = "description"
+
+
 def test_description_error_on_init(sample_series):
     series = convert_series(sample_series, Categorical)
     err_msg = "Column description must be a string"
@@ -676,6 +683,13 @@ def test_accessor_metadata(sample_series):
 
     series.ww.metadata['number'] = 1012034
     assert series.ww.metadata == {'date_created': '1/1/19', 'metadata_field': [1, 2, 3], 'number': 1012034}
+
+
+def test_metadata_setter_error_before_init(sample_series):
+    series = convert_series(sample_series, Categorical)
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=err_msg):
+        series.ww.metadata = {"key": "val"}
 
 
 def test_accessor_metadata_error_on_init(sample_series):

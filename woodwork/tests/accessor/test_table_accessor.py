@@ -309,7 +309,6 @@ def test_getitem(sample_df):
     assert series.ww.semantic_tags == {'numeric'}
 
 
-
 def test_getitem_init_error(sample_df):
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     with pytest.raises(AttributeError, match=error):

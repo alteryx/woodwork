@@ -150,7 +150,7 @@ class WoodworkTableAccessor:
 
     def __getitem__(self, key):
         if self._schema is None:
-            _raise_init_error()        
+            _raise_init_error()
         if isinstance(key, list):
             columns = set(self._dataframe.columns)
             diff = list(set(key).difference(columns))
