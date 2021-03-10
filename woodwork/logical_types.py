@@ -20,7 +20,7 @@ class LogicalTypeMetaClass(type):
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
     type_string = ClassNameDescriptor()
-    pandas_dtype = 'string'
+    primary_dtype = 'string'
     backup_dtype = None
     standard_tags = set()
 
@@ -40,8 +40,7 @@ class Boolean(LogicalType):
             [True, False, True]
             [0, 1, 1]
     """
-    pandas_dtype = 'boolean'
-    backup_dtype = 'bool'
+    primary_dtype = 'boolean'
 
 
 class Categorical(LogicalType):
@@ -55,8 +54,8 @@ class Categorical(LogicalType):
             ["produce", "dairy", "bakery"]
             [3, 1, 2]
     """
-    pandas_dtype = 'category'
-    backup_dtype = 'str'
+    primary_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
     def __init__(self, encoding=None):
@@ -75,8 +74,8 @@ class CountryCode(LogicalType):
             ["AUS", "USA", "UKR"]
             ["GB", "NZ", "DE"]
     """
-    pandas_dtype = 'category'
-    backup_dtype = 'str'
+    primary_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
 
@@ -93,7 +92,7 @@ class Datetime(LogicalType):
              "2020-01-10 00:00:00",
              "01/01/2000 08:30"]
     """
-    pandas_dtype = 'datetime64[ns]'
+    primary_dtype = 'datetime64[ns]'
     datetime_format = None
 
     def __init__(self, datetime_format=None):
@@ -111,7 +110,7 @@ class Double(LogicalType):
             [1.2, 100.4, 3.5]
             [-15.34, 100, 58.3]
     """
-    pandas_dtype = 'float64'
+    primary_dtype = 'float64'
     standard_tags = {'numeric'}
 
 
@@ -126,8 +125,7 @@ class Integer(LogicalType):
             [100, 35, 0]
             [-54, 73, 11]
     """
-    pandas_dtype = 'Int64'
-    backup_dtype = 'int64'
+    primary_dtype = 'Int64'
     standard_tags = {'numeric'}
 
 
@@ -141,8 +139,7 @@ class EmailAddress(LogicalType):
              "support@example.com",
              "team@example.com"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class Filepath(LogicalType):
@@ -156,8 +153,7 @@ class Filepath(LogicalType):
              "/Users/john.smith/dev/index.html",
              "/tmp"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class FullName(LogicalType):
@@ -171,8 +167,7 @@ class FullName(LogicalType):
              "Doe, Mrs. Jane",
              "James Brown"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class IPAddress(LogicalType):
@@ -186,8 +181,7 @@ class IPAddress(LogicalType):
              "192.0.0.0",
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class LatLong(LogicalType):
@@ -209,7 +203,7 @@ class LatLong(LogicalType):
              (40.423599, -86.921162),
              (-45.031705, nan)]
     """
-    pandas_dtype = 'object'
+    primary_dtype = 'object'
 
 
 class NaturalLanguage(LogicalType):
@@ -223,8 +217,7 @@ class NaturalLanguage(LogicalType):
              "I like to eat pizza!",
              "When will humans go to mars?"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class Ordinal(LogicalType):
@@ -242,8 +235,8 @@ class Ordinal(LogicalType):
             ["first", "second", "third"]
             ["bronze", "silver", "gold"]
     """
-    pandas_dtype = 'category'
-    backup_dtype = 'str'
+    primary_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
     def __init__(self, order):
@@ -275,8 +268,7 @@ class PhoneNumber(LogicalType):
              "+1-555-123-5495",
              "5551235495"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class SubRegionCode(LogicalType):
@@ -289,8 +281,8 @@ class SubRegionCode(LogicalType):
             ["US-CO", "US-MA", "US-CA"]
             ["AU-NSW", "AU-TAS", "AU-QLD"]
     """
-    pandas_dtype = 'category'
-    backup_dtype = 'str'
+    primary_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}
 
 
@@ -304,7 +296,7 @@ class Timedelta(LogicalType):
              pd.Timedelta('-1 days +23:40:00'),
              pd.Timedelta('4 days 12:00:00')]
     """
-    pandas_dtype = 'timedelta64[ns]'
+    primary_dtype = 'timedelta64[ns]'
 
 
 class URL(LogicalType):
@@ -318,8 +310,7 @@ class URL(LogicalType):
              "https://example.com/index.html",
              "example.com"]
     """
-    pandas_dtype = 'string'
-    backup_dtype = 'str'
+    primary_dtype = 'string'
 
 
 class ZIPCode(LogicalType):
@@ -334,6 +325,6 @@ class ZIPCode(LogicalType):
              "60018-0123",
              "10021"]
     """
-    pandas_dtype = 'category'
-    backup_dtype = 'str'
+    primary_dtype = 'category'
+    backup_dtype = 'string'
     standard_tags = {'category'}

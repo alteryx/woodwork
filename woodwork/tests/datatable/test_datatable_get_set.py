@@ -171,10 +171,8 @@ def test_setitem_new_column(sample_df):
     dt = DataTable(sample_df)
     new_series = pd.Series([1, 2, 3])
     if ks and isinstance(sample_df, ks.DataFrame):
-        dtype = 'int64'
         new_series = ks.Series(new_series)
-    else:
-        dtype = 'Int64'
+    dtype = 'Int64'
 
     new_col = DataColumn(new_series, use_standard_tags=False)
     assert new_col.name is None
@@ -192,7 +190,7 @@ def test_setitem_new_column(sample_df):
     # Standard tags and no logical type
     new_series = pd.Series(['new', 'column', 'inserted'], name='test_col')
     if ks and isinstance(sample_df, ks.DataFrame):
-        dtype = 'object'
+        dtype = 'string'
         new_series = ks.Series(new_series)
     else:
         dtype = 'category'
@@ -235,10 +233,9 @@ def test_setitem_overwrite_column(sample_df):
     original_col = dt['age']
     new_series = pd.Series([1, 2, 3])
     if ks and isinstance(sample_df, ks.DataFrame):
-        dtype = 'int64'
         new_series = ks.Series(new_series)
-    else:
-        dtype = 'Int64'
+
+    dtype = 'Int64'
     overwrite_col = DataColumn(new_series, use_standard_tags=True)
     dt['age'] = overwrite_col
     updated_df = dt.to_dataframe()
@@ -255,9 +252,7 @@ def test_setitem_overwrite_column(sample_df):
     new_series = pd.Series([True, False, False])
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
-        dtype = 'bool'
-    else:
-        dtype = 'boolean'
+    dtype = 'boolean'
     overwrite_col = DataColumn(new_series.astype(dtype),
                                use_standard_tags=False,
                                semantic_tags='test_tag')

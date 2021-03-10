@@ -40,13 +40,19 @@ Release Notes
         * Add Schema properties to WoodworkTableAccessor (:pr:`651`)
         * Add KoalasTableAccessor (:pr:`652`)
         * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
+        * Update Koalas min version and add support for more new pandas dtypes with Koalas (:pr:`678`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
         * Fix bug in ``_reset_semantic_tags`` causing columns to share same semantic tags set (:pr:`666`)
+        * Maintain column order in DataFrame and Woodwork repr (:pr:`677`)
     * Changes
         * Move mutual information logic to statistics utils file (:pr:`584`)
         * Bump min Koalas version to 1.4.0 (:pr:`638`)
         * Preserve pandas underlying index when not creating a Woodwork index (:pr:`664`)
+        * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
+        * Clean up dtype usage across Woodwork (:pr:`682`)
+        * Improve error when calling accessor properties or methods before init (:pr:`683`)
+        * Remove dtype from Schema dictionary (:pr:`685`)
     * Documentation Changes
         * Update README.md and Get Started guide to use accessor (:pr:`655`)
         * Update docstrings and API Reference page (:pr:`660`)

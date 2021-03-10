@@ -114,7 +114,7 @@ class DataColumn(object):
             else:
                 self._series = self._series.apply(_reformat_to_latlong)
 
-        if self.logical_type.pandas_dtype != str(self._series.dtype):
+        if self.logical_type.primary_dtype != str(self._series.dtype):
             # Update the underlying series
             try:
                 if _get_ltype_class(self.logical_type) == Datetime:
@@ -132,11 +132,11 @@ class DataColumn(object):
                     if ks and isinstance(self._series, ks.Series) and self.logical_type.backup_dtype:
                         new_dtype = self.logical_type.backup_dtype
                     else:
-                        new_dtype = self.logical_type.pandas_dtype
+                        new_dtype = self.logical_type.primary_dtype
                     self._series = self._series.astype(new_dtype)
             except (TypeError, ValueError):
                 error_msg = f'Error converting datatype for column {self.name} from type {str(self._series.dtype)} ' \
-                    f'to type {self.logical_type.pandas_dtype}. Please confirm the underlying data is consistent with ' \
+                    f'to type {self.logical_type.primary_dtype}. Please confirm the underlying data is consistent with ' \
                     f'logical type {self.logical_type}.'
                 raise TypeError(error_msg)
 

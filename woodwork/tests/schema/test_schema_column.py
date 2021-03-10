@@ -60,10 +60,9 @@ def test_validate_metadata_errors():
 def test_get_column_dict():
     column = _get_column_dict('column', Integer, semantic_tags='test_tag')
 
-    assert set(column.keys()) == {'dtype', 'logical_type', 'semantic_tags', 'description', 'metadata'}
+    assert set(column.keys()) == {'logical_type', 'semantic_tags', 'description', 'metadata'}
 
     assert column.get('logical_type') == Integer
-    assert column.get('dtype') == 'Int64'
     assert column.get('semantic_tags') == {'numeric', 'test_tag'}
 
     assert column.get('description') is None
