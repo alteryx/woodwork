@@ -953,7 +953,7 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     schema_df.ww.set_time_index('')
     assert schema_df.ww.time_index == ''
 
-    schema_df.ww.pop('')
+    popped_col = schema_df.ww.pop('')
     assert '' not in schema_df
     assert '' not in schema_df.ww.columns
     assert schema_df.ww.time_index is None
@@ -961,10 +961,8 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     schema_df.ww.set_index(None)
     assert schema_df.ww.index is None
 
-    # --> add back in if setitem is implemented
-    # dt[''] = popped_col
-    # assert dt[''].name == ''
-    # assert dt['']._series.name == ''
+    schema_df.ww[''] = popped_col
+    assert schema_df.ww[''].name == ''
 
     renamed_df = schema_df.ww.rename({0: 'col_with_name'})
     assert 0 not in renamed_df.columns
