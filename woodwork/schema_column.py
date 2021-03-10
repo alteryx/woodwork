@@ -3,7 +3,7 @@ import warnings
 import woodwork as ww
 from woodwork.exceptions import (
     DuplicateTagsWarning,
-    StandardTagsRemovalWarning
+    StandardTagsChangedWarning
 )
 from woodwork.logical_types import Boolean, Datetime, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
@@ -121,8 +121,8 @@ def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use
         raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
     standard_tags_to_remove = sorted(list(tags_to_remove.intersection(standard_tags)))
     if standard_tags_to_remove and use_standard_tags:
-        warnings.warn(StandardTagsRemovalWarning().get_warning_message(standard_tags_to_remove, name),
-                      StandardTagsRemovalWarning)
+        warnings.warn(StandardTagsChangedWarning().get_warning_message(use_standard_tags, name),
+                      StandardTagsChangedWarning)
     return current_tags.difference(tags_to_remove)
 
 
