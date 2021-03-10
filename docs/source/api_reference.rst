@@ -72,7 +72,6 @@ Schema
     Schema.add_semantic_tags
     Schema.index
     Schema.logical_types
-    Schema.physical_types
     Schema.rename
     Schema.remove_semantic_tags
     Schema.reset_semantic_tags

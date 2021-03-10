@@ -163,13 +163,28 @@ class WoodworkTableAccessor:
 
         series = self._dataframe[key]
         column = self.schema.columns[key]
-        del column['dtype']
         column['semantic_tags'] -= {'index', 'time_index'}
         series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
 
     def __repr__(self):
-        return repr(self.types)
+        """A string representation of a Woodwork table containing typing information"""
+        return repr(self._get_typing_info())
+
+    def _repr_html_(self):
+        """An HTML representation of a Woodwork table for IPython.display in Jupyter Notebooks
+        containing typing information and a preview of the data."""
+        return self._get_typing_info().to_html()
+
+    def _get_typing_info(self):
+        """Creates a DataFrame that contains the typing information for a Woodwork table."""
+        if self._schema is None:
+            _raise_init_error()
+        typing_info = self._schema._get_typing_info().copy()
+        typing_info.insert(0, 'Physical Type', pd.Series(self.physical_types))
+        # Maintain the same column order used in the DataFrame
+        typing_info = typing_info.loc[list(self._dataframe.columns), :]
+        return typing_info
 
     @property
     def iloc(self):
@@ -231,24 +246,20 @@ class WoodworkTableAccessor:
             return self._schema._get_subset_schema(list(self._dataframe.columns))
 
     @property
+    def physical_types(self):
+        """A dictionary containing physical types for each column"""
+        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self.schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+
+    @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
         tags for the Schema."""
-        repr_df = self._schema._get_typing_info()
-        # Maintain the same column order used in the DataFrame
-        repr_df = repr_df.loc[list(self._dataframe.columns), :]
-
-        return repr_df
+        return self._get_typing_info()
 
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
         return self._schema.logical_types
-
-    @property
-    def physical_types(self):
-        """A dictionary containing physical types for each column"""
-        return self._schema.physical_types
 
     @property
     def semantic_tags(self):
@@ -546,7 +557,6 @@ class WoodworkTableAccessor:
 
         # Initialize Woodwork typing info for series
         col_schema = self._schema.columns[column_name]
-        del col_schema['dtype']
         series.ww.init(**col_schema, use_standard_tags=self.use_standard_tags)
 
         # Update schema to not include popped column

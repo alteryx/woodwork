@@ -112,6 +112,19 @@ def test_accessor_schema_property(sample_df):
     assert sample_df.ww._schema == sample_df.ww.schema
 
 
+def test_accessor_physical_types_property(sample_df):
+    sample_df.ww.init(logical_types={'age': 'Categorical'})
+
+    assert isinstance(sample_df.ww.physical_types, dict)
+    assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
+    for k, v in sample_df.ww.physical_types.items():
+        logical_type = sample_df.ww.columns[k]['logical_type']
+        if ks and isinstance(sample_df, ks.DataFrame) and logical_type.backup_dtype is not None:
+            assert v == logical_type.backup_dtype
+        else:
+            assert v == logical_type.primary_dtype
+
+
 def test_accessor_separation_of_params(sample_df):
     # mix up order of acccessor and schema params
     schema_df = sample_df.copy()
@@ -270,10 +283,6 @@ def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_in
 
     # eq not implemented on Accessor class, so Schema's eq is called
     assert schema_df.ww.__eq__(comparison_schema)
-
-    # Since there's a repr on Accessor, it gets called
-    assert schema_df.ww._repr_html_() == comparison_schema._repr_html_()
-    assert schema_df.ww.__repr__() == comparison_schema.__repr__()
 
     logical_types = {
         'id': Double,
@@ -514,7 +523,6 @@ def test_sets_category_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -526,7 +534,6 @@ def test_sets_object_dtype_on_init(latlong_df):
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == LatLong
-        assert df.ww.columns[column_name]['dtype'] == LatLong.primary_dtype
         assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
@@ -562,7 +569,6 @@ def test_sets_string_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -584,7 +590,6 @@ def test_sets_boolean_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -607,7 +612,6 @@ def test_sets_int64_dtype_on_init():
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
             assert df.ww.columns[column_name]['logical_type'] == logical_type
-            assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -628,7 +632,6 @@ def test_sets_float64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -651,7 +654,6 @@ def test_sets_datetime64_dtype_on_init():
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
         assert df.ww.columns[column_name]['logical_type'] == logical_type
-        assert df.ww.columns[column_name]['dtype'] == logical_type.primary_dtype
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -969,13 +971,6 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     assert 'col_with_name' in renamed_df.columns
 
 
-def test_accessor_repr(sample_df, sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
-    sample_df.ww.init()
-
-    assert repr(schema) == repr(sample_df.ww)
-
-
 def test_get_invalid_schema_message(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
@@ -1144,6 +1139,22 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     if dd and not isinstance(sample_df, dd.DataFrame):
         # keys() not supported with Dask
         pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
+
+
+def test_dataframe_methods_on_accessor_to_pandas(sample_df):
+    if isinstance(sample_df, pd.DataFrame):
+        pytest.skip("No need to test converting pandas DataFrame to pandas")
+
+    sample_df.ww.init(name='woodwork', index='id')
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        pd_df = sample_df.ww.compute()
+    elif ks and isinstance(sample_df, ks.DataFrame):
+        pd_df = sample_df.ww.to_pandas()
+
+    assert isinstance(pd_df, pd.DataFrame)
+    assert pd_df.ww.index == 'id'
+    assert pd_df.ww.name == 'woodwork'
 
 
 def test_get_subset_df_with_schema(sample_df):
@@ -1684,7 +1695,6 @@ def test_accessor_rename(sample_df):
     new_col = new_df.ww.columns['birthday']
     assert old_col['logical_type'] == new_col['logical_type']
     assert old_col['semantic_tags'] == new_col['semantic_tags']
-    assert old_col['dtype'] == new_col['dtype']
 
     new_df = sample_df.ww.rename({'age': 'full_name', 'full_name': 'age'})
 
@@ -1722,15 +1732,12 @@ def test_accessor_schema_properties(sample_df):
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
-    schema_properties = ['types', 'logical_types', 'physical_types', 'semantic_tags', 'index', 'time_index']
+    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index']
     for schema_property in schema_properties:
         prop_from_accessor = getattr(sample_df.ww, schema_property)
         prop_from_schema = getattr(sample_df.ww.schema, schema_property)
 
-        if schema_property == 'types':
-            pd.testing.assert_frame_equal(prop_from_accessor, prop_from_schema)
-        else:
-            assert prop_from_accessor == prop_from_schema
+        assert prop_from_accessor == prop_from_schema
 
         # Assumes we don't have setters for any of these attributes
         error = "can't set attribute"
@@ -1814,3 +1821,78 @@ def test_maintain_column_order_disordered_schema(sample_df):
     sample_df.ww.init(schema=scramble_df.ww.schema)
     assert all(sample_df.columns == column_order)
     assert all(sample_df.ww.types.index == column_order)
+
+
+def test_accessor_types(sample_df):
+    sample_df.ww.init()
+
+    returned_types = sample_df.ww.types
+    assert isinstance(returned_types, pd.DataFrame)
+    assert all(returned_types.columns == ['Physical Type', 'Logical Type', 'Semantic Tag(s)'])
+    assert returned_types.shape[1] == 3
+    assert len(returned_types.index) == len(sample_df.columns)
+
+    string_dtype = 'string'
+    boolean_dtype = 'boolean'
+    int_dtype = 'Int64'
+
+    correct_physical_types = {
+        'id': int_dtype,
+        'full_name': string_dtype,
+        'email': string_dtype,
+        'phone_number': string_dtype,
+        'age': int_dtype,
+        'signup_date': 'datetime64[ns]',
+        'is_registered': boolean_dtype,
+    }
+    correct_physical_types = pd.Series(list(correct_physical_types.values()),
+                                       index=list(correct_physical_types.keys()))
+    assert correct_physical_types.equals(returned_types['Physical Type'])
+
+    correct_logical_types = {
+        'id': Integer,
+        'full_name': NaturalLanguage,
+        'email': NaturalLanguage,
+        'phone_number': NaturalLanguage,
+        'age': Integer,
+        'signup_date': Datetime,
+        'is_registered': Boolean,
+    }
+    correct_logical_types = pd.Series(list(correct_logical_types.values()),
+                                      index=list(correct_logical_types.keys()))
+    assert correct_logical_types.equals(returned_types['Logical Type'])
+
+    correct_semantic_tags = {
+        'id': "['numeric']",
+        'full_name': "[]",
+        'email': "[]",
+        'phone_number': "[]",
+        'age': "['numeric']",
+        'signup_date': "[]",
+        'is_registered': "[]",
+    }
+    correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
+                                      index=list(correct_semantic_tags.keys()))
+    assert correct_semantic_tags.equals(returned_types['Semantic Tag(s)'])
+
+
+def test_accessor_repr(small_df):
+    error = 'Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init'
+    with pytest.raises(AttributeError, match=error):
+        repr(small_df.ww)
+    small_df.ww.init()
+
+    table_repr = repr(small_df.ww)
+    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    assert table_repr == expected_repr
+
+    table_html_repr = small_df.ww._repr_html_()
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    assert table_html_repr == expected_repr
+
+
+def test_accessor_repr_empty(empty_df):
+    empty_df.ww.init()
+
+    assert repr(empty_df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
+    assert empty_df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'

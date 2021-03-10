@@ -20,14 +20,6 @@ from woodwork.logical_types import (
 from woodwork.schema import Schema
 
 
-def test_schema_physical_types(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
-    assert isinstance(schema.physical_types, dict)
-    assert set(schema.physical_types.keys()) == set(sample_column_names)
-    for k, v in schema.physical_types.items():
-        assert v == schema.columns[k]['logical_type'].primary_dtype
-
-
 def test_schema_logical_types(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types)
     assert isinstance(schema.logical_types, dict)
@@ -58,10 +50,9 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
 
     returned_types = schema.types
     assert isinstance(returned_types, pd.DataFrame)
-    assert 'Physical Type' in returned_types.columns
     assert 'Logical Type' in returned_types.columns
     assert 'Semantic Tag(s)' in returned_types.columns
-    assert returned_types.shape[1] == 3
+    assert returned_types.shape[1] == 2
     assert len(returned_types.index) == len(sample_column_names)
     correct_logical_types = {
         'id': Integer,
@@ -96,19 +87,19 @@ def test_schema_repr(small_df):
     schema = Schema(list(small_df.columns), logical_types={'sample_datetime_series': Datetime})
 
     schema_repr = repr(schema)
-    expected_repr = '                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []'
+    expected_repr = '                       Logical Type Semantic Tag(s)\nColumn                                             \nsample_datetime_series     Datetime              []'
     assert schema_repr == expected_repr
 
     schema_html_repr = schema._repr_html_()
-    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
     assert schema_html_repr == expected_repr
 
 
 def test_schema_repr_empty():
     schema = Schema([], {})
-    assert repr(schema) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
+    assert repr(schema) == 'Empty DataFrame\nColumns: [Logical Type, Semantic Tag(s)]\nIndex: []'
 
-    assert schema._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
+    assert schema._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
 
 
 def test_schema_equality(sample_column_names, sample_inferred_logical_types):
@@ -836,7 +827,6 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
     new_col = renamed_schema.columns['birthday']
     assert old_col['logical_type'] == new_col['logical_type']
     assert old_col['semantic_tags'] == new_col['semantic_tags']
-    assert old_col['dtype'] == new_col['dtype']
 
     swapped_schema = schema.rename({'age': 'full_name', 'full_name': 'age'})
     swapped_back_schema = swapped_schema.rename({'age': 'full_name', 'full_name': 'age'})
