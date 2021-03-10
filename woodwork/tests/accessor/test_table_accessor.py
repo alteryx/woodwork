@@ -1775,6 +1775,7 @@ def test_setitem_different_name(sample_df):
         df.ww['id'] = new_series
 
     assert df.ww['id'].name == 'id'
+    assert 'id' in df.columns
     assert 'id' in df.ww._schema.columns.keys()
     assert 'wrong' not in df.ww.columns
 
@@ -1787,6 +1788,7 @@ def test_setitem_different_name(sample_df):
         df.ww['new_col'] = new_series2
 
     assert df.ww['new_col'].name == 'new_col'
+    assert 'new_col' in df.columns
     assert 'new_col' in df.ww._schema.columns.keys()
     assert 'wrong2' not in df.ww.columns
 
