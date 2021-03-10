@@ -1797,13 +1797,10 @@ def test_setitem_new_column(sample_df):
     df = sample_df.copy()
     df.ww.init(use_standard_tags=False)
 
+    new_series = pd.Series([1, 2, 3])
     if ks and isinstance(sample_df, ks.DataFrame):
-        dtype = 'int64'
-        new_series = pd.Series([1, 2, 3], dtype=dtype)
         new_series = ks.Series(new_series)
-    else:
-        dtype = 'Int64'
-        new_series = pd.Series([1, 2, 3], dtype=dtype)
+    dtype = 'Int64'
 
     df.ww['test_col2'] = new_series
     assert 'test_col2' in df.columns
@@ -1836,13 +1833,12 @@ def test_setitem_new_column(sample_df):
     df = sample_df.copy()
     df.ww.init(use_standard_tags=True)
 
+    new_series = pd.Series(['new', 'column', 'inserted'], name='test_col')
     if ks and isinstance(sample_df, ks.DataFrame):
-        dtype = 'object'
-        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
+        dtype = 'string'
         new_series = ks.Series(new_series)
     else:
         dtype = 'category'
-        new_series = pd.Series(['new', 'column', 'inserted'], name='test_col', dtype=dtype)
 
     new_series = init_series(new_series)
     df.ww['test_col'] = new_series
