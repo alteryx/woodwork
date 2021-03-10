@@ -23,7 +23,12 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
-from woodwork.tests.testing_utils import convert_series, to_pandas
+from woodwork.tests.testing_utils import (
+    convert_series,
+    is_property,
+    is_public_method,
+    to_pandas
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -75,13 +80,8 @@ def test_accessor_init_with_semantic_tags(sample_series):
 
 
 def test_error_accessing_properties_before_init(sample_series):
-    def is_prop(val):
-        if hasattr(WoodworkColumnAccessor, val) and isinstance(getattr(WoodworkColumnAccessor, val), property):
-            return True
-        return False
-
     props_to_exclude = ['iloc', 'loc']
-    props = [prop for prop in dir(sample_series.ww) if is_prop(prop) and prop not in props_to_exclude]
+    props = [prop for prop in dir(sample_series.ww) if is_property(WoodworkColumnAccessor, prop) and prop not in props_to_exclude]
 
     error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     for prop in props:
@@ -90,14 +90,8 @@ def test_error_accessing_properties_before_init(sample_series):
 
 
 def test_error_accessing_methods_before_init(sample_series):
-    def is_public_method(val):
-        if hasattr(WoodworkColumnAccessor, val) and val[0] != '_':
-            if callable(getattr(WoodworkColumnAccessor, val)):
-                return True
-        return False
-
     methods_to_exclude = ['init']
-    public_methods = [method for method in dir(sample_series.ww) if is_public_method(method)]
+    public_methods = [method for method in dir(sample_series.ww) if is_public_method(WoodworkColumnAccessor, method)]
     public_methods = [method for method in public_methods if method not in methods_to_exclude]
 
     method_args_dict = {

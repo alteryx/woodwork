@@ -66,3 +66,18 @@ def check_column_order(dt, new_dt):
     assert all(dt.types.index == new_dt.types.index)
     # Confirm types df matches column order
     assert all(new_dt.to_dataframe().columns == new_dt.types.index)
+
+
+def is_public_method(class_to_check, name):
+    """Determine if the specified name is a public method on a class"""
+    if hasattr(class_to_check, name) and name[0] != '_':
+        if callable(getattr(class_to_check, name)):
+            return True
+    return False
+
+
+def is_property(class_to_check, name):
+    """Determine if the specified name is a property on a class"""
+    if hasattr(class_to_check, name) and isinstance(getattr(class_to_check, name), property):
+        return True
+    return False

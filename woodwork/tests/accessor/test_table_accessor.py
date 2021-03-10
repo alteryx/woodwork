@@ -39,7 +39,12 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.tests.testing_utils import to_pandas, validate_subset_schema
+from woodwork.tests.testing_utils import (
+    is_property,
+    is_public_method,
+    to_pandas,
+    validate_subset_schema
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -162,14 +167,8 @@ def test_init_accessor_with_schema(sample_df):
 
 
 def test_accessor_init_errors_methods(sample_df):
-    def is_public_method(val):
-        if hasattr(WoodworkTableAccessor, val) and val[0] != '_':
-            if callable(getattr(WoodworkTableAccessor, val)):
-                return True
-        return False
-
     methods_to_exclude = ['init']
-    public_methods = [method for method in dir(sample_df.ww) if is_public_method(method)]
+    public_methods = [method for method in dir(sample_df.ww) if is_public_method(WoodworkTableAccessor, method)]
     public_methods = [method for method in public_methods if method not in methods_to_exclude]
     method_args_dict = {
         'add_semantic_tags': [{'id': 'new_tag'}],
@@ -206,13 +205,8 @@ def test_accessor_init_errors_methods(sample_df):
 
 
 def test_accessor_init_errors_properties(sample_df):
-    def is_prop(val):
-        if hasattr(WoodworkTableAccessor, val) and isinstance(getattr(WoodworkTableAccessor, val), property):
-            return True
-        return False
-
     props_to_exclude = ['iloc', 'loc', 'schema']
-    props = [prop for prop in dir(sample_df.ww) if is_prop(prop) and prop not in props_to_exclude]
+    props = [prop for prop in dir(sample_df.ww) if is_property(WoodworkTableAccessor, prop) and prop not in props_to_exclude]
 
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     for prop in props:
