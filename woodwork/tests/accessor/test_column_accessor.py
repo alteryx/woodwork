@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import init_series
+from woodwork.column_accessor import WoodworkColumnAccessor
 from woodwork.exceptions import (
     DuplicateTagsWarning,
     TypeConversionError,
@@ -73,23 +74,48 @@ def test_accessor_init_with_semantic_tags(sample_series):
     assert series.ww.semantic_tags == set(semantic_tags)
 
 
-def test_accessor_warnings_accessing_properties_before_init(sample_series):
-    error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+def test_error_accessing_properties_before_init(sample_series):
+    def is_prop(val):
+        if hasattr(WoodworkColumnAccessor, val) and isinstance(getattr(WoodworkColumnAccessor, val), property):
+            return True
+        return False
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.__repr__()
+    props_to_exclude = ['iloc', 'loc']
+    props = [prop for prop in dir(sample_series.ww) if is_prop(prop) and prop not in props_to_exclude]
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.description
+    error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    for prop in props:
+        with pytest.raises(AttributeError, match=error):
+            getattr(sample_series.ww, prop)
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.logical_type
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.metadata
+def test_error_accessing_methods_before_init(sample_series):
+    def is_public_method(val):
+        if hasattr(WoodworkColumnAccessor, val) and val[0] != '_':
+            if callable(getattr(WoodworkColumnAccessor, val)):
+                return True
+        return False
 
-    with pytest.raises(AttributeError, match=error_message):
-        sample_series.ww.semantic_tags
+    methods_to_exclude = ['init']
+    public_methods = [method for method in dir(sample_series.ww) if is_public_method(method)]
+    public_methods = [method for method in public_methods if method not in methods_to_exclude]
+
+    method_args_dict = {
+        'add_semantic_tags': [{'new_tag'}],
+        'remove_semantic_tags': [{'new_tag'}],
+        'reset_semantic_tags': None,
+        'set_logical_type': ['Integer'],
+        'set_semantic_tags': [{'new_tag'}]
+    }
+    error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    for method in public_methods:
+        func = getattr(sample_series.ww, method)
+        method_args = method_args_dict[method]
+        with pytest.raises(AttributeError, match=error):
+            if method_args:
+                func(*method_args)
+            else:
+                func()
 
 
 def test_accessor_with_alternate_semantic_tags_input(sample_series):
@@ -173,6 +199,13 @@ def test_accessor_repr(sample_series):
         dtype = 'category'
     assert series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
+
+
+def test_accessor_repr_error_before_init(sample_series):
+    series = convert_series(sample_series, Categorical)
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(AttributeError, match=err_msg):
+        series.ww.__repr__()
 
 
 def test_set_semantic_tags(sample_series):
