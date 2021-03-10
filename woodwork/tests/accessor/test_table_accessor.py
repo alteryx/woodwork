@@ -656,6 +656,10 @@ def test_sets_datetime64_dtype_on_init():
         assert df.ww.columns[column_name]['logical_type'] == logical_type
         assert df[column_name].dtype == logical_type.primary_dtype
 
+
+def test_invalid_dtype_casting():
+    column_name = 'test_series'
+
     # Cannot cast a column with pd.NA to Double
     series = pd.Series([1.1, pd.NA, 3], name=column_name)
     ltypes = {
@@ -1145,15 +1149,12 @@ def test_dataframe_methods_on_accessor_to_pandas(sample_df):
 
     if dd and isinstance(sample_df, dd.DataFrame):
         pd_df = sample_df.ww.compute()
-        assert isinstance(pd_df, pd.DataFrame)
-        assert pd_df.ww.index == 'id'
-        assert pd_df.ww.name == 'woodwork'
-
     elif ks and isinstance(sample_df, ks.DataFrame):
         pd_df = sample_df.ww.to_pandas()
-        assert isinstance(pd_df, pd.DataFrame)
-        assert pd_df.ww.index == 'id'
-        assert pd_df.ww.name == 'woodwork'
+
+    assert isinstance(pd_df, pd.DataFrame)
+    assert pd_df.ww.index == 'id'
+    assert pd_df.ww.name == 'woodwork'
 
 
 def test_get_subset_df_with_schema(sample_df):
@@ -1827,9 +1828,7 @@ def test_accessor_types(sample_df):
 
     returned_types = sample_df.ww.types
     assert isinstance(returned_types, pd.DataFrame)
-    assert 'Physical Type' in returned_types.columns
-    assert 'Logical Type' in returned_types.columns
-    assert 'Semantic Tag(s)' in returned_types.columns
+    assert all(returned_types.columns == ['Physical Type', 'Logical Type', 'Semantic Tag(s)'])
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
 
