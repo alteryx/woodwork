@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
+        * Include unique columns in mutual information calculations (:pr:`687`) 
     * Documentation Changes
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
@@ -14,7 +15,7 @@ Release Notes
         * Update release branch naming instructions (:pr:`644`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes

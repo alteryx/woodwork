@@ -959,7 +959,8 @@ def test_datatable_mutual_information(df_mi):
     pd.testing.assert_frame_equal(mi, mi_many_rows)
 
     mi = dt.mutual_information(nrows=1)
-    assert mi.shape[0] == 0
+    assert mi.shape[0] == 10
+    assert (mi['mutual_info'] == 1.0).all()
 
     mi = dt.mutual_information(num_bins=2)
     assert mi.shape[0] == 10
@@ -998,8 +999,8 @@ def test_mutual_info_unique(df_mi_unique):
     mi = dt.mutual_information()
 
     cols_used = set(np.unique(mi[['column_1', 'column_2']].values))
-    assert 'unique' not in cols_used
-    assert 'unique_with_one_nan' not in cols_used
+    assert 'unique' in cols_used
+    assert 'unique_with_one_nan' in cols_used
     assert 'unique_with_nans' in cols_used
     assert 'ints' in cols_used
 
