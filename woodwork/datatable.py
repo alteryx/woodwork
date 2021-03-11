@@ -1024,7 +1024,7 @@ class DataTable(object):
         valid_columns = [col.name for col in self.columns.values() if (
             col.name != self.index and _get_ltype_class(col.logical_type) in valid_types)]
 
-        data = self._dataframe[valid_columns]
+        data = self._dataframe.loc[:, valid_columns]
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
         if ks and isinstance(self._dataframe, ks.DataFrame):
