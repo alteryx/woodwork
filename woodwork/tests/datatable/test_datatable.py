@@ -978,7 +978,7 @@ def test_mutual_info_on_index(sample_df):
 
     dt = DataTable(sample_df, index='id')
     mi = dt.mutual_information()
-    assert 'id' not in mi['column_1'].values
+    assert not ('id' in mi['column_1'].values or 'id' in mi['column_2'].values)
 
     mi = dt.mutual_information(include_index=True)
     assert 'id' in mi['column_1'].values or 'id' in mi['column_2'].values

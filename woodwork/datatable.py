@@ -1025,13 +1025,10 @@ class DataTable(object):
         """
         valid_types = get_valid_mi_types()
 
-        valid_columns = [col.name for col in self.columns.values() if (
-            col.name != self.index and _get_ltype_class(col.logical_type) in valid_types)]
+        valid_columns = [col.name for col in self.columns.values() if _get_ltype_class(col.logical_type) in valid_types]
 
-        if (include_index and
-            self.index is not None and
-                _get_ltype_class(self.columns[self.index].logical_type) in valid_types):
-            valid_columns.append(self.index)
+        if not include_index and self.index is not None:
+            valid_columns.remove(self.index)
 
         data = self._dataframe.loc[:, valid_columns]
         if dd and isinstance(data, dd.DataFrame):
