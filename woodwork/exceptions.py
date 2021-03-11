@@ -15,8 +15,8 @@ class StandardTagsRemovalWarning(UserWarning):
 
 class StandardTagsChangedWarning(UserWarning):
     def get_warning_message(self, use_standard_tags, col_name):
-        managed, changed = ('used', 'added to') if use_standard_tags else ('not used', 'removed from')
-        return f'Standard tags are {managed} by the data frame and have been {changed} "{col_name}"'
+        changed = 'added to' if use_standard_tags else 'removed from'
+        return f'Standard tags have been {changed} "{col_name}"'
 
 
 class UpgradeSchemaWarning(UserWarning):

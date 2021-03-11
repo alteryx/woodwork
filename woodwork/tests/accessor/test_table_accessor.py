@@ -1888,7 +1888,7 @@ def test_setitem_overwrite_column(sample_df):
         semantic_tags='test_tag',
     )
 
-    match = 'Standard tags are used by the data frame and have been added to "full_name"'
+    match = 'Standard tags have been added to "full_name"'
     with pytest.warns(StandardTagsChangedWarning, match=match):
         df.ww['full_name'] = new_series
 
@@ -1913,7 +1913,7 @@ def test_setitem_overwrite_column(sample_df):
         semantic_tags='test_tag',
     )
 
-    match = 'Standard tags are not used by the data frame and have been removed from "full_name"'
+    match = 'Standard tags have been removed from "full_name"'
     with pytest.warns(StandardTagsChangedWarning, match=match):
         df.ww['full_name'] = new_series
 

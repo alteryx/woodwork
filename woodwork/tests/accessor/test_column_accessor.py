@@ -344,7 +344,7 @@ def test_remove_standard_semantic_tag(sample_series):
     series = convert_series(sample_series, Categorical)
     # Check that warning is raised if use_standard_tags is True - tag should be removed
     series.ww.init(logical_type=Categorical, semantic_tags='tag1', use_standard_tags=True)
-    expected_message = 'Standard tags are used by the data frame and have been added to "sample_series"'
+    expected_message = 'Standard tags have been added to "sample_series"'
     with pytest.warns(UserWarning) as record:
         series.ww.remove_semantic_tags(['tag1', 'category'])
     assert len(record) == 1
