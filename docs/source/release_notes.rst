@@ -9,6 +9,7 @@ Release Notes
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
         * Include unique columns in mutual information calculations (:pr:`687`) 
     * Documentation Changes
+        * Update to remove warning message from statistical insights guide (:pr:`690`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)
