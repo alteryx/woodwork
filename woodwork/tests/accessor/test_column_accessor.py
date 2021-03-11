@@ -7,6 +7,7 @@ import pytest
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     DuplicateTagsWarning,
+    StandardTagsChangedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
 )
@@ -345,7 +346,7 @@ def test_remove_standard_semantic_tag(sample_series):
     # Check that warning is raised if use_standard_tags is True - tag should be removed
     series.ww.init(logical_type=Categorical, semantic_tags='tag1', use_standard_tags=True)
     expected_message = 'Standard tags have been added to "sample_series"'
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(StandardTagsChangedWarning) as record:
         series.ww.remove_semantic_tags(['tag1', 'category'])
     assert len(record) == 1
     assert record[0].message.args[0] == expected_message
