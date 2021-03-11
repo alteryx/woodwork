@@ -974,10 +974,14 @@ def test_datatable_mutual_information(df_mi):
     pd.testing.assert_frame_equal(to_pandas(dt.to_dataframe()), to_pandas(original_df))
 
 
-def test_mutual_info_does_not_include_index(sample_df):
+def test_mutual_info_on_index(sample_df):
+
     dt = DataTable(sample_df, index='id')
     mi = dt.mutual_information()
     assert 'id' not in mi['column_1'].values
+
+    mi = dt.mutual_information(include_index=True)
+    assert 'id' in mi['column_1'].values or 'id' in mi['column_2'].values
 
 
 def test_mutual_info_returns_empty_df_properly(sample_df):
