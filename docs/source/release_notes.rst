@@ -8,6 +8,7 @@ Release Notes
     * Changes
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
         * Include unique columns in mutual information calculations (:pr:`687`) 
+        * Add parameter to include index column in mutual information calculations (:pr:`692`) 
     * Documentation Changes
         * Update to remove warning message from statistical insights guide (:pr:`690`)
     * Testing Changes
