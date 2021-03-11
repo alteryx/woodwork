@@ -1776,9 +1776,9 @@ def test_setitem_different_name(sample_df):
         df.ww['id'] = new_series
 
     assert df.ww['id'].name == 'id'
-    assert 'id' in df.columns
-    assert 'id' in df.ww._schema.columns.keys()
+    assert 'id' in df.ww.columns
     assert 'wrong' not in df.ww.columns
+    assert 'wrong' not in df.columns
 
     new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='float')
     if ks and isinstance(sample_df, ks.DataFrame):
@@ -1789,9 +1789,9 @@ def test_setitem_different_name(sample_df):
         df.ww['new_col'] = new_series2
 
     assert df.ww['new_col'].name == 'new_col'
-    assert 'new_col' in df.columns
-    assert 'new_col' in df.ww._schema.columns.keys()
+    assert 'new_col' in df.ww.columns
     assert 'wrong2' not in df.ww.columns
+    assert 'wrong2' not in df.columns
 
 
 def test_setitem_new_column(sample_df):
@@ -1823,8 +1823,7 @@ def test_setitem_new_column(sample_df):
     )
 
     df.ww['test_col3'] = new_series
-    assert 'test_col3' in df.columns
-    assert 'test_col3' in df.ww._schema.columns.keys()
+    assert 'test_col3' in df.ww.columns
     assert df.ww['test_col3'].ww.logical_type == Double
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
@@ -1843,8 +1842,7 @@ def test_setitem_new_column(sample_df):
 
     new_series = init_series(new_series)
     df.ww['test_col'] = new_series
-    assert 'test_col' in df.columns
-    assert 'test_col' in df.ww._schema.columns.keys()
+    assert 'test_col' in df.ww.columns
     assert df.ww['test_col'].ww.logical_type == Categorical
     assert df.ww['test_col'].ww.semantic_tags == {'category'}
     assert df.ww['test_col'].name == 'test_col'
