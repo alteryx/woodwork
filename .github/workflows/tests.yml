@@ -69,7 +69,14 @@ jobs:
       fail-fast: true
       matrix:
         python_version: ["3.6", "3.7", "3.8", "3.9"]
-        optional_libraries: ["minimal", "optional", "minimum_requirements"]
+        optional_libraries: ["core", "optional", "minimum_requirements"]
+        exclude:
+          - python_version: "3.7"
+            node: "minimum_requirements"
+          - python_version: "3.8"
+            node: "minimum_requirements"
+          - python_version: "3.9"
+            node: "minimum_requirements"
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
