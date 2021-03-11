@@ -1013,10 +1013,10 @@ class DataTable(object):
             nrows (int): The number of rows to sample for when determining mutual info.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
-            include_index (bool): If True, the column specified as the index will be included
-                in mutual information calculations. If False, the index column will not have
-                mutual information calculated for it. Defaults to False.
-
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for mutual information calculations.
+                If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -1081,9 +1081,10 @@ class DataTable(object):
             nrows (int): The number of rows to sample for when determining mutual info.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
-            include_index (bool): If True, the column specified as the index will be included
-                in mutual information calculations. If False, the index column will not have
-                mutual information calculated for it. Defaults to False.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for mutual information calculations.
+                If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
 
         Returns:
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
