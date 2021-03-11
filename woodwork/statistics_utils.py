@@ -189,7 +189,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None):
     valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if (
         col_name != dataframe.ww.index and _get_ltype_class(col['logical_type']) in valid_types)]
 
-    data = dataframe[valid_columns]
+    data = dataframe.loc[:, valid_columns]
     if dd and isinstance(data, dd.DataFrame):
         data = data.compute()
     if ks and isinstance(dataframe, ks.DataFrame):
