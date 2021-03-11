@@ -121,7 +121,7 @@ def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use
         raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
     standard_tags_to_remove = sorted(list(tags_to_remove.intersection(standard_tags)))
     if standard_tags_to_remove and use_standard_tags:
-        warnings.warn(StandardTagsChangedWarning().get_warning_message(use_standard_tags, name),
+        warnings.warn(StandardTagsChangedWarning().get_warning_message(not use_standard_tags, name),
                       StandardTagsChangedWarning)
     return current_tags.difference(tags_to_remove)
 
