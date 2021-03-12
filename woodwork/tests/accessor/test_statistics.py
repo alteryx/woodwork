@@ -142,11 +142,14 @@ def test_mutual_info(df_mi):
     pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
 
 
-def test_mutual_info_does_not_include_index(sample_df):
+def test_mutual_info_on_index(sample_df):
     sample_df.ww.init(index='id')
     mi = sample_df.ww.mutual_information()
 
-    assert 'id' not in mi['column_1'].values
+    assert not ('id' in mi['column_1'].values or 'id' in mi['column_2'].values)
+
+    mi = sample_df.ww.mutual_information(include_index=True)
+    assert 'id' in mi['column_1'].values or 'id' in mi['column_2'].values
 
 
 def test_mutual_info_returns_empty_df_properly(sample_df):
