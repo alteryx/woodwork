@@ -159,7 +159,7 @@ def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logi
     no_standard_tags_schema.set_types(logical_types=nl_ltypes)
 
     assert schema.use_standard_tags != no_standard_tags_schema.use_standard_tags
-    assert schema == no_standard_tags_schema
+    assert schema != no_standard_tags_schema
 
 
 def test_schema_table_metadata(sample_column_names, sample_inferred_logical_types):
