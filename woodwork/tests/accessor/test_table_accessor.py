@@ -338,34 +338,24 @@ def test_getitem_invalid_input(sample_df):
         df.ww['invalid_column']
 
 
-def test_accessor_equality_with_schema(sample_df, sample_column_names, sample_inferred_logical_types):
-    comparison_schema = Schema(sample_column_names, sample_inferred_logical_types)
-
+def test_accessor_equality(sample_df):
+    # Confirm equality with same schema and same data
     schema_df = sample_df.copy()
     schema_df.ww.init()
 
-    # eq not implemented on Accessor class, so Schema's eq is called
-    assert schema_df.ww.__eq__(comparison_schema)
+    copy_df = schema_df.ww.copy()
+    assert schema_df.ww == copy_df.ww
 
-    logical_types = {
-        'id': Double,
-        'full_name': FullName
-    }
-    semantic_tags = {
-        'email': 'test_tag',
-    }
-    comparison_schema = Schema(sample_column_names,
-                               logical_types={**sample_inferred_logical_types, **logical_types},
-                               index='id',
-                               time_index='signup_date',
-                               semantic_tags=semantic_tags)
-    schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types=logical_types,
-                      index='id',
-                      time_index='signup_date',
-                      semantic_tags=semantic_tags,
-                      already_sorted=True)
-    assert schema_df.ww == comparison_schema
+    # Confirm not equal with different schema but same data
+    copy_df.ww.set_index('id')
+    assert schema_df.ww != copy_df.ww
+
+    # Confirm not equal with same schema but different data - only pandas
+    iloc_df = schema_df.ww.loc[:2, :]
+    if isinstance(sample_df, pd.DataFrame):
+        assert schema_df.ww != iloc_df
+    else:
+        assert schema_df.ww == iloc_df
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):

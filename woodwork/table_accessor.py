@@ -138,6 +138,15 @@ class WoodworkTableAccessor:
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
 
+    def __eq__(self, other):
+        if self._schema != other.ww._schema:
+            return False
+
+        # Only check pandas DataFrames for equality
+        if isinstance(self._dataframe, pd.DataFrame) and isinstance(other.ww._dataframe, pd.DataFrame):
+            return self._dataframe.equals(other.ww._dataframe)
+        return True
+
     def __getattr__(self, attr):
         # If the method is present on the Accessor, uses that method.
         # If the method is present on Schema, uses that method.
