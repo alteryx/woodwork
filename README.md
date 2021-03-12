@@ -96,7 +96,7 @@ filtered_df
 99        24      0.9075  21.780      False
 ```
 
-As you can see, Woodwork makes it easy to manage typing information for your data, and provides simple interfaces to access only the data you need based on the logical types or semantic tags. Please refer to the [Woodwork documentation](https://woodwork.alteryx.com/) for more detail on working with Woodwork tables.
+As you can see, Woodwork makes it easy to manage typing information for your data, and provides simple interfaces to access only the data you need based on the logical types or semantic tags. Please refer to the [Woodwork documentation](https://woodwork.alteryx.com/) for more detail on working with a Woodwork DataFrame.
 
 ## Built at Alteryx Innovation Labs
 
