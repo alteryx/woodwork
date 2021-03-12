@@ -5,9 +5,12 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
+    ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
+    StandardTagsChangedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
 )
@@ -1013,7 +1016,7 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     schema_df.ww.set_time_index('')
     assert schema_df.ww.time_index == ''
 
-    schema_df.ww.pop('')
+    popped_col = schema_df.ww.pop('')
     assert '' not in schema_df
     assert '' not in schema_df.ww.columns
     assert schema_df.ww.time_index is None
@@ -1021,10 +1024,8 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
     schema_df.ww.set_index(None)
     assert schema_df.ww.index is None
 
-    # --> add back in if setitem is implemented
-    # dt[''] = popped_col
-    # assert dt[''].name == ''
-    # assert dt['']._series.name == ''
+    schema_df.ww[''] = popped_col
+    assert schema_df.ww[''].name == ''
 
     renamed_df = schema_df.ww.rename({0: 'col_with_name'})
     assert 0 not in renamed_df.columns
@@ -1810,6 +1811,183 @@ def test_sets_koalas_option_on_init(sample_df_koalas):
         ks.set_option('compute.ops_on_diff_frames', False)
         sample_df_koalas.ww.init()
         assert ks.get_option('compute.ops_on_diff_frames') is True
+
+
+def test_setitem_invalid_input(sample_df):
+    df = sample_df.copy()
+    df.ww.init(index='id', time_index='signup_date')
+
+    error_msg = 'New column must be of Series type'
+    with pytest.raises(ValueError, match=error_msg):
+        df.ww['test'] = [1, 2, 3]
+
+    error_msg = 'Cannot reassign index. Change column name and then use df.ww.set_index to reassign index.'
+    with pytest.raises(KeyError, match=error_msg):
+        df.ww['id'] = df.id
+
+    error_msg = 'Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.'
+    with pytest.raises(KeyError, match=error_msg):
+        df.ww['signup_date'] = df.signup_date
+
+
+def test_setitem_different_name(sample_df):
+    df = sample_df.copy()
+    df.ww.init()
+
+    new_series = pd.Series([1, 2, 3, 4], name='wrong', dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    warning = 'Name mismatch between wrong and id. Series name is now id'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        df.ww['id'] = new_series
+
+    assert df.ww['id'].name == 'id'
+    assert 'id' in df.ww.columns
+    assert 'wrong' not in df.ww.columns
+    assert 'wrong' not in df.columns
+
+    new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series2 = ks.Series(new_series2)
+
+    warning = 'Name mismatch between wrong2 and new_col. Series name is now new_col'
+    with pytest.warns(ColumnNameMismatchWarning, match=warning):
+        df.ww['new_col'] = new_series2
+
+    assert df.ww['new_col'].name == 'new_col'
+    assert 'new_col' in df.ww.columns
+    assert 'wrong2' not in df.ww.columns
+    assert 'wrong2' not in df.columns
+
+
+def test_setitem_new_column(sample_df):
+    df = sample_df.copy()
+    df.ww.init(use_standard_tags=False)
+
+    new_series = pd.Series([1, 2, 3])
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+    dtype = 'Int64'
+
+    df.ww['test_col2'] = new_series
+    assert 'test_col2' in df.columns
+    assert 'test_col2' in df.ww._schema.columns.keys()
+    assert df.ww['test_col2'].ww.logical_type == Integer
+    assert df.ww['test_col2'].ww.semantic_tags == set()
+    assert df.ww['test_col2'].name == 'test_col2'
+    assert df.ww['test_col2'].dtype == dtype
+
+    new_series = pd.Series([1, 2, 3], dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    new_series = init_series(
+        new_series,
+        logical_type=Double,
+        use_standard_tags=False,
+        semantic_tags={'test_tag'},
+    )
+
+    df.ww['test_col3'] = new_series
+    assert 'test_col3' in df.ww.columns
+    assert df.ww['test_col3'].ww.logical_type == Double
+    assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
+    assert df.ww['test_col3'].name == 'test_col3'
+    assert df.ww['test_col3'].dtype == 'float'
+
+    # Standard tags and no logical type
+    df = sample_df.copy()
+    df.ww.init(use_standard_tags=True)
+
+    new_series = pd.Series(['new', 'column', 'inserted'], name='test_col')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        dtype = 'string'
+        new_series = ks.Series(new_series)
+    else:
+        dtype = 'category'
+
+    new_series = init_series(new_series)
+    df.ww['test_col'] = new_series
+    assert 'test_col' in df.ww.columns
+    assert df.ww['test_col'].ww.logical_type == Categorical
+    assert df.ww['test_col'].ww.semantic_tags == {'category'}
+    assert df.ww['test_col'].name == 'test_col'
+    assert df.ww['test_col'].dtype == dtype
+
+
+def test_setitem_overwrite_column(sample_df):
+    df = sample_df.copy()
+    df.ww.init(
+        index='id',
+        time_index='signup_date',
+        use_standard_tags=True
+    )
+
+    # Change to column no change in types
+    original_col = df.ww['age']
+    new_series = pd.Series([1, 2, 3])
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    dtype = 'Int64'
+    new_series = init_series(new_series, use_standard_tags=True)
+    df.ww['age'] = new_series
+
+    assert 'age' in df.columns
+    assert 'age' in df.ww._schema.columns.keys()
+    assert df.ww['age'].ww.logical_type == original_col.ww.logical_type
+    assert df.ww['age'].ww.semantic_tags == original_col.ww.semantic_tags
+    assert df.ww['age'].dtype == dtype
+    assert original_col is not df.ww['age']
+
+    # Change dtype, logical types, and tags with conflicting use_standard_tags
+    original_col = df['full_name']
+    new_series = pd.Series([0, 1, 2], dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    new_series = init_series(
+        new_series,
+        use_standard_tags=False,
+        semantic_tags='test_tag',
+    )
+
+    match = 'Standard tags have been added to "full_name"'
+    with pytest.warns(StandardTagsChangedWarning, match=match):
+        df.ww['full_name'] = new_series
+
+    assert 'full_name' in df.columns
+    assert 'full_name' in df.ww._schema.columns.keys()
+    assert df.ww['full_name'].ww.logical_type == Double
+    assert df.ww['full_name'].ww.semantic_tags == {'test_tag', 'numeric'}
+    assert df.ww['full_name'].dtype == 'float'
+    assert original_col is not df.ww['full_name']
+
+    df = sample_df.copy()
+    df.ww.init(use_standard_tags=False)
+
+    original_col = df['full_name']
+    new_series = pd.Series([0, 1, 2], dtype='float')
+    if ks and isinstance(sample_df, ks.DataFrame):
+        new_series = ks.Series(new_series)
+
+    new_series = init_series(
+        new_series,
+        use_standard_tags=True,
+        semantic_tags='test_tag',
+    )
+
+    match = 'Standard tags have been removed from "full_name"'
+    with pytest.warns(StandardTagsChangedWarning, match=match):
+        df.ww['full_name'] = new_series
+
+    assert 'full_name' in df.columns
+    assert 'full_name' in df.ww._schema.columns.keys()
+    assert df.ww['full_name'].ww.logical_type == Double
+    assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
+    assert df.ww['full_name'].dtype == 'float'
+    assert original_col is not df.ww['full_name']
 
 
 def test_maintain_column_order_on_type_changes(sample_df):
