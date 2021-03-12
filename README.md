@@ -40,7 +40,7 @@ conda install -c conda-forge woodwork
 
 ## Example
 
-Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for three of the columns.
+Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for four of the columns.
 
 ```python
 import woodwork as ww
