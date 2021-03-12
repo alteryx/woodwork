@@ -6,11 +6,14 @@ import woodwork.serialize_accessor as serialize
 from woodwork.accessor_utils import (
     _get_valid_dtype,
     _is_dataframe,
-    _update_column_dtype
+    _update_column_dtype,
+    init_series
 )
 from woodwork.exceptions import (
+    ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
+    StandardTagsChangedWarning,
     TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
@@ -168,6 +171,35 @@ class WoodworkTableAccessor:
         column['semantic_tags'] -= {'index', 'time_index'}
         series.ww.init(**column, use_standard_tags=self.use_standard_tags)
         return series
+
+    def __setitem__(self, col_name, column):
+        series = tuple(pkg.Series for pkg in (pd, dd, ks) if pkg)
+        if not isinstance(column, series):
+            raise ValueError('New column must be of Series type')
+
+        # Don't allow reassigning of index or time index with setitem
+        if self.index == col_name:
+            raise KeyError('Cannot reassign index. Change column name and then use df.ww.set_index to reassign index.')
+        if self.time_index == col_name:
+            raise KeyError('Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.')
+
+        if column.name is not None and column.name != col_name:
+            warnings.warn(ColumnNameMismatchWarning().get_warning_message(column.name, col_name),
+                          ColumnNameMismatchWarning)
+
+        if column.ww._schema is None:
+            column = init_series(column, use_standard_tags=self.use_standard_tags)
+        elif self.use_standard_tags and not column.ww.use_standard_tags:
+            column.ww._schema['semantic_tags'] |= column.ww.logical_type.standard_tags
+            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
+            warnings.warn(message, StandardTagsChangedWarning)
+        elif not self.use_standard_tags and column.ww.use_standard_tags:
+            column.ww._schema['semantic_tags'] -= column.ww.logical_type.standard_tags
+            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
+            warnings.warn(message, StandardTagsChangedWarning)
+
+        self._dataframe[col_name] = column
+        self._schema.columns[col_name] = column.ww._schema
 
     def __repr__(self):
         """A string representation of a Woodwork table containing typing information"""

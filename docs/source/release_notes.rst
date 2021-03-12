@@ -41,6 +41,7 @@ Release Notes
         * Add KoalasTableAccessor (:pr:`652`)
         * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
         * Update Koalas min version and add support for more new pandas dtypes with Koalas (:pr:`678`)
+        * Adds ``__setitem__`` to WoodworkTableAccessor (:pr:`669`)
     * Fixes
         * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
         * Fix bug in ``_reset_semantic_tags`` causing columns to share same semantic tags set (:pr:`666`)
@@ -62,7 +63,7 @@ Release Notes
         * Update release branch naming instructions (:pr:`644`)
 
     Thanks to the following people for contributing to this release:
-    :user:`johnbridstrup`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`johnbridstrup`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes

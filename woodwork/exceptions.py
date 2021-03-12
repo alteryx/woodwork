@@ -13,6 +13,12 @@ class StandardTagsRemovalWarning(UserWarning):
         return f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{name}'"
 
 
+class StandardTagsChangedWarning(UserWarning):
+    def get_warning_message(self, use_standard_tags, col_name):
+        changed = 'added to' if use_standard_tags else 'removed from'
+        return f'Standard tags have been {changed} "{col_name}"'
+
+
 class UpgradeSchemaWarning(UserWarning):
     def get_warning_message(self, saved_version_str, current_schema_version):
         return ('The schema version of the saved Woodwork table '
