@@ -56,6 +56,7 @@ Release Notes
         * Remove dtype from Schema dictionary (:pr:`685`)
     * Documentation Changes
         * Update docstrings and API Reference page (:pr:`660`)
+        * Update Dask and Koalas guide to use accessor (:pr:`701`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)
