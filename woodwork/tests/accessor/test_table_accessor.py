@@ -358,6 +358,26 @@ def test_accessor_equality(sample_df):
         assert schema_df.ww == iloc_df
 
 
+def test_accessor_equality_standard_tags(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init()
+
+    # Different standard tags values - using logical types with standard tags
+    no_standard_tags_df = sample_df.copy()
+    no_standard_tags_df.ww.init(use_standard_tags=False)
+
+    assert schema_df.ww.use_standard_tags != no_standard_tags_df.ww.use_standard_tags
+    assert schema_df.ww != no_standard_tags_df.ww
+
+    # Different standard tags values - no logical types that have standard tags
+    nl_ltypes = {col_name: NaturalLanguage for col_name in schema_df.columns}
+    schema_df.ww.set_types(logical_types=nl_ltypes)
+    no_standard_tags_df.ww.set_types(logical_types=nl_ltypes)
+
+    assert schema_df.ww.use_standard_tags != no_standard_tags_df.ww.use_standard_tags
+    assert schema_df.ww == no_standard_tags_df.ww
+
+
 def test_accessor_init_with_valid_string_time_index(time_index_df):
     time_index_df.ww.init(name='schema',
                           index='id',
