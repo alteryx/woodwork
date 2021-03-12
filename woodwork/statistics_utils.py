@@ -203,10 +203,6 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None):
     not_null_cols = data.columns[data.notnull().any()]
     if set(not_null_cols) != set(valid_columns):
         data = data.loc[:, not_null_cols]
-    # remove columns that are unique
-    not_unique_cols = [col for col in data.columns if not data[col].is_unique]
-    if set(not_unique_cols) != set(valid_columns):
-        data = data.loc[:, not_unique_cols]
 
     data = _replace_nans_for_mutual_info(dataframe.ww.schema, data)
     data = _make_categorical_for_mutual_info(dataframe.ww.schema, data, num_bins)
