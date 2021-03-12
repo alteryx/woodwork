@@ -55,6 +55,7 @@ Release Notes
         * Improve error when calling accessor properties or methods before init (:pr:`683`)
         * Remove dtype from Schema dictionary (:pr:`685`)
     * Documentation Changes
+        * Update README.md and Get Started guide to use accessor (:pr:`655`)
         * Update docstrings and API Reference page (:pr:`660`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
