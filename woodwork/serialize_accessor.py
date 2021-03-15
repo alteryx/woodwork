@@ -17,7 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '6.0.0'
+SCHEMA_VERSION = '7.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
@@ -62,6 +62,7 @@ def typing_info_to_dict(dataframe):
         'name': dataframe.ww.name,
         'index': dataframe.ww.index,
         'time_index': dataframe.ww.time_index,
+        'use_standard_tags': dataframe.ww.use_standard_tags,
         'column_typing_info': column_typing_info,
         'loading_info': {
             'table_type': table_type

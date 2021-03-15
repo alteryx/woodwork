@@ -118,7 +118,7 @@ def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
         time_index=table_typing_info.get('time_index'),
         logical_types=logical_types,
         semantic_tags=semantic_tags,
-        use_standard_tags=False,
+        use_standard_tags=table_typing_info.get('use_standard_tags'),
         table_metadata=table_typing_info.get('table_metadata'),
         column_metadata=column_metadata,
         column_descriptions=column_descriptions)

@@ -82,6 +82,8 @@ class Schema(object):
             return False
         if self.time_index != other.time_index:
             return False
+        if self.use_standard_tags != other.use_standard_tags:
+            return False
         if self.columns != other.columns:
             return False
         if self.metadata != other.metadata:

@@ -144,6 +144,24 @@ def test_schema_equality(sample_column_names, sample_inferred_logical_types):
                   table_metadata={'created_by': 'user2'}) != schema_with_metadata
 
 
+def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    no_standard_tags_schema = Schema(sample_column_names, sample_inferred_logical_types,
+                                     use_standard_tags=False)
+
+    # Different standard tags values - using logical types with standard tags
+    assert schema.use_standard_tags != no_standard_tags_schema.use_standard_tags
+    assert schema != no_standard_tags_schema
+
+    # Different standard tags values - no logical types that have standard tags
+    nl_ltypes = {col_name: NaturalLanguage for col_name in sample_column_names}
+    schema.set_types(logical_types=nl_ltypes)
+    no_standard_tags_schema.set_types(logical_types=nl_ltypes)
+
+    assert schema.use_standard_tags != no_standard_tags_schema.use_standard_tags
+    assert schema != no_standard_tags_schema
+
+
 def test_schema_table_metadata(sample_column_names, sample_inferred_logical_types):
     metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
 
