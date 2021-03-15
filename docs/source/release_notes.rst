@@ -57,6 +57,7 @@ Release Notes
         * Add ``include_index`` param and allow unique columns in Accessor mutual information (:pr:`699`)
     * Documentation Changes
         * Update README.md and Get Started guide to use accessor (:pr:`655`)
+        * Update Understanding Types and Tags guide to use accessor (:pr:`657`)
         * Update docstrings and API Reference page (:pr:`660`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
