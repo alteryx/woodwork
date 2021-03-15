@@ -61,13 +61,26 @@ Release Notes
         * Update docstrings and API Reference page (:pr:`660`)
         * Update statistical insights guide to use accessor (:pr:`693`)
         * Update Customizing Type Inference guide to use accessor (:pr:`696`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+**v0.0.11 March 15, 2021**
+    * Changes
+        * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
+        * Include unique columns in mutual information calculations (:pr:`687`)
+        * Add parameter to include index column in mutual information calculations (:pr:`692`)
+    * Documentation Changes
+        * Update to remove warning message from statistical insights guide (:pr:`690`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)
         * Update release branch naming instructions (:pr:`644`)
 
     Thanks to the following people for contributing to this release:
-    :user:`johnbridstrup`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.0.10 February 25, 2021**
     * Changes
