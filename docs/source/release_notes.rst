@@ -62,7 +62,7 @@ Release Notes
         * Update docstrings and API Reference page (:pr:`660`)
         * Update statistical insights guide to use accessor (:pr:`693`)
         * Update Customizing Type Inference guide to use accessor (:pr:`696`)
-    * Documentation Changes
+        * Update Dask and Koalas guide to use accessor (:pr:`701`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
