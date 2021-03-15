@@ -998,7 +998,7 @@ class DataTable(object):
             data[col_name] = new_col.cat.codes
         return data
 
-    def mutual_information_dict(self, num_bins=10, nrows=None):
+    def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False):
         """
         Calculates mutual information between all pairs of columns in the DataTable that
         support mutual information. Logical Types that support mutual information are as
@@ -1011,7 +1011,10 @@ class DataTable(object):
             nrows (int): The number of rows to sample for when determining mutual info.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
-
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for mutual information calculations.
+                If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -1019,10 +1022,13 @@ class DataTable(object):
             (perfect dependency).
         """
         valid_types = get_valid_mi_types()
-        valid_columns = [col.name for col in self.columns.values() if (
-            col.name != self.index and _get_ltype_class(col.logical_type) in valid_types)]
 
-        data = self._dataframe[valid_columns]
+        valid_columns = [col.name for col in self.columns.values() if _get_ltype_class(col.logical_type) in valid_types]
+
+        if not include_index and self.index is not None:
+            valid_columns.remove(self.index)
+
+        data = self._dataframe.loc[:, valid_columns]
         if dd and isinstance(data, dd.DataFrame):
             data = data.compute()
         if ks and isinstance(self._dataframe, ks.DataFrame):
@@ -1036,10 +1042,6 @@ class DataTable(object):
         not_null_cols = data.columns[data.notnull().any()]
         if set(not_null_cols) != set(valid_columns):
             data = data.loc[:, not_null_cols]
-        # remove columns that are unique
-        not_unique_cols = [col for col in data.columns if not data[col].is_unique]
-        if set(not_unique_cols) != set(valid_columns):
-            data = data.loc[:, not_unique_cols]
 
         data = self._replace_nans_for_mutual_info(data)
         data = self._make_categorical_for_mutual_info(data, num_bins)
@@ -1061,7 +1063,7 @@ class DataTable(object):
         mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
         return mutual_info
 
-    def mutual_information(self, num_bins=10, nrows=None):
+    def mutual_information(self, num_bins=10, nrows=None, include_index=False):
         """
         Calculates mutual information between all pairs of columns in the DataTable that
         support mutual information. Logical Types that support mutual information are as
@@ -1074,6 +1076,10 @@ class DataTable(object):
             nrows (int): The number of rows to sample for when determining mutual info.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for mutual information calculations.
+                If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
 
         Returns:
             pd.DataFrame: A Dataframe containing mutual information with columns `column_1`,
@@ -1081,7 +1087,7 @@ class DataTable(object):
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        mutual_info = self.mutual_information_dict(num_bins, nrows)
+        mutual_info = self.mutual_information_dict(num_bins, nrows, include_index)
         return pd.DataFrame(mutual_info)
 
     def to_dictionary(self):
