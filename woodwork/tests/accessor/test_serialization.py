@@ -18,7 +18,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_6.0.0.tar"
+TEST_FILE = "test_serialization_woodwork_table_schema_7.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -62,10 +62,11 @@ def test_to_dictionary(sample_df):
     string_val = 'string'
     bool_val = 'boolean'
 
-    expected = {'schema_version': '6.0.0',
+    expected = {'schema_version': '7.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
+                'use_standard_tags': True,
                 'column_typing_info': [{'name': 'id',
                                         'ordinal': 0,
                                         'logical_type': {'parameters': {}, 'type': 'Integer'},
@@ -180,6 +181,25 @@ def test_to_csv_with_latlong(latlong_df, tmpdir):
     pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
                                   to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True))
     assert deserialized_df.ww.schema == latlong_df.ww.schema
+
+
+def test_to_csv_use_standard_tags(sample_df, tmpdir):
+    no_standard_tags_df = sample_df.copy()
+    no_standard_tags_df.ww.init(use_standard_tags=False)
+
+    no_standard_tags_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    deserialized_no_tags_df = deserialize.read_woodwork_table(str(tmpdir))
+
+    standard_tags_df = sample_df.copy()
+    standard_tags_df.ww.init(use_standard_tags=True)
+
+    standard_tags_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    deserialized_tags_df = deserialize.read_woodwork_table(str(tmpdir))
+
+    assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
+
+    assert deserialized_no_tags_df.ww.schema == no_standard_tags_df.ww.schema
+    assert deserialized_tags_df.ww.schema == standard_tags_df.ww.schema
 
 
 def test_to_pickle(sample_df, tmpdir):
