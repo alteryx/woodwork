@@ -347,7 +347,7 @@ def test_accessor_equality(sample_df):
     assert schema_df.ww == copy_df.ww
 
     # Confirm not equal with different schema but same data
-    copy_df.ww.set_index('id')
+    copy_df.ww.set_time_index('signup_date')
     assert schema_df.ww != copy_df.ww
 
     # Confirm not equal with same schema but different data - only pandas
