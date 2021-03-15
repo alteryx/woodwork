@@ -2,13 +2,20 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
     * Enhancements
     * Fixes
     * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.0.11 March 15, 2021**
+    * Changes
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
-        * Include unique columns in mutual information calculations (:pr:`687`) 
-        * Add parameter to include index column in mutual information calculations (:pr:`692`) 
+        * Include unique columns in mutual information calculations (:pr:`687`)
+        * Add parameter to include index column in mutual information calculations (:pr:`692`)
     * Documentation Changes
         * Update to remove warning message from statistical insights guide (:pr:`690`)
     * Testing Changes
