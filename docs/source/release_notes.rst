@@ -59,6 +59,7 @@ Release Notes
         * Update README.md and Get Started guide to use accessor (:pr:`655`)
         * Update Understanding Types and Tags guide to use accessor (:pr:`657`)
         * Update docstrings and API Reference page (:pr:`660`)
+        * Update Customizing Type Inference guide to use accessor (:pr:`696`)
     * Testing Changes
         * Update branch reference in tests to run on main (:pr:`641`)
         * Make release notes updated check separate from unit tests (:pr:`642`)
