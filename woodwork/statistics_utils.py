@@ -195,7 +195,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
 
-    data = dataframe[valid_columns]
+    data = dataframe.loc[:, valid_columns]
     if dd and isinstance(data, dd.DataFrame):
         data = data.compute()
     if ks and isinstance(dataframe, ks.DataFrame):
