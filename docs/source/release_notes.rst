@@ -64,6 +64,7 @@ Release Notes
         * Update statistical insights guide to use accessor (:pr:`693`)
         * Update Customizing Type Inference guide to use accessor (:pr:`696`)
         * Update Dask and Koalas guide to use accessor (:pr:`701`)
+        * Update index notebook and install guide to use accessor (:pr:`715`)
     * Testing Changes
         * Add tests to Accessor/Schema that weren't previously covered (:pr:`712`, :pr:`716`)
 
