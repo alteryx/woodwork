@@ -54,3 +54,38 @@ def test_override_default_function(sample_df):
     assert dt.to_dataframe()['age'].dtype == 'float64'
     # Reset global type system to original settings
     ww.type_system.reset_defaults()
+
+
+def test_custom_type_with_accessor(sample_df):
+    class AgesAbove20(LogicalType):
+        primary_dtype = 'float64'
+        standard_tags = {'age', 'numeric'}
+
+    def ages_func(series):
+        if all(series > 20):
+            return True
+        return False
+
+    ww.type_system.add_type(AgesAbove20, inference_function=ages_func, parent='Integer')
+    sample_df.ww.init()
+    assert sample_df.ww['age'].ww.logical_type == AgesAbove20
+    assert sample_df.ww['age'].ww.semantic_tags == {'age', 'numeric'}
+    assert sample_df['age'].dtype == 'float64'
+    # Reset global type system to original settings
+    ww.type_system.reset_defaults()
+
+
+def test_accessor_override_default_function(sample_df):
+    def new_double_func(series):
+        if pdtypes.is_integer_dtype(series.dtype):
+            return True
+        return False
+
+    # Update functions to cause 'age' to be recognized as Double instead fo Integer
+    ww.type_system.update_inference_function('Double', inference_function=new_double_func)
+    ww.type_system.update_inference_function('Integer', inference_function=None)
+    sample_df.ww.init()
+    assert sample_df.ww['age'].ww.logical_type == Double
+    assert sample_df['age'].dtype == 'float64'
+    # Reset global type system to original settings
+    ww.type_system.reset_defaults()
