@@ -64,6 +64,7 @@ Release Notes
         * Update Customizing Type Inference guide to use accessor (:pr:`696`)
         * Update Dask and Koalas guide to use accessor (:pr:`701`)
     * Testing Changes
+        * Add tests to Accessor/Schema that weren't previously covered (:pr:`712`)
 
     Thanks to the following people for contributing to this release:
     :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`

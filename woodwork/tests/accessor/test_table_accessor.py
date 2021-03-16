@@ -534,6 +534,46 @@ def test_datetime_dtype_inference_on_init():
     assert df['date_NA_specified'].dtype == 'datetime64[ns]'
 
 
+def test_datetime_inference_with_format_param():
+    df = pd.DataFrame({
+        'index': [0, 1, 2],
+        'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
+        'ymd_special': ["2019~01~01", "2019~01~02", "2019~01~03"],
+        'mdy_special': pd.Series(['3~11~2000', '3~12~2000', '3~13~2000'], dtype='string'),
+    })
+    df.ww.init(
+        name='dt_name',
+        logical_types={'ymd_special': Datetime(datetime_format='%Y~%m~%d'),
+                       'mdy_special': Datetime(datetime_format='%m~%d~%Y'),
+                       'dates': Datetime},
+        time_index='ymd_special')
+
+    assert df['dates'].dtype == 'datetime64[ns]'
+    assert df['ymd_special'].dtype == 'datetime64[ns]'
+    assert df['mdy_special'].dtype == 'datetime64[ns]'
+
+    assert df.ww.time_index == 'ymd_special'
+    assert df.ww['dates'].ww.logical_type == Datetime
+    assert isinstance(df.ww['ymd_special'].ww.logical_type, Datetime)
+    assert isinstance(df.ww['mdy_special'].ww.logical_type, Datetime)
+
+    df.ww.set_time_index('mdy_special')
+    assert df.ww.time_index == 'mdy_special'
+
+    df = pd.DataFrame({
+        'mdy_special': pd.Series(['3&11&2000', '3&12&2000', '3&13&2000'], dtype='string'),
+    })
+    df.ww.init()
+    assert df['mdy_special'].dtype == 'category'
+
+    df.ww.set_types(logical_types={'mdy_special': Datetime(datetime_format='%m&%d&%Y')})
+    assert df['mdy_special'].dtype == 'datetime64[ns]'
+
+    df.ww.set_time_index('mdy_special')
+    assert isinstance(df.ww['mdy_special'].ww.logical_type, Datetime)
+    assert df.ww.time_index == 'mdy_special'
+
+
 def test_timedelta_dtype_inference_on_init():
     df = pd.DataFrame({
         'delta_no_nans': (pd.Series([pd.to_datetime('2020-09-01')] * 2) - pd.to_datetime('2020-07-01')),
@@ -1524,6 +1564,28 @@ def test_select_repetitive(sample_df):
     assert set(df_repeat_ltypes.columns) == {'phone_number'}
 
 
+def test_select_instantiated_ltype():
+    ymd_format = Datetime(datetime_format='%Y~%m~%d')
+
+    df = pd.DataFrame({
+        'dates': ["2019/01/01", "2019/01/02", "2019/01/03"],
+        'ymd': ["2019~01~01", "2019~01~02", "2019~01~03"],
+    })
+    df.ww.init(
+        logical_types={'ymd': ymd_format,
+                       'dates': Datetime})
+
+    new_df = df.ww.select('Datetime')
+    assert len(new_df.columns) == 2
+
+    new_df = df.ww.select(Datetime)
+    assert len(new_df.columns) == 2
+
+    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
+    with pytest.raises(TypeError, match=err_msg):
+        df.ww.select(ymd_format)
+
+
 def test_accessor_set_index(sample_df):
     sample_df.ww.init()
 
@@ -2124,3 +2186,21 @@ def test_accessor_repr_empty(empty_df):
 
     assert repr(empty_df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
     assert empty_df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
+
+
+def test_numeric_column_names(sample_df):
+    numeric_columns = {col_name: i for col_name, i in zip(sample_df.columns, range(0, len(sample_df.columns)))}
+
+    sample_df.ww.init()
+    numeric_via_woodwork = sample_df.ww.rename(numeric_columns)
+
+    assert numeric_via_woodwork.ww[0].ww._schema == sample_df.ww['id'].ww._schema
+
+    numeric_cols_df = sample_df.rename(columns=numeric_columns)
+    numeric_cols_df.ww.init()
+
+    assert numeric_cols_df.ww == numeric_via_woodwork.ww
+
+    numeric_cols_df.ww.set_index(0)
+    assert numeric_cols_df.ww.index == 0
+    assert numeric_cols_df.ww.semantic_tags[0] == {'index'}

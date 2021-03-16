@@ -509,6 +509,12 @@ def test_describe_with_include(sample_df):
     multi_params_df['full_name'].equals(sample_df.ww.describe()['full_name'])
 
 
+def test_describe_with_no_match(sample_df):
+    sample_df.ww.init()
+    df = sample_df.ww.describe(include=['wrongname'])
+    assert df.empty
+
+
 def test_value_counts(categorical_df):
     logical_types = {
         'ints': Integer,
