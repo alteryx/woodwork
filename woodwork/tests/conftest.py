@@ -186,11 +186,6 @@ def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
     return ks.from_pandas(numeric_time_index_df_pandas)
 
 
-@pytest.fixture(params=['numeric_time_index_df_pandas', 'numeric_time_index_df_dask', 'numeric_time_index_df_koalas'])
-def numeric_time_index_df(request):
-    return request.getfixturevalue(request.param)
-
-
 @pytest.fixture()
 def describe_df_pandas():
     index_data = [0, 1, 2, 3, 4, 5, 6, 7]
