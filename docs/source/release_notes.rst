@@ -56,6 +56,7 @@ Release Notes
         * Remove dtype from Schema dictionary (:pr:`685`)
         * Add ``include_index`` param and allow unique columns in Accessor mutual information (:pr:`699`)
         * Include DataFrame equality and ``use_standard_tags`` in WoodworkTableAccessor equality check (:pr:`700`)
+        * Remove ``DataTable`` and ``DataColumn`` classes to migrate towards the accessor approach (:pr:`713`)
     * Documentation Changes
         * Update README.md and Get Started guide to use accessor (:pr:`655`)
         * Update Understanding Types and Tags guide to use accessor (:pr:`657`)
