@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from woodwork import type_system
-from woodwork.exceptions import ColumnNotPresentError
+from woodwork.exceptions import ColumnNotPresentError, DuplicateTagsWarning
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -526,6 +526,27 @@ def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['full_name'] == {'tag1', 'list_tag'}
     assert schema.semantic_tags['age'] == {'numeric', 'age', 'str_tag'}
     assert schema.semantic_tags['id'] == {'set_tag', 'index'}
+
+
+def test_warns_on_adding_duplicate_tags(sample_column_names, sample_inferred_logical_types):
+    semantic_tags = {
+        'full_name': 'tag1',
+        'age': ['numeric', 'age']
+    }
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    semantic_tags=semantic_tags, use_standard_tags=False,
+                    index='id')
+
+    new_tags = {
+        'full_name': 'tag1',
+    }
+    expected_message = "Semantic tag(s) 'tag1' already present on column 'full_name'"
+    with pytest.warns(DuplicateTagsWarning) as record:
+        schema.add_semantic_tags(new_tags)
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
+
+    assert schema.semantic_tags['full_name'] == {'tag1'}
 
 
 def test_reset_all_semantic_tags(sample_column_names, sample_inferred_logical_types):

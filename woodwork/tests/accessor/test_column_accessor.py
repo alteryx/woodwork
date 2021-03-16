@@ -270,7 +270,7 @@ def test_add_custom_tags(sample_series):
     assert series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
 
 
-def test_warns_on_setting_duplicate_tag(sample_series):
+def test_warns_on_adding_duplicate_tag(sample_series):
     series = convert_series(sample_series, Categorical)
     semantic_tags = ['first_tag', 'second_tag']
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
@@ -733,3 +733,13 @@ def test_accessor_metadata_error_on_update(sample_series):
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
         series.ww.metadata = 123
+
+
+def test_non_string_column_name(sample_series):
+    series = convert_series(sample_series, Categorical)
+    series.name = 0
+    series.ww.init(semantic_tags={'test_tag'})
+
+    assert series.ww.name == 0
+    assert series.name == 0
+    assert series.ww.semantic_tags == {'category', 'test_tag'}
