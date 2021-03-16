@@ -162,6 +162,7 @@ def time_index_df_koalas(time_index_df_pandas):
 def time_index_df(request):
     return request.getfixturevalue(request.param)
 
+
 @pytest.fixture()
 def numeric_time_index_df_pandas():
     return pd.DataFrame({
