@@ -69,6 +69,9 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
+**Breaking Changes**
+    * Removes ``DataTable`` and has the new Accessor approach.
+
 **v0.0.11 March 15, 2021**
     * Changes
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
