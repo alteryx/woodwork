@@ -270,7 +270,7 @@ def test_add_custom_tags(sample_series):
     assert series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
 
 
-def test_warns_on_setting_duplicate_tag(sample_series):
+def test_warns_on_adding_duplicate_tag(sample_series):
     series = convert_series(sample_series, Categorical)
     semantic_tags = ['first_tag', 'second_tag']
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
