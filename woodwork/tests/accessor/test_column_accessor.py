@@ -733,3 +733,13 @@ def test_accessor_metadata_error_on_update(sample_series):
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
         series.ww.metadata = 123
+
+
+def test_non_string_column_name(sample_series):
+    series = convert_series(sample_series, Categorical)
+    series.name = 0
+    series.ww.init(semantic_tags={'test_tag'})
+
+    assert series.ww.name == 0
+    assert series.name == 0
+    assert series.ww.semantic_tags == {'category', 'test_tag'}

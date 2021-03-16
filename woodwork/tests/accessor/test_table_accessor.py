@@ -2124,3 +2124,21 @@ def test_accessor_repr_empty(empty_df):
 
     assert repr(empty_df.ww) == 'Empty DataFrame\nColumns: [Physical Type, Logical Type, Semantic Tag(s)]\nIndex: []'
     assert empty_df.ww._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
+
+
+def test_numeric_column_names(sample_df):
+    numeric_columns = {col_name: i for col_name, i in zip(sample_df.columns, range(0, len(sample_df.columns)))}
+
+    sample_df.ww.init()
+    numeric_via_woodwork = sample_df.ww.rename(numeric_columns)
+
+    assert numeric_via_woodwork.ww[0].ww._schema == sample_df.ww['id'].ww._schema
+
+    numeric_cols_df = sample_df.rename(columns=numeric_columns)
+    numeric_cols_df.ww.init()
+
+    assert numeric_cols_df.ww == numeric_via_woodwork.ww
+
+    numeric_cols_df.ww.set_index(0)
+    assert numeric_cols_df.ww.index == 0
+    assert numeric_cols_df.ww.semantic_tags[0] == {'index'}
