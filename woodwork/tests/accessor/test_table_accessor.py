@@ -425,6 +425,27 @@ def test_accessor_with_numeric_time_index(time_index_df):
     assert date_col['semantic_tags'] == {'numeric', 'time_index'}
 
 
+def test_numeric_time_index_dtypes(numeric_time_index_df):
+    numeric_time_index_df.ww.init(time_index='ints')
+    assert numeric_time_index_df.ww.time_index == 'ints'
+    assert numeric_time_index_df.ww.logical_types['ints'] == Integer
+    assert numeric_time_index_df.ww.semantic_tags['ints'] == {'time_index', 'numeric'}
+
+    numeric_time_index_df.ww.set_time_index('floats')
+    assert numeric_time_index_df.ww.time_index == 'floats'
+    assert numeric_time_index_df.ww.logical_types['floats'] == Double
+    assert numeric_time_index_df.ww.semantic_tags['floats'] == {'time_index', 'numeric'}
+
+    numeric_time_index_df.ww.set_time_index('with_null')
+    assert numeric_time_index_df.ww.time_index == 'with_null'
+    if ks and isinstance(numeric_time_index_df, ks.DataFrame):
+        ltype = Double
+    else:
+        ltype = Integer
+    assert numeric_time_index_df.ww.logical_types['with_null'] == ltype
+    assert numeric_time_index_df.ww.semantic_tags['with_null'] == {'time_index', 'numeric'}
+
+
 def test_accessor_init_with_invalid_string_time_index(sample_df):
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
