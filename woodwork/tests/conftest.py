@@ -164,29 +164,6 @@ def time_index_df(request):
 
 
 @pytest.fixture()
-def numeric_time_index_df_pandas():
-    return pd.DataFrame({
-        'floats': pd.Series([1, 2, 3, 4], dtype='float'),
-        'ints': pd.Series([1, -2, 3, 4], dtype='Int64'),
-        'with_null': pd.Series([1, 2, pd.NA, 4], dtype='Int64'),
-    })
-
-
-@pytest.fixture()
-def numeric_time_index_df_dask(numeric_time_index_df_pandas):
-    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
-    return dd.from_pandas(numeric_time_index_df_pandas, npartitions=2)
-
-
-@pytest.fixture()
-def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
-    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    numeric_time_index_df_pandas['ints'] = numeric_time_index_df_pandas['ints'].astype('int64')
-    numeric_time_index_df_pandas['with_null'] = numeric_time_index_df_pandas['ints'].astype('float')
-    return ks.from_pandas(numeric_time_index_df_pandas)
-
-
-@pytest.fixture()
 def describe_df_pandas():
     index_data = [0, 1, 2, 3, 4, 5, 6, 7]
     boolean_data = [True, False, True, True, False, True, False, True]
