@@ -1,5 +1,4 @@
 # flake8: noqa
-from .column_utils import convert_series
 from .table_utils import (
     is_property,
     is_public_method,

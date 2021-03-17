@@ -25,7 +25,6 @@ from woodwork.logical_types import (
     ZIPCode
 )
 from woodwork.tests.testing_utils import (
-    convert_series,
     is_property,
     is_public_method,
     to_pandas
@@ -45,17 +44,17 @@ def test_accessor_init(sample_series):
 
 
 def test_accessor_init_with_logical_type(sample_series):
-    series = convert_series(sample_series, NaturalLanguage)
+    series = sample_series.astype('string')
     series.ww.init(logical_type=NaturalLanguage)
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = convert_series(sample_series, NaturalLanguage)
+    series = sample_series.astype('string')
     series.ww.init(logical_type="natural_language")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = convert_series(sample_series, NaturalLanguage)
+    series = sample_series.astype('string')
     series.ww.init(logical_type="NaturalLanguage")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
@@ -411,7 +410,7 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
 
 
 def test_series_methods_on_accessor_dtype_mismatch(sample_df):
-    ints_series = convert_series(sample_df['id'], Integer)
+    ints_series = sample_df['id'].astype('Int64')
     ints_series.ww.init()
 
     assert ints_series.ww.logical_type == Integer
@@ -598,9 +597,12 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     str_col_2.ww.init(logical_type=Categorical)
     str_col_diff_tags = sample_series.copy()
     str_col_diff_tags.ww.init(logical_type=Categorical, semantic_tags={'test'})
-    diff_name_col = convert_series(sample_datetime_series, Categorical)
+    if ks and isinstance(sample_datetime_series, ks.Series):
+        diff_name_col = sample_datetime_series.astype('string')
+    else:
+        diff_name_col = sample_datetime_series.astype('category')
     diff_name_col.ww.init(logical_type=Categorical)
-    diff_dtype_col = convert_series(sample_series, NaturalLanguage)
+    diff_dtype_col = sample_series.astype('string')
     diff_dtype_col.ww.init(logical_type=NaturalLanguage)
     diff_description_col = sample_series.copy()
     diff_description_col.ww.init(logical_type='Categorical', description='description')
@@ -643,10 +645,10 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     assert datetime_col_instantiated.ww == datetime_col_param.ww
 
     # Check different underlying series
-    str_col = convert_series(sample_series, NaturalLanguage)
+    str_col = sample_series.astype('string')
     str_col.ww.init(logical_type='NaturalLanguage')
     changed_series = sample_series.copy().replace(to_replace='a', value='test')
-    changed_series = convert_series(changed_series, NaturalLanguage)
+    changed_series = changed_series.astype('string')
     changed_series.ww.init(logical_type='NaturalLanguage')
 
     # We only check underlying data for equality with pandas dataframes
