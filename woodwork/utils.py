@@ -49,51 +49,6 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
     return semantic_tags
 
 
-def read_csv(filepath=None,
-             name=None,
-             index=None,
-             time_index=None,
-             semantic_tags=None,
-             logical_types=None,
-             use_standard_tags=True,
-             **kwargs):
-    """Read data from the specified CSV file and return a Woodwork DataTable
-
-    Args:
-        filepath (str): A valid string path to the file to read
-        name (str, optional): Name used to identify the datatable.
-        index (str, optional): Name of the index column in the dataframe.
-        time_index (str, optional): Name of the time index column in the dataframe.
-        semantic_tags (dict, optional): Dictionary mapping column names in the dataframe to the
-            semantic tags for the column. The keys in the dictionary should be strings
-            that correspond to columns in the underlying dataframe. There are two options for
-            specifying the dictionary values:
-            (str): If only one semantic tag is being set, a single string can be used as a value.
-            (list[str] or set[str]): If multiple tags are being set, a list or set of strings can be
-            used as the value.
-            Semantic tags will be set to an empty set for any column not included in the
-            dictionary.
-        logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
-            the dataframe to the LogicalType for the column. LogicalTypes will be inferred
-            for any columns not present in the dictionary.
-        use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-            on the inferred or specified logical type for the column. Defaults to True.
-        **kwargs: Additional keyword arguments to pass to the underlying ``pandas.read_csv`` function. For more
-            information on available keywords refer to the pandas documentation.
-
-    Returns:
-        woodwork.DataTable: DataTable created from the specified CSV file
-    """
-    dataframe = pd.read_csv(filepath, **kwargs)
-    return ww.DataTable(dataframe,
-                        name=name,
-                        index=index,
-                        time_index=time_index,
-                        semantic_tags=semantic_tags,
-                        logical_types=logical_types,
-                        use_standard_tags=use_standard_tags)
-
-
 def read_csv_to_accessor(filepath=None,
                          name=None,
                          index=None,
@@ -137,49 +92,6 @@ def read_csv_to_accessor(filepath=None,
                       logical_types=logical_types,
                       use_standard_tags=use_standard_tags)
     return dataframe
-
-
-def _new_dt_including(datatable, new_data):
-    """Creates a new DataTable with specified data and columns
-
-    Args:
-        datatable (DataTable): DataTable with desired information
-
-        new_data (DataFrame): subset of original DataTable
-    Returns:
-        DataTable: New DataTable with attributes from original DataTable but data from new DataTable
-    """
-    cols = new_data.columns
-
-    new_logical_types = {}
-    new_semantic_tags = {}
-    new_column_descriptions = {}
-    new_column_metadata = {}
-    for col_name, col in datatable.columns.items():
-        if col_name not in cols:
-            continue
-        new_logical_types[col_name] = col.logical_type
-        new_semantic_tags[col_name] = col.semantic_tags
-        new_column_descriptions[col_name] = col.description
-        new_column_metadata[col_name] = col.metadata
-
-    new_index = datatable.index if datatable.index in cols else None
-    new_time_index = datatable.time_index if datatable.time_index in cols else None
-    if new_index is not None:
-        new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
-    if new_time_index is not None:
-        new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
-
-    return ww.DataTable(new_data,
-                        name=datatable.name,
-                        index=new_index,
-                        time_index=new_time_index,
-                        semantic_tags=new_semantic_tags,
-                        logical_types=new_logical_types,
-                        use_standard_tags=datatable.use_standard_tags,
-                        table_metadata=datatable.metadata,
-                        column_metadata=new_column_metadata,
-                        column_descriptions=new_column_descriptions)
 
 
 def import_or_raise(library, error_msg):

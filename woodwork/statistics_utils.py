@@ -271,6 +271,6 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
         frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
         df = frequencies[:top_n].reset_index()
         df.columns = ["value", "count"]
-        dt_list = list(df.to_dict(orient="index").values())
-        val_counts[col] = dt_list
+        values = list(df.to_dict(orient="index").values())
+        val_counts[col] = values
     return val_counts

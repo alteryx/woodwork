@@ -1,5 +1,4 @@
 
-import inspect
 import os
 import re
 
@@ -19,7 +18,6 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,
@@ -34,7 +32,6 @@ from woodwork.utils import (
     _is_url,
     _is_valid_latlong_series,
     _is_valid_latlong_value,
-    _new_dt_including,
     _parse_logical_type,
     _reformat_to_latlong,
     _to_latlong_float,
@@ -138,60 +135,6 @@ def test_list_semantic_tags():
                 assert name in log_type.standard_tags
 
 
-def test_read_csv_no_params(sample_df_pandas, tmpdir):
-    filepath = os.path.join(tmpdir, 'sample.csv')
-    sample_df_pandas.to_csv(filepath, index=False)
-
-    dt_from_csv = ww.read_csv(filepath=filepath)
-    dt = ww.DataTable(sample_df_pandas)
-    assert isinstance(dt, ww.DataTable)
-    assert dt_from_csv.logical_types == dt.logical_types
-    assert dt_from_csv.semantic_tags == dt.semantic_tags
-    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
-
-
-def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
-    filepath = os.path.join(tmpdir, 'sample.csv')
-    sample_df_pandas.to_csv(filepath, index=False)
-    logical_types = {
-        'full_name': 'NaturalLanguage',
-        'phone_number': 'PhoneNumber'
-    }
-    semantic_tags = {
-        'age': ['tag1', 'tag2'],
-        'is_registered': ['tag3', 'tag4']
-    }
-    dt_from_csv = ww.read_csv(filepath=filepath,
-                              index='id',
-                              time_index='signup_date',
-                              logical_types=logical_types,
-                              semantic_tags=semantic_tags)
-    dt = ww.DataTable(sample_df_pandas,
-                      index='id',
-                      time_index='signup_date',
-                      logical_types=logical_types,
-                      semantic_tags=semantic_tags)
-
-    assert isinstance(dt, ww.DataTable)
-    assert dt_from_csv.logical_types == dt.logical_types
-    assert dt_from_csv.semantic_tags == dt.semantic_tags
-    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
-
-
-def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
-    filepath = os.path.join(tmpdir, 'sample.csv')
-    sample_df_pandas.to_csv(filepath, index=False)
-    nrows = 2
-    dt_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
-    dt = ww.DataTable(sample_df_pandas)
-
-    assert isinstance(dt, ww.DataTable)
-    assert dt_from_csv.logical_types == dt.logical_types
-    assert dt_from_csv.semantic_tags == dt.semantic_tags
-    assert len(dt_from_csv.to_dataframe()) == nrows
-    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
-
-
 def test_read_csv_to_accessor_no_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
@@ -288,43 +231,6 @@ def test_get_ltype_params():
     ymd = '%Y-%m-%d'
     params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
-
-
-def test_new_dt_including(sample_df_pandas):
-    # more thorough testing for this exists in indexer testing and new_dt_from_cols testing
-    dt = ww.DataTable(sample_df_pandas)
-    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
-    for col in new_dt.columns:
-        assert new_dt.semantic_tags[col] == dt.semantic_tags[col]
-        assert new_dt.logical_types[col] == dt.logical_types[col]
-
-
-def test_new_dt_including_all_params(sample_df):
-    # The first element is self, so it won't be included in kwargs
-    possible_dt_params = inspect.getfullargspec(ww.DataTable.__init__)[0][1:]
-
-    kwargs = {
-        'dataframe': sample_df.copy(),
-        'name': 'test_dt',
-        'index': 'made_index',
-        'time_index': 'signup_date',
-        'semantic_tags': {'age': 'test_tag'},
-        'logical_types': {'email': 'EmailAddress'},
-        'table_metadata': {'created_by': 'user1'},
-        'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
-        'use_standard_tags': False,
-        'make_index': True,
-        'column_descriptions': {'age': 'this is a description'},
-        'already_sorted': True}
-
-    # Confirm all possible params to DataTable init are present with non-default values where possible
-    assert set(possible_dt_params) == set(kwargs.keys())
-
-    dt = ww.DataTable(**kwargs)
-    copy_dt = _new_dt_including(dt, dt._dataframe.copy())
-
-    assert dt == copy_dt
-    pd.testing.assert_frame_equal(to_pandas(dt._dataframe), to_pandas(copy_dt._dataframe))
 
 
 def test_import_or_raise():

@@ -189,7 +189,7 @@ class LatLong(LogicalType):
 
     Note:
         LatLong values will be stored with the object dtype as a
-        tuple of floats (or a list of floats for Koalas DataTables)
+        tuple of floats (or a list of floats for Koalas DataFrames)
         and must contain only two values.
 
         Null latitude or longitude values will be stored as np.nan, and

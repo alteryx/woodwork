@@ -104,55 +104,6 @@ Deserialization
     read_table_typing_information
     read_woodwork_table
 
-DataTable
-=========
-
-.. currentmodule:: woodwork.datatable
-.. autosummary::
-    :toctree: generated/
-
-    DataTable
-    DataTable.add_semantic_tags
-    DataTable.describe
-    DataTable.describe_dict
-    DataTable.drop
-    DataTable.head
-    DataTable.iloc
-    DataTable.mutual_information
-    DataTable.mutual_information_dict
-    DataTable.pop
-    DataTable.remove_semantic_tags
-    DataTable.rename
-    DataTable.reset_semantic_tags
-    DataTable.select
-    DataTable.set_index
-    DataTable.set_time_index
-    DataTable.set_types
-    DataTable.shape
-    DataTable.to_csv
-    DataTable.to_dataframe
-    DataTable.to_parquet
-    DataTable.to_pickle
-    DataTable.update_dataframe
-    DataTable.value_counts
-
-DataColumn
-==========
-
-.. currentmodule:: woodwork.datacolumn
-.. autosummary::
-    :toctree: generated/
-
-    DataColumn
-    DataColumn.add_semantic_tags
-    DataColumn.iloc
-    DataColumn.remove_semantic_tags
-    DataColumn.reset_semantic_tags
-    DataColumn.set_logical_type
-    DataColumn.set_semantic_tags
-    DataColumn.shape
-    DataColumn.to_series
-
 Logical Types
 =============
 
@@ -219,7 +170,6 @@ General Utils
     :nosignatures:
 
     get_valid_mi_types
-    read_csv
     read_csv_to_accessor
 
 .. currentmodule:: woodwork.accessor_utils
@@ -237,4 +187,4 @@ Demo Data
 .. autosummary::
     :toctree: generated/
 
-    load_retail
+    load_retail_to_accessor

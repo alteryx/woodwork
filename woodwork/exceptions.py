@@ -8,11 +8,6 @@ class DuplicateTagsWarning(UserWarning):
         return f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{name}'"
 
 
-class StandardTagsRemovalWarning(UserWarning):
-    def get_warning_message(self, standard_tags_to_remove, name):
-        return f"Removing standard semantic tag(s) '{', '.join(standard_tags_to_remove)}' from column '{name}'"
-
-
 class StandardTagsChangedWarning(UserWarning):
     def get_warning_message(self, use_standard_tags, col_name):
         changed = 'added to' if use_standard_tags else 'removed from'
