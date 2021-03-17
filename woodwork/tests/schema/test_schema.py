@@ -187,7 +187,7 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     time_index='signup_date',
                     index='id',
-                    name='dt_name')
+                    name='df_name')
 
     filtered = schema._filter_cols(include=Datetime)
     assert filtered == ['signup_date']
@@ -214,7 +214,7 @@ def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logi
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     time_index='signup_date',
                     index='id',
-                    name='dt_name')
+                    name='df_name')
 
     filter_no_matches = schema._filter_cols(include='nothing')
     assert filter_no_matches == []
@@ -230,7 +230,7 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     time_index='signup_date',
                     index='id',
-                    name='dt_name')
+                    name='df_name')
 
     err_msg = "Invalid selector used in include: {} must be a string, uninstantiated and registered LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
