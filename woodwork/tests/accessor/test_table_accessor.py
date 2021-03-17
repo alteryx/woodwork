@@ -281,7 +281,7 @@ def test_getitem(sample_df):
     df = sample_df
     df.ww.init(
         time_index='signup_date',
-        index='id', name='dt_name',
+        index='id', name='df_name',
         logical_types={'age': 'Double'},
         semantic_tags={'age': {'custom_tag'}},
     )
@@ -563,7 +563,7 @@ def test_datetime_inference_with_format_param():
         'mdy_special': pd.Series(['3~11~2000', '3~12~2000', '3~13~2000'], dtype='string'),
     })
     df.ww.init(
-        name='dt_name',
+        name='df_name',
         logical_types={'ymd_special': Datetime(datetime_format='%Y~%m~%d'),
                        'mdy_special': Datetime(datetime_format='%m~%d~%Y'),
                        'dates': Datetime},
@@ -1718,7 +1718,7 @@ def test_pop(sample_df):
 
 
 def test_pop_index(sample_df):
-    sample_df.ww.init(index='id', name='dt_name')
+    sample_df.ww.init(index='id', name='df_name')
     assert sample_df.ww.index == 'id'
     id_col = sample_df.ww.pop('id')
     assert sample_df.ww.index is None
