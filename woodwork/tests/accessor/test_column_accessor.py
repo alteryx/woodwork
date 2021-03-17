@@ -25,7 +25,6 @@ from woodwork.logical_types import (
     ZIPCode
 )
 from woodwork.tests.testing_utils import (
-    convert_series,
     is_property,
     is_public_method,
     to_pandas
@@ -37,33 +36,32 @@ ks = import_or_none('databricks.koalas')
 
 
 def test_accessor_init(sample_series):
-    series = convert_series(sample_series, Categorical)
-    assert series.ww._schema is None
-    series.ww.init()
-    assert isinstance(series.ww._schema, dict)
-    assert series.ww.logical_type == Categorical
-    assert series.ww.semantic_tags == {'category'}
+    assert sample_series.ww._schema is None
+    sample_series.ww.init()
+    assert isinstance(sample_series.ww._schema, dict)
+    assert sample_series.ww.logical_type == Categorical
+    assert sample_series.ww.semantic_tags == {'category'}
 
 
 def test_accessor_init_with_logical_type(sample_series):
-    series = convert_series(sample_series, NaturalLanguage)
+    series = sample_series.astype('string')
     series.ww.init(logical_type=NaturalLanguage)
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = convert_series(sample_series, NaturalLanguage)
+    series = sample_series.astype('string')
     series.ww.init(logical_type="natural_language")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = convert_series(sample_series, NaturalLanguage)
+    series = sample_series.astype('string')
     series.ww.init(logical_type="NaturalLanguage")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    series = sample_series
+    series = sample_series.astype('object')
     series_dtype = 'object'
     correct_dtype = 'string'
     error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \
@@ -74,10 +72,9 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
 
 
 def test_accessor_init_with_semantic_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = ['tag1', 'tag2']
-    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
-    assert series.ww.semantic_tags == set(semantic_tags)
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert sample_series.ww.semantic_tags == set(semantic_tags)
 
 
 def test_error_accessing_properties_before_init(sample_series):
@@ -114,12 +111,12 @@ def test_error_accessing_methods_before_init(sample_series):
 
 
 def test_accessor_with_alternate_semantic_tags_input(sample_series):
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     semantic_tags = 'custom_tag'
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
     assert series.ww.semantic_tags == {'custom_tag'}
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     semantic_tags = {'custom_tag', 'numeric'}
     series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
     assert series.ww.semantic_tags == semantic_tags
@@ -136,93 +133,83 @@ def test_logical_type_errors(sample_series):
 
 
 def test_semantic_tag_errors(sample_series):
-    series = convert_series(sample_series, Categorical)
     error_message = "semantic_tags for sample_series must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        series.ww.init(semantic_tags=int)
+        sample_series.ww.init(semantic_tags=int)
 
     error_message = "semantic_tags for sample_series must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
-        series.ww.init(semantic_tags={'index': {}, 'time_index': {}})
+        sample_series.ww.init(semantic_tags={'index': {}, 'time_index': {}})
 
     error_message = "semantic_tags for sample_series must contain only strings"
     with pytest.raises(TypeError, match=error_message):
-        series.ww.init(semantic_tags=['index', 1])
+        sample_series.ww.init(semantic_tags=['index', 1])
 
 
 def test_accessor_description(sample_series):
-    series = convert_series(sample_series, Categorical)
-
     column_description = "custom description"
-    series.ww.init(description=column_description)
-    assert series.ww.description == column_description
+    sample_series.ww.init(description=column_description)
+    assert sample_series.ww.description == column_description
 
     new_description = "updated description text"
-    series.ww.description = new_description
-    assert series.ww.description == new_description
+    sample_series.ww.description = new_description
+    assert sample_series.ww.description == new_description
 
 
 def test_description_setter_error_before_init(sample_series):
-    series = convert_series(sample_series, Categorical)
     err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     with pytest.raises(AttributeError, match=err_msg):
-        series.ww.description = "description"
+        sample_series.ww.description = "description"
 
 
 def test_description_error_on_init(sample_series):
-    series = convert_series(sample_series, Categorical)
     err_msg = "Column description must be a string"
     with pytest.raises(TypeError, match=err_msg):
-        series.ww.init(description=123)
+        sample_series.ww.init(description=123)
 
 
 def test_description_error_on_update(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
+    sample_series.ww.init()
     err_msg = "Column description must be a string"
     with pytest.raises(TypeError, match=err_msg):
-        series.ww.description = 123
+        sample_series.ww.description = 123
 
 
 def test_accessor_repr(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(use_standard_tags=False)
+    sample_series.ww.init(use_standard_tags=False)
     # Koalas doesn't support categorical
-    if ks and isinstance(series, ks.Series):
+    if ks and isinstance(sample_series, ks.Series):
         dtype = 'string'
     else:
         dtype = 'category'
-    assert series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
+    assert sample_series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
 
 def test_accessor_repr_error_before_init(sample_series):
-    series = convert_series(sample_series, Categorical)
     err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     with pytest.raises(AttributeError, match=err_msg):
-        series.ww.__repr__()
+        sample_series.ww.__repr__()
 
 
 def test_set_semantic_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = {'tag1', 'tag2'}
-    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
-    assert series.ww.semantic_tags == semantic_tags
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    assert sample_series.ww.semantic_tags == semantic_tags
 
     new_tags = ['new_tag']
-    series.ww.set_semantic_tags(new_tags)
-    assert series.ww.semantic_tags == set(new_tags)
+    sample_series.ww.set_semantic_tags(new_tags)
+    assert sample_series.ww.semantic_tags == set(new_tags)
 
 
 def test_set_semantic_tags_with_standard_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = {'tag1', 'tag2'}
-    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=True)
-    assert series.ww.semantic_tags == semantic_tags.union({'category'})
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=True)
+    assert sample_series.ww.semantic_tags == semantic_tags.union({'category'})
 
     new_tags = ['new_tag']
-    series.ww.set_semantic_tags(new_tags)
-    assert series.ww.semantic_tags == set(new_tags).union({'category'})
+    sample_series.ww.set_semantic_tags(new_tags)
+    assert sample_series.ww.semantic_tags == set(new_tags).union({'category'})
 
 
 def test_adds_numeric_standard_tag():
@@ -256,63 +243,56 @@ def test_does_not_add_standard_tags():
 
 
 def test_add_custom_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = 'initial_tag'
-    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
 
-    series.ww.add_semantic_tags('string_tag')
-    assert series.ww.semantic_tags == {'initial_tag', 'string_tag'}
+    sample_series.ww.add_semantic_tags('string_tag')
+    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag'}
 
-    series.ww.add_semantic_tags(['list_tag'])
-    assert series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
+    sample_series.ww.add_semantic_tags(['list_tag'])
+    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
 
-    series.ww.add_semantic_tags({'set_tag'})
-    assert series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
+    sample_series.ww.add_semantic_tags({'set_tag'})
+    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
 
 
 def test_warns_on_adding_duplicate_tag(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = ['first_tag', 'second_tag']
-    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
 
     expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
     with pytest.warns(DuplicateTagsWarning) as record:
-        series.ww.add_semantic_tags(['first_tag', 'second_tag'])
+        sample_series.ww.add_semantic_tags(['first_tag', 'second_tag'])
     assert len(record) == 1
     assert record[0].message.args[0] == expected_message
 
 
 def test_set_logical_type_with_standard_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
+    sample_series.ww.init(logical_type='Categorical',
+                          semantic_tags='original_tag',
+                          use_standard_tags=True)
 
-    series.ww.init(logical_type='Categorical',
-                   semantic_tags='original_tag',
-                   use_standard_tags=True)
-
-    new_series = series.ww.set_logical_type('CountryCode')
-    assert series.ww.logical_type == Categorical
+    new_series = sample_series.ww.set_logical_type('CountryCode')
+    assert sample_series.ww.logical_type == Categorical
     assert new_series.ww.logical_type == CountryCode
     assert new_series.ww.semantic_tags == {'category'}
 
 
 def test_set_logical_type_without_standard_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
+    sample_series.ww.init(logical_type='Categorical',
+                          semantic_tags='original_tag',
+                          use_standard_tags=False)
 
-    series.ww.init(logical_type='Categorical',
-                   semantic_tags='original_tag',
-                   use_standard_tags=False)
-
-    new_series = series.ww.set_logical_type('CountryCode')
-    assert series.ww.logical_type == Categorical
+    new_series = sample_series.ww.set_logical_type('CountryCode')
+    assert sample_series.ww.logical_type == Categorical
     assert new_series.ww.logical_type == CountryCode
     assert new_series.ww.semantic_tags == set()
 
 
 def test_set_logical_type_valid_dtype_change(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(logical_type='Categorical')
+    sample_series.ww.init(logical_type='Categorical')
 
-    new_series = series.ww.set_logical_type('NaturalLanguage')
+    new_series = sample_series.ww.set_logical_type('NaturalLanguage')
 
     if ks and isinstance(sample_series, ks.Series):
         # Koalas uses string dtype for Categorical
@@ -321,8 +301,8 @@ def test_set_logical_type_valid_dtype_change(sample_series):
         original_dtype = 'category'
     new_dtype = 'string'
 
-    assert series.ww.logical_type == Categorical
-    assert series.dtype == original_dtype
+    assert sample_series.ww.logical_type == Categorical
+    assert sample_series.dtype == original_dtype
     assert new_series.ww.logical_type == NaturalLanguage
     assert new_series.dtype == new_dtype
 
@@ -333,32 +313,29 @@ def test_set_logical_type_invalid_dtype_change(sample_series):
     if ks and isinstance(sample_series, ks.Series):
         pytest.xfail('Koalas allows this conversion, filling values it cannot convert with NaN '
                      'and converting dtype to float.')
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(logical_type='Categorical')
+    sample_series.ww.init(logical_type='Categorical')
     error_message = "Error converting datatype for sample_series from type category to " \
         "type Int64. Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_message):
-        series.ww.set_logical_type('Integer')
+        sample_series.ww.set_logical_type('Integer')
 
 
 def test_reset_semantic_tags_with_standard_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = 'initial_tag'
-    series.ww.init(semantic_tags=semantic_tags,
-                   logical_type=Categorical,
-                   use_standard_tags=True)
+    sample_series.ww.init(semantic_tags=semantic_tags,
+                          logical_type=Categorical,
+                          use_standard_tags=True)
 
-    series.ww.reset_semantic_tags()
-    assert series.ww.semantic_tags == Categorical.standard_tags
+    sample_series.ww.reset_semantic_tags()
+    assert sample_series.ww.semantic_tags == Categorical.standard_tags
 
 
 def test_reset_semantic_tags_without_standard_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
     semantic_tags = 'initial_tag'
-    series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
 
-    series.ww.reset_semantic_tags()
-    assert series.ww.semantic_tags == set()
+    sample_series.ww.reset_semantic_tags()
+    assert sample_series.ww.semantic_tags == set()
 
 
 def test_remove_semantic_tags(sample_series):
@@ -369,14 +346,14 @@ def test_remove_semantic_tags(sample_series):
     ]
 
     for tag in tags_to_remove:
-        series = convert_series(sample_series, Categorical)
+        series = sample_series.copy()
         series.ww.init(semantic_tags=['tag1', 'tag2'], use_standard_tags=False)
         series.ww.remove_semantic_tags(tag)
         assert series.ww.semantic_tags == {'tag2'}
 
 
 def test_remove_standard_semantic_tag(sample_series):
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     # Check that warning is raised if use_standard_tags is True - tag should be removed
     series.ww.init(logical_type=Categorical, semantic_tags='tag1', use_standard_tags=True)
     expected_message = 'Standard tags have been removed from "sample_series"'
@@ -387,7 +364,7 @@ def test_remove_standard_semantic_tag(sample_series):
     assert series.ww.semantic_tags == set()
 
     # Check that warning is not raised if use_standard_tags is False - tag should be removed
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     series.ww.init(logical_type=Categorical, semantic_tags=['category', 'tag1'], use_standard_tags=False)
 
     with pytest.warns(None) as record:
@@ -397,47 +374,43 @@ def test_remove_standard_semantic_tag(sample_series):
 
 
 def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(semantic_tags='tag1')
+    sample_series.ww.init(semantic_tags='tag1')
     error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
     with pytest.raises(LookupError, match=error_msg):
-        series.ww.remove_semantic_tags('invalid_tagname')
+        sample_series.ww.remove_semantic_tags('invalid_tagname')
 
 
 def test_series_methods_on_accessor(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
+    sample_series.ww.init()
 
-    copied_series = series.ww.copy()
-    assert copied_series is not series
-    assert copied_series.ww._schema == series.ww._schema
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(copied_series))
+    copied_series = sample_series.ww.copy()
+    assert copied_series is not sample_series
+    assert copied_series.ww._schema == sample_series.ww._schema
+    pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
 
 
 def test_series_methods_on_accessor_without_standard_tags(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(use_standard_tags=False)
+    sample_series.ww.init(use_standard_tags=False)
 
-    copied_series = series.ww.copy()
-    assert copied_series is not series
-    assert copied_series.ww._schema == series.ww._schema
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(copied_series))
+    copied_series = sample_series.ww.copy()
+    assert copied_series is not sample_series
+    assert copied_series.ww._schema == sample_series.ww._schema
+    pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
 
 
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
     if ks and isinstance(sample_series, ks.Series):
         pytest.xfail('Running replace on Koalas series changes series dtype to object, invalidating schema')
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
+    sample_series.ww.init()
 
-    replace_series = series.ww.replace('a', 'd')
-    assert replace_series.ww._schema == series.ww._schema
-    assert replace_series.ww._schema is not series.ww._schema
-    pd.testing.assert_series_equal(to_pandas(replace_series), to_pandas(series.replace('a', 'd')))
+    replace_series = sample_series.ww.replace('a', 'd')
+    assert replace_series.ww._schema == sample_series.ww._schema
+    assert replace_series.ww._schema is not sample_series.ww._schema
+    pd.testing.assert_series_equal(to_pandas(replace_series), to_pandas(sample_series.replace('a', 'd')))
 
 
 def test_series_methods_on_accessor_dtype_mismatch(sample_df):
-    ints_series = convert_series(sample_df['id'], Integer)
+    ints_series = sample_df['id'].astype('Int64')
     ints_series.ww.init()
 
     assert ints_series.ww.logical_type == Integer
@@ -455,19 +428,17 @@ def test_series_methods_on_accessor_inplace(sample_series):
     # TODO: Try to find a supported inplace method for Dask, if one exists
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('Dask does not support pop.')
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
+    sample_series.ww.init()
 
-    original_schema = series.ww._schema.copy()
-    val = series.ww.pop(0)
-    assert series.ww._schema == original_schema
-    assert len(series) == 3
+    original_schema = sample_series.ww._schema.copy()
+    val = sample_series.ww.pop(0)
+    assert sample_series.ww._schema == original_schema
+    assert len(sample_series) == 3
     assert val == 'a'
 
 
 def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
+    sample_series.ww.init()
 
     if ks and isinstance(sample_series, ks.Series):
         # Koalas uses `string` for Categorical, so must try a different conversion
@@ -482,60 +453,56 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
         "Please initialize Woodwork with Series.ww.init"
 
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
-        new_series = series.ww.astype(new_type)
+        new_series = sample_series.ww.astype(new_type)
 
     assert new_series.ww._schema is None
 
 
 def test_series_methods_on_accessor_other_returns(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
-    col_shape = series.ww.shape
-    series_shape = series.shape
-    if dd and isinstance(series, dd.Series):
+    sample_series.ww.init()
+    col_shape = sample_series.ww.shape
+    series_shape = sample_series.shape
+    if dd and isinstance(sample_series, dd.Series):
         col_shape = (col_shape[0].compute(),)
         series_shape = (series_shape[0].compute())
     assert col_shape == (4,)
     assert col_shape == series_shape
 
-    assert series.name == series.ww.name
-    series_nunique = series.nunique()
-    ww_nunique = series.ww.nunique()
-    if dd and isinstance(series, dd.Series):
+    assert sample_series.name == sample_series.ww.name
+    series_nunique = sample_series.nunique()
+    ww_nunique = sample_series.ww.nunique()
+    if dd and isinstance(sample_series, dd.Series):
         series_nunique = series_nunique.compute()
         ww_nunique = ww_nunique.compute()
     assert series_nunique == ww_nunique
 
 
 def test_series_methods_on_accessor_new_schema_dict(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(semantic_tags=['new_tag', 'tag2'], metadata={'important_keys': [1, 2, 3]})
+    sample_series.ww.init(semantic_tags=['new_tag', 'tag2'], metadata={'important_keys': [1, 2, 3]})
 
-    copied_series = series.ww.copy()
+    copied_series = sample_series.ww.copy()
 
-    assert copied_series.ww._schema == series.ww._schema
-    assert copied_series.ww._schema is not series.ww._schema
+    assert copied_series.ww._schema == sample_series.ww._schema
+    assert copied_series.ww._schema is not sample_series.ww._schema
 
     copied_series.ww.metadata['important_keys'].append(4)
     assert copied_series.ww.metadata['important_keys'] == [1, 2, 3, 4]
-    assert series.ww.metadata['important_keys'] == [1, 2, 3]
+    assert sample_series.ww.metadata['important_keys'] == [1, 2, 3]
 
     copied_series.ww.add_semantic_tags(['tag3'])
     assert copied_series.ww.semantic_tags == {'category', 'new_tag', 'tag2', 'tag3'}
-    assert series.ww.semantic_tags == {'category', 'new_tag', 'tag2'}
+    assert sample_series.ww.semantic_tags == {'category', 'new_tag', 'tag2'}
 
 
 def test_series_getattr_errors(sample_series):
-    series = convert_series(sample_series, Categorical)
-
     error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     with pytest.raises(AttributeError, match=error_message):
-        series.ww.shape
+        sample_series.ww.shape
 
-    series.ww.init()
+    sample_series.ww.init()
     error_message = "Woodwork has no attribute 'invalid_attr'"
     with pytest.raises(AttributeError, match=error_message):
-        series.ww.invalid_attr
+        sample_series.ww.invalid_attr
 
 
 def test_ordinal_requires_instance_on_init(sample_series):
@@ -547,27 +514,26 @@ def test_ordinal_requires_instance_on_init(sample_series):
 
 
 def test_ordinal_requires_instance_on_update(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init(logical_type="Categorical")
+    sample_series.ww.init(logical_type="Categorical")
 
     error_msg = 'Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error_msg):
-        series.ww.set_logical_type(Ordinal)
+        sample_series.ww.set_logical_type(Ordinal)
     with pytest.raises(TypeError, match=error_msg):
-        series.ww.set_logical_type("Ordinal")
+        sample_series.ww.set_logical_type("Ordinal")
 
 
 def test_ordinal_with_order(sample_series):
     if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
     series.ww.init(logical_type=ordinal_with_order)
     assert isinstance(series.ww.logical_type, Ordinal)
     assert series.ww.logical_type.order == ['a', 'b', 'c']
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     series.ww.init(logical_type='Categorical')
     new_series = series.ww.set_logical_type(ordinal_with_order)
     assert isinstance(new_series.ww.logical_type, Ordinal)
@@ -578,12 +544,11 @@ def test_ordinal_with_incomplete_ranking(sample_series):
     if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
 
-    series = convert_series(sample_series, Categorical)
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
     error_msg = re.escape("Ordinal column sample_series contains values that are not "
                           "present in the order values provided: ['c']")
     with pytest.raises(ValueError, match=error_msg):
-        series.ww.init(logical_type=ordinal_incomplete_order)
+        sample_series.ww.init(logical_type=ordinal_incomplete_order)
 
 
 def test_ordinal_with_nan_values():
@@ -626,19 +591,22 @@ def test_latlong_formatting_with_init_series(latlongs):
 
 def test_accessor_equality(sample_series, sample_datetime_series):
     # Check different parameters
-    str_col = convert_series(sample_series, Categorical)
+    str_col = sample_series.copy()
     str_col.ww.init(logical_type='Categorical')
-    str_col_2 = convert_series(sample_series, Categorical)
+    str_col_2 = sample_series.copy()
     str_col_2.ww.init(logical_type=Categorical)
-    str_col_diff_tags = convert_series(sample_series, Categorical)
+    str_col_diff_tags = sample_series.copy()
     str_col_diff_tags.ww.init(logical_type=Categorical, semantic_tags={'test'})
-    diff_name_col = convert_series(sample_datetime_series, Categorical)
+    if ks and isinstance(sample_datetime_series, ks.Series):
+        diff_name_col = sample_datetime_series.astype('string')
+    else:
+        diff_name_col = sample_datetime_series.astype('category')
     diff_name_col.ww.init(logical_type=Categorical)
-    diff_dtype_col = convert_series(sample_series, NaturalLanguage)
+    diff_dtype_col = sample_series.astype('string')
     diff_dtype_col.ww.init(logical_type=NaturalLanguage)
-    diff_description_col = convert_series(sample_series, Categorical)
+    diff_description_col = sample_series.copy()
     diff_description_col.ww.init(logical_type='Categorical', description='description')
-    diff_metadata_col = convert_series(sample_series, Categorical)
+    diff_metadata_col = sample_series.copy()
     diff_metadata_col.ww.init(logical_type='Categorical', metadata={'interesting_values': ['a', 'b']})
 
     assert str_col.ww == str_col_2.ww
@@ -653,8 +621,8 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     # Check columns with same logical types but different parameters
     ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
     ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
-    ordinal_col_1 = convert_series(sample_series, Categorical)
-    ordinal_col_2 = convert_series(sample_series, Categorical)
+    ordinal_col_1 = sample_series.copy()
+    ordinal_col_2 = sample_series.copy()
     ordinal_col_1.ww.init(logical_type=ordinal_ltype_1)
     ordinal_col_2.ww.init(logical_type=ordinal_ltype_2)
 
@@ -677,10 +645,10 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     assert datetime_col_instantiated.ww == datetime_col_param.ww
 
     # Check different underlying series
-    str_col = convert_series(sample_series, NaturalLanguage)
+    str_col = sample_series.astype('string')
     str_col.ww.init(logical_type='NaturalLanguage')
     changed_series = sample_series.copy().replace(to_replace='a', value='test')
-    changed_series = convert_series(changed_series, NaturalLanguage)
+    changed_series = changed_series.astype('string')
     changed_series.ww.init(logical_type='NaturalLanguage')
 
     # We only check underlying data for equality with pandas dataframes
@@ -693,11 +661,11 @@ def test_accessor_equality(sample_series, sample_datetime_series):
 def test_accessor_metadata(sample_series):
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     series.ww.init()
     assert series.ww.metadata == {}
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     series.ww.init(metadata=column_metadata)
     assert series.ww.metadata == column_metadata
 
@@ -714,32 +682,28 @@ def test_accessor_metadata(sample_series):
 
 
 def test_metadata_setter_error_before_init(sample_series):
-    series = convert_series(sample_series, Categorical)
     err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     with pytest.raises(AttributeError, match=err_msg):
-        series.ww.metadata = {"key": "val"}
+        sample_series.ww.metadata = {"key": "val"}
 
 
 def test_accessor_metadata_error_on_init(sample_series):
-    series = convert_series(sample_series, Categorical)
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
-        series.ww.init(metadata=123)
+        sample_series.ww.init(metadata=123)
 
 
 def test_accessor_metadata_error_on_update(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.ww.init()
+    sample_series.ww.init()
     err_msg = "Column metadata must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
-        series.ww.metadata = 123
+        sample_series.ww.metadata = 123
 
 
 def test_non_string_column_name(sample_series):
-    series = convert_series(sample_series, Categorical)
-    series.name = 0
-    series.ww.init(semantic_tags={'test_tag'})
+    sample_series.name = 0
+    sample_series.ww.init(semantic_tags={'test_tag'})
 
-    assert series.ww.name == 0
-    assert series.name == 0
-    assert series.ww.semantic_tags == {'category', 'test_tag'}
+    assert sample_series.ww.name == 0
+    assert sample_series.name == 0
+    assert sample_series.ww.semantic_tags == {'category', 'test_tag'}

@@ -20,6 +20,11 @@ ks = import_or_none('databricks.koalas')
 
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):
+    if ks and isinstance(sample_series, ks.Series):
+        sample_series = sample_series.astype('str')
+    else:
+        sample_series = sample_series.astype('object')
+
     series = init_series(sample_series, logical_type='categorical')
     assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
@@ -36,6 +41,11 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
+    if ks and isinstance(sample_series, ks.Series):
+        sample_series = sample_series.astype('str')
+    else:
+        sample_series = sample_series.astype('object')
+
     series = init_series(sample_series)
     assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
@@ -51,6 +61,11 @@ def test_init_series_with_datetime(sample_datetime_series):
 
 
 def test_init_series_all_parameters(sample_series):
+    if ks and isinstance(sample_series, ks.Series):
+        sample_series = sample_series.astype('str')
+    else:
+        sample_series = sample_series.astype('object')
+
     metadata = {'meta_key': 'meta_value'}
     description = 'custom description'
     series = init_series(sample_series,
@@ -74,7 +89,8 @@ def test_init_series_error_on_invalid_conversion(sample_series):
     if ks and isinstance(sample_series, ks.Series):
         pytest.xfail('Koalas allows this conversion, filling values it cannot convert with NaN '
                      'and converting dtype to float.')
-    error_message = "Error converting datatype for sample_series from type object to type Int64. " \
+
+    error_message = "Error converting datatype for sample_series from type category to type Int64. " \
         "Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_message):
         init_series(sample_series, logical_type='integer')
