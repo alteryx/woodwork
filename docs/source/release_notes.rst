@@ -72,7 +72,7 @@ Release Notes
     :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
-    * Removes ``DataTable`` and has the new Accessor approach.
+    * The ``DataTable`` and ``DataColumn`` classes have been removed and replaced by new ``WoodworkTableAccessor`` and ``WoodworkColumnAccessor`` classes which are used through the ``ww`` namespace available on DataFrames after importing Woodwork.
 
 **v0.0.11 March 15, 2021**
     * Changes
