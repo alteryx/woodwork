@@ -97,7 +97,7 @@ def sample_series(request):
 
 @pytest.fixture()
 def sample_series_pandas():
-    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('object')
+    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('category')
 
 
 @pytest.fixture()
@@ -109,7 +109,7 @@ def sample_series_dask(sample_series_pandas):
 @pytest.fixture()
 def sample_series_koalas(sample_series_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(sample_series_pandas)
+    return ks.from_pandas(sample_series_pandas.astype('string'))
 
 
 @pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask', 'sample_datetime_series_koalas'])

@@ -63,7 +63,7 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    series = sample_series
+    series = sample_series.astype('object')
     series_dtype = 'object'
     correct_dtype = 'string'
     error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \

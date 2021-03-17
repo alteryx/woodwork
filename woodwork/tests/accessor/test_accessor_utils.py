@@ -21,14 +21,17 @@ ks = import_or_none('databricks.koalas')
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):
     series = init_series(sample_series, logical_type='categorical')
-    assert series is not sample_series
+    assert series is sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
     assert series.ww.semantic_tags == {'category'}
 
     series = init_series(sample_series, logical_type='natural_language')
-    assert series is not sample_series
+    if ks and isinstance(series, ks.Series):
+        assert series is sample_series
+    else:
+        assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), NaturalLanguage)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == NaturalLanguage
@@ -37,7 +40,7 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
     series = init_series(sample_series)
-    assert series is not sample_series
+    assert series is sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
@@ -59,7 +62,7 @@ def test_init_series_all_parameters(sample_series):
                          metadata=metadata,
                          description=description,
                          use_standard_tags=False)
-    assert series is not sample_series
+    assert series is sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
     assert series.ww.logical_type == Categorical
@@ -74,7 +77,8 @@ def test_init_series_error_on_invalid_conversion(sample_series):
     if ks and isinstance(sample_series, ks.Series):
         pytest.xfail('Koalas allows this conversion, filling values it cannot convert with NaN '
                      'and converting dtype to float.')
-    error_message = "Error converting datatype for sample_series from type object to type Int64. " \
+
+    error_message = "Error converting datatype for sample_series from type category to type Int64. " \
         "Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_message):
         init_series(sample_series, logical_type='integer')
