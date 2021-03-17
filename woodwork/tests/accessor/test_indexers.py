@@ -10,7 +10,7 @@ from woodwork.logical_types import (
     Integer,
     PhoneNumber
 )
-from woodwork.tests.testing_utils import convert_series, to_pandas
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -71,7 +71,7 @@ def test_error_before_column_init(sample_series):
 def test_iloc_column(sample_series):
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('iloc is not supported with Dask inputs')
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
     description = 'custom column description'
@@ -91,7 +91,7 @@ def test_iloc_column(sample_series):
 
     assert series.ww.iloc[0] == 'a'
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     series.ww.init(use_standard_tags=False)
     sliced = series.ww.iloc[:]
     assert sliced.name
@@ -102,29 +102,28 @@ def test_iloc_column(sample_series):
 def test_iloc_column_does_not_propagate_changes_to_data(sample_series):
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('iloc is not supported with Dask inputs')
-    series = convert_series(sample_series, Categorical)
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
     description = 'custom column description'
     metadata = {'meta_key': 'custom metadata'}
-    series.ww.init(logical_type=logical_type,
-                   semantic_tags=semantic_tags,
-                   description=description,
-                   metadata=metadata,
-                   use_standard_tags=False)
+    sample_series.ww.init(logical_type=logical_type,
+                          semantic_tags=semantic_tags,
+                          description=description,
+                          metadata=metadata,
+                          use_standard_tags=False)
 
-    sliced = series.ww.iloc[2:]
-    series.ww.add_semantic_tags('new_tag')
+    sliced = sample_series.ww.iloc[2:]
+    sample_series.ww.add_semantic_tags('new_tag')
     assert sliced.ww.semantic_tags == {'tag1', 'tag2'}
-    assert sliced.ww.semantic_tags is not series.ww.semantic_tags
+    assert sliced.ww.semantic_tags is not sample_series.ww.semantic_tags
 
-    series.ww.metadata['new_key'] = 'new_value'
+    sample_series.ww.metadata['new_key'] = 'new_value'
     assert sliced.ww.metadata == {'meta_key': 'custom metadata'}
-    assert sliced.ww.metadata is not series.ww.metadata
+    assert sliced.ww.metadata is not sample_series.ww.metadata
 
 
 def test_loc_column(sample_series):
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
     series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
@@ -144,7 +143,7 @@ def test_loc_column(sample_series):
         single_val = single_val.loc[0]
     assert single_val == 'a'
 
-    series = convert_series(sample_series, Categorical)
+    series = sample_series.copy()
     series.ww.init(use_standard_tags=False)
     sliced = series.ww.loc[:]
     assert sliced.name
