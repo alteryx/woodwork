@@ -187,4 +187,4 @@ Demo Data
 .. autosummary::
     :toctree: generated/
 
-    load_retail_to_accessor
+    load_retail

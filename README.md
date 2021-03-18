@@ -45,7 +45,7 @@ Below is an example of using Woodwork. In this example, a sample dataset of orde
 ```python
 import woodwork as ww
 
-df = ww.demo.load_retail_to_accessor(nrows=100, init_woodwork=False)
+df = ww.demo.load_retail(nrows=100, init_woodwork=False)
 df.ww.init(name='retail', index='order_product_id')
 df.ww.set_types(logical_types={
     'quantity': 'Integer',
