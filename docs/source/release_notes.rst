@@ -69,9 +69,10 @@ Release Notes
         * Update index notebook and install guide to use accessor (:pr:`715`)
     * Testing Changes
         * Add tests to Accessor/Schema that weren't previously covered (:pr:`712`, :pr:`716`)
+        * Update release branch name in notes update check (:pr:`719`)
 
     Thanks to the following people for contributing to this release:
-    :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``DataTable`` and ``DataColumn`` classes have been removed and replaced by new ``WoodworkTableAccessor`` and ``WoodworkColumnAccessor`` classes which are used through the ``ww`` namespace available on DataFrames after importing Woodwork.
