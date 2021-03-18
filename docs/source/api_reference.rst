@@ -170,7 +170,7 @@ General Utils
     :nosignatures:
 
     get_valid_mi_types
-    read_csv_to_accessor
+    read_csv
 
 .. currentmodule:: woodwork.accessor_utils
 

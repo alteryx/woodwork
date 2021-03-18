@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
+from woodwork.indexers import _iLocIndexer, _locIndexerAccessor
 from woodwork.logical_types import (
     Categorical,
     Datetime,
@@ -18,17 +18,17 @@ dd = import_or_none('dask.dataframe')
 
 def test_iLocIndexer_class_error(sample_df_dask, sample_series_dask):
     with pytest.raises(TypeError, match="iloc is not supported for Dask DataFrames"):
-        _iLocIndexerAccessor(sample_df_dask)
+        _iLocIndexer(sample_df_dask)
 
     with pytest.raises(TypeError, match="iloc is not supported for Dask Series"):
-        _iLocIndexerAccessor(sample_series_dask)
+        _iLocIndexer(sample_series_dask)
 
 
 def test_iLocIndexer_class(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('iloc is not supported with Dask inputs')
     sample_df.ww.init()
-    ind = _iLocIndexerAccessor(sample_df)
+    ind = _iLocIndexer(sample_df)
     pd.testing.assert_frame_equal(to_pandas(ind.data), to_pandas(sample_df))
     pd.testing.assert_frame_equal(to_pandas(ind[1:2]), to_pandas(sample_df.iloc[1:2]))
     assert ind[0, 0] == 0

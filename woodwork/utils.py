@@ -49,7 +49,7 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
     return semantic_tags
 
 
-def read_csv_to_accessor(filepath=None,
+def read_csv(filepath=None,
                          name=None,
                          index=None,
                          time_index=None,
