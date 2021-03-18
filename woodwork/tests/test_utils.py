@@ -161,10 +161,10 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
         'is_registered': ['tag3', 'tag4']
     }
     df_from_csv = ww.read_csv(filepath=filepath,
-                                          index='id',
-                                          time_index='signup_date',
-                                          logical_types=logical_types,
-                                          semantic_tags=semantic_tags)
+                              index='id',
+                              time_index='signup_date',
+                              logical_types=logical_types,
+                              semantic_tags=semantic_tags)
     assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
 
     schema_df = sample_df_pandas.copy()

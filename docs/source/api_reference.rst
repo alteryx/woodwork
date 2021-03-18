@@ -85,7 +85,7 @@ Schema
 Serialization
 =============
 
-.. currentmodule:: woodwork.serialize_accessor
+.. currentmodule:: woodwork.serialize
 .. autosummary::
     :toctree: generated/
     
@@ -97,7 +97,7 @@ Serialization
 Deserialization
 ===============
 
-.. currentmodule:: woodwork.deserialize_accessor
+.. currentmodule:: woodwork.deserialize
 .. autosummary::
     :toctree: generated/
 

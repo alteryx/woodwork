@@ -2,7 +2,7 @@ import warnings
 
 import pandas as pd
 
-import woodwork.serialize_accessor as serialize
+import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
     _get_valid_dtype,
     _is_dataframe,
