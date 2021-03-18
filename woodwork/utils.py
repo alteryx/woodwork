@@ -49,14 +49,14 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
     return semantic_tags
 
 
-def read_csv_to_accessor(filepath=None,
-                         name=None,
-                         index=None,
-                         time_index=None,
-                         semantic_tags=None,
-                         logical_types=None,
-                         use_standard_tags=True,
-                         **kwargs):
+def read_csv(filepath=None,
+             name=None,
+             index=None,
+             time_index=None,
+             semantic_tags=None,
+             logical_types=None,
+             use_standard_tags=True,
+             **kwargs):
     """Read data from the specified CSV file and return a DataFrame with initialized Woodwork typing information.
 
     Args:

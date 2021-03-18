@@ -5,7 +5,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
 from woodwork.exceptions import TypingInfoMismatchWarning
-from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
+from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
 from woodwork.schema_column import (
     _add_semantic_tags,
@@ -98,7 +98,7 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _iLocIndexerAccessor(self._series)
+        return _iLocIndexer(self._series)
 
     @property
     def loc(self):
@@ -127,7 +127,7 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _locIndexerAccessor(self._series)
+        return _locIndexer(self._series)
 
     @property
     def logical_type(self):

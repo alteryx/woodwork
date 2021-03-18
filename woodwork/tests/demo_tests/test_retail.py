@@ -2,7 +2,7 @@ import urllib.request
 
 import pytest
 
-from woodwork.demo import load_retail_to_accessor
+from woodwork.demo import load_retail
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -21,13 +21,13 @@ def set_testing_headers():
     urllib.request.install_opener(opener)
 
 
-def test_load_retail_to_accessor_diff():
+def test_load_retail_diff():
     nrows = 10
-    df = load_retail_to_accessor(nrows=nrows, init_woodwork=False)
+    df = load_retail(nrows=nrows, init_woodwork=False)
     assert df.ww.schema is None
     assert df.shape[0] == nrows
     nrows_second = 11
-    df = load_retail_to_accessor(nrows=nrows_second, init_woodwork=False)
+    df = load_retail(nrows=nrows_second, init_woodwork=False)
     assert df.ww.schema is None
     assert df.shape[0] == nrows_second
 
@@ -35,8 +35,8 @@ def test_load_retail_to_accessor_diff():
     assert df['order_product_id'].is_unique
 
 
-def test_load_retail_to_accessor():
-    df = load_retail_to_accessor(nrows=10, init_woodwork=True)
+def test_load_retail():
+    df = load_retail(nrows=10, init_woodwork=True)
     assert isinstance(df.ww.schema, Schema)
 
     expected_logical_types = {

@@ -7,7 +7,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-class _iLocIndexerAccessor:
+class _iLocIndexer:
     def __init__(self, data):
         self.data = data
         if dd and isinstance(self.data, dd.DataFrame):
@@ -20,7 +20,7 @@ class _iLocIndexerAccessor:
         return _process_selection(selection, self.data)
 
 
-class _locIndexerAccessor:
+class _locIndexer:
     def __init__(self, data):
         self.data = data
 

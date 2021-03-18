@@ -2,7 +2,7 @@ import warnings
 
 import pandas as pd
 
-import woodwork.serialize_accessor as serialize
+import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
     _get_valid_dtype,
     _is_dataframe,
@@ -16,7 +16,7 @@ from woodwork.exceptions import (
     StandardTagsChangedWarning,
     TypingInfoMismatchWarning
 )
-from woodwork.indexers import _iLocIndexerAccessor, _locIndexerAccessor
+from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime
 from woodwork.schema import Schema
 from woodwork.statistics_utils import (
@@ -251,7 +251,7 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _iLocIndexerAccessor(self._dataframe)
+        return _iLocIndexer(self._dataframe)
 
     @property
     def loc(self):
@@ -280,7 +280,7 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _locIndexerAccessor(self._dataframe)
+        return _locIndexer(self._dataframe)
 
     @property
     def schema(self):

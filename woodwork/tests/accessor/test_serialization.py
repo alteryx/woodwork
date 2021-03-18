@@ -5,8 +5,8 @@ import boto3
 import pandas as pd
 import pytest
 
-import woodwork.deserialize_accessor as deserialize
-import woodwork.serialize_accessor as serialize
+import woodwork.deserialize as deserialize
+import woodwork.serialize as serialize
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.logical_types import Ordinal
 from woodwork.tests.testing_utils import to_pandas

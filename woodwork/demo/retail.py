@@ -12,7 +12,7 @@ from woodwork.logical_types import (
 )
 
 
-def load_retail_to_accessor(id='demo_retail_data', nrows=None, init_woodwork=True):
+def load_retail(id='demo_retail_data', nrows=None, init_woodwork=True):
     """Load a demo retail dataset into a DataFrame, optionally initializing Woodwork's typing information.
 
     Args:

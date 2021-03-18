@@ -58,6 +58,7 @@ Release Notes
         * Include DataFrame equality and ``use_standard_tags`` in WoodworkTableAccessor equality check (:pr:`700`)
         * Remove ``DataTable`` and ``DataColumn`` classes to migrate towards the accessor approach (:pr:`713`)
         * Change ``sample_series`` dtype to not need conversion and remove ``convert_series`` util (:pr:`720`)
+        * Rename Accessor methods since ``DataTable`` has been removed (:pr:`723`)
     * Documentation Changes
         * Update README.md and Get Started guide to use accessor (:pr:`655`, :pr:`717`)
         * Update Understanding Types and Tags guide to use accessor (:pr:`657`)
