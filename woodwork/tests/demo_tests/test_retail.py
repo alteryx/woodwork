@@ -21,7 +21,7 @@ def set_testing_headers():
     urllib.request.install_opener(opener)
 
 
-def test_load_retail_to_accessor_diff():
+def test_load_retail_diff():
     nrows = 10
     df = load_retail(nrows=nrows, init_woodwork=False)
     assert df.ww.schema is None
@@ -35,7 +35,7 @@ def test_load_retail_to_accessor_diff():
     assert df['order_product_id'].is_unique
 
 
-def test_load_retail_to_accessor():
+def test_load_retail():
     df = load_retail(nrows=10, init_woodwork=True)
     assert isinstance(df.ww.schema, Schema)
 
