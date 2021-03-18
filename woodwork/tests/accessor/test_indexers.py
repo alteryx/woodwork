@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from woodwork.indexers import _iLocIndexer, _locIndexerAccessor
+from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import (
     Categorical,
     Datetime,
@@ -36,7 +36,7 @@ def test_iLocIndexer_class(sample_df):
 
 def test_locIndexer_class(sample_df):
     sample_df.ww.init()
-    ind = _locIndexerAccessor(sample_df)
+    ind = _locIndexer(sample_df)
     pd.testing.assert_frame_equal(to_pandas(ind.data), to_pandas(sample_df))
     pd.testing.assert_frame_equal(to_pandas(ind[1:2]), to_pandas(sample_df.loc[1:2]))
     single_val = ind[0, 'id']

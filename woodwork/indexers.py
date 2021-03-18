@@ -20,7 +20,7 @@ class _iLocIndexer:
         return _process_selection(selection, self.data)
 
 
-class _locIndexerAccessor:
+class _locIndexer:
     def __init__(self, data):
         self.data = data
 
