@@ -36,11 +36,8 @@ def col_is_datetime(col, datetime_format=None):
 
 
 def _is_numeric_series(series, logical_type):
-    '''
-    Determines whether a series supplied to the DataTable will be considered numeric
-    for the purposes of determining if it can be a time_index.
-
-    '''
+    """Determines whether a series will be considered numeric
+    for the purposes of determining if it can be a time_index."""
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
 
@@ -77,7 +74,7 @@ def list_logical_types():
         [{'name': ltype.__name__,
           'type_string': ltype.type_string,
           'description': ltype.__doc__,
-          'physical_type': ltype.pandas_dtype,
+          'physical_type': ltype.primary_dtype,
           'standard_tags': ltype.standard_tags,
           'is_default_type': ltype in ww.type_system._default_inference_functions,
           'is_registered': ltype in ww.type_system.registered_types,
@@ -125,8 +122,7 @@ def _get_ltype_class(ltype):
 
 
 def _get_specified_ltype_params(ltype):
-    '''
-    Gets a dictionary of a LogicalType's parameters.
+    """Gets a dictionary of a LogicalType's parameters.
 
     Note: If the logical type has not been instantiated, no parameters have
     been specified for the LogicalType, so no parameters will be returned
@@ -137,7 +133,7 @@ def _get_specified_ltype_params(ltype):
 
     Returns:
         dict: The LogicalType's specified parameters.
-    '''
+    """
     if ltype in ww.type_system.registered_types:
         # Do not reveal parameters for an uninstantiated LogicalType
         return {}

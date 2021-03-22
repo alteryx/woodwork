@@ -1,5 +1,4 @@
 
-import inspect
 import os
 import re
 
@@ -19,7 +18,6 @@ from woodwork.logical_types import (
     SubRegionCode,
     ZIPCode
 )
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,
@@ -28,11 +26,13 @@ from woodwork.type_sys.utils import (
 )
 from woodwork.utils import (
     _convert_input_to_set,
-    _get_mode,
+    _get_column_logical_type,
     _is_null_latlong,
     _is_s3,
     _is_url,
-    _new_dt_including,
+    _is_valid_latlong_series,
+    _is_valid_latlong_value,
+    _parse_logical_type,
     _reformat_to_latlong,
     _to_latlong_float,
     camel_to_snake,
@@ -99,10 +99,10 @@ def test_list_logical_types_customized_type_system():
     ww.type_system.remove_type('URL')
 
     class CustomRegistered(ww.logical_types.LogicalType):
-        pandas_dtype = 'int64'
+        primary_dtype = 'int64'
 
     class CustomNotRegistered(ww.logical_types.LogicalType):
-        pandas_dtype = 'int64'
+        primary_dtype = 'int64'
 
     ww.type_system.add_type(CustomRegistered)
     all_ltypes = ww.logical_types.LogicalType.__subclasses__()
@@ -135,37 +135,18 @@ def test_list_semantic_tags():
                 assert name in log_type.standard_tags
 
 
-def test_get_mode():
-    series_list = [
-        pd.Series([1, 2, 3, 4, 2, 2, 3]),
-        pd.Series(['a', 'b', 'b', 'c', 'b']),
-        pd.Series([3, 2, 3, 2]),
-        pd.Series([np.nan, np.nan, np.nan]),
-        pd.Series([pd.NA, pd.NA, pd.NA]),
-        pd.Series([1, 2, np.nan, 2, np.nan, 3, 2]),
-        pd.Series([1, 2, pd.NA, 2, pd.NA, 3, 2])
-    ]
-
-    answer_list = [2, 'b', 2, None, None, 2, 2]
-
-    for series, answer in zip(series_list, answer_list):
-        mode = _get_mode(series)
-        if answer is None:
-            assert mode is None
-        else:
-            assert mode == answer
-
-
 def test_read_csv_no_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
 
-    dt_from_csv = ww.read_csv(filepath=filepath)
-    dt = ww.DataTable(sample_df_pandas)
-    assert isinstance(dt, ww.DataTable)
-    assert dt_from_csv.logical_types == dt.logical_types
-    assert dt_from_csv.semantic_tags == dt.semantic_tags
-    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
+    df_from_csv = ww.read_csv(filepath=filepath)
+    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init()
+
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
 def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
@@ -179,35 +160,37 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
         'age': ['tag1', 'tag2'],
         'is_registered': ['tag3', 'tag4']
     }
-    dt_from_csv = ww.read_csv(filepath=filepath,
+    df_from_csv = ww.read_csv(filepath=filepath,
                               index='id',
                               time_index='signup_date',
                               logical_types=logical_types,
                               semantic_tags=semantic_tags)
-    dt = ww.DataTable(sample_df_pandas,
-                      index='id',
+    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init(index='id',
                       time_index='signup_date',
                       logical_types=logical_types,
                       semantic_tags=semantic_tags)
 
-    assert isinstance(dt, ww.DataTable)
-    assert dt_from_csv.logical_types == dt.logical_types
-    assert dt_from_csv.semantic_tags == dt.semantic_tags
-    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe())
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
 def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
     nrows = 2
-    dt_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
-    dt = ww.DataTable(sample_df_pandas)
 
-    assert isinstance(dt, ww.DataTable)
-    assert dt_from_csv.logical_types == dt.logical_types
-    assert dt_from_csv.semantic_tags == dt.semantic_tags
-    assert len(dt_from_csv.to_dataframe()) == nrows
-    pd.testing.assert_frame_equal(dt_from_csv.to_dataframe(), dt.to_dataframe().head(nrows))
+    df_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
+    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init()
+
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    assert len(df_from_csv) == nrows
+    pd.testing.assert_frame_equal(df_from_csv, schema_df.head(nrows))
 
 
 def test_is_numeric_datetime_series(time_index_df):
@@ -248,43 +231,6 @@ def test_get_ltype_params():
     ymd = '%Y-%m-%d'
     params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
     assert params_value == {'datetime_format': ymd}
-
-
-def test_new_dt_including(sample_df_pandas):
-    # more thorough testing for this exists in indexer testing and new_dt_from_cols testing
-    dt = ww.DataTable(sample_df_pandas)
-    new_dt = _new_dt_including(dt, sample_df_pandas.iloc[:, 1:4])
-    for col in new_dt.columns:
-        assert new_dt.semantic_tags[col] == new_dt.semantic_tags[col]
-        assert new_dt.logical_types[col] == new_dt.logical_types[col]
-
-
-def test_new_dt_including_all_params(sample_df):
-    # The first element is self, so it won't be included in kwargs
-    possible_dt_params = inspect.getfullargspec(ww.DataTable.__init__)[0][1:]
-
-    kwargs = {
-        'dataframe': sample_df.copy(),
-        'name': 'test_dt',
-        'index': 'made_index',
-        'time_index': 'signup_date',
-        'semantic_tags': {'age': 'test_tag'},
-        'logical_types': {'email': 'EmailAddress'},
-        'table_metadata': {'created_by': 'user1'},
-        'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
-        'use_standard_tags': False,
-        'make_index': True,
-        'column_descriptions': {'age': 'this is a description'},
-        'already_sorted': True}
-
-    # Confirm all possible params to DataTable init are present with non-default values where possible
-    assert set(possible_dt_params) == set(kwargs.keys())
-
-    dt = ww.DataTable(**kwargs)
-    copy_dt = _new_dt_including(dt, dt._dataframe.copy())
-
-    assert dt == copy_dt
-    pd.testing.assert_frame_equal(to_pandas(dt._dataframe), to_pandas(copy_dt._dataframe))
 
 
 def test_import_or_raise():
@@ -399,6 +345,64 @@ def test_is_null_latlong():
     assert not _is_null_latlong(False)
 
 
+def test_is_valid_latlong_value():
+    values = [
+        (1.0, 2.0),
+        np.nan,
+        [1.0, 2.0],
+        (np.nan, np.nan),
+        ('a', 2.0),
+        (1.0, 2.0, 3.0),
+        None
+    ]
+
+    expected_values = [
+        True,
+        True,
+        False,
+        False,
+        False,
+        False,
+        False
+    ]
+
+    for index, value in enumerate(values):
+        assert _is_valid_latlong_value(value) is expected_values[index]
+
+
+def test_is_valid_latlong_value_koalas():
+    values = [
+        (1.0, 2.0),
+        np.nan,
+        [1.0, 2.0],
+        (np.nan, np.nan),
+        ('a', 2.0),
+        (1.0, 2.0, 3.0),
+        None
+    ]
+
+    expected_values = [
+        False,
+        True,
+        True,
+        False,
+        False,
+        False,
+        False
+    ]
+
+    for index, value in enumerate(values):
+        assert _is_valid_latlong_value(value, bracket_type=list) is expected_values[index]
+
+
+def test_is_valid_latlong_series():
+    valid_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
+    invalid_series = pd.Series([(1.0, 2.0), (3.0, '4.0')])
+
+    assert _is_valid_latlong_series(valid_series) is True
+    assert _is_valid_latlong_series(invalid_series) is False
+
+
 def test_get_valid_mi_types():
     valid_types = get_valid_mi_types()
     expected_types = [
@@ -414,3 +418,30 @@ def test_get_valid_mi_types():
     ]
 
     assert valid_types == expected_types
+
+
+def test_get_column_logical_type(sample_series):
+    assert _get_column_logical_type(sample_series, None, 'col_name') == Categorical
+
+    assert _get_column_logical_type(sample_series, Datetime, 'col_name') == Datetime
+
+
+def test_parse_logical_type():
+    assert _parse_logical_type('Datetime', 'col_name') == Datetime
+    assert _parse_logical_type(Datetime, 'col_name') == Datetime
+
+    ymd_format = Datetime(datetime_format='%Y-%m-%d')
+    assert _parse_logical_type(ymd_format, 'col_name') == ymd_format
+
+
+def test_parse_logical_type_errors():
+    error = 'Must use an Ordinal instance with order values defined'
+    with pytest.raises(TypeError, match=error):
+        _parse_logical_type('Ordinal', 'col_name')
+
+    with pytest.raises(TypeError, match=error):
+        _parse_logical_type(Ordinal, 'col_name')
+
+    error = "Invalid logical type specified for 'col_name'"
+    with pytest.raises(TypeError, match=error):
+        _parse_logical_type(int, 'col_name')

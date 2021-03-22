@@ -4,14 +4,81 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Implement Schema and Accessor API (:pr:`497`)
+        * Add Schema class that holds typing info (:pr:`499`)
+        * Add WoodworkTableAccessor class that performs type inference and stores Schema (:pr:`514`)
+        * Allow initializing Accessor schema with a valid Schema object (:pr:`522`)
+        * Add ability to read in a csv and create a DataFrame with an initialized Woodwork Schema (:pr:`534`)
+        * Add ability to call pandas methods from Accessor (:pr:`538`, :pr:`589`)
+        * Add helpers for checking if a column is one of Boolean, Datetime, numeric, or categorical (:pr:`553`)
+        * Add ability to load demo retail dataset with a Woodwork Accessor (:pr:`556`)
+        * Add ``select`` to WoodworkTableAccessor (:pr:`548`)
+        * Add ``mutual_information`` to WoodworkTableAccessor (:pr:`571`)
+        * Add WoodworkColumnAccessor class (:pr:`562`)
+        * Add semantic tag update methods to column accessor (:pr:`573`)
+        * Add ``describe`` and ``describe_dict`` to WoodworkTableAccessor (:pr:`579`)
+        * Add ``init_series`` util function for initializing a series with dtype change (:pr:`581`)
+        * Add ``set_logical_type`` method to WoodworkColumnAccessor (:pr:`590`)
+        * Add semantic tag update methods to table schema (:pr:`591`)
+        * Add warning if additional parameters are passed along with schema (:pr:`593`)
+        * Better warning when accessing column properties before init (:pr:`596`)
+        * Update column accessor to work with LatLong columns (:pr:`598`)
+        * Add ``set_index`` to WoodworkTableAccessor (:pr:`603`)
+        * Implement ``loc`` and ``iloc`` for WoodworkColumnAccessor (:pr:`613`)
+        * Add ``set_time_index`` to WoodworkTableAccessor (:pr:`612`)
+        * Implement ``loc`` and ``iloc`` for WoodworkTableAccessor (:pr:`618`)
+        * Allow updating logical types with ``set_types`` and make relevant DataFrame changes (:pr:`619`)
+        * Allow serialization of WoodworkColumnAccessor to csv, pickle, and parquet (:pr:`624`)
+        * Add DaskColumnAccessor (:pr:`625`)
+        * Allow deserialization from csv, pickle, and parquet to Woodwork table (:pr:`626`)
+        * Add ``value_counts`` to WoodworkTableAccessor (:pr:`632`)
+        * Add KoalasColumnAccessor (:pr:`634`)
+        * Add ``pop`` to WoodworkTableAccessor (:pr:`636`)
+        * Add ``drop`` to WoodworkTableAccessor (:pr:`640`)
+        * Add ``rename`` to WoodworkTableAccessor (:pr:`646`)
+        * Add DaskTableAccessor (:pr:`648`)
+        * Add Schema properties to WoodworkTableAccessor (:pr:`651`)
+        * Add KoalasTableAccessor (:pr:`652`)
+        * Adds ``__getitem__`` to WoodworkTableAccessor (:pr:`633`)
+        * Update Koalas min version and add support for more new pandas dtypes with Koalas (:pr:`678`)
+        * Adds ``__setitem__`` to WoodworkTableAccessor (:pr:`669`)
     * Fixes
+        * Create new Schema object when performing pandas operation on Accessors (:pr:`595`)
+        * Fix bug in ``_reset_semantic_tags`` causing columns to share same semantic tags set (:pr:`666`)
+        * Maintain column order in DataFrame and Woodwork repr (:pr:`677`)
     * Changes
+        * Move mutual information logic to statistics utils file (:pr:`584`)
+        * Bump min Koalas version to 1.4.0 (:pr:`638`)
+        * Preserve pandas underlying index when not creating a Woodwork index (:pr:`664`)
+        * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
+        * Clean up dtype usage across Woodwork (:pr:`682`)
+        * Improve error when calling accessor properties or methods before init (:pr:`683`)
+        * Remove dtype from Schema dictionary (:pr:`685`)
+        * Add ``include_index`` param and allow unique columns in Accessor mutual information (:pr:`699`)
+        * Include DataFrame equality and ``use_standard_tags`` in WoodworkTableAccessor equality check (:pr:`700`)
+        * Remove ``DataTable`` and ``DataColumn`` classes to migrate towards the accessor approach (:pr:`713`)
+        * Change ``sample_series`` dtype to not need conversion and remove ``convert_series`` util (:pr:`720`)
+        * Rename Accessor methods since ``DataTable`` has been removed (:pr:`723`)
     * Documentation Changes
+        * Update README.md and Get Started guide to use accessor (:pr:`655`, :pr:`717`)
+        * Update Understanding Types and Tags guide to use accessor (:pr:`657`)
+        * Update docstrings and API Reference page (:pr:`660`)
+        * Update statistical insights guide to use accessor (:pr:`693`)
+        * Update Customizing Type Inference guide to use accessor (:pr:`696`)
+        * Update Dask and Koalas guide to use accessor (:pr:`701`)
+        * Update index notebook and install guide to use accessor (:pr:`715`)
+        * Add section to documentation about schema validity (:pr:`729`)
+        * Update README.md and Get Started guide to use ``pd.read_csv`` (:pr:`730`)
+        * Make small fixes to documentation formatting (:pr:`731`)
     * Testing Changes
+        * Add tests to Accessor/Schema that weren't previously covered (:pr:`712`, :pr:`716`)
         * Update release branch name in notes update check (:pr:`719`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+    * The ``DataTable`` and ``DataColumn`` classes have been removed and replaced by new ``WoodworkTableAccessor`` and ``WoodworkColumnAccessor`` classes which are used through the ``ww`` namespace available on DataFrames after importing Woodwork.
 
 **v0.0.11 March 15, 2021**
     * Changes

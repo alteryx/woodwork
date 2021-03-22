@@ -2,54 +2,107 @@
 API Reference
 =============
 
-DataTable
-=========
+WoodworkTableAccessor
+=====================
 
-.. currentmodule:: woodwork.datatable
+.. currentmodule:: woodwork.table_accessor
 .. autosummary::
     :toctree: generated/
 
-    DataTable
-    DataTable.add_semantic_tags
-    DataTable.describe
-    DataTable.describe_dict
-    DataTable.drop
-    DataTable.head
-    DataTable.iloc
-    DataTable.mutual_information
-    DataTable.mutual_information_dict
-    DataTable.pop
-    DataTable.remove_semantic_tags
-    DataTable.rename
-    DataTable.reset_semantic_tags
-    DataTable.select
-    DataTable.set_index
-    DataTable.set_time_index
-    DataTable.set_types
-    DataTable.shape
-    DataTable.to_csv
-    DataTable.to_dataframe
-    DataTable.to_parquet
-    DataTable.to_pickle
-    DataTable.update_dataframe
-    DataTable.value_counts
+    WoodworkTableAccessor
+    WoodworkTableAccessor.add_semantic_tags
+    WoodworkTableAccessor.describe
+    WoodworkTableAccessor.describe_dict
+    WoodworkTableAccessor.drop
+    WoodworkTableAccessor.iloc
+    WoodworkTableAccessor.index
+    WoodworkTableAccessor.init
+    WoodworkTableAccessor.loc
+    WoodworkTableAccessor.logical_types
+    WoodworkTableAccessor.mutual_information
+    WoodworkTableAccessor.mutual_information_dict
+    WoodworkTableAccessor.physical_types
+    WoodworkTableAccessor.pop
+    WoodworkTableAccessor.remove_semantic_tags
+    WoodworkTableAccessor.rename
+    WoodworkTableAccessor.reset_semantic_tags
+    WoodworkTableAccessor.schema
+    WoodworkTableAccessor.select
+    WoodworkTableAccessor.semantic_tags
+    WoodworkTableAccessor.set_index
+    WoodworkTableAccessor.set_time_index
+    WoodworkTableAccessor.set_types
+    WoodworkTableAccessor.time_index
+    WoodworkTableAccessor.to_csv
+    WoodworkTableAccessor.to_dictionary
+    WoodworkTableAccessor.to_parquet
+    WoodworkTableAccessor.to_pickle
+    WoodworkTableAccessor.types
+    WoodworkTableAccessor.value_counts
 
-DataColumn
-==========
+WoodworkColumnAccessor
+======================
 
-.. currentmodule:: woodwork.datacolumn
+.. currentmodule:: woodwork.column_accessor
 .. autosummary::
     :toctree: generated/
 
-    DataColumn
-    DataColumn.add_semantic_tags
-    DataColumn.iloc
-    DataColumn.remove_semantic_tags
-    DataColumn.reset_semantic_tags
-    DataColumn.set_logical_type
-    DataColumn.set_semantic_tags
-    DataColumn.shape
-    DataColumn.to_series
+    WoodworkColumnAccessor
+    WoodworkColumnAccessor.add_semantic_tags
+    WoodworkColumnAccessor.description
+    WoodworkColumnAccessor.iloc
+    WoodworkColumnAccessor.init
+    WoodworkColumnAccessor.loc
+    WoodworkColumnAccessor.logical_type
+    WoodworkColumnAccessor.metadata
+    WoodworkColumnAccessor.remove_semantic_tags
+    WoodworkColumnAccessor.reset_semantic_tags
+    WoodworkColumnAccessor.semantic_tags
+    WoodworkColumnAccessor.set_logical_type
+    WoodworkColumnAccessor.set_semantic_tags
+
+Schema
+======
+
+.. currentmodule:: woodwork.schema
+.. autosummary::
+    :toctree: generated/
+
+    Schema
+    Schema.add_semantic_tags
+    Schema.index
+    Schema.logical_types
+    Schema.rename
+    Schema.remove_semantic_tags
+    Schema.reset_semantic_tags
+    Schema.semantic_tags
+    Schema.set_index
+    Schema.set_time_index
+    Schema.set_types
+    Schema.time_index
+    Schema.types
+
+Serialization
+=============
+
+.. currentmodule:: woodwork.serialize
+.. autosummary::
+    :toctree: generated/
+    
+    typing_info_to_dict
+    write_dataframe
+    write_typing_info
+    write_woodwork_table
+
+Deserialization
+===============
+
+.. currentmodule:: woodwork.deserialize
+.. autosummary::
+    :toctree: generated/
+
+    read_table_typing_information
+    read_woodwork_table
 
 Logical Types
 =============
@@ -118,6 +171,14 @@ General Utils
 
     get_valid_mi_types
     read_csv
+
+.. currentmodule:: woodwork.accessor_utils
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    init_series
 
 Demo Data
 =========

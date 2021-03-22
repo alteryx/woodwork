@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from woodwork.logical_types import Boolean, Datetime, Integer, NaturalLanguage
 from woodwork.utils import import_or_none
 
 
@@ -27,13 +28,6 @@ def spark_session():
             .getOrCreate()
 
         return spark
-
-
-@pytest.fixture(params=[('sample_df_pandas', 'sample_series_pandas'),
-                        ('sample_df_dask', 'sample_series_dask'),
-                        ('sample_df_koalas', 'sample_series_koalas')])
-def sample_combos(request):
-    return (request.getfixturevalue(request.param[0]), request.getfixturevalue(request.param[1]))
 
 
 @pytest.fixture(params=['sample_df_pandas', 'sample_df_dask', 'sample_df_koalas'])
@@ -103,7 +97,7 @@ def sample_series(request):
 
 @pytest.fixture()
 def sample_series_pandas():
-    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('object')
+    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('category')
 
 
 @pytest.fixture()
@@ -115,7 +109,7 @@ def sample_series_dask(sample_series_pandas):
 @pytest.fixture()
 def sample_series_koalas(sample_series_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(sample_series_pandas)
+    return ks.from_pandas(sample_series_pandas.astype('string'))
 
 
 @pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask', 'sample_datetime_series_koalas'])
@@ -458,6 +452,7 @@ def latlong_df(request):
 @pytest.fixture
 def pandas_latlongs():
     return [
+        pd.Series([(1.0, 2.0), (3.0, 4.0)]),
         pd.Series([('1', '2'), ('3', '4')]),
         pd.Series([['1', '2'], ['3', '4']]),
         pd.Series([(1, 2), (3, 4)]),
@@ -506,3 +501,25 @@ def falsy_names_df_koalas(falsy_names_df_pandas):
 @pytest.fixture(params=['falsy_names_df_pandas', 'falsy_names_df_dask', 'falsy_names_df_koalas'])
 def falsy_names_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def sample_column_names():
+    return ['id',
+            'full_name',
+            'email',
+            'phone_number',
+            'age',
+            'signup_date',
+            'is_registered']
+
+
+@pytest.fixture()
+def sample_inferred_logical_types():
+    return {'id': Integer,
+            'full_name': NaturalLanguage,
+            'email': NaturalLanguage,
+            'phone_number': NaturalLanguage,
+            'age': Integer,
+            'signup_date': Datetime,
+            'is_registered': Boolean}

@@ -10,13 +10,12 @@ import woodwork as ww
 
 
 def import_or_none(library):
-    '''
-    Attemps to import the requested library.
+    """Attempts to import the requested library.
 
     Args:
         library (str): the name of the library
     Returns: the library if it is installed, else None
-    '''
+    """
     try:
         return importlib.import_module(library)
     except ImportError:
@@ -50,14 +49,6 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags'):
     return semantic_tags
 
 
-def _get_mode(series):
-    """Get the mode value for a series"""
-    mode_values = series.mode()
-    if len(mode_values) > 0:
-        return mode_values[0]
-    return None
-
-
 def read_csv(filepath=None,
              name=None,
              index=None,
@@ -66,13 +57,13 @@ def read_csv(filepath=None,
              logical_types=None,
              use_standard_tags=True,
              **kwargs):
-    """Read data from the specified CSV file and return a Woodwork DataTable
+    """Read data from the specified CSV file and return a DataFrame with initialized Woodwork typing information.
 
     Args:
         filepath (str): A valid string path to the file to read
-        name (str, optional): Name used to identify the datatable.
-        index (str, optional): Name of the index column in the dataframe.
-        time_index (str, optional): Name of the time index column in the dataframe.
+        name (str, optional): Name used to identify the DataFrame.
+        index (str, optional): Name of the index column.
+        time_index (str, optional): Name of the time index column.
         semantic_tags (dict, optional): Dictionary mapping column names in the dataframe to the
             semantic tags for the column. The keys in the dictionary should be strings
             that correspond to columns in the underlying dataframe. There are two options for
@@ -91,71 +82,26 @@ def read_csv(filepath=None,
             information on available keywords refer to the pandas documentation.
 
     Returns:
-        woodwork.DataTable: DataTable created from the specified CSV file
+        pd.DataFrame: DataFrame created from the specified CSV file with Woodwork typing information initialized.
     """
     dataframe = pd.read_csv(filepath, **kwargs)
-    return ww.DataTable(dataframe,
-                        name=name,
-                        index=index,
-                        time_index=time_index,
-                        semantic_tags=semantic_tags,
-                        logical_types=logical_types,
-                        use_standard_tags=use_standard_tags)
-
-
-def _new_dt_including(datatable, new_data):
-    '''
-    Creates a new DataTable with specified data and columns
-
-    Args:
-        datatable (DataTable): DataTable with desired information
-
-        new_data (DataFrame): subset of original DataTable
-    Returns:
-        DataTable: New DataTable with attributes from original DataTable but data from new DataTable
-    '''
-    cols = new_data.columns
-
-    new_logical_types = {}
-    new_semantic_tags = {}
-    new_column_descriptions = {}
-    new_column_metadata = {}
-    for col_name, col in datatable.columns.items():
-        if col_name not in cols:
-            continue
-        new_logical_types[col_name] = col.logical_type
-        new_semantic_tags[col_name] = col.semantic_tags
-        new_column_descriptions[col_name] = col.description
-        new_column_metadata[col_name] = col.metadata
-
-    new_index = datatable.index if datatable.index in cols else None
-    new_time_index = datatable.time_index if datatable.time_index in cols else None
-    if new_index is not None:
-        new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
-    if new_time_index is not None:
-        new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
-
-    return ww.DataTable(new_data,
-                        name=datatable.name,
-                        index=new_index,
-                        time_index=new_time_index,
-                        semantic_tags=new_semantic_tags,
-                        logical_types=new_logical_types,
-                        use_standard_tags=datatable.use_standard_tags,
-                        table_metadata=datatable.metadata,
-                        column_metadata=new_column_metadata,
-                        column_descriptions=new_column_descriptions)
+    dataframe.ww.init(name=name,
+                      index=index,
+                      time_index=time_index,
+                      semantic_tags=semantic_tags,
+                      logical_types=logical_types,
+                      use_standard_tags=use_standard_tags)
+    return dataframe
 
 
 def import_or_raise(library, error_msg):
-    '''
-    Attempts to import the requested library.  If the import fails, raises an
+    """Attempts to import the requested library.  If the import fails, raises an
     ImportError with the supplied error message.
 
     Args:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
-    '''
+    """
     try:
         return importlib.import_module(library)
     except ImportError:
@@ -163,24 +109,17 @@ def import_or_raise(library, error_msg):
 
 
 def _is_s3(string):
-    '''
-    Checks if the given string is a s3 path.
-    Returns a boolean.
-    '''
+    """Checks if the given string is a s3 path. Returns a boolean."""
     return "s3://" in string
 
 
 def _is_url(string):
-    '''
-    Checks if the given string is an url path.
-    Returns a boolean.
-    '''
+    """Checks if the given string is an url path. Returns a boolean."""
     return 'http' in string
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values.
-    """
+    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values."""
     if _is_null_latlong(latlong):
         return np.nan
 
@@ -215,9 +154,7 @@ def _reformat_to_latlong(latlong, use_list=False):
 
 
 def _to_latlong_float(val):
-    '''
-    Attempts to convert a value to a float, propogating null values.
-    '''
+    """Attempts to convert a value to a float, propagating null values."""
     if _is_null_latlong(val):
         return np.nan
 
@@ -225,6 +162,37 @@ def _to_latlong_float(val):
         return float(val)
     except (ValueError, TypeError):
         raise ValueError(f'Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {val} cannot be converted to a float.')
+
+
+def _is_valid_latlong_series(series):
+    """Returns True if all elements in the series contain properly formatted LatLong values,
+    otherwise returns False"""
+    dd = import_or_none('dask.dataframe')
+    ks = import_or_none('databricks.koalas')
+    if dd and isinstance(series, dd.Series):
+        series = series.compute()
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+        bracket_type = list
+    else:
+        bracket_type = tuple
+    if series.apply(_is_valid_latlong_value, args=(bracket_type,)).all():
+        return True
+    return False
+
+
+def _is_valid_latlong_value(val, bracket_type=tuple):
+    """Returns True if the value provided is a properly formatted LatLong value for a
+    pandas, Dask or Koalas Series, otherwise returns False."""
+    if isinstance(val, bracket_type) and len(val) == 2:
+        latitude, longitude = val
+        if isinstance(latitude, float) and isinstance(longitude, float):
+            if pd.isnull(latitude) and pd.isnull(longitude):
+                return False
+            return True
+    elif isinstance(val, float) and pd.isnull(val):
+        return True
+    return False
 
 
 def _is_null_latlong(val):
@@ -257,3 +225,22 @@ def get_valid_mi_types():
             valid_types.append(ltype)
 
     return valid_types
+
+
+def _get_column_logical_type(series, logical_type, name):
+    if logical_type:
+        return _parse_logical_type(logical_type, name)
+    else:
+        return ww.type_system.infer_logical_type(series)
+
+
+def _parse_logical_type(logical_type, name):
+    if isinstance(logical_type, str):
+        logical_type = ww.type_system.str_to_logical_type(logical_type)
+    ltype_class = ww.type_sys.utils._get_ltype_class(logical_type)
+    if ltype_class == ww.logical_types.Ordinal and not isinstance(logical_type, ww.logical_types.Ordinal):
+        raise TypeError("Must use an Ordinal instance with order values defined")
+    if ltype_class in ww.type_system.registered_types:
+        return logical_type
+    else:
+        raise TypeError(f"Invalid logical type specified for '{name}'")

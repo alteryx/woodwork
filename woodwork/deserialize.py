@@ -9,45 +9,44 @@ from pathlib import Path
 import pandas as pd
 
 import woodwork as ww
-from woodwork import DataTable
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
-def read_table_description(path):
-    '''Read DataTable description from disk, S3 path, or URL.
+def read_table_typing_information(path):
+    """Read Woodwork typing information from disk, S3 path, or URL.
 
         Args:
-            path (str): Location on disk, S3 path, or URL to read `table_description.json`.
+            path (str): Location on disk, S3 path, or URL to read `woodwork_typing_info.json`.
 
         Returns:
-            description (dict) : Description for :class:`.Datatable`.
-    '''
+            dict: Woodwork typing information dictionary
+    """
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
-    file = os.path.join(path, 'table_description.json')
+    file = os.path.join(path, 'woodwork_typing_info.json')
     with open(file, 'r') as file:
-        description = json.load(file)
-    description['path'] = path
-    return description
+        typing_info = json.load(file)
+    typing_info['path'] = path
+    return typing_info
 
 
-def description_to_datatable(table_description, **kwargs):
-    '''Deserialize DataTable from table description.
+def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
+    """Deserialize Woodwork table from table description.
 
     Args:
-        table_description (dict) : Description of a :class:`.DataTable`. Likely generated using :meth:`.serialize.datatable_to_description`
+        table_typing_info (dict) : Woodwork typing information. Likely generated using :meth:`.serialize.typing_info_to_dict`
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
-        datatable (woodwork.DataTable) : Instance of :class:`.DataTable`.
-    '''
-    _check_schema_version(table_description['schema_version'])
+        DataFrame: DataFrame with Woodwork typing information initialized.
+    """
+    _check_schema_version(table_typing_info['schema_version'])
 
-    path = table_description['path']
-    loading_info = table_description['loading_info']
+    path = table_typing_info['path']
+    loading_info = table_typing_info['loading_info']
 
     file = os.path.join(path, loading_info['location'])
 
@@ -60,7 +59,7 @@ def description_to_datatable(table_description, **kwargs):
     compression = kwargs['compression']
     if table_type == 'dask':
         DASK_ERR_MSG = (
-            'Cannot load Dask DataTable - unable to import Dask.\n\n'
+            'Cannot load Dask DataFrame - unable to import Dask.\n\n'
             'Please install with pip or conda:\n\n'
             'python -m pip install "woodwork[dask]"\n\n'
             'conda install dask'
@@ -68,7 +67,7 @@ def description_to_datatable(table_description, **kwargs):
         lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
     elif table_type == 'koalas':
         KOALAS_ERR_MSG = (
-            'Cannot load Koalas DataTable - unable to import Koalas.\n\n'
+            'Cannot load Koalas DataFrame - unable to import Koalas.\n\n'
             'Please install with pip or conda:\n\n'
             'python -m pip install "woodwork[koalas]"\n\n'
             'conda install koalas\n\n'
@@ -95,7 +94,7 @@ def description_to_datatable(table_description, **kwargs):
     semantic_tags = {}
     column_descriptions = {}
     column_metadata = {}
-    for col in table_description['column_metadata']:
+    for col in table_typing_info['column_typing_info']:
         col_name = col['name']
 
         ltype_metadata = col['logical_type']
@@ -113,27 +112,32 @@ def description_to_datatable(table_description, **kwargs):
         column_descriptions[col_name] = col['description']
         column_metadata[col_name] = col['metadata']
 
-    return DataTable(dataframe,
-                     name=table_description.get('name'),
-                     index=table_description.get('index'),
-                     time_index=table_description.get('time_index'),
-                     logical_types=logical_types,
-                     semantic_tags=semantic_tags,
-                     use_standard_tags=False,
-                     table_metadata=table_description.get('table_metadata'),
-                     column_metadata=column_metadata,
-                     column_descriptions=column_descriptions)
+    dataframe.ww.init(
+        name=table_typing_info.get('name'),
+        index=table_typing_info.get('index'),
+        time_index=table_typing_info.get('time_index'),
+        logical_types=logical_types,
+        semantic_tags=semantic_tags,
+        use_standard_tags=table_typing_info.get('use_standard_tags'),
+        table_metadata=table_typing_info.get('table_metadata'),
+        column_metadata=column_metadata,
+        column_descriptions=column_descriptions)
+
+    return dataframe
 
 
-def read_datatable(path, profile_name=None, **kwargs):
-    '''Read DataTable from disk, S3 path, or URL.
+def read_woodwork_table(path, profile_name=None, **kwargs):
+    """Read Woodwork table from disk, S3 path, or URL.
 
         Args:
-            path (str): Directory on disk, S3 path, or URL to read `table_description.json`.
+            path (str): Directory on disk, S3 path, or URL to read `woodwork_typing_info.json`.
             profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
-    '''
+
+        Returns:
+            DataFrame: DataFrame with Woodwork typing information initialized.
+    """
     if _is_url(path) or _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name
@@ -147,17 +151,16 @@ def read_datatable(path, profile_name=None, **kwargs):
             with tarfile.open(str(file_path)) as tar:
                 tar.extractall(path=tmpdir)
 
-            table_description = read_table_description(tmpdir)
-            return description_to_datatable(table_description, **kwargs)
+            table_typing_info = read_table_typing_information(tmpdir)
+            return _typing_information_to_woodwork_table(table_typing_info, **kwargs)
     else:
-        table_description = read_table_description(path)
-        return description_to_datatable(table_description, **kwargs)
+        table_typing_info = read_table_typing_information(path)
+        return _typing_information_to_woodwork_table(table_typing_info, **kwargs)
 
 
 def _check_schema_version(saved_version_str):
-    '''Warns users if the schema used to save their data is greater than the latest
-    supported schema or if it is an outdated schema that is no longer supported.
-    '''
+    """Warns users if the schema used to save their data is greater than the latest
+    supported schema or if it is an outdated schema that is no longer supported."""
     saved = saved_version_str.split('.')
     current = SCHEMA_VERSION.split('.')
 
