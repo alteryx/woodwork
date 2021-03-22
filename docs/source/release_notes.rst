@@ -68,6 +68,7 @@ Release Notes
         * Update Dask and Koalas guide to use accessor (:pr:`701`)
         * Update index notebook and install guide to use accessor (:pr:`715`)
         * Add section to documentation about schema validity (:pr:`729`)
+        * Update README.md and Get Started guide to use ``pd.read_csv`` (:pr:`730`)
     * Testing Changes
         * Add tests to Accessor/Schema that weren't previously covered (:pr:`712`, :pr:`716`)
         * Update release branch name in notes update check (:pr:`719`)
