@@ -11,7 +11,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-**v0.0.11 March 22, 2021**
+**v0.1.0 March 22, 2021**
     * Enhancements
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
