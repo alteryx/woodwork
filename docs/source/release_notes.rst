@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.1.0 March 22, 2021**
     * Enhancements
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
@@ -75,7 +84,7 @@ Release Notes
         * Update release branch name in notes update check (:pr:`719`)
 
     Thanks to the following people for contributing to this release:
-    :user:`johnbridstrup`, :user:`jeff-hernandez`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``DataTable`` and ``DataColumn`` classes have been removed and replaced by new ``WoodworkTableAccessor`` and ``WoodworkColumnAccessor`` classes which are used through the ``ww`` namespace available on DataFrames after importing Woodwork.
