@@ -43,10 +43,11 @@ conda install -c conda-forge woodwork
 Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for four of the columns.
 
 ```python
+import pandas as pd
 import woodwork as ww
 
-df = ww.demo.load_retail(nrows=100, init_woodwork=False)
-df.ww.init(name='retail', index='order_product_id')
+df = pd.read_csv("https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv")
+df.ww.init(name='retail', make_index=True, index='order_product_id')
 df.ww.set_types(logical_types={
     'quantity': 'Integer',
     'customer_name': 'FullName',
