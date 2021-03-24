@@ -62,13 +62,19 @@ def test_convert_input_to_set():
     with pytest.raises(TypeError, match=error_message):
         _convert_input_to_set(int)
 
+    assert _convert_input_to_set(int, validate=False) == int
+
     error_message = "test_text must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         _convert_input_to_set({'index': {}, 'time_index': {}}, 'test_text')
 
+    assert _convert_input_to_set({'index': {}, 'time_index': {}}, 'test_text', validate=False) == {'index': {}, 'time_index': {}}
+
     error_message = "include parameter must contain only strings"
     with pytest.raises(TypeError, match=error_message):
         _convert_input_to_set(['index', 1], 'include parameter')
+
+    assert _convert_input_to_set(['index', 1], 'include parameter', validate=False) == {'index', 1}
 
     semantic_tags_from_single = _convert_input_to_set('index', 'include parameter')
     assert semantic_tags_from_single == {'index'}

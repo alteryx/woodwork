@@ -52,6 +52,7 @@ class WoodworkTableAccessor:
              make_index=False,
              already_sorted=False,
              schema=None,
+             validate=True,
              **kwargs):
         """Initializes Woodwork typing information for a DataFrame.
 
@@ -88,8 +89,12 @@ class WoodworkTableAccessor:
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between DataFrames.
+            validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
+                Should only be False when confident that parameters and data are valid since any resulting errors may
+                not be easily understood.
         """
-        _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
+        if validate:
+            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
         if schema is not None:
             self._schema = schema
             extra_params = []
@@ -132,7 +137,9 @@ class WoodworkTableAccessor:
             self._schema = Schema(column_names=column_names,
                                   logical_types=parsed_logical_types,
                                   index=index,
-                                  time_index=time_index, **kwargs)
+                                  time_index=time_index,
+                                  validate=validate,
+                                  **kwargs)
 
             self._set_underlying_index()
             if self._schema.time_index is not None:

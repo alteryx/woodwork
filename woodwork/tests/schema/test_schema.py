@@ -307,7 +307,8 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
         'table_metadata': {'created_by': 'user1'},
         'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
         'use_standard_tags': False,
-        'column_descriptions': {'age': 'this is a description'}
+        'column_descriptions': {'age': 'this is a description'},
+        'validate': True
     }
 
     # Confirm all possible params to Schema init are present with non-default values where possible
@@ -885,3 +886,44 @@ def test_schema_rename_indices(sample_column_names, sample_inferred_logical_type
 
     assert renamed_schema.index == 'renamed_index'
     assert renamed_schema.time_index == 'renamed_time_index'
+
+
+def test_no_schema_validation_set_indices_valid_input(sample_column_names, sample_inferred_logical_types):
+    validation_schema = Schema(sample_column_names, sample_inferred_logical_types)
+    no_validation_schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    validation_schema.set_index('id', validate=True)
+    no_validation_schema.set_index('id', validate=False)
+    assert validation_schema == no_validation_schema
+
+    validation_schema.set_time_index('signup_date', validate=True)
+    no_validation_schema.set_time_index('signup_date', validate=False)
+    assert validation_schema == no_validation_schema
+
+
+def test_no_schema_validation_set_indices_invalid_input(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    error = "Specified index column `test_col` not found in Schema."
+    with pytest.raises(LookupError, match=error):
+        schema.set_index('test_col', validate=True)
+
+    error = "'test_col'"
+    with pytest.raises(KeyError, match=error):
+        schema.set_index('test_col', validate=False)
+
+    error = re.escape("Specified time index column `test_col` not found in Schema")
+    with pytest.raises(LookupError, match=error):
+        schema.set_time_index('test_col', validate=True)
+
+    error = "'test_col'"
+    with pytest.raises(KeyError, match=error):
+        schema.set_time_index('test_col', validate=False)
+
+    error = "Time index column must be a Datetime or numeric column."
+    with pytest.raises(TypeError, match=error):
+        schema.set_time_index('is_registered', validate=True)
+
+    # Will go ahead and set the index with wrong logical type without validation
+    schema.set_time_index('is_registered', validate=False)
+    assert schema.time_index == 'is_registered'

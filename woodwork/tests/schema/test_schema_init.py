@@ -355,3 +355,27 @@ def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_l
     schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
     for name, column in schema.columns.items():
         assert column['metadata'] == (column_metadata.get(name) or {})
+
+
+def test_no_schema_validation_valid_input(sample_column_names, sample_inferred_logical_types):
+    column_metadata = {
+        'age': {'interesting_values': [33]},
+        'signup_date': {'description': 'date of account creation'}
+    }
+    validated_schema = Schema(sample_column_names, sample_inferred_logical_types,
+                              column_metadata=column_metadata, index='signup_date', validate=True)
+    not_validated_schema = Schema(sample_column_names, sample_inferred_logical_types,
+                                  column_metadata=column_metadata, index='signup_date', validate=False)
+
+    assert validated_schema == not_validated_schema
+
+
+def test_no_schema_validation_invalid_input(sample_column_names, sample_inferred_logical_types):
+    error = 'semantic_tags for id must be a string, set or list'
+    with pytest.raises(TypeError, match=error):
+        Schema(sample_column_names, sample_inferred_logical_types,
+               semantic_tags={'id': 4}, validate=True)
+    error = "'int' object has no attribute 'union'"
+    with pytest.raises(AttributeError, match=error):
+        Schema(sample_column_names, sample_inferred_logical_types,
+               semantic_tags={'id': 4}, validate=False)
