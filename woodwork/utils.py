@@ -34,7 +34,6 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags', validat
     if not semantic_tags:
         return set()
 
-# --> this and check below need to be their own functions in order to properly mock
     if validate and type(semantic_tags) not in [list, set, str]:
         raise TypeError(f"{error_language} must be a string, set or list")
 
