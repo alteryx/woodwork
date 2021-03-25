@@ -23,12 +23,12 @@ from woodwork.logical_types import (
     Double,
     EmailAddress,
     Filepath,
-    PersonFullName,
     Integer,
     IPAddress,
     LatLong,
     NaturalLanguage,
     Ordinal,
+    PersonFullName,
     PhoneNumber,
     SubRegionCode,
     ZIPCode
@@ -1354,7 +1354,7 @@ def test_select_ltypes_strings(sample_df):
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
 
-    df_single_ltype = schema_df.ww.select('full_name')
+    df_single_ltype = schema_df.ww.select('person_full_name')
     assert set(df_single_ltype.columns) == {'full_name'}
 
 
@@ -1476,7 +1476,7 @@ def test_select_single_inputs(sample_df):
                           'signup_date': 'date_of_birth'
                       })
 
-    df_ltype_string = schema_df.ww.select('full_name')
+    df_ltype_string = schema_df.ww.select('person_full_name')
     assert len(df_ltype_string.columns) == 1
     assert 'full_name' in df_ltype_string.columns
 

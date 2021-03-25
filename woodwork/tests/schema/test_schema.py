@@ -12,9 +12,9 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     EmailAddress,
-    PersonFullName,
     Integer,
     NaturalLanguage,
+    PersonFullName,
     PhoneNumber
 )
 from woodwork.schema import Schema
@@ -266,12 +266,12 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
 
     schema = Schema(sample_column_names,
                     {**sample_inferred_logical_types, 'full_name': Categorical, 'age': PersonFullName},
-                    semantic_tags={'id': 'full_name'})
+                    semantic_tags={'id': 'person_full_name'})
 
-    filter_tag_and_ltype = schema._filter_cols(include='full_name')
+    filter_tag_and_ltype = schema._filter_cols(include='person_full_name')
     assert set(filter_tag_and_ltype) == {'id', 'age'}
 
-    filter_all_three = schema._filter_cols(include='full_name', col_names=True)
+    filter_all_three = schema._filter_cols(include=['person_full_name', 'full_name'], col_names=True)
     assert set(filter_all_three) == {'id', 'age', 'full_name'}
 
 
