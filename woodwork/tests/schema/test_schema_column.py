@@ -57,6 +57,31 @@ def test_validate_metadata_errors():
         _validate_metadata(int)
 
 
+def test_no_validation_valid_input():
+    validated_column = _get_column_dict('ints', Integer, validate=True,
+                                        description='this is a description',
+                                        metadata={'user': 'person1'})
+    not_validated_column = _get_column_dict('ints', Integer, validate=False,
+                                            description='this is a description',
+                                            metadata={'user': 'person1'})
+
+    assert validated_column == not_validated_column
+
+
+def test_no_validation_invalid_input():
+    error = "logical_type logical_type is not a registered LogicalType."
+    with pytest.raises(TypeError, match=error):
+        _get_column_dict('ints', 'logical_type', validate=True,
+                         description='this is a description',
+                         metadata={'user': 'person1'})
+
+    error = "'str' object has no attribute 'standard_tags'"
+    with pytest.raises(AttributeError, match=error):
+        _get_column_dict('ints', 'logical_type', validate=False,
+                         description='this is a description',
+                         metadata={'user': 'person1'})
+
+
 def test_get_column_dict():
     column = _get_column_dict('column', Integer, semantic_tags='test_tag')
 
