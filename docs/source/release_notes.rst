@@ -2,14 +2,19 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
+        * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
+**Breaking Changes**
+    * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
 
 **v0.1.0 March 22, 2021**
     * Enhancements
