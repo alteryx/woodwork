@@ -1,6 +1,7 @@
 import re
 
 import pytest
+from mock import patch
 
 import woodwork as ww
 from woodwork.logical_types import (
@@ -57,29 +58,30 @@ def test_validate_metadata_errors():
         _validate_metadata(int)
 
 
-def test_no_validation_valid_input():
-    validated_column = _get_column_dict('ints', Integer, validate=True,
-                                        description='this is a description',
-                                        metadata={'user': 'person1'})
-    not_validated_column = _get_column_dict('ints', Integer, validate=False,
-                                            description='this is a description',
-                                            metadata={'user': 'person1'})
+@patch("woodwork.schema_column._validate_metadata")
+@patch("woodwork.schema_column._validate_description")
+@patch("woodwork.schema_column._validate_logical_type")
+def test_validation_methods_called(mock_validate_logical_type, mock_validate_description, mock_validate_metadata,
+                                   sample_column_names, sample_inferred_logical_types):
+    assert not mock_validate_logical_type.called
+    assert not mock_validate_description.called
+    assert not mock_validate_metadata.called
+
+    not_validated_column = _get_column_dict('not_validated', logical_type=Integer,
+                                            description='this is a description', metadata={'user': 'person1'},
+                                            validate=False)
+    assert not mock_validate_logical_type.called
+    assert not mock_validate_description.called
+    assert not mock_validate_metadata.called
+
+    validated_column = _get_column_dict('not_validated', logical_type=Integer,
+                                        description='this is a description', metadata={'user': 'person1'},
+                                        validate=True)
+    assert mock_validate_logical_type.called
+    assert mock_validate_description.called
+    assert mock_validate_metadata.called
 
     assert validated_column == not_validated_column
-
-
-def test_no_validation_invalid_input():
-    error = "logical_type logical_type is not a registered LogicalType."
-    with pytest.raises(TypeError, match=error):
-        _get_column_dict('ints', 'logical_type', validate=True,
-                         description='this is a description',
-                         metadata={'user': 'person1'})
-
-    error = "'str' object has no attribute 'standard_tags'"
-    with pytest.raises(AttributeError, match=error):
-        _get_column_dict('ints', 'logical_type', validate=False,
-                         description='this is a description',
-                         metadata={'user': 'person1'})
 
 
 def test_get_column_dict():

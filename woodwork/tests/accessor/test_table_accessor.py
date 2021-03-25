@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from mock import patch
+
 import woodwork as ww
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
@@ -2227,24 +2229,19 @@ def test_numeric_column_names(sample_df):
     assert numeric_cols_df.ww.semantic_tags[0] == {'index'}
 
 
-def test_no_validation_valid_inputs(sample_df):
-    validated_df = sample_df.copy()
-    validated_df.ww.init(validate=True, index='id', logical_types={'age': 'Double'})
+@patch("woodwork.table_accessor._validate_accessor_params")
+def test_validation_methods_called(mock_validate_accessor_params, sample_df):
+    assert not mock_validate_accessor_params.called
 
     not_validated_df = sample_df.copy()
     not_validated_df.ww.init(validate=False, index='id', logical_types={'age': 'Double'})
 
+    assert not mock_validate_accessor_params.called
+
+    validated_df = sample_df.copy()
+    validated_df.ww.init(validate=True, index='id', logical_types={'age': 'Double'})
+
+    assert mock_validate_accessor_params.called
+
     assert validated_df.ww == not_validated_df.ww
     pd.testing.assert_frame_equal(to_pandas(validated_df), to_pandas(not_validated_df))
-
-
-def test_no_validation_invalid_inputs(sample_df):
-    validated_df = sample_df.copy()
-    error_message = 'Specified time index column `foo` not found in dataframe'
-    with pytest.raises(LookupError, match=error_message):
-        validated_df.ww.init(validate=True, index='id', time_index='foo')
-
-    not_validated_df = sample_df.copy()
-    error_message = 'foo'
-    with pytest.raises(KeyError, match=error_message):
-        not_validated_df.ww.init(validate=False, index='id', time_index='foo')

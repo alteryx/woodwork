@@ -65,7 +65,8 @@ def _validate_metadata(column_metadata):
 
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}', validate=validate)
+    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}',
+                                          validate=validate)
 
     if use_standard_tags:
         semantic_tags = semantic_tags.union(logical_type.standard_tags)
