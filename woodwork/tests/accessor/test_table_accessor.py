@@ -23,7 +23,7 @@ from woodwork.logical_types import (
     Double,
     EmailAddress,
     Filepath,
-    FullName,
+    PersonFullName,
     Integer,
     IPAddress,
     LatLong,
@@ -667,7 +667,7 @@ def test_sets_string_dtype_on_init():
 
     logical_types = [
         Filepath,
-        FullName,
+        PersonFullName,
         IPAddress,
         NaturalLanguage,
         PhoneNumber,
@@ -1085,7 +1085,7 @@ def test_accessor_with_falsy_column_names(falsy_names_df):
 
 def test_get_invalid_schema_message(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
+    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'PersonFullName'})
     schema = schema_df.ww.schema
 
     assert _get_invalid_schema_message(schema_df, schema) is None
@@ -1131,7 +1131,7 @@ def test_get_invalid_schema_message_index_checks(sample_df):
         pytest.xfail('Index validation not performed for Dask or Koalas DataFrames')
 
     schema_df = sample_df.copy()
-    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'FullName'})
+    schema_df.ww.init(name='test_schema', index='id', logical_types={'id': 'Double', 'full_name': 'PersonFullName'})
     schema = schema_df.ww.schema
 
     different_underlying_index_df = schema_df.copy()
@@ -1274,7 +1274,7 @@ def test_get_subset_df_with_schema(sample_df):
     schema_df.ww.init(time_index='signup_date',
                       index='id',
                       name='df_name',
-                      logical_types={'full_name': FullName,
+                      logical_types={'full_name': PersonFullName,
                                      'email': EmailAddress,
                                      'phone_number': PhoneNumber,
                                      'age': Double,
@@ -1323,7 +1323,7 @@ def test_get_subset_df_use_dataframe_order(sample_df):
 
 def test_select_ltypes_no_match_and_all(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': FullName,
+    schema_df.ww.init(logical_types={'full_name': PersonFullName,
                                      'email': EmailAddress,
                                      'phone_number': PhoneNumber,
                                      'age': Double,
@@ -1342,14 +1342,14 @@ def test_select_ltypes_no_match_and_all(sample_df):
 
 def test_select_ltypes_strings(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': FullName,
+    schema_df.ww.init(logical_types={'full_name': PersonFullName,
                                      'email': EmailAddress,
                                      'phone_number': PhoneNumber,
                                      'age': Double,
                                      'signup_date': Datetime,
                                      })
 
-    df_multiple_ltypes = schema_df.ww.select(['FullName', 'email_address', 'double', 'Boolean', 'datetime'])
+    df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'Boolean', 'datetime'])
     assert len(df_multiple_ltypes.columns) == 5
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
@@ -1360,32 +1360,32 @@ def test_select_ltypes_strings(sample_df):
 
 def test_select_ltypes_objects(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': FullName,
+    schema_df.ww.init(logical_types={'full_name': PersonFullName,
                                      'email': EmailAddress,
                                      'phone_number': PhoneNumber,
                                      'age': Double,
                                      'signup_date': Datetime,
                                      })
 
-    df_multiple_ltypes = schema_df.ww.select([FullName, EmailAddress, Double, Boolean, Datetime])
+    df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, Boolean, Datetime])
     assert len(df_multiple_ltypes.columns) == 5
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
 
-    df_single_ltype = schema_df.ww.select(FullName)
+    df_single_ltype = schema_df.ww.select(PersonFullName)
     assert len(df_single_ltype.columns) == 1
 
 
 def test_select_ltypes_mixed(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': FullName,
+    schema_df.ww.init(logical_types={'full_name': PersonFullName,
                                      'email': EmailAddress,
                                      'phone_number': PhoneNumber,
                                      'age': Double,
                                      'signup_date': Datetime,
                                      })
 
-    df_mixed_ltypes = schema_df.ww.select(['FullName', 'email_address', Double])
+    df_mixed_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', Double])
     assert len(df_mixed_ltypes.columns) == 3
     assert 'phone_number' not in df_mixed_ltypes.columns
 
@@ -1395,7 +1395,7 @@ def test_select_ltypes_table(sample_df):
     schema_df.ww.init(name='testing',
                       index='id',
                       time_index='signup_date',
-                      logical_types={'full_name': FullName,
+                      logical_types={'full_name': PersonFullName,
                                      'email': EmailAddress,
                                      'phone_number': PhoneNumber,
                                      'age': Double,
@@ -1413,7 +1413,7 @@ def test_select_ltypes_table(sample_df):
     assert df_with_indices.ww.index == 'id'
     assert df_with_indices.ww.time_index == 'signup_date'
 
-    df_values = schema_df.ww.select(['FullName'])
+    df_values = schema_df.ww.select(['PersonFullName'])
     assert df_values.ww.name == schema_df.ww.name
     assert df_values.ww.columns['full_name'] == schema_df.ww.columns['full_name']
 
@@ -1465,7 +1465,7 @@ def test_select_single_inputs(sample_df):
                       index='id',
                       name='df_name',
                       logical_types={
-                          'full_name': FullName,
+                          'full_name': PersonFullName,
                           'email': EmailAddress,
                           'phone_number': PhoneNumber,
                           'signup_date': Datetime(datetime_format='%Y-%m-%d')
@@ -1500,7 +1500,7 @@ def test_select_list_inputs(sample_df):
                       index='id',
                       name='df_name',
                       logical_types={
-                          'full_name': FullName,
+                          'full_name': PersonFullName,
                           'email': EmailAddress,
                           'phone_number': PhoneNumber,
                           'signup_date': Datetime(datetime_format='%Y-%m-%d'),
@@ -1513,14 +1513,14 @@ def test_select_list_inputs(sample_df):
                           'is_registered': 'category'
                       })
 
-    df_just_strings = schema_df.ww.select(['FullName', 'index', 'tag2', 'boolean'])
+    df_just_strings = schema_df.ww.select(['PersonFullName', 'index', 'tag2', 'boolean'])
     assert len(df_just_strings.columns) == 4
     assert 'id' in df_just_strings.columns
     assert 'full_name' in df_just_strings.columns
     assert 'email' in df_just_strings.columns
     assert 'is_registered' in df_just_strings.columns
 
-    df_mixed_selectors = schema_df.ww.select([FullName, 'index', 'time_index', Integer])
+    df_mixed_selectors = schema_df.ww.select([PersonFullName, 'index', 'time_index', Integer])
     assert len(df_mixed_selectors.columns) == 4
     assert 'id' in df_mixed_selectors.columns
     assert 'full_name' in df_mixed_selectors.columns
@@ -1540,7 +1540,7 @@ def test_select_semantic_tags_no_match(sample_df):
                       index='id',
                       name='df_name',
                       logical_types={
-                          'full_name': FullName,
+                          'full_name': PersonFullName,
                           'email': EmailAddress,
                           'phone_number': PhoneNumber,
                           'signup_date': Datetime(datetime_format='%Y-%m-%d'),
@@ -1566,7 +1566,7 @@ def test_select_repetitive(sample_df):
                       index='id',
                       name='df_name',
                       logical_types={
-                          'full_name': FullName,
+                          'full_name': PersonFullName,
                           'email': EmailAddress,
                           'phone_number': PhoneNumber,
                           'signup_date': Datetime(datetime_format='%Y-%m-%d'),

@@ -156,7 +156,7 @@ class Filepath(LogicalType):
     primary_dtype = 'string'
 
 
-class FullName(LogicalType):
+class PersonFullName(LogicalType):
     """Represents Logical Types that may contain first, middle and last names,
     including honorifics and suffixes.
 

@@ -8,7 +8,7 @@ from woodwork.logical_types import (
     CountryCode,
     Datetime,
     Double,
-    FullName,
+    PersonFullName,
     Integer,
     LogicalType,
     NaturalLanguage,
@@ -306,8 +306,8 @@ def test_str_to_logical_type():
         assert ww.type_system.str_to_logical_type(logical_type.type_string) == logical_type
 
     assert ww.type_system.str_to_logical_type('bOoLeAn') == Boolean
-    assert ww.type_system.str_to_logical_type('full_NAME') == FullName
-    assert ww.type_system.str_to_logical_type('FullnamE') == FullName
+    assert ww.type_system.str_to_logical_type('full_NAME') == PersonFullName
+    assert ww.type_system.str_to_logical_type('FullnamE') == PersonFullName
 
     ymd = '%Y-%m-%d'
     datetime_with_format = ww.type_system.str_to_logical_type('datetime', params={'datetime_format': ymd})
@@ -321,7 +321,7 @@ def test_str_to_logical_type():
     assert datetime_no_format == Datetime()
 
     # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated
-    assert ww.type_system.str_to_logical_type('full_NAME', params={}) == FullName
+    assert ww.type_system.str_to_logical_type('full_NAME', params={}) == PersonFullName
     assert datetime_no_format != Datetime
 
     # Input a different type system
