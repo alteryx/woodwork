@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
+        * Renamed logical type ``FullName`` to ``PersonFullName`` (:pr:`740`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
 
 **v0.1.0 March 22, 2021**
     * Enhancements
