@@ -15,8 +15,8 @@ from woodwork.logical_types import (
     Double,
     Integer,
     Ordinal,
-    SubRegionCode,
-    ZIPCode
+    PostalCode,
+    SubRegionCode
 )
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -47,7 +47,7 @@ ks = import_or_none('databricks.koalas')
 
 def test_camel_to_snake():
     test_items = {
-        'ZIPCode': 'zip_code',
+        'PostalCode': 'postal_code',
         'SubRegionCode': 'sub_region_code',
         'NaturalLanguage': 'natural_language',
         'Categorical': 'categorical',
@@ -109,8 +109,8 @@ def test_list_logical_types_customized_type_system():
     df = list_logical_types()
     assert len(all_ltypes) == len(df)
     # Check that URL is unregistered
-    assert df.loc[18, 'is_default_type']
-    assert not df.loc[18, 'is_registered']
+    assert df.loc[19, 'is_default_type']
+    assert not df.loc[19, 'is_registered']
 
     # Check that new registered type is present and shows as registered
     assert 'CustomRegistered' in df['name'].values
@@ -413,8 +413,8 @@ def test_get_valid_mi_types():
         Double,
         Integer,
         Ordinal,
+        PostalCode,
         SubRegionCode,
-        ZIPCode,
     ]
 
     assert valid_types == expected_types

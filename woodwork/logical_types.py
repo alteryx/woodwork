@@ -313,17 +313,16 @@ class URL(LogicalType):
     primary_dtype = 'string'
 
 
-class ZIPCode(LogicalType):
-    """Represents Logical Types that contain a series of postal codes used by
-    the US Postal Service for representing a group of addresses.
-    Has 'category' as a standard tag.
+class PostalCode(LogicalType):
+    """Represents Logical Types that contain a series of postal codes for
+    representing a group of addresses. Has 'category' as a standard tag.
 
     Examples:
         .. code-block:: python
 
             ["90210"
              "60018-0123",
-             "10021"]
+             "SW1A"]
     """
     primary_dtype = 'category'
     backup_dtype = 'string'
