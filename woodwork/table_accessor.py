@@ -90,8 +90,8 @@ class WoodworkTableAccessor:
                 initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between DataFrames.
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
-                Should only be False when confident that parameters and data are valid since any resulting errors may
-                not be easily understood.
+                Should be set to False only when parameters and data are known to be valid.
+                Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
             _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
