@@ -34,8 +34,8 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags', validat
     if not semantic_tags:
         return set()
 
-    if validate and type(semantic_tags) not in [list, set, str]:
-        raise TypeError(f"{error_language} must be a string, set or list")
+    if validate:
+        _validate_tags_input(semantic_tags, error_language)
 
     if isinstance(semantic_tags, str):
         return {semantic_tags}
@@ -43,10 +43,20 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags', validat
     if isinstance(semantic_tags, list):
         semantic_tags = set(semantic_tags)
 
-    if validate and not all([isinstance(tag, str) for tag in semantic_tags]):
-        raise TypeError(f"{error_language} must contain only strings")
+    if validate:
+        _validate_string_tags(semantic_tags, error_language)
 
     return semantic_tags
+
+
+def _validate_tags_input(semantic_tags, error_language):
+    if type(semantic_tags) not in [list, set, str]:
+        raise TypeError(f"{error_language} must be a string, set or list")
+
+
+def _validate_string_tags(semantic_tags, error_language):
+    if not all([isinstance(tag, str) for tag in semantic_tags]):
+        raise TypeError(f"{error_language} must contain only strings")
 
 
 def read_csv(filepath=None,
