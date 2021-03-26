@@ -82,16 +82,16 @@ def test_convert_input_to_set():
 
 
 @patch("woodwork.utils._validate_string_tags")
-@patch("woodwork.utils._validate_tags_input")
-def test_validation_methods_called(mock_validate_input, mock_validate_strings):
-    assert not mock_validate_input.called
+@patch("woodwork.utils._validate_tags_input_type")
+def test_validation_methods_called(mock_validate_input_type, mock_validate_strings):
+    assert not mock_validate_input_type.called
     assert not mock_validate_strings.called
 
     _convert_input_to_set('test_tag', validate=False)
-    assert not mock_validate_input.called
+    assert not mock_validate_input_type.called
 
     _convert_input_to_set('test_tag', validate=True)
-    assert mock_validate_input.called
+    assert mock_validate_input_type.called
 
     _convert_input_to_set(['test_tag', 'tag2'], validate=False)
     assert not mock_validate_strings.called

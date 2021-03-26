@@ -35,7 +35,7 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags', validat
         return set()
 
     if validate:
-        _validate_tags_input(semantic_tags, error_language)
+        _validate_tags_input_type(semantic_tags, error_language)
 
     if isinstance(semantic_tags, str):
         return {semantic_tags}
@@ -49,7 +49,7 @@ def _convert_input_to_set(semantic_tags, error_language='semantic_tags', validat
     return semantic_tags
 
 
-def _validate_tags_input(semantic_tags, error_language):
+def _validate_tags_input_type(semantic_tags, error_language):
     if type(semantic_tags) not in [list, set, str]:
         raise TypeError(f"{error_language} must be a string, set or list")
 
