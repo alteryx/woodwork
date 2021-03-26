@@ -53,7 +53,7 @@ class Schema(object):
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
-            validate (bool, optional): Whether parameter validateion should occur. Defaults to True. Warning:
+            validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
