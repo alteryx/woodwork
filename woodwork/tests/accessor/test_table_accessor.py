@@ -30,8 +30,8 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     PhoneNumber,
-    SubRegionCode,
-    ZIPCode
+    PostalCode,
+    SubRegionCode
 )
 from woodwork.schema import Schema
 from woodwork.table_accessor import (
@@ -624,8 +624,8 @@ def test_sets_category_dtype_on_init():
         Categorical,
         CountryCode,
         Ordinal(order=['a', 'b', 'c']),
-        SubRegionCode,
-        ZIPCode,
+        PostalCode,
+        SubRegionCode
     ]
 
     for series in series_list:
@@ -1330,8 +1330,8 @@ def test_select_ltypes_no_match_and_all(sample_df):
                                      'signup_date': Datetime,
                                      })
 
-    assert len(schema_df.ww.select(ZIPCode).columns) == 0
-    assert len(schema_df.ww.select(['ZIPCode', PhoneNumber]).columns) == 1
+    assert len(schema_df.ww.select(PostalCode).columns) == 0
+    assert len(schema_df.ww.select(['PostalCode', PhoneNumber]).columns) == 1
 
     all_types = ww.type_system.registered_types
     df_all_types = schema_df.ww.select(all_types)
@@ -1556,7 +1556,7 @@ def test_select_semantic_tags_no_match(sample_df):
     df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
     assert len(df_multiple_unused.columns) == 2
 
-    df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', ZIPCode, Integer])
+    df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', PostalCode, Integer])
     assert len(df_unused_ltype.columns) == 3
 
 

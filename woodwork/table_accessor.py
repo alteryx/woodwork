@@ -681,7 +681,7 @@ class WoodworkTableAccessor:
         Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
-        SubRegionCode, and ZIPCode
+        PostalCode, and SubRegionCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -708,7 +708,7 @@ class WoodworkTableAccessor:
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
-        SubRegionCode, and ZIPCode
+        PostalCode, and SubRegionCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting

@@ -21,8 +21,8 @@ from woodwork.logical_types import (
     LatLong,
     NaturalLanguage,
     Ordinal,
-    SubRegionCode,
-    ZIPCode
+    PostalCode,
+    SubRegionCode
 )
 from woodwork.tests.testing_utils import (
     is_property,
@@ -226,7 +226,7 @@ def test_adds_numeric_standard_tag():
 def test_adds_category_standard_tag():
     semantic_tags = 'custom_tag'
 
-    logical_types = [Categorical, CountryCode, Ordinal(order=(1, 2, 3)), SubRegionCode, ZIPCode]
+    logical_types = [Categorical, CountryCode, Ordinal(order=(1, 2, 3)), PostalCode, SubRegionCode]
     for logical_type in logical_types:
         series = pd.Series([1, 2, 3], dtype='category')
         series.ww.init(logical_type=logical_type, semantic_tags=semantic_tags)
