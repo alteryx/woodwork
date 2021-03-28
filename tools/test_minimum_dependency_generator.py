@@ -1,8 +1,9 @@
 
+import sys
+
 from minimum_dependency_generator import find_min_requirement
 from packaging.specifiers import Specifier
 
-import sys
 
 def test_lower_bound():
     mininum_package = find_min_requirement('plotly>=4.14.0')
@@ -24,6 +25,7 @@ def test_spacing():
 def test_marker():
     mininum_package = find_min_requirement('sktime>=0.5.3;python_version<"3.9"')
     verify_mininum(mininum_package, 'sktime', '0.5.3')
+
 
 def test_upper_bound():
     mininum_package = find_min_requirement('pyzmq<22.0.0')
@@ -55,6 +57,7 @@ def test_comments():
 def test_complex_bound():
     mininum_package = find_min_requirement('pandas>=0.24.1,<2.0.0,!=1.1.0,!=1.1.1')
     verify_mininum(mininum_package, 'pandas', '0.24.1')
+
 
 def test_wrong_python_env():
     mininum_package = find_min_requirement('ipython==7.16.0; python_version==\'3.4\'')
