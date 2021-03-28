@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-name: Unit Tests with Minimum Dependencies
+name: Unit Tests - Minimum Dependencies
 jobs:
   unit_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
@@ -16,6 +16,15 @@ jobs:
         python_version: ["3.6", "3.7", "3.8", "3.9"]
         optional_libraries: ["minimum_requirements"]
     steps:
+      - name: Set up python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Install woodwork with tests and minimum requirements
         run: |
           make generate_min_reqs
