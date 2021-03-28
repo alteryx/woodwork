@@ -62,7 +62,7 @@ jobs:
       - name: Run lint test
         run: make lint
 
-  unit_tests:
+  unit_latest_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
     runs-on: ubuntu-latest
     strategy:
