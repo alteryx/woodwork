@@ -1,5 +1,4 @@
 import argparse
-import json
 import re
 
 import requests
@@ -31,7 +30,10 @@ def create_strict_min(package_version):
 
 def verify_python_environment(requirement):
     package = Requirement(requirement)
-    if package.marker and package.marker.evaluate():
+    if not package.marker:
+        # no python version specified in requirement
+        return True
+    elif package.marker and package.marker.evaluate():
         # evaluate --> Return the boolean from evaluating the given marker against the current Python process environment
         return True
     return False
@@ -88,6 +90,7 @@ def write_min_requirements(requirements_path, output_path):
         min_version = find_min_requirement(req)
         min_requirements.append(str(min_version) + "\n")
 
+    print(min_requirements)
     with open(output_path, "w") as f:
         f.writelines(min_requirements)
 
