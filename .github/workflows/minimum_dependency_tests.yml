@@ -8,7 +8,6 @@ on:
 name: Unit Tests - Minimum Dependencies
 jobs:
   unit_core_min_tests:
-    needs: check
     name: ${{ matrix.python_version }} unit tests minimum core dependencies
     runs-on: ubuntu-latest
     strategy:
