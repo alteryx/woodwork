@@ -1,0 +1,26 @@
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+name: Unit Tests with Minimum Dependencies
+jobs:
+  unit_tests:
+    name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: ["3.6", "3.7", "3.8", "3.9"]
+        optional_libraries: ["minimum_requirements"]
+    steps:
+      - name: Install woodwork with tests and minimum requirements
+        run: |
+          python tools/minimum_dependency_generator.py 'requirements.txt' 'minimum_dependencies.txt'
+          python tools/minimum_dependency_generator.py 'test-requirements.txt' 'minimum_test_dependencies.txt'
+          cat minimum_dependencies.txt
+          cat minimum_test_dependencies.txt
+          python -m pip install -r minimum_test_dependencies.txt
+          python -m pip install -r minimum_dependencies.txt
