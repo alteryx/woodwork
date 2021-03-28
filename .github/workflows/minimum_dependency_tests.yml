@@ -24,7 +24,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Check if core requirements have changed
-      - uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v2
         id: changes
         with:
           filters: |
