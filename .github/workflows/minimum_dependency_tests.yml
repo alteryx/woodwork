@@ -7,7 +7,7 @@ on:
 
 name: Unit Tests - Minimum Dependencies
 jobs:
-  changes:
+  detect_requirement_changes:
     runs-on: ubuntu-latest
     outputs:
       reqs: ${{ steps.filter.outputs.reqs }}
@@ -28,9 +28,9 @@ jobs:
               - 'test-requirements.txt'
 
   reqs:
-    name: ${{ matrix.python_version }} unit tests minimum core dependencies
-    needs: changes
-    if: ${{ needs.changes.outputs.reqs == 'true' }}
+    name: 3.6 unit tests minimum dependencies
+    needs: detect_requirement_changes
+    if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
