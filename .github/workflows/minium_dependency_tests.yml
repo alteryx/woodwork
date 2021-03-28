@@ -18,9 +18,11 @@ jobs:
     steps:
       - name: Install woodwork with tests and minimum requirements
         run: |
-          python tools/minimum_dependency_generator.py 'requirements.txt' 'minimum_dependencies.txt'
-          python tools/minimum_dependency_generator.py 'test-requirements.txt' 'minimum_test_dependencies.txt'
+          make generate_min_reqs
+          make generate_min_test_reqs
           cat minimum_dependencies.txt
           cat minimum_test_dependencies.txt
           python -m pip install -r minimum_test_dependencies.txt
           python -m pip install -r minimum_dependencies.txt
+
+          /Users/gaurav.sheni/woodwork/tools/minimum_dependency_generator.py
