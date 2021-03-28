@@ -1,10 +1,11 @@
 import argparse
-from packaging.version import Version, parse
-from packaging.specifiers import Specifier
-from packaging.requirements import Requirement
 import json
-import requests
 import re
+
+import requests
+from packaging.requirements import Requirement
+from packaging.specifiers import Specifier
+from packaging.version import Version, parse
 
 
 def versions(package_name):
@@ -18,6 +19,7 @@ def versions(package_name):
     versions.sort(reverse=False)
     return versions
 
+
 def create_strict_min(package_version):
     version = None
     if isinstance(package_version, Version):
@@ -26,12 +28,14 @@ def create_strict_min(package_version):
         version = package_version.version
     return Specifier('==' + version)
 
+
 def verify_python_environment(requirement):
     package = Requirement(requirement)
     if package.marker and package.marker.evaluate():
         # evaluate --> Return the boolean from evaluating the given marker against the current Python process environment
         return True
     return False
+
 
 def find_min_requirement(requirement):
     if '#' in requirement:

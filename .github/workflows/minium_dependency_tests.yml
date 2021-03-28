@@ -14,7 +14,6 @@ jobs:
       fail-fast: true
       matrix:
         python_version: ["3.6", "3.7", "3.8", "3.9"]
-        optional_libraries: ["minimum_requirements"]
     steps:
       - name: Set up python 3.7
         uses: actions/setup-python@v2
@@ -27,11 +26,11 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Install woodwork with tests and minimum requirements
         run: |
+          pip install packaging
+          pip install requests
           make generate_min_reqs
           make generate_min_test_reqs
           cat minimum_dependencies.txt
           cat minimum_test_dependencies.txt
           python -m pip install -r minimum_test_dependencies.txt
           python -m pip install -r minimum_dependencies.txt
-
-          /Users/gaurav.sheni/woodwork/tools/minimum_dependency_generator.py
