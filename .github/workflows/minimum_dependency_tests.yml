@@ -10,6 +10,8 @@ jobs:
   unit_core_min_tests:
     name: ${{ matrix.python_version }} unit tests minimum core dependencies
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.reqs }}
     strategy:
       fail-fast: true
     steps:
