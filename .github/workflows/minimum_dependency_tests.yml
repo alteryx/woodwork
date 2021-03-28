@@ -20,18 +20,18 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          base: 'main'
           filters: |
             reqs:
               - 'requirements.txt'
               - 'test-requirements.txt'
 
-  backend:
+  reqs:
     name: ${{ matrix.python_version }} unit tests minimum core dependencies
     needs: changes
     if: ${{ needs.changes.outputs.reqs == 'true' }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
