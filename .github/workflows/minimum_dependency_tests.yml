@@ -8,17 +8,15 @@ on:
 name: Unit Tests - Minimum Dependencies
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
+    name: ${{ matrix.python_version }} unit tests minimum dependencies
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
-      matrix:
-        python_version: ["3.6"]
     steps:
-      - name: Set up python 3.7
+      - name: Set up python 3.6
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.6
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
