@@ -7,8 +7,9 @@ on:
 
 name: Unit Tests - Minimum Dependencies
 jobs:
-  unit_tests:
-    name: ${{ matrix.python_version }} unit tests minimum dependencies
+  unit_core_min_tests:
+    needs: check
+    name: ${{ matrix.python_version }} unit tests minimum core dependencies
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -22,7 +23,17 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Check if core requirements have changed
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            reqs:
+              - 'requirements.txt'
+            test_reqs:
+              - 'test-requirements.txt'
       - name: Install woodwork with tests and minimum requirements
+        if: steps.filter.outputs.reqs == 'true' || steps.filter.outputs.test_reqs == 'true'
         run: |
           pip install --upgrade pip
           pip install packaging
@@ -35,5 +46,6 @@ jobs:
           python -m pip install -r minimum_test_dependencies.txt
           python -m pip install -r minimum_dependencies.txt
       - name: Run unit tests without code coverage
+        if: steps.filter.outputs.reqs == 'true' || steps.filter.outputs.test_reqs == 'true'
         run: |
           python -m pytest woodwork/ -n 2
