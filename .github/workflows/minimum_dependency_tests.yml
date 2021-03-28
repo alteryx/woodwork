@@ -7,33 +7,42 @@ on:
 
 name: Unit Tests - Minimum Dependencies
 jobs:
-  unit_core_min_tests:
-    name: ${{ matrix.python_version }} unit tests minimum core dependencies
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.reqs }}
-    strategy:
-      fail-fast: true
+      reqs: ${{ steps.filter.outputs.reqs }}
     steps:
-      - name: Set up python 3.6
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.6
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Check if core requirements have changed
-        uses: dorny/paths-filter@v2
-        id: changes
+      - uses: dorny/paths-filter@v2
+        id: filter
         with:
           filters: |
             reqs:
               - 'requirements.txt'
               - 'test-requirements.txt'
-      - if: steps.filter.outputs.reqs == 'true'
-        name: Install woodwork with tests and minimum requirements
+
+  backend:
+    name: ${{ matrix.python_version }} unit tests minimum core dependencies
+    needs: changes
+    if: ${{ needs.changes.outputs.reqs == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Set up python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install woodwork with tests and minimum requirements
         run: |
           pip install --upgrade pip
           pip install packaging
