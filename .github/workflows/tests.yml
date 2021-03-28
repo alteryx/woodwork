@@ -69,14 +69,7 @@ jobs:
       fail-fast: true
       matrix:
         python_version: ["3.6", "3.7", "3.8", "3.9"]
-        optional_libraries: ["core", "optional", "minimum_requirements"]
-        exclude:
-          - python_version: "3.7"
-            optional_libraries: "minimum_requirements"
-          - python_version: "3.8"
-            optional_libraries: "minimum_requirements"
-          - python_version: "3.9"
-            optional_libraries: "minimum_requirements"
+        optional_libraries: ["minimal", "optional"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -93,7 +86,7 @@ jobs:
         run: |
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-      - if: ${{ matrix.optional_libraries != 'optional' && matrix.optional_libraries != 'minimum_requirements' }}
+      - if: ${{ matrix.optional_libraries != 'optional' }}
         name: Install woodwork with test requirements
         run: |
           python -m pip install -e unpacked_sdist/
@@ -107,14 +100,6 @@ jobs:
           python -m pip install -e unpacked_sdist/[dask]
           python -m pip install -e unpacked_sdist/[koalas]
           python -m pip install -r unpacked_sdist/test-requirements.txt
-      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'minimum_requirements' }}
-        name: Install woodwork with tests and minimum requirements
-        run: |
-          python .github/minimum_dependency_generator.py 'requirements.txt' 'minimum_dependencies.txt'
-          python .github/minimum_dependency_generator.py 'test-requirements.txt' 'minimum_test_dependencies.txt'
-          cat minimum_dependencies.txt
-          python -m pip install -r minimum_test_dependencies.txt
-          python -m pip install -r minimum_dependencies.txt
       - if: ${{ matrix.python_version != 3.6 || matrix.optional_libraries != 'optional' }}
         name: Run unit tests (no code coverage)
         run: |
