@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-name: Tests
+name: Unit Tests with Latest Dependencies
 jobs:
   build_docs:
     name: 3.7 build docs
