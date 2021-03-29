@@ -1,4 +1,4 @@
-name: Minimum Dependency Checker
+name: Unit Tests - Minimum Dependency Checker
 on:
   pull_request:
     types: [opened, synchronize]
@@ -35,4 +35,4 @@ jobs:
         run: |
           python -m pip install -r tools/minimum_dependency/requirements.txt
           python -m pip install -r tools/minimum_dependency/test-requirements.txt
-          make test-min-deps
+          make test-min-deps-gen
