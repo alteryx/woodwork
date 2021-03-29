@@ -1,8 +1,8 @@
 docs/source/generated/
 *.dirlock
 *.~lock*
-minimum_dependencies.txt
-minimum_test_dependencies.txt
+minimum_requirements.txt
+minimum_test_requirements.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
