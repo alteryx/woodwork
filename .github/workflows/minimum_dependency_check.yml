@@ -49,7 +49,7 @@ jobs:
           title: Automated Minimum Dependency Updates
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           body: "This is an auto-generated PR with minimum dependency updates.
-                 Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
+                 Please do not delete the min-dep-update branch because it's needed by the auto-dependency bot."
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
