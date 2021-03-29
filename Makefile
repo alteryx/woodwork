@@ -41,9 +41,13 @@ checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark|koalas')
 	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
 
-.PHONY: generate_min_reqs
-generate_min_reqs:
+.PHONY: generate-min-deps
+generate-min-deps:
 	python tools/minimum_dependency/minimum_dependency_generator.py $(OUTPUT_PATH) --requirements_paths $(INPUT_PATHS)
+
+.PHONY: test-min-deps
+test-min-deps:
+	python -m pytest tools/minimum_dependency/
 
 .PHONY: package_woodwork
 package_woodwork:
