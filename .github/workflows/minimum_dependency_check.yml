@@ -35,7 +35,7 @@ jobs:
           cat minimum_core_optional_requirements.txt
       - name: Update minimum core dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='requirements.txt'
+          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_requirements.txt INPUT_PATHS='requirements.txt'
           cat minimum_core_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
