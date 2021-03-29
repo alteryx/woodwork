@@ -6,7 +6,7 @@ on:
     - 'test-requirements.txt'
     - 'dask-requirements.txt'
     - 'koalas-requirements.txt'
-    - 'tools/minimum_dependency/**'
+    - 'tools/minimum_dependency/minimum_dependency_generator.py'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,14 +29,18 @@ jobs:
         run: |
           make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
           cat woodwork/tests/minimum_test_requirements.txt
-      - name: Update minimum optional dependencies
+      - name: Update minimum koalas dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_core_optional_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
-          cat minimum_core_optional_requirements.txt
+          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_koalas_requirements.txt INPUT_PATHS='koalas-requirements.txt requirements.txt'
+          cat woodwork/tests/minimum_koalas_requirements.txt
+      - name: Update minimum dask dependencies
+        run: |
+          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_dask_requirements.txt INPUT_PATHS='dask-requirements.txt requirements.txt'
+          cat woodwork/tests/minimum_dask_requirements.txt
       - name: Update minimum core dependencies
         run: |
           make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
-          cat minimum_core_requirements.txt
+          cat woodwork/tests/minimum_core_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
