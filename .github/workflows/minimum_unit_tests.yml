@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        optional_libraries: ["core", "optional"]
+        libraries: ["core", "dask", "koalas"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -25,14 +25,15 @@ jobs:
       - name: Install woodwork - minimum tests requirements
         run: |
           python -m pip install -r woodwork/tests/minimum_test_requirements.txt
-      - if: ${{ matrix.optional_libraries == 'optional' }}
-        name: Install woodwork - minimum dask, koalas, core requirements
+      - if: ${{ matrix.libraries == 'koalas' }}
+        name: Install woodwork - minimum koalas, core requirements
         run: |
-          sudo apt update
-          sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-          python -m pip install -r minimum_core_optional_requirements.txt
-      - if: ${{ matrix.optional_libraries == 'core' }}
+          python -m pip install -r woodwork/tests/minimum_koalas_requirements.txt
+      - if: ${{ matrix.libraries == 'dask' }}
+        name: Install woodwork - minimum dask, core requirements
+        run: |
+          python -m pip install -r woodwork/tests/minimum_dask_requirements.txt
+      - if: ${{ matrix.libraries == 'core' }}
         name: Install woodwork - minimum core requirements
         run: |
           python -m pip install -r woodwork/tests/minimum_core_requirements.txt
