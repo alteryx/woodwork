@@ -28,6 +28,8 @@ def create_strict_min(package_version):
         version = package_version.public
     elif isinstance(package_version, Specifier):
         version = package_version.version
+    elif isinstance(package_version, str):
+        version = package_version
     return Specifier('==' + version)
 
 
@@ -57,21 +59,28 @@ def generate_package_name(requirement):
         return package.name + "[" + package.extras.pop() + "]"
     return package.name
 
+def find_operator_version(package, operator):
+    version = None
+    for x in package.specifier:
+        if x.operator == operator:
+            version = x.version
+            break
+    return version
+
 def find_min_requirement(requirement):
     requirement = remove_comment(requirement)
     if not verify_python_environment(requirement):
         return None
     if '>=' in requirement:
-        # mininum version specified (ex - 'package <= 0.0.4')
-        requirement = re.sub(r',<\d+\.\d+\.\d+$', '', requirement)
+        # mininum version specified (ex - 'package >= 0.0.4')
         package = Requirement(requirement)
-        mininum = [x for x in package.specifier][0]
-        mininum = create_strict_min(mininum)
+        version = find_operator_version(package, '>=')
+        mininum = create_strict_min(version)
     elif '==' in requirement:
         # version strictly specified
         package = Requirement(requirement)
-        mininum = [x for x in package.specifier][0]
-        mininum = create_strict_min(mininum)
+        version = find_operator_version(package, '==')
+        mininum = create_strict_min(version)
     elif '<' in requirement:
         # mininum version not specified (ex - 'package < 0.0.4')
         package = Requirement(requirement)
