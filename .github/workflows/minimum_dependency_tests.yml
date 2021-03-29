@@ -29,6 +29,7 @@ jobs:
               - 'test-requirements.txt'
               - 'dask-requirements.txt'
               - 'koalas-requirements.txt'
+              - 'tools/minimum_dependency/**'
 
   py36_unit_tests_minimum_dependencies:
     name: 3.6 unit tests minimum dependencies
@@ -83,6 +84,7 @@ jobs:
   unit_tests_minimum_dependencies_generator:
     name: unit test minimum dependency generator
     needs: py36_unit_tests_minimum_dependencies
+    if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Run unit tests for minimum dependency generator
