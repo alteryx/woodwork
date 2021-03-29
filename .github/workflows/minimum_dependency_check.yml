@@ -2,11 +2,13 @@ name: Minimum Dependency Checker
 on:
   push:
     paths:
-    - 'requirements.txt'
-    - 'test-requirements.txt'
-    - 'dask-requirements.txt'
-    - 'koalas-requirements.txt'
-    - 'tools/minimum_dependency/minimum_dependency_generator.py'
+      - 'requirements.txt'
+      - 'test-requirements.txt'
+      - 'dask-requirements.txt'
+      - 'koalas-requirements.txt'
+      - 'tools/minimum_dependency/minimum_dependency_generator.py'
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
