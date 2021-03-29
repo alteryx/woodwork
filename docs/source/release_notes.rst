@@ -13,6 +13,9 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`
 
+**Breaking Changes**
+    * The ``FullName`` logical type has been renamed to ``PersonFullName``
+
 **v0.1.0 March 22, 2021**
     * Enhancements
         * Implement Schema and Accessor API (:pr:`497`)
