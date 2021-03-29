@@ -56,7 +56,7 @@ jobs:
           make generate_min_reqs INPUT_PATH=test-dependencies.txt OUTPUT_PATH=minimum_test_dependencies.txt
           cat minimum_test_dependencies.txt
           python -m pip install -r minimum_test_dependencies.txt
-      - if: ${{ matrix.optional_libraries == 'spark' }}
+      - if: ${{ matrix.optional_libraries == 'optional' }}
         name: Install woodwork with minimum dask requirements
         run: |
           make generate_min_reqs INPUT_PATH=dask-requirements.txt OUTPUT_PATH=dask_requirements.txt
