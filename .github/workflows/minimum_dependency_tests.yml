@@ -53,20 +53,21 @@ jobs:
           pip install wheel
       - name: Install woodwork with minimum tests requirements
         run: |
-          make generate_min_reqs INPUT_PATH=test-requirements.txt OUTPUT_PATH=minimum_test_dependencies.txt
-          cat minimum_test_dependencies.txt
-          python -m pip install -r minimum_test_dependencies.txt
+          make generate_min_reqs OUTPUT_PATH=minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
+          cat minimum_test_requirements.txt
+          python -m pip install -r minimum_test_requirements.txt
       - if: ${{ matrix.optional_libraries == 'optional' }}
-        name: Install woodwork with minimum dask requirements
+        name: Install woodwork with minimum dask, koalas, core requirements
         run: |
-          make generate_min_reqs INPUT_PATH=dask-requirements.txt OUTPUT_PATH=minimum_dask_requirements.txt
-          cat minimum_dask_requirements.txt
-          python -m pip install -r minimum_dask_requirements.txt
-      - name: Install woodwork with minimum requirements
+          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATH='koalas-requirements.txt dask-requirements.txt requirements.txt'
+          cat minimum_requirements.txt
+          python -m pip install -r minimum_requirements.txt
+      - if: ${{ matrix.optional_libraries != 'optional' }}
+        name: Install woodwork with minimum core requirements
         run: |
-          make generate_min_reqs INPUT_PATH=requirements.txt OUTPUT_PATH=minimum_dependencies.txt
-          cat minimum_dependencies.txt
-          python -m pip install -r minimum_dependencies.txt
+          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATH='requirements.txt'
+          cat minimum_requirements.txt
+          python -m pip install -r minimum_requirements.txt
       - if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
         name: Run unit tests without code coverage
         run: |

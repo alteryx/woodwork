@@ -43,7 +43,7 @@ checkdeps:
 
 .PHONY: generate_min_reqs
 generate_min_reqs:
-	python tools/minimum_dependency_generator.py $(INPUT_PATH) $(OUTPUT_PATH)
+	python tools/minimum_dependency_generator.py $(OUTPUT_PATH) --requirements_paths $(INPUT_PATHS)
 
 .PHONY: package_woodwork
 package_woodwork:
