@@ -17,9 +17,9 @@ from woodwork.logical_types import (
     Ordinal,
     PersonFullName,
     PhoneNumber,
+    PostalCode,
     SubRegionCode,
-    Timedelta,
-    ZIPCode
+    Timedelta
 )
 from woodwork.statistics_utils import (
     _get_describe_dict,
@@ -222,8 +222,8 @@ def test_describe_accessor_method(describe_df):
     categorical_ltypes = [Categorical,
                           CountryCode,
                           Ordinal(order=('yellow', 'red', 'blue')),
-                          SubRegionCode,
-                          ZIPCode]
+                          PostalCode,
+                          SubRegionCode]
     boolean_ltypes = [Boolean]
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]

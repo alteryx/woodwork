@@ -24,9 +24,9 @@ from woodwork.logical_types import (
     Ordinal,
     PersonFullName,
     PhoneNumber,
+    PostalCode,
     SubRegionCode,
-    Timedelta,
-    ZIPCode
+    Timedelta
 )
 from woodwork.utils import import_or_none
 
@@ -48,18 +48,18 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     NaturalLanguage: None,
     Ordinal: None,
     PhoneNumber: None,
+    PostalCode: None,
     SubRegionCode: None,
     Timedelta: timedelta_func,
-    URL: None,
-    ZIPCode: None
+    URL: None
 }
 
 # (ParentType, ChildType)
 DEFAULT_RELATIONSHIPS = [
     (Categorical, CountryCode),
     (Categorical, Ordinal),
+    (Categorical, PostalCode),
     (Categorical, SubRegionCode),
-    (Categorical, ZIPCode),
     (NaturalLanguage, EmailAddress),
     (NaturalLanguage, Filepath),
     (NaturalLanguage, PersonFullName),

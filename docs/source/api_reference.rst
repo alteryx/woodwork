@@ -125,10 +125,10 @@ Logical Types
     Ordinal
     PersonFullName
     PhoneNumber
+    PostalCode
     SubRegionCode
     Timedelta
     URL
-    ZIPCode
 
 TypeSystem
 ==========
