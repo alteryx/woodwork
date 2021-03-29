@@ -1,12 +1,10 @@
 name: Minimum Dependency Check
 on:
+  pull_request:
+    types: [opened, synchronize]
   push:
-    paths:
-    - 'requirements.txt'
-    - 'test-requirements.txt'
-    - 'dask-requirements.txt'
-    - 'koalas-requirements.txt'
-    - 'tools/minimum_dependency/minimum_dependency_generator.py'
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,16 +39,16 @@ jobs:
         run: |
           make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
           cat woodwork/tests/minimum_core_requirements.txt
-      - name: Create Pull Request
-        uses: FeatureLabs/create-pull-request@v3
-        with:
-          token: ${{ secrets.REPO_SCOPED_TOKEN }}
-          commit-message: Update minimum dependencies
-          title: Automated Minimum Dependency Updates
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          body: "This is an auto-generated PR with minimum dependency updates.
-                 Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
-          branch: min-dep-update
-          branch-suffix: short-commit-hash
-          base: main
-          reviewers: gsheni, thehomebrewnerd, tamargrey
+      # - name: Create Pull Request
+      #   uses: FeatureLabs/create-pull-request@v3
+      #   with:
+      #     token: ${{ secrets.REPO_SCOPED_TOKEN }}
+      #     commit-message: Update minimum dependencies
+      #     title: Automated Minimum Dependency Updates
+      #     author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+      #     body: "This is an auto-generated PR with minimum dependency updates.
+      #            Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
+      #     branch: min-dep-update
+      #     branch-suffix: short-commit-hash
+      #     base: main
+      #     reviewers: gsheni, thehomebrewnerd, tamargrey
