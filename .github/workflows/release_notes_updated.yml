@@ -17,6 +17,7 @@ jobs:
           main = '^main$'
           release = '^release_v\d+\.\d+\.\d+$'
           dep_update = '^dep-update-[a-f0-9]{7}$'
+          min_dep_update = '^min-dep-update-[a-f0-9]{7}$'
           regex = main, release, dep_update
           patterns = list(map(compile, regex))
           ref = "${{ github.event.pull_request.head.ref }}"
