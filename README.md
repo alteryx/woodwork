@@ -50,7 +50,7 @@ df = pd.read_csv("https://api.featurelabs.com/datasets/online-retail-logs-2018-0
 df.ww.init(name='retail', make_index=True, index='order_product_id')
 df.ww.set_types(logical_types={
     'quantity': 'Integer',
-    'customer_name': 'FullName',
+    'customer_name': 'PersonFullName',
     'country': 'Categorical',
     'order_id': 'Categorical'
 })
@@ -59,7 +59,7 @@ df.ww
 
 ```
                    Physical Type     Logical Type Semantic Tag(s)
-Column                                                           
+Column
 order_product_id           Int64          Integer       ['index']
 order_id                category      Categorical    ['category']
 product_id              category      Categorical    ['category']
@@ -67,7 +67,7 @@ description               string  NaturalLanguage              []
 quantity                   Int64          Integer     ['numeric']
 order_date        datetime64[ns]         Datetime              []
 unit_price               float64           Double     ['numeric']
-customer_name             string         FullName              []
+customer_name             string   PersonFullName              []
 country                 category      Categorical    ['category']
 total                    float64           Double     ['numeric']
 cancelled                boolean          Boolean              []
