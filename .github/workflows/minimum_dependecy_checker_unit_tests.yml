@@ -7,7 +7,7 @@ on:
       - main
 jobs:
   minimum_dependeny_checker_unit_tests:
-    name: Run unit tests for minimum dependency checker
+    name: unit tests - minimum dependency checker
     runs-on: ubuntu-latest
     outputs:
       reqs: ${{ steps.filter.outputs.reqs }}
