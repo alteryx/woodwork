@@ -59,6 +59,9 @@ jobs:
       - if: ${{ matrix.optional_libraries == 'optional' }}
         name: Install woodwork - minimum dask, koalas, core requirements
         run: |
+          sudo apt update
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
           cat minimum_requirements.txt
           python -m pip install -r minimum_requirements.txt
