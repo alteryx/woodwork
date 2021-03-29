@@ -47,7 +47,7 @@ generate-min-deps:
 
 .PHONY: test-min-deps
 test-min-deps:
-	python -m pytest tools/minimum_dependency/
+	python -m pytest tools/minimum_dependency/test_minimum_dependency_generator.py
 
 .PHONY: package_woodwork
 package_woodwork:
