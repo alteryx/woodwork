@@ -53,15 +53,15 @@ jobs:
           pip install wheel
       - name: Install woodwork with minimum tests requirements
         run: |
-          make generate_min_reqs INPUT_PATH=test-dependencies.txt OUTPUT_PATH=minimum_test_dependencies.txt
+          make generate_min_reqs INPUT_PATH=test-requirements.txt OUTPUT_PATH=minimum_test_dependencies.txt
           cat minimum_test_dependencies.txt
           python -m pip install -r minimum_test_dependencies.txt
       - if: ${{ matrix.optional_libraries == 'optional' }}
         name: Install woodwork with minimum dask requirements
         run: |
-          make generate_min_reqs INPUT_PATH=dask-requirements.txt OUTPUT_PATH=dask_requirements.txt
-          cat dask_requirements.txt
-          python -m pip install -r dask_requirements.txt
+          make generate_min_reqs INPUT_PATH=dask-requirements.txt OUTPUT_PATH=minimum_dask_requirements.txt
+          cat minimum_dask_requirements.txt
+          python -m pip install -r minimum_dask_requirements.txt
       - name: Install woodwork with minimum requirements
         run: |
           make generate_min_reqs INPUT_PATH=requirements.txt OUTPUT_PATH=minimum_dependencies.txt
