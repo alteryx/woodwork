@@ -67,7 +67,7 @@ jobs:
           make generate_min_reqs INPUT_PATH=requirements.txt OUTPUT_PATH=minimum_dependencies.txt
           cat minimum_dependencies.txt
           python -m pip install -r minimum_dependencies.txt
-      - if: steps.filter.outputs.reqs == 'true'
+      - if: needs.detect_requirement_changes.outputs.reqs == 'true'
         name: Run unit tests without code coverage
         run: |
           python -m pytest woodwork/ -n 2
