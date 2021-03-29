@@ -10,12 +10,12 @@ from woodwork.logical_types import (
     Double,
     EmailAddress,
     Filepath,
-    FullName,
     Integer,
     IPAddress,
     LatLong,
     NaturalLanguage,
     Ordinal,
+    PersonFullName,
     PhoneNumber,
     PostalCode,
     SubRegionCode,
@@ -229,7 +229,7 @@ def test_describe_accessor_method(describe_df):
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
     numeric_ltypes = [Double, Integer]
-    natural_language_ltypes = [EmailAddress, Filepath, FullName, IPAddress,
+    natural_language_ltypes = [EmailAddress, Filepath, PersonFullName, IPAddress,
                                PhoneNumber, URL]
     latlong_ltypes = [LatLong]
 

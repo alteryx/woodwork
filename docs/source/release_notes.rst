@@ -6,15 +6,17 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
+    * The ``FullName`` logical type has been renamed to ``PersonFullName``
 
 **v0.1.0 March 22, 2021**
     * Enhancements
