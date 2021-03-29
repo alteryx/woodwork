@@ -31,11 +31,11 @@ jobs:
           cat woodwork/tests/minimum_test_requirements.txt
       - name: Update minimum optional dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
+          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_core_optional_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
           cat minimum_core_optional_requirements.txt
       - name: Update minimum core dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_requirements.txt INPUT_PATHS='requirements.txt'
+          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
           cat minimum_core_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
