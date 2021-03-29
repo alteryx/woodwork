@@ -84,6 +84,15 @@ jobs:
     if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Set up python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
       - name: Run unit tests for minimum dependency generator
         run: |
           python -m pip install -r tools/minimum_dependency/requirements.txt
