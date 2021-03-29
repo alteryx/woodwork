@@ -32,6 +32,9 @@ jobs:
     needs: detect_requirement_changes
     if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        optional_libraries: ["minimal", "optional"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -42,17 +45,27 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.6
-      - name: Install woodwork with tests and minimum requirements
+      - name: Install woodwork with minimum generator requirements
         run: |
           pip install --upgrade pip
           pip install packaging
           pip install requests
           pip install wheel
-          make generate_min_test_reqs
-          make generate_min_reqs
+      - name: Install woodwork with minimum tests requirements
+        run: |
+          make generate_min_reqs INPUT_PATH=test-dependencies.txt OUTPUT_PATH=minimum_test_dependencies.txt
           cat minimum_test_dependencies.txt
-          cat minimum_dependencies.txt
           python -m pip install -r minimum_test_dependencies.txt
+      - if: ${{ matrix.optional_libraries == 'spark' }}
+        name: Install woodwork with minimum dask requirements
+        run: |
+          make generate_min_reqs INPUT_PATH=dask-requirements.txt OUTPUT_PATH=dask_requirements.txt
+          cat dask_requirements.txt
+          python -m pip install -r dask_requirements.txt
+      - name: Install woodwork with minimum requirements
+        run: |
+          make generate_min_reqs INPUT_PATH=requirements.txt OUTPUT_PATH=minimum_dependencies.txt
+          cat minimum_dependencies.txt
           python -m pip install -r minimum_dependencies.txt
       - if: steps.filter.outputs.reqs == 'true'
         name: Run unit tests without code coverage
