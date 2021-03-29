@@ -45,8 +45,8 @@ checkdeps:
 generate-min-deps:
 	python tools/minimum_dependency/minimum_dependency_generator.py $(OUTPUT_PATH) --requirements_paths $(INPUT_PATHS)
 
-.PHONY: test-min-deps
-test-min-deps:
+.PHONY: test-min-deps-gen
+test-min-deps-gen:
 	python -m pytest tools/minimum_dependency/test_minimum_dependency_generator.py
 
 .PHONY: package_woodwork
