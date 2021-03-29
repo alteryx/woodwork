@@ -26,6 +26,8 @@ jobs:
             reqs:
               - 'requirements.txt'
               - 'test-requirements.txt'
+              - 'dask-requirements.txt'
+              - 'koalas-requirements.txt'
 
   reqs:
     name: 3.6 unit tests minimum dependencies
@@ -47,10 +49,11 @@ jobs:
           python-version: 3.6
       - name: Install minimum generator requirements
         run: |
-          pip install --upgrade pip
-          pip install packaging
-          pip install requests
-          pip install wheel
+          python -m pip install --upgrade pip
+          pip config --site set global.progress_bar off
+          python -m pip install packaging
+          python -m pip install requests
+          python -m pip install wheel
       - name: Install woodwork - minimum tests requirements
         run: |
           make generate_min_reqs OUTPUT_PATH=minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
