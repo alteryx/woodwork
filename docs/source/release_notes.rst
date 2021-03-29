@@ -10,6 +10,7 @@ Release Notes
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
     * Documentation Changes
     * Testing Changes
+        * Add unit tests aganist minimum dependencies for python 3.6 (:pr:`743`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
