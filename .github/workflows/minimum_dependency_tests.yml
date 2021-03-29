@@ -8,6 +8,7 @@ on:
 name: Unit Tests - Minimum Dependencies
 jobs:
   detect_requirement_changes:
+    name: detect requirements changes
     runs-on: ubuntu-latest
     outputs:
       reqs: ${{ steps.filter.outputs.reqs }}
@@ -29,7 +30,7 @@ jobs:
               - 'dask-requirements.txt'
               - 'koalas-requirements.txt'
 
-  reqs:
+  py36_unit_tests_minimum_dependencies:
     name: 3.6 unit tests minimum dependencies
     needs: detect_requirement_changes
     if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
@@ -54,25 +55,38 @@ jobs:
           python -m pip install -r tools/minimum_dependency/requirements.txt
       - name: Install woodwork - minimum tests requirements
         run: |
-          make generate_min_reqs OUTPUT_PATH=minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
+          make generate-min-deps OUTPUT_PATH=minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
           cat minimum_test_requirements.txt
           python -m pip install -r minimum_test_requirements.txt
+      - name: Run unit tests for minimum dependency generator
+        run: |
+          python -m pytest tools/minimum_dependency
       - if: ${{ matrix.optional_libraries == 'optional' }}
         name: Install woodwork - minimum dask, koalas, core requirements
         run: |
           sudo apt update
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
+          make generate-min-deps OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
           cat minimum_requirements.txt
           python -m pip install -r minimum_requirements.txt
       - if: ${{ matrix.optional_libraries != 'optional' }}
         name: Install woodwork - minimum core requirements
         run: |
-          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='requirements.txt'
+          make generate-min-deps OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='requirements.txt'
           cat minimum_requirements.txt
           python -m pip install -r minimum_requirements.txt
-      - if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
-        name: Run unit tests without code coverage
+      - name: Run unit tests without code coverage
         run: |
           python -m pytest woodwork/ -n 2
+
+  unit_tests_minimum_dependencies_generator:
+    name: unit test minimum dependency generator
+    needs: py36_unit_tests_minimum_dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run unit tests for minimum dependency generator
+        run: |
+          python -m pip install -r tools/minimum_dependency/requirements.txt
+          python -m pip install -r tools/minimum_dependency/test-requirements.txt
+          make test-min-deps
