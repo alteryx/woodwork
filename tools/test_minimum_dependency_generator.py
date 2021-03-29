@@ -47,6 +47,8 @@ def test_bound():
 def test_extra_requires():
     mininum_package = find_min_requirement('dask[dataframe]>=2.30.0,<2012.12.0')
     verify_mininum(mininum_package, 'dask', '2.30.0', required_extra='dataframe')
+    mininum_package = find_min_requirement('dask[dataframe]<2012.12.0,>=2.30.0')
+    verify_mininum(mininum_package, 'dask', '2.30.0', required_extra='dataframe')
 
 
 def test_comments():
