@@ -8,7 +8,8 @@ from packaging.specifiers import Specifier
 def test_lower_bound():
     mininum_package = find_min_requirement('plotly>=4.14.0')
     verify_mininum(mininum_package, 'plotly', '4.14.0')
-
+    mininum_package = find_min_requirement('plotly>=4.14')
+    verify_mininum(mininum_package, 'plotly', '4.14')
 
 def test_lower_upper_bound():
     mininum_package = find_min_requirement('xgboost>=0.82,<1.3.0')
