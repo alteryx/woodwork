@@ -111,7 +111,7 @@ def write_min_requirements(output_path, requirements_paths):
                 new_req = prev_req.specifier & package.specifier
                 requirements_to_specifier[name] = name + str(new_req)
             else:
-                requirements_to_specifier[name] = name
+                requirements_to_specifier[name] = name + str(package.specifier)
 
     for req in list(requirements_to_specifier.values()):
         min_version = find_min_requirement(req)
