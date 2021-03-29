@@ -59,13 +59,13 @@ jobs:
       - if: ${{ matrix.optional_libraries == 'optional' }}
         name: Install woodwork with minimum dask, koalas, core requirements
         run: |
-          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATH='koalas-requirements.txt dask-requirements.txt requirements.txt'
+          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='koalas-requirements.txt dask-requirements.txt requirements.txt'
           cat minimum_requirements.txt
           python -m pip install -r minimum_requirements.txt
       - if: ${{ matrix.optional_libraries != 'optional' }}
         name: Install woodwork with minimum core requirements
         run: |
-          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATH='requirements.txt'
+          make generate_min_reqs OUTPUT_PATH=minimum_requirements.txt INPUT_PATHS='requirements.txt'
           cat minimum_requirements.txt
           python -m pip install -r minimum_requirements.txt
       - if: ${{ needs.detect_requirement_changes.outputs.reqs == 'true' }}
