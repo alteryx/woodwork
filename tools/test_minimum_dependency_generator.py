@@ -1,7 +1,7 @@
 
 import sys
 
-from minimum_dependency_generator import find_min_requirement
+from .minimum_dependency_generator import find_min_requirement
 from packaging.specifiers import Specifier
 
 
