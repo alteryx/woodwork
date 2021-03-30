@@ -8,11 +8,12 @@ Release Notes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
+        * Restrict smart-open version to <5.0.0 (:pr:`750`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
