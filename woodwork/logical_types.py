@@ -110,7 +110,7 @@ class Double(LogicalType):
             [1.2, 100.4, 3.5]
             [-15.34, 100, 58.3]
     """
-    primary_dtype = 'float64'
+    primary_dtype = 'Float64'
     standard_tags = {'numeric'}
 
 
