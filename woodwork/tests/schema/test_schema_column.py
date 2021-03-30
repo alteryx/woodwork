@@ -1,6 +1,7 @@
 import re
 
 import pytest
+from mock import patch
 
 import woodwork as ww
 from woodwork.logical_types import (
@@ -55,6 +56,32 @@ def test_validate_metadata_errors():
     match = re.escape("Column metadata must be a dictionary")
     with pytest.raises(TypeError, match=match):
         _validate_metadata(int)
+
+
+@patch("woodwork.schema_column._validate_metadata")
+@patch("woodwork.schema_column._validate_description")
+@patch("woodwork.schema_column._validate_logical_type")
+def test_validation_methods_called(mock_validate_logical_type, mock_validate_description, mock_validate_metadata,
+                                   sample_column_names, sample_inferred_logical_types):
+    assert not mock_validate_logical_type.called
+    assert not mock_validate_description.called
+    assert not mock_validate_metadata.called
+
+    not_validated_column = _get_column_dict('not_validated', logical_type=Integer,
+                                            description='this is a description', metadata={'user': 'person1'},
+                                            validate=False)
+    assert not mock_validate_logical_type.called
+    assert not mock_validate_description.called
+    assert not mock_validate_metadata.called
+
+    validated_column = _get_column_dict('not_validated', logical_type=Integer,
+                                        description='this is a description', metadata={'user': 'person1'},
+                                        validate=True)
+    assert mock_validate_logical_type.called
+    assert mock_validate_description.called
+    assert mock_validate_metadata.called
+
+    assert validated_column == not_validated_column
 
 
 def test_get_column_dict():

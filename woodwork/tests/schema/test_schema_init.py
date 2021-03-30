@@ -1,6 +1,7 @@
 import re
 
 import pytest
+from mock import patch
 
 from woodwork.logical_types import (
     Boolean,
@@ -355,3 +356,32 @@ def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_l
     schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata=column_metadata)
     for name, column in schema.columns.items():
         assert column['metadata'] == (column_metadata.get(name) or {})
+
+
+@patch("woodwork.schema._validate_not_setting_index_tags")
+@patch("woodwork.schema._check_time_index")
+@patch("woodwork.schema._check_index")
+@patch("woodwork.schema._validate_params")
+def test_validation_methods_called(mock_validate_params, mock_check_index,
+                                   mock_check_time_index, mock_validate_not_setting_index,
+                                   sample_column_names, sample_inferred_logical_types):
+    assert not mock_validate_params.called
+    assert not mock_check_index.called
+    assert not mock_check_time_index.called
+    assert not mock_validate_not_setting_index.called
+
+    not_validated_schema = Schema(sample_column_names, sample_inferred_logical_types,
+                                  index='id', time_index='signup_date', validate=False)
+    assert not mock_validate_params.called
+    assert not mock_check_index.called
+    assert not mock_check_time_index.called
+    assert not mock_validate_not_setting_index.called
+
+    validated_schema = Schema(sample_column_names, sample_inferred_logical_types,
+                              index='id', time_index='signup_date', validate=True)
+    assert mock_validate_params.called
+    assert mock_check_index.called
+    assert mock_check_time_index.called
+    assert mock_validate_not_setting_index.called
+
+    assert validated_schema == not_validated_schema
