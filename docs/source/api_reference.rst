@@ -118,12 +118,12 @@ Logical Types
     Double
     EmailAddress
     Filepath
-    FullName
     Integer
     IPAddress
     LatLong
     NaturalLanguage
     Ordinal
+    PersonFullName
     PhoneNumber
     PostalCode
     SubRegionCode

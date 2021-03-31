@@ -1,36 +1,12 @@
 import argparse
 from collections import defaultdict
-import re
 
-import requests
 from packaging.requirements import Requirement
 from packaging.specifiers import Specifier
-from packaging.version import Version, parse
-
-
-def versions(package_name):
-    url = "https://pypi.org/pypi/%s/json" % (package_name,)
-    r = requests.get(url)
-    data = r.json()
-    releases = []
-    for rel in list(data["releases"].keys()):
-        for avoid_tag  in ['rc', 'b', 'post']:
-            if rel not in avoid_tag:
-                releases.append(rel)
-    versions = [Version(x) for x in releases]
-    versions.sort(reverse=False)
-    return versions
 
 
 def create_strict_min(package_version):
-    version = None
-    if isinstance(package_version, Version):
-        version = package_version.public
-    elif isinstance(package_version, Specifier):
-        version = package_version.version
-    elif isinstance(package_version, str):
-        version = package_version
-    return Specifier('==' + version)
+    return Specifier('==' + package_version)
 
 
 def verify_python_environment(requirement):
@@ -51,14 +27,6 @@ def remove_comment(requirement):
     return requirement
 
 
-def generate_package_name(requirement):
-    package = requirement
-    if not isinstance(package, Requirement):
-        package = Requirement(requirement)
-    if len(package.extras):
-        return package.name + "[" + package.extras.pop() + "]"
-    return package.name
-
 def find_operator_version(package, operator):
     version = None
     for x in package.specifier:
@@ -67,7 +35,15 @@ def find_operator_version(package, operator):
             break
     return version
 
-def find_min_requirement(requirement):
+
+def determine_package_name(package):
+    name = package.name
+    if len(package.extras) > 0:
+        name = package.name + "[" + package.extras.pop() + "]"
+    return name
+
+
+def find_min_requirement(requirement, python_version='3.6', major_python_version='py3'):
     requirement = remove_comment(requirement)
     if not verify_python_environment(requirement):
         return None
@@ -81,30 +57,16 @@ def find_min_requirement(requirement):
         package = Requirement(requirement)
         version = find_operator_version(package, '==')
         mininum = create_strict_min(version)
-    elif '<' in requirement:
-        # mininum version not specified (ex - 'package < 0.0.4')
-        package = Requirement(requirement)
-        version_not_specified = [x for x in package.specifier][0]
-        exclusive_upper_bound_version = parse(version_not_specified.version)
-        all_versions = versions(package.name)
-        valid_versions = []
-        for version in all_versions:
-            if version < exclusive_upper_bound_version:
-                valid_versions.append(version)
-        mininum = min(valid_versions)
-        mininum = create_strict_min(mininum)
     else:
+        # mininum version not specified (ex - 'package < 0.0.4')
         # version not specified (ex - 'package')
-        package = Requirement(requirement)
-        all_versions = versions(package.name)
-        mininum = min(all_versions)
-        mininum = create_strict_min(mininum)
-    if len(package.extras) > 0:
-        return Requirement(package.name + "[" + package.extras.pop() + "]" + str(mininum))
-    return Requirement(package.name + str(mininum))
+        raise ValueError('Operator does not exist or is an invalid operator. Please specify the mininum version.')
+    name = determine_package_name(package)
+    min_requirement = Requirement(name + str(mininum))
+    return min_requirement
 
 
-def write_min_requirements(output_path, requirements_paths):
+def write_min_requirements(output_filepath, requirements_paths, py_env_specifier='3.6'):
     requirements_to_specifier = defaultdict(list)
     min_requirements = []
 
@@ -114,7 +76,7 @@ def write_min_requirements(output_path, requirements_paths):
             requirements.extend(f.readlines())
         for req in requirements:
             package = Requirement(remove_comment(req))
-            name = generate_package_name(package)
+            name = determine_package_name(package)
             if name in requirements_to_specifier:
                 prev_req = Requirement(requirements_to_specifier[name])
                 new_req = prev_req.specifier & package.specifier
@@ -123,16 +85,16 @@ def write_min_requirements(output_path, requirements_paths):
                 requirements_to_specifier[name] = name + str(package.specifier)
 
     for req in list(requirements_to_specifier.values()):
-        min_version = find_min_requirement(req)
-        min_requirements.append(str(min_version) + "\n")
+        min_package = find_min_requirement(req)
+        min_requirements.append(str(min_package) + "\n")
 
-    with open(output_path, "w") as f:
+    with open(output_filepath, "w") as f:
         f.writelines(min_requirements)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="reads a requirements file and outputs the minimized requirements")
-    parser.add_argument('output_path', help='path to output minimized requirements')
+    parser.add_argument('output_filepath', help='path to output minimized requirements')
     parser.add_argument('--requirements_paths', nargs='+', help='path for requirements to minimize', required=True)
     args = parser.parse_args()
-    write_min_requirements(args.output_path, args.requirements_paths)
+    write_min_requirements(args.output_filepath, args.requirements_paths)

@@ -15,7 +15,8 @@ def _get_column_dict(name,
                      semantic_tags=None,
                      use_standard_tags=True,
                      description=None,
-                     metadata=None):
+                     metadata=None,
+                     validate=True):
     """Creates a dictionary that contains the typing information for a Schema column
     Args:
         name (str): The name of the column.
@@ -25,15 +26,16 @@ def _get_column_dict(name,
                 specified logical type. Defaults to True.
         description (str, optional): User description of the column.
         metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
+        validate (bool, optional): Whether to perform parameter validation. Defaults to True.
     """
-    _validate_logical_type(logical_type)
-    _validate_description(description)
-
     if metadata is None:
         metadata = {}
-    _validate_metadata(metadata)
+    if validate:
+        _validate_logical_type(logical_type)
+        _validate_description(description)
+        _validate_metadata(metadata)
 
-    semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name)
+    semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate)
 
     return {
         'logical_type': logical_type,
@@ -62,8 +64,9 @@ def _validate_metadata(column_metadata):
         raise TypeError("Column metadata must be a dictionary")
 
 
-def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}')
+def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate):
+    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}',
+                                          validate=validate)
 
     if use_standard_tags:
         semantic_tags = semantic_tags.union(logical_type.standard_tags)

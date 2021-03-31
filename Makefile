@@ -39,7 +39,24 @@ installdeps-dev:
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark|koalas')
-	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
+	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_FILEPATH)
+
+.PHONY: gen-min-deps
+gen-min-deps:
+	python tools/minimum_dependency/minimum_dependency_generator.py $(OUTPUT_FILEPATH) --requirements_paths $(INPUT_PATHS)
+
+.PHONY: test-min-deps
+test-min-deps:
+	python -m pytest tools/minimum_dependency/test_minimum_dependency_generator.py  --cov=tools/minimum_dependency/ --cov-report term-missing
+
+.PHONY: lint-min-deps
+lint-min-deps:
+	flake8 tools && isort --check-only tools
+
+.PHONY: lint-fix-min-deps
+lint-fix-min-deps:
+	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221,E261,E111,E114" tools
+	isort tools
 
 .PHONY: generate-min-deps
 generate-min-deps:

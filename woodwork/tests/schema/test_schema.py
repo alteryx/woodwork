@@ -3,6 +3,7 @@ import re
 
 import pandas as pd
 import pytest
+from mock import patch
 
 from woodwork import type_system
 from woodwork.exceptions import ColumnNotPresentError, DuplicateTagsWarning
@@ -12,9 +13,9 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     EmailAddress,
-    FullName,
     Integer,
     NaturalLanguage,
+    PersonFullName,
     PhoneNumber
 )
 from woodwork.schema import Schema
@@ -265,13 +266,13 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
     assert filter_overlap_with_name == ['full_name']
 
     schema = Schema(sample_column_names,
-                    {**sample_inferred_logical_types, 'full_name': Categorical, 'age': FullName},
-                    semantic_tags={'id': 'full_name'})
+                    {**sample_inferred_logical_types, 'full_name': Categorical, 'age': PersonFullName},
+                    semantic_tags={'id': 'person_full_name'})
 
-    filter_tag_and_ltype = schema._filter_cols(include='full_name')
+    filter_tag_and_ltype = schema._filter_cols(include='person_full_name')
     assert set(filter_tag_and_ltype) == {'id', 'age'}
 
-    filter_all_three = schema._filter_cols(include='full_name', col_names=True)
+    filter_all_three = schema._filter_cols(include=['person_full_name', 'full_name'], col_names=True)
     assert set(filter_all_three) == {'id', 'age', 'full_name'}
 
 
@@ -307,7 +308,8 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
         'table_metadata': {'created_by': 'user1'},
         'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
         'use_standard_tags': False,
-        'column_descriptions': {'age': 'this is a description'}
+        'column_descriptions': {'age': 'this is a description'},
+        'validate': True
     }
 
     # Confirm all possible params to Schema init are present with non-default values where possible
@@ -885,3 +887,28 @@ def test_schema_rename_indices(sample_column_names, sample_inferred_logical_type
 
     assert renamed_schema.index == 'renamed_index'
     assert renamed_schema.time_index == 'renamed_time_index'
+
+
+@patch("woodwork.schema._check_time_index")
+@patch("woodwork.schema._check_index")
+def test_validation_methods_called(mock_check_index, mock_check_time_index,
+                                   sample_column_names, sample_inferred_logical_types):
+    validation_schema = Schema(sample_column_names, sample_inferred_logical_types)
+    no_validation_schema = Schema(sample_column_names, sample_inferred_logical_types)
+
+    assert not mock_check_index.called
+    assert not mock_check_time_index.called
+
+    no_validation_schema.set_index('id', validate=False)
+    assert not mock_check_index.called
+
+    validation_schema.set_index('id', validate=True)
+    assert mock_check_index.called
+    assert validation_schema == no_validation_schema
+
+    validation_schema.set_time_index('signup_date', validate=False)
+    assert not mock_check_time_index.called
+
+    no_validation_schema.set_time_index('signup_date', validate=True)
+    assert mock_check_time_index.called
+    assert validation_schema == no_validation_schema

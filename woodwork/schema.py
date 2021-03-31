@@ -26,7 +26,8 @@ class Schema(object):
                  table_metadata=None,
                  column_metadata=None,
                  use_standard_tags=True,
-                 column_descriptions=None):
+                 column_descriptions=None,
+                 validate=True):
         """Create Schema
 
         Args:
@@ -52,10 +53,14 @@ class Schema(object):
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
+                Should be set to False only when parameters and data are known to be valid.
+                Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
-        # Check that inputs are valid
-        _validate_params(column_names, name, index, time_index, logical_types,
-                         table_metadata, column_metadata, semantic_tags, column_descriptions)
+        if validate:
+            # Check that inputs are valid
+            _validate_params(column_names, name, index, time_index, logical_types,
+                             table_metadata, column_metadata, semantic_tags, column_descriptions)
 
         self.name = name
         self.use_standard_tags = use_standard_tags
@@ -66,12 +71,13 @@ class Schema(object):
                                             semantic_tags,
                                             use_standard_tags,
                                             column_descriptions,
-                                            column_metadata)
+                                            column_metadata,
+                                            validate)
         if index is not None:
-            self.set_index(index)
+            self.set_index(index, validate=validate)
 
         if time_index is not None:
-            self.set_time_index(time_index)
+            self.set_time_index(time_index, validate=validate)
 
         self.metadata = table_metadata or {}
 
@@ -273,14 +279,16 @@ class Schema(object):
                         semantic_tags,
                         use_standard_tags,
                         column_descriptions,
-                        column_metadata):
+                        column_metadata,
+                        validate):
         """Create a dictionary with column names as keys and new column dictionaries holding
         each column's typing information as values."""
         columns = {}
         for name in column_names:
             semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name),
-                                                          error_language=f'semantic_tags for {name}')
-            _validate_not_setting_index_tags(semantic_tags_for_col, name)
+                                                          error_language=f'semantic_tags for {name}', validate=validate)
+            if validate:
+                _validate_not_setting_index_tags(semantic_tags_for_col, name)
             description = (column_descriptions or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)
 
@@ -289,10 +297,11 @@ class Schema(object):
                                              semantic_tags=semantic_tags_for_col,
                                              use_standard_tags=use_standard_tags,
                                              description=description,
-                                             metadata=metadata_for_col)
+                                             metadata=metadata_for_col,
+                                             validate=validate)
         return columns
 
-    def set_index(self, new_index):
+    def set_index(self, new_index, validate=True):
         """Sets the index. Handles setting a new index, updating the index, or removing the index.
 
         Args:
@@ -303,10 +312,11 @@ class Schema(object):
         if old_index is not None:
             self.remove_semantic_tags({old_index: 'index'})
         if new_index is not None:
-            _check_index(self.columns.keys(), new_index)
+            if validate:
+                _check_index(self.columns.keys(), new_index)
             self._set_index_tags(new_index)
 
-    def set_time_index(self, new_time_index):
+    def set_time_index(self, new_time_index, validate=True):
         """Set the time index. Adds the 'time_index' semantic tag to the column and
         clears the tag from any previously set index column
 
@@ -318,7 +328,8 @@ class Schema(object):
         if old_time_index is not None:
             self.remove_semantic_tags({old_time_index: 'time_index'})
         if new_time_index is not None:
-            _check_time_index(self.columns.keys(), new_time_index, self.logical_types.get(new_time_index))
+            if validate:
+                _check_time_index(self.columns.keys(), new_time_index, self.logical_types.get(new_time_index))
             self._set_time_index_tags(new_time_index)
 
     def rename(self, columns):
