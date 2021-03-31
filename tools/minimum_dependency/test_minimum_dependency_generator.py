@@ -11,11 +11,6 @@ from .minimum_dependency_generator import (
 
 
 @pytest.fixture(scope='session', autouse=True)
-def dask_dep():
-    return 'dask>=2.30.0,<2012.12.0'
-
-
-@pytest.fixture(scope='session', autouse=True)
 def pandas_dep():
     return 'pandas>=0.24.1,<2.0.0,!=1.1.0,!=1.1.1'
 
@@ -26,22 +21,27 @@ def woodwork_dep():
 
 
 @pytest.fixture(scope='session', autouse=True)
-def numpy_dep_lower():
+def dask_dep():
+    return 'dask[dataframe]>=2.30.0,<2012.12.0'
+
+
+@pytest.fixture(scope='session', autouse=True)
+def ploty_dep():
+    return 'plotly>=4.14.0'
+
+
+@pytest.fixture(scope='session', autouse=True)
+def numpy_lower():
     return 'numpy>=1.15.4'
 
 
 @pytest.fixture(scope='session', autouse=True)
-def numpy_dep_upper():
+def numpy_upper():
     return 'numpy<1.20.0'
 
 
-@pytest.fixture(scope='session', autouse=True)
-def colorama_dep():
-    return 'colorama'
-
-
-def test_lower_bound():
-    mininum_package = find_min_requirement('plotly>=4.14.0')
+def test_lower_bound(ploty_dep):
+    mininum_package = find_min_requirement(ploty_dep)
     verify_mininum(mininum_package, 'plotly', '4.14.0')
     mininum_package = find_min_requirement('plotly>=4.14')
     verify_mininum(mininum_package, 'plotly', '4.14')
@@ -51,7 +51,7 @@ def test_lower_upper_bound(dask_dep):
     mininum_package = find_min_requirement('xgboost>=0.82,<1.3.0')
     verify_mininum(mininum_package, 'xgboost', '0.82')
     mininum_package = find_min_requirement(dask_dep)
-    verify_mininum(mininum_package, 'dask', '2.30.0')
+    verify_mininum(mininum_package, 'dask', '2.30.0', required_extra='dataframe')
 
 
 def test_spacing():
@@ -65,15 +65,11 @@ def test_marker():
 
 
 def test_upper_bound():
-    mininum_package = find_min_requirement('pyzmq<22.0.0')
-    verify_mininum(mininum_package, 'pyzmq', '2.0.7')
-    mininum_package = find_min_requirement('dask<2012.12.0')
-    verify_mininum(mininum_package, 'dask', '0.2.0')
-
-
-def test_not_bound(colorama_dep):
-    mininum_package = find_min_requirement(colorama_dep)
-    verify_mininum(mininum_package, 'colorama', '0.1')
+    error_text = "Operator does not exist or is an invalid operator. Please specify the mininum version."
+    with pytest.raises(ValueError, match=error_text):
+        find_min_requirement('xgboost<1.3.0')
+    with pytest.raises(ValueError, match=error_text):
+        find_min_requirement('colorama')
 
 
 def test_bound(woodwork_dep):
@@ -81,9 +77,9 @@ def test_bound(woodwork_dep):
     verify_mininum(mininum_package, 'woodwork', '0.0.11')
 
 
-def test_extra_requires(dask_dep):
-    mininum_package = find_min_requirement(dask_dep)
-    verify_mininum(mininum_package, 'dask', '2.30.0', required_extra='dataframe')
+def test_extra_requires():
+    mininum_package = find_min_requirement('dask>=2.30.0')
+    verify_mininum(mininum_package, 'dask', '2.30.0', required_extra=None)
     mininum_package = find_min_requirement('dask[dataframe]<2012.12.0,>=2.30.0')
     verify_mininum(mininum_package, 'dask', '2.30.0', required_extra='dataframe')
 
@@ -106,9 +102,11 @@ def test_wrong_python_env():
     verify_mininum(mininum_package, 'ipython', '7.16.0')
 
 
-def test_write_min_requirements(dask_dep, pandas_dep, woodwork_dep, numpy_dep_upper, numpy_dep_lower, colorama_dep):
-    requirements_core = '\n'.join([dask_dep, pandas_dep, woodwork_dep, numpy_dep_upper])
-    requirements_koalas = '\n'.join([numpy_dep_lower, colorama_dep])
+def test_write_min_requirements(ploty_dep, dask_dep, pandas_dep, woodwork_dep,
+                                numpy_upper, numpy_lower):
+    min_requirements = []
+    requirements_core = '\n'.join([dask_dep, pandas_dep, woodwork_dep, numpy_upper])
+    requirements_koalas = '\n'.join([ploty_dep, numpy_lower])
     with tempfile.NamedTemporaryFile(mode="w", suffix='.txt', prefix='out_requirements') as out_f:
         with tempfile.NamedTemporaryFile(mode="w", suffix='.txt', prefix='core_requirements') as core_f:
             with tempfile.NamedTemporaryFile(mode="w", suffix='.txt', prefix='koalas_requirements') as koalas_f:
@@ -117,6 +115,12 @@ def test_write_min_requirements(dask_dep, pandas_dep, woodwork_dep, numpy_dep_up
                 koalas_f.writelines(requirements_koalas)
                 koalas_f.flush()
                 write_min_requirements(out_f.name, requirements_paths=[core_f.name, koalas_f.name])
+        with open(out_f.name) as f:
+            min_requirements = f.readlines()
+    expected_min_reqs = ['dask[dataframe]==2.30.0', 'pandas==0.24.1', 'woodwork==0.0.11', 'numpy==1.15.4', 'plotly==4.14.0']
+    assert len(min_requirements) == len(expected_min_reqs)
+    for idx, min_req in enumerate(min_requirements):
+        assert expected_min_reqs[idx] == min_req.strip()
 
 
 def verify_mininum(mininum_package, required_package_name, required_mininum_version,
@@ -124,4 +128,9 @@ def verify_mininum(mininum_package, required_package_name, required_mininum_vers
     assert mininum_package.name == required_package_name
     assert mininum_package.specifier == Specifier(operator + required_mininum_version)
     if required_extra:
-        mininum_package.extras == {required_extra}
+        assert mininum_package.extras == {required_extra}
+    else:
+        assert mininum_package.extras == set()
+        extra_chars = ['[', ']']
+        not any([x in mininum_package.name for x in extra_chars])
+        assert not any([x in required_package_name for x in extra_chars])
