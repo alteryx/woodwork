@@ -1,7 +1,11 @@
 name: Minimum Dependency Checker
 on:
-  pull_request:
-    types: [opened, synchronize]
+  push:
+    paths:
+    - 'requirements.txt'
+    - 'test-requirements.txt'
+    - 'dask-requirements.txt'
+    - 'koalas-requirements.txt'
 jobs:
   build:
     runs-on: ubuntu-latest
