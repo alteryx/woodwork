@@ -398,7 +398,7 @@ def test_accessor_with_numeric_time_index(time_index_df):
     assert date_col['logical_type'] == Double
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-# --> no longer valid to convert from strs to Float64
+# --> no longer valid to convert from strs to Float64 - check if later version of pandas changes this
     # schema_df = time_index_df.copy()
     # schema_df.ww.init(time_index='strs', logical_types={'strs': 'Double'})
     # date_col = schema_df.ww.columns['strs']
@@ -1137,6 +1137,7 @@ def test_get_invalid_schema_message_index_checks(sample_df):
     assert (_get_invalid_schema_message(different_underlying_index_df, schema) ==
             "Index mismatch between DataFrame and typing information")
 
+    # --> we shouldn't have to do the astype right? see if this is a bug or if a later pandas version fixes
     not_unique_df = schema_df.replace({3.0: 1.0}).astype({'id': 'Float64'})
     not_unique_df.index = not_unique_df['id']
     not_unique_df.index.name = None
