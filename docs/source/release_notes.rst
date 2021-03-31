@@ -13,9 +13,10 @@ Release Notes
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
+        * Add unit tests aganist minimum dependencies for python 3.6 (:pr:`743`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
