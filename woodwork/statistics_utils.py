@@ -151,8 +151,13 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     for col_name in data.columns:
         column = schema.columns[col_name]
         if _is_col_numeric(column):
+            # Float64 dtype is not compatible with qcut, so convert to float64
+            # --> should we convert it back after????
+            data_col = data[col_name]
+            if str(data_col.dtype) == 'Float64':
+                data_col = data_col.astype('float64')
             # bin numeric features to make categories
-            data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
+            data[col_name] = pd.qcut(data_col, num_bins, duplicates="drop")
         # Convert Datetimes to total seconds - an integer - and bin
         if _is_col_datetime(column):
             data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")

@@ -23,7 +23,7 @@ def test_register_custom_logical_type(type_sys):
 
 def test_custom_type_with_accessor(sample_df):
     class AgesAbove20(LogicalType):
-        primary_dtype = 'float64'
+        primary_dtype = 'Float64'
         standard_tags = {'age', 'numeric'}
 
     def ages_func(series):
@@ -35,7 +35,7 @@ def test_custom_type_with_accessor(sample_df):
     sample_df.ww.init()
     assert sample_df.ww['age'].ww.logical_type == AgesAbove20
     assert sample_df.ww['age'].ww.semantic_tags == {'age', 'numeric'}
-    assert sample_df['age'].dtype == 'float64'
+    assert sample_df['age'].dtype == 'Float64'
     # Reset global type system to original settings
     ww.type_system.reset_defaults()
 
@@ -51,6 +51,6 @@ def test_accessor_override_default_function(sample_df):
     ww.type_system.update_inference_function('Integer', inference_function=None)
     sample_df.ww.init()
     assert sample_df.ww['age'].ww.logical_type == Double
-    assert sample_df['age'].dtype == 'float64'
+    assert sample_df['age'].dtype == 'Float64'
     # Reset global type system to original settings
     ww.type_system.reset_defaults()

@@ -71,7 +71,7 @@ def test_accessor_replace_nans_for_mutual_info():
     assert isinstance(formatted_df, pd.DataFrame)
 
     assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
-    assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
+    assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='Float64'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
     assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
     assert formatted_df['str'].equals(pd.Series(['test', 'test', 'test2', 'test'], dtype='category'))

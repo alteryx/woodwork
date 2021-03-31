@@ -398,12 +398,13 @@ def test_accessor_with_numeric_time_index(time_index_df):
     assert date_col['logical_type'] == Double
     assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
-    schema_df = time_index_df.copy()
-    schema_df.ww.init(time_index='strs', logical_types={'strs': 'Double'})
-    date_col = schema_df.ww.columns['strs']
-    assert schema_df.ww.time_index == 'strs'
-    assert date_col['logical_type'] == Double
-    assert date_col['semantic_tags'] == {'time_index', 'numeric'}
+# --> no longer valid to convert from strs to Float64
+    # schema_df = time_index_df.copy()
+    # schema_df.ww.init(time_index='strs', logical_types={'strs': 'Double'})
+    # date_col = schema_df.ww.columns['strs']
+    # assert schema_df.ww.time_index == 'strs'
+    # assert date_col['logical_type'] == Double
+    # assert date_col['semantic_tags'] == {'time_index', 'numeric'}
 
     error_msg = 'Time index column must contain datetime or numeric values'
     with pytest.raises(TypeError, match=error_msg):
@@ -487,7 +488,7 @@ def test_int_dtype_inference_on_init():
     df.ww.init()
 
     assert df['ints_no_nans'].dtype == 'Int64'
-    assert df['ints_nan'].dtype == 'float64'
+    assert df['ints_nan'].dtype == 'Float64'
     assert df['ints_NA'].dtype == 'category'
     assert df['ints_NA_specified'].dtype == 'Int64'
 
@@ -530,13 +531,13 @@ def test_float_dtype_inference_on_init():
         'floats_no_nans': pd.Series([1.1, 2.2]),
         'floats_nan': pd.Series([1.1, np.nan]),
         'floats_NA': pd.Series([1.1, pd.NA]),
-        'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float')})
+        'floats_nan_specified': pd.Series([1.1, np.nan], dtype='Float64')})
     df.ww.init()
 
-    assert df['floats_no_nans'].dtype == 'float64'
-    assert df['floats_nan'].dtype == 'float64'
+    assert df['floats_no_nans'].dtype == 'Float64'
+    assert df['floats_nan'].dtype == 'Float64'
     assert df['floats_NA'].dtype == 'category'
-    assert df['floats_nan_specified'].dtype == 'float64'
+    assert df['floats_nan_specified'].dtype == 'Float64'
 
 
 def test_datetime_dtype_inference_on_init():
@@ -735,6 +736,7 @@ def test_sets_float64_dtype_on_init():
         pd.Series([1.1, 2, 3], name=column_name),
         pd.Series([1.1, None, 3], name=column_name),
         pd.Series([1.1, np.nan, 3], name=column_name),
+        pd.Series([1.1, pd.NA, 3], name=column_name),
     ]
 
     logical_type = Double
@@ -779,17 +781,13 @@ def test_invalid_dtype_casting():
     ltypes = {
         column_name: Double,
     }
-    err_msg = 'Error converting datatype for test_series from type object to type ' \
-        'float64. Please confirm the underlying data is consistent with logical type Double.'
-    with pytest.raises(TypeConversionError, match=err_msg):
-        pd.DataFrame(series).ww.init(logical_types=ltypes)
 
     # Cannot cast Datetime to Double
     df = pd.DataFrame({column_name: ['2020-01-01', '2020-01-02', '2020-01-03']})
     df.ww.init(logical_types={column_name: Datetime})
 
     err_msg = 'Error converting datatype for test_series from type datetime64[ns] to type ' \
-        'float64. Please confirm the underlying data is consistent with logical type Double.'
+        'Float64. Please confirm the underlying data is consistent with logical type Double.'
     with pytest.raises(TypeConversionError, match=re.escape(err_msg)):
         df.ww.set_types(logical_types={column_name: Double})
 
@@ -1090,7 +1088,7 @@ def test_get_invalid_schema_message(sample_df):
 
     assert _get_invalid_schema_message(schema_df, schema) is None
     assert (_get_invalid_schema_message(sample_df, schema) ==
-            'dtype mismatch for column id between DataFrame dtype, int64, and Double dtype, float64')
+            'dtype mismatch for column id between DataFrame dtype, int64, and Double dtype, Float64')
 
     sampled_df = schema_df.sample(frac=0.3)
     assert _get_invalid_schema_message(sampled_df, schema) is None
@@ -1135,13 +1133,14 @@ def test_get_invalid_schema_message_index_checks(sample_df):
     schema = schema_df.ww.schema
 
     different_underlying_index_df = schema_df.copy()
-    different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='float64')
+    different_underlying_index_df['id'] = pd.Series([9, 8, 7, 6], dtype='Float64')
     assert (_get_invalid_schema_message(different_underlying_index_df, schema) ==
             "Index mismatch between DataFrame and typing information")
 
-    not_unique_df = schema_df.replace({3: 1})
+    not_unique_df = schema_df.replace({3.0: 1.0}).astype({'id': 'Float64'})
     not_unique_df.index = not_unique_df['id']
     not_unique_df.index.name = None
+    print(_get_invalid_schema_message(not_unique_df, schema))
     assert _get_invalid_schema_message(not_unique_df, schema) == 'Index column is not unique'
 
 
@@ -1674,7 +1673,7 @@ def test_set_types_errors(sample_df):
         # Dask does not error on invalid type conversion until compute
         # Koalas does conversion and fills values with NaN
         error = 'Error converting datatype for email from type string ' \
-            'to type float64. Please confirm the underlying data is consistent with ' \
+            'to type Float64. Please confirm the underlying data is consistent with ' \
             'logical type Double.'
         with pytest.raises(TypeConversionError, match=error):
             sample_df.ww.set_types(logical_types={'email': 'Double'})
@@ -1907,7 +1906,7 @@ def test_setitem_different_name(sample_df):
     df = sample_df.copy()
     df.ww.init()
 
-    new_series = pd.Series([1, 2, 3, 4], name='wrong', dtype='float')
+    new_series = pd.Series([1, 2, 3, 4], name='wrong', dtype='Float64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
@@ -1918,7 +1917,7 @@ def test_setitem_different_name(sample_df):
     assert 'wrong' not in df.ww.columns
     assert 'wrong' not in df.columns
 
-    new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='float')
+    new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='Float64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series2 = ks.Series(new_series2)
 
@@ -1947,7 +1946,7 @@ def test_setitem_new_column(sample_df):
     assert df.ww['test_col2'].name == 'test_col2'
     assert df.ww['test_col2'].dtype == dtype
 
-    new_series = pd.Series([1, 2, 3], dtype='float')
+    new_series = pd.Series([1, 2, 3], dtype='Float64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
@@ -1963,7 +1962,7 @@ def test_setitem_new_column(sample_df):
     assert df.ww['test_col3'].ww.logical_type == Double
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
-    assert df.ww['test_col3'].dtype == 'float'
+    assert df.ww['test_col3'].dtype == 'Float64'
 
     # Standard tags and no logical type
     df = sample_df.copy()
@@ -2012,7 +2011,7 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = df['full_name']
-    new_series = pd.Series([0, 1, 2], dtype='float')
+    new_series = pd.Series([0, 1, 2], dtype='Float64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
@@ -2030,14 +2029,14 @@ def test_setitem_overwrite_column(sample_df):
     assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Double
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag', 'numeric'}
-    assert df.ww['full_name'].dtype == 'float'
+    assert df.ww['full_name'].dtype == 'Float64'
     assert original_col is not df.ww['full_name']
 
     df = sample_df.copy()
     df.ww.init(use_standard_tags=False)
 
     original_col = df['full_name']
-    new_series = pd.Series([0, 1, 2], dtype='float')
+    new_series = pd.Series([0, 1, 2], dtype='Float64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
@@ -2055,7 +2054,7 @@ def test_setitem_overwrite_column(sample_df):
     assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Double
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
-    assert df.ww['full_name'].dtype == 'float'
+    assert df.ww['full_name'].dtype == 'Float64'
     assert original_col is not df.ww['full_name']
 
 

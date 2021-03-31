@@ -234,7 +234,7 @@ def test_adds_category_standard_tag():
 
 
 def test_does_not_add_standard_tags():
-    series = pd.Series([1.1, 2, 3])
+    series = pd.Series([1.1, 2, 3], dtype='Float64')
     semantic_tags = 'custom_tag'
     series.ww.init(logical_type=Double,
                    semantic_tags=semantic_tags,
