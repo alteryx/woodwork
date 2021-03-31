@@ -3,10 +3,10 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'tools/minimum_dependency_/**'
+      - 'tools/minimum_dependency/**'
   push:
     paths:
-      - 'tools/minimum_dependency_/**'
+      - 'tools/minimum_dependency/**'
 
 jobs:
   minimum_dependeny_checker_unit_tests:
