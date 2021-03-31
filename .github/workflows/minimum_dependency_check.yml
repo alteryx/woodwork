@@ -1,11 +1,7 @@
 name: Minimum Dependency Checker
 on:
-  push:
-    paths:
-    - 'requirements.txt'
-    - 'test-requirements.txt'
-    - 'dask-requirements.txt'
-    - 'koalas-requirements.txt'
+  pull_request:
+    types: [opened, synchronize]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,26 +15,26 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.6
-      - name: Install generator requirements
+      - name: Install requirements for minimum dependency checker
         run: |
           python -m pip install --upgrade pip
           pip config --site set global.progress_bar off
           python -m pip install -r tools/minimum_dependency/requirements.txt
       - name: Update minimum test dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
           cat woodwork/tests/minimum_test_requirements.txt
       - name: Update minimum koalas dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_koalas_requirements.txt INPUT_PATHS='koalas-requirements.txt requirements.txt'
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_koalas_requirements.txt INPUT_PATHS='koalas-requirements.txt requirements.txt'
           cat woodwork/tests/minimum_koalas_requirements.txt
       - name: Update minimum dask dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_dask_requirements.txt INPUT_PATHS='dask-requirements.txt requirements.txt'
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_dask_requirements.txt INPUT_PATHS='dask-requirements.txt requirements.txt'
           cat woodwork/tests/minimum_dask_requirements.txt
       - name: Update minimum core dependencies
         run: |
-          make generate-min-deps OUTPUT_PATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
           cat woodwork/tests/minimum_core_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
