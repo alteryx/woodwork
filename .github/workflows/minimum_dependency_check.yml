@@ -6,7 +6,6 @@ on:
     - 'test-requirements.txt'
     - 'dask-requirements.txt'
     - 'koalas-requirements.txt'
-    - 'tools/minimum_dependency/minimum_dependency_generator.py'
 jobs:
   build:
     runs-on: ubuntu-latest
