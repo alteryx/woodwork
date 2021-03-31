@@ -4,7 +4,6 @@ on:
     types: [opened, synchronize]
     paths:
       - 'tools/minimum_dependency/**'
-
 jobs:
   minimum_dependeny_checker_unit_tests:
     name: unit tests - minimum dependency checker
