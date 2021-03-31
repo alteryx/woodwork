@@ -36,6 +36,13 @@ def find_operator_version(package, operator):
     return version
 
 
+def determine_package_name(package):
+    name = package.name
+    if len(package.extras) > 0:
+        name = package.name + "[" + package.extras.pop() + "]"
+    return name
+
+
 def find_min_requirement(requirement, python_version='3.6', major_python_version='py3'):
     requirement = remove_comment(requirement)
     if not verify_python_environment(requirement):
@@ -54,10 +61,8 @@ def find_min_requirement(requirement, python_version='3.6', major_python_version
         # mininum version not specified (ex - 'package < 0.0.4')
         # version not specified (ex - 'package')
         raise ValueError('Operator does not exist or is an invalid operator. Please specify the mininum version.')
-    if len(package.extras) > 0:
-        min_requirement = Requirement(package.name + "[" + package.extras.pop() + "]" + str(mininum))
-    else:
-        min_requirement = Requirement(package.name + str(mininum))
+    name = determine_package_name(package)
+    min_requirement = Requirement(name + str(mininum))
     return min_requirement
 
 
@@ -71,9 +76,7 @@ def write_min_requirements(output_filepath, requirements_paths, py_env_specifier
             requirements.extend(f.readlines())
         for req in requirements:
             package = Requirement(remove_comment(req))
-            name = package.name
-            if len(package.extras) > 0:
-                name = package.name + "[" + package.extras.pop() + "]"
+            name = determine_package_name(package)
             if name in requirements_to_specifier:
                 prev_req = Requirement(requirements_to_specifier[name])
                 new_req = prev_req.specifier & package.specifier
