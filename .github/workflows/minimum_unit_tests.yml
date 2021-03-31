@@ -2,9 +2,12 @@ name: Unit Tests - Minimum Dependencies
 on:
   pull_request:
     types: [opened, synchronize]
-  push:
-    branches:
-      - main
+    paths:
+      - 'requirements.txt'
+      - 'test-requirements.txt'
+      - 'dask-requirements.txt'
+      - 'koalas-requirements.txt'
+      - 'tools/minimum_dependency/minimum_dependency_generator.py'
 jobs:
   py36_unit_tests_minimum_dependencies:
     name: 3.6 unit tests minimum dependencies
