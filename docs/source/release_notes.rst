@@ -4,16 +4,18 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add validation control to WoodworkTableAccessor (:pr:`736`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
+        * Restrict smart-open version to <5.0.0 (:pr:`750`)
     * Documentation Changes
     * Testing Changes
         * Add unit tests aganist minimum dependencies for python 3.6 (:pr:`743`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``

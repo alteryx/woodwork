@@ -5,6 +5,7 @@ import re
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 import woodwork as ww
 from woodwork.logical_types import (
@@ -78,6 +79,25 @@ def test_convert_input_to_set():
 
     semantic_tags_from_set = _convert_input_to_set({'index', 'numeric', 'category'}, 'include parameter')
     assert semantic_tags_from_set == {'index', 'numeric', 'category'}
+
+
+@patch("woodwork.utils._validate_string_tags")
+@patch("woodwork.utils._validate_tags_input_type")
+def test_validation_methods_called(mock_validate_input_type, mock_validate_strings):
+    assert not mock_validate_input_type.called
+    assert not mock_validate_strings.called
+
+    _convert_input_to_set('test_tag', validate=False)
+    assert not mock_validate_input_type.called
+
+    _convert_input_to_set('test_tag', validate=True)
+    assert mock_validate_input_type.called
+
+    _convert_input_to_set(['test_tag', 'tag2'], validate=False)
+    assert not mock_validate_strings.called
+
+    _convert_input_to_set(['test_tag', 'tag2'], validate=True)
+    assert mock_validate_strings.called
 
 
 def test_list_logical_types_default():
