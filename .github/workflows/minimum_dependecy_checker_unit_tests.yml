@@ -9,8 +9,6 @@ jobs:
   minimum_dependeny_checker_unit_tests:
     name: unit tests - minimum dependency checker
     runs-on: ubuntu-latest
-    outputs:
-      reqs: ${{ steps.filter.outputs.reqs }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
