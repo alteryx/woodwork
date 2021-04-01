@@ -10,6 +10,7 @@ Release Notes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
         * Fix issue with smart-open version 5.0.0 (:pr:`750`, :pr:`758`)
+        * Update minimum scikit-learn version to 0.22 (:pr:`763`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
