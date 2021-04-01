@@ -9,7 +9,7 @@ Release Notes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
-        * Restrict smart-open version to <5.0.0 (:pr:`750`)
+        * Fix issue with smart-open version 5.0.0 (:pr:`750`, :pr:`758`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
