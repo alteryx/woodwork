@@ -1,11 +1,14 @@
 name: Minimum Dependency Checker
 on:
   push:
+    branches:
+      - main
     paths:
-    - 'requirements.txt'
-    - 'test-requirements.txt'
-    - 'dask-requirements.txt'
-    - 'koalas-requirements.txt'
+      - 'requirements.txt'
+      - 'test-requirements.txt'
+      - 'dask-requirements.txt'
+      - 'koalas-requirements.txt'
+
 jobs:
   build:
     runs-on: ubuntu-latest
