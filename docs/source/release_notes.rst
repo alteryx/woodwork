@@ -11,6 +11,7 @@ Release Notes
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
         * Fix issue with smart-open version 5.0.0 (:pr:`750`, :pr:`758`)
         * Update minimum scikit-learn version to 0.22 (:pr:`763`)
+        * Drop support for Python version 3.6 (:pr:`768`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
