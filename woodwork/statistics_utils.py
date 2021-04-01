@@ -152,7 +152,6 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
         column = schema.columns[col_name]
         if _is_col_numeric(column):
             # Float64 dtype is not compatible with qcut, so convert to float64
-            # --> should we convert it back after???? - check if later version of pandas changes
             data_col = data[col_name]
             if str(data_col.dtype) == 'Float64':
                 data_col = data_col.astype('float64')
