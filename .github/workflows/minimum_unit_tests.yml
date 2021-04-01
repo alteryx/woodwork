@@ -7,6 +7,9 @@ on:
       - 'test-requirements.txt'
       - 'dask-requirements.txt'
       - 'koalas-requirements.txt'
+  push:
+    branches:
+      - main
 jobs:
   py36_unit_tests_minimum_dependencies:
     name: 3.6 unit tests minimum dependencies

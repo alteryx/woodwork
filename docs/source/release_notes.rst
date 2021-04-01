@@ -10,10 +10,11 @@ Release Notes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
         * Fix issue with smart-open version 5.0.0 (:pr:`750`, :pr:`758`)
+        * Update minimum scikit-learn version to 0.22 (:pr:`763`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
-        * Add unit tests aganist minimum dependencies for python 3.6 (:pr:`743`, :pr:`753`)
+        * Add unit tests aganist minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
