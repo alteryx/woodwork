@@ -1,0 +1,44 @@
+name: Unit Tests - Minimum Dependencies
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'requirements.txt'
+      - 'test-requirements.txt'
+      - 'dask-requirements.txt'
+      - 'koalas-requirements.txt'
+jobs:
+  py36_unit_tests_minimum_dependencies:
+    name: 3.6 unit tests minimum dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        libraries: ["core", "dask", "koalas"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Set up python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install woodwork - minimum tests requirements
+        run: |
+          python -m pip install -r woodwork/tests/minimum_test_requirements.txt
+      - if: ${{ matrix.libraries == 'koalas' }}
+        name: Install woodwork - minimum koalas, core requirements
+        run: |
+          python -m pip install -r woodwork/tests/minimum_koalas_requirements.txt
+      - if: ${{ matrix.libraries == 'dask' }}
+        name: Install woodwork - minimum dask, core requirements
+        run: |
+          python -m pip install -r woodwork/tests/minimum_dask_requirements.txt
+      - if: ${{ matrix.libraries == 'core' }}
+        name: Install woodwork - minimum core requirements
+        run: |
+          python -m pip install -r woodwork/tests/minimum_core_requirements.txt
+      - name: Run unit tests without code coverage
+        run: |
+          python -m pytest woodwork/ -n 2

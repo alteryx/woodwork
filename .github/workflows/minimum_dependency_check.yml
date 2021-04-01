@@ -1,0 +1,55 @@
+name: Minimum Dependency Checker
+on:
+  push:
+    paths:
+    - 'requirements.txt'
+    - 'test-requirements.txt'
+    - 'dask-requirements.txt'
+    - 'koalas-requirements.txt'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Set up python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install requirements for minimum dependency checker
+        run: |
+          python -m pip install --upgrade pip
+          pip config --site set global.progress_bar off
+          python -m pip install -r tools/minimum_dependency/requirements.txt
+      - name: Update minimum test dependencies
+        run: |
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
+          cat woodwork/tests/minimum_test_requirements.txt
+      - name: Update minimum koalas dependencies
+        run: |
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_koalas_requirements.txt INPUT_PATHS='koalas-requirements.txt requirements.txt'
+          cat woodwork/tests/minimum_koalas_requirements.txt
+      - name: Update minimum dask dependencies
+        run: |
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_dask_requirements.txt INPUT_PATHS='dask-requirements.txt requirements.txt'
+          cat woodwork/tests/minimum_dask_requirements.txt
+      - name: Update minimum core dependencies
+        run: |
+          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
+          cat woodwork/tests/minimum_core_requirements.txt
+      - name: Create Pull Request
+        uses: FeatureLabs/create-pull-request@v3
+        with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          commit-message: Update minimum dependencies
+          title: Automated Minimum Dependency Updates
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          body: "This is an auto-generated PR with **minimum** dependency updates.
+                 Please do not delete the `min-dep-update` branch because it's needed by the auto-dependency bot."
+          branch: min-dep-update
+          branch-suffix: short-commit-hash
+          base: main
+          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez
