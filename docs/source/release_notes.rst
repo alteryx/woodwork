@@ -3,6 +3,9 @@
 Release Notes
 -------------
 **Future Release**
+    .. warning::
+        This Woodwork release does not support Python 3.6
+
     * Enhancements
         * Add validation control to WoodworkTableAccessor (:pr:`736`)
     * Fixes
