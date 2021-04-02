@@ -8,7 +8,6 @@ from mock import patch
 import woodwork as ww
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
-    ColumnNameMismatchWarning,
     ColumnNotPresentError,
     ParametersIgnoredWarning,
     StandardTagsChangedWarning,
@@ -1912,10 +1911,8 @@ def test_setitem_different_name(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
-    warning = 'Name mismatch between wrong and id. Series name is now id'
-    with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        df.ww['id'] = new_series
-
+    # Assign series with name `wrong` to existing column with name `id`
+    df.ww['id'] = new_series
     assert df.ww['id'].name == 'id'
     assert 'id' in df.ww.columns
     assert 'wrong' not in df.ww.columns
@@ -1925,10 +1922,8 @@ def test_setitem_different_name(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series2 = ks.Series(new_series2)
 
-    warning = 'Name mismatch between wrong2 and new_col. Series name is now new_col'
-    with pytest.warns(ColumnNameMismatchWarning, match=warning):
-        df.ww['new_col'] = new_series2
-
+    # Assign series with name `wrong2` to new column with name `new_col`
+    df.ww['new_col'] = new_series2
     assert df.ww['new_col'].name == 'new_col'
     assert 'new_col' in df.ww.columns
     assert 'wrong2' not in df.ww.columns

@@ -1,8 +1,3 @@
-class ColumnNameMismatchWarning(UserWarning):
-    def get_warning_message(self, lose_col, keep_col):
-        return f'Name mismatch between {lose_col} and {keep_col}. Series name is now {keep_col}'
-
-
 class DuplicateTagsWarning(UserWarning):
     def get_warning_message(self, duplicate_tags, name):
         return f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{name}'"
