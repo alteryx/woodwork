@@ -43,7 +43,7 @@ def determine_package_name(package):
     return name
 
 
-def find_min_requirement(requirement, python_version='3.6', major_python_version='py3'):
+def find_min_requirement(requirement, python_version='3.7', major_python_version='py3'):
     requirement = remove_comment(requirement)
     if not verify_python_environment(requirement):
         return None
@@ -66,7 +66,7 @@ def find_min_requirement(requirement, python_version='3.6', major_python_version
     return min_requirement
 
 
-def write_min_requirements(output_filepath, requirements_paths, py_env_specifier='3.6'):
+def write_min_requirements(output_filepath, requirements_paths, py_env_specifier='3.7'):
     requirements_to_specifier = defaultdict(list)
     min_requirements = []
 
