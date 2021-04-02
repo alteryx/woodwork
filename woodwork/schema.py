@@ -57,6 +57,7 @@ class Schema(object):
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
+        # Test comment
         if validate:
             # Check that inputs are valid
             _validate_params(column_names, name, index, time_index, logical_types,
