@@ -8,6 +8,7 @@ Release Notes
 
     * Enhancements
         * Add validation control to WoodworkTableAccessor (:pr:`736`)
+        * Use nullable ``pd.Float64Dtype`` on ``Double`` logical type (:pr:`755`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
@@ -27,6 +28,7 @@ Release Notes
 **Breaking Changes**
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
     * The ``FullName`` logical type has been renamed to ``PersonFullName``
+    * The ``Double`` logical type now uses the nullable ``pd.Float64Dtype`` as its primary dtype instead of ``np.float64``
 
 **v0.1.0 March 22, 2021**
     * Enhancements
