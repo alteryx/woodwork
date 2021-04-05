@@ -184,7 +184,7 @@ def test_schema_column_metadata(sample_column_names, sample_inferred_logical_typ
     assert schema.columns['id']['metadata'] == column_metadata
 
 
-def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
+def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     time_index='signup_date',
                     index='id',
@@ -211,6 +211,33 @@ def test_filter_schema_cols(sample_column_names, sample_inferred_logical_types):
         assert col in expected
 
 
+def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical_types):
+    schema = Schema(sample_column_names, sample_inferred_logical_types,
+                    time_index='signup_date',
+                    index='id',
+                    name='df_name')
+
+    filtered = schema._filter_cols(exclude=Datetime)
+    assert 'signup_date' not in filtered
+
+    filtered = schema._filter_cols(exclude='email', col_names=True)
+    assert 'email' not in filtered
+
+    filtered_log_type_string = schema._filter_cols(exclude='NaturalLanguage')
+    filtered_log_type = schema._filter_cols(exclude=NaturalLanguage)
+    expected = {'id', 'age', 'signup_date', 'is_registered'}
+    assert filtered_log_type == filtered_log_type_string
+    assert set(filtered_log_type) == expected
+
+    filtered_semantic_tag = schema._filter_cols(exclude='numeric')
+    assert 'age' not in filtered_semantic_tag
+
+    filtered_multiple_overlap = schema._filter_cols(exclude=['NaturalLanguage', 'email'], col_names=True)
+    expected = ['id', 'age', 'signup_date', 'is_registered']
+    for col in filtered_multiple_overlap:
+        assert col in expected
+
+
 def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
     schema = Schema(sample_column_names, sample_inferred_logical_types,
                     time_index='signup_date',
@@ -225,6 +252,9 @@ def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logi
 
     filter_non_string = schema._filter_cols(include=1)
     assert filter_non_string == []
+
+    filter_exclude_all = schema._filter_cols(exclude=list(sample_inferred_logical_types.values()))
+    assert filter_exclude_all == []
 
 
 def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):

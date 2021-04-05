@@ -393,25 +393,34 @@ class WoodworkTableAccessor:
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
-    def select(self, include):
+    def select(self, include=None, exclude=None):
         """Create a DataFrame with Woodwork typing information initialized
-        that includes only columns whose Logical Type and semantic tags are
-        specified in the list of types and tags to include.
+        that includes only columns whose Logical Type and semantic tags match
+        conditions specified in the list of types and tags to include or exclude.
+        Values for both ``include`` and ``exclude`` cannot be provided in a
+        single call.
 
         If no matching columns are found, an empty DataFrame will be returned.
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): Logical
                 types, semantic tags to include in the DataFrame.
+            exclude (str or LogicalType or list[str or LogicalType]): Logical
+                types, semantic tags to exclude from the DataFrame.
 
         Returns:
-            DataFrame: The subset of the original DataFrame that contains just the
-            logical types and semantic tags in ``include``. Has Woodwork typing
-            information initialized.
+            DataFrame: The subset of the original DataFrame that matches the
+            conditions specified by ``include`` or ``exclude``. Has Woodwork
+            typing information initialized.
         """
         if self._schema is None:
             _raise_init_error()
-        cols_to_include = self._schema._filter_cols(include)
+        if include is not None and exclude is not None:
+            raise ValueError("Cannot specify values for both 'include' and 'exclude' in a single call.")
+        if include is None and exclude is None:
+            raise ValueError("Must specify values for either 'include' or 'exclude'.")
+
+        cols_to_include = self._schema._filter_cols(include, exclude)
         return self._get_subset_df_with_schema(cols_to_include)
 
     def add_semantic_tags(self, semantic_tags):
