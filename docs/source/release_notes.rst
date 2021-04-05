@@ -8,7 +8,7 @@ Release Notes
 
     * Enhancements
         * Add validation control to WoodworkTableAccessor (:pr:`736`)
-        * Store ``make_index`` value on WoodworkTableAccessor (:pr:`736`)
+        * Store ``make_index`` value on WoodworkTableAccessor (:pr:`780`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
