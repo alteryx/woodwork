@@ -17,6 +17,7 @@ Release Notes
         * Update minimum scikit-learn version to 0.22 (:pr:`763`)
         * Drop support for Python version 3.6 (:pr:`768`)
         * Remove ``ColumnNameMismatchWarning`` (:pr:`777`)
+        * ``get_column_dict`` does not use standard tags by default (:pr:`782`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes

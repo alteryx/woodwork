@@ -51,7 +51,7 @@ class Schema(object):
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-                specified logical type for the column. Defaults to True.
+                on the specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.

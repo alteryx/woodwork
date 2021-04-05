@@ -90,16 +90,16 @@ def test_get_column_dict():
     assert set(column.keys()) == {'logical_type', 'semantic_tags', 'description', 'metadata'}
 
     assert column.get('logical_type') == Integer
-    assert column.get('semantic_tags') == {'numeric', 'test_tag'}
+    assert column.get('semantic_tags') == {'test_tag'}
 
     assert column.get('description') is None
     assert column.get('metadata') == {}
 
 
 def test_get_column_dict_standard_tags():
-    column = _get_column_dict('column', Integer, use_standard_tags=False)
+    column = _get_column_dict('column', Integer, use_standard_tags=True)
 
-    assert column.get('semantic_tags') == set()
+    assert column.get('semantic_tags') == {'numeric'}
 
 
 def test_get_column_dict_params():
