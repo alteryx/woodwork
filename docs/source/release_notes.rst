@@ -8,6 +8,7 @@ Release Notes
 
     * Enhancements
         * Add validation control to WoodworkTableAccessor (:pr:`736`)
+        * Add optional ``exclude`` parameter to WoodworkTableAccessor ``select`` method (:pr:`783`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
