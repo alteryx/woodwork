@@ -94,7 +94,6 @@ class WoodworkTableAccessor:
         """
         if validate:
             _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
-
         if schema is not None:
             self._schema = schema
             extra_params = []
@@ -145,6 +144,7 @@ class WoodworkTableAccessor:
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
 
+        # Record the value of
         self.make_index = make_index
 
     def __eq__(self, other):
