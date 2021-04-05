@@ -836,7 +836,7 @@ def test_make_index(sample_df):
         assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
 
         copied_df = schema_df.ww.copy()
-        assert copied_df.ww.make_index is True  # --> not sure the best way to store this across dfs
+        assert copied_df.ww.make_index is True
 
         own_index_df = sample_df.copy()
         own_index_df.ww.init(index='id')

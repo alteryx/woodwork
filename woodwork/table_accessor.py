@@ -95,9 +95,6 @@ class WoodworkTableAccessor:
         if validate:
             _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
 
-        # --> Set the made_index value here
-        self.make_index = make_index
-
         if schema is not None:
             self._schema = schema
             extra_params = []
@@ -148,12 +145,13 @@ class WoodworkTableAccessor:
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
 
+        self.make_index = make_index
+
     def __eq__(self, other):
-        if self._schema != other.ww._schema:
+        if self.make_index != other.ww.make_index:
             return False
 
-        # --> make sure to thest this in equality test
-        if self.make_index != other.ww.make_index:
+        if self._schema != other.ww._schema:
             return False
 
         # Only check pandas DataFrames for equality
