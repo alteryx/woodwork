@@ -813,12 +813,25 @@ def test_make_index(sample_df):
         schema_df = sample_df.copy()
         schema_df.ww.init(index='new_index', make_index=True)
 
+        assert schema_df.ww.made_index is True
+
         assert schema_df.ww.index == 'new_index'
         assert 'new_index' in schema_df.ww.columns
         assert 'new_index' in schema_df.ww.columns
         assert to_pandas(schema_df)['new_index'].unique
         assert to_pandas(schema_df['new_index']).is_monotonic
         assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
+
+        copied_df = schema_df.ww.copy()
+        assert copied_df.ww.made_index is True  # --> not sure the best way to store this across dfs
+
+        own_index_df = sample_df.copy()
+        own_index_df.ww.init(index='id')
+
+        assert own_index_df.ww.made_index is False
+
+        copied_df = own_index_df.ww.copy()
+        assert copied_df.ww.made_index is False
 
 
 def test_underlying_index_set_no_index_on_init(sample_df):
