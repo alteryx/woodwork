@@ -23,7 +23,7 @@ def _get_column_dict(name,
         logical_type (str, LogicalType): The column's LogicalType.
         semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
         use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
-                specified logical type. Defaults to True.
+                on the specified logical type. Defaults to False.
         description (str, optional): User description of the column.
         metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
         validate (bool, optional): Whether to perform parameter validation. Defaults to True.
