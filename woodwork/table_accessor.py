@@ -96,7 +96,7 @@ class WoodworkTableAccessor:
             _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
 
         # --> Set the made_index value here
-        self.made_index = make_index
+        self.make_index = make_index
 
         if schema is not None:
             self._schema = schema
@@ -153,7 +153,7 @@ class WoodworkTableAccessor:
             return False
 
         # --> make sure to thest this in equality test
-        if self.made_index != other.ww.made_index:
+        if self.make_index != other.ww.make_index:
             return False
 
         # Only check pandas DataFrames for equality
@@ -588,9 +588,7 @@ class WoodworkTableAccessor:
                     else:
                         copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
                         result.ww.init(schema=copied_schema)
-                        print('og made', self.made_index)
-                        result.ww.made_index = self.made_index
-                        print('new made', result.ww.made_index)
+                        result.ww.make_index = self.make_index
                 else:
                     # Confirm that the Schema is still valid on original DataFrame
                     # Important for inplace operations

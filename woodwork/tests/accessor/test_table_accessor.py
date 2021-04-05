@@ -358,6 +358,19 @@ def test_accessor_equality(sample_df):
         assert schema_df.ww == iloc_df
 
 
+def test_accessor_equality_make_index(sample_df_pandas):
+    made_index_df = sample_df_pandas.copy()
+    made_index_df.insert(0, 'new_index', range(len(made_index_df)))
+    made_index_df.ww.init(index='new_index', make_index=False)
+
+    schema_df = sample_df_pandas.copy()
+    schema_df.ww.init(index='new_index', make_index=True)
+
+    pd.testing.assert_frame_equal(schema_df, made_index_df)
+
+    assert made_index_df.ww != schema_df
+
+
 def test_accessor_init_with_valid_string_time_index(time_index_df):
     time_index_df.ww.init(name='schema',
                           index='id',
@@ -813,7 +826,7 @@ def test_make_index(sample_df):
         schema_df = sample_df.copy()
         schema_df.ww.init(index='new_index', make_index=True)
 
-        assert schema_df.ww.made_index is True
+        assert schema_df.ww.make_index is True
 
         assert schema_df.ww.index == 'new_index'
         assert 'new_index' in schema_df.ww.columns
@@ -823,15 +836,15 @@ def test_make_index(sample_df):
         assert 'index' in schema_df.ww.columns['new_index']['semantic_tags']
 
         copied_df = schema_df.ww.copy()
-        assert copied_df.ww.made_index is True  # --> not sure the best way to store this across dfs
+        assert copied_df.ww.make_index is True  # --> not sure the best way to store this across dfs
 
         own_index_df = sample_df.copy()
         own_index_df.ww.init(index='id')
 
-        assert own_index_df.ww.made_index is False
+        assert own_index_df.ww.make_index is False
 
         copied_df = own_index_df.ww.copy()
-        assert copied_df.ww.made_index is False
+        assert copied_df.ww.make_index is False
 
 
 def test_underlying_index_set_no_index_on_init(sample_df):
