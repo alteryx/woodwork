@@ -13,7 +13,7 @@ from woodwork.utils import _convert_input_to_set
 def _get_column_dict(name,
                      logical_type,
                      semantic_tags=None,
-                     use_standard_tags=True,
+                     use_standard_tags=False,
                      description=None,
                      metadata=None,
                      validate=True):
