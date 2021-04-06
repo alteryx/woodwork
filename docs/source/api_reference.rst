@@ -62,7 +62,7 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.set_semantic_tags
 
 TableSchema
-======
+===========
 
 .. currentmodule:: woodwork.table_schema
 .. autosummary::
