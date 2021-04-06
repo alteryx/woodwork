@@ -84,7 +84,7 @@ class WoodworkTableAccessor:
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
-            schema (Woodwork.Schema, optional): Typing information to use for the DataFrame instead of performing inference.
+            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between DataFrames.
@@ -567,7 +567,7 @@ class WoodworkTableAccessor:
 
     def _make_schema_call(self, attr):
         """Forwards the requested attribute onto the schema object.
-        Results are that of the Woodwork.Schema class."""
+        Results are that of the Woodwork.TableSchema class."""
         schema_attr = getattr(self._schema, attr)
 
         if callable(schema_attr):
@@ -892,7 +892,7 @@ def _check_logical_types(dataframe_columns, logical_types):
 
 def _check_schema(dataframe, schema):
     if not isinstance(schema, Schema):
-        raise TypeError('Provided schema must be a Woodwork.Schema object.')
+        raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
     invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')

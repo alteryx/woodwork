@@ -112,7 +112,7 @@ def _replace_nans_for_mutual_info(schema, data):
     """Replace NaN values in the dataframe so that mutual information can be calculated
 
     Args:
-        schema (woodwork.Schema): Woodwork typing info for the data
+        schema (woodwork.TableSchema): Woodwork typing info for the data
         data (pd.DataFrame): dataframe to use for calculating mutual information
 
     Returns:
@@ -139,7 +139,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     mutual information can be calculated
 
     Args:
-        schema (woodwork.Schema): Woodwork typing info for the data
+        schema (woodwork.TableSchema): Woodwork typing info for the data
         data (pd.DataFrame): dataframe to use for calculating mutual information
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.

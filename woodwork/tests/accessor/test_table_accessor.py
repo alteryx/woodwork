@@ -225,7 +225,7 @@ def test_init_accessor_with_schema_errors(sample_df):
     iloc_df = schema_df.iloc[:, :-1]
     assert iloc_df.ww.schema is None
 
-    error = 'Provided schema must be a Woodwork.Schema object.'
+    error = 'Provided schema must be a Woodwork.TableSchema object.'
     with pytest.raises(TypeError, match=error):
         iloc_df.ww.init(schema=int)
 

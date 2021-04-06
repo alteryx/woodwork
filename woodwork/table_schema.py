@@ -339,7 +339,7 @@ class Schema(object):
             columns (dict[str -> str]): A dictionary mapping current column names to new column names.
 
         Returns:
-            woodwork.Schema: Schema with the specified columns renamed.
+            woodwork.TableSchema: Schema with the specified columns renamed.
         """
         if not isinstance(columns, dict):
             raise TypeError('columns must be a dictionary')
