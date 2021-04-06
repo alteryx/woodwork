@@ -19,11 +19,11 @@ def _get_column_dict(name=None,
                      validate=True):
     """Creates a dictionary that contains the typing information for a Schema column
     Args:
-        name (str): The name of the column.
-        logical_type (str, LogicalType): The column's LogicalType.
+        name (str, optional): The name of the column.
+        logical_type (str, LogicalType, optional): The column's LogicalType.
         semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
         use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
-                on the specified logical type. Defaults to False.
+                on the specified logical type if a logical type is defined for the column. Defaults to False.
         description (str, optional): User description of the column.
         metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
         validate (bool, optional): Whether to perform parameter validation. Defaults to True.
@@ -31,7 +31,8 @@ def _get_column_dict(name=None,
     if metadata is None:
         metadata = {}
     if validate:
-        _validate_logical_type(logical_type)
+        if logical_type is not None:
+            _validate_logical_type(logical_type)
         _validate_description(description)
         _validate_metadata(metadata)
 
@@ -46,13 +47,12 @@ def _get_column_dict(name=None,
 
 
 def _validate_logical_type(logical_type):
-    if logical_type is not None:
-        ltype_class = _get_ltype_class(logical_type)
+    ltype_class = _get_ltype_class(logical_type)
 
-        if ltype_class not in ww.type_system.registered_types:
-            raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
-        if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
-            raise TypeError("Must use an Ordinal instance with order values defined")
+    if ltype_class not in ww.type_system.registered_types:
+        raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
+    if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
+        raise TypeError("Must use an Ordinal instance with order values defined")
 
 
 def _validate_description(column_description):
@@ -66,7 +66,11 @@ def _validate_metadata(column_metadata):
 
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}',
+    error_language = f'semantic_tags for {name}'
+    if logical_type is None:
+        error_language = 'semantic_tags'
+
+    semantic_tags = _convert_input_to_set(semantic_tags, error_language=error_language,
                                           validate=validate)
 
     if use_standard_tags:

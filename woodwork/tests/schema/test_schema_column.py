@@ -27,8 +27,6 @@ from woodwork.schema_column import (
 
 
 def test_validate_logical_type_errors():
-    assert _validate_logical_type(None) is None
-
     match = re.escape("logical_type <class 'int'> is not a registered LogicalType.")
     with pytest.raises(TypeError, match=match):
         _validate_logical_type(int)
@@ -120,15 +118,15 @@ def test_get_column_dict_null_params():
     assert just_tags.get('logical_type') is None
     assert just_tags.get('semantic_tags') == {'numeric', 'time_index'}
 
-    just_tags = _get_column_dict(logical_type=Integer)
-    assert just_tags.get('logical_type') == Integer
-    assert just_tags.get('semantic_tags') == set()
+    just_ltype = _get_column_dict(logical_type=Integer)
+    assert just_ltype.get('logical_type') == Integer
+    assert just_ltype.get('semantic_tags') == set()
 
     error = "Cannot use standard tags when logical_type is None"
     with pytest.raises(ValueError, match=error):
         _get_column_dict(semantic_tags='categorical', use_standard_tags=True)
 
-    error = "semantic_tags for None must be a string, set or list"
+    error = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error):
         _get_column_dict(semantic_tags=1)
 
