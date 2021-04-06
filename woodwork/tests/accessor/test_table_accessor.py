@@ -368,7 +368,7 @@ def test_accessor_equality_make_index(sample_df_pandas):
 
     pd.testing.assert_frame_equal(schema_df, made_index_df)
 
-    assert made_index_df.ww != schema_df
+    assert made_index_df.ww != schema_df.ww
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):

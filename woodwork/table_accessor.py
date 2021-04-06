@@ -112,7 +112,11 @@ class WoodworkTableAccessor:
             if extra_params:
                 warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
+            # We need to store make_index on the Accessor when initializing with a Schema
+            # but we still should ignore any make_index value passed in here
+            self.make_index = False
         else:
+            self.make_index = make_index
             if make_index:
                 _make_index(self._dataframe, index)
 
@@ -143,9 +147,6 @@ class WoodworkTableAccessor:
             self._set_underlying_index()
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
-
-        # Record the value of
-        self.make_index = make_index
 
     def __eq__(self, other):
         if self.make_index != other.ww.make_index:
