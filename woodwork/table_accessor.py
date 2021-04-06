@@ -22,7 +22,7 @@ from woodwork.statistics_utils import (
     _get_mutual_information_dict,
     _get_value_counts
 )
-from woodwork.table_schema import Schema
+from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -137,12 +137,12 @@ class WoodworkTableAccessor:
                     self._dataframe[name] = updated_series
 
             column_names = list(self._dataframe.columns)
-            self._schema = Schema(column_names=column_names,
-                                  logical_types=parsed_logical_types,
-                                  index=index,
-                                  time_index=time_index,
-                                  validate=validate,
-                                  **kwargs)
+            self._schema = TableSchema(column_names=column_names,
+                                       logical_types=parsed_logical_types,
+                                       index=index,
+                                       time_index=time_index,
+                                       validate=validate,
+                                       **kwargs)
 
             self._set_underlying_index()
             if self._schema.time_index is not None:
@@ -891,7 +891,7 @@ def _check_logical_types(dataframe_columns, logical_types):
 
 
 def _check_schema(dataframe, schema):
-    if not isinstance(schema, Schema):
+    if not isinstance(schema, TableSchema):
         raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
     invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:

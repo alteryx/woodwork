@@ -18,11 +18,11 @@ from woodwork.logical_types import (
     PersonFullName,
     PhoneNumber
 )
-from woodwork.table_schema import Schema
+from woodwork.table_schema import TableSchema
 
 
 def test_schema_logical_types(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     assert isinstance(schema.logical_types, dict)
     assert set(schema.logical_types.keys()) == set(sample_column_names)
     for k, v in schema.logical_types.items():
@@ -35,7 +35,7 @@ def test_schema_semantic_tags(sample_column_names, sample_inferred_logical_types
         'email': ['tag2'],
         'age': ['numeric', 'age']
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags)
     assert isinstance(schema.semantic_tags, dict)
     assert set(schema.semantic_tags.keys()) == set(sample_column_names)
     for k, v in schema.semantic_tags.items():
@@ -47,7 +47,7 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     sample_column_names.append('formatted_date')
 
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
-    schema = Schema(sample_column_names, logical_types={**sample_inferred_logical_types, 'formatted_date': ymd_format})
+    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, 'formatted_date': ymd_format})
 
     returned_types = schema.types
     assert isinstance(returned_types, pd.DataFrame)
@@ -85,7 +85,7 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
 
 
 def test_schema_repr(small_df):
-    schema = Schema(list(small_df.columns), logical_types={'sample_datetime_series': Datetime})
+    schema = TableSchema(list(small_df.columns), logical_types={'sample_datetime_series': Datetime})
 
     schema_repr = repr(schema)
     expected_repr = '                       Logical Type Semantic Tag(s)\nColumn                                             \nsample_datetime_series     Datetime              []'
@@ -97,16 +97,16 @@ def test_schema_repr(small_df):
 
 
 def test_schema_repr_empty():
-    schema = Schema([], {})
+    schema = TableSchema([], {})
     assert repr(schema) == 'Empty DataFrame\nColumns: [Logical Type, Semantic Tag(s)]\nIndex: []'
 
     assert schema._repr_html_() == '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>'
 
 
 def test_schema_equality(sample_column_names, sample_inferred_logical_types):
-    schema_basic = Schema(sample_column_names, sample_inferred_logical_types)
-    schema_basic2 = Schema(sample_column_names, sample_inferred_logical_types)
-    schema_names = Schema(sample_column_names, sample_inferred_logical_types, name='test')
+    schema_basic = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema_basic2 = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema_names = TableSchema(sample_column_names, sample_inferred_logical_types, name='test')
 
     assert schema_basic != schema_names
     assert schema_basic == schema_basic2
@@ -115,40 +115,40 @@ def test_schema_equality(sample_column_names, sample_inferred_logical_types):
     missing_logical_types = sample_inferred_logical_types.copy()
     missing_logical_types.pop('id')
 
-    schema_missing_col = Schema(missing_col_names, missing_logical_types)
+    schema_missing_col = TableSchema(missing_col_names, missing_logical_types)
     assert schema_basic != schema_missing_col
 
-    schema_index = Schema(sample_column_names, sample_inferred_logical_types, index='id')
-    schema_time_index = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema_index = TableSchema(sample_column_names, sample_inferred_logical_types, index='id')
+    schema_time_index = TableSchema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
 
     assert schema_basic != schema_index
     assert schema_index != schema_time_index
 
-    schema_numeric_time_index = Schema(sample_column_names, sample_inferred_logical_types, time_index='id')
+    schema_numeric_time_index = TableSchema(sample_column_names, sample_inferred_logical_types, time_index='id')
 
     assert schema_time_index != schema_numeric_time_index
 
-    schema_with_ltypes = Schema(sample_column_names,
-                                logical_types={**sample_inferred_logical_types, 'full_name': Categorical},
-                                time_index='signup_date')
+    schema_with_ltypes = TableSchema(sample_column_names,
+                                     logical_types={**sample_inferred_logical_types, 'full_name': Categorical},
+                                     time_index='signup_date')
     assert schema_with_ltypes != schema_time_index
 
-    schema_with_metadata = Schema(sample_column_names, sample_inferred_logical_types, index='id', table_metadata={'created_by': 'user1'})
-    assert Schema(sample_column_names, sample_inferred_logical_types, index='id') != schema_with_metadata
-    assert Schema(sample_column_names,
-                  sample_inferred_logical_types,
-                  index='id',
-                  table_metadata={'created_by': 'user1'}) == schema_with_metadata
-    assert Schema(sample_column_names,
-                  sample_inferred_logical_types,
-                  index='id',
-                  table_metadata={'created_by': 'user2'}) != schema_with_metadata
+    schema_with_metadata = TableSchema(sample_column_names, sample_inferred_logical_types, index='id', table_metadata={'created_by': 'user1'})
+    assert TableSchema(sample_column_names, sample_inferred_logical_types, index='id') != schema_with_metadata
+    assert TableSchema(sample_column_names,
+                       sample_inferred_logical_types,
+                       index='id',
+                       table_metadata={'created_by': 'user1'}) == schema_with_metadata
+    assert TableSchema(sample_column_names,
+                       sample_inferred_logical_types,
+                       index='id',
+                       table_metadata={'created_by': 'user2'}) != schema_with_metadata
 
 
 def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
-    no_standard_tags_schema = Schema(sample_column_names, sample_inferred_logical_types,
-                                     use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    no_standard_tags_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                          use_standard_tags=False)
 
     # Different standard tags values - using logical types with standard tags
     assert schema.use_standard_tags != no_standard_tags_schema.use_standard_tags
@@ -166,29 +166,29 @@ def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logi
 def test_schema_table_metadata(sample_column_names, sample_inferred_logical_types):
     metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     assert schema.metadata == {}
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    table_metadata=metadata, time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         table_metadata=metadata, time_index='signup_date')
     assert schema.metadata == metadata
 
 
 def test_column_schema_metadata(sample_column_names, sample_inferred_logical_types):
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     assert schema.columns['id']['metadata'] == {}
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, column_metadata={'id': column_metadata})
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, column_metadata={'id': column_metadata})
     assert schema.columns['id']['metadata'] == column_metadata
 
 
 def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    time_index='signup_date',
-                    index='id',
-                    name='df_name')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         time_index='signup_date',
+                         index='id',
+                         name='df_name')
 
     filtered = schema._filter_cols(include=Datetime)
     assert filtered == ['signup_date']
@@ -212,10 +212,10 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
 
 
 def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    time_index='signup_date',
-                    index='id',
-                    name='df_name')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         time_index='signup_date',
+                         index='id',
+                         name='df_name')
 
     filtered = schema._filter_cols(exclude=Datetime)
     assert 'signup_date' not in filtered
@@ -239,10 +239,10 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
 
 
 def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    time_index='signup_date',
-                    index='id',
-                    name='df_name')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         time_index='signup_date',
+                         index='id',
+                         name='df_name')
 
     filter_no_matches = schema._filter_cols(include='nothing')
     assert filter_no_matches == []
@@ -264,10 +264,10 @@ def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logi
 
 
 def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    time_index='signup_date',
-                    index='id',
-                    name='df_name')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         time_index='signup_date',
+                         index='id',
+                         name='df_name')
 
     err_msg = "Invalid selector used in include: {} must be a string, uninstantiated and registered LogicalType, or valid column name"
     with pytest.raises(TypeError, match=err_msg):
@@ -293,7 +293,7 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
 
 
 def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     filter_name_ltype_overlap = schema._filter_cols(include='full_name')
     assert filter_name_ltype_overlap == []
@@ -301,9 +301,9 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
     filter_overlap_with_name = schema._filter_cols(include='full_name', col_names=True)
     assert filter_overlap_with_name == ['full_name']
 
-    schema = Schema(sample_column_names,
-                    {**sample_inferred_logical_types, 'full_name': Categorical, 'age': PersonFullName},
-                    semantic_tags={'id': 'person_full_name'})
+    schema = TableSchema(sample_column_names,
+                         {**sample_inferred_logical_types, 'full_name': Categorical, 'age': PersonFullName},
+                         semantic_tags={'id': 'person_full_name'})
 
     filter_tag_and_ltype = schema._filter_cols(include='person_full_name')
     assert set(filter_tag_and_ltype) == {'id', 'age'}
@@ -313,7 +313,7 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
 
 
 def test_filter_schema_non_string_cols():
-    schema = Schema(column_names=[0, 1, 2, 3], logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double})
+    schema = TableSchema(column_names=[0, 1, 2, 3], logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double})
 
     filter_types_and_tags = schema._filter_cols(include=[Integer, 'category'])
     assert filter_types_and_tags == [0, 1]
@@ -323,7 +323,7 @@ def test_filter_schema_non_string_cols():
 
 
 def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     new_schema = schema._get_subset_schema(sample_column_names[1:4])
     for col in new_schema.columns:
         assert new_schema.semantic_tags[col] == schema.semantic_tags[col]
@@ -332,7 +332,7 @@ def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
 
 def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logical_types):
     # The first element is self, so it won't be included in kwargs
-    possible_schema_params = inspect.getfullargspec(Schema.__init__)[0][1:]
+    possible_schema_params = inspect.getfullargspec(TableSchema.__init__)[0][1:]
 
     kwargs = {
         'column_names': sample_column_names,
@@ -351,7 +351,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
     # Confirm all possible params to Schema init are present with non-default values where possible
     assert set(possible_schema_params) == set(kwargs.keys())
 
-    schema = Schema(**kwargs)
+    schema = TableSchema(**kwargs)
     copy_schema = schema._get_subset_schema(sample_column_names)
 
     assert schema == copy_schema
@@ -365,8 +365,8 @@ def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
         'phone_number': ['tag3', 'tag2'],
         'signup_date': {'secondary_time_index'},
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         semantic_tags=semantic_tags, use_standard_tags=True)
 
     schema.set_types(logical_types={
         'full_name': Categorical,
@@ -396,9 +396,9 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
         'full_name': 'tag1',
         'age': 'test_tag'
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='full_name',
-                    semantic_tags=semantic_tags, use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='full_name',
+                         semantic_tags=semantic_tags, use_standard_tags=True)
 
     # An empty set should reset the tags
     schema.set_types(semantic_tags={'full_name': set()}, retain_index_tags=False)
@@ -411,7 +411,7 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
 
 
 def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday']")
     with pytest.raises(LookupError, match=error_message):
@@ -443,9 +443,9 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
         'signup_date': {'secondary_time_index'},
     }
     # use standard tags and keep index tags
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=True,
-                    index='id')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         semantic_tags=semantic_tags, use_standard_tags=True,
+                         index='id')
 
     schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'email': 'new_tag'},
                      logical_types={'id': Double, 'age': Double, 'email': Categorical})
@@ -459,9 +459,9 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
     assert schema.logical_types['email'] == Categorical
 
     # use standard tags and lose index tags
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=True,
-                    index='id', time_index='age')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         semantic_tags=semantic_tags, use_standard_tags=True,
+                         index='id', time_index='age')
 
     schema.set_types(semantic_tags={'age': 'new_tag'},
                      logical_types={'id': Double},
@@ -471,9 +471,9 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['age'] == {'numeric', 'new_tag'}
 
     # don't use standard tags and lose index tags
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=False,
-                    index='id', time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         semantic_tags=semantic_tags, use_standard_tags=False,
+                         index='id', time_index='signup_date')
 
     schema.set_types(semantic_tags={'id': 'new_tag', 'age': 'new_tag', 'is_registered': 'new_tag'},
                      logical_types={'id': Double, 'age': Double, 'email': Categorical}, retain_index_tags=False)
@@ -501,7 +501,7 @@ def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
         'full_name': {'tag1'},
         'age': {'numeric', 'age'}
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags)
     assert schema.semantic_tags['full_name'] == expected_tags['full_name']
     assert schema.semantic_tags['age'] == expected_tags['age']
 
@@ -516,8 +516,8 @@ def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
 
 
 def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=False)
     assert schema.semantic_tags['id'] == {'index'}
 
     new_tags = {
@@ -531,8 +531,8 @@ def test_set_semantic_tags_with_index(sample_column_names, sample_inferred_logic
 
 
 def test_set_semantic_tags_with_time_index(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    time_index='signup_date', use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         time_index='signup_date', use_standard_tags=False)
     assert schema.semantic_tags['signup_date'] == {'time_index'}
 
     new_tags = {
@@ -550,9 +550,9 @@ def test_add_semantic_tags(sample_column_names, sample_inferred_logical_types):
         'full_name': 'tag1',
         'age': ['numeric', 'age']
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=False,
-                    index='id')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         semantic_tags=semantic_tags, use_standard_tags=False,
+                         index='id')
 
     new_tags = {
         'full_name': ['list_tag'],
@@ -571,9 +571,9 @@ def test_warns_on_adding_duplicate_tags(sample_column_names, sample_inferred_log
         'full_name': 'tag1',
         'age': ['numeric', 'age']
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    semantic_tags=semantic_tags, use_standard_tags=False,
-                    index='id')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         semantic_tags=semantic_tags, use_standard_tags=False,
+                         index='id')
 
     new_tags = {
         'full_name': 'tag1',
@@ -592,7 +592,7 @@ def test_reset_all_semantic_tags(sample_column_names, sample_inferred_logical_ty
         'full_name': 'tag1',
         'age': 'age'
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags, use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags, use_standard_tags=True)
 
     schema.reset_semantic_tags()
     assert schema.semantic_tags['full_name'] == set()
@@ -603,10 +603,10 @@ def test_reset_semantic_tags_with_index(sample_column_names, sample_inferred_log
     semantic_tags = {
         'id': 'tag1',
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id',
-                    semantic_tags=semantic_tags,
-                    use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id',
+                         semantic_tags=semantic_tags,
+                         use_standard_tags=False)
     assert schema.semantic_tags['id'] == {'index', 'tag1'}
 
     schema.reset_semantic_tags('id', retain_index_tags=True)
@@ -620,10 +620,10 @@ def test_reset_semantic_tags_with_time_index(sample_column_names, sample_inferre
     semantic_tags = {
         'signup_date': 'tag1',
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    time_index='signup_date',
-                    semantic_tags=semantic_tags,
-                    use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         time_index='signup_date',
+                         semantic_tags=semantic_tags,
+                         use_standard_tags=False)
     assert schema.semantic_tags['signup_date'] == {'time_index', 'tag1'}
 
     schema.reset_semantic_tags('signup_date', retain_index_tags=True)
@@ -634,7 +634,7 @@ def test_reset_semantic_tags_with_time_index(sample_column_names, sample_inferre
 
 
 def test_reset_semantic_tags_invalid_column(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,)
     error_msg = "Input contains columns that are not present in dataframe: 'invalid_column'"
     with pytest.raises(LookupError, match=error_msg):
         schema.reset_semantic_tags('invalid_column')
@@ -646,7 +646,7 @@ def test_remove_semantic_tags(sample_column_names, sample_inferred_logical_types
         'age': ['numeric', 'age'],
         'id': ['tag1', 'tag2']
     }
-    schema = Schema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags, use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags, use_standard_tags=False)
     tags_to_remove = {
         'full_name': ['tag1', 'tag3'],
         'age': 'numeric',
@@ -662,7 +662,7 @@ def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inf
     error_msg = re.escape("Cannot add 'index' tag directly for column id. To set a column as the index, "
                           "use DataFrame.ww.set_index() instead.")
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     with pytest.raises(ValueError, match=error_msg):
         schema.add_semantic_tags({'id': 'index'})
@@ -673,7 +673,7 @@ def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inf
 def test_raises_error_setting_time_index_tag_directly(sample_column_names, sample_inferred_logical_types):
     error_msg = re.escape("Cannot add 'time_index' tag directly for column signup_date. To set a column as the time index, "
                           "use DataFrame.ww.set_time_index() instead.")
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     with pytest.raises(ValueError, match=error_msg):
         schema.add_semantic_tags({'signup_date': 'time_index'})
@@ -683,82 +683,82 @@ def test_raises_error_setting_time_index_tag_directly(sample_column_names, sampl
 
 def test_removes_index_via_tags(sample_column_names, sample_inferred_logical_types):
     # Check setting tags
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=True)
     schema.set_types(semantic_tags={'id': 'new_tag'}, retain_index_tags=False)
     assert schema.semantic_tags['id'] == {'numeric', 'new_tag'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=False)
     schema.set_types(semantic_tags={'id': 'new_tag'}, retain_index_tags=False)
     assert schema.semantic_tags['id'] == {'new_tag'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='full_name', use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='full_name', use_standard_tags=True)
     schema.set_types(semantic_tags={'full_name': 'new_tag'}, retain_index_tags=False)
     assert schema.semantic_tags['full_name'] == {'new_tag'}
     assert schema.index is None
 
     # Check removing tags
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=True)
     schema.remove_semantic_tags(semantic_tags={'id': 'index'})
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=False)
     schema.remove_semantic_tags(semantic_tags={'id': 'index'})
     assert schema.semantic_tags['id'] == set()
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='full_name', use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='full_name', use_standard_tags=True)
     schema.remove_semantic_tags(semantic_tags={'full_name': 'index'})
     assert schema.semantic_tags['full_name'] == set()
     assert schema.index is None
 
     # Check resetting tags
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=True)
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', use_standard_tags=False)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', use_standard_tags=False)
     schema.reset_semantic_tags('id')
     assert schema.semantic_tags['id'] == set()
     assert schema.index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='full_name', use_standard_tags=True)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='full_name', use_standard_tags=True)
     schema.reset_semantic_tags('full_name')
     assert schema.semantic_tags['full_name'] == set()
     assert schema.index is None
 
 
 def test_removes_time_index_via_tags(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
     schema.set_types(semantic_tags={'signup_date': 'new_tag'}, retain_index_tags=False)
     assert schema.semantic_tags['signup_date'] == {'new_tag'}
     assert schema.time_index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
     schema.remove_semantic_tags(semantic_tags={'signup_date': 'time_index'})
     assert schema.semantic_tags['signup_date'] == set()
     assert schema.time_index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, time_index='signup_date')
     schema.reset_semantic_tags('signup_date')
     assert schema.semantic_tags['signup_date'] == set()
     assert schema.time_index is None
 
 
 def test_set_index(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     assert schema.index is None
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.semantic_tags['age'] == {'numeric'}
@@ -779,7 +779,7 @@ def test_set_index(sample_column_names, sample_inferred_logical_types):
 
 
 def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     error = re.escape("Specified index column `testing` not found in Schema.")
     with pytest.raises(LookupError, match=error):
@@ -787,7 +787,7 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
 
 
 def test_set_time_index(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     assert schema.time_index is None
     assert schema.semantic_tags['age'] == {'numeric'}
     assert schema.semantic_tags['signup_date'] == set()
@@ -808,7 +808,7 @@ def test_set_time_index(sample_column_names, sample_inferred_logical_types):
 
 
 def test_set_numeric_datetime_time_index(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, {**sample_inferred_logical_types, 'age': Datetime})
+    schema = TableSchema(sample_column_names, {**sample_inferred_logical_types, 'age': Datetime})
 
     assert schema.logical_types['age'] == Datetime
     assert schema.semantic_tags['age'] == set()
@@ -823,7 +823,7 @@ def test_set_numeric_datetime_time_index(sample_column_names, sample_inferred_lo
 
 
 def test_set_time_index_errors(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     error = re.escape("Specified time index column `testing` not found in Schema")
     with pytest.raises(LookupError, match=error):
@@ -835,15 +835,15 @@ def test_set_time_index_errors(sample_column_names, sample_inferred_logical_type
 
 
 def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     schema.set_index(None)
     assert schema.index is None
 
     schema.set_time_index(None)
     assert schema.time_index is None
 
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id', time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id', time_index='signup_date')
     original_schema = schema._get_subset_schema(list(schema.columns.keys()))
 
     schema.set_index('id')
@@ -858,7 +858,7 @@ def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
 
 
 def test_schema_rename_errors(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types, index='id', time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, index='id', time_index='signup_date')
 
     error = "columns must be a dictionary"
     with pytest.raises(TypeError, match=error):
@@ -881,11 +881,11 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
 
     table_metadata = {'table_info': 'this is text'}
     id_description = 'the id of the row'
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id',
-                    time_index='signup_date',
-                    table_metadata=table_metadata,
-                    column_descriptions={'id': id_description})
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id',
+                         time_index='signup_date',
+                         table_metadata=table_metadata,
+                         column_descriptions={'id': id_description})
     original_schema = schema._get_subset_schema(list(schema.columns.keys()))
 
     renamed_schema = schema.rename({'age': 'birthday'})
@@ -911,9 +911,9 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
 
 
 def test_schema_rename_indices(sample_column_names, sample_inferred_logical_types):
-    schema = Schema(sample_column_names, sample_inferred_logical_types,
-                    index='id',
-                    time_index='signup_date')
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                         index='id',
+                         time_index='signup_date')
 
     renamed_schema = schema.rename({'id': 'renamed_index', 'signup_date': 'renamed_time_index'})
     assert 'id' not in renamed_schema.columns
@@ -929,8 +929,8 @@ def test_schema_rename_indices(sample_column_names, sample_inferred_logical_type
 @patch("woodwork.table_schema._check_index")
 def test_validation_methods_called(mock_check_index, mock_check_time_index,
                                    sample_column_names, sample_inferred_logical_types):
-    validation_schema = Schema(sample_column_names, sample_inferred_logical_types)
-    no_validation_schema = Schema(sample_column_names, sample_inferred_logical_types)
+    validation_schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    no_validation_schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     assert not mock_check_index.called
     assert not mock_check_time_index.called

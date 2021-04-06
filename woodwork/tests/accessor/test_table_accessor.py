@@ -41,7 +41,7 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
-from woodwork.table_schema import Schema
+from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
     is_property,
     is_public_method,
@@ -111,7 +111,7 @@ def test_check_unique_column_names_errors(sample_df):
 def test_accessor_init(sample_df):
     assert sample_df.ww.schema is None
     sample_df.ww.init()
-    assert isinstance(sample_df.ww.schema, Schema)
+    assert isinstance(sample_df.ww.schema, TableSchema)
 
 
 def test_accessor_schema_property(sample_df):

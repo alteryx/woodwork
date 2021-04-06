@@ -16,7 +16,7 @@ from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 
-class Schema(object):
+class TableSchema(object):
     def __init__(self, column_names,
                  logical_types,
                  name=None,
@@ -479,16 +479,16 @@ class Schema(object):
         if new_time_index is not None:
             new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
 
-        return Schema(subset_cols,
-                      new_logical_types,
-                      name=self.name,
-                      index=new_index,
-                      time_index=new_time_index,
-                      semantic_tags=copy.deepcopy(new_semantic_tags),
-                      use_standard_tags=self.use_standard_tags,
-                      table_metadata=copy.deepcopy(self.metadata),
-                      column_metadata=copy.deepcopy(new_column_metadata),
-                      column_descriptions=new_column_descriptions)
+        return TableSchema(subset_cols,
+                           new_logical_types,
+                           name=self.name,
+                           index=new_index,
+                           time_index=new_time_index,
+                           semantic_tags=copy.deepcopy(new_semantic_tags),
+                           use_standard_tags=self.use_standard_tags,
+                           table_metadata=copy.deepcopy(self.metadata),
+                           column_metadata=copy.deepcopy(new_column_metadata),
+                           column_descriptions=new_column_descriptions)
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,
