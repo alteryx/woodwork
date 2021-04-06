@@ -136,7 +136,8 @@ def read_woodwork_table(path, profile_name=None, validate=False, **kwargs):
             profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
             validate (bool, optional): Whether parameter and data validation should occur when initializing Woodwork dataframe
-                during deserialization. Defaults to False.
+                during deserialization. Defaults to False. Note: If serialized data was modified outside of Woodwork and you
+                are unsure of the validity of the data or typing information, `validate` should be set to True.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
 
         Returns:
