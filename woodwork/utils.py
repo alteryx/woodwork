@@ -66,6 +66,7 @@ def read_csv(filepath=None,
              semantic_tags=None,
              logical_types=None,
              use_standard_tags=True,
+             validate=True,
              **kwargs):
     """Read data from the specified CSV file and return a DataFrame with initialized Woodwork typing information.
 
@@ -88,6 +89,9 @@ def read_csv(filepath=None,
             for any columns not present in the dictionary.
         use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
             on the inferred or specified logical type for the column. Defaults to True.
+        validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
+                Should be set to False only when parameters and data are known to be valid.
+                Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         **kwargs: Additional keyword arguments to pass to the underlying ``pandas.read_csv`` function. For more
             information on available keywords refer to the pandas documentation.
 
@@ -100,7 +104,8 @@ def read_csv(filepath=None,
                       time_index=time_index,
                       semantic_tags=semantic_tags,
                       logical_types=logical_types,
-                      use_standard_tags=use_standard_tags)
+                      use_standard_tags=use_standard_tags,
+                      validate=validate)
     return dataframe
 
 

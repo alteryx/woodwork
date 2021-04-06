@@ -4,6 +4,7 @@ import os
 import boto3
 import pandas as pd
 import pytest
+from mock import patch
 
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
@@ -452,6 +453,15 @@ def test_deserialize_s3_csv(sample_df_pandas):
 
     pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
+
+
+@patch("woodwork.table_accessor._validate_accessor_params")
+def test_deserialize_validation_control(mock_validate_accessor_params):
+    assert not mock_validate_accessor_params.called
+    deserialize.read_woodwork_table(URL)
+    assert not mock_validate_accessor_params.called
+    deserialize.read_woodwork_table(URL, validate=True)
+    assert mock_validate_accessor_params.called
 
 
 def test_check_later_schema_version():
