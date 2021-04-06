@@ -26,7 +26,7 @@ from woodwork.table_schema import (
 
 
 def test_validate_params_errors(sample_column_names):
-    error_message = 'Schema name must be a string'
+    error_message = 'TableSchema name must be a string'
     with pytest.raises(TypeError, match=error_message):
         _validate_params(column_names=sample_column_names,
                          name=1,
@@ -40,13 +40,13 @@ def test_validate_params_errors(sample_column_names):
 
 
 def test_check_index_errors(sample_column_names):
-    error_message = 'Specified index column `foo` not found in Schema.'
+    error_message = 'Specified index column `foo` not found in TableSchema.'
     with pytest.raises(LookupError, match=error_message):
         _check_index(column_names=sample_column_names, index='foo')
 
 
 def test_check_time_index_errors(sample_column_names):
-    error_message = 'Specified time index column `foo` not found in Schema'
+    error_message = 'Specified time index column `foo` not found in TableSchema'
     with pytest.raises(LookupError, match=error_message):
         _check_time_index(column_names=sample_column_names, time_index='foo', logical_type=Integer)
 
@@ -61,7 +61,7 @@ def test_check_column_names(sample_column_names):
         _check_column_names(column_names=int)
 
     sample_column_names.append('id')
-    with pytest.raises(IndexError, match='Schema cannot contain duplicate columns names'):
+    with pytest.raises(IndexError, match='TableSchema cannot contain duplicate columns names'):
         _check_column_names(sample_column_names)
 
 
@@ -76,7 +76,7 @@ def test_check_logical_types_errors(sample_column_names):
         'birthday': None,
         'occupation': None,
     }
-    error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday', 'occupation']")
+    error_message = re.escape("logical_types contains columns that are not present in TableSchema: ['birthday', 'occupation']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
@@ -87,7 +87,7 @@ def test_check_logical_types_errors(sample_column_names):
         'phone_number': None,
         'age': None,
     }
-    error_message = re.escape("logical_types is missing columns that are present in Schema: ['is_registered', 'signup_date']")
+    error_message = re.escape("logical_types is missing columns that are present in TableSchema: ['is_registered', 'signup_date']")
     with pytest.raises(LookupError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 

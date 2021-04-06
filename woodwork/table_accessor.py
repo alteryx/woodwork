@@ -112,7 +112,7 @@ class WoodworkTableAccessor:
             if extra_params:
                 warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
-            # We need to store make_index on the Accessor when initializing with a Schema
+            # We need to store make_index on the Accessor when initializing with a schema
             # but we still should ignore any make_index value passed in here
             self.make_index = False
         else:
@@ -162,7 +162,7 @@ class WoodworkTableAccessor:
 
     def __getattr__(self, attr):
         # If the method is present on the Accessor, uses that method.
-        # If the method is present on Schema, uses that method.
+        # If the method is present on TableSchema, uses that method.
         # If the method is present on DataFrame, uses that method.
         if self._schema is None:
             _raise_init_error()
@@ -307,7 +307,7 @@ class WoodworkTableAccessor:
     @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
-        tags for the Schema."""
+        tags for the schema."""
         if self._schema is None:
             _raise_init_error()
         return self._get_typing_info()
@@ -557,7 +557,7 @@ class WoodworkTableAccessor:
 
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
-        specified by the Schema. Does not change the underlying index if no Woodwork index is
+        specified by the TableSchema. Does not change the underlying index if no Woodwork index is
         specified. Only sets underlying index for pandas DataFrames.
         """
         if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
@@ -587,7 +587,7 @@ class WoodworkTableAccessor:
                 # Make DataFrame call and intercept the result
                 result = dataframe_attr(*args, **kwargs)
 
-                # Try to initialize Woodwork with the existing Schema
+                # Try to initialize Woodwork with the existing schema
                 if _is_dataframe(result):
                     invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                     if invalid_schema_message:
@@ -598,7 +598,7 @@ class WoodworkTableAccessor:
                         result.ww.init(schema=copied_schema)
                         result.ww.make_index = self.make_index
                 else:
-                    # Confirm that the Schema is still valid on original DataFrame
+                    # Confirm that the schema is still valid on original DataFrame
                     # Important for inplace operations
                     invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
                     if invalid_schema_message:

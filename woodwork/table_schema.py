@@ -28,26 +28,26 @@ class TableSchema(object):
                  use_standard_tags=True,
                  column_descriptions=None,
                  validate=True):
-        """Create Schema
+        """Create TableSchema
 
         Args:
-            column_names (list, set): The columns present in the Schema.
+            column_names (list, set): The columns present in the TableSchema.
             logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
-                the Schema to the LogicalType for the column. All columns present in the
-                Schema must be present in the logical_types dictionary.
-            name (str, optional): Name used to identify the Schema.
+                the TableSchema to the LogicalType for the column. All columns present in the
+                TableSchema must be present in the logical_types dictionary.
+            name (str, optional): Name used to identify the TableSchema.
             index (str, optional): Name of the index column.
             time_index (str, optional): Name of the time index column.
-            semantic_tags (dict, optional): Dictionary mapping column names in the Schema to the
+            semantic_tags (dict, optional): Dictionary mapping column names in the TableSchema to the
                 semantic tags for the column. The keys in the dictionary should be strings
-                that correspond to columns in the Schema. There are two options for
+                that correspond to columns in the TableSchema. There are two options for
                 specifying the dictionary values:
                 (str): If only one semantic tag is being set, a single string can be used as a value.
                 (list[str] or set[str]): If multiple tags are being set, a list or set of strings can be
                 used as the value.
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
-            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the Schema.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the TableSchema.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
@@ -98,22 +98,22 @@ class TableSchema(object):
         return True
 
     def __repr__(self):
-        """A string representation of a Schema containing typing information."""
+        """A string representation of a TableSchema containing typing information."""
         return repr(self._get_typing_info())
 
     def _repr_html_(self):
-        """An HTML representation of a Schema for IPython.display in Jupyter Notebooks
+        """An HTML representation of a TableSchema for IPython.display in Jupyter Notebooks
         containing typing information and a preview of the data."""
         return self._get_typing_info().to_html()
 
     @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
-        tags for the Schema."""
+        tags for the TableSchema."""
         return self._get_typing_info()
 
     def _get_typing_info(self):
-        """Creates a DataFrame that contains the typing information for a Schema."""
+        """Creates a DataFrame that contains the typing information for a TableSchema."""
         typing_info = {}
         for col_name, col_dict in self.columns.items():
 
@@ -157,7 +157,7 @@ class TableSchema(object):
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
-        updating the Schema at those columns.
+        updating the TableSchema at those columns.
 
         Args:
             logical_types (dict[str -> LogicalType], optional): A dictionary defining the new logical types for the
@@ -177,7 +177,7 @@ class TableSchema(object):
         for col_name in (logical_types.keys() | semantic_tags.keys()):
             original_tags = self.semantic_tags[col_name]
 
-            # Update Logical Type for the Schema, getting new semantic tags
+            # Update Logical Type for the TableSchema, getting new semantic tags
             new_logical_type = logical_types.get(col_name)
             if new_logical_type is not None:
                 self.columns[col_name]['logical_type'] = new_logical_type
@@ -192,7 +192,7 @@ class TableSchema(object):
                                                        self.use_standard_tags)
                 _validate_not_setting_index_tags(new_semantic_tags, col_name)
 
-            # Update the tags for the Schema
+            # Update the tags for the TableSchema
             self.columns[col_name]['semantic_tags'] = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
@@ -305,7 +305,7 @@ class TableSchema(object):
         """Sets the index. Handles setting a new index, updating the index, or removing the index.
 
         Args:
-            new_index (str): Name of the new index column. Must be present in the Schema.
+            new_index (str): Name of the new index column. Must be present in the TableSchema.
                 If None, will remove the index.
         """
         old_index = self.index
@@ -333,13 +333,13 @@ class TableSchema(object):
             self._set_time_index_tags(new_time_index)
 
     def rename(self, columns):
-        """Renames columns in a Schema
+        """Renames columns in a TableSchema
 
         Args:
             columns (dict[str -> str]): A dictionary mapping current column names to new column names.
 
         Returns:
-            woodwork.TableSchema: Schema with the specified columns renamed.
+            woodwork.TableSchema: TableSchema with the specified columns renamed.
         """
         if not isinstance(columns, dict):
             raise TypeError('columns must be a dictionary')
@@ -453,12 +453,12 @@ class TableSchema(object):
         return list(cols_to_return)
 
     def _get_subset_schema(self, subset_cols):
-        """Creates a new Schema with specified columns, retaining typing information.
+        """Creates a new TableSchema with specified columns, retaining typing information.
 
         Args:
-            subset_cols (list[str]): subset of columns from which to create the new Schema
+            subset_cols (list[str]): subset of columns from which to create the new TableSchema
         Returns:
-            Schema: New Schema with attributes from original Schema
+            TableSchema: New TableSchema with attributes from original TableSchema
         """
         new_logical_types = {}
         new_semantic_tags = {}
@@ -493,10 +493,10 @@ class TableSchema(object):
 
 def _validate_params(column_names, name, index, time_index, logical_types,
                      table_metadata, column_metadata, semantic_tags, column_descriptions):
-    """Check that values supplied during Schema initialization are valid"""
+    """Check that values supplied during TableSchema initialization are valid"""
     _check_column_names(column_names)
     if name and not isinstance(name, str):
-        raise TypeError('Schema name must be a string')
+        raise TypeError('TableSchema name must be a string')
     if index is not None:
         _check_index(column_names, index)
     if logical_types:
@@ -518,18 +518,18 @@ def _check_column_names(column_names):
         raise TypeError('Column names must be a list or set')
 
     if len(column_names) != len(set(column_names)):
-        raise IndexError('Schema cannot contain duplicate columns names')
+        raise IndexError('TableSchema cannot contain duplicate columns names')
 
 
 def _check_index(column_names, index):
     if index not in column_names:
         # User specifies an index that is not in the list of column names
-        raise LookupError(f'Specified index column `{index}` not found in Schema.')
+        raise LookupError(f'Specified index column `{index}` not found in TableSchema.')
 
 
 def _check_time_index(column_names, time_index, logical_type):
     if time_index not in column_names:
-        raise LookupError(f'Specified time index column `{time_index}` not found in Schema')
+        raise LookupError(f'Specified time index column `{time_index}` not found in TableSchema')
     ltype_class = _get_ltype_class(logical_type)
 
     if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):
@@ -545,11 +545,11 @@ def _check_logical_types(column_names, logical_types, require_all_cols=True):
     cols_not_found_in_schema = cols_in_ltypes.difference(cols_in_schema)
     if cols_not_found_in_schema:
         raise LookupError('logical_types contains columns that are not present in '
-                          f'Schema: {sorted(list(cols_not_found_in_schema))}')
+                          f'TableSchema: {sorted(list(cols_not_found_in_schema))}')
     cols_not_found_in_ltypes = cols_in_schema.difference(cols_in_ltypes)
     if cols_not_found_in_ltypes and require_all_cols:
         raise LookupError(f'logical_types is missing columns that are present in '
-                          f'Schema: {sorted(list(cols_not_found_in_ltypes))}')
+                          f'TableSchema: {sorted(list(cols_not_found_in_ltypes))}')
 
     for col_name, logical_type in logical_types.items():
         if _get_ltype_class(logical_type) not in ww.type_system.registered_types:

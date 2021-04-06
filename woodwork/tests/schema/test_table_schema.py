@@ -348,7 +348,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
         'validate': True
     }
 
-    # Confirm all possible params to Schema init are present with non-default values where possible
+    # Confirm all possible params to TableSchema init are present with non-default values where possible
     assert set(possible_schema_params) == set(kwargs.keys())
 
     schema = TableSchema(**kwargs)
@@ -413,7 +413,7 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
 def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
-    error_message = re.escape("logical_types contains columns that are not present in Schema: ['birthday']")
+    error_message = re.escape("logical_types contains columns that are not present in TableSchema: ['birthday']")
     with pytest.raises(LookupError, match=error_message):
         schema.set_types(logical_types={'birthday': Double})
 
@@ -781,7 +781,7 @@ def test_set_index(sample_column_names, sample_inferred_logical_types):
 def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
-    error = re.escape("Specified index column `testing` not found in Schema.")
+    error = re.escape("Specified index column `testing` not found in TableSchema.")
     with pytest.raises(LookupError, match=error):
         schema.set_index('testing')
 
@@ -825,7 +825,7 @@ def test_set_numeric_datetime_time_index(sample_column_names, sample_inferred_lo
 def test_set_time_index_errors(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
-    error = re.escape("Specified time index column `testing` not found in Schema")
+    error = re.escape("Specified time index column `testing` not found in TableSchema")
     with pytest.raises(LookupError, match=error):
         schema.set_time_index('testing')
 

@@ -194,7 +194,7 @@ class WoodworkColumnAccessor:
                 # Make Series call and intercept the result
                 result = series_attr(*args, **kwargs)
 
-                # Try to initialize Woodwork with the existing Schema
+                # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(type(result), self._schema['logical_type'])
                     if str(result.dtype) == valid_dtype:
