@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
-from woodwork.logical_types import Datetime, Double, LatLong
-from woodwork.schema_column import (
+from woodwork.column_schema import (
     _is_col_boolean,
     _is_col_categorical,
     _is_col_datetime,
     _is_col_numeric
 )
+from woodwork.logical_types import Datetime, Double, LatLong
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import get_valid_mi_types, import_or_none
 

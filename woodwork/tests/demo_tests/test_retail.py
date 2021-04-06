@@ -11,7 +11,7 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage
 )
-from woodwork.schema import Schema
+from woodwork.table_schema import Schema
 
 
 @pytest.fixture(autouse=True)

@@ -4,10 +4,7 @@ import warnings
 import pandas as pd
 
 from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
-from woodwork.exceptions import TypingInfoMismatchWarning
-from woodwork.indexers import _iLocIndexer, _locIndexer
-from woodwork.logical_types import LatLong, Ordinal
-from woodwork.schema_column import (
+from woodwork.column_schema import (
     _add_semantic_tags,
     _get_column_dict,
     _remove_semantic_tags,
@@ -16,6 +13,9 @@ from woodwork.schema_column import (
     _validate_description,
     _validate_metadata
 )
+from woodwork.exceptions import TypingInfoMismatchWarning
+from woodwork.indexers import _iLocIndexer, _locIndexer
+from woodwork.logical_types import LatLong, Ordinal
 from woodwork.utils import (
     _get_column_logical_type,
     _is_valid_latlong_series,

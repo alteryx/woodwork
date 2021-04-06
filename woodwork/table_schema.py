@@ -4,14 +4,14 @@ import copy
 import pandas as pd
 
 import woodwork as ww
-from woodwork.exceptions import ColumnNotPresentError
-from woodwork.schema_column import (
+from woodwork.column_schema import (
     _add_semantic_tags,
     _get_column_dict,
     _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags
 )
+from woodwork.exceptions import ColumnNotPresentError
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 

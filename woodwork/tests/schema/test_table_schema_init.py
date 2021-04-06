@@ -11,7 +11,7 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage
 )
-from woodwork.schema import (
+from woodwork.table_schema import (
     Schema,
     _check_column_descriptions,
     _check_column_metadata,
@@ -358,10 +358,10 @@ def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_l
         assert column['metadata'] == (column_metadata.get(name) or {})
 
 
-@patch("woodwork.schema._validate_not_setting_index_tags")
-@patch("woodwork.schema._check_time_index")
-@patch("woodwork.schema._check_index")
-@patch("woodwork.schema._validate_params")
+@patch("woodwork.table_schema._validate_not_setting_index_tags")
+@patch("woodwork.table_schema._check_time_index")
+@patch("woodwork.table_schema._check_index")
+@patch("woodwork.table_schema._validate_params")
 def test_validation_methods_called(mock_validate_params, mock_check_index,
                                    mock_check_time_index, mock_validate_not_setting_index,
                                    sample_column_names, sample_inferred_logical_types):

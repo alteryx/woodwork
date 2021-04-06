@@ -17,12 +17,12 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime
-from woodwork.schema import Schema
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
     _get_value_counts
 )
+from woodwork.table_schema import Schema
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,

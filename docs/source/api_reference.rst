@@ -64,7 +64,7 @@ WoodworkColumnAccessor
 Schema
 ======
 
-.. currentmodule:: woodwork.schema
+.. currentmodule:: woodwork.table_schema
 .. autosummary::
     :toctree: generated/
 

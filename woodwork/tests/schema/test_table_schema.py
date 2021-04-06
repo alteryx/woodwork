@@ -18,7 +18,7 @@ from woodwork.logical_types import (
     PersonFullName,
     PhoneNumber
 )
-from woodwork.schema import Schema
+from woodwork.table_schema import Schema
 
 
 def test_schema_logical_types(sample_column_names, sample_inferred_logical_types):
@@ -174,7 +174,7 @@ def test_schema_table_metadata(sample_column_names, sample_inferred_logical_type
     assert schema.metadata == metadata
 
 
-def test_schema_column_metadata(sample_column_names, sample_inferred_logical_types):
+def test_column_schema_metadata(sample_column_names, sample_inferred_logical_types):
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
     schema = Schema(sample_column_names, sample_inferred_logical_types)
@@ -925,8 +925,8 @@ def test_schema_rename_indices(sample_column_names, sample_inferred_logical_type
     assert renamed_schema.time_index == 'renamed_time_index'
 
 
-@patch("woodwork.schema._check_time_index")
-@patch("woodwork.schema._check_index")
+@patch("woodwork.table_schema._check_time_index")
+@patch("woodwork.table_schema._check_index")
 def test_validation_methods_called(mock_check_index, mock_check_time_index,
                                    sample_column_names, sample_inferred_logical_types):
     validation_schema = Schema(sample_column_names, sample_inferred_logical_types)

@@ -4,16 +4,7 @@ import pytest
 from mock import patch
 
 import woodwork as ww
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Datetime,
-    Double,
-    Integer,
-    NaturalLanguage,
-    Ordinal
-)
-from woodwork.schema_column import (
+from woodwork.column_schema import (
     _get_column_dict,
     _is_col_boolean,
     _is_col_categorical,
@@ -23,6 +14,15 @@ from woodwork.schema_column import (
     _validate_description,
     _validate_logical_type,
     _validate_metadata
+)
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage,
+    Ordinal
 )
 
 
@@ -54,9 +54,9 @@ def test_validate_metadata_errors():
         _validate_metadata(int)
 
 
-@patch("woodwork.schema_column._validate_metadata")
-@patch("woodwork.schema_column._validate_description")
-@patch("woodwork.schema_column._validate_logical_type")
+@patch("woodwork.column_schema._validate_metadata")
+@patch("woodwork.column_schema._validate_description")
+@patch("woodwork.column_schema._validate_logical_type")
 def test_validation_methods_called(mock_validate_logical_type, mock_validate_description, mock_validate_metadata,
                                    sample_column_names, sample_inferred_logical_types):
     assert not mock_validate_logical_type.called

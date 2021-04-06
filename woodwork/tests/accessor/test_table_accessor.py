@@ -33,7 +33,6 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode
 )
-from woodwork.schema import Schema
 from woodwork.table_accessor import (
     WoodworkTableAccessor,
     _check_index,
@@ -42,6 +41,7 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
+from woodwork.table_schema import Schema
 from woodwork.tests.testing_utils import (
     is_property,
     is_public_method,
