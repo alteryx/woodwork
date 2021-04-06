@@ -19,6 +19,7 @@ Release Notes
         * Drop support for Python version 3.6 (:pr:`768`)
         * Remove ``ColumnNameMismatchWarning`` (:pr:`777`)
         * ``get_column_dict`` does not use standard tags by default (:pr:`782`)
+        * Make ``logical_type`` and ``name`` params to ``_get_column_dict`` optional (:pr:`7786`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
