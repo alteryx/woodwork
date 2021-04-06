@@ -1360,8 +1360,9 @@ def test_select_ltypes_no_match_and_all(sample_df):
     assert len(schema_df.ww.select(['PostalCode', PhoneNumber]).columns) == 1
 
     all_types = ww.type_system.registered_types
-    df_all_types = schema_df.ww.select(all_types)
+    assert len(schema_df.ww.select(exclude=all_types).columns) == 0
 
+    df_all_types = schema_df.ww.select(all_types)
     pd.testing.assert_frame_equal(to_pandas(df_all_types), to_pandas(schema_df))
     assert df_all_types.ww.schema == schema_df.ww.schema
 
@@ -1414,6 +1415,22 @@ def test_select_ltypes_mixed(sample_df):
     df_mixed_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', Double])
     assert len(df_mixed_ltypes.columns) == 3
     assert 'phone_number' not in df_mixed_ltypes.columns
+
+
+def test_select_ltypes_mixed_exclude(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(logical_types={'full_name': PersonFullName,
+                                     'email': EmailAddress,
+                                     'phone_number': PhoneNumber,
+                                     'age': Double,
+                                     'signup_date': Datetime,
+                                     })
+
+    df_mixed_ltypes = schema_df.ww.select(exclude=['PersonFullName', 'email_address', Double])
+    assert len(df_mixed_ltypes.columns) == 4
+    assert 'full_name' not in df_mixed_ltypes.columns
+    assert 'email_address' not in df_mixed_ltypes.columns
+    assert 'age' not in df_mixed_ltypes.columns
 
 
 def test_select_ltypes_table(sample_df):
@@ -1483,6 +1500,47 @@ def test_select_semantic_tags(sample_df):
     assert 'id' in df_common_tags.columns
     assert 'is_registered' in df_common_tags.columns
     assert 'age' in df_common_tags.columns
+
+
+def test_select_semantic_tags_exclude(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(semantic_tags={'full_name': 'tag1',
+                                     'email': ['tag2'],
+                                     'age': ['numeric', 'tag2'],
+                                     'phone_number': ['tag3', 'tag2'],
+                                     'is_registered': 'category',
+                                     },
+                      time_index='signup_date')
+
+    df_one_match = schema_df.ww.select(exclude='numeric')
+    assert len(df_one_match.columns) == 5
+    assert 'age' not in df_one_match.columns
+    assert 'id' not in df_one_match.columns
+
+    df_multiple_matches = schema_df.ww.select(exclude='tag2')
+    assert len(df_multiple_matches.columns) == 4
+    assert 'age' not in df_multiple_matches.columns
+    assert 'phone_number' not in df_multiple_matches.columns
+    assert 'email' not in df_multiple_matches.columns
+
+    df_multiple_tags = schema_df.ww.select(exclude=['numeric', 'time_index'])
+    assert len(df_multiple_tags.columns) == 4
+    assert 'id' not in df_multiple_tags.columns
+    assert 'age' not in df_multiple_tags.columns
+    assert 'signup_date' not in df_multiple_tags.columns
+
+    df_overlapping_tags = schema_df.ww.select(exclude=['numeric', 'tag2'])
+    assert len(df_overlapping_tags.columns) == 3
+    assert 'id' not in df_overlapping_tags.columns
+    assert 'age' not in df_overlapping_tags.columns
+    assert 'phone_number' not in df_overlapping_tags.columns
+    assert 'email' not in df_overlapping_tags.columns
+
+    df_common_tags = schema_df.ww.select(exclude=['category', 'numeric'])
+    assert len(df_common_tags.columns) == 4
+    assert 'id' not in df_common_tags.columns
+    assert 'is_registered' not in df_common_tags.columns
+    assert 'age' not in df_common_tags.columns
 
 
 def test_select_single_inputs(sample_df):
@@ -1631,6 +1689,23 @@ def test_select_instantiated_ltype():
     err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         df.ww.select(ymd_format)
+
+
+def test_select_include_and_exclude_error(sample_df):
+    sample_df.ww.init()
+    err_msg = "Cannot specify values for both 'include' and 'exclude' in a single call."
+    with pytest.raises(ValueError, match=err_msg):
+        sample_df.ww.select(include='Integer', exclude='Double')
+
+    with pytest.raises(ValueError, match=err_msg):
+        sample_df.ww.select(include=[], exclude=[])
+
+
+def test_select_no_selectors_error(sample_df):
+    sample_df.ww.init()
+    err_msg = "Must specify values for either 'include' or 'exclude'."
+    with pytest.raises(ValueError, match=err_msg):
+        sample_df.ww.select()
 
 
 def test_accessor_set_index(sample_df):

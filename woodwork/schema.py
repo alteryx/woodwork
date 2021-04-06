@@ -377,20 +377,32 @@ class Schema(object):
     def _set_time_index_tags(self, time_index):
         self.columns[time_index]['semantic_tags'].add('time_index')
 
-    def _filter_cols(self, include, col_names=False):
+    def _filter_cols(self, include=None, exclude=None, col_names=False):
         """Return list of columns filtered with any of: semantic tags, LogicalTypes, column names
 
         Args:
             include (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
-                filter columns by. Can be Logical Types or Semantic Tags.
+                filter columns by. Can be Logical Types or Semantic Tags. Columns that match will be
+                included in the returned list of columns.
+            exclude (str or LogicalType or list[str or LogicalType]): parameter or list of parameters to
+                filter columns by. Can be Logical Types or Semantic Tags. Columns that match will be
+                excluded from the returned list of columns.
 
             col_names (bool): Specifies whether to filter columns by name. Defaults to False.
 
         Returns:
             List[str] of column names that fit into filter.
         """
-        if not isinstance(include, list):
+        assert not (include and exclude), "Cannot specify both include and exclude"
+        if include and not isinstance(include, list):
             include = [include]
+        elif exclude and not isinstance(exclude, list):
+            exclude = [exclude]
+
+        if include is not None:
+            selectors = include
+        elif exclude is not None:
+            selectors = exclude
 
         ltypes_used = set()
         ltypes_in_schema = {_get_ltype_class(col['logical_type']) for col in self.columns.values()}
@@ -398,9 +410,9 @@ class Schema(object):
         tags_used = set()
         tags_in_schema = {tag for col in self.columns.values() for tag in col['semantic_tags']}
 
-        cols_to_include = set()
+        col_name_matches = set()
 
-        for selector in include:
+        for selector in selectors:
             # Determine if the selector is a registered, uninstantiated LogicalType
             maybe_ltype = selector
             if isinstance(selector, str):
@@ -426,13 +438,19 @@ class Schema(object):
                 tags_used.add(selector)
             # Determine if the selector is a column name
             if col_names and selector in self.columns:
-                cols_to_include.add(selector)
+                col_name_matches.add(selector)
 
+        cols_to_return = set()
         for col_name, col in self.columns.items():
-            if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
-                cols_to_include.add(col_name)
+            is_match = (_get_ltype_class(col['logical_type']) in ltypes_used or
+                        col['semantic_tags'].intersection(tags_used) or
+                        col_name in col_name_matches)
+            if include is not None and is_match:
+                cols_to_return.add(col_name)
+            elif exclude is not None and not is_match:
+                cols_to_return.add(col_name)
 
-        return list(cols_to_include)
+        return list(cols_to_return)
 
     def _get_subset_schema(self, subset_cols):
         """Creates a new Schema with specified columns, retaining typing information.
