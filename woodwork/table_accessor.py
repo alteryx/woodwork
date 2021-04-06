@@ -112,7 +112,11 @@ class WoodworkTableAccessor:
             if extra_params:
                 warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
+            # We need to store make_index on the Accessor when initializing with a Schema
+            # but we still should ignore any make_index value passed in here
+            self.make_index = False
         else:
+            self.make_index = make_index
             if make_index:
                 _make_index(self._dataframe, index)
 
@@ -145,6 +149,9 @@ class WoodworkTableAccessor:
                 self._sort_columns(already_sorted)
 
     def __eq__(self, other):
+        if self.make_index != other.ww.make_index:
+            return False
+
         if self._schema != other.ww._schema:
             return False
 
@@ -580,6 +587,7 @@ class WoodworkTableAccessor:
                     else:
                         copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
                         result.ww.init(schema=copied_schema)
+                        result.ww.make_index = self.make_index
                 else:
                     # Confirm that the Schema is still valid on original DataFrame
                     # Important for inplace operations
