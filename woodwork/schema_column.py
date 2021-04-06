@@ -31,7 +31,6 @@ def _get_column_dict(name=None,
     if metadata is None:
         metadata = {}
     if validate:
-        # --> ltype validation should be able to handle none
         _validate_logical_type(logical_type)
         _validate_description(description)
         _validate_metadata(metadata)
@@ -47,12 +46,13 @@ def _get_column_dict(name=None,
 
 
 def _validate_logical_type(logical_type):
-    ltype_class = _get_ltype_class(logical_type)
+    if logical_type is not None:
+        ltype_class = _get_ltype_class(logical_type)
 
-    if ltype_class not in ww.type_system.registered_types:
-        raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
-    if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
-        raise TypeError("Must use an Ordinal instance with order values defined")
+        if ltype_class not in ww.type_system.registered_types:
+            raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
+        if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
+            raise TypeError("Must use an Ordinal instance with order values defined")
 
 
 def _validate_description(column_description):
@@ -70,7 +70,8 @@ def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, valid
                                           validate=validate)
 
     if use_standard_tags:
-        # --> handle no logical type case
+        if logical_type is None:
+            raise ValueError("Cannot use standard tags when logical_type is None")
         semantic_tags = semantic_tags.union(logical_type.standard_tags)
 
     return semantic_tags

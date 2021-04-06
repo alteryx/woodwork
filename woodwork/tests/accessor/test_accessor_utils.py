@@ -1,4 +1,4 @@
-iblemport pytest
+import pytest
 
 from woodwork.accessor_utils import (
     _get_valid_dtype,

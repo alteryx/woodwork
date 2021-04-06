@@ -56,7 +56,7 @@ class WoodworkColumnAccessor:
         self.use_standard_tags = use_standard_tags
 
         self._schema = _get_column_dict(name=self._series.name,
-                                        logical_type=logical_type,  # --> can we confirm this is not None?
+                                        logical_type=logical_type,
                                         semantic_tags=semantic_tags,
                                         use_standard_tags=self.use_standard_tags,
                                         description=description,

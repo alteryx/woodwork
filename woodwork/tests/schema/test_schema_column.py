@@ -31,11 +31,6 @@ def test_validate_logical_type_errors():
     with pytest.raises(TypeError, match=match):
         _validate_logical_type(int)
 
-    # --> update to return nothing or remove
-    match = 'logical_type None is not a registered LogicalType.'
-    with pytest.raises(TypeError, match=match):
-        _validate_logical_type(None)
-
     ww.type_system.remove_type(Integer)
     match = 'logical_type Integer is not a registered LogicalType.'
     with pytest.raises(TypeError, match=match):
@@ -111,12 +106,27 @@ def test_get_column_dict_params():
 
 
 def test_get_column_dict_null_params():
-    # --> test null name and ltype with various combos
-    # null both
-    # just tags - no standard tags - date of birth and foreign key
-    # just tags - with - standard tags and index tags
-    # no name with error
-    pass
+    assert _validate_logical_type(None) is None
+
+    empty_col = {
+        'logical_type': None,
+        'semantic_tags': set(),
+        'description': None,
+        'metadata': {}
+    }
+    assert _get_column_dict() == empty_col
+
+    just_tags = _get_column_dict(semantic_tags={'numeric', 'time_index'})
+    assert just_tags.get('logical_type') is None
+    assert just_tags.get('semantic_tags') == {'numeric', 'time_index'}
+
+    error = "Cannot use standard tags when logical_type is None"
+    with pytest.raises(ValueError, match=error):
+        _get_column_dict(semantic_tags='categorical', use_standard_tags=True)
+
+    error = "semantic_tags for None must be a string, set or list"
+    with pytest.raises(TypeError, match=error):
+        _get_column_dict(semantic_tags=1)
 
 
 def test_is_col_numeric():
