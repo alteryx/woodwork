@@ -8,6 +8,7 @@ Release Notes
 
     * Enhancements
         * Add validation control to WoodworkTableAccessor (:pr:`736`)
+        * Store ``make_index`` value on WoodworkTableAccessor (:pr:`780`)
         * Add optional ``exclude`` parameter to WoodworkTableAccessor ``select`` method (:pr:`783`)
     * Fixes
     * Changes
