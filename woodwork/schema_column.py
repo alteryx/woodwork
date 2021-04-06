@@ -10,8 +10,8 @@ from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 
-def _get_column_dict(name,
-                     logical_type,
+def _get_column_dict(name=None,
+                     logical_type=None,
                      semantic_tags=None,
                      use_standard_tags=False,
                      description=None,
@@ -19,11 +19,11 @@ def _get_column_dict(name,
                      validate=True):
     """Creates a dictionary that contains the typing information for a Schema column
     Args:
-        name (str): The name of the column.
-        logical_type (str, LogicalType): The column's LogicalType.
+        name (str, optional): The name of the column.
+        logical_type (str, LogicalType, optional): The column's LogicalType.
         semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
         use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
-                on the specified logical type. Defaults to False.
+                on the specified logical type if a logical type is defined for the column. Defaults to False.
         description (str, optional): User description of the column.
         metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
         validate (bool, optional): Whether to perform parameter validation. Defaults to True.
@@ -31,7 +31,8 @@ def _get_column_dict(name,
     if metadata is None:
         metadata = {}
     if validate:
-        _validate_logical_type(logical_type)
+        if logical_type is not None:
+            _validate_logical_type(logical_type)
         _validate_description(description)
         _validate_metadata(metadata)
 
@@ -65,10 +66,16 @@ def _validate_metadata(column_metadata):
 
 
 def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language=f'semantic_tags for {name}',
+    error_language = f'semantic_tags for {name}'
+    if logical_type is None:
+        error_language = 'semantic_tags'
+
+    semantic_tags = _convert_input_to_set(semantic_tags, error_language=error_language,
                                           validate=validate)
 
     if use_standard_tags:
+        if logical_type is None:
+            raise ValueError("Cannot use standard tags when logical_type is None")
         semantic_tags = semantic_tags.union(logical_type.standard_tags)
 
     return semantic_tags
