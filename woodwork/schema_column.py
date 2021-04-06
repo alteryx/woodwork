@@ -10,8 +10,8 @@ from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 
-def _get_column_dict(name,
-                     logical_type,
+def _get_column_dict(name=None,
+                     logical_type=None,
                      semantic_tags=None,
                      use_standard_tags=False,
                      description=None,
@@ -31,6 +31,7 @@ def _get_column_dict(name,
     if metadata is None:
         metadata = {}
     if validate:
+        # --> ltype validation should be able to handle none
         _validate_logical_type(logical_type)
         _validate_description(description)
         _validate_metadata(metadata)
@@ -69,6 +70,7 @@ def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, valid
                                           validate=validate)
 
     if use_standard_tags:
+        # --> handle no logical type case
         semantic_tags = semantic_tags.union(logical_type.standard_tags)
 
     return semantic_tags

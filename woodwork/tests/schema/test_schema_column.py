@@ -31,6 +31,7 @@ def test_validate_logical_type_errors():
     with pytest.raises(TypeError, match=match):
         _validate_logical_type(int)
 
+    # --> update to return nothing or remove
     match = 'logical_type None is not a registered LogicalType.'
     with pytest.raises(TypeError, match=match):
         _validate_logical_type(None)
@@ -107,6 +108,15 @@ def test_get_column_dict_params():
 
     assert column.get('description') == 'this is a column!'
     assert column.get('metadata') == {'created_by': 'user1'}
+
+
+def test_get_column_dict_null_params():
+    # --> test null name and ltype with various combos
+    # null both
+    # just tags - no standard tags - date of birth and foreign key
+    # just tags - with - standard tags and index tags
+    # no name with error
+    pass
 
 
 def test_is_col_numeric():
