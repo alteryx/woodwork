@@ -23,7 +23,8 @@ Release Notes
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
-        * Add unit tests aganist minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
+        * Add unit tests against minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
+        * Update spark config for test fixtures and docs build (:pr:`787`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
