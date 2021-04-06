@@ -396,12 +396,12 @@ class Schema(object):
         assert not (include and exclude), "Cannot specify both include and exclude"
         if include and not isinstance(include, list):
             include = [include]
-        if exclude and not isinstance(exclude, list):
+        elif exclude and not isinstance(exclude, list):
             exclude = [exclude]
 
         if include is not None:
             selectors = include
-        else:
+        elif exclude is not None:
             selectors = exclude
 
         ltypes_used = set()
@@ -410,7 +410,7 @@ class Schema(object):
         tags_used = set()
         tags_in_schema = {tag for col in self.columns.values() for tag in col['semantic_tags']}
 
-        match_cols = set()
+        col_name_matches = set()
 
         for selector in selectors:
             # Determine if the selector is a registered, uninstantiated LogicalType
@@ -438,16 +438,19 @@ class Schema(object):
                 tags_used.add(selector)
             # Determine if the selector is a column name
             if col_names and selector in self.columns:
-                match_cols.add(selector)
+                col_name_matches.add(selector)
 
+        cols_to_return = set()
         for col_name, col in self.columns.items():
-            if _get_ltype_class(col['logical_type']) in ltypes_used or col['semantic_tags'].intersection(tags_used):
-                match_cols.add(col_name)
+            is_match = (_get_ltype_class(col['logical_type']) in ltypes_used or
+                        col['semantic_tags'].intersection(tags_used) or
+                        col_name in col_name_matches)
+            if include is not None and is_match:
+                cols_to_return.add(col_name)
+            elif exclude is not None and not is_match:
+                cols_to_return.add(col_name)
 
-        if include is not None:
-            return list(match_cols)
-        else:
-            return [col for col in self.columns.keys() if col not in match_cols]
+        return list(cols_to_return)
 
     def _get_subset_schema(self, subset_cols):
         """Creates a new Schema with specified columns, retaining typing information.

@@ -253,8 +253,14 @@ def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logi
     filter_non_string = schema._filter_cols(include=1)
     assert filter_non_string == []
 
-    filter_exclude_all = schema._filter_cols(exclude=list(sample_inferred_logical_types.values()))
-    assert filter_exclude_all == []
+    filter_exclude_no_matches = schema._filter_cols(exclude='nothing')
+    assert set(filter_exclude_no_matches) == set(sample_column_names)
+
+    filter_exclude_empty_list = schema._filter_cols(exclude=[])
+    assert set(filter_exclude_empty_list) == set(sample_column_names)
+
+    filter_exclude_non_string = schema._filter_cols(exclude=1)
+    assert set(filter_exclude_non_string) == set(sample_column_names)
 
 
 def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types):
