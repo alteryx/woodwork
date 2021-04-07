@@ -215,14 +215,11 @@ class WoodworkTableAccessor:
         if column.ww._schema is None:
             column = init_series(column, use_standard_tags=self.use_standard_tags)
         elif self.use_standard_tags and not column.ww.use_standard_tags:
-            # --> need to update so that we can set like this :/ maybe add a property and a setter??
-            column.ww.semantic_tags |= column.ww.logical_type.standard_tags
+            column.ww.add_semantic_tags(column.ww.logical_type.standard_tags)
             message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
             warnings.warn(message, StandardTagsChangedWarning)
         elif not self.use_standard_tags and column.ww.use_standard_tags:
-            column.ww.semantic_tags -= column.ww.logical_type.standard_tags
-            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
-            warnings.warn(message, StandardTagsChangedWarning)
+            column.ww.remove_semantic_tags(column.ww.logical_type.standard_tags)
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema

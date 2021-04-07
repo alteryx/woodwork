@@ -2138,7 +2138,7 @@ def test_setitem_overwrite_column(sample_df):
     df.ww.init(use_standard_tags=False)
 
     original_col = df['full_name']
-    new_series = pd.Series([0, 1, 2], dtype='float')
+    new_series = pd.Series([0, 1, 2], dtype='float', name='full_name')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
