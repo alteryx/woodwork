@@ -33,11 +33,12 @@ def read_table_typing_information(path):
     return typing_info
 
 
-def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
+def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs):
     """Deserialize Woodwork table from table description.
 
     Args:
         table_typing_info (dict) : Woodwork typing information. Likely generated using :meth:`.serialize.typing_info_to_dict`
+        validate (bool): Whether parameter and data validation should occur during table initialization
         kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
     Returns:
@@ -121,18 +122,22 @@ def _typing_information_to_woodwork_table(table_typing_info, **kwargs):
         use_standard_tags=table_typing_info.get('use_standard_tags'),
         table_metadata=table_typing_info.get('table_metadata'),
         column_metadata=column_metadata,
-        column_descriptions=column_descriptions)
+        column_descriptions=column_descriptions,
+        validate=validate)
 
     return dataframe
 
 
-def read_woodwork_table(path, profile_name=None, **kwargs):
+def read_woodwork_table(path, profile_name=None, validate=False, **kwargs):
     """Read Woodwork table from disk, S3 path, or URL.
 
         Args:
             path (str): Directory on disk, S3 path, or URL to read `woodwork_typing_info.json`.
             profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
+            validate (bool, optional): Whether parameter and data validation should occur when initializing Woodwork dataframe
+                during deserialization. Defaults to False. Note: If serialized data was modified outside of Woodwork and you
+                are unsure of the validity of the data or typing information, `validate` should be set to True.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
 
         Returns:
@@ -152,10 +157,10 @@ def read_woodwork_table(path, profile_name=None, **kwargs):
                 tar.extractall(path=tmpdir)
 
             table_typing_info = read_table_typing_information(tmpdir)
-            return _typing_information_to_woodwork_table(table_typing_info, **kwargs)
+            return _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     else:
         table_typing_info = read_table_typing_information(path)
-        return _typing_information_to_woodwork_table(table_typing_info, **kwargs)
+        return _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
 
 
 def _check_schema_version(saved_version_str):

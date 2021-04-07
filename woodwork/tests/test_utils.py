@@ -213,6 +213,18 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(df_from_csv, schema_df.head(nrows))
 
 
+@patch("woodwork.table_accessor._validate_accessor_params")
+def test_read_csv_validation_control(mock_validate_accessor_params, sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample.csv')
+    sample_df_pandas.to_csv(filepath, index=False)
+
+    assert not mock_validate_accessor_params.called
+    ww.read_csv(filepath=filepath, validate=False)
+    assert not mock_validate_accessor_params.called
+    ww.read_csv(filepath=filepath)
+    assert mock_validate_accessor_params.called
+
+
 def test_is_numeric_datetime_series(time_index_df):
     assert _is_numeric_series(time_index_df['ints'], None)
     assert _is_numeric_series(time_index_df['ints'], Double)
