@@ -11,7 +11,7 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage
 )
-from woodwork.schema import Schema
+from woodwork.table_schema import TableSchema
 
 
 @pytest.fixture(autouse=True)
@@ -37,7 +37,7 @@ def test_load_retail_diff():
 
 def test_load_retail():
     df = load_retail(nrows=10, init_woodwork=True)
-    assert isinstance(df.ww.schema, Schema)
+    assert isinstance(df.ww.schema, TableSchema)
 
     expected_logical_types = {
         'order_product_id': Categorical,

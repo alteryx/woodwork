@@ -17,12 +17,12 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime
-from woodwork.schema import Schema
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
     _get_value_counts
 )
+from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -84,7 +84,7 @@ class WoodworkTableAccessor:
             use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
                 on the specified logical type for the column. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
-            schema (Woodwork.Schema, optional): Typing information to use for the DataFrame instead of performing inference.
+            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between DataFrames.
@@ -112,7 +112,7 @@ class WoodworkTableAccessor:
             if extra_params:
                 warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
-            # We need to store make_index on the Accessor when initializing with a Schema
+            # We need to store make_index on the Accessor when initializing with a schema
             # but we still should ignore any make_index value passed in here
             self.make_index = False
         else:
@@ -137,12 +137,12 @@ class WoodworkTableAccessor:
                     self._dataframe[name] = updated_series
 
             column_names = list(self._dataframe.columns)
-            self._schema = Schema(column_names=column_names,
-                                  logical_types=parsed_logical_types,
-                                  index=index,
-                                  time_index=time_index,
-                                  validate=validate,
-                                  **kwargs)
+            self._schema = TableSchema(column_names=column_names,
+                                       logical_types=parsed_logical_types,
+                                       index=index,
+                                       time_index=time_index,
+                                       validate=validate,
+                                       **kwargs)
 
             self._set_underlying_index()
             if self._schema.time_index is not None:
@@ -162,7 +162,7 @@ class WoodworkTableAccessor:
 
     def __getattr__(self, attr):
         # If the method is present on the Accessor, uses that method.
-        # If the method is present on Schema, uses that method.
+        # If the method is present on TableSchema, uses that method.
         # If the method is present on DataFrame, uses that method.
         if self._schema is None:
             _raise_init_error()
@@ -307,7 +307,7 @@ class WoodworkTableAccessor:
     @property
     def types(self):
         """DataFrame containing the physical dtypes, logical types and semantic
-        tags for the Schema."""
+        tags for the schema."""
         if self._schema is None:
             _raise_init_error()
         return self._get_typing_info()
@@ -557,7 +557,7 @@ class WoodworkTableAccessor:
 
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
-        specified by the Schema. Does not change the underlying index if no Woodwork index is
+        specified by the TableSchema. Does not change the underlying index if no Woodwork index is
         specified. Only sets underlying index for pandas DataFrames.
         """
         if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
@@ -567,7 +567,7 @@ class WoodworkTableAccessor:
 
     def _make_schema_call(self, attr):
         """Forwards the requested attribute onto the schema object.
-        Results are that of the Woodwork.Schema class."""
+        Results are that of the Woodwork.TableSchema class."""
         schema_attr = getattr(self._schema, attr)
 
         if callable(schema_attr):
@@ -587,7 +587,7 @@ class WoodworkTableAccessor:
                 # Make DataFrame call and intercept the result
                 result = dataframe_attr(*args, **kwargs)
 
-                # Try to initialize Woodwork with the existing Schema
+                # Try to initialize Woodwork with the existing schema
                 if _is_dataframe(result):
                     invalid_schema_message = _get_invalid_schema_message(result, self._schema)
                     if invalid_schema_message:
@@ -598,7 +598,7 @@ class WoodworkTableAccessor:
                         result.ww.init(schema=copied_schema)
                         result.ww.make_index = self.make_index
                 else:
-                    # Confirm that the Schema is still valid on original DataFrame
+                    # Confirm that the schema is still valid on original DataFrame
                     # Important for inplace operations
                     invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
                     if invalid_schema_message:
@@ -891,8 +891,8 @@ def _check_logical_types(dataframe_columns, logical_types):
 
 
 def _check_schema(dataframe, schema):
-    if not isinstance(schema, Schema):
-        raise TypeError('Provided schema must be a Woodwork.Schema object.')
+    if not isinstance(schema, TableSchema):
+        raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
     invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')

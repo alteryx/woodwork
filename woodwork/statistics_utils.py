@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
-from woodwork.logical_types import Datetime, Double, LatLong
-from woodwork.schema_column import (
+from woodwork.column_schema import (
     _is_col_boolean,
     _is_col_categorical,
     _is_col_datetime,
     _is_col_numeric
 )
+from woodwork.logical_types import Datetime, Double, LatLong
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import get_valid_mi_types, import_or_none
 
@@ -112,7 +112,7 @@ def _replace_nans_for_mutual_info(schema, data):
     """Replace NaN values in the dataframe so that mutual information can be calculated
 
     Args:
-        schema (woodwork.Schema): Woodwork typing info for the data
+        schema (woodwork.TableSchema): Woodwork typing info for the data
         data (pd.DataFrame): dataframe to use for calculating mutual information
 
     Returns:
@@ -139,7 +139,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     mutual information can be calculated
 
     Args:
-        schema (woodwork.Schema): Woodwork typing info for the data
+        schema (woodwork.TableSchema): Woodwork typing info for the data
         data (pd.DataFrame): dataframe to use for calculating mutual information
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.

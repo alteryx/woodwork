@@ -160,7 +160,7 @@ def test_read_csv_no_params(sample_df_pandas, tmpdir):
     sample_df_pandas.to_csv(filepath, index=False)
 
     df_from_csv = ww.read_csv(filepath=filepath)
-    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+    assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
     schema_df.ww.init()
@@ -185,7 +185,7 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
                               time_index='signup_date',
                               logical_types=logical_types,
                               semantic_tags=semantic_tags)
-    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+    assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
     schema_df.ww.init(index='id',
@@ -203,7 +203,7 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     nrows = 2
 
     df_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
-    assert isinstance(df_from_csv.ww.schema, ww.schema.Schema)
+    assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
     schema_df.ww.init()

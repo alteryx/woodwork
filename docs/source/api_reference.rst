@@ -61,26 +61,26 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.set_logical_type
     WoodworkColumnAccessor.set_semantic_tags
 
-Schema
-======
+TableSchema
+===========
 
-.. currentmodule:: woodwork.schema
+.. currentmodule:: woodwork.table_schema
 .. autosummary::
     :toctree: generated/
 
-    Schema
-    Schema.add_semantic_tags
-    Schema.index
-    Schema.logical_types
-    Schema.rename
-    Schema.remove_semantic_tags
-    Schema.reset_semantic_tags
-    Schema.semantic_tags
-    Schema.set_index
-    Schema.set_time_index
-    Schema.set_types
-    Schema.time_index
-    Schema.types
+    TableSchema
+    TableSchema.add_semantic_tags
+    TableSchema.index
+    TableSchema.logical_types
+    TableSchema.rename
+    TableSchema.remove_semantic_tags
+    TableSchema.reset_semantic_tags
+    TableSchema.semantic_tags
+    TableSchema.set_index
+    TableSchema.set_time_index
+    TableSchema.set_types
+    TableSchema.time_index
+    TableSchema.types
 
 Serialization
 =============

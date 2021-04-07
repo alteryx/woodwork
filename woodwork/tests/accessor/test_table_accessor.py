@@ -33,7 +33,6 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode
 )
-from woodwork.schema import Schema
 from woodwork.table_accessor import (
     WoodworkTableAccessor,
     _check_index,
@@ -42,6 +41,7 @@ from woodwork.table_accessor import (
     _check_unique_column_names,
     _get_invalid_schema_message
 )
+from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
     is_property,
     is_public_method,
@@ -111,7 +111,7 @@ def test_check_unique_column_names_errors(sample_df):
 def test_accessor_init(sample_df):
     assert sample_df.ww.schema is None
     sample_df.ww.init()
-    assert isinstance(sample_df.ww.schema, Schema)
+    assert isinstance(sample_df.ww.schema, TableSchema)
 
 
 def test_accessor_schema_property(sample_df):
@@ -225,7 +225,7 @@ def test_init_accessor_with_schema_errors(sample_df):
     iloc_df = schema_df.iloc[:, :-1]
     assert iloc_df.ww.schema is None
 
-    error = 'Provided schema must be a Woodwork.Schema object.'
+    error = 'Provided schema must be a Woodwork.TableSchema object.'
     with pytest.raises(TypeError, match=error):
         iloc_df.ww.init(schema=int)
 
@@ -256,7 +256,7 @@ def test_accessor_with_schema_parameter_warning(sample_df):
 def test_accessor_getattr(sample_df):
     schema_df = sample_df.copy()
 
-    # We can access attributes on the Accessor class before the Schema is initialized
+    # We can access attributes on the Accessor class before the schema is initialized
     assert schema_df.ww.schema is None
 
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
@@ -1734,7 +1734,7 @@ def test_accessor_set_index(sample_df):
 def test_accessor_set_index_errors(sample_df):
     sample_df.ww.init()
 
-    error = 'Specified index column `testing` not found in Schema.'
+    error = 'Specified index column `testing` not found in TableSchema.'
     with pytest.raises(LookupError, match=error):
         sample_df.ww.set_index('testing')
 

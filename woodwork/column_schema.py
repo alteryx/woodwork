@@ -17,7 +17,7 @@ def _get_column_dict(name=None,
                      description=None,
                      metadata=None,
                      validate=True):
-    """Creates a dictionary that contains the typing information for a Schema column
+    """Creates a dictionary that contains the typing information for a column schema
     Args:
         name (str, optional): The name of the column.
         logical_type (str, LogicalType, optional): The column's LogicalType.
