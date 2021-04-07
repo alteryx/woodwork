@@ -6,6 +6,7 @@ import pytest
 
 from woodwork.accessor_utils import init_series
 from woodwork.column_accessor import WoodworkColumnAccessor
+from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     DuplicateTagsWarning,
     StandardTagsChangedWarning,
@@ -38,7 +39,7 @@ ks = import_or_none('databricks.koalas')
 def test_accessor_init(sample_series):
     assert sample_series.ww._schema is None
     sample_series.ww.init()
-    assert isinstance(sample_series.ww._schema, dict)
+    assert isinstance(sample_series.ww._schema, ColumnSchema)
     assert sample_series.ww.logical_type == Categorical
     assert sample_series.ww.semantic_tags == {'category'}
 
@@ -428,11 +429,13 @@ def test_series_methods_on_accessor_inplace(sample_series):
     # TODO: Try to find a supported inplace method for Dask, if one exists
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('Dask does not support pop.')
-    sample_series.ww.init()
+    comparison_series = sample_series.copy()
 
-    original_schema = sample_series.ww._schema.copy()
+    sample_series.ww.init()
+    comparison_series.ww.init()
+
     val = sample_series.ww.pop(0)
-    assert sample_series.ww._schema == original_schema
+    assert sample_series.ww._schema == comparison_series.ww._schema
     assert len(sample_series) == 3
     assert val == 'a'
 
