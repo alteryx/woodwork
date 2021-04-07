@@ -80,7 +80,7 @@ def test_validation_methods_called(mock_validate_logical_type, mock_validate_des
     assert validated_column == not_validated_column
 
 
-def test_get_column_dict():
+def test_column_schema():
     column = ColumnSchema('column', Integer, semantic_tags='test_tag')
 
     assert column.logical_type == Integer
@@ -90,20 +90,20 @@ def test_get_column_dict():
     assert column.metadata == {}
 
 
-def test_get_column_dict_standard_tags():
+def test_column_schema_standard_tags():
     column = ColumnSchema('column', Integer, use_standard_tags=True)
 
     assert column.semantic_tags == {'numeric'}
 
 
-def test_get_column_dict_params():
+def test_column_schema_params():
     column = ColumnSchema('column', Integer, description='this is a column!', metadata={'created_by': 'user1'})
 
     assert column.description == 'this is a column!'
     assert column.metadata == {'created_by': 'user1'}
 
 
-def test_get_column_dict_null_params():
+def test_column_schema_null_params():
     empty_col = ColumnSchema()
     assert empty_col.logical_type is None
     assert empty_col.description is None
