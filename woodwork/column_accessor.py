@@ -63,6 +63,7 @@ class WoodworkColumnAccessor:
                                     description=description,
                                     metadata=metadata)
 
+    # --> should be on ColumnSchema object???
     @property
     def description(self):
         """The description of the series"""
@@ -137,6 +138,7 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         return self._schema.logical_type
 
+    # --> should be on column schema object??
     @property
     def metadata(self):
         """The metadata of the series"""

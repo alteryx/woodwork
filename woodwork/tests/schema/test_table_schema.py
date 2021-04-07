@@ -26,7 +26,7 @@ def test_schema_logical_types(sample_column_names, sample_inferred_logical_types
     assert isinstance(schema.logical_types, dict)
     assert set(schema.logical_types.keys()) == set(sample_column_names)
     for k, v in schema.logical_types.items():
-        assert v == schema.columns[k]['logical_type']
+        assert v == schema.columns[k].logical_type
 
 
 def test_schema_semantic_tags(sample_column_names, sample_inferred_logical_types):
@@ -40,7 +40,7 @@ def test_schema_semantic_tags(sample_column_names, sample_inferred_logical_types
     assert set(schema.semantic_tags.keys()) == set(sample_column_names)
     for k, v in schema.semantic_tags.items():
         assert isinstance(v, set)
-        assert v == schema.columns[k]['semantic_tags']
+        assert v == schema.columns[k].semantic_tags
 
 
 def test_schema_types(sample_column_names, sample_inferred_logical_types):
@@ -178,10 +178,10 @@ def test_column_schema_metadata(sample_column_names, sample_inferred_logical_typ
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
-    assert schema.columns['id']['metadata'] == {}
+    assert schema.columns['id'].metadata == {}
 
     schema = TableSchema(sample_column_names, sample_inferred_logical_types, column_metadata={'id': column_metadata})
-    assert schema.columns['id']['metadata'] == column_metadata
+    assert schema.columns['id'].metadata == column_metadata
 
 
 def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical_types):
@@ -898,12 +898,12 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
 
     # confirm that metadata and descriptions are there
     assert renamed_schema.metadata == table_metadata
-    assert schema.columns['id']['description'] == id_description
+    assert schema.columns['id'].description == id_description
 
     old_col = schema.columns['age']
     new_col = renamed_schema.columns['birthday']
-    assert old_col['logical_type'] == new_col['logical_type']
-    assert old_col['semantic_tags'] == new_col['semantic_tags']
+    assert old_col.logical_type == new_col.logical_type
+    assert old_col.semantic_tags == new_col.semantic_tags
 
     swapped_schema = schema.rename({'age': 'full_name', 'full_name': 'age'})
     swapped_back_schema = swapped_schema.rename({'age': 'full_name', 'full_name': 'age'})

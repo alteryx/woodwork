@@ -10,17 +10,6 @@ from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 
-# --> just keeping this so tests run - remove when we've removed all uses of _get_column_dict
-def _get_column_dict(name=None,
-                     logical_type=None,
-                     semantic_tags=None,
-                     use_standard_tags=False,
-                     description=None,
-                     metadata=None,
-                     validate=True):
-    pass
-
-
 class ColumnSchema(object):
     def __init__(self,
                  name=None,
