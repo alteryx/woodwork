@@ -36,6 +36,8 @@ Release Notes
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
     * The ``FullName`` logical type has been renamed to ``PersonFullName``
     * The ``Schema`` object has been renamed to ``TableSchema``
+    * With the ``ColumnSchema`` object, typing information for a column can no longer be accessed
+      with ``df.ww.columns[col_name]['logical_type']``. Instead use ``df.ww.columns[col_name].logical_type``.
 
 **v0.1.0 March 22, 2021**
     * Enhancements
