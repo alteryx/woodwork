@@ -15,7 +15,7 @@ class ColumnSchema(object):
                  name=None,
                  logical_type=None,
                  semantic_tags=None,
-                 use_standard_tags=False,  # --> should this be stored?? - if it is we need to include in equality
+                 use_standard_tags=False,
                  description=None,
                  metadata=None,
                  validate=True):
@@ -43,7 +43,6 @@ class ColumnSchema(object):
         self.description = description
         self.logical_type = logical_type
 
-        # --> make a method and use self.locial_type inside
         semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate)
         self.semantic_tags = semantic_tags
 
@@ -58,8 +57,6 @@ class ColumnSchema(object):
             return False
 
         return True
-
-# --> probably will need a way to copy the object deeply for the accessors!
 
 
 def _validate_logical_type(logical_type):

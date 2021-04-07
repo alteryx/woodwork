@@ -59,7 +59,6 @@ def test_validate_metadata_errors():
 @patch("woodwork.column_schema._validate_logical_type")
 def test_validation_methods_called(mock_validate_logical_type, mock_validate_description, mock_validate_metadata,
                                    sample_column_names, sample_inferred_logical_types):
-    # --> need to add an equality method
     assert not mock_validate_logical_type.called
     assert not mock_validate_description.called
     assert not mock_validate_metadata.called

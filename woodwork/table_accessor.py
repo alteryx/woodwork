@@ -192,7 +192,7 @@ class WoodworkTableAccessor:
         series = self._dataframe[key]
         column = self.schema.columns[key]
         column.semantic_tags -= {'index', 'time_index'}
-        # --> need a way to copy a ColumnSchema deeply
+
         series.ww.init(logical_type=column.logical_type,
                        semantic_tags=copy.deepcopy(column.semantic_tags),
                        description=column.description,
@@ -651,7 +651,6 @@ class WoodworkTableAccessor:
 
         # Initialize Woodwork typing info for series
         col_schema = self._schema.columns[column_name]
-        # --> need a way of copying a column schema
         series.ww.init(logical_type=col_schema.logical_type,
                        semantic_tags=copy.deepcopy(col_schema.semantic_tags),
                        description=col_schema.description,

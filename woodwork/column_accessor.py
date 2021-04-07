@@ -55,7 +55,6 @@ class WoodworkColumnAccessor:
         self._validate_logical_type(logical_type)
         self.use_standard_tags = use_standard_tags
 
-# --> add a schema property below this that returns a copy of the schema
         self._schema = ColumnSchema(name=self._series.name,
                                     logical_type=logical_type,
                                     semantic_tags=semantic_tags,
@@ -63,7 +62,6 @@ class WoodworkColumnAccessor:
                                     description=description,
                                     metadata=metadata)
 
-    # --> should be on ColumnSchema object???
     @property
     def description(self):
         """The description of the series"""
@@ -138,7 +136,6 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         return self._schema.logical_type
 
-    # --> should be on column schema object??
     @property
     def metadata(self):
         """The metadata of the series"""
@@ -201,7 +198,6 @@ class WoodworkColumnAccessor:
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(type(result), self._schema.logical_type)
                     if str(result.dtype) == valid_dtype:
-                        # --> add a way of initializing with a schema??
                         result.ww.init(logical_type=self._schema.logical_type,
                                        semantic_tags=copy.deepcopy(self._schema.semantic_tags),
                                        description=self._schema.description,
