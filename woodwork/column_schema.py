@@ -10,6 +10,7 @@ from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 
+# --> just keeping this so tests run - remove when we've removed all uses of _get_column_dict
 def _get_column_dict(name=None,
                      logical_type=None,
                      semantic_tags=None,
@@ -17,33 +18,59 @@ def _get_column_dict(name=None,
                      description=None,
                      metadata=None,
                      validate=True):
-    """Creates a dictionary that contains the typing information for a column schema
-    Args:
-        name (str, optional): The name of the column.
-        logical_type (str, LogicalType, optional): The column's LogicalType.
-        semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
-        use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
-                on the specified logical type if a logical type is defined for the column. Defaults to False.
-        description (str, optional): User description of the column.
-        metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
-        validate (bool, optional): Whether to perform parameter validation. Defaults to True.
-    """
-    if metadata is None:
-        metadata = {}
-    if validate:
-        if logical_type is not None:
-            _validate_logical_type(logical_type)
-        _validate_description(description)
-        _validate_metadata(metadata)
+    pass
 
-    semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate)
 
-    return {
-        'logical_type': logical_type,
-        'semantic_tags': semantic_tags,
-        'description': description,
-        'metadata': metadata
-    }
+class ColumnSchema(object):
+    def __init__(self,
+                 name=None,
+                 logical_type=None,
+                 semantic_tags=None,
+                 use_standard_tags=False,  # --> should this be stored?? - if it is we need to include in equality
+                 description=None,
+                 metadata=None,
+                 validate=True):
+        """Create ColumnSchema
+
+        Args:
+            name (str, optional): The name of the column.
+            logical_type (str, LogicalType, optional): The column's LogicalType.
+            semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
+            use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
+                    on the specified logical type if a logical type is defined for the column. Defaults to False.
+            description (str, optional): User description of the column.
+            metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
+            validate (bool, optional): Whether to perform parameter validation. Defaults to True.
+        """
+        if metadata is None:
+            metadata = {}
+        self.metadata = metadata
+
+        if validate:
+            if logical_type is not None:
+                _validate_logical_type(logical_type)
+            _validate_description(description)
+            _validate_metadata(metadata)
+        self.description = description
+        self.logical_type = logical_type
+
+        # --> make a method and use self.locial_type inside
+        semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate)
+        self.semantic_tags = semantic_tags
+
+    def __eq__(self, other):
+        if self.logical_type != other.logical_type:
+            return False
+        if self.semantic_tags != other.semantic_tags:
+            return False
+        if self.description != other.description:
+            return False
+        if self.metadata != other.metadata:
+            return False
+
+        return True
+
+# --> probably will need a way to copy the object deeply for the accessors!
 
 
 def _validate_logical_type(logical_type):
@@ -81,20 +108,20 @@ def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, valid
     return semantic_tags
 
 
-def _is_col_numeric(col_dict):
-    return 'numeric' in col_dict['logical_type'].standard_tags
+def _is_col_numeric(col):
+    return 'numeric' in col.logical_type.standard_tags
 
 
-def _is_col_categorical(col_dict):
-    return 'category' in col_dict['logical_type'].standard_tags
+def _is_col_categorical(col):
+    return 'category' in col.logical_type.standard_tags
 
 
-def _is_col_datetime(col_dict):
-    return _get_ltype_class(col_dict['logical_type']) == Datetime
+def _is_col_datetime(col):
+    return _get_ltype_class(col.logical_type) == Datetime
 
 
-def _is_col_boolean(col_dict):
-    return _get_ltype_class(col_dict['logical_type']) == Boolean
+def _is_col_boolean(col):
+    return _get_ltype_class(col.logical_type) == Boolean
 
 
 def _add_semantic_tags(new_tags, current_tags, name):
