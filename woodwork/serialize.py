@@ -37,15 +37,15 @@ def typing_info_to_dict(dataframe):
         {'name': col_name,
          'ordinal': ordered_columns.get_loc(col_name),
          'logical_type': {
-             'parameters': _get_specified_ltype_params(col['logical_type']),
-             'type': str(_get_ltype_class(col['logical_type']))
+             'parameters': _get_specified_ltype_params(col.logical_type),
+             'type': str(_get_ltype_class(col.logical_type))
          },
          'physical_type': {
              'type': str(dataframe[col_name].dtype)
          },
-         'semantic_tags': sorted(list(col['semantic_tags'])),
-         'description': col['description'],
-         'metadata': col['metadata']
+         'semantic_tags': sorted(list(col.semantic_tags)),
+         'description': col.description,
+         'metadata': col.metadata
          }
         for col_name, col in dataframe.ww.columns.items()
     ]
@@ -168,7 +168,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
         dataframe = dataframe.ww.copy()
-        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col['logical_type']) == ww.logical_types.LatLong]
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
         dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
 
         dataframe.to_parquet(file, **kwargs)

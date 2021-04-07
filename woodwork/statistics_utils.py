@@ -52,17 +52,17 @@ def _get_describe_dict(dataframe, include=None):
 
         # Any LatLong columns will be using lists, which we must convert
         # back to tuples so we can calculate the mode, which requires hashable values
-        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col['logical_type']) == LatLong]
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
         df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
     else:
         df = dataframe
 
     for column_name, column in cols_to_include:
-        if 'index' in column['semantic_tags']:
+        if 'index' in column.semantic_tags:
             continue
         values = {}
-        logical_type = column['logical_type']
-        semantic_tags = column['semantic_tags']
+        logical_type = column.logical_type
+        semantic_tags = column.semantic_tags
         series = df[column_name]
 
         # Calculate Aggregation Stats
@@ -125,7 +125,7 @@ def _replace_nans_for_mutual_info(schema, data):
 
         if _is_col_numeric(column) or _is_col_datetime(column):
             mean = series.mean()
-            if isinstance(mean, float) and not _get_ltype_class(column['logical_type']) == Double:
+            if isinstance(mean, float) and not _get_ltype_class(column.logical_type) == Double:
                 data[column_name] = series.astype('float')
             data[column_name] = series.fillna(mean)
         elif _is_col_categorical(column) or _is_col_boolean(column):
@@ -190,7 +190,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         (perfect dependency).
         """
     valid_types = get_valid_mi_types()
-    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col['logical_type']) in valid_types]
+    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) in valid_types]
 
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
