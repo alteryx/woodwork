@@ -62,6 +62,10 @@ class WoodworkColumnAccessor:
                                     metadata=metadata)
 
     @property
+    def schema(self):
+        return copy.deepcopy(self._schema)
+
+    @property
     def description(self):
         """The description of the series"""
         if self._schema is None:
