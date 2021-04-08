@@ -190,7 +190,7 @@ class WoodworkTableAccessor:
             raise ColumnNotPresentError(key)
 
         series = self._dataframe[key]
-        column = self.schema.columns[key]
+        column = copy.deepcopy(self._schema.columns[key])
         column.semantic_tags -= {'index', 'time_index'}
 
         series.ww.init(logical_type=column.logical_type,
@@ -300,14 +300,14 @@ class WoodworkTableAccessor:
     def schema(self):
         """A copy of the Woodwork typing information for the DataFrame."""
         if self._schema:
-            return self._schema._get_subset_schema(list(self._dataframe.columns))
+            return copy.deepcopy(self._schema)
 
     @property
     def physical_types(self):
         """A dictionary containing physical types for each column"""
         if self._schema is None:
             _raise_init_error()
-        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self.schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
@@ -599,8 +599,8 @@ class WoodworkTableAccessor:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
-                        copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
-                        result.ww.init(schema=copied_schema)
+                        copied_schema = self.schema
+                        result.ww.init(schema=copied_schema, validate=False)
                         result.ww.make_index = self.make_index
                 else:
                     # Confirm that the schema is still valid on original DataFrame
@@ -629,7 +629,7 @@ class WoodworkTableAccessor:
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
         new_df = self._dataframe[cols_to_include]
-        new_df.ww.init(schema=new_schema)
+        new_df.ww.init(schema=new_schema, validate=False)
 
         return new_df
 

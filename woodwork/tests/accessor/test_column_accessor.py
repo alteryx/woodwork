@@ -386,7 +386,7 @@ def test_series_methods_on_accessor(sample_series):
 
     copied_series = sample_series.ww.copy()
     assert copied_series is not sample_series
-    assert copied_series.ww._schema == sample_series.ww._schema
+    assert copied_series.ww.schema == sample_series.ww.schema
     pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
 
 
@@ -395,7 +395,7 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
 
     copied_series = sample_series.ww.copy()
     assert copied_series is not sample_series
-    assert copied_series.ww._schema == sample_series.ww._schema
+    assert copied_series.ww.schema == sample_series.ww.schema
     pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
 
 
@@ -710,3 +710,15 @@ def test_non_string_column_name(sample_series):
     assert sample_series.ww.name == 0
     assert sample_series.name == 0
     assert sample_series.ww.semantic_tags == {'category', 'test_tag'}
+
+
+def test_schema_property(sample_series):
+    sample_series.ww.init(logical_type='Categorical', semantic_tags='test_tag', metadata={'created_by': 'user1'})
+
+    assert sample_series.ww.schema is not sample_series.ww._schema
+    assert sample_series.ww.schema == sample_series.ww._schema
+
+    changed_schema = sample_series.ww.schema
+    changed_schema.metadata['new'] = 1
+
+    assert changed_schema != sample_series.ww._schema

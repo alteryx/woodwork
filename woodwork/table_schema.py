@@ -351,7 +351,7 @@ class TableSchema(object):
         if len(columns) != len(set(columns.values())):
             raise ValueError('New columns names must be unique from one another.')
 
-        new_schema = self._get_subset_schema(list(self.columns.keys()))
+        new_schema = copy.deepcopy(self)
 
         cols_to_update = {}
         for old_name, new_name in columns.items():
@@ -486,7 +486,8 @@ class TableSchema(object):
                            use_standard_tags=self.use_standard_tags,
                            table_metadata=copy.deepcopy(self.metadata),
                            column_metadata=copy.deepcopy(new_column_metadata),
-                           column_descriptions=new_column_descriptions)
+                           column_descriptions=new_column_descriptions,
+                           validate=False)
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,
