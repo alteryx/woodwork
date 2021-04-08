@@ -300,7 +300,7 @@ class WoodworkTableAccessor:
     def schema(self):
         """A copy of the Woodwork typing information for the DataFrame."""
         if self._schema:
-            return self._schema._get_subset_schema(list(self._dataframe.columns))
+            return copy.deepcopy(self._schema)
 
     @property
     def physical_types(self):
@@ -599,7 +599,7 @@ class WoodworkTableAccessor:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
-                        copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
+                        copied_schema = copy.deepcopy(self._schema)
                         result.ww.init(schema=copied_schema, validate=False)
                         result.ww.make_index = self.make_index
                 else:

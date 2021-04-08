@@ -351,7 +351,7 @@ class TableSchema(object):
         if len(columns) != len(set(columns.values())):
             raise ValueError('New columns names must be unique from one another.')
 
-        new_schema = self._get_subset_schema(list(self.columns.keys()))
+        new_schema = copy.deepcopy(self)
 
         cols_to_update = {}
         for old_name, new_name in columns.items():
