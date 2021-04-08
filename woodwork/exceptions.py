@@ -4,9 +4,10 @@ class DuplicateTagsWarning(UserWarning):
 
 
 class StandardTagsChangedWarning(UserWarning):
-    def get_warning_message(self, use_standard_tags, col_name):
+    def get_warning_message(self, use_standard_tags, col_name=None):
         changed = 'added to' if use_standard_tags else 'removed from'
-        return f'Standard tags have been {changed} "{col_name}"'
+        name = ("\"" + col_name + "\"") if col_name is not None else 'your column'
+        return f'Standard tags have been {changed} {name}'
 
 
 class UpgradeSchemaWarning(UserWarning):
