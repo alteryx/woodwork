@@ -1,3 +1,4 @@
+import copy
 import warnings
 
 import pandas as pd
@@ -190,8 +191,14 @@ class WoodworkTableAccessor:
 
         series = self._dataframe[key]
         column = self.schema.columns[key]
-        column['semantic_tags'] -= {'index', 'time_index'}
-        series.ww.init(**column, use_standard_tags=self.use_standard_tags)
+        column.semantic_tags -= {'index', 'time_index'}
+
+        series.ww.init(logical_type=column.logical_type,
+                       semantic_tags=copy.deepcopy(column.semantic_tags),
+                       description=column.description,
+                       metadata=copy.deepcopy(column.metadata),
+                       use_standard_tags=self.use_standard_tags)
+
         return series
 
     def __setitem__(self, col_name, column):
@@ -208,13 +215,11 @@ class WoodworkTableAccessor:
         if column.ww._schema is None:
             column = init_series(column, use_standard_tags=self.use_standard_tags)
         elif self.use_standard_tags and not column.ww.use_standard_tags:
-            column.ww._schema['semantic_tags'] |= column.ww.logical_type.standard_tags
+            column.ww.add_semantic_tags(column.ww.logical_type.standard_tags)
             message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
             warnings.warn(message, StandardTagsChangedWarning)
         elif not self.use_standard_tags and column.ww.use_standard_tags:
-            column.ww._schema['semantic_tags'] -= column.ww.logical_type.standard_tags
-            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
-            warnings.warn(message, StandardTagsChangedWarning)
+            column.ww.remove_semantic_tags(column.ww.logical_type.standard_tags)
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema
@@ -646,7 +651,11 @@ class WoodworkTableAccessor:
 
         # Initialize Woodwork typing info for series
         col_schema = self._schema.columns[column_name]
-        series.ww.init(**col_schema, use_standard_tags=self.use_standard_tags)
+        series.ww.init(logical_type=col_schema.logical_type,
+                       semantic_tags=copy.deepcopy(col_schema.semantic_tags),
+                       description=col_schema.description,
+                       metadata=copy.deepcopy(col_schema.metadata),
+                       use_standard_tags=self.use_standard_tags)
 
         # Update schema to not include popped column
         del self._schema.columns[column_name]

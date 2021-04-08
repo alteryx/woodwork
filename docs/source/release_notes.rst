@@ -22,6 +22,7 @@ Release Notes
         * ``get_column_dict`` does not use standard tags by default (:pr:`782`)
         * Make ``logical_type`` and ``name`` params to ``_get_column_dict`` optional (:pr:`786`)
         * Rename Schema object and files to match new table-column schema structure (:pr:`789`)
+        * Store column typing information in a ``ColumnSchema`` object instead of a dictionary (:pr:`791`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
     * Testing Changes
@@ -35,6 +36,8 @@ Release Notes
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
     * The ``FullName`` logical type has been renamed to ``PersonFullName``
     * The ``Schema`` object has been renamed to ``TableSchema``
+    * With the ``ColumnSchema`` object, typing information for a column can no longer be accessed
+      with ``df.ww.columns[col_name]['logical_type']``. Instead use ``df.ww.columns[col_name].logical_type``.
 
 **v0.1.0 March 22, 2021**
     * Enhancements

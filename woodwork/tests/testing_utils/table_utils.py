@@ -11,8 +11,8 @@ def validate_subset_schema(subset_schema, schema):
     for subset_col_name, subset_col in subset_schema.columns.items():
         assert subset_col_name in schema.columns
         col = schema.columns[subset_col_name]
-        assert subset_col['logical_type'] == col['logical_type']
-        assert subset_col['semantic_tags'] == col['semantic_tags']
+        assert subset_col.logical_type == col.logical_type
+        assert subset_col.semantic_tags == col.semantic_tags
 
 
 def mi_between_cols(col1, col2, df):

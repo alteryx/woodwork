@@ -5,8 +5,8 @@ import pandas as pd
 
 from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
 from woodwork.column_schema import (
+    ColumnSchema,
     _add_semantic_tags,
-    _get_column_dict,
     _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags,
@@ -55,26 +55,25 @@ class WoodworkColumnAccessor:
         self._validate_logical_type(logical_type)
         self.use_standard_tags = use_standard_tags
 
-        self._schema = _get_column_dict(name=self._series.name,
-                                        logical_type=logical_type,
-                                        semantic_tags=semantic_tags,
-                                        use_standard_tags=self.use_standard_tags,
-                                        description=description,
-                                        metadata=metadata)
+        self._schema = ColumnSchema(logical_type=logical_type,
+                                    semantic_tags=semantic_tags,
+                                    use_standard_tags=self.use_standard_tags,
+                                    description=description,
+                                    metadata=metadata)
 
     @property
     def description(self):
         """The description of the series"""
         if self._schema is None:
             _raise_init_error()
-        return self._schema['description']
+        return self._schema.description
 
     @description.setter
     def description(self, description):
         if self._schema is None:
             _raise_init_error()
         _validate_description(description)
-        self._schema['description'] = description
+        self._schema.description = description
 
     @property
     def iloc(self):
@@ -134,28 +133,28 @@ class WoodworkColumnAccessor:
         """The logical type of the series"""
         if self._schema is None:
             _raise_init_error()
-        return self._schema['logical_type']
+        return self._schema.logical_type
 
     @property
     def metadata(self):
         """The metadata of the series"""
         if self._schema is None:
             _raise_init_error()
-        return self._schema['metadata']
+        return self._schema.metadata
 
     @metadata.setter
     def metadata(self, metadata):
         if self._schema is None:
             _raise_init_error()
         _validate_metadata(metadata)
-        self._schema['metadata'] = metadata
+        self._schema.metadata = metadata
 
     @property
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
         if self._schema is None:
             _raise_init_error()
-        return self._schema['semantic_tags']
+        return self._schema.semantic_tags
 
     def __eq__(self, other):
         if self._schema != other._schema:
@@ -196,10 +195,13 @@ class WoodworkColumnAccessor:
 
                 # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
-                    valid_dtype = _get_valid_dtype(type(result), self._schema['logical_type'])
+                    valid_dtype = _get_valid_dtype(type(result), self._schema.logical_type)
                     if str(result.dtype) == valid_dtype:
-                        schema = copy.deepcopy(self._schema)
-                        result.ww.init(**schema, use_standard_tags=self.use_standard_tags)
+                        result.ww.init(logical_type=self._schema.logical_type,
+                                       semantic_tags=copy.deepcopy(self._schema.semantic_tags),
+                                       description=self._schema.description,
+                                       metadata=copy.deepcopy(self._schema.metadata),
+                                       use_standard_tags=self.use_standard_tags)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{valid_dtype}, and returned dtype, {result.dtype}'
@@ -239,9 +241,9 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        self._schema['semantic_tags'] = _add_semantic_tags(semantic_tags,
-                                                           self.semantic_tags,
-                                                           self._series.name)
+        self._schema.semantic_tags = _add_semantic_tags(semantic_tags,
+                                                        self.semantic_tags,
+                                                        self._series.name)
 
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from the current tags.
@@ -251,11 +253,11 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        self._schema['semantic_tags'] = _remove_semantic_tags(semantic_tags,
-                                                              self.semantic_tags,
-                                                              self._series.name,
-                                                              self.logical_type.standard_tags,
-                                                              self.use_standard_tags)
+        self._schema.semantic_tags = _remove_semantic_tags(semantic_tags,
+                                                           self.semantic_tags,
+                                                           self._series.name,
+                                                           self.logical_type.standard_tags,
+                                                           self.use_standard_tags)
 
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
@@ -267,8 +269,8 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        self._schema['semantic_tags'] = _reset_semantic_tags(self.logical_type.standard_tags,
-                                                             self.use_standard_tags)
+        self._schema.semantic_tags = _reset_semantic_tags(self.logical_type.standard_tags,
+                                                          self.use_standard_tags)
 
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,
@@ -303,9 +305,9 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        self._schema['semantic_tags'] = _set_semantic_tags(semantic_tags,
-                                                           self.logical_type.standard_tags,
-                                                           self.use_standard_tags)
+        self._schema.semantic_tags = _set_semantic_tags(semantic_tags,
+                                                        self.logical_type.standard_tags,
+                                                        self.use_standard_tags)
 
 
 def _raise_init_error():

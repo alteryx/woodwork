@@ -258,6 +258,6 @@ def test_iloc_table_does_not_propagate_changes_to_data(sample_df):
     assert sliced.ww.metadata == {}
     assert sliced.ww.metadata is not sample_df.ww.metadata
 
-    sample_df.ww.columns['email']['metadata']['new_key'] = 'new_value'
-    assert sliced.ww.columns['email']['metadata'] == {}
-    assert sliced.ww.columns['email']['metadata'] is not sample_df.ww.columns['email']['metadata']
+    sample_df.ww.columns['email'].metadata['new_key'] = 'new_value'
+    assert sliced.ww.columns['email'].metadata == {}
+    assert sliced.ww.columns['email'].metadata is not sample_df.ww.columns['email'].metadata

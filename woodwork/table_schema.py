@@ -5,8 +5,8 @@ import pandas as pd
 
 import woodwork as ww
 from woodwork.column_schema import (
+    ColumnSchema,
     _add_semantic_tags,
-    _get_column_dict,
     _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags
@@ -115,9 +115,8 @@ class TableSchema(object):
     def _get_typing_info(self):
         """Creates a DataFrame that contains the typing information for a TableSchema."""
         typing_info = {}
-        for col_name, col_dict in self.columns.items():
-
-            types = [col_dict['logical_type'], str(list(col_dict['semantic_tags']))]
+        for col_name, col in self.columns.items():
+            types = [col.logical_type, str(list(col.semantic_tags))]
             typing_info[col_name] = types
 
         columns = ['Logical Type', 'Semantic Tag(s)']
@@ -132,18 +131,18 @@ class TableSchema(object):
     @property
     def logical_types(self):
         """A dictionary containing logical types for each column"""
-        return {col_name: col['logical_type'] for col_name, col in self.columns.items()}
+        return {col_name: col.logical_type for col_name, col in self.columns.items()}
 
     @property
     def semantic_tags(self):
         """A dictionary containing semantic tags for each column"""
-        return {col_name: col['semantic_tags'] for col_name, col in self.columns.items()}
+        return {col_name: col.semantic_tags for col_name, col in self.columns.items()}
 
     @property
     def index(self):
         """The index column for the table"""
         for col_name, column in self.columns.items():
-            if 'index' in column['semantic_tags']:
+            if 'index' in column.semantic_tags:
                 return col_name
         return None
 
@@ -151,7 +150,7 @@ class TableSchema(object):
     def time_index(self):
         """The time index column for the table"""
         for col_name, column in self.columns.items():
-            if 'time_index' in column['semantic_tags']:
+            if 'time_index' in column.semantic_tags:
                 return col_name
         return None
 
@@ -180,7 +179,7 @@ class TableSchema(object):
             # Update Logical Type for the TableSchema, getting new semantic tags
             new_logical_type = logical_types.get(col_name)
             if new_logical_type is not None:
-                self.columns[col_name]['logical_type'] = new_logical_type
+                self.columns[col_name].logical_type = new_logical_type
 
             # Get new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
@@ -193,7 +192,7 @@ class TableSchema(object):
                 _validate_not_setting_index_tags(new_semantic_tags, col_name)
 
             # Update the tags for the TableSchema
-            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+            self.columns[col_name].semantic_tags = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)
@@ -213,7 +212,7 @@ class TableSchema(object):
             tags_to_add = _convert_input_to_set(tags_to_add)
             _validate_not_setting_index_tags(tags_to_add, col_name)
             new_semantic_tags = _add_semantic_tags(tags_to_add, self.semantic_tags[col_name], col_name)
-            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+            self.columns[col_name].semantic_tags = new_semantic_tags
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
@@ -240,7 +239,7 @@ class TableSchema(object):
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
                 standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
                 new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
-            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+            self.columns[col_name].semantic_tags = new_semantic_tags
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
@@ -266,7 +265,7 @@ class TableSchema(object):
         for col_name in columns:
             original_tags = self.semantic_tags[col_name]
             new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags)
-            self.columns[col_name]['semantic_tags'] = new_semantic_tags
+            self.columns[col_name].semantic_tags = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)
@@ -292,13 +291,12 @@ class TableSchema(object):
             description = (column_descriptions or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)
 
-            columns[name] = _get_column_dict(name,
-                                             logical_types.get(name),
-                                             semantic_tags=semantic_tags_for_col,
-                                             use_standard_tags=use_standard_tags,
-                                             description=description,
-                                             metadata=metadata_for_col,
-                                             validate=validate)
+            columns[name] = ColumnSchema(logical_type=logical_types.get(name),
+                                         semantic_tags=semantic_tags_for_col,
+                                         use_standard_tags=use_standard_tags,
+                                         description=description,
+                                         metadata=metadata_for_col,
+                                         validate=validate)
         return columns
 
     def set_index(self, new_index, validate=True):
@@ -366,16 +364,16 @@ class TableSchema(object):
     def _set_index_tags(self, index):
         """Updates the semantic tags of the index by removing any standard tags
         before adding the 'index' tag."""
-        column_dict = self.columns[index]
+        column = self.columns[index]
 
-        standard_tags = column_dict['logical_type'].standard_tags
-        new_tags = column_dict['semantic_tags'].difference(standard_tags)
+        standard_tags = column.logical_type.standard_tags
+        new_tags = column.semantic_tags.difference(standard_tags)
         new_tags.add('index')
 
-        self.columns[index]['semantic_tags'] = new_tags
+        self.columns[index].semantic_tags = new_tags
 
     def _set_time_index_tags(self, time_index):
-        self.columns[time_index]['semantic_tags'].add('time_index')
+        self.columns[time_index].semantic_tags.add('time_index')
 
     def _filter_cols(self, include=None, exclude=None, col_names=False):
         """Return list of columns filtered with any of: semantic tags, LogicalTypes, column names
@@ -405,10 +403,10 @@ class TableSchema(object):
             selectors = exclude
 
         ltypes_used = set()
-        ltypes_in_schema = {_get_ltype_class(col['logical_type']) for col in self.columns.values()}
+        ltypes_in_schema = {_get_ltype_class(col.logical_type) for col in self.columns.values()}
 
         tags_used = set()
-        tags_in_schema = {tag for col in self.columns.values() for tag in col['semantic_tags']}
+        tags_in_schema = {tag for col in self.columns.values() for tag in col.semantic_tags}
 
         col_name_matches = set()
 
@@ -442,8 +440,8 @@ class TableSchema(object):
 
         cols_to_return = set()
         for col_name, col in self.columns.items():
-            is_match = (_get_ltype_class(col['logical_type']) in ltypes_used or
-                        col['semantic_tags'].intersection(tags_used) or
+            is_match = (_get_ltype_class(col.logical_type) in ltypes_used or
+                        col.semantic_tags.intersection(tags_used) or
                         col_name in col_name_matches)
             if include is not None and is_match:
                 cols_to_return.add(col_name)
@@ -467,10 +465,10 @@ class TableSchema(object):
         for col_name in subset_cols:
             col = col = self.columns[col_name]
 
-            new_logical_types[col_name] = col['logical_type']
-            new_semantic_tags[col_name] = col['semantic_tags']
-            new_column_descriptions[col_name] = col['description']
-            new_column_metadata[col_name] = col['metadata']
+            new_logical_types[col_name] = col.logical_type
+            new_semantic_tags[col_name] = col.semantic_tags
+            new_column_descriptions[col_name] = col.description
+            new_column_metadata[col_name] = col.metadata
 
         new_index = self.index if self.index in subset_cols else None
         new_time_index = self.time_index if self.time_index in subset_cols else None
