@@ -12,7 +12,6 @@ from woodwork.utils import _convert_input_to_set
 
 class ColumnSchema(object):
     def __init__(self,
-                 name=None,
                  logical_type=None,
                  semantic_tags=None,
                  use_standard_tags=False,
@@ -43,7 +42,7 @@ class ColumnSchema(object):
         self.description = description
         self.logical_type = logical_type
 
-        semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate)
+        semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate)
         self.semantic_tags = semantic_tags
 
     def __eq__(self, other):
@@ -78,12 +77,8 @@ def _validate_metadata(column_metadata):
         raise TypeError("Column metadata must be a dictionary")
 
 
-def _get_column_tags(semantic_tags, logical_type, use_standard_tags, name, validate):
-    error_language = f'semantic_tags for {name}'
-    if logical_type is None:
-        error_language = 'semantic_tags'
-
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language=error_language,
+def _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate):
+    semantic_tags = _convert_input_to_set(semantic_tags, error_language='semantic_tags',
                                           validate=validate)
 
     if use_standard_tags:

@@ -134,15 +134,15 @@ def test_logical_type_errors(sample_series):
 
 
 def test_semantic_tag_errors(sample_series):
-    error_message = "semantic_tags for sample_series must be a string, set or list"
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         sample_series.ww.init(semantic_tags=int)
 
-    error_message = "semantic_tags for sample_series must be a string, set or list"
+    error_message = "semantic_tags must be a string, set or list"
     with pytest.raises(TypeError, match=error_message):
         sample_series.ww.init(semantic_tags={'index': {}, 'time_index': {}})
 
-    error_message = "semantic_tags for sample_series must contain only strings"
+    error_message = "semantic_tags must contain only strings"
     with pytest.raises(TypeError, match=error_message):
         sample_series.ww.init(semantic_tags=['index', 1])
 

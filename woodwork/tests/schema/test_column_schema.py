@@ -39,7 +39,7 @@ def test_validate_logical_type_errors():
 
     error_msg = 'Must use an Ordinal instance with order values defined'
     with pytest.raises(TypeError, match=error_msg):
-        ColumnSchema('column', Ordinal)
+        ColumnSchema(Ordinal)
 
 
 def test_validate_description_errors():
@@ -63,14 +63,14 @@ def test_validation_methods_called(mock_validate_logical_type, mock_validate_des
     assert not mock_validate_description.called
     assert not mock_validate_metadata.called
 
-    not_validated_column = ColumnSchema('not_validated', logical_type=Integer,
+    not_validated_column = ColumnSchema(logical_type=Integer,
                                         description='this is a description', metadata={'user': 'person1'},
                                         validate=False)
     assert not mock_validate_logical_type.called
     assert not mock_validate_description.called
     assert not mock_validate_metadata.called
 
-    validated_column = ColumnSchema('not_validated', logical_type=Integer,
+    validated_column = ColumnSchema(logical_type=Integer,
                                     description='this is a description', metadata={'user': 'person1'},
                                     validate=True)
     assert mock_validate_logical_type.called
@@ -81,7 +81,7 @@ def test_validation_methods_called(mock_validate_logical_type, mock_validate_des
 
 
 def test_column_schema():
-    column = ColumnSchema('column', Integer, semantic_tags='test_tag')
+    column = ColumnSchema(logical_type=Integer, semantic_tags='test_tag')
 
     assert column.logical_type == Integer
     assert column.semantic_tags == {'test_tag'}
@@ -91,13 +91,13 @@ def test_column_schema():
 
 
 def test_column_schema_standard_tags():
-    column = ColumnSchema('column', Integer, use_standard_tags=True)
+    column = ColumnSchema(logical_type=Integer, use_standard_tags=True)
 
     assert column.semantic_tags == {'numeric'}
 
 
 def test_column_schema_params():
-    column = ColumnSchema('column', Integer, description='this is a column!', metadata={'created_by': 'user1'})
+    column = ColumnSchema(logical_type=Integer, description='this is a column!', metadata={'created_by': 'user1'})
 
     assert column.description == 'this is a column!'
     assert column.metadata == {'created_by': 'user1'}
@@ -128,70 +128,70 @@ def test_column_schema_null_params():
 
 
 def test_is_col_numeric():
-    int_column = ColumnSchema('ints', Integer)
+    int_column = ColumnSchema(logical_type=Integer)
     assert _is_col_numeric(int_column)
 
-    double_column = ColumnSchema('floats', Double)
+    double_column = ColumnSchema(logical_type=Double)
     assert _is_col_numeric(double_column)
 
-    nl_column = ColumnSchema('text', NaturalLanguage)
+    nl_column = ColumnSchema(logical_type=NaturalLanguage)
     assert not _is_col_numeric(nl_column)
 
-    manually_added = ColumnSchema('text', NaturalLanguage, semantic_tags='numeric')
+    manually_added = ColumnSchema(logical_type=NaturalLanguage, semantic_tags='numeric')
     assert not _is_col_numeric(manually_added)
 
-    no_standard_tags = ColumnSchema('ints', Integer, use_standard_tags=False)
+    no_standard_tags = ColumnSchema(logical_type=Integer, use_standard_tags=False)
     assert _is_col_numeric(no_standard_tags)
 
-    instantiated_column = ColumnSchema('ints', Integer())
+    instantiated_column = ColumnSchema(logical_type=Integer())
     assert _is_col_numeric(instantiated_column)
 
 
 def test_is_col_categorical():
-    categorical_column = ColumnSchema('cats', Categorical)
+    categorical_column = ColumnSchema(logical_type=Categorical)
     assert _is_col_categorical(categorical_column)
 
-    ordinal_column = ColumnSchema('ordinal', Ordinal(order=['a', 'b']))
+    ordinal_column = ColumnSchema(logical_type=Ordinal(order=['a', 'b']))
     assert _is_col_categorical(ordinal_column)
 
-    nl_column = ColumnSchema('text', NaturalLanguage)
+    nl_column = ColumnSchema(logical_type=NaturalLanguage)
     assert not _is_col_categorical(nl_column)
 
-    manually_added = ColumnSchema('text', NaturalLanguage, semantic_tags='category')
+    manually_added = ColumnSchema(logical_type=NaturalLanguage, semantic_tags='category')
     assert not _is_col_categorical(manually_added)
 
-    no_standard_tags = ColumnSchema('cats', Categorical, use_standard_tags=False)
+    no_standard_tags = ColumnSchema(logical_type=Categorical, use_standard_tags=False)
     assert _is_col_categorical(no_standard_tags)
 
 
 def test_is_col_boolean():
-    boolean_column = ColumnSchema('bools', Boolean)
+    boolean_column = ColumnSchema(logical_type=Boolean)
     assert _is_col_boolean(boolean_column)
 
-    instantiated_column = ColumnSchema('bools', Boolean())
+    instantiated_column = ColumnSchema(logical_type=Boolean())
     assert _is_col_boolean(instantiated_column)
 
-    ordinal_column = ColumnSchema('ordinal', Ordinal(order=['a', 'b']))
+    ordinal_column = ColumnSchema(logical_type=Ordinal(order=['a', 'b']))
     assert not _is_col_boolean(ordinal_column)
 
-    nl_column = ColumnSchema('text', NaturalLanguage)
+    nl_column = ColumnSchema(logical_type=NaturalLanguage)
     assert not _is_col_boolean(nl_column)
 
 
 def test_is_col_datetime():
-    datetime_column = ColumnSchema('dates', Datetime)
+    datetime_column = ColumnSchema(logical_type=Datetime)
     assert _is_col_datetime(datetime_column)
 
-    formatted_datetime_column = ColumnSchema('dates', Datetime(datetime_format='%Y-%m%d'))
+    formatted_datetime_column = ColumnSchema(logical_type=Datetime(datetime_format='%Y-%m%d'))
     assert _is_col_datetime(formatted_datetime_column)
 
-    instantiated_datetime_column = ColumnSchema('dates', Datetime())
+    instantiated_datetime_column = ColumnSchema(logical_type=Datetime())
     assert _is_col_datetime(instantiated_datetime_column)
 
-    nl_column = ColumnSchema('text', NaturalLanguage)
+    nl_column = ColumnSchema(logical_type=NaturalLanguage)
     assert not _is_col_datetime(nl_column)
 
-    double_column = ColumnSchema('floats', Double)
+    double_column = ColumnSchema(logical_type=Double)
     assert not _is_col_datetime(double_column)
 
 

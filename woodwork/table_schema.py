@@ -291,8 +291,7 @@ class TableSchema(object):
             description = (column_descriptions or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)
 
-            columns[name] = ColumnSchema(name,
-                                         logical_types.get(name),
+            columns[name] = ColumnSchema(logical_type=logical_types.get(name),
                                          semantic_tags=semantic_tags_for_col,
                                          use_standard_tags=use_standard_tags,
                                          description=description,

@@ -55,8 +55,7 @@ class WoodworkColumnAccessor:
         self._validate_logical_type(logical_type)
         self.use_standard_tags = use_standard_tags
 
-        self._schema = ColumnSchema(name=self._series.name,
-                                    logical_type=logical_type,
+        self._schema = ColumnSchema(logical_type=logical_type,
                                     semantic_tags=semantic_tags,
                                     use_standard_tags=self.use_standard_tags,
                                     description=description,
