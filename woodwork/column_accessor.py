@@ -63,6 +63,8 @@ class WoodworkColumnAccessor:
 
     @property
     def schema(self):
+        if self._schema is None:
+            _raise_init_error()
         return copy.deepcopy(self._schema)
 
     @property

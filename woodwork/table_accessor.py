@@ -600,7 +600,7 @@ class WoodworkTableAccessor:
                                       TypingInfoMismatchWarning)
                     else:
                         copied_schema = self._schema._get_subset_schema(list(self._dataframe.columns))
-                        result.ww.init(schema=copied_schema)
+                        result.ww.init(schema=copied_schema, validate=False)
                         result.ww.make_index = self.make_index
                 else:
                     # Confirm that the schema is still valid on original DataFrame
