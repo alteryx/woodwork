@@ -190,7 +190,7 @@ class WoodworkTableAccessor:
             raise ColumnNotPresentError(key)
 
         series = self._dataframe[key]
-        column = self.schema.columns[key]
+        column = self._schema.columns[key]
         column.semantic_tags -= {'index', 'time_index'}
 
         series.ww.init(logical_type=column.logical_type,
@@ -307,7 +307,7 @@ class WoodworkTableAccessor:
         """A dictionary containing physical types for each column"""
         if self._schema is None:
             _raise_init_error()
-        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self.schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
