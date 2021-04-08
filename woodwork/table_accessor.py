@@ -599,7 +599,7 @@ class WoodworkTableAccessor:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
                     else:
-                        copied_schema = copy.deepcopy(self._schema)
+                        copied_schema = self.schema
                         result.ww.init(schema=copied_schema, validate=False)
                         result.ww.make_index = self.make_index
                 else:
