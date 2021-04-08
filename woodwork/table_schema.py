@@ -486,7 +486,8 @@ class TableSchema(object):
                            use_standard_tags=self.use_standard_tags,
                            table_metadata=copy.deepcopy(self.metadata),
                            column_metadata=copy.deepcopy(new_column_metadata),
-                           column_descriptions=new_column_descriptions)
+                           column_descriptions=new_column_descriptions,
+                           validate=False)
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,

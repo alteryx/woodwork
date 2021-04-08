@@ -629,7 +629,7 @@ class WoodworkTableAccessor:
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
         new_df = self._dataframe[cols_to_include]
-        new_df.ww.init(schema=new_schema)
+        new_df.ww.init(schema=new_schema, validate=False)
 
         return new_df
 
