@@ -190,7 +190,7 @@ class WoodworkTableAccessor:
             raise ColumnNotPresentError(key)
 
         series = self._dataframe[key]
-        column = self._schema.columns[key]
+        column = copy.deepcopy(self._schema.columns[key])
         column.semantic_tags -= {'index', 'time_index'}
 
         series.ww.init(logical_type=column.logical_type,
