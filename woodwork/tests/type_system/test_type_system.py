@@ -142,7 +142,7 @@ def test_add_duplicate_ltype(type_sys):
     assert ww.type_system.str_to_logical_type('Integer') == ww.logical_types.Integer
 
     class Integer(LogicalType):
-        primary_dtype = 'string'
+        _primary_dtype = 'string'
 
     error_msg = 'Logical Type with name Integer already present in the Type System. Please rename the LogicalType or remove existing one.'
     with pytest.raises(ValueError, match=error_msg):

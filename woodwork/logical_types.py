@@ -1,7 +1,14 @@
 import pandas as pd
 
+import woodwork as ww
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import camel_to_snake
+
+NEW_TO_OLD = {
+    'Int64': 'int64',
+    'boolean': 'bool',
+    'string': 'object',
+}
 
 
 class ClassNameDescriptor(object):
@@ -16,12 +23,26 @@ class LogicalTypeMetaClass(type):
     def __repr__(cls):
         return cls.__name__
 
+    @property
+    def primary_dtype(cls):
+        if ww.config.get_option('use_nullable_dtypes'):
+            return cls._primary_dtype
+        else:
+            return NEW_TO_OLD.get(cls._primary_dtype, cls._primary_dtype)
+
+    @property
+    def backup_dtype(cls):
+        if ww.config.get_option('use_nullable_dtypes'):
+            return cls._backup_dtype
+        else:
+            return NEW_TO_OLD.get(cls._backup_dtype, cls._backup_dtype)
+
 
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
     type_string = ClassNameDescriptor()
-    primary_dtype = 'string'
-    backup_dtype = None
+    _primary_dtype = 'object'
+    _backup_dtype = None
     standard_tags = set()
 
     def __eq__(self, other, deep=False):
@@ -29,6 +50,14 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def __str__(self):
         return str(self.__class__)
+
+    @property
+    def primary_dtype(self):
+        return type(self).primary_dtype
+
+    @property
+    def backup_dtype(self):
+        return type(self).backup_dtype
 
 
 class Boolean(LogicalType):
@@ -40,7 +69,7 @@ class Boolean(LogicalType):
             [True, False, True]
             [0, 1, 1]
     """
-    primary_dtype = 'boolean'
+    _primary_dtype = 'boolean'
 
 
 class Categorical(LogicalType):
@@ -54,8 +83,8 @@ class Categorical(LogicalType):
             ["produce", "dairy", "bakery"]
             [3, 1, 2]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
+    _primary_dtype = 'category'
+    _backup_dtype = 'string'
     standard_tags = {'category'}
 
     def __init__(self, encoding=None):
@@ -74,8 +103,8 @@ class CountryCode(LogicalType):
             ["AUS", "USA", "UKR"]
             ["GB", "NZ", "DE"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
+    _primary_dtype = 'category'
+    _backup_dtype = 'string'
     standard_tags = {'category'}
 
 
@@ -92,7 +121,7 @@ class Datetime(LogicalType):
              "2020-01-10 00:00:00",
              "01/01/2000 08:30"]
     """
-    primary_dtype = 'datetime64[ns]'
+    _primary_dtype = 'datetime64[ns]'
     datetime_format = None
 
     def __init__(self, datetime_format=None):
@@ -110,7 +139,7 @@ class Double(LogicalType):
             [1.2, 100.4, 3.5]
             [-15.34, 100, 58.3]
     """
-    primary_dtype = 'float64'
+    _primary_dtype = 'float64'
     standard_tags = {'numeric'}
 
 
@@ -125,7 +154,7 @@ class Integer(LogicalType):
             [100, 35, 0]
             [-54, 73, 11]
     """
-    primary_dtype = 'Int64'
+    _primary_dtype = 'Int64'
     standard_tags = {'numeric'}
 
 
@@ -139,7 +168,7 @@ class EmailAddress(LogicalType):
              "support@example.com",
              "team@example.com"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class Filepath(LogicalType):
@@ -153,7 +182,7 @@ class Filepath(LogicalType):
              "/Users/john.smith/dev/index.html",
              "/tmp"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class PersonFullName(LogicalType):
@@ -167,7 +196,7 @@ class PersonFullName(LogicalType):
              "Doe, Mrs. Jane",
              "James Brown"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class IPAddress(LogicalType):
@@ -181,7 +210,7 @@ class IPAddress(LogicalType):
              "192.0.0.0",
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class LatLong(LogicalType):
@@ -203,7 +232,7 @@ class LatLong(LogicalType):
              (40.423599, -86.921162),
              (-45.031705, nan)]
     """
-    primary_dtype = 'object'
+    _primary_dtype = 'object'
 
 
 class NaturalLanguage(LogicalType):
@@ -217,7 +246,7 @@ class NaturalLanguage(LogicalType):
              "I like to eat pizza!",
              "When will humans go to mars?"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class Ordinal(LogicalType):
@@ -235,8 +264,8 @@ class Ordinal(LogicalType):
             ["first", "second", "third"]
             ["bronze", "silver", "gold"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
+    _primary_dtype = 'category'
+    _backup_dtype = 'string'
     standard_tags = {'category'}
 
     def __init__(self, order):
@@ -268,7 +297,7 @@ class PhoneNumber(LogicalType):
              "+1-555-123-5495",
              "5551235495"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class SubRegionCode(LogicalType):
@@ -281,8 +310,8 @@ class SubRegionCode(LogicalType):
             ["US-CO", "US-MA", "US-CA"]
             ["AU-NSW", "AU-TAS", "AU-QLD"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
+    _primary_dtype = 'category'
+    _backup_dtype = 'string'
     standard_tags = {'category'}
 
 
@@ -296,7 +325,7 @@ class Timedelta(LogicalType):
              pd.Timedelta('-1 days +23:40:00'),
              pd.Timedelta('4 days 12:00:00')]
     """
-    primary_dtype = 'timedelta64[ns]'
+    _primary_dtype = 'timedelta64[ns]'
 
 
 class URL(LogicalType):
@@ -310,7 +339,7 @@ class URL(LogicalType):
              "https://example.com/index.html",
              "example.com"]
     """
-    primary_dtype = 'string'
+    _primary_dtype = 'string'
 
 
 class PostalCode(LogicalType):
@@ -324,6 +353,6 @@ class PostalCode(LogicalType):
              "60018-0123",
              "SW1A"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
+    _primary_dtype = 'category'
+    _backup_dtype = 'string'
     standard_tags = {'category'}

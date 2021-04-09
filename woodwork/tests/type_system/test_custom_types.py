@@ -7,7 +7,7 @@ from woodwork.logical_types import Categorical, Double, LogicalType
 
 def test_register_custom_logical_type(type_sys):
     class CustomLogicalType(LogicalType):
-        primary_dtype = 'string'
+        _primary_dtype = 'string'
 
     def custom_func(series):
         return True
@@ -23,7 +23,7 @@ def test_register_custom_logical_type(type_sys):
 
 def test_custom_type_with_accessor(sample_df):
     class AgesAbove20(LogicalType):
-        primary_dtype = 'float64'
+        _primary_dtype = 'float64'
         standard_tags = {'age', 'numeric'}
 
     def ages_func(series):
