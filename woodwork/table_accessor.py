@@ -40,9 +40,6 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-# temp comment
-# a second comment
-
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe = dataframe
