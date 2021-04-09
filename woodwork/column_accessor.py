@@ -163,6 +163,8 @@ class WoodworkColumnAccessor:
         return self._schema.semantic_tags
 
     def __eq__(self, other):
+        if self.use_standard_tags != other.use_standard_tags:
+            return False
         if self._schema != other._schema:
             return False
         if isinstance(self._series, pd.Series):

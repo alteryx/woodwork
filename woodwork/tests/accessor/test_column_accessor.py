@@ -661,6 +661,25 @@ def test_accessor_equality(sample_series, sample_datetime_series):
         assert str_col.ww == changed_series.ww
 
 
+def test_accessor_equality_standard_tags(sample_series):
+    # Different standard tags values - using logical types with standard tags
+    no_standard_tags_series = sample_series.copy()
+    standard_tags_series = sample_series.copy()
+
+    no_standard_tags_series.ww.init(use_standard_tags=False)
+    standard_tags_series.ww.init(use_standard_tags=True)
+
+    assert no_standard_tags_series.ww.use_standard_tags != standard_tags_series.ww.use_standard_tags
+    assert no_standard_tags_series.ww != standard_tags_series.ww
+
+    # Different standard tags values - no logical types that have standard tags
+    no_standard_tags_series = init_series(sample_series.copy(), logical_type='NaturalLanguage', use_standard_tags=False)
+    standard_tags_series = init_series(sample_series.copy(), logical_type='NaturalLanguage', use_standard_tags=True)
+
+    assert no_standard_tags_series.ww.use_standard_tags != standard_tags_series.ww.use_standard_tags
+    assert no_standard_tags_series.ww != standard_tags_series.ww
+
+
 def test_accessor_metadata(sample_series):
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 
