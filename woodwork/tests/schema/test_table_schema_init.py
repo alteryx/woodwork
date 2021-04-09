@@ -195,16 +195,24 @@ def test_schema_init_with_name_and_indices(sample_column_names, sample_inferred_
 
 def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_logical_types):
     # Set a numeric time index on init
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': Integer}},
-                         time_index='signup_date')
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, **{'signup_date': Integer}},
+        time_index='signup_date',
+        use_standard_tags=True
+    )
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
     assert date_col.logical_type == Integer
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': Double}},
-                         time_index='signup_date')
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, **{'signup_date': Double}},
+        time_index='signup_date',
+        use_standard_tags=True
+    )
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
     assert date_col.logical_type == Double
@@ -265,8 +273,12 @@ def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_log
 
 
 def test_schema_adds_standard_semantic_tags(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': Categorical}},
-                         name='schema')
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, **{'id': Categorical}},
+        use_standard_tags=True,
+        name='schema'
+    )
 
     assert schema.semantic_tags['id'] == {'category'}
     assert schema.semantic_tags['age'] == {'numeric'}
@@ -317,7 +329,7 @@ def test_semantic_tag_errors(sample_column_names, sample_inferred_logical_types)
 
 
 def test_index_replacing_standard_tags(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, use_standard_tags=True)
     assert schema.columns['id'].semantic_tags == {'numeric'}
 
     schema = TableSchema(sample_column_names, sample_inferred_logical_types, index='id')

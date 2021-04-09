@@ -24,6 +24,7 @@ Release Notes
         * Make ``logical_type`` and ``name`` params to ``_get_column_dict`` optional (:pr:`786`)
         * Rename Schema object and files to match new table-column schema structure (:pr:`789`)
         * Store column typing information in a ``ColumnSchema`` object instead of a dictionary (:pr:`791`)
+        * ``TableSchema`` does not use standard tags by default (:pr:`806`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
         * Update spark config for docs build (:pr:`787`, :pr:`801`)

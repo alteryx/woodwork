@@ -53,6 +53,7 @@ class WoodworkTableAccessor:
              already_sorted=False,
              schema=None,
              validate=True,
+             use_standard_tags=True,
              **kwargs):
         """Initializes Woodwork typing information for a DataFrame.
 
@@ -143,6 +144,7 @@ class WoodworkTableAccessor:
                                        index=index,
                                        time_index=time_index,
                                        validate=validate,
+                                       use_standard_tags=use_standard_tags,
                                        **kwargs)
 
             self._set_underlying_index()
