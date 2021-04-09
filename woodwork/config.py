@@ -1,7 +1,7 @@
 CONFIG_DEFAULTS = {
     'natural_language_threshold': 10,
     'numeric_categorical_threshold': -1,
-    'use_nullable_dtypes': False,
+    'use_nullable_dtypes': True,
 }
 
 
