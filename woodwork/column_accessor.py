@@ -53,11 +53,10 @@ class WoodworkColumnAccessor:
         logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
         self._validate_logical_type(logical_type)
-        self.use_standard_tags = use_standard_tags
 
         self._schema = ColumnSchema(logical_type=logical_type,
                                     semantic_tags=semantic_tags,
-                                    use_standard_tags=self.use_standard_tags,
+                                    use_standard_tags=use_standard_tags,
                                     description=description,
                                     metadata=metadata)
 
@@ -165,6 +164,8 @@ class WoodworkColumnAccessor:
     def __eq__(self, other):
         if self._schema != other._schema:
             return False
+        if self._series.name != other._series.name:
+            return False
         if isinstance(self._series, pd.Series):
             return self._series.equals(other._series)
         return True
@@ -207,7 +208,7 @@ class WoodworkColumnAccessor:
                                        semantic_tags=copy.deepcopy(self._schema.semantic_tags),
                                        description=self._schema.description,
                                        metadata=copy.deepcopy(self._schema.metadata),
-                                       use_standard_tags=self.use_standard_tags)
+                                       use_standard_tags=self._schema.use_standard_tags)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{valid_dtype}, and returned dtype, {result.dtype}'
@@ -263,7 +264,7 @@ class WoodworkColumnAccessor:
                                                            self.semantic_tags,
                                                            self._series.name,
                                                            self.logical_type.standard_tags,
-                                                           self.use_standard_tags)
+                                                           self._schema.use_standard_tags)
 
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
@@ -276,7 +277,7 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         self._schema.semantic_tags = _reset_semantic_tags(self.logical_type.standard_tags,
-                                                          self.use_standard_tags)
+                                                          self._schema.use_standard_tags)
 
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,
@@ -297,7 +298,7 @@ class WoodworkColumnAccessor:
         return init_series(new_series,
                            logical_type=logical_type,
                            semantic_tags=None,
-                           use_standard_tags=self.use_standard_tags,
+                           use_standard_tags=self._schema.use_standard_tags,
                            description=self.description,
                            metadata=copy.deepcopy(self.metadata))
 
@@ -313,7 +314,7 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         self._schema.semantic_tags = _set_semantic_tags(semantic_tags,
                                                         self.logical_type.standard_tags,
-                                                        self.use_standard_tags)
+                                                        self._schema.use_standard_tags)
 
 
 def _raise_init_error():

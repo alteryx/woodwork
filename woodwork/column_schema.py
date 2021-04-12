@@ -42,10 +42,14 @@ class ColumnSchema(object):
         self.description = description
         self.logical_type = logical_type
 
+        self.use_standard_tags = use_standard_tags
+
         semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate)
         self.semantic_tags = semantic_tags
 
     def __eq__(self, other):
+        if self.use_standard_tags != other.use_standard_tags:
+            return False
         if self.logical_type != other.logical_type:
             return False
         if self.semantic_tags != other.semantic_tags:
