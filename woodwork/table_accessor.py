@@ -350,6 +350,13 @@ class WoodworkTableAccessor:
             _raise_init_error()
         return self._schema.time_index
 
+    @property
+    def use_standard_tags(self):
+        """Whether standard tags are used for each column in the table"""
+        if self._schema is None:
+            _raise_init_error()
+        return self._schema.use_standard_tags
+
     def set_index(self, new_index):
         """Sets the index column of the DataFrame. Adds the 'index' semantic tag to the column
         and clears the tag from any previously set index column.

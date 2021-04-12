@@ -193,7 +193,6 @@ class WoodworkColumnAccessor:
         return msg
 
     def _make_schema_call(self, attr):
-        # --> consider adding to accessor utils
         """Forwards the requested attribute onto the schema object.
         Results are that of the Woodwork.ColumnSchema class."""
         schema_attr = getattr(self._schema, attr)

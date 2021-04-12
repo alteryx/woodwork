@@ -163,7 +163,6 @@ class TableSchema(object):
 
     @property
     def use_standard_tags(self):
-        # --> test this, add to api ref and accessor
         return {col_name: col.use_standard_tags for col_name, col in self.columns.items()}
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):

@@ -333,7 +333,6 @@ def test_filter_schema_non_string_cols():
 
 
 def test_get_subset_schema(sample_column_names, sample_inferred_logical_types):
-    # --> maybe test with weird use_standard_tags values??
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
     new_schema = schema._get_subset_schema(sample_column_names[1:4])
     for col in new_schema.columns:

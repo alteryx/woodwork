@@ -1973,7 +1973,7 @@ def test_accessor_schema_properties(sample_df):
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
-    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index']
+    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index', 'use_standard_tags']
     for schema_property in schema_properties:
         prop_from_accessor = getattr(sample_df.ww, schema_property)
         prop_from_schema = getattr(sample_df.ww.schema, schema_property)
