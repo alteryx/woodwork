@@ -84,10 +84,10 @@ class WoodworkTableAccessor:
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
-                added to columns based on the specified logical type for the column. 
+                added to columns based on the specified logical type for the column.
                 If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
-                Unspecified columns will use the default value. Defaults to True. 
+                Unspecified columns will use the default value. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
@@ -142,6 +142,7 @@ class WoodworkTableAccessor:
                     self._dataframe[name] = updated_series
 
             column_names = list(self._dataframe.columns)
+            # --> we need to pass in the full dict for use_standard_tags so that we use the correct default
             self._schema = TableSchema(column_names=column_names,
                                        logical_types=parsed_logical_types,
                                        index=index,

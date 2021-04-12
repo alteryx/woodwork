@@ -413,3 +413,49 @@ def test_validation_methods_called(mock_validate_params, mock_check_index,
     assert mock_validate_not_setting_index.called
 
     assert validated_schema == not_validated_schema
+
+
+def test_use_standard_tags_from_bool(sample_column_names, sample_inferred_logical_types):
+    standard_tags_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                       use_standard_tags=True)
+    assert set(standard_tags_schema.columns.keys()) == set(standard_tags_schema.use_standard_tags.keys())
+    assert all([*standard_tags_schema.use_standard_tags.values()])
+    assert standard_tags_schema.semantic_tags['id'] == {'numeric'}
+
+    no_standard_tags_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                          use_standard_tags=False)
+    assert set(no_standard_tags_schema.columns.keys()) == set(no_standard_tags_schema.use_standard_tags.keys())
+    assert not any([*no_standard_tags_schema.use_standard_tags.values()])
+    assert no_standard_tags_schema.semantic_tags['id'] == set()
+
+
+def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logical_types):
+    default_schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    assert default_schema.use_standard_tags == {col_name: False for col_name in sample_column_names}
+
+    use_standard_tags = {'id': True,
+                         'full_name': False,
+                         'email': True,
+                         'phone_number': True,
+                         'age': False,
+                         'signup_date': True,
+                         'is_registered': False}
+    full_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                   use_standard_tags=use_standard_tags)
+    assert full_dict_schema.use_standard_tags == use_standard_tags
+
+    partial_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                      use_standard_tags={'id': True,
+                                                         'email': True,
+                                                         'phone_number': True,
+                                                         'signup_date': True})
+    assert full_dict_schema.use_standard_tags == partial_dict_schema.use_standard_tags
+    assert full_dict_schema == partial_dict_schema
+
+    partial_dict_default_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                              use_standard_tags={'id': False,
+                                                                 'email': False,
+                                                                 'phone_number': False,
+                                                                 'signup_date': False})
+    assert default_schema.use_standard_tags == partial_dict_default_schema.use_standard_tags
+    assert default_schema == partial_dict_default_schema
