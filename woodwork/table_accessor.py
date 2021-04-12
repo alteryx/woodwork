@@ -13,7 +13,6 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     ParametersIgnoredWarning,
-    StandardTagsChangedWarning,
     TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
@@ -98,7 +97,7 @@ class WoodworkTableAccessor:
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
-            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema)
+            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema, use_standard_tags)
         if schema is not None:
             self._schema = schema
             extra_params = []
@@ -142,7 +141,13 @@ class WoodworkTableAccessor:
                     self._dataframe[name] = updated_series
 
             column_names = list(self._dataframe.columns)
-            # --> we need to pass in the full dict for use_standard_tags so that we use the correct default
+
+            # TableSchema uses a different default for use_standard_tags so we need to define it here
+            if isinstance(use_standard_tags, bool):
+                use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
+            else:
+                use_standard_tags = {**{col_name: True for col_name in column_names}, **use_standard_tags}
+
             self._schema = TableSchema(column_names=column_names,
                                        logical_types=parsed_logical_types,
                                        index=index,
@@ -203,7 +208,7 @@ class WoodworkTableAccessor:
                        semantic_tags=copy.deepcopy(column.semantic_tags),
                        description=column.description,
                        metadata=copy.deepcopy(column.metadata),
-                       use_standard_tags=self.use_standard_tags)
+                       use_standard_tags=self.use_standard_tags[key])
 
         return series
 
@@ -219,13 +224,7 @@ class WoodworkTableAccessor:
             raise KeyError('Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.')
 
         if column.ww._schema is None:
-            column = init_series(column, use_standard_tags=self.use_standard_tags)
-        elif self.use_standard_tags and not column.ww.use_standard_tags:
-            column.ww.add_semantic_tags(column.ww.logical_type.standard_tags)
-            message = StandardTagsChangedWarning().get_warning_message(self.use_standard_tags, col_name)
-            warnings.warn(message, StandardTagsChangedWarning)
-        elif not self.use_standard_tags and column.ww.use_standard_tags:
-            column.ww.remove_semantic_tags(column.ww.logical_type.standard_tags)
+            column = init_series(column, use_standard_tags=True)
 
         self._dataframe[col_name] = column
         self._schema.columns[col_name] = column.ww._schema
@@ -469,7 +468,7 @@ class WoodworkTableAccessor:
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
         The default values will be either an empty set or a set of the standard tags
-        based on the column logical type, controlled by the use_standard_tags property on the table.
+        based on the column logical type, controlled by the use_standard_tags property on each column.
         Column names can be provided as a single string, a list of strings or a set of strings.
         If columns is not specified, tags will be reset for all columns.
 
@@ -661,7 +660,7 @@ class WoodworkTableAccessor:
                        semantic_tags=copy.deepcopy(col_schema.semantic_tags),
                        description=col_schema.description,
                        metadata=copy.deepcopy(col_schema.metadata),
-                       use_standard_tags=self.use_standard_tags)
+                       use_standard_tags=self.use_standard_tags[column_name])
 
         # Update schema to not include popped column
         del self._schema.columns[column_name]
@@ -843,8 +842,9 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
 
-def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema):
+def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema, use_standard_tags):
     _check_unique_column_names(dataframe)
+    _check_use_standard_tags(use_standard_tags)
     if schema is not None:
         _check_schema(dataframe, schema)
     else:
@@ -911,6 +911,11 @@ def _check_schema(dataframe, schema):
     invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
+
+
+def _check_use_standard_tags(use_standard_tags):
+    if not isinstance(use_standard_tags, (bool, dict)):
+        raise TypeError('use_standard_tags must be a dictionary or a boolean')
 
 
 def _make_index(dataframe, index):

@@ -430,7 +430,7 @@ def test_use_standard_tags_from_bool(sample_column_names, sample_inferred_logica
 
 
 def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logical_types):
-    default_schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    default_schema = TableSchema(sample_column_names, sample_inferred_logical_types, use_standard_tags={col_name: False for col_name in sample_column_names})
     assert default_schema.use_standard_tags == {col_name: False for col_name in sample_column_names}
 
     use_standard_tags = {'id': True,
