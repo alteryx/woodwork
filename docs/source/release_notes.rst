@@ -27,7 +27,7 @@ Release Notes
         * ``TableSchema`` does not use standard tags by default (:pr:`806`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
-        * Update spark config for docs build (:pr:`787`, :pr:`801`)
+        * Update spark config for docs build (:pr:`787`, :pr:`801`, :pr:`810`)
     * Testing Changes
         * Add unit tests against minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
         * Update spark config for test fixtures (:pr:`787`)
