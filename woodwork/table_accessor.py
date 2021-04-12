@@ -83,8 +83,11 @@ class WoodworkTableAccessor:
             table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
-            use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-                on the specified logical type for the column. Defaults to True.
+            use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
+                added to columns based on the specified logical type for the column. 
+                If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
+                A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
+                Unspecified columns will use the default value. Defaults to True. 
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after

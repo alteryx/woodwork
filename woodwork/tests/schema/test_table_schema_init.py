@@ -21,6 +21,7 @@ from woodwork.table_schema import (
     _check_semantic_tags,
     _check_table_metadata,
     _check_time_index,
+    _check_use_standard_tags,
     _validate_params
 )
 
@@ -36,7 +37,8 @@ def test_validate_params_errors(sample_column_names):
                          table_metadata=None,
                          column_metadata=None,
                          semantic_tags=None,
-                         column_descriptions=None)
+                         column_descriptions=None,
+                         use_standard_tags=False)
 
 
 def test_check_index_errors(sample_column_names):
@@ -160,6 +162,20 @@ def test_check_column_description_errors(sample_column_names):
     err_msg = re.escape("column_descriptions contains columns that do not exist: ['invalid_col']")
     with pytest.raises(LookupError, match=err_msg):
         _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
+
+
+def test_check_use_standard_tags_errors(sample_column_names):
+    error_message = 'use_standard_tags must be a dictionary or a boolean'
+    with pytest.raises(TypeError, match=error_message):
+        _check_use_standard_tags(sample_column_names, use_standard_tags=1)
+
+    error_message = re.escape("use_standard_tags contains columns that do not exist: ['invalid_col']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_use_standard_tags(sample_column_names, use_standard_tags={'invalid_col': True})
+
+    error_message = "use_standard_tags for column id must be a boolean"
+    with pytest.raises(TypeError, match=error_message):
+        _check_use_standard_tags(sample_column_names, use_standard_tags={'id': 1})
 
 
 def test_schema_init(sample_column_names, sample_inferred_logical_types):
