@@ -32,7 +32,8 @@ class WoodworkColumnAccessor:
         self._schema = None
 
     def init(self, logical_type=None, semantic_tags=None,
-             use_standard_tags=True, description=None, metadata=None):
+             use_standard_tags=True, description=None, metadata=None,
+             schema=None):
         """Initializes Woodwork typing information for a Series.
 
         Args:
@@ -49,21 +50,31 @@ class WoodworkColumnAccessor:
                 based on the inferred or specified logical type of the series. Defaults to True.
             description (str, optional): Optional text describing the contents of the series.
             metadata (dict[str -> json serializable], optional): Metadata associated with the series.
+            schema (Woodwork.TableSchema, optional): Typing information to use for the Series instead of performing inference.
+                Any other arguments provided will be ignored. Note that any changes made to the schema object after
+                initialization will propagate to the Series. Similarly, to avoid unintended typing information changes,
+                the same schema object should not be shared between Series.
         """
-        logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
-        self._validate_logical_type(logical_type)
+        if schema is not None:
+            # --> implement validation - check that it's the correct type and that it matches the series!
+            # _validate_schema(schema)
+            # --> confirm other parameters aren't being passed in
 
-        self._schema = ColumnSchema(logical_type=logical_type,
-                                    semantic_tags=semantic_tags,
-                                    use_standard_tags=use_standard_tags,
-                                    description=description,
-                                    metadata=metadata)
+            self._schema = schema
+        else:
+            logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
+
+            self._validate_logical_type(logical_type)
+
+            self._schema = ColumnSchema(logical_type=logical_type,
+                                        semantic_tags=semantic_tags,
+                                        use_standard_tags=use_standard_tags,
+                                        description=description,
+                                        metadata=metadata)
 
     @property
     def schema(self):
-        if self._schema is None:
-            _raise_init_error()
         return copy.deepcopy(self._schema)
 
     @property

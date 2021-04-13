@@ -43,6 +43,64 @@ def test_accessor_init(sample_series):
     assert sample_series.ww.semantic_tags == {'category'}
 
 
+def test_accessor_init_with_schema(sample_series):
+    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    schema = sample_series.ww._schema
+
+    head_series = sample_series.head(2)
+    assert head_series.ww.schema is None
+    head_series.ww.init(schema=schema)
+
+    assert head_series.ww._schema is schema
+    assert head_series.ww.description == 'this is a column'
+    assert head_series.ww.semantic_tags == {'test_tag', 'category'}
+
+    iloc_series = sample_series.loc[[2, 3]]
+    assert iloc_series.ww.schema is None
+    iloc_series.ww.init(schema=schema)
+
+    assert iloc_series.ww._schema is schema
+    assert iloc_series.ww.description == 'this is a column'
+    assert iloc_series.ww.semantic_tags == {'test_tag', 'category'}
+    assert iloc_series.ww.logical_type == Categorical
+
+# --> add these back in
+# def test_accessor_init_with_schema_errors(sample_df):
+#     schema_df = sample_df.copy()
+#     schema_df.ww.init()
+#     schema = schema_df.ww.schema
+
+#     iloc_df = schema_df.iloc[:, :-1]
+#     assert iloc_df.ww.schema is None
+
+#     error = 'Provided schema must be a Woodwork.TableSchema object.'
+#     with pytest.raises(TypeError, match=error):
+#         iloc_df.ww.init(schema=int)
+
+#     error = ("Woodwork typing information is not valid for this DataFrame: "
+#              "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
+#     with pytest.raises(ValueError, match=error):
+#         iloc_df.ww.init(schema=schema)
+
+
+# def test_accessor_with_schema_parameter_warning(sample_df):
+#     schema_df = sample_df.copy()
+#     schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
+#     schema = schema_df.ww.schema
+
+#     head_df = schema_df.head(2)
+
+#     warning = "A schema was provided and the following parameters were ignored: index, make_index, " \
+#               "time_index, logical_types, already_sorted, semantic_tags"
+#     with pytest.warns(ParametersIgnoredWarning, match=warning):
+#         head_df.ww.init(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
+#                         make_index=True, already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
+#                         schema=schema)
+
+#     assert head_df.ww.name == 'test_schema'
+#     assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
+
+
 def test_accessor_init_with_logical_type(sample_series):
     series = sample_series.astype('string')
     series.ww.init(logical_type=NaturalLanguage)
@@ -78,7 +136,7 @@ def test_accessor_init_with_semantic_tags(sample_series):
 
 
 def test_error_accessing_properties_before_init(sample_series):
-    props_to_exclude = ['iloc', 'loc']
+    props_to_exclude = ['iloc', 'loc', 'schema']
     props = [prop for prop in dir(sample_series.ww) if is_property(WoodworkColumnAccessor, prop) and prop not in props_to_exclude]
 
     error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
