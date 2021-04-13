@@ -200,3 +200,37 @@ def test_reset_semantic_tags_returns_new_object():
     reset_tags = _reset_semantic_tags(standard_tags, use_standard_tags=True)
     assert reset_tags is not standard_tags
     assert reset_tags == standard_tags
+
+
+def test_schema_equality():
+    col = ColumnSchema(logical_type=Categorical)
+    diff_description_col = ColumnSchema(logical_type=Categorical, description='description')
+    diff_metadata_col = ColumnSchema(logical_type=Categorical, metadata={'interesting_values': ['a', 'b']})
+    use_standard_tags_col = ColumnSchema(logical_type=Categorical, use_standard_tags=True)
+    diff_tags_col = ColumnSchema(logical_type=Categorical, semantic_tags={'new_tag'})
+
+    assert col != diff_description_col
+    assert col != diff_metadata_col
+    assert col != use_standard_tags_col
+    assert col != diff_tags_col
+
+    # Check columns with same logical types but different parameters
+    ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
+    ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
+    ordinal_col_1 = ColumnSchema(logical_type=ordinal_ltype_1)
+    ordinal_col_2 = ColumnSchema(logical_type=ordinal_ltype_2)
+
+    assert col != ordinal_col_1
+    assert ordinal_col_1 != ordinal_col_2
+    assert ordinal_col_1 == ordinal_col_1
+
+    datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
+
+    datetime_col_format = ColumnSchema(logical_type=datetime_ltype_instantiated)
+    datetime_col_param = ColumnSchema(logical_type=Datetime(datetime_format=None))
+    datetime_col_instantiated = ColumnSchema(logical_type=Datetime())
+    datetime_col = ColumnSchema(logical_type=Datetime)
+
+    assert datetime_col != datetime_col_instantiated
+    assert datetime_col_instantiated != datetime_col_format
+    assert datetime_col_instantiated == datetime_col_param

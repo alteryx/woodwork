@@ -16,7 +16,6 @@ from woodwork.exceptions import (
 from woodwork.logical_types import (
     Categorical,
     CountryCode,
-    Datetime,
     Double,
     Integer,
     LatLong,
@@ -592,60 +591,28 @@ def test_latlong_formatting_with_init_series(latlongs):
         assert expected_series.ww._schema == new_series.ww._schema
 
 
-def test_accessor_equality(sample_series, sample_datetime_series):
+def test_accessor_equality(sample_series):
     # Check different parameters
     str_col = sample_series.copy()
     str_col.ww.init(logical_type='Categorical')
+
     str_col_2 = sample_series.copy()
     str_col_2.ww.init(logical_type=Categorical)
+
     str_col_diff_tags = sample_series.copy()
     str_col_diff_tags.ww.init(logical_type=Categorical, semantic_tags={'test'})
-    if ks and isinstance(sample_datetime_series, ks.Series):
-        diff_name_col = sample_datetime_series.astype('string')
-    else:
-        diff_name_col = sample_datetime_series.astype('category')
+
+    diff_name_col = sample_series.copy()
+    diff_name_col.name = 'different_name'
     diff_name_col.ww.init(logical_type=Categorical)
+
     diff_dtype_col = sample_series.astype('string')
     diff_dtype_col.ww.init(logical_type=NaturalLanguage)
-    diff_description_col = sample_series.copy()
-    diff_description_col.ww.init(logical_type='Categorical', description='description')
-    diff_metadata_col = sample_series.copy()
-    diff_metadata_col.ww.init(logical_type='Categorical', metadata={'interesting_values': ['a', 'b']})
 
     assert str_col.ww == str_col_2.ww
     assert str_col.ww != str_col_diff_tags.ww
-    if isinstance(str_col, pd.Series) and isinstance(diff_name_col, pd.Series):
-        # Name is from series, series equality checked only with Pandas input
-        assert str_col.ww != diff_name_col.ww
+    assert str_col.ww != diff_name_col.ww
     assert str_col.ww != diff_dtype_col.ww
-    assert str_col.ww != diff_description_col.ww
-    assert str_col.ww != diff_metadata_col.ww
-
-    # Check columns with same logical types but different parameters
-    ordinal_ltype_1 = Ordinal(order=['a', 'b', 'c'])
-    ordinal_ltype_2 = Ordinal(order=['b', 'a', 'c'])
-    ordinal_col_1 = sample_series.copy()
-    ordinal_col_2 = sample_series.copy()
-    ordinal_col_1.ww.init(logical_type=ordinal_ltype_1)
-    ordinal_col_2.ww.init(logical_type=ordinal_ltype_2)
-
-    assert str_col.ww != ordinal_col_1.ww
-    assert ordinal_col_1.ww != ordinal_col_2.ww
-    assert ordinal_col_1.ww == ordinal_col_1.ww
-
-    datetime_ltype_instantiated = Datetime(datetime_format='%Y-%m%d')
-    datetime_col_format = sample_datetime_series.astype('datetime64[ns]')
-    datetime_col_param = sample_datetime_series.astype('datetime64[ns]')
-    datetime_col_instantiated = sample_datetime_series.astype('datetime64[ns]')
-    datetime_col = sample_datetime_series.astype('datetime64[ns]')
-    datetime_col_format.ww.init(logical_type=datetime_ltype_instantiated)
-    datetime_col_param.ww.init(logical_type=Datetime(datetime_format=None))
-    datetime_col_instantiated.ww.init(logical_type=Datetime())
-    datetime_col.ww.init(logical_type=Datetime)
-
-    assert datetime_col.ww != datetime_col_instantiated.ww
-    assert datetime_col_instantiated.ww != datetime_col_format.ww
-    assert datetime_col_instantiated.ww == datetime_col_param.ww
 
     # Check different underlying series
     str_col = sample_series.astype('string')
