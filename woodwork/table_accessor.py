@@ -111,6 +111,8 @@ class WoodworkTableAccessor:
                 extra_params.append('logical_types')
             if already_sorted:
                 extra_params.append('already_sorted')
+            if not use_standard_tags or isinstance(use_standard_tags, dict):
+                extra_params.append('use_standard_tags')
             for key in kwargs:
                 extra_params.append(key)
             if extra_params:

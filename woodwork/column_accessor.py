@@ -13,7 +13,10 @@ from woodwork.column_schema import (
     _validate_description,
     _validate_metadata
 )
-from woodwork.exceptions import TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    TypingInfoMismatchWarning
+)
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
 from woodwork.utils import (
@@ -57,9 +60,21 @@ class WoodworkColumnAccessor:
         """
 
         if schema is not None:
-            # --> implement validation - check that it's the correct type and that it matches the series!
-            # _validate_schema(schema)
-            # --> confirm other parameters aren't being passed in
+            _validate_schema(schema, self._series)
+
+            extra_params = []
+            if logical_type is not None:
+                extra_params.append('logical_type')
+            if semantic_tags is not None:
+                extra_params.append('semantic_tags')
+            if description is not None:
+                extra_params.append('description')
+            if metadata is not None:
+                extra_params.append('metadata')
+            if not use_standard_tags:
+                extra_params.append('use_standard_tags')
+            if extra_params:
+                warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
             self._schema = schema
         else:
@@ -332,6 +347,15 @@ class WoodworkColumnAccessor:
         self._schema.semantic_tags = _set_semantic_tags(semantic_tags,
                                                         self.logical_type.standard_tags,
                                                         self._schema.use_standard_tags)
+
+
+def _validate_schema(schema, series):
+    if not isinstance(schema, ColumnSchema):
+        raise TypeError('Provided schema must be a Woodwork.ColumnSchema object.')
+
+    valid_dtype = _get_valid_dtype(type(series), schema.logical_type)
+    if str(series.dtype) != valid_dtype:
+        raise ValueError(f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}")
 
 
 def _raise_init_error():
