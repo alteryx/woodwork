@@ -95,6 +95,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     semantic_tags = {}
     column_descriptions = {}
     column_metadata = {}
+    use_standard_tags = {}
     for col in table_typing_info['column_typing_info']:
         col_name = col['name']
 
@@ -112,6 +113,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         semantic_tags[col_name] = tags
         column_descriptions[col_name] = col['description']
         column_metadata[col_name] = col['metadata']
+        use_standard_tags[col_name] = col['use_standard_tags']
 
     dataframe.ww.init(
         name=table_typing_info.get('name'),
@@ -119,7 +121,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         time_index=table_typing_info.get('time_index'),
         logical_types=logical_types,
         semantic_tags=semantic_tags,
-        use_standard_tags=table_typing_info.get('use_standard_tags'),
+        use_standard_tags=use_standard_tags,
         table_metadata=table_typing_info.get('table_metadata'),
         column_metadata=column_metadata,
         column_descriptions=column_descriptions,

@@ -19,7 +19,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_7.0.0.tar"
+TEST_FILE = "test_serialization_woodwork_table_schema_8.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -63,13 +63,13 @@ def test_to_dictionary(sample_df):
     string_val = 'string'
     bool_val = 'boolean'
 
-    expected = {'schema_version': '7.0.0',
+    expected = {'schema_version': '8.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
-                'use_standard_tags': True,
                 'column_typing_info': [{'name': 'id',
                                         'ordinal': 0,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Integer'},
                                         'physical_type': {'type': int_val},
                                         'semantic_tags': ['index', 'tag1'],
@@ -77,6 +77,7 @@ def test_to_dictionary(sample_df):
                                         'metadata':{'is_sorted': True}},
                                        {'name': 'full_name',
                                         'ordinal': 1,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
@@ -84,6 +85,7 @@ def test_to_dictionary(sample_df):
                                         'metadata':{}},
                                        {'name': 'email',
                                         'ordinal': 2,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
@@ -91,6 +93,7 @@ def test_to_dictionary(sample_df):
                                         'metadata':{}},
                                        {'name': 'phone_number',
                                         'ordinal': 3,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
@@ -98,6 +101,7 @@ def test_to_dictionary(sample_df):
                                         'metadata': {}},
                                        {'name': 'age',
                                         'ordinal': 4,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
                                         'physical_type': {'type': cat_val},
                                         'semantic_tags': ['category'],
@@ -105,6 +109,7 @@ def test_to_dictionary(sample_df):
                                         'metadata':{'interesting_values': [33, 57]}},
                                        {'name': 'signup_date',
                                         'ordinal': 5,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {},
                                                          'type': 'Datetime'},
                                         'physical_type': {'type': 'datetime64[ns]'},
@@ -113,6 +118,7 @@ def test_to_dictionary(sample_df):
                                         'metadata':{}},
                                        {'name': 'is_registered',
                                         'ordinal': 6,
+                                        'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Boolean'},
                                         'physical_type': {'type': bool_val},
                                         'semantic_tags': [],
