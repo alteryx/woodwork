@@ -155,7 +155,7 @@ def test_list_semantic_tags():
                 assert name in log_type.standard_tags
 
 
-def test_read_csv_no_params(sample_df_pandas, tmpdir):
+def test_read_csv_no_params(sample_df_pandas, tmpdir, use_both_dtypes):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
 
@@ -169,7 +169,7 @@ def test_read_csv_no_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
-def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
+def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir, use_both_dtypes):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
     logical_types = {
@@ -197,7 +197,7 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
-def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
+def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir, use_both_dtypes):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
     nrows = 2

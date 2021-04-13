@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+import woodwork as ww
 from woodwork.logical_types import (
     URL,
     Boolean,
@@ -55,9 +56,8 @@ def test_get_mode():
             assert mode == answer
 
 
-def test_accessor_replace_nans_for_mutual_info():
+def test_accessor_replace_nans_for_mutual_info(use_both_dtypes):
     df_nans = pd.DataFrame({
-        'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
         'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
@@ -70,13 +70,18 @@ def test_accessor_replace_nans_for_mutual_info():
 
     assert isinstance(formatted_df, pd.DataFrame)
 
-    assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
     assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
     assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
     assert formatted_df['str'].equals(pd.Series(['test', 'test', 'test2', 'test'], dtype='category'))
     assert formatted_df['str_no_nan'].equals(pd.Series(['test', 'test2', 'test2', 'test'], dtype='category'))
     assert formatted_df['dates'].equals(pd.Series(['2020-01-01', '2020-01-02', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]'))
+
+    if ww.config.get_option('use_nullable_dtypes'):
+        df_nans['ints'] = pd.Series([2, pd.NA, 5, 2], dtype='Int64')
+        df_nans.ww.init()
+        formatted_df = _replace_nans_for_mutual_info(df_nans.ww.schema, df_nans.copy())
+        assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
 
 
 def test_accessor_make_categorical_for_mutual_info():
@@ -99,7 +104,9 @@ def test_accessor_make_categorical_for_mutual_info():
     assert formatted_num_bins_df['dates'].equals(pd.Series([2, 1, 3, 0], dtype='int8'))
 
 
-def test_mutual_info_same(df_same_mi):
+def test_mutual_info_same(df_same_mi, use_both_dtypes):
+    if not ww.config.get_option('use_nullable_dtypes'):
+        df_same_mi['ints'] = df_same_mi['ints'].fillna(0)
     df_same_mi.ww.init()
 
     mi = df_same_mi.ww.mutual_information()
@@ -111,7 +118,7 @@ def test_mutual_info_same(df_same_mi):
     assert mi_between_cols('floats', 'ints', mi) == 1.0
 
 
-def test_mutual_info(df_mi):
+def test_mutual_info(df_mi, use_both_dtypes):
     df_mi.ww.init(logical_types={'dates': Datetime(datetime_format='%Y-%m-%d')})
     original_df = df_mi.copy()
     mi = df_mi.ww.mutual_information()
@@ -142,7 +149,7 @@ def test_mutual_info(df_mi):
     pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
 
 
-def test_mutual_info_on_index(sample_df):
+def test_mutual_info_on_index(sample_df, use_both_dtypes):
     sample_df.ww.init(index='id')
     mi = sample_df.ww.mutual_information()
 
@@ -152,7 +159,7 @@ def test_mutual_info_on_index(sample_df):
     assert 'id' in mi['column_1'].values or 'id' in mi['column_2'].values
 
 
-def test_mutual_info_returns_empty_df_properly(sample_df):
+def test_mutual_info_returns_empty_df_properly(sample_df, use_both_dtypes):
     schema_df = sample_df[['id', 'age']]
     schema_df.ww.init(index='id')
 
@@ -160,7 +167,7 @@ def test_mutual_info_returns_empty_df_properly(sample_df):
     assert mi.empty
 
 
-def test_mutual_info_sort(df_mi):
+def test_mutual_info_sort(df_mi, use_both_dtypes):
     df_mi.ww.init()
     mi = df_mi.ww.mutual_information()
 
@@ -168,7 +175,7 @@ def test_mutual_info_sort(df_mi):
         assert mi['mutual_info'].iloc[i] >= mi['mutual_info'].iloc[i + 1]
 
 
-def test_mutual_info_dict(df_mi):
+def test_mutual_info_dict(df_mi, use_both_dtypes):
     df_mi.ww.init()
     mi_dict = df_mi.ww.mutual_information_dict()
     mi = df_mi.ww.mutual_information()
@@ -176,7 +183,7 @@ def test_mutual_info_dict(df_mi):
     pd.testing.assert_frame_equal(pd.DataFrame(mi_dict), mi)
 
 
-def test_mutual_info_unique_cols(df_mi_unique):
+def test_mutual_info_unique_cols(df_mi_unique, use_both_dtypes):
     df_mi_unique.ww.init()
     mi = df_mi_unique.ww.mutual_information()
 
@@ -187,7 +194,7 @@ def test_mutual_info_unique_cols(df_mi_unique):
     assert 'ints' in cols_used
 
 
-def test_get_describe_dict(describe_df):
+def test_get_describe_dict(describe_df, use_both_dtypes):
     describe_df.ww.init(index='index_col')
 
     stats_dict = _get_describe_dict(describe_df)
@@ -212,13 +219,13 @@ def test_get_describe_dict(describe_df):
     pd.testing.assert_frame_equal(stats_df, stats_dict_to_df)
 
 
-def test_describe_does_not_include_index(describe_df):
+def test_describe_does_not_include_index(describe_df, use_both_dtypes):
     describe_df.ww.init(index='index_col')
     stats_df = describe_df.ww.describe()
     assert 'index_col' not in stats_df.columns
 
 
-def test_describe_accessor_method(describe_df):
+def test_describe_accessor_method(describe_df, use_both_dtypes):
     categorical_ltypes = [Categorical,
                           CountryCode,
                           Ordinal(order=('yellow', 'red', 'blue')),
@@ -271,14 +278,12 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'category_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['category_col'].dropna())
+        assert expected_vals.equals(stats_df['category_col'].dropna())
 
     # Test boolean columns
     boolean_data = describe_df[['boolean_col']]
-    if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'bool'
-    else:
-        expected_dtype = 'boolean'
+
+    expected_dtype = Boolean.primary_dtype
     for ltype in boolean_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
@@ -294,7 +299,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'boolean_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['boolean_col'].dropna())
+        assert expected_vals.equals(stats_df['boolean_col'].dropna())
 
     # Test datetime columns
     datetime_data = describe_df[['datetime_col']]
@@ -315,7 +320,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['datetime_col'].dropna())
+        assert expected_vals.equals(stats_df['datetime_col'].dropna())
 
     # Test formatted datetime columns
     formatted_datetime_data = describe_df[['formatted_datetime_col']]
@@ -346,7 +351,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'formatted_datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
+        assert expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
 
     # Test timedelta columns - Skip for Koalas
     if not (ks and isinstance(describe_df, ks.DataFrame)):
@@ -365,39 +370,58 @@ def test_describe_accessor_method(describe_df):
             assert isinstance(stats_df, pd.DataFrame)
             assert set(stats_df.columns) == {'col'}
             assert stats_df.index.tolist() == expected_index
-            expected_vals.equals(stats_df['col'].dropna())
+            assert expected_vals.equals(stats_df['col'].dropna())
 
     # Test numeric columns
     numeric_data = describe_df[['numeric_col']]
     for ltype in numeric_ltypes:
-        expected_vals = pd.Series({
-            'physical_type': ltype.primary_dtype,
-            'logical_type': ltype,
-            'semantic_tags': {'numeric', 'custom_tag'},
-            'count': 7,
-            'nunique': 6,
-            'nan_count': 1,
-            'mean': 20.857142857142858,
-            'mode': 10,
-            'std': 18.27957486220227,
-            'min': 1,
-            'first_quartile': 10,
-            'second_quartile': 17,
-            'third_quartile': 26,
-            'max': 56}, name='numeric_col')
+        if not ww.config.get_option('use_nullable_dtypes') and ltype == Integer:
+            numeric_data = numeric_data.fillna(0)
+            expected_vals = pd.Series({
+                'physical_type': ltype.primary_dtype,
+                'logical_type': ltype,
+                'semantic_tags': {'numeric', 'custom_tag'},
+                'count': 8,
+                'nunique': 7,
+                'nan_count': 0,
+                'mean': 18.25,
+                'mode': 10,
+                'std': 18.460382289804137,
+                'min': 0,
+                'first_quartile': 7.75,
+                'second_quartile': 13.5,
+                'third_quartile': 23,
+                'max': 56}, name='numeric_col')
+        else:
+            expected_vals = pd.Series({
+                'physical_type': ltype.primary_dtype,
+                'logical_type': ltype,
+                'semantic_tags': {'numeric', 'custom_tag'},
+                'count': 7,
+                'nunique': 6,
+                'nan_count': 1,
+                'mean': 20.857142857142858,
+                'mode': 10,
+                'std': 18.27957486220227,
+                'min': 1,
+                'first_quartile': 10,
+                'second_quartile': 17,
+                'third_quartile': 26,
+                'max': 56}, name='numeric_col')
         numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = numeric_data.ww.describe()
+
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'numeric_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['numeric_col'].dropna())
+        assert expected_vals.equals(stats_df['numeric_col'].dropna())
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
     if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'object'
+        expected_dtype = NaturalLanguage.backup_dtype
     else:
-        expected_dtype = 'string'
+        expected_dtype = NaturalLanguage.primary_dtype
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
@@ -413,7 +437,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'natural_language_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['natural_language_col'].dropna())
+        assert expected_vals.equals(stats_df['natural_language_col'].dropna())
 
     # Test latlong columns
     latlong_data = describe_df[['latlong_col']]
@@ -434,10 +458,10 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'latlong_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['latlong_col'].dropna())
+        assert expected_vals.equals(stats_df['latlong_col'].dropna())
 
 
-def test_describe_with_improper_tags(describe_df):
+def test_describe_with_improper_tags(describe_df, use_both_dtypes):
     df = describe_df.copy()[['boolean_col', 'natural_language_col']]
 
     logical_types = {
@@ -460,8 +484,13 @@ def test_describe_with_improper_tags(describe_df):
     assert stats_df['natural_language_col'][['mean', 'std', 'min', 'max']].isnull().all()
 
 
-def test_describe_with_no_semantic_tags(describe_df):
+def test_describe_with_no_semantic_tags(describe_df, use_both_dtypes):
     df = describe_df.copy()[['category_col', 'numeric_col']]
+    if not ww.config.get_option('use_nullable_dtypes'):
+        df['numeric_col'] = df['numeric_col'].fillna(0)
+        mean_val = 18.25
+    else:
+        mean_val = 20.85714
 
     logical_types = {
         'category_col': Categorical,
@@ -478,10 +507,10 @@ def test_describe_with_no_semantic_tags(describe_df):
     assert stats_df['category_col']['nunique'] == 3
     # Make sure numeric stats were computed
     assert stats_df['numeric_col']['semantic_tags'] == set()
-    np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], 20.85714, 5)
+    np.testing.assert_almost_equal(stats_df['numeric_col']['mean'], mean_val, 5)
 
 
-def test_describe_with_include(sample_df):
+def test_describe_with_include(sample_df, use_both_dtypes):
     semantic_tags = {
         'full_name': 'tag1',
         'email': ['tag2'],
@@ -509,13 +538,16 @@ def test_describe_with_include(sample_df):
     multi_params_df['full_name'].equals(sample_df.ww.describe()['full_name'])
 
 
-def test_describe_with_no_match(sample_df):
+def test_describe_with_no_match(sample_df, use_both_dtypes):
     sample_df.ww.init()
     df = sample_df.ww.describe(include=['wrongname'])
     assert df.empty
 
 
-def test_value_counts(categorical_df):
+def test_value_counts(categorical_df, use_both_dtypes):
+    if not ww.config.get_option('use_nullable_dtypes'):
+        categorical_df['ints'] = categorical_df['ints'].fillna(0)
+        categorical_df['bools'] = categorical_df['bools'].fillna(True)
     logical_types = {
         'ints': Integer,
         'categories1': Categorical,

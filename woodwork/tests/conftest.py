@@ -2,7 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import Boolean, Datetime, Integer, NaturalLanguage
+from woodwork.config import config
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Integer,
+    NaturalLanguage
+)
 from woodwork.utils import import_or_none
 
 
@@ -110,7 +117,7 @@ def sample_series_dask(sample_series_pandas):
 @pytest.fixture()
 def sample_series_koalas(sample_series_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(sample_series_pandas.astype('string'))
+    return ks.from_pandas(sample_series_pandas.astype(Categorical.backup_dtype))
 
 
 @pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask', 'sample_datetime_series_koalas'])
@@ -524,3 +531,22 @@ def sample_inferred_logical_types():
             'age': Integer,
             'signup_date': Datetime,
             'is_registered': Boolean}
+
+
+@pytest.fixture()
+def use_nullable_dtypes():
+    config.set_option('use_nullable_dtypes', True)
+    yield
+    config.reset_option('use_nullable_dtypes')
+
+
+@pytest.fixture()
+def use_non_nullable_dtypes():
+    config.set_option('use_nullable_dtypes', False)
+    yield
+    config.reset_option('use_nullable_dtypes')
+
+
+@pytest.fixture(params=['use_non_nullable_dtypes', 'use_nullable_dtypes'])
+def use_both_dtypes(request):
+    return request.getfixturevalue(request.param)

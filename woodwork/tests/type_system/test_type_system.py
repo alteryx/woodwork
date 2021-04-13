@@ -136,13 +136,13 @@ def test_add_type_with_parent():
     assert type_sys.relationships[0] == (Double, Integer)
 
 
-def test_add_duplicate_ltype(type_sys):
+def test_add_duplicate_ltype(type_sys, use_both_dtypes):
     inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
 
     assert ww.type_system.str_to_logical_type('Integer') == ww.logical_types.Integer
 
     class Integer(LogicalType):
-        _primary_dtype = 'string'
+        _primary_dtype = 'object'
 
     error_msg = 'Logical Type with name Integer already present in the Type System. Please rename the LogicalType or remove existing one.'
     with pytest.raises(ValueError, match=error_msg):
@@ -152,12 +152,12 @@ def test_add_duplicate_ltype(type_sys):
     type_sys.add_type(Integer, inference_function=inference_fn)
 
     ltype = type_sys.str_to_logical_type('Integer')
-    assert ltype.primary_dtype == 'string'
+    assert ltype.primary_dtype == 'object'
     assert ltype == Integer
 
     type_sys.reset_defaults()
     ltype = type_sys.str_to_logical_type('Integer')
-    assert ltype.primary_dtype == 'Int64'
+    assert ltype.primary_dtype == ww.logical_types.Integer.primary_dtype
     assert ltype == ww.logical_types.Integer
 
 

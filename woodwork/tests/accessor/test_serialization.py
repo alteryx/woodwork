@@ -9,7 +9,13 @@ from mock import patch
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
-from woodwork.logical_types import Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Integer,
+    NaturalLanguage,
+    Ordinal
+)
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
@@ -47,7 +53,7 @@ def test_error_before_table_init(sample_df, tmpdir):
         sample_df.ww.to_parquet(str(tmpdir))
 
 
-def test_to_dictionary(sample_df):
+def test_to_dictionary(sample_df, use_both_dtypes):
     if dd and isinstance(sample_df, dd.DataFrame):
         table_type = 'dask'
     elif ks and isinstance(sample_df, ks.DataFrame):
@@ -56,12 +62,12 @@ def test_to_dictionary(sample_df):
         table_type = 'pandas'
 
     if ks and isinstance(sample_df, ks.DataFrame):
-        cat_val = 'string'
+        cat_val = Categorical.backup_dtype
     else:
-        cat_val = 'category'
-    int_val = 'Int64'
-    string_val = 'string'
-    bool_val = 'boolean'
+        cat_val = Categorical.primary_dtype
+    int_val = Integer.primary_dtype
+    string_val = NaturalLanguage.primary_dtype
+    bool_val = Boolean.primary_dtype
 
     expected = {'schema_version': '7.0.0',
                 'name': 'test_data',
@@ -155,7 +161,7 @@ def test_serialize_wrong_format(sample_df, tmpdir):
         serialize.write_woodwork_table(sample_df, str(tmpdir), format='test')
 
 
-def test_to_csv(sample_df, tmpdir):
+def test_to_csv(sample_df, tmpdir, use_both_dtypes):
     sample_df.ww.init(
         name='test_data',
         index='id',
@@ -174,7 +180,7 @@ def test_to_csv(sample_df, tmpdir):
     assert deserialized_df.ww.schema == sample_df.ww.schema
 
 
-def test_to_csv_with_latlong(latlong_df, tmpdir):
+def test_to_csv_with_latlong(latlong_df, tmpdir, use_both_dtypes):
     latlong_df.ww.init(index='tuple_ints', logical_types={col: 'LatLong' for col in latlong_df.columns})
     latlong_df.ww.to_csv(str(tmpdir))
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
@@ -184,7 +190,7 @@ def test_to_csv_with_latlong(latlong_df, tmpdir):
     assert deserialized_df.ww.schema == latlong_df.ww.schema
 
 
-def test_to_csv_use_standard_tags(sample_df, tmpdir):
+def test_to_csv_use_standard_tags(sample_df, tmpdir, use_both_dtypes):
     no_standard_tags_df = sample_df.copy()
     no_standard_tags_df.ww.init(use_standard_tags=False)
 
@@ -203,7 +209,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     assert deserialized_tags_df.ww.schema == standard_tags_df.ww.schema
 
 
-def test_to_pickle(sample_df, tmpdir):
+def test_to_pickle(sample_df, tmpdir, use_both_dtypes):
     sample_df.ww.init()
     if not isinstance(sample_df, pd.DataFrame):
         msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
@@ -218,7 +224,7 @@ def test_to_pickle(sample_df, tmpdir):
         assert deserialized_df.ww.schema == sample_df.ww.schema
 
 
-def test_to_pickle_with_latlong(latlong_df, tmpdir):
+def test_to_pickle_with_latlong(latlong_df, tmpdir, use_both_dtypes):
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
     if not isinstance(latlong_df, pd.DataFrame):
         msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
@@ -233,7 +239,7 @@ def test_to_pickle_with_latlong(latlong_df, tmpdir):
         assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
-def test_to_parquet(sample_df, tmpdir):
+def test_to_parquet(sample_df, tmpdir, use_both_dtypes):
     sample_df.ww.init(index='id')
     sample_df.ww.to_parquet(str(tmpdir))
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
@@ -242,7 +248,7 @@ def test_to_parquet(sample_df, tmpdir):
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-def test_to_parquet_with_latlong(latlong_df, tmpdir):
+def test_to_parquet_with_latlong(latlong_df, tmpdir, use_both_dtypes):
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
     latlong_df.ww.to_parquet(str(tmpdir))
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
@@ -276,7 +282,7 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
-def test_to_csv_S3(sample_df, s3_client, s3_bucket):
+def test_to_csv_S3(sample_df, s3_client, s3_bucket, use_both_dtypes):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init(
@@ -294,7 +300,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket, use_both_dtypes):
     sample_df_pandas.ww.init()
     sample_df_pandas.ww.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
@@ -305,7 +311,7 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
+def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket, use_both_dtypes):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
@@ -318,7 +324,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
+def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket, use_both_dtypes):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init(
@@ -337,7 +343,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
+def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket, use_both_dtypes):
     sample_df_pandas.ww.init()
     sample_df_pandas.ww.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -347,7 +353,7 @@ def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
+def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket, use_both_dtypes):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
@@ -431,7 +437,7 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
-def test_deserialize_url_csv(sample_df_pandas):
+def test_deserialize_url_csv(sample_df_pandas, use_both_dtypes):
     sample_df_pandas.ww.init(index='id')
     deserialized_df = deserialize.read_woodwork_table(URL)
 
@@ -439,7 +445,7 @@ def test_deserialize_url_csv(sample_df_pandas):
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-def test_deserialize_url_csv_anon(sample_df_pandas):
+def test_deserialize_url_csv_anon(sample_df_pandas, use_both_dtypes):
     sample_df_pandas.ww.init(index='id')
     deserialized_df = deserialize.read_woodwork_table(URL, profile_name=False)
 
@@ -447,7 +453,7 @@ def test_deserialize_url_csv_anon(sample_df_pandas):
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-def test_deserialize_s3_csv(sample_df_pandas):
+def test_deserialize_s3_csv(sample_df_pandas, use_both_dtypes):
     sample_df_pandas.ww.init(index='id')
     deserialized_df = deserialize.read_woodwork_table(S3_URL)
 

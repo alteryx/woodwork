@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import woodwork as ww
 from woodwork.accessor_utils import init_series
 from woodwork.column_accessor import WoodworkColumnAccessor
 from woodwork.column_schema import ColumnSchema
@@ -36,7 +37,17 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-def test_accessor_init(sample_series):
+def convert_series_type(series):
+    if ww.config.get_option('use_nullable_dtypes'):
+        if ks and isinstance(series, ks.Series):
+            series = series.astype('string')
+        else:
+            series = series.astype('category')
+    return series
+
+
+def test_accessor_init(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     assert sample_series.ww._schema is None
     sample_series.ww.init()
     assert isinstance(sample_series.ww._schema, ColumnSchema)
@@ -44,27 +55,33 @@ def test_accessor_init(sample_series):
     assert sample_series.ww.semantic_tags == {'category'}
 
 
-def test_accessor_init_with_logical_type(sample_series):
-    series = sample_series.astype('string')
+def test_accessor_init_with_logical_type(sample_series, use_both_dtypes):
+    series = sample_series.astype(NaturalLanguage.primary_dtype)
     series.ww.init(logical_type=NaturalLanguage)
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = sample_series.astype('string')
+    series = sample_series.astype(NaturalLanguage.primary_dtype)
     series.ww.init(logical_type="natural_language")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = sample_series.astype('string')
+    series = sample_series.astype(NaturalLanguage.primary_dtype)
     series.ww.init(logical_type="NaturalLanguage")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
 
-def test_accessor_init_with_invalid_logical_type(sample_series):
-    series = sample_series.astype('object')
-    series_dtype = 'object'
-    correct_dtype = 'string'
+def test_accessor_init_with_invalid_logical_type(sample_series, use_both_dtypes):
+    if ww.config.get_option('use_nullable_dtypes'):
+        series = sample_series.astype('object')
+        series_dtype = 'object'
+        correct_dtype = 'string'
+    else:
+        series = sample_series.astype('string')
+        series_dtype = 'string'
+        correct_dtype = 'object'
+
     error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \
         f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before initializing " \
         "or use the woodwork.init_series function to initialize."
@@ -176,13 +193,14 @@ def test_description_error_on_update(sample_series):
         sample_series.ww.description = 123
 
 
-def test_accessor_repr(sample_series):
+def test_accessor_repr(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init(use_standard_tags=False)
     # Koalas doesn't support categorical
     if ks and isinstance(sample_series, ks.Series):
-        dtype = 'string'
+        dtype = Categorical.backup_dtype
     else:
-        dtype = 'category'
+        dtype = Categorical.primary_dtype
     assert sample_series.ww.__repr__() == f'<Series: sample_series (Physical Type = {dtype}) ' \
         '(Logical Type = Categorical) (Semantic Tags = set())>'
 
@@ -213,7 +231,7 @@ def test_set_semantic_tags_with_standard_tags(sample_series):
     assert sample_series.ww.semantic_tags == set(new_tags).union({'category'})
 
 
-def test_adds_numeric_standard_tag():
+def test_adds_numeric_standard_tag(use_both_dtypes):
     series = pd.Series([1, 2, 3])
     semantic_tags = 'custom_tag'
 
@@ -279,7 +297,8 @@ def test_set_logical_type_with_standard_tags(sample_series):
     assert new_series.ww.semantic_tags == {'category'}
 
 
-def test_set_logical_type_without_standard_tags(sample_series):
+def test_set_logical_type_without_standard_tags(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init(logical_type='Categorical',
                           semantic_tags='original_tag',
                           use_standard_tags=False)
@@ -290,33 +309,28 @@ def test_set_logical_type_without_standard_tags(sample_series):
     assert new_series.ww.semantic_tags == set()
 
 
-def test_set_logical_type_valid_dtype_change(sample_series):
-    sample_series.ww.init(logical_type='Categorical')
+def test_set_logical_type_valid_dtype_change(sample_df, use_both_dtypes):
+    sample_df.ww.init()
+    int_series = sample_df.ww['age']
 
-    new_series = sample_series.ww.set_logical_type('NaturalLanguage')
+    double_series = int_series.ww.set_logical_type('Double')
 
-    if ks and isinstance(sample_series, ks.Series):
-        # Koalas uses string dtype for Categorical
-        original_dtype = 'string'
-    else:
-        original_dtype = 'category'
-    new_dtype = 'string'
-
-    assert sample_series.ww.logical_type == Categorical
-    assert sample_series.dtype == original_dtype
-    assert new_series.ww.logical_type == NaturalLanguage
-    assert new_series.dtype == new_dtype
+    assert int_series.ww.logical_type == Integer
+    assert int_series.dtype == Integer.primary_dtype
+    assert double_series.ww.logical_type == Double
+    assert double_series.dtype == Double.primary_dtype
 
 
-def test_set_logical_type_invalid_dtype_change(sample_series):
+def test_set_logical_type_invalid_dtype_change(sample_series, use_both_dtypes):
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('Dask type conversion with astype does not fail until compute is called')
     if ks and isinstance(sample_series, ks.Series):
         pytest.xfail('Koalas allows this conversion, filling values it cannot convert with NaN '
                      'and converting dtype to float.')
     sample_series.ww.init(logical_type='Categorical')
+    dtype = Integer.primary_dtype
     error_message = "Error converting datatype for sample_series from type category to " \
-        "type Int64. Please confirm the underlying data is consistent with logical type Integer."
+        f"type {dtype}. Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_message):
         sample_series.ww.set_logical_type('Integer')
 
@@ -381,7 +395,8 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
         sample_series.ww.remove_semantic_tags('invalid_tagname')
 
 
-def test_series_methods_on_accessor(sample_series):
+def test_series_methods_on_accessor(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init()
 
     copied_series = sample_series.ww.copy()
@@ -390,7 +405,8 @@ def test_series_methods_on_accessor(sample_series):
     pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
 
 
-def test_series_methods_on_accessor_without_standard_tags(sample_series):
+def test_series_methods_on_accessor_without_standard_tags(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init(use_standard_tags=False)
 
     copied_series = sample_series.ww.copy()
@@ -399,7 +415,7 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
     pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
 
 
-def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
+def test_series_methods_on_accessor_returning_series_valid_schema(sample_series, use_both_dtypes):
     if ks and isinstance(sample_series, ks.Series):
         pytest.xfail('Running replace on Koalas series changes series dtype to object, invalidating schema')
     sample_series.ww.init()
@@ -410,26 +426,31 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     pd.testing.assert_series_equal(to_pandas(replace_series), to_pandas(sample_series.replace('a', 'd')))
 
 
-def test_series_methods_on_accessor_dtype_mismatch(sample_df):
-    ints_series = sample_df['id'].astype('Int64')
+def test_series_methods_on_accessor_dtype_mismatch(sample_df, use_both_dtypes):
+    convert_dtype = 'Int64'
+    ltype_dtype = 'int64'
+    if ww.config.get_option('use_nullable_dtypes'):
+        convert_dtype, ltype_dtype = ltype_dtype, convert_dtype
+    ints_series = sample_df['id'].astype(ltype_dtype)
     ints_series.ww.init()
 
     assert ints_series.ww.logical_type == Integer
-    assert str(ints_series.dtype) == 'Int64'
+    assert str(ints_series.dtype) == ltype_dtype
 
     warning = ("Operation performed by astype has invalidated the Woodwork typing information:\n "
-               "dtype mismatch between original dtype, Int64, and returned dtype, int64.\n "
+               f"dtype mismatch between original dtype, {ltype_dtype}, and returned dtype, {convert_dtype}.\n "
                "Please initialize Woodwork with Series.ww.init")
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
-        series = ints_series.ww.astype('int64')
+        series = ints_series.ww.astype(convert_dtype)
     assert series.ww._schema is None
 
 
-def test_series_methods_on_accessor_inplace(sample_series):
+def test_series_methods_on_accessor_inplace(sample_series, use_both_dtypes):
     # TODO: Try to find a supported inplace method for Dask, if one exists
     if dd and isinstance(sample_series, dd.Series):
         pytest.xfail('Dask does not support pop.')
-    comparison_series = sample_series.copy()
+    sample_series = convert_series_type(sample_series)
+    comparison_series = convert_series_type(sample_series.copy())
 
     sample_series.ww.init()
     comparison_series.ww.init()
@@ -440,13 +461,14 @@ def test_series_methods_on_accessor_inplace(sample_series):
     assert val == 'a'
 
 
-def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
+def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init()
 
     if ks and isinstance(sample_series, ks.Series):
         # Koalas uses `string` for Categorical, so must try a different conversion
-        original_type = 'string'
-        new_type = 'Int64'
+        original_type = Categorical.backup_dtype
+        new_type = 'float64'
     else:
         original_type = 'category'
         new_type = 'string'
@@ -461,7 +483,8 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
     assert new_series.ww._schema is None
 
 
-def test_series_methods_on_accessor_other_returns(sample_series):
+def test_series_methods_on_accessor_other_returns(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init()
     col_shape = sample_series.ww.shape
     series_shape = sample_series.shape
@@ -480,7 +503,8 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     assert series_nunique == ww_nunique
 
 
-def test_series_methods_on_accessor_new_schema_dict(sample_series):
+def test_series_methods_on_accessor_new_schema_dict(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
     sample_series.ww.init(semantic_tags=['new_tag', 'tag2'], metadata={'important_keys': [1, 2, 3]})
 
     copied_series = sample_series.ww.copy()
@@ -554,7 +578,7 @@ def test_ordinal_with_incomplete_ranking(sample_series):
         sample_series.ww.init(logical_type=ordinal_incomplete_order)
 
 
-def test_ordinal_with_nan_values():
+def test_ordinal_with_nan_values(use_both_dtypes):
     nan_series = pd.Series(['a', 'b', np.nan, 'a']).astype('category')
     ordinal_with_order = Ordinal(order=['a', 'b'])
     nan_series.ww.init(logical_type=ordinal_with_order)
@@ -562,13 +586,13 @@ def test_ordinal_with_nan_values():
     assert nan_series.ww.logical_type.order == ['a', 'b']
 
 
-def test_latlong_init_with_valid_series(latlongs):
+def test_latlong_init_with_valid_series(latlongs, use_both_dtypes):
     series = latlongs[0]
     series.ww.init(logical_type="LatLong")
     assert series.ww.logical_type == LatLong
 
 
-def test_latlong_init_error_with_invalid_series(latlongs):
+def test_latlong_init_error_with_invalid_series(latlongs, use_both_dtypes):
     series = latlongs[1]
     error_message = "Cannot initialize Woodwork. Series does not contain properly formatted " \
         "LatLong data. Try reformatting before initializing or use the " \
@@ -577,7 +601,7 @@ def test_latlong_init_error_with_invalid_series(latlongs):
         series.ww.init(logical_type="LatLong")
 
 
-def test_latlong_formatting_with_init_series(latlongs):
+def test_latlong_formatting_with_init_series(latlongs, use_both_dtypes):
     expected_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
     if dd and isinstance(latlongs[0], dd.Series):
         expected_series = dd.from_pandas(expected_series, npartitions=2)
@@ -592,7 +616,12 @@ def test_latlong_formatting_with_init_series(latlongs):
         assert expected_series.ww._schema == new_series.ww._schema
 
 
-def test_accessor_equality(sample_series, sample_datetime_series):
+def test_accessor_equality_non_nullable_dtypes(sample_series, sample_datetime_series, use_both_dtypes):
+    if ww.config.get_option('use_nullable_dtypes'):
+        sample_series = convert_series_type(sample_series)
+        dtype = 'string'
+    else:
+        dtype = 'object'
     # Check different parameters
     str_col = sample_series.copy()
     str_col.ww.init(logical_type='Categorical')
@@ -601,11 +630,11 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     str_col_diff_tags = sample_series.copy()
     str_col_diff_tags.ww.init(logical_type=Categorical, semantic_tags={'test'})
     if ks and isinstance(sample_datetime_series, ks.Series):
-        diff_name_col = sample_datetime_series.astype('string')
+        diff_name_col = sample_datetime_series.astype(dtype)
     else:
         diff_name_col = sample_datetime_series.astype('category')
     diff_name_col.ww.init(logical_type=Categorical)
-    diff_dtype_col = sample_series.astype('string')
+    diff_dtype_col = sample_series.astype(dtype)
     diff_dtype_col.ww.init(logical_type=NaturalLanguage)
     diff_description_col = sample_series.copy()
     diff_description_col.ww.init(logical_type='Categorical', description='description')
@@ -648,10 +677,10 @@ def test_accessor_equality(sample_series, sample_datetime_series):
     assert datetime_col_instantiated.ww == datetime_col_param.ww
 
     # Check different underlying series
-    str_col = sample_series.astype('string')
+    str_col = sample_series.astype(dtype)
     str_col.ww.init(logical_type='NaturalLanguage')
     changed_series = sample_series.copy().replace(to_replace='a', value='test')
-    changed_series = changed_series.astype('string')
+    changed_series = changed_series.astype(dtype)
     changed_series.ww.init(logical_type='NaturalLanguage')
 
     # We only check underlying data for equality with pandas dataframes
