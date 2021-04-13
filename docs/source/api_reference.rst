@@ -61,6 +61,7 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.semantic_tags
     WoodworkColumnAccessor.set_logical_type
     WoodworkColumnAccessor.set_semantic_tags
+    WoodworkColumnAccessor.use_standard_tags
 
 TableSchema
 ===========

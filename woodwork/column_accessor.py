@@ -161,6 +161,12 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         return self._schema.semantic_tags
 
+    @property
+    def use_standard_tags(self):
+        if self._schema is None:
+            _raise_init_error()
+        return self._schema.use_standard_tags
+
     def __eq__(self, other):
         if self._schema != other._schema:
             return False
@@ -172,12 +178,9 @@ class WoodworkColumnAccessor:
 
     def __getattr__(self, attr):
         # If the method is present on the Accessor, uses that method.
-        # If the method is present on TableSchema, uses that method.
         # If the method is present on Series, uses that method.
         if self._schema is None:
             _raise_init_error()
-        if hasattr(self._schema, attr):
-            return self._make_schema_call(attr)
         if hasattr(self._series, attr):
             return self._make_series_call(attr)
         else:
@@ -191,17 +194,6 @@ class WoodworkColumnAccessor:
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
-
-    def _make_schema_call(self, attr):
-        """Forwards the requested attribute onto the schema object.
-        Results are that of the Woodwork.ColumnSchema class."""
-        schema_attr = getattr(self._schema, attr)
-
-        if callable(schema_attr):
-            def wrapper(*args, **kwargs):
-                return schema_attr(*args, **kwargs)
-            return wrapper
-        return schema_attr
 
     def _make_series_call(self, attr):
         """Forwards the requested attribute onto the series object. Intercepts return value,

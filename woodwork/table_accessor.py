@@ -352,7 +352,7 @@ class WoodworkTableAccessor:
 
     @property
     def use_standard_tags(self):
-        """Whether standard tags are used for each column in the table"""
+        """A dictionary containing the use_standard_tags setting for each column in the table"""
         if self._schema is None:
             _raise_init_error()
         return self._schema.use_standard_tags
