@@ -615,7 +615,12 @@ def test_latlong_formatting_with_init_series(latlongs, use_both_dtypes):
         assert expected_series.ww._schema == new_series.ww._schema
 
 
-def test_accessor_equality(sample_series):
+def test_accessor_equality(sample_series, use_both_dtypes):
+    sample_series = convert_series_type(sample_series)
+    if ww.config.get_option('use_nullable_dtypes'):
+        dtype = 'string'
+    else:
+        dtype = 'object'
     # Check different parameters
     str_col = sample_series.copy()
     str_col.ww.init(logical_type='Categorical')
@@ -630,7 +635,7 @@ def test_accessor_equality(sample_series):
     diff_name_col.name = 'different_name'
     diff_name_col.ww.init(logical_type=Categorical)
 
-    diff_dtype_col = sample_series.astype('string')
+    diff_dtype_col = sample_series.astype(dtype)
     diff_dtype_col.ww.init(logical_type=NaturalLanguage)
 
     assert str_col.ww == str_col_2.ww
@@ -639,10 +644,10 @@ def test_accessor_equality(sample_series):
     assert str_col.ww != diff_dtype_col.ww
 
     # Check different underlying series
-    str_col = sample_series.astype('string')
+    str_col = sample_series.astype(dtype)
     str_col.ww.init(logical_type='NaturalLanguage')
     changed_series = sample_series.copy().replace(to_replace='a', value='test')
-    changed_series = changed_series.astype('string')
+    changed_series = changed_series.astype(dtype)
     changed_series.ww.init(logical_type='NaturalLanguage')
 
     # We only check underlying data for equality with pandas dataframes

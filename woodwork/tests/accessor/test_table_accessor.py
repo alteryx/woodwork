@@ -114,7 +114,7 @@ def test_check_use_standard_tags_errors():
         _check_use_standard_tags(1)
 
 
-def test_accessor_init(sample_df):
+def test_accessor_init(sample_df, use_both_dtypes):
     assert sample_df.ww.schema is None
     sample_df.ww.init()
     assert isinstance(sample_df.ww.schema, TableSchema)
