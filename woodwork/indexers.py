@@ -51,7 +51,7 @@ def _process_selection(selection, original_data):
                               semantic_tags=copy.deepcopy(schema.semantic_tags),
                               description=schema.description,
                               metadata=copy.deepcopy(schema.metadata),
-                              use_standard_tags=original_data.ww.use_standard_tags)
+                              use_standard_tags=schema.use_standard_tags)
     elif _is_dataframe(selection):
         # Selecting a new DataFrame from an existing DataFrame
         schema = original_data.ww.schema

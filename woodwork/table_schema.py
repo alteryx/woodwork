@@ -25,7 +25,7 @@ class TableSchema(object):
                  semantic_tags=None,
                  table_metadata=None,
                  column_metadata=None,
-                 use_standard_tags=True,
+                 use_standard_tags=False,
                  column_descriptions=None,
                  validate=True):
         """Create TableSchema
@@ -50,8 +50,11 @@ class TableSchema(object):
             table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the TableSchema.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
-            use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
-                on the specified logical type for the column. Defaults to True.
+            use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
+                added to columns based on the specified logical type for the column.
+                If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
+                A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
+                Unspecified columns will use the default value. Defaults to False.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
@@ -60,10 +63,16 @@ class TableSchema(object):
         if validate:
             # Check that inputs are valid
             _validate_params(column_names, name, index, time_index, logical_types,
-                             table_metadata, column_metadata, semantic_tags, column_descriptions)
+                             table_metadata, column_metadata, semantic_tags, column_descriptions,
+                             use_standard_tags)
 
         self.name = name
-        self.use_standard_tags = use_standard_tags
+
+        # use_standard_tags should be a dictionary mapping each column to its boolean
+        if isinstance(use_standard_tags, bool):
+            use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
+        else:
+            use_standard_tags = {**{col_name: False for col_name in column_names}, **use_standard_tags}
 
         # Infer logical types and create columns
         self.columns = self._create_columns(column_names,
@@ -87,8 +96,6 @@ class TableSchema(object):
         if self.index != other.index:
             return False
         if self.time_index != other.time_index:
-            return False
-        if self.use_standard_tags != other.use_standard_tags:
             return False
         if self.columns != other.columns:
             return False
@@ -154,6 +161,10 @@ class TableSchema(object):
                 return col_name
         return None
 
+    @property
+    def use_standard_tags(self):
+        return {col_name: col.use_standard_tags for col_name, col in self.columns.items()}
+
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
         updating the TableSchema at those columns.
@@ -184,11 +195,11 @@ class TableSchema(object):
             # Get new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
             if new_semantic_tags is None:
-                new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags)
+                new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags[col_name])
             else:
                 new_semantic_tags = _set_semantic_tags(new_semantic_tags,
                                                        self.logical_types[col_name].standard_tags,
-                                                       self.use_standard_tags)
+                                                       self.use_standard_tags[col_name])
                 _validate_not_setting_index_tags(new_semantic_tags, col_name)
 
             # Update the tags for the TableSchema
@@ -232,10 +243,10 @@ class TableSchema(object):
                                                       self.semantic_tags[col_name],
                                                       col_name,
                                                       standard_tags,
-                                                      self.use_standard_tags)
+                                                      self.use_standard_tags[col_name])
             # If the index is removed, reinsert any standard tags not explicitly removed
             original_tags = self.semantic_tags[col_name]
-            if self.use_standard_tags and 'index' in original_tags and 'index' not in new_semantic_tags:
+            if self.use_standard_tags[col_name] and 'index' in original_tags and 'index' not in new_semantic_tags:
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
                 standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
                 new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
@@ -264,7 +275,7 @@ class TableSchema(object):
 
         for col_name in columns:
             original_tags = self.semantic_tags[col_name]
-            new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags)
+            new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags[col_name])
             self.columns[col_name].semantic_tags = new_semantic_tags
 
             if retain_index_tags and 'index' in original_tags:
@@ -293,7 +304,7 @@ class TableSchema(object):
 
             columns[name] = ColumnSchema(logical_type=logical_types.get(name),
                                          semantic_tags=semantic_tags_for_col,
-                                         use_standard_tags=use_standard_tags,
+                                         use_standard_tags=use_standard_tags.get(name),
                                          description=description,
                                          metadata=metadata_for_col,
                                          validate=validate)
@@ -483,7 +494,7 @@ class TableSchema(object):
                            index=new_index,
                            time_index=new_time_index,
                            semantic_tags=copy.deepcopy(new_semantic_tags),
-                           use_standard_tags=self.use_standard_tags,
+                           use_standard_tags=self.use_standard_tags.copy(),
                            table_metadata=copy.deepcopy(self.metadata),
                            column_metadata=copy.deepcopy(new_column_metadata),
                            column_descriptions=new_column_descriptions,
@@ -491,9 +502,10 @@ class TableSchema(object):
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,
-                     table_metadata, column_metadata, semantic_tags, column_descriptions):
+                     table_metadata, column_metadata, semantic_tags, column_descriptions, use_standard_tags):
     """Check that values supplied during TableSchema initialization are valid"""
     _check_column_names(column_names)
+    _check_use_standard_tags(column_names, use_standard_tags)
     if name and not isinstance(name, str):
         raise TypeError('TableSchema name must be a string')
     if index is not None:
@@ -591,6 +603,20 @@ def _check_column_metadata(column_names, column_metadata):
     if cols_not_found:
         raise LookupError('column_metadata contains columns that do not exist: '
                           f'{sorted(list(cols_not_found))}')
+
+
+def _check_use_standard_tags(column_names, use_standard_tags):
+    if not isinstance(use_standard_tags, (dict, bool)):
+        raise TypeError('use_standard_tags must be a dictionary or a boolean')
+    if isinstance(use_standard_tags, dict):
+        cols_not_found = set(use_standard_tags.keys()).difference(set(column_names))
+        if cols_not_found:
+            raise LookupError('use_standard_tags contains columns that do not exist: '
+                              f'{sorted(list(cols_not_found))}')
+
+        for col_name, use_standard_tags_for_col in use_standard_tags.items():
+            if not isinstance(use_standard_tags_for_col, bool):
+                raise TypeError(f"use_standard_tags for column {col_name} must be a boolean")
 
 
 def _validate_not_setting_index_tags(semantic_tags, col_name):

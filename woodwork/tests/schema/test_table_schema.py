@@ -47,7 +47,11 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     sample_column_names.append('formatted_date')
 
     ymd_format = Datetime(datetime_format='%Y~%m~%d')
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, 'formatted_date': ymd_format})
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, 'formatted_date': ymd_format},
+        use_standard_tags=True
+    )
 
     returned_types = schema.types
     assert isinstance(returned_types, pd.DataFrame)
@@ -146,7 +150,7 @@ def test_schema_equality(sample_column_names, sample_inferred_logical_types):
 
 
 def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, use_standard_tags=True)
     no_standard_tags_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                                           use_standard_tags=False)
 
@@ -188,7 +192,8 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
     schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                          time_index='signup_date',
                          index='id',
-                         name='df_name')
+                         name='df_name',
+                         use_standard_tags=True)
 
     filtered = schema._filter_cols(include=Datetime)
     assert filtered == ['signup_date']
@@ -215,7 +220,8 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
     schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                          time_index='signup_date',
                          index='id',
-                         name='df_name')
+                         name='df_name',
+                         use_standard_tags=True)
 
     filtered = schema._filter_cols(exclude=Datetime)
     assert 'signup_date' not in filtered
@@ -313,7 +319,11 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
 
 
 def test_filter_schema_non_string_cols():
-    schema = TableSchema(column_names=[0, 1, 2, 3], logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double})
+    schema = TableSchema(
+        column_names=[0, 1, 2, 3],
+        logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double},
+        use_standard_tags=True
+    )
 
     filter_types_and_tags = schema._filter_cols(include=[Integer, 'category'])
     assert filter_types_and_tags == [0, 1]
@@ -758,7 +768,7 @@ def test_removes_time_index_via_tags(sample_column_names, sample_inferred_logica
 
 
 def test_set_index(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, use_standard_tags=True)
     assert schema.index is None
     assert schema.semantic_tags['id'] == {'numeric'}
     assert schema.semantic_tags['age'] == {'numeric'}
@@ -787,7 +797,7 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
 
 
 def test_set_time_index(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, use_standard_tags=True)
     assert schema.time_index is None
     assert schema.semantic_tags['age'] == {'numeric'}
     assert schema.semantic_tags['signup_date'] == set()

@@ -25,12 +25,15 @@ Release Notes
         * Make ``logical_type`` and ``name`` params to ``_get_column_dict`` optional (:pr:`786`)
         * Rename Schema object and files to match new table-column schema structure (:pr:`789`)
         * Store column typing information in a ``ColumnSchema`` object instead of a dictionary (:pr:`791`)
+        * ``TableSchema`` does not use standard tags by default (:pr:`806`)
+        * Store ``use_standard_tags`` on the ``ColumnSchema`` instead of the ``TableSchema`` (:pr:`809`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
-        * Update spark config for docs build (:pr:`787`, :pr:`801`)
+        * Update spark config for docs build (:pr:`787`, :pr:`801`, :pr:`810`)
     * Testing Changes
         * Add unit tests against minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
         * Update spark config for test fixtures (:pr:`787`)
+        * Separate latest unit tests into pandas, dask, koalas (:pr:`813`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`

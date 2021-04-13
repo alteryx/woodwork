@@ -21,6 +21,7 @@ from woodwork.table_schema import (
     _check_semantic_tags,
     _check_table_metadata,
     _check_time_index,
+    _check_use_standard_tags,
     _validate_params
 )
 
@@ -36,7 +37,8 @@ def test_validate_params_errors(sample_column_names):
                          table_metadata=None,
                          column_metadata=None,
                          semantic_tags=None,
-                         column_descriptions=None)
+                         column_descriptions=None,
+                         use_standard_tags=False)
 
 
 def test_check_index_errors(sample_column_names):
@@ -162,6 +164,20 @@ def test_check_column_description_errors(sample_column_names):
         _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
 
 
+def test_check_use_standard_tags_errors(sample_column_names):
+    error_message = 'use_standard_tags must be a dictionary or a boolean'
+    with pytest.raises(TypeError, match=error_message):
+        _check_use_standard_tags(sample_column_names, use_standard_tags=1)
+
+    error_message = re.escape("use_standard_tags contains columns that do not exist: ['invalid_col']")
+    with pytest.raises(LookupError, match=error_message):
+        _check_use_standard_tags(sample_column_names, use_standard_tags={'invalid_col': True})
+
+    error_message = "use_standard_tags for column id must be a boolean"
+    with pytest.raises(TypeError, match=error_message):
+        _check_use_standard_tags(sample_column_names, use_standard_tags={'id': 1})
+
+
 def test_schema_init(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
@@ -195,16 +211,24 @@ def test_schema_init_with_name_and_indices(sample_column_names, sample_inferred_
 
 def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_logical_types):
     # Set a numeric time index on init
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': Integer}},
-                         time_index='signup_date')
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, **{'signup_date': Integer}},
+        time_index='signup_date',
+        use_standard_tags=True
+    )
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
     assert date_col.logical_type == Integer
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'signup_date': Double}},
-                         time_index='signup_date')
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, **{'signup_date': Double}},
+        time_index='signup_date',
+        use_standard_tags=True
+    )
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
     assert date_col.logical_type == Double
@@ -265,8 +289,12 @@ def test_schema_init_with_semantic_tags(sample_column_names, sample_inferred_log
 
 
 def test_schema_adds_standard_semantic_tags(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **{'id': Categorical}},
-                         name='schema')
+    schema = TableSchema(
+        sample_column_names,
+        logical_types={**sample_inferred_logical_types, **{'id': Categorical}},
+        use_standard_tags=True,
+        name='schema'
+    )
 
     assert schema.semantic_tags['id'] == {'category'}
     assert schema.semantic_tags['age'] == {'numeric'}
@@ -317,7 +345,7 @@ def test_semantic_tag_errors(sample_column_names, sample_inferred_logical_types)
 
 
 def test_index_replacing_standard_tags(sample_column_names, sample_inferred_logical_types):
-    schema = TableSchema(sample_column_names, sample_inferred_logical_types)
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, use_standard_tags=True)
     assert schema.columns['id'].semantic_tags == {'numeric'}
 
     schema = TableSchema(sample_column_names, sample_inferred_logical_types, index='id')
@@ -385,3 +413,50 @@ def test_validation_methods_called(mock_validate_params, mock_check_index,
     assert mock_validate_not_setting_index.called
 
     assert validated_schema == not_validated_schema
+
+
+def test_use_standard_tags_from_bool(sample_column_names, sample_inferred_logical_types):
+    standard_tags_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                       use_standard_tags=True)
+    assert set(standard_tags_schema.columns.keys()) == set(standard_tags_schema.use_standard_tags.keys())
+    assert all([*standard_tags_schema.use_standard_tags.values()])
+    assert standard_tags_schema.semantic_tags['id'] == {'numeric'}
+
+    no_standard_tags_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                          use_standard_tags=False)
+    assert set(no_standard_tags_schema.columns.keys()) == set(no_standard_tags_schema.use_standard_tags.keys())
+    assert not any([*no_standard_tags_schema.use_standard_tags.values()])
+    assert no_standard_tags_schema.semantic_tags['id'] == set()
+
+
+def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logical_types):
+    default_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                 use_standard_tags={col_name: False for col_name in sample_column_names})
+    assert default_schema.use_standard_tags == {col_name: False for col_name in sample_column_names}
+
+    use_standard_tags = {'id': True,
+                         'full_name': False,
+                         'email': True,
+                         'phone_number': True,
+                         'age': False,
+                         'signup_date': True,
+                         'is_registered': False}
+    full_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                   use_standard_tags=use_standard_tags)
+    assert full_dict_schema.use_standard_tags == use_standard_tags
+
+    partial_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                      use_standard_tags={'id': True,
+                                                         'email': True,
+                                                         'phone_number': True,
+                                                         'signup_date': True})
+    assert full_dict_schema.use_standard_tags == partial_dict_schema.use_standard_tags
+    assert full_dict_schema == partial_dict_schema
+
+    partial_dict_default_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                              use_standard_tags={'id': False,
+                                                                 'email': False,
+                                                                 'phone_number': False,
+                                                                 'signup_date': False})
+    assert default_schema.use_standard_tags == partial_dict_default_schema.use_standard_tags
+    assert default_schema == partial_dict_default_schema

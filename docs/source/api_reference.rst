@@ -38,6 +38,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.to_parquet
     WoodworkTableAccessor.to_pickle
     WoodworkTableAccessor.types
+    WoodworkTableAccessor.use_standard_tags
     WoodworkTableAccessor.value_counts
 
 WoodworkColumnAccessor
@@ -60,6 +61,7 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.semantic_tags
     WoodworkColumnAccessor.set_logical_type
     WoodworkColumnAccessor.set_semantic_tags
+    WoodworkColumnAccessor.use_standard_tags
 
 TableSchema
 ===========
@@ -81,6 +83,7 @@ TableSchema
     TableSchema.set_types
     TableSchema.time_index
     TableSchema.types
+    TableSchema.use_standard_tags
 
 Serialization
 =============

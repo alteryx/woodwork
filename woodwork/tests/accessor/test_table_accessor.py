@@ -10,7 +10,6 @@ from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNotPresentError,
     ParametersIgnoredWarning,
-    StandardTagsChangedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
 )
@@ -39,6 +38,7 @@ from woodwork.table_accessor import (
     _check_logical_types,
     _check_time_index,
     _check_unique_column_names,
+    _check_use_standard_tags,
     _get_invalid_schema_message
 )
 from woodwork.table_schema import TableSchema
@@ -108,7 +108,13 @@ def test_check_unique_column_names_errors(sample_df):
         _check_unique_column_names(duplicate_cols_df)
 
 
-def test_accessor_init(sample_df, use_both_dtypes):
+def test_check_use_standard_tags_errors():
+    error_message = 'use_standard_tags must be a dictionary or a boolean'
+    with pytest.raises(TypeError, match=error_message):
+        _check_use_standard_tags(1)
+
+
+def test_accessor_init(sample_df):
     assert sample_df.ww.schema is None
     sample_df.ww.init()
     assert isinstance(sample_df.ww.schema, TableSchema)
@@ -1994,7 +2000,7 @@ def test_accessor_schema_properties(sample_df, use_both_dtypes):
     sample_df.ww.init(index='id',
                       time_index='signup_date')
 
-    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index']
+    schema_properties = ['logical_types', 'semantic_tags', 'index', 'time_index', 'use_standard_tags']
     for schema_property in schema_properties:
         prop_from_accessor = getattr(sample_df.ww, schema_property)
         prop_from_schema = getattr(sample_df.ww.schema, schema_property)
@@ -2071,7 +2077,8 @@ def test_setitem_new_column(sample_df, use_both_dtypes):
     assert 'test_col2' in df.columns
     assert 'test_col2' in df.ww._schema.columns.keys()
     assert df.ww['test_col2'].ww.logical_type == Integer
-    assert df.ww['test_col2'].ww.semantic_tags == set()
+    assert df.ww['test_col2'].ww.use_standard_tags is True
+    assert df.ww['test_col2'].ww.semantic_tags == {'numeric'}
     assert df.ww['test_col2'].name == 'test_col2'
     assert df.ww['test_col2'].dtype == dtype
 
@@ -2089,6 +2096,7 @@ def test_setitem_new_column(sample_df, use_both_dtypes):
     df.ww['test_col3'] = new_series
     assert 'test_col3' in df.ww.columns
     assert df.ww['test_col3'].ww.logical_type == Double
+    assert df.ww['test_col3'].ww.use_standard_tags is False
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
     assert df.ww['test_col3'].dtype == 'float'
@@ -2108,6 +2116,7 @@ def test_setitem_new_column(sample_df, use_both_dtypes):
     df.ww['test_col'] = new_series
     assert 'test_col' in df.ww.columns
     assert df.ww['test_col'].ww.logical_type == Categorical
+    assert df.ww['test_col'].ww.use_standard_tags is True
     assert df.ww['test_col'].ww.semantic_tags == {'category'}
     assert df.ww['test_col'].name == 'test_col'
     assert df.ww['test_col'].dtype == dtype
@@ -2150,14 +2159,13 @@ def test_setitem_overwrite_column(sample_df, use_both_dtypes):
         semantic_tags='test_tag',
     )
 
-    match = 'Standard tags have been added to "full_name"'
-    with pytest.warns(StandardTagsChangedWarning, match=match):
-        df.ww['full_name'] = new_series
+    df.ww['full_name'] = new_series
 
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Double
-    assert df.ww['full_name'].ww.semantic_tags == {'test_tag', 'numeric'}
+    assert df.ww['full_name'].ww.use_standard_tags is False
+    assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
     assert df.ww['full_name'].dtype == 'float'
     assert original_col is not df.ww['full_name']
 
@@ -2175,14 +2183,13 @@ def test_setitem_overwrite_column(sample_df, use_both_dtypes):
         semantic_tags='test_tag',
     )
 
-    match = 'Standard tags have been removed from your column'
-    with pytest.warns(StandardTagsChangedWarning, match=match):
-        df.ww['full_name'] = new_series
+    df.ww['full_name'] = new_series
 
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
     assert df.ww['full_name'].ww.logical_type == Double
-    assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
+    assert df.ww['full_name'].ww.use_standard_tags is True
+    assert df.ww['full_name'].ww.semantic_tags == {'test_tag', 'numeric'}
     assert df.ww['full_name'].dtype == 'float'
     assert original_col is not df.ww['full_name']
 
