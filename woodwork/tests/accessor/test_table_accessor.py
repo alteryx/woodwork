@@ -1788,7 +1788,7 @@ def test_set_types(sample_df, use_both_dtypes):
     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
 
     sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
-    assert sample_df['is_registered'].dtype == 'Int64'
+    assert sample_df['is_registered'].dtype == Integer.primary_dtype
 
     sample_df.ww.set_types(semantic_tags={'signup_date': ['new_tag']},
                            logical_types={'full_name': 'Categorical'},
