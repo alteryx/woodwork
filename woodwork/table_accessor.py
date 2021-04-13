@@ -205,12 +205,10 @@ class WoodworkTableAccessor:
         series = self._dataframe[key]
         column = copy.deepcopy(self._schema.columns[key])
         column.semantic_tags -= {'index', 'time_index'}
+        if column.use_standard_tags:
+            column.semantic_tags |= column.logical_type.standard_tags
 
-        series.ww.init(logical_type=column.logical_type,
-                       semantic_tags=copy.deepcopy(column.semantic_tags),
-                       description=column.description,
-                       metadata=copy.deepcopy(column.metadata),
-                       use_standard_tags=self.use_standard_tags[key])
+        series.ww.init(schema=column)
 
         return series
 
@@ -664,12 +662,7 @@ class WoodworkTableAccessor:
         series = self._dataframe.pop(column_name)
 
         # Initialize Woodwork typing info for series
-        col_schema = self._schema.columns[column_name]
-        series.ww.init(logical_type=col_schema.logical_type,
-                       semantic_tags=copy.deepcopy(col_schema.semantic_tags),
-                       description=col_schema.description,
-                       metadata=copy.deepcopy(col_schema.metadata),
-                       use_standard_tags=self.use_standard_tags[column_name])
+        series.ww.init(schema=self.schema.columns[column_name])
 
         # Update schema to not include popped column
         del self._schema.columns[column_name]
