@@ -31,6 +31,7 @@ Release Notes
     * Testing Changes
         * Add unit tests against minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
         * Update spark config for test fixtures (:pr:`787`)
+        * Separate latest unit tests into pandas, dask, koalas (:pr:`813`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
