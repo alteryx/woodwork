@@ -418,7 +418,10 @@ def test_describe_accessor_method(describe_df, use_both_dtypes):
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
-    expected_dtype = NaturalLanguage.primary_dtype
+    if ks and isinstance(category_data, ks.DataFrame):
+        expected_dtype = NaturalLanguage.backup_dtype
+    else:
+        expected_dtype = NaturalLanguage.primary_dtype
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,

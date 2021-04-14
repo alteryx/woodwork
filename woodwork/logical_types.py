@@ -10,6 +10,11 @@ NEW_TO_OLD = {
     'string': 'object',
 }
 
+NEW_TO_OLD_BACKUP = {
+    'Int64': 'int64',
+    'boolean': 'bool',
+}
+
 
 class ClassNameDescriptor(object):
     """Descriptor to convert a class's name from camelcase to snakecase"""
@@ -35,7 +40,7 @@ class LogicalTypeMetaClass(type):
         if ww.config.get_option('use_nullable_dtypes'):
             return cls._backup_dtype
         else:
-            return NEW_TO_OLD.get(cls._backup_dtype, cls._backup_dtype)
+            return NEW_TO_OLD_BACKUP.get(cls._backup_dtype, cls._backup_dtype)
 
 
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
@@ -169,6 +174,7 @@ class EmailAddress(LogicalType):
              "team@example.com"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class Filepath(LogicalType):
@@ -183,6 +189,7 @@ class Filepath(LogicalType):
              "/tmp"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class PersonFullName(LogicalType):
@@ -197,6 +204,7 @@ class PersonFullName(LogicalType):
              "James Brown"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class IPAddress(LogicalType):
@@ -211,6 +219,7 @@ class IPAddress(LogicalType):
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class LatLong(LogicalType):
@@ -247,6 +256,7 @@ class NaturalLanguage(LogicalType):
              "When will humans go to mars?"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class Ordinal(LogicalType):
@@ -298,6 +308,7 @@ class PhoneNumber(LogicalType):
              "5551235495"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class SubRegionCode(LogicalType):
@@ -340,6 +351,7 @@ class URL(LogicalType):
              "example.com"]
     """
     _primary_dtype = 'string'
+    _backup_dtype = 'string'
 
 
 class PostalCode(LogicalType):

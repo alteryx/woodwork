@@ -23,11 +23,10 @@ ks = import_or_none('databricks.koalas')
 def test_init_series_valid_conversion_specified_ltype(sample_series, use_both_dtypes):
     if ks and isinstance(sample_series, ks.Series):
         sample_series = sample_series.astype('str')
+    elif ww.config.get_option('use_nullable_dtypes'):
+        sample_series = sample_series.astype('object')
     else:
-        if ww.config.get_option('use_nullable_dtypes'):
-            sample_series = sample_series.astype('object')
-        else:
-            sample_series = sample_series.astype('string')
+        sample_series = sample_series.astype('string')
 
     series = init_series(sample_series, logical_type='categorical')
     assert series is not sample_series
@@ -45,10 +44,7 @@ def test_init_series_valid_conversion_specified_ltype(sample_series, use_both_dt
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series, use_both_dtypes):
-    if ks and isinstance(sample_series, ks.Series):
-        sample_series = sample_series.astype('str')
-    else:
-        sample_series = sample_series.astype('object')
+    sample_series = sample_series.astype('U0')
 
     series = init_series(sample_series)
     assert series is not sample_series

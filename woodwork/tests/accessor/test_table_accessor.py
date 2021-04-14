@@ -1152,12 +1152,12 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df, use_both_dtypes):
 
     int_df = Integer.primary_dtype
     bool_df = Boolean.primary_dtype
-    str_df = NaturalLanguage.primary_dtype
     if ks and isinstance(schema_df, ks.DataFrame):
-        # Koalas uses dtype of object for Categorical
         cat_df = Categorical.backup_dtype
+        str_df = NaturalLanguage.backup_dtype
     else:
         cat_df = Categorical.primary_dtype
+        str_df = NaturalLanguage.primary_dtype
 
     if ww.config.get_option('use_nullable_dtypes'):
         int_new = 'int64'
@@ -1167,8 +1167,12 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df, use_both_dtypes):
     else:
         int_new = 'Int64'
         bool_new = 'boolean'
-        str_new = 'string'
-        cat_new = 'string'
+        if ks and isinstance(schema_df, ks.DataFrame):
+            cat_new = '<U0'
+            str_new = '<U0'
+        else:
+            cat_new = 'string'
+            str_new = 'string'
 
     incorrect_int_dtype_df = schema_df.ww.astype({'id': int_new})
     incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': bool_new})
@@ -1315,6 +1319,9 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df, use_both_dtypes)
 def test_dataframe_methods_on_accessor_to_pandas(sample_df, use_both_dtypes):
     if isinstance(sample_df, pd.DataFrame):
         pytest.skip("No need to test converting pandas DataFrame to pandas")
+
+    if ks and isinstance(sample_df, ks.DataFrame) and not ww.config.get_option('use_nullable_dtypes'):
+        pytest.xfail("Koalas and pandas use different dtypes for natural language with non-nullable dtypes")
 
     sample_df.ww.init(name='woodwork', index='id')
 
@@ -2274,7 +2281,10 @@ def test_accessor_types(sample_df, use_both_dtypes):
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
 
-    string_dtype = NaturalLanguage.primary_dtype
+    if ks and isinstance(sample_df, ks.DataFrame):
+        string_dtype = NaturalLanguage.backup_dtype
+    else:
+        string_dtype = NaturalLanguage.primary_dtype
     boolean_dtype = Boolean.primary_dtype
     int_dtype = Integer.primary_dtype
 

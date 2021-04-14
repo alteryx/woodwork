@@ -117,7 +117,7 @@ def sample_series_dask(sample_series_pandas):
 @pytest.fixture()
 def sample_series_koalas(sample_series_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    return ks.from_pandas(sample_series_pandas.astype(Categorical.backup_dtype))
+    return ks.from_pandas(sample_series_pandas.astype('object')).astype(Categorical.backup_dtype)
 
 
 @pytest.fixture(params=['sample_datetime_series_pandas', 'sample_datetime_series_dask', 'sample_datetime_series_koalas'])

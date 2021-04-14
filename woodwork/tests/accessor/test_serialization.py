@@ -63,10 +63,11 @@ def test_to_dictionary(sample_df, use_both_dtypes):
 
     if ks and isinstance(sample_df, ks.DataFrame):
         cat_val = Categorical.backup_dtype
+        string_val = NaturalLanguage.backup_dtype
     else:
         cat_val = Categorical.primary_dtype
+        string_val = NaturalLanguage.primary_dtype
     int_val = Integer.primary_dtype
-    string_val = NaturalLanguage.primary_dtype
     bool_val = Boolean.primary_dtype
 
     expected = {'schema_version': '8.0.0',

@@ -55,24 +55,33 @@ def test_accessor_init(sample_series, use_both_dtypes):
 
 
 def test_accessor_init_with_logical_type(sample_series, use_both_dtypes):
-    series = sample_series.astype(NaturalLanguage.primary_dtype)
+    if ks and isinstance(sample_series, ks.Series):
+        dtype = NaturalLanguage.backup_dtype
+    else:
+        dtype = NaturalLanguage.primary_dtype
+
+    series = sample_series.astype(dtype)
     series.ww.init(logical_type=NaturalLanguage)
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = sample_series.astype(NaturalLanguage.primary_dtype)
+    series = sample_series.astype(dtype)
     series.ww.init(logical_type="natural_language")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
-    series = sample_series.astype(NaturalLanguage.primary_dtype)
+    series = sample_series.astype(dtype)
     series.ww.init(logical_type="NaturalLanguage")
     assert series.ww.logical_type == NaturalLanguage
     assert series.ww.semantic_tags == set()
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series, use_both_dtypes):
-    if ww.config.get_option('use_nullable_dtypes'):
+    if ks and isinstance(sample_series, ks.Series):
+        series = sample_series.astype('<U0')
+        series_dtype = '<U0'
+        correct_dtype = 'string'
+    elif ww.config.get_option('use_nullable_dtypes'):
         series = sample_series.astype('object')
         series_dtype = 'object'
         correct_dtype = 'string'
@@ -80,7 +89,6 @@ def test_accessor_init_with_invalid_logical_type(sample_series, use_both_dtypes)
         series = sample_series.astype('string')
         series_dtype = 'string'
         correct_dtype = 'object'
-
     error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \
         f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before initializing " \
         "or use the woodwork.init_series function to initialize."
@@ -617,7 +625,8 @@ def test_latlong_formatting_with_init_series(latlongs, use_both_dtypes):
 
 def test_accessor_equality(sample_series, use_both_dtypes):
     sample_series = convert_series_type(sample_series)
-    if ww.config.get_option('use_nullable_dtypes'):
+    if (ww.config.get_option('use_nullable_dtypes') or
+            (ks and isinstance(sample_series, ks.Series))):
         dtype = 'string'
     else:
         dtype = 'object'
