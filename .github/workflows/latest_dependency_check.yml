@@ -14,17 +14,21 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8.x'
-    - name: Update dependencies
+    - name: Install woodwork dependencies and test dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install -e .
         python -m pip install -r test-requirements.txt
-    - name: Update koalas dependencies
+    - name: Update latest core dependencies
+      run: |
+        make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_core_dependencies.txt
+        cat woodwork/tests/latest_core_dependencies.txt
+    - name: Update latest koalas dependencies
       run: |
         python -m pip install -r koalas-requirements.txt
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_koalas_dependencies.txt
         cat woodwork/tests/latest_koalas_dependencies.txt
-    - name: Update dask dependencies
+    - name: Update latest dask dependencies
       run: |
         python -m pip install -r dask-requirements.txt
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_dask_dependencies.txt
