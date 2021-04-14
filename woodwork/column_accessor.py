@@ -53,7 +53,7 @@ class WoodworkColumnAccessor:
                 based on the inferred or specified logical type of the series. Defaults to True.
             description (str, optional): Optional text describing the contents of the series.
             metadata (dict[str -> json serializable], optional): Metadata associated with the series.
-            schema (Woodwork.TableSchema, optional): Typing information to use for the Series instead of performing inference.
+            schema (Woodwork.ColumnSchema, optional): Typing information to use for the Series instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the Series. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between Series.
