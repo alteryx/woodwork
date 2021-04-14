@@ -18,7 +18,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -e .
+    - name: Update latest test dependencies
+      run: |
         python -m pip install -r test-requirements.txt
+        make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_test_dependencies.txt
+        cat woodwork/tests/latest_test_dependencies.txt
     - name: Update latest core dependencies
       run: |
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_core_dependencies.txt
