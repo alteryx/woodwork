@@ -61,6 +61,15 @@ class ColumnSchema(object):
 
         return True
 
+    def __repr__(self):
+        msg = "<ColumnSchema"
+        if self.logical_type is not None:
+            msg += u" (Logical Type = {})".format(self.logical_type)
+        if self.semantic_tags:
+            msg += u" (Semantic Tags = {})".format(sorted(list(self.semantic_tags)))
+        msg += ">"
+        return msg
+
 
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
