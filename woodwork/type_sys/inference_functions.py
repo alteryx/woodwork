@@ -45,7 +45,7 @@ def double_func(series):
 
 
 def boolean_func(series):
-    if pdtypes.is_bool_dtype(series.dtype):
+    if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(series.dtype):
         return True
     return False
 
