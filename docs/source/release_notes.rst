@@ -35,6 +35,7 @@ Release Notes
         * Update spark config for test fixtures (:pr:`787`)
         * Separate latest unit tests into pandas, dask, koalas (:pr:`813`)
         * Update latest dependency checker to generate separate core, koalas, and dask dependencies (:pr:`815`, :pr:`825`)
+        * Ignore latest dependency branch when checking for updates to the release notes (:pr:`827`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
