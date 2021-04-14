@@ -9,6 +9,7 @@ from woodwork.column_accessor import WoodworkColumnAccessor
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     DuplicateTagsWarning,
+    ParametersIgnoredWarning,
     StandardTagsChangedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
@@ -41,6 +42,68 @@ def test_accessor_init(sample_series):
     assert isinstance(sample_series.ww._schema, ColumnSchema)
     assert sample_series.ww.logical_type == Categorical
     assert sample_series.ww.semantic_tags == {'category'}
+
+
+def test_accessor_init_with_schema(sample_series):
+    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    schema = sample_series.ww.schema
+
+    head_series = sample_series.head(2)
+    assert head_series.ww.schema is None
+    head_series.ww.init(schema=schema)
+
+    assert head_series.ww._schema is schema
+    assert head_series.ww.description == 'this is a column'
+    assert head_series.ww.semantic_tags == {'test_tag', 'category'}
+
+    iloc_series = sample_series.loc[[2, 3]]
+    assert iloc_series.ww.schema is None
+    iloc_series.ww.init(schema=schema)
+
+    assert iloc_series.ww._schema is schema
+    assert iloc_series.ww.description == 'this is a column'
+    assert iloc_series.ww.semantic_tags == {'test_tag', 'category'}
+    assert iloc_series.ww.logical_type == Categorical
+
+
+def test_accessor_init_with_schema_errors(sample_series):
+    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    schema = sample_series.ww.schema
+
+    head_series = sample_series.head(2)
+    assert head_series.ww.schema is None
+
+    error = 'Provided schema must be a Woodwork.ColumnSchema object.'
+    with pytest.raises(TypeError, match=error):
+        head_series.ww.init(schema=int)
+
+    ltype_dtype = 'category'
+    if ks and isinstance(sample_series, ks.Series):
+        ltype_dtype = 'string'
+    error = f"dtype mismatch between Series dtype object, and Categorical dtype, {ltype_dtype}"
+
+    diff_dtype_series = sample_series.astype('object')
+    with pytest.raises(ValueError, match=error):
+        diff_dtype_series.ww.init(schema=schema)
+
+
+def test_accessor_with_schema_parameter_warning(sample_series):
+    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    schema = sample_series.ww.schema
+
+    head_series = sample_series.head(2)
+
+    warning = "A schema was provided and the following parameters were ignored: " \
+              "logical_type, semantic_tags, description, metadata, use_standard_tags"
+    with pytest.warns(ParametersIgnoredWarning, match=warning):
+        head_series.ww.init(logical_type=Integer, semantic_tags={'ignored_test_tag'},
+                            description='an ignored description', metadata={'user_id': 'user1'},
+                            use_standard_tags=False, schema=schema)
+
+    assert head_series.ww.semantic_tags == {'category', 'test_tag'}
+    assert head_series.ww.logical_type == Categorical
+    assert head_series.ww.description == 'this is a column'
+    assert head_series.ww.metadata == {}
 
 
 def test_accessor_init_with_logical_type(sample_series):
@@ -78,7 +141,7 @@ def test_accessor_init_with_semantic_tags(sample_series):
 
 
 def test_error_accessing_properties_before_init(sample_series):
-    props_to_exclude = ['iloc', 'loc']
+    props_to_exclude = ['iloc', 'loc', 'schema']
     props = [prop for prop in dir(sample_series.ww) if is_property(WoodworkColumnAccessor, prop) and prop not in props_to_exclude]
 
     error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"

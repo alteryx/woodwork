@@ -43,15 +43,13 @@ def _process_selection(selection, original_data):
             # Selecting a single column from a DataFrame
             schema = original_data.ww.schema.columns[selection.name]
             schema.semantic_tags = schema.semantic_tags - {'index'} - {'time_index'}
+            if schema.use_standard_tags:
+                schema.semantic_tags |= schema.logical_type.standard_tags
         else:
             # Selecting a new Series from an existing Series
             schema = original_data.ww._schema
         if schema:
-            selection.ww.init(logical_type=schema.logical_type,
-                              semantic_tags=copy.deepcopy(schema.semantic_tags),
-                              description=schema.description,
-                              metadata=copy.deepcopy(schema.metadata),
-                              use_standard_tags=schema.use_standard_tags)
+            selection.ww.init(schema=copy.deepcopy(schema))
     elif _is_dataframe(selection):
         # Selecting a new DataFrame from an existing DataFrame
         schema = original_data.ww.schema

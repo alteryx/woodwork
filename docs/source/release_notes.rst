@@ -12,6 +12,7 @@ Release Notes
         * Add optional ``exclude`` parameter to WoodworkTableAccessor ``select`` method (:pr:`783`)
         * Add validation control to ``deserialize.read_woodwork_table`` and ``ww.read_csv`` (:pr:`788`)
         * Add ``WoodworkColumnAccessor.schema`` and handle copying column schema (:pr:`799`)
+        * Allow initializing a ``WoodworkColumnAccessor`` with a ``ColumnSchema`` (:pr:`814`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)

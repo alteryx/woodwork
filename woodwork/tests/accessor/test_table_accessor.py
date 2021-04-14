@@ -249,11 +249,11 @@ def test_accessor_with_schema_parameter_warning(sample_df):
     head_df = schema_df.head(2)
 
     warning = "A schema was provided and the following parameters were ignored: index, make_index, " \
-              "time_index, logical_types, already_sorted, semantic_tags"
+              "time_index, logical_types, already_sorted, use_standard_tags, semantic_tags"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
         head_df.ww.init(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
                         make_index=True, already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
-                        schema=schema)
+                        use_standard_tags={'id': True, 'age': False}, schema=schema)
 
     assert head_df.ww.name == 'test_schema'
     assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}

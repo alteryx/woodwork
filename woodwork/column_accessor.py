@@ -13,7 +13,10 @@ from woodwork.column_schema import (
     _validate_description,
     _validate_metadata
 )
-from woodwork.exceptions import TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    TypingInfoMismatchWarning
+)
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
 from woodwork.utils import (
@@ -32,7 +35,8 @@ class WoodworkColumnAccessor:
         self._schema = None
 
     def init(self, logical_type=None, semantic_tags=None,
-             use_standard_tags=True, description=None, metadata=None):
+             use_standard_tags=True, description=None, metadata=None,
+             schema=None):
         """Initializes Woodwork typing information for a Series.
 
         Args:
@@ -49,21 +53,43 @@ class WoodworkColumnAccessor:
                 based on the inferred or specified logical type of the series. Defaults to True.
             description (str, optional): Optional text describing the contents of the series.
             metadata (dict[str -> json serializable], optional): Metadata associated with the series.
+            schema (Woodwork.ColumnSchema, optional): Typing information to use for the Series instead of performing inference.
+                Any other arguments provided will be ignored. Note that any changes made to the schema object after
+                initialization will propagate to the Series. Similarly, to avoid unintended typing information changes,
+                the same schema object should not be shared between Series.
         """
-        logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
-        self._validate_logical_type(logical_type)
+        if schema is not None:
+            _validate_schema(schema, self._series)
 
-        self._schema = ColumnSchema(logical_type=logical_type,
-                                    semantic_tags=semantic_tags,
-                                    use_standard_tags=use_standard_tags,
-                                    description=description,
-                                    metadata=metadata)
+            extra_params = []
+            if logical_type is not None:
+                extra_params.append('logical_type')
+            if semantic_tags is not None:
+                extra_params.append('semantic_tags')
+            if description is not None:
+                extra_params.append('description')
+            if metadata is not None:
+                extra_params.append('metadata')
+            if not use_standard_tags:
+                extra_params.append('use_standard_tags')
+            if extra_params:
+                warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
+
+            self._schema = schema
+        else:
+            logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
+
+            self._validate_logical_type(logical_type)
+
+            self._schema = ColumnSchema(logical_type=logical_type,
+                                        semantic_tags=semantic_tags,
+                                        use_standard_tags=use_standard_tags,
+                                        description=description,
+                                        metadata=metadata)
 
     @property
     def schema(self):
-        if self._schema is None:
-            _raise_init_error()
         return copy.deepcopy(self._schema)
 
     @property
@@ -210,11 +236,7 @@ class WoodworkColumnAccessor:
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(type(result), self._schema.logical_type)
                     if str(result.dtype) == valid_dtype:
-                        result.ww.init(logical_type=self._schema.logical_type,
-                                       semantic_tags=copy.deepcopy(self._schema.semantic_tags),
-                                       description=self._schema.description,
-                                       metadata=copy.deepcopy(self._schema.metadata),
-                                       use_standard_tags=self._schema.use_standard_tags)
+                        result.ww.init(schema=self.schema)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{valid_dtype}, and returned dtype, {result.dtype}'
@@ -321,6 +343,15 @@ class WoodworkColumnAccessor:
         self._schema.semantic_tags = _set_semantic_tags(semantic_tags,
                                                         self.logical_type.standard_tags,
                                                         self._schema.use_standard_tags)
+
+
+def _validate_schema(schema, series):
+    if not isinstance(schema, ColumnSchema):
+        raise TypeError('Provided schema must be a Woodwork.ColumnSchema object.')
+
+    valid_dtype = _get_valid_dtype(type(series), schema.logical_type)
+    if str(series.dtype) != valid_dtype:
+        raise ValueError(f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}")
 
 
 def _raise_init_error():
