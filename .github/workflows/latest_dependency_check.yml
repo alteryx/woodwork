@@ -8,18 +8,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        libraries: ["core", "dask", "koalas"]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
         python-version: '3.8.x'
-    - name: Update dependencies
+    - name: Install woodwork dependencies and test dependencies
       run: |
         python -m pip install --upgrade pip
-        make installdeps
-        make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_dependencies.txt
-        cat woodwork/tests/latest_dependencies.txt
+        python -m pip install -e .
+        python -m pip install -r test-requirements.txt
+    - if: ${{ matrix.libraries == 'core' }}
+      name: Update latest core dependencies
+      run: |
+        make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_core_dependencies.txt
+        cat woodwork/tests/latest_core_dependencies.txt
+    - if: ${{ matrix.libraries == 'koalas' }}
+      name: Update latest koalas dependencies
+      run: |
+        python -m pip install -r koalas-requirements.txt
+        make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_koalas_dependencies.txt
+        cat woodwork/tests/latest_koalas_dependencies.txt
+    - if: ${{ matrix.libraries == 'dask' }}
+      name: Update latest dask dependencies
+      run: |
+        python -m pip install -r dask-requirements.txt
+        make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_dask_dependencies.txt
+        cat woodwork/tests/latest_dask_dependencies.txt
     - name: Create Pull Request
       uses: FeatureLabs/create-pull-request@v3
       with:

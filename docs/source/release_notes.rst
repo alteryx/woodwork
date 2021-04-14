@@ -13,6 +13,7 @@ Release Notes
         * Add validation control to ``deserialize.read_woodwork_table`` and ``ww.read_csv`` (:pr:`788`)
         * Add ``WoodworkColumnAccessor.schema`` and handle copying column schema (:pr:`799`)
         * Add config option for switching between using nullable and non-nullable dtypes (:pr:`807`)
+        * Allow initializing a ``WoodworkColumnAccessor`` with a ``ColumnSchema`` (:pr:`814`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
@@ -34,6 +35,7 @@ Release Notes
         * Add unit tests against minimum dependencies for python 3.6 on PRs and main (:pr:`743`, :pr:`753`, :pr:`763`)
         * Update spark config for test fixtures (:pr:`787`)
         * Separate latest unit tests into pandas, dask, koalas (:pr:`813`)
+        * Update latest dependency checker to generate separate core, koalas, and dask dependencies (:pr:`815`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
