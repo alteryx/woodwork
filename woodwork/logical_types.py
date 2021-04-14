@@ -28,6 +28,7 @@ class LogicalTypeMetaClass(type):
     def __repr__(cls):
         return cls.__name__
 
+    # Return primary_dtype for uninstantiated LogicalType class
     @property
     def primary_dtype(cls):
         if ww.config.get_option('use_nullable_dtypes'):
@@ -35,6 +36,7 @@ class LogicalTypeMetaClass(type):
         else:
             return NEW_TO_OLD.get(cls._primary_dtype, cls._primary_dtype)
 
+    # Return backup_dtype for uninstantiated LogicalType class
     @property
     def backup_dtype(cls):
         if ww.config.get_option('use_nullable_dtypes'):
@@ -56,10 +58,12 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def __str__(self):
         return str(self.__class__)
 
+    # Get primary_dtype from MetaClass for LogicalType instances
     @property
     def primary_dtype(self):
         return type(self).primary_dtype
 
+    # Get backup_dtype from MetaClass for LogicalType instances
     @property
     def backup_dtype(self):
         return type(self).backup_dtype
