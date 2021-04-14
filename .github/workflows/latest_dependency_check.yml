@@ -30,6 +30,8 @@ jobs:
         cat woodwork/tests/latest_koalas_dependencies.txt
     - name: Update latest dask dependencies
       run: |
+        python -m pip uninstall -r koalas-requirements.txt -y
+        pip freeze
         python -m pip install -r dask-requirements.txt
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/latest_dask_dependencies.txt
         cat woodwork/tests/latest_dask_dependencies.txt
