@@ -6,10 +6,6 @@ from mock import patch
 import woodwork as ww
 from woodwork.column_schema import (
     ColumnSchema,
-    _is_col_boolean,
-    _is_col_categorical,
-    _is_col_datetime,
-    _is_col_numeric,
     _reset_semantic_tags,
     _validate_description,
     _validate_logical_type,
@@ -127,72 +123,72 @@ def test_column_schema_null_params():
         ColumnSchema(semantic_tags=1)
 
 
-def test_is_col_numeric():
+def test_is_numeric():
     int_column = ColumnSchema(logical_type=Integer)
-    assert _is_col_numeric(int_column)
+    assert int_column._is_numeric()
 
     double_column = ColumnSchema(logical_type=Double)
-    assert _is_col_numeric(double_column)
+    assert double_column._is_numeric()
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_numeric(nl_column)
+    assert not nl_column._is_numeric()
 
     manually_added = ColumnSchema(logical_type=NaturalLanguage, semantic_tags='numeric')
-    assert not _is_col_numeric(manually_added)
+    assert not manually_added._is_numeric()
 
     no_standard_tags = ColumnSchema(logical_type=Integer, use_standard_tags=False)
-    assert _is_col_numeric(no_standard_tags)
+    assert no_standard_tags._is_numeric()
 
     instantiated_column = ColumnSchema(logical_type=Integer())
-    assert _is_col_numeric(instantiated_column)
+    assert instantiated_column._is_numeric()
 
 
-def test_is_col_categorical():
+def test_is_categorical():
     categorical_column = ColumnSchema(logical_type=Categorical)
-    assert _is_col_categorical(categorical_column)
+    assert categorical_column._is_categorical()
 
     ordinal_column = ColumnSchema(logical_type=Ordinal(order=['a', 'b']))
-    assert _is_col_categorical(ordinal_column)
+    assert ordinal_column._is_categorical()
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_categorical(nl_column)
+    assert not nl_column._is_categorical()
 
     manually_added = ColumnSchema(logical_type=NaturalLanguage, semantic_tags='category')
-    assert not _is_col_categorical(manually_added)
+    assert not manually_added._is_categorical()
 
     no_standard_tags = ColumnSchema(logical_type=Categorical, use_standard_tags=False)
-    assert _is_col_categorical(no_standard_tags)
+    assert no_standard_tags._is_categorical()
 
 
-def test_is_col_boolean():
+def test_is_boolean():
     boolean_column = ColumnSchema(logical_type=Boolean)
-    assert _is_col_boolean(boolean_column)
+    assert boolean_column._is_boolean()
 
     instantiated_column = ColumnSchema(logical_type=Boolean())
-    assert _is_col_boolean(instantiated_column)
+    assert instantiated_column._is_boolean()
 
     ordinal_column = ColumnSchema(logical_type=Ordinal(order=['a', 'b']))
-    assert not _is_col_boolean(ordinal_column)
+    assert not ordinal_column._is_boolean()
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_boolean(nl_column)
+    assert not nl_column._is_boolean()
 
 
-def test_is_col_datetime():
+def test_is_datetime():
     datetime_column = ColumnSchema(logical_type=Datetime)
-    assert _is_col_datetime(datetime_column)
+    assert datetime_column._is_datetime()
 
     formatted_datetime_column = ColumnSchema(logical_type=Datetime(datetime_format='%Y-%m%d'))
-    assert _is_col_datetime(formatted_datetime_column)
+    assert formatted_datetime_column._is_datetime()
 
     instantiated_datetime_column = ColumnSchema(logical_type=Datetime())
-    assert _is_col_datetime(instantiated_datetime_column)
+    assert instantiated_datetime_column._is_datetime()
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_datetime(nl_column)
+    assert not nl_column._is_datetime()
 
     double_column = ColumnSchema(logical_type=Double)
-    assert not _is_col_datetime(double_column)
+    assert not double_column._is_datetime()
 
 
 def test_reset_semantic_tags_returns_new_object():

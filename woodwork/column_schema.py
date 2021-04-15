@@ -80,6 +80,35 @@ class ColumnSchema(object):
 
         return semantic_tags
 
+    # --> should these be public??
+    def _is_numeric(self):
+        return 'numeric' in self.logical_type.standard_tags
+
+    def _is_categorical(self):
+        return 'category' in self.logical_type.standard_tags
+
+    def _is_datetime(self):
+        return _get_ltype_class(self.logical_type) == Datetime
+
+    def _is_boolean(self):
+        return _get_ltype_class(self.logical_type) == Boolean
+
+    def _add_semantic_tags(self, new_tags, name):
+        """Add the specified semantic tags to the current set of tags
+
+        Args:
+            new_tags (str/list/set): The new tags to add
+            current_tags (set): Current set of semantic tags
+            name (str): Name of the column to use in warning
+        """
+        new_tags = _convert_input_to_set(new_tags)
+
+        duplicate_tags = sorted(list(self.semantic_tags.intersection(new_tags)))
+        if duplicate_tags:
+            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
+                          DuplicateTagsWarning)
+        self.semantic_tags = self.semantic_tags.union(new_tags)
+
 
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
@@ -98,39 +127,6 @@ def _validate_description(column_description):
 def _validate_metadata(column_metadata):
     if not isinstance(column_metadata, dict):
         raise TypeError("Column metadata must be a dictionary")
-
-
-def _is_col_numeric(col):
-    return 'numeric' in col.logical_type.standard_tags
-
-
-def _is_col_categorical(col):
-    return 'category' in col.logical_type.standard_tags
-
-
-def _is_col_datetime(col):
-    return _get_ltype_class(col.logical_type) == Datetime
-
-
-def _is_col_boolean(col):
-    return _get_ltype_class(col.logical_type) == Boolean
-
-
-def _add_semantic_tags(new_tags, current_tags, name):
-    """Add the specified semantic tags to the current set of tags
-
-    Args:
-        new_tags (str/list/set): The new tags to add
-        current_tags (set): Current set of semantic tags
-        name (str): Name of the column to use in warning
-    """
-    new_tags = _convert_input_to_set(new_tags)
-
-    duplicate_tags = sorted(list(current_tags.intersection(new_tags)))
-    if duplicate_tags:
-        warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
-                      DuplicateTagsWarning)
-    return current_tags.union(new_tags)
 
 
 def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use_standard_tags):

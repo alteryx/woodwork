@@ -6,7 +6,6 @@ import pandas as pd
 import woodwork as ww
 from woodwork.column_schema import (
     ColumnSchema,
-    _add_semantic_tags,
     _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags
@@ -222,8 +221,7 @@ class TableSchema(object):
         for col_name, tags_to_add in semantic_tags.items():
             tags_to_add = _convert_input_to_set(tags_to_add)
             _validate_not_setting_index_tags(tags_to_add, col_name)
-            new_semantic_tags = _add_semantic_tags(tags_to_add, self.semantic_tags[col_name], col_name)
-            self.columns[col_name].semantic_tags = new_semantic_tags
+            self.columns[col_name]._add_semantic_tags(tags_to_add, col_name)
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
