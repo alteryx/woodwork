@@ -193,6 +193,7 @@ class TableSchema(object):
             # Get new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
             if new_semantic_tags is None:
+                # --> wait till we have bot this and set moved to be methods
                 new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags[col_name])
             else:
                 new_semantic_tags = _set_semantic_tags(new_semantic_tags,
@@ -269,8 +270,7 @@ class TableSchema(object):
 
         for col_name in columns:
             original_tags = self.semantic_tags[col_name]
-            new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags[col_name])
-            self.columns[col_name].semantic_tags = new_semantic_tags
+            self.columns[col_name]._reset_semantic_tags()
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)

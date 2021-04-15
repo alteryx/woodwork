@@ -6,7 +6,6 @@ import pandas as pd
 from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
 from woodwork.column_schema import (
     ColumnSchema,
-    _reset_semantic_tags,
     _set_semantic_tags,
     _validate_description,
     _validate_metadata
@@ -298,8 +297,7 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        self._schema.semantic_tags = _reset_semantic_tags(self.logical_type.standard_tags,
-                                                          self._schema.use_standard_tags)
+        self._schema._reset_semantic_tags()
 
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,

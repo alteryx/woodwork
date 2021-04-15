@@ -130,6 +130,20 @@ class ColumnSchema(object):
                           StandardTagsChangedWarning)
         self.semantic_tags = self.semantic_tags.difference(tags_to_remove)
 
+    def _reset_semantic_tags(self):
+        """Reset the set of semantic tags to the default values. The default values
+        will be either an empty set or the standard tags, controlled by the
+        use_standard_tags boolean.
+
+        Args:
+            standard_tags (set): Set of standard tags for the column logical type
+            use_standard_tags (bool): If True, retain standard tags after reset
+        """
+        new_tags = set()
+        if self.use_standard_tags:
+            new_tags = set(self.logical_type.standard_tags)
+        self.semantic_tags = new_tags
+
 
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
