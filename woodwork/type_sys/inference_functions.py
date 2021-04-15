@@ -29,7 +29,7 @@ def categorical_func(series):
 
 
 def integer_func(series):
-    if integer_nullable_func(series) and series.notnull().all():
+    if integer_nullable_func(series) and not series.isnull().any():
         return True
     return False
 
@@ -51,7 +51,7 @@ def double_func(series):
 
 
 def boolean_func(series):
-    if boolean_nullable_func(series) and series.notnull().all():
+    if boolean_nullable_func(series) and not series.isnull().any():
         return True
     return False
 
