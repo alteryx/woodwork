@@ -6,11 +6,6 @@ from mock import patch
 import woodwork as ww
 from woodwork.column_schema import (
     ColumnSchema,
-    _is_col_boolean,
-    _is_col_categorical,
-    _is_col_datetime,
-    _is_col_numeric,
-    _reset_semantic_tags,
     _validate_description,
     _validate_logical_type,
     _validate_metadata
@@ -127,79 +122,81 @@ def test_column_schema_null_params():
         ColumnSchema(semantic_tags=1)
 
 
-def test_is_col_numeric():
+def test_is_numeric():
     int_column = ColumnSchema(logical_type=Integer)
-    assert _is_col_numeric(int_column)
+    assert int_column.is_numeric
 
     double_column = ColumnSchema(logical_type=Double)
-    assert _is_col_numeric(double_column)
+    assert double_column.is_numeric
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_numeric(nl_column)
+    assert not nl_column.is_numeric
 
     manually_added = ColumnSchema(logical_type=NaturalLanguage, semantic_tags='numeric')
-    assert not _is_col_numeric(manually_added)
+    assert not manually_added.is_numeric
 
     no_standard_tags = ColumnSchema(logical_type=Integer, use_standard_tags=False)
-    assert _is_col_numeric(no_standard_tags)
+    assert no_standard_tags.is_numeric
 
     instantiated_column = ColumnSchema(logical_type=Integer())
-    assert _is_col_numeric(instantiated_column)
+    assert instantiated_column.is_numeric
 
 
-def test_is_col_categorical():
+def test_is_categorical():
     categorical_column = ColumnSchema(logical_type=Categorical)
-    assert _is_col_categorical(categorical_column)
+    assert categorical_column.is_categorical
 
     ordinal_column = ColumnSchema(logical_type=Ordinal(order=['a', 'b']))
-    assert _is_col_categorical(ordinal_column)
+    assert ordinal_column.is_categorical
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_categorical(nl_column)
+    assert not nl_column.is_categorical
 
     manually_added = ColumnSchema(logical_type=NaturalLanguage, semantic_tags='category')
-    assert not _is_col_categorical(manually_added)
+    assert not manually_added.is_categorical
 
     no_standard_tags = ColumnSchema(logical_type=Categorical, use_standard_tags=False)
-    assert _is_col_categorical(no_standard_tags)
+    assert no_standard_tags.is_categorical
 
 
-def test_is_col_boolean():
+def test_is_boolean():
     boolean_column = ColumnSchema(logical_type=Boolean)
-    assert _is_col_boolean(boolean_column)
+    assert boolean_column.is_boolean
 
     instantiated_column = ColumnSchema(logical_type=Boolean())
-    assert _is_col_boolean(instantiated_column)
+    assert instantiated_column.is_boolean
 
     ordinal_column = ColumnSchema(logical_type=Ordinal(order=['a', 'b']))
-    assert not _is_col_boolean(ordinal_column)
+    assert not ordinal_column.is_boolean
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_boolean(nl_column)
+    assert not nl_column.is_boolean
 
 
-def test_is_col_datetime():
+def test_is_datetime():
     datetime_column = ColumnSchema(logical_type=Datetime)
-    assert _is_col_datetime(datetime_column)
+    assert datetime_column.is_datetime
 
     formatted_datetime_column = ColumnSchema(logical_type=Datetime(datetime_format='%Y-%m%d'))
-    assert _is_col_datetime(formatted_datetime_column)
+    assert formatted_datetime_column.is_datetime
 
     instantiated_datetime_column = ColumnSchema(logical_type=Datetime())
-    assert _is_col_datetime(instantiated_datetime_column)
+    assert instantiated_datetime_column.is_datetime
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
-    assert not _is_col_datetime(nl_column)
+    assert not nl_column.is_datetime
 
     double_column = ColumnSchema(logical_type=Double)
-    assert not _is_col_datetime(double_column)
+    assert not double_column.is_datetime
 
 
 def test_reset_semantic_tags_returns_new_object():
-    standard_tags = {'tag1', 'tag2'}
-    reset_tags = _reset_semantic_tags(standard_tags, use_standard_tags=True)
-    assert reset_tags is not standard_tags
-    assert reset_tags == standard_tags
+    schema = ColumnSchema(logical_type=Integer, semantic_tags=set(), use_standard_tags=True)
+    standard_tags = Integer.standard_tags
+
+    schema._reset_semantic_tags()
+    assert schema.semantic_tags is not standard_tags
+    assert schema.semantic_tags == standard_tags
 
 
 def test_schema_equality():
