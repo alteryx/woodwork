@@ -45,7 +45,7 @@ jobs:
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
-          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update minimum dependencies
           title: Automated Minimum Dependency Updates
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
