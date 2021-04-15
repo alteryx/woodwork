@@ -6,7 +6,6 @@ import pandas as pd
 import woodwork as ww
 from woodwork.column_schema import (
     ColumnSchema,
-    _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags
 )
@@ -236,19 +235,16 @@ class TableSchema(object):
         for col_name, tags_to_remove in semantic_tags.items():
             standard_tags = self.logical_types[col_name].standard_tags
             tags_to_remove = _convert_input_to_set(tags_to_remove)
+            original_tags = self.semantic_tags[col_name].copy()
 
-            new_semantic_tags = _remove_semantic_tags(tags_to_remove,
-                                                      self.semantic_tags[col_name],
-                                                      col_name,
-                                                      standard_tags,
-                                                      self.use_standard_tags[col_name])
+            self.columns[col_name]._remove_semantic_tags(tags_to_remove,
+                                                         col_name)
+
             # If the index is removed, reinsert any standard tags not explicitly removed
-            original_tags = self.semantic_tags[col_name]
-            if self.use_standard_tags[col_name] and 'index' in original_tags and 'index' not in new_semantic_tags:
+            if self.use_standard_tags[col_name] and 'index' in original_tags and 'index' not in self.columns[col_name].semantic_tags:
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
                 standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
-                new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
-            self.columns[col_name].semantic_tags = new_semantic_tags
+                self.columns[col_name].semantic_tags = self.semantic_tags[col_name].union(standard_tags_to_reinsert)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.

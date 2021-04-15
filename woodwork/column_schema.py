@@ -94,6 +94,7 @@ class ColumnSchema(object):
         return _get_ltype_class(self.logical_type) == Boolean
 
     def _add_semantic_tags(self, new_tags, name):
+        # --> fix docstrings!!!!!
         """Add the specified semantic tags to the current set of tags
 
         Args:
@@ -108,6 +109,26 @@ class ColumnSchema(object):
             warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
                           DuplicateTagsWarning)
         self.semantic_tags = self.semantic_tags.union(new_tags)
+
+    def _remove_semantic_tags(self, tags_to_remove, name):
+        """Removes specified semantic tags from from the current set of tags
+
+        Args:
+            tags_to_remove (str/list/set): The tags to remove
+            current_tags (set): Current set of semantic tags
+            name (str): Name of the column to use in warning
+            standard_tags (set): Set of standard tags for the column logical type
+            use_standard_tags (bool): If True, warn if user attempts to remove a standard tag
+        """
+        tags_to_remove = _convert_input_to_set(tags_to_remove)
+        invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
+        if invalid_tags:
+            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
+        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags)))
+        if standard_tags_to_remove and self.use_standard_tags:
+            warnings.warn(StandardTagsChangedWarning().get_warning_message(not self.use_standard_tags, name),
+                          StandardTagsChangedWarning)
+        self.semantic_tags = self.semantic_tags.difference(tags_to_remove)
 
 
 def _validate_logical_type(logical_type):
@@ -127,27 +148,6 @@ def _validate_description(column_description):
 def _validate_metadata(column_metadata):
     if not isinstance(column_metadata, dict):
         raise TypeError("Column metadata must be a dictionary")
-
-
-def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use_standard_tags):
-    """Removes specified semantic tags from from the current set of tags
-
-    Args:
-        tags_to_remove (str/list/set): The tags to remove
-        current_tags (set): Current set of semantic tags
-        name (str): Name of the column to use in warning
-        standard_tags (set): Set of standard tags for the column logical type
-        use_standard_tags (bool): If True, warn if user attempts to remove a standard tag
-    """
-    tags_to_remove = _convert_input_to_set(tags_to_remove)
-    invalid_tags = sorted(list(tags_to_remove.difference(current_tags)))
-    if invalid_tags:
-        raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
-    standard_tags_to_remove = sorted(list(tags_to_remove.intersection(standard_tags)))
-    if standard_tags_to_remove and use_standard_tags:
-        warnings.warn(StandardTagsChangedWarning().get_warning_message(not use_standard_tags, name),
-                      StandardTagsChangedWarning)
-    return current_tags.difference(tags_to_remove)
 
 
 def _reset_semantic_tags(standard_tags, use_standard_tags):

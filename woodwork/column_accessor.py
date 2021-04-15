@@ -6,7 +6,6 @@ import pandas as pd
 from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
 from woodwork.column_schema import (
     ColumnSchema,
-    _remove_semantic_tags,
     _reset_semantic_tags,
     _set_semantic_tags,
     _validate_description,
@@ -286,11 +285,8 @@ class WoodworkColumnAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        self._schema.semantic_tags = _remove_semantic_tags(semantic_tags,
-                                                           self.semantic_tags,
-                                                           self._series.name,
-                                                           self.logical_type.standard_tags,
-                                                           self._schema.use_standard_tags)
+        self._schema._remove_semantic_tags(semantic_tags,
+                                           self._series.name)
 
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
