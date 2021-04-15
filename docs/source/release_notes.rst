@@ -13,6 +13,7 @@ Release Notes
         * Add validation control to ``deserialize.read_woodwork_table`` and ``ww.read_csv`` (:pr:`788`)
         * Add ``WoodworkColumnAccessor.schema`` and handle copying column schema (:pr:`799`)
         * Allow initializing a ``WoodworkColumnAccessor`` with a ``ColumnSchema`` (:pr:`814`)
+        * Add ``BooleanNullable`` and ``IntegerNullable`` logical types (:pr:`830`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
@@ -46,6 +47,9 @@ Release Notes
     * The ``Schema`` object has been renamed to ``TableSchema``
     * With the ``ColumnSchema`` object, typing information for a column can no longer be accessed
       with ``df.ww.columns[col_name]['logical_type']``. Instead use ``df.ww.columns[col_name].logical_type``.
+    * The ``Boolean`` and ``Integer`` logical types will no longer work with data that contains null
+      values. The new ``BooleanNullable`` and ``IntegerNullable`` logical types should be used if
+      null values are present.
 
 **v0.1.0 March 22, 2021**
     * Enhancements
