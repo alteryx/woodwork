@@ -21,7 +21,6 @@ class ColumnSchema(object):
         """Create ColumnSchema
 
         Args:
-            name (str, optional): The name of the column.
             logical_type (str, LogicalType, optional): The column's LogicalType.
             semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
             use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
@@ -60,6 +59,15 @@ class ColumnSchema(object):
             return False
 
         return True
+
+    def __repr__(self):
+        msg = "<ColumnSchema"
+        if self.logical_type is not None:
+            msg += u" (Logical Type = {})".format(self.logical_type)
+        if self.semantic_tags:
+            msg += u" (Semantic Tags = {})".format(sorted(list(self.semantic_tags)))
+        msg += ">"
+        return msg
 
 
 def _validate_logical_type(logical_type):
