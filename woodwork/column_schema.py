@@ -43,7 +43,7 @@ class ColumnSchema(object):
 
         self.use_standard_tags = use_standard_tags
 
-        semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate)
+        semantic_tags = self._get_column_tags(semantic_tags, validate)
         self.semantic_tags = semantic_tags
 
     def __eq__(self, other):
@@ -69,6 +69,93 @@ class ColumnSchema(object):
         msg += ">"
         return msg
 
+    def _get_column_tags(self, semantic_tags, validate):
+        semantic_tags = _convert_input_to_set(semantic_tags, error_language='semantic_tags',
+                                              validate=validate)
+
+        if self.use_standard_tags:
+            if self.logical_type is None:
+                raise ValueError("Cannot use standard tags when logical_type is None")
+            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
+
+        return semantic_tags
+
+    @property
+    def is_numeric(self):
+        """Whether the ColumnSchema is numeric in nature"""
+        return 'numeric' in self.logical_type.standard_tags
+
+    @property
+    def is_categorical(self):
+        """Whether the ColumnSchema is categorical in nature"""
+        return 'category' in self.logical_type.standard_tags
+
+    @property
+    def is_datetime(self):
+        """Whether the ColumnSchema is a Datetime column"""
+        return _get_ltype_class(self.logical_type) == Datetime
+
+    @property
+    def is_boolean(self):
+        """Whether the ColumnSchema is a Boolean column"""
+        return _get_ltype_class(self.logical_type) == Boolean
+
+    def _add_semantic_tags(self, new_tags, name):
+        """Add the specified semantic tags to the current set of tags
+
+        Args:
+            new_tags (str/list/set): The new tags to add
+            name (str): Name of the column to use in warning
+        """
+        new_tags = _convert_input_to_set(new_tags)
+
+        duplicate_tags = sorted(list(self.semantic_tags.intersection(new_tags)))
+        if duplicate_tags:
+            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
+                          DuplicateTagsWarning)
+        self.semantic_tags = self.semantic_tags.union(new_tags)
+
+    def _remove_semantic_tags(self, tags_to_remove, name):
+        """Removes specified semantic tags from from the current set of tags
+
+        Args:
+            tags_to_remove (str/list/set): The tags to remove
+            name (str): Name of the column to use in warning
+        """
+        tags_to_remove = _convert_input_to_set(tags_to_remove)
+        invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
+        if invalid_tags:
+            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
+        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags)))
+        if standard_tags_to_remove and self.use_standard_tags:
+            warnings.warn(StandardTagsChangedWarning().get_warning_message(not self.use_standard_tags, name),
+                          StandardTagsChangedWarning)
+        self.semantic_tags = self.semantic_tags.difference(tags_to_remove)
+
+    def _reset_semantic_tags(self):
+        """Reset the set of semantic tags to the default values. The default values
+        will be either an empty set or the standard tags, controlled by the
+        use_standard_tags boolean.
+        """
+        new_tags = set()
+        if self.use_standard_tags:
+            new_tags = set(self.logical_type.standard_tags)
+        self.semantic_tags = new_tags
+
+    def _set_semantic_tags(self, semantic_tags):
+        """Replace current semantic tags with new values. If use_standard_tags is set
+        to True, standard tags will be added as well.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to set
+        """
+        semantic_tags = _convert_input_to_set(semantic_tags)
+
+        if self.use_standard_tags:
+            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
+
+        self.semantic_tags = semantic_tags
+
 
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
@@ -87,100 +174,3 @@ def _validate_description(column_description):
 def _validate_metadata(column_metadata):
     if not isinstance(column_metadata, dict):
         raise TypeError("Column metadata must be a dictionary")
-
-
-def _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language='semantic_tags',
-                                          validate=validate)
-
-    if use_standard_tags:
-        if logical_type is None:
-            raise ValueError("Cannot use standard tags when logical_type is None")
-        semantic_tags = semantic_tags.union(logical_type.standard_tags)
-
-    return semantic_tags
-
-
-def _is_col_numeric(col):
-    return 'numeric' in col.logical_type.standard_tags
-
-
-def _is_col_categorical(col):
-    return 'category' in col.logical_type.standard_tags
-
-
-def _is_col_datetime(col):
-    return _get_ltype_class(col.logical_type) == Datetime
-
-
-def _is_col_boolean(col):
-    return _get_ltype_class(col.logical_type) == Boolean
-
-
-def _add_semantic_tags(new_tags, current_tags, name):
-    """Add the specified semantic tags to the current set of tags
-
-    Args:
-        new_tags (str/list/set): The new tags to add
-        current_tags (set): Current set of semantic tags
-        name (str): Name of the column to use in warning
-    """
-    new_tags = _convert_input_to_set(new_tags)
-
-    duplicate_tags = sorted(list(current_tags.intersection(new_tags)))
-    if duplicate_tags:
-        warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
-                      DuplicateTagsWarning)
-    return current_tags.union(new_tags)
-
-
-def _remove_semantic_tags(tags_to_remove, current_tags, name, standard_tags, use_standard_tags):
-    """Removes specified semantic tags from from the current set of tags
-
-    Args:
-        tags_to_remove (str/list/set): The tags to remove
-        current_tags (set): Current set of semantic tags
-        name (str): Name of the column to use in warning
-        standard_tags (set): Set of standard tags for the column logical type
-        use_standard_tags (bool): If True, warn if user attempts to remove a standard tag
-    """
-    tags_to_remove = _convert_input_to_set(tags_to_remove)
-    invalid_tags = sorted(list(tags_to_remove.difference(current_tags)))
-    if invalid_tags:
-        raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
-    standard_tags_to_remove = sorted(list(tags_to_remove.intersection(standard_tags)))
-    if standard_tags_to_remove and use_standard_tags:
-        warnings.warn(StandardTagsChangedWarning().get_warning_message(not use_standard_tags, name),
-                      StandardTagsChangedWarning)
-    return current_tags.difference(tags_to_remove)
-
-
-def _reset_semantic_tags(standard_tags, use_standard_tags):
-    """Reset the set of semantic tags to the default values. The default values
-    will be either an empty set or the standard tags, controlled by the
-    use_standard_tags boolean.
-
-    Args:
-        standard_tags (set): Set of standard tags for the column logical type
-        use_standard_tags (bool): If True, retain standard tags after reset
-    """
-    if use_standard_tags:
-        return set(standard_tags)
-    return set()
-
-
-def _set_semantic_tags(semantic_tags, standard_tags, use_standard_tags):
-    """Replace current semantic tags with new values. If use_standard_tags is set
-    to True, standard tags will be added as well.
-
-    Args:
-        semantic_tags (str/list/set): New semantic tag(s) to set
-        standard_tags (set): Set of standard tags for the column logical type
-        use_standard_tags (bool): If True, retain standard tags after reset
-    """
-    semantic_tags = _convert_input_to_set(semantic_tags)
-
-    if use_standard_tags:
-        semantic_tags = semantic_tags.union(standard_tags)
-
-    return semantic_tags
