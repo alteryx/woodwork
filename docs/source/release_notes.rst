@@ -28,6 +28,7 @@ Release Notes
         * Store column typing information in a ``ColumnSchema`` object instead of a dictionary (:pr:`791`)
         * ``TableSchema`` does not use standard tags by default (:pr:`806`)
         * Store ``use_standard_tags`` on the ``ColumnSchema`` instead of the ``TableSchema`` (:pr:`809`)
+        * Move functions in ``column_schema.py`` to be methods on ``ColumnSchema`` (:pr:`829`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
         * Update spark config for docs build (:pr:`787`, :pr:`801`, :pr:`810`)
