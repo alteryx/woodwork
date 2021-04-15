@@ -503,7 +503,7 @@ def test_int_dtype_inference_on_init():
         'ints_NA_specified': pd.Series([1, pd.NA], dtype='Int64')})
     df.ww.init()
 
-    assert df['ints_no_nans'].dtype == 'Int64'
+    assert df['ints_no_nans'].dtype == 'int64'
     assert df['ints_nan'].dtype == 'float64'
     assert df['ints_NA'].dtype == 'category'
     assert df['ints_NA_specified'].dtype == 'Int64'
@@ -1764,7 +1764,7 @@ def test_set_types(sample_df):
     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
 
     sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
-    assert sample_df['is_registered'].dtype == 'Int64'
+    assert sample_df['is_registered'].dtype == 'int64'
 
     sample_df.ww.set_types(semantic_tags={'signup_date': ['new_tag']},
                            logical_types={'full_name': 'Categorical'},
