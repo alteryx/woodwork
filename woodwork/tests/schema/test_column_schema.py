@@ -6,7 +6,6 @@ from mock import patch
 import woodwork as ww
 from woodwork.column_schema import (
     ColumnSchema,
-    _reset_semantic_tags,
     _validate_description,
     _validate_logical_type,
     _validate_metadata
@@ -192,10 +191,12 @@ def test_is_datetime():
 
 
 def test_reset_semantic_tags_returns_new_object():
-    standard_tags = {'tag1', 'tag2'}
-    reset_tags = _reset_semantic_tags(standard_tags, use_standard_tags=True)
-    assert reset_tags is not standard_tags
-    assert reset_tags == standard_tags
+    schema = ColumnSchema(logical_type=Integer, semantic_tags=set(), use_standard_tags=True)
+    standard_tags = Integer.standard_tags
+
+    schema._reset_semantic_tags()
+    assert schema.semantic_tags is not standard_tags
+    assert schema.semantic_tags == standard_tags
 
 
 def test_schema_equality():

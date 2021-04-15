@@ -4,11 +4,7 @@ import copy
 import pandas as pd
 
 import woodwork as ww
-from woodwork.column_schema import (
-    ColumnSchema,
-    _reset_semantic_tags,
-    _set_semantic_tags
-)
+from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import ColumnNotPresentError
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
@@ -190,19 +186,13 @@ class TableSchema(object):
             if new_logical_type is not None:
                 self.columns[col_name].logical_type = new_logical_type
 
-            # Get new semantic tags, removing existing tags
+            # Set new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
             if new_semantic_tags is None:
-                # --> wait till we have bot this and set moved to be methods
-                new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags[col_name])
+                self.columns[col_name]._reset_semantic_tags()
             else:
-                new_semantic_tags = _set_semantic_tags(new_semantic_tags,
-                                                       self.logical_types[col_name].standard_tags,
-                                                       self.use_standard_tags[col_name])
-                _validate_not_setting_index_tags(new_semantic_tags, col_name)
-
-            # Update the tags for the TableSchema
-            self.columns[col_name].semantic_tags = new_semantic_tags
+                self.columns[col_name]._set_semantic_tags(new_semantic_tags)
+                _validate_not_setting_index_tags(self.semantic_tags[col_name], col_name)
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)

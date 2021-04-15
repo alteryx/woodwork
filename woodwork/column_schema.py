@@ -144,6 +144,22 @@ class ColumnSchema(object):
             new_tags = set(self.logical_type.standard_tags)
         self.semantic_tags = new_tags
 
+    def _set_semantic_tags(self, semantic_tags):
+        """Replace current semantic tags with new values. If use_standard_tags is set
+        to True, standard tags will be added as well.
+
+        Args:
+            semantic_tags (str/list/set): New semantic tag(s) to set
+            standard_tags (set): Set of standard tags for the column logical type
+            use_standard_tags (bool): If True, retain standard tags after reset
+        """
+        semantic_tags = _convert_input_to_set(semantic_tags)
+
+        if self.use_standard_tags:
+            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
+
+        self.semantic_tags = semantic_tags
+
 
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
@@ -162,34 +178,3 @@ def _validate_description(column_description):
 def _validate_metadata(column_metadata):
     if not isinstance(column_metadata, dict):
         raise TypeError("Column metadata must be a dictionary")
-
-
-def _reset_semantic_tags(standard_tags, use_standard_tags):
-    """Reset the set of semantic tags to the default values. The default values
-    will be either an empty set or the standard tags, controlled by the
-    use_standard_tags boolean.
-
-    Args:
-        standard_tags (set): Set of standard tags for the column logical type
-        use_standard_tags (bool): If True, retain standard tags after reset
-    """
-    if use_standard_tags:
-        return set(standard_tags)
-    return set()
-
-
-def _set_semantic_tags(semantic_tags, standard_tags, use_standard_tags):
-    """Replace current semantic tags with new values. If use_standard_tags is set
-    to True, standard tags will be added as well.
-
-    Args:
-        semantic_tags (str/list/set): New semantic tag(s) to set
-        standard_tags (set): Set of standard tags for the column logical type
-        use_standard_tags (bool): If True, retain standard tags after reset
-    """
-    semantic_tags = _convert_input_to_set(semantic_tags)
-
-    if use_standard_tags:
-        semantic_tags = semantic_tags.union(standard_tags)
-
-    return semantic_tags
