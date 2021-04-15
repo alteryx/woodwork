@@ -16,6 +16,7 @@ from woodwork.exceptions import (
 from woodwork.logical_types import (
     URL,
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
@@ -23,6 +24,7 @@ from woodwork.logical_types import (
     EmailAddress,
     Filepath,
     Integer,
+    IntegerNullable,
     IPAddress,
     LatLong,
     NaturalLanguage,
@@ -457,11 +459,7 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
 
     numeric_time_index_df.ww.set_time_index('with_null')
     assert numeric_time_index_df.ww.time_index == 'with_null'
-    if ks and isinstance(numeric_time_index_df, ks.DataFrame):
-        ltype = Double
-    else:
-        ltype = Integer
-    assert numeric_time_index_df.ww.logical_types['with_null'] == ltype
+    assert numeric_time_index_df.ww.logical_types['with_null'] == IntegerNullable
     assert numeric_time_index_df.ww.semantic_tags['with_null'] == {'time_index', 'numeric'}
 
 
@@ -519,7 +517,7 @@ def test_bool_dtype_inference_on_init():
         'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean")})
     df.ww.init()
 
-    assert df['bools_no_nans'].dtype == 'boolean'
+    assert df['bools_no_nans'].dtype == 'bool'
     assert df['bool_nan'].dtype == 'category'
     assert df['bool_NA'].dtype == 'category'
     assert df['bool_NA_specified'].dtype == 'boolean'
@@ -714,16 +712,19 @@ def test_sets_boolean_dtype_on_init():
         pd.Series([True, pd.NA, True], name=column_name),
     ]
 
-    logical_type = Boolean
+    logical_types = [Boolean, BooleanNullable]
     for series in series_list:
-        series = series.astype('object')
-        ltypes = {
-            column_name: logical_type,
-        }
-        df = pd.DataFrame(series)
-        df.ww.init(logical_types=ltypes)
-        assert df.ww.columns[column_name].logical_type == logical_type
-        assert df[column_name].dtype == logical_type.primary_dtype
+        for logical_type in logical_types:
+            if series.isnull().any() and logical_type == Boolean:
+                continue
+            series = series.astype('object')
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            df.ww.init(logical_types=ltypes)
+            assert df.ww.columns[column_name].logical_type == logical_type
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -735,10 +736,12 @@ def test_sets_int64_dtype_on_init():
         pd.Series([1, pd.NA, 3], name=column_name),
     ]
 
-    logical_types = [Integer]
+    logical_types = [Integer, IntegerNullable]
     for series in series_list:
         series = series.astype('object')
         for logical_type in logical_types:
+            if series.isnull().any() and logical_type == Integer:
+                continue
             ltypes = {
                 column_name: logical_type,
             }
@@ -818,7 +821,7 @@ def test_invalid_dtype_casting():
         column_name: Integer,
     }
     err_msg = 'Error converting datatype for test_series from type object to type ' \
-        'Int64. Please confirm the underlying data is consistent with logical type Integer.'
+        'int64. Please confirm the underlying data is consistent with logical type Integer.'
     with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
@@ -1141,15 +1144,15 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema_df.ww.init(logical_types={'age': 'Categorical'})
     schema = schema_df.ww.schema
 
-    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'int64'})
-    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'bool'})
+    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'Int64'})
+    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'boolean'})
     incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
     incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
 
     assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
-            'dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64')
+            'dtype mismatch for column id between DataFrame dtype, Int64, and Integer dtype, int64')
     assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
-            'dtype mismatch for column is_registered between DataFrame dtype, bool, and Boolean dtype, boolean')
+            'dtype mismatch for column is_registered between DataFrame dtype, boolean, and Boolean dtype, bool')
     # Koalas backup dtypes make these checks not relevant
     if ks and not isinstance(sample_df, ks.DataFrame):
         assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
@@ -1189,7 +1192,7 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    ltype_dtype = 'Int64'
+    ltype_dtype = 'int64'
     new_dtype = 'string'
 
     warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
@@ -2041,10 +2044,10 @@ def test_setitem_new_column(sample_df):
     df = sample_df.copy()
     df.ww.init(use_standard_tags=False)
 
-    new_series = pd.Series([1, 2, 3])
+    new_series = pd.Series([1, 2, 3, 4])
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
-    dtype = 'Int64'
+    dtype = 'int64'
 
     df.ww['test_col2'] = new_series
     assert 'test_col2' in df.columns
@@ -2105,11 +2108,11 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change to column no change in types
     original_col = df.ww['age']
-    new_series = pd.Series([1, 2, 3])
+    new_series = pd.Series([1, 2, 3, 4])
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
-    dtype = 'Int64'
+    dtype = 'int64'
     new_series = init_series(new_series, use_standard_tags=True)
     df.ww['age'] = new_series
 
@@ -2248,8 +2251,8 @@ def test_accessor_types(sample_df):
     assert len(returned_types.index) == len(sample_df.columns)
 
     string_dtype = 'string'
-    boolean_dtype = 'boolean'
-    int_dtype = 'Int64'
+    boolean_dtype = 'bool'
+    int_dtype = 'int64'
 
     correct_physical_types = {
         'id': int_dtype,

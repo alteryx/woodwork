@@ -10,11 +10,13 @@ from mock import patch
 import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
     Double,
     Integer,
+    IntegerNullable,
     Ordinal,
     PostalCode,
     SubRegionCode
@@ -129,18 +131,18 @@ def test_list_logical_types_customized_type_system():
     df = list_logical_types()
     assert len(all_ltypes) == len(df)
     # Check that URL is unregistered
-    assert df.loc[19, 'is_default_type']
-    assert not df.loc[19, 'is_registered']
+    assert df.loc[21, 'is_default_type']
+    assert not df.loc[21, 'is_registered']
 
     # Check that new registered type is present and shows as registered
     assert 'CustomRegistered' in df['name'].values
-    assert not df.loc[4, 'is_default_type']
-    assert df.loc[4, 'is_registered']
+    assert not df.loc[5, 'is_default_type']
+    assert df.loc[5, 'is_registered']
 
     # Check that new unregistered type is present and shows as not registered
     assert 'CustomNotRegistered' in df['name'].values
-    assert not df.loc[3, 'is_default_type']
-    assert not df.loc[3, 'is_registered']
+    assert not df.loc[4, 'is_default_type']
+    assert not df.loc[4, 'is_registered']
     ww.type_system.reset_defaults()
 
 
@@ -439,11 +441,13 @@ def test_get_valid_mi_types():
     valid_types = get_valid_mi_types()
     expected_types = [
         Boolean,
+        BooleanNullable,
         Categorical,
         CountryCode,
         Datetime,
         Double,
         Integer,
+        IntegerNullable,
         Ordinal,
         PostalCode,
         SubRegionCode,

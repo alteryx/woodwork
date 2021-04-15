@@ -59,9 +59,9 @@ def test_to_dictionary(sample_df):
         cat_val = 'string'
     else:
         cat_val = 'category'
-    int_val = 'Int64'
+    int_val = 'int64'
     string_val = 'string'
-    bool_val = 'boolean'
+    bool_val = 'bool'
 
     expected = {'schema_version': '8.0.0',
                 'name': 'test_data',

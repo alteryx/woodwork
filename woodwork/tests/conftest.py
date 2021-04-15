@@ -168,8 +168,8 @@ def time_index_df(request):
 def numeric_time_index_df_pandas():
     return pd.DataFrame({
         'floats': pd.Series([1, 2, 3, 4], dtype='float'),
-        'ints': pd.Series([1, -2, 3, 4], dtype='Int64'),
-        'with_null': pd.Series([1, 2, pd.NA, 4], dtype='Int64'),
+        'ints': pd.Series([1, -2, 3, 4], dtype='int64'),
+        'with_null': pd.Series([1, pd.NA, 3, 4], dtype='Int64'),
     })
 
 
@@ -182,8 +182,6 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 @pytest.fixture()
 def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    numeric_time_index_df_pandas['ints'] = numeric_time_index_df_pandas['ints'].astype('int64')
-    numeric_time_index_df_pandas['with_null'] = numeric_time_index_df_pandas['ints'].astype('float')
     return ks.from_pandas(numeric_time_index_df_pandas)
 
 
