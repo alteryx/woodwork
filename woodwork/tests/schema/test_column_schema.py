@@ -234,3 +234,14 @@ def test_schema_equality():
     assert datetime_col != datetime_col_instantiated
     assert datetime_col_instantiated != datetime_col_format
     assert datetime_col_instantiated == datetime_col_param
+
+
+def test_schema_repr():
+    assert (repr(ColumnSchema(logical_type=Datetime, semantic_tags='time_index')) ==
+            "<ColumnSchema (Logical Type = Datetime) (Semantic Tags = ['time_index'])>")
+    assert (repr(ColumnSchema(logical_type=Integer)) ==
+            "<ColumnSchema (Logical Type = Integer)>")
+    assert (repr(ColumnSchema(semantic_tags={'category', 'foreign_key'})) ==
+            "<ColumnSchema (Semantic Tags = ['category', 'foreign_key'])>")
+    assert (repr(ColumnSchema()) ==
+            "<ColumnSchema>")
