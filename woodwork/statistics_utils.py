@@ -60,21 +60,21 @@ def _get_describe_dict(dataframe, include=None):
         series = df[column_name]
 
         # Calculate Aggregation Stats
-        if column._is_categorical():
+        if column.is_categorical:
             agg_stats = agg_stats_to_calculate['category']
-        elif column._is_numeric():
+        elif column.is_numeric:
             agg_stats = agg_stats_to_calculate['numeric']
-        elif column._is_datetime():
+        elif column.is_datetime:
             agg_stats = agg_stats_to_calculate[Datetime]
         else:
             agg_stats = ["count"]
         values = series.agg(agg_stats).to_dict()
 
         # Calculate other specific stats based on logical type or semantic tags
-        if column._is_boolean():
+        if column.is_boolean:
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
-        elif column._is_numeric():
+        elif column.is_numeric:
             quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[1]
@@ -117,12 +117,12 @@ def _replace_nans_for_mutual_info(schema, data):
         column = schema.columns[column_name]
         series = data[column_name]
 
-        if column._is_numeric() or column._is_datetime():
+        if column.is_numeric or column.is_datetime:
             mean = series.mean()
             if isinstance(mean, float) and not _get_ltype_class(column.logical_type) == Double:
                 data[column_name] = series.astype('float')
             data[column_name] = series.fillna(mean)
-        elif column._is_categorical() or column._is_boolean():
+        elif column.is_categorical or column.is_boolean:
             mode = _get_mode(series)
             data[column_name] = series.fillna(mode)
     return data
@@ -144,11 +144,11 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
 
     for col_name in data.columns:
         column = schema.columns[col_name]
-        if column._is_numeric():
+        if column.is_numeric:
             # bin numeric features to make categories
             data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
         # Convert Datetimes to total seconds - an integer - and bin
-        if column._is_datetime():
+        if column.is_datetime:
             data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
         # convert categories to integers
         new_col = data[col_name]
@@ -246,7 +246,7 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
         and `value`.
     """
     val_counts = {}
-    valid_cols = [col for col, column in dataframe.ww.columns.items() if column._is_categorical()]
+    valid_cols = [col for col, column in dataframe.ww.columns.items() if column.is_categorical]
     data = dataframe[valid_cols]
     is_ks = False
     if dd and isinstance(data, dd.DataFrame):

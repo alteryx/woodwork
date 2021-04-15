@@ -80,16 +80,24 @@ class ColumnSchema(object):
 
         return semantic_tags
 
-    def _is_numeric(self):
+    @property
+    def is_numeric(self):
+        """Whether the ColumnSchema is numeric in nature"""
         return 'numeric' in self.logical_type.standard_tags
 
-    def _is_categorical(self):
+    @property
+    def is_categorical(self):
+        """Whether the ColumnSchema is categorical in nature"""
         return 'category' in self.logical_type.standard_tags
 
-    def _is_datetime(self):
+    @property
+    def is_datetime(self):
+        """Whether the ColumnSchema is a Datetime column"""
         return _get_ltype_class(self.logical_type) == Datetime
 
-    def _is_boolean(self):
+    @property
+    def is_boolean(self):
+        """Whether the ColumnSchema is a Boolean column"""
         return _get_ltype_class(self.logical_type) == Boolean
 
     def _add_semantic_tags(self, new_tags, name):

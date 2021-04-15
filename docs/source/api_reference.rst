@@ -85,6 +85,19 @@ TableSchema
     TableSchema.types
     TableSchema.use_standard_tags
 
+ColumnSchema
+============
+
+.. currentmodule:: woodwork.table_schema
+.. autosummary::
+    :toctree: generated/
+
+    ColumnSchema
+    ColumnSchema.is_boolean
+    ColumnSchema.is_categorical
+    ColumnSchema.is_datetime
+    ColumnSchema.is_numeric
+    
 Serialization
 =============
 
