@@ -43,7 +43,7 @@ class ColumnSchema(object):
 
         self.use_standard_tags = use_standard_tags
 
-        semantic_tags = _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate)
+        semantic_tags = self._get_column_tags(semantic_tags, validate)
         self.semantic_tags = semantic_tags
 
     def __eq__(self, other):
@@ -69,6 +69,17 @@ class ColumnSchema(object):
         msg += ">"
         return msg
 
+    def _get_column_tags(self, semantic_tags, validate):
+        semantic_tags = _convert_input_to_set(semantic_tags, error_language='semantic_tags',
+                                              validate=validate)
+
+        if self.use_standard_tags:
+            if self.logical_type is None:
+                raise ValueError("Cannot use standard tags when logical_type is None")
+            semantic_tags = semantic_tags.union(self.logical_type.standard_tags)
+
+        return semantic_tags
+
 
 def _validate_logical_type(logical_type):
     ltype_class = _get_ltype_class(logical_type)
@@ -87,18 +98,6 @@ def _validate_description(column_description):
 def _validate_metadata(column_metadata):
     if not isinstance(column_metadata, dict):
         raise TypeError("Column metadata must be a dictionary")
-
-
-def _get_column_tags(semantic_tags, logical_type, use_standard_tags, validate):
-    semantic_tags = _convert_input_to_set(semantic_tags, error_language='semantic_tags',
-                                          validate=validate)
-
-    if use_standard_tags:
-        if logical_type is None:
-            raise ValueError("Cannot use standard tags when logical_type is None")
-        semantic_tags = semantic_tags.union(logical_type.standard_tags)
-
-    return semantic_tags
 
 
 def _is_col_numeric(col):
