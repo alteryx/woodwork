@@ -61,6 +61,7 @@ def test_accessor_replace_nans_for_mutual_info():
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
+        'bools_pdna': pd.Series([True, pd.NA, True, False], dtype='boolean'),
         'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
         'str': pd.Series(['test', np.nan, 'test2', 'test']),
         'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
@@ -74,6 +75,7 @@ def test_accessor_replace_nans_for_mutual_info():
     assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
     assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
+    assert formatted_df['bools_pdna'].equals(pd.Series([True, True, True, False], dtype='boolean'))
     assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
     assert formatted_df['str'].equals(pd.Series(['test', 'test', 'test2', 'test'], dtype='category'))
     assert formatted_df['str_no_nan'].equals(pd.Series(['test', 'test2', 'test2', 'test'], dtype='category'))
@@ -84,7 +86,9 @@ def test_accessor_make_categorical_for_mutual_info():
     df = pd.DataFrame({
         'ints1': pd.Series([1, 2, 3, 2]),
         'ints2': pd.Series([1, 100, 1, 100]),
+        'ints3': pd.Series([1, 2, 3, 2], dtype='Int64'),
         'bools': pd.Series([True, False, True, False]),
+        'booleans': pd.Series([True, False, True, False], dtype='boolean'),
         'categories': pd.Series(['test', 'test2', 'test2', 'test']),
         'dates': pd.Series(['2020-01-01', '2019-01-02', '2020-08-03', '1997-01-04'])
     })
@@ -95,7 +99,9 @@ def test_accessor_make_categorical_for_mutual_info():
 
     assert formatted_num_bins_df['ints1'].equals(pd.Series([0, 1, 3, 1], dtype='int8'))
     assert formatted_num_bins_df['ints2'].equals(pd.Series([0, 1, 0, 1], dtype='int8'))
+    assert formatted_num_bins_df['ints3'].equals(pd.Series([0, 1, 3, 1], dtype='int8'))
     assert formatted_num_bins_df['bools'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
+    assert formatted_num_bins_df['booleans'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
     assert formatted_num_bins_df['dates'].equals(pd.Series([2, 1, 3, 0], dtype='int8'))
 
