@@ -145,6 +145,9 @@ def test_is_numeric():
     instantiated_column = ColumnSchema(logical_type=Integer())
     assert instantiated_column.is_numeric
 
+    empty_column = ColumnSchema()
+    assert not empty_column.is_numeric
+
 
 def test_is_categorical():
     categorical_column = ColumnSchema(logical_type=Categorical)
@@ -162,6 +165,9 @@ def test_is_categorical():
     no_standard_tags = ColumnSchema(logical_type=Categorical, use_standard_tags=False)
     assert no_standard_tags.is_categorical
 
+    empty_column = ColumnSchema()
+    assert not empty_column.is_categorical
+
 
 def test_is_boolean():
     boolean_column = ColumnSchema(logical_type=Boolean)
@@ -175,6 +181,9 @@ def test_is_boolean():
 
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
     assert not nl_column.is_boolean
+
+    empty_column = ColumnSchema()
+    assert not empty_column.is_boolean
 
 
 def test_is_datetime():
@@ -192,6 +201,9 @@ def test_is_datetime():
 
     double_column = ColumnSchema(logical_type=Double)
     assert not double_column.is_datetime
+
+    empty_column = ColumnSchema()
+    assert not empty_column.is_datetime
 
 
 def test_set_semantic_tags_no_standard_tags():
@@ -290,7 +302,6 @@ def test_reset_semantic_tags_returns_new_object():
 
 
 def test_remove_semantic_tags():
-    # --> keep the equivalent with categorical ltype
     tags_to_remove = [
         'tag1',
         ['tag1'],
