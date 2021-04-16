@@ -3,14 +3,13 @@ import re
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 from woodwork.accessor_utils import init_series
 from woodwork.column_accessor import WoodworkColumnAccessor
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
-    DuplicateTagsWarning,
     ParametersIgnoredWarning,
-    StandardTagsChangedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning
 )
@@ -257,17 +256,7 @@ def test_accessor_repr_error_before_init(sample_series):
 
 def test_set_semantic_tags(sample_series):
     semantic_tags = {'tag1', 'tag2'}
-    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
-    assert sample_series.ww.semantic_tags == semantic_tags
-
-    new_tags = ['new_tag']
-    sample_series.ww.set_semantic_tags(new_tags)
-    assert sample_series.ww.semantic_tags == set(new_tags)
-
-
-def test_set_semantic_tags_with_standard_tags(sample_series):
-    semantic_tags = {'tag1', 'tag2'}
-    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=True)
+    sample_series.ww.init(semantic_tags=semantic_tags)
     assert sample_series.ww.semantic_tags == semantic_tags.union({'category'})
 
     new_tags = ['new_tag']
@@ -307,38 +296,16 @@ def test_does_not_add_standard_tags():
 
 def test_add_custom_tags(sample_series):
     semantic_tags = 'initial_tag'
-    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
+    sample_series.ww.init(semantic_tags=semantic_tags)
 
     sample_series.ww.add_semantic_tags('string_tag')
-    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag'}
+    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'category'}
 
     sample_series.ww.add_semantic_tags(['list_tag'])
-    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
+    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'category'}
 
     sample_series.ww.add_semantic_tags({'set_tag'})
-    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
-
-
-def test_warns_on_adding_duplicate_tag(sample_series):
-    semantic_tags = ['first_tag', 'second_tag']
-    sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
-
-    expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'sample_series'"
-    with pytest.warns(DuplicateTagsWarning) as record:
-        sample_series.ww.add_semantic_tags(['first_tag', 'second_tag'])
-    assert len(record) == 1
-    assert record[0].message.args[0] == expected_message
-
-
-def test_set_logical_type_with_standard_tags(sample_series):
-    sample_series.ww.init(logical_type='Categorical',
-                          semantic_tags='original_tag',
-                          use_standard_tags=True)
-
-    new_series = sample_series.ww.set_logical_type('CountryCode')
-    assert sample_series.ww.logical_type == Categorical
-    assert new_series.ww.logical_type == CountryCode
-    assert new_series.ww.semantic_tags == {'category'}
+    assert sample_series.ww.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag', 'category'}
 
 
 def test_set_logical_type_without_standard_tags(sample_series):
@@ -383,16 +350,6 @@ def test_set_logical_type_invalid_dtype_change(sample_series):
         sample_series.ww.set_logical_type('Integer')
 
 
-def test_reset_semantic_tags_with_standard_tags(sample_series):
-    semantic_tags = 'initial_tag'
-    sample_series.ww.init(semantic_tags=semantic_tags,
-                          logical_type=Categorical,
-                          use_standard_tags=True)
-
-    sample_series.ww.reset_semantic_tags()
-    assert sample_series.ww.semantic_tags == Categorical.standard_tags
-
-
 def test_reset_semantic_tags_without_standard_tags(sample_series):
     semantic_tags = 'initial_tag'
     sample_series.ww.init(semantic_tags=semantic_tags, use_standard_tags=False)
@@ -410,37 +367,9 @@ def test_remove_semantic_tags(sample_series):
 
     for tag in tags_to_remove:
         series = sample_series.copy()
-        series.ww.init(semantic_tags=['tag1', 'tag2'], use_standard_tags=False)
+        series.ww.init(semantic_tags=['tag1', 'tag2'], use_standard_tags=True)
         series.ww.remove_semantic_tags(tag)
-        assert series.ww.semantic_tags == {'tag2'}
-
-
-def test_remove_standard_semantic_tag(sample_series):
-    series = sample_series.copy()
-    # Check that warning is raised if use_standard_tags is True - tag should be removed
-    series.ww.init(logical_type=Categorical, semantic_tags='tag1', use_standard_tags=True)
-    expected_message = 'Standard tags have been removed from "sample_series"'
-    with pytest.warns(StandardTagsChangedWarning) as record:
-        series.ww.remove_semantic_tags(['tag1', 'category'])
-    assert len(record) == 1
-    assert record[0].message.args[0] == expected_message
-    assert series.ww.semantic_tags == set()
-
-    # Check that warning is not raised if use_standard_tags is False - tag should be removed
-    series = sample_series.copy()
-    series.ww.init(logical_type=Categorical, semantic_tags=['category', 'tag1'], use_standard_tags=False)
-
-    with pytest.warns(None) as record:
-        series.ww.remove_semantic_tags(['tag1', 'category'])
-    assert len(record) == 0
-    assert series.ww.semantic_tags == set()
-
-
-def test_remove_semantic_tags_raises_error_with_invalid_tag(sample_series):
-    sample_series.ww.init(semantic_tags='tag1')
-    error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'sample_series'")
-    with pytest.raises(LookupError, match=error_msg):
-        sample_series.ww.remove_semantic_tags('invalid_tagname')
+        assert series.ww.semantic_tags == {'tag2', 'category'}
 
 
 def test_series_methods_on_accessor(sample_series):
@@ -542,7 +471,7 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     assert series_nunique == ww_nunique
 
 
-def test_series_methods_on_accessor_new_schema_dict(sample_series):
+def test_series_methods_on_accessor_new_schema_object(sample_series):
     sample_series.ww.init(semantic_tags=['new_tag', 'tag2'], metadata={'important_keys': [1, 2, 3]})
 
     copied_series = sample_series.ww.copy()
@@ -752,3 +681,40 @@ def test_schema_property(sample_series):
     changed_schema.metadata['new'] = 1
 
     assert changed_schema != sample_series.ww._schema
+
+
+@patch("woodwork.column_accessor.WoodworkColumnAccessor._validate_logical_type")
+def test_validation_methods_called_init(mock_validate_logical_type, sample_series):
+    assert not mock_validate_logical_type.called
+
+    not_validated = sample_series.copy()
+    not_validated.ww.init(validate=False)
+
+    assert not mock_validate_logical_type.called
+
+    validated = sample_series.copy()
+    validated.ww.init(validate=True)
+
+    assert mock_validate_logical_type.called
+    assert validated.ww == not_validated.ww
+    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+
+
+@patch("woodwork.column_accessor._validate_schema")
+def test_validation_methods_called_init_with_schema(mock_validate_schema, sample_series):
+    assert not mock_validate_schema.called
+    schema_series = sample_series.copy()
+    schema_series.ww.init()
+    schema = schema_series.ww.schema
+
+    not_validated = sample_series.copy()
+    not_validated.ww.init(schema=schema, validate=False)
+
+    assert not mock_validate_schema.called
+
+    validated = sample_series.copy()
+    validated.ww.init(schema=schema, validate=True)
+
+    assert mock_validate_schema.called
+    assert validated.ww == not_validated.ww
+    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))

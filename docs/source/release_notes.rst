@@ -15,6 +15,7 @@ Release Notes
         * Allow initializing a ``WoodworkColumnAccessor`` with a ``ColumnSchema`` (:pr:`814`)
         * Add ``__repr__`` to ``ColumnSchema`` (:pr:`817`)
         * Add ``BooleanNullable`` and ``IntegerNullable`` logical types (:pr:`830`)
+        * Add validation control to WoodworkColumnAccessor (:pr:`833`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
@@ -40,6 +41,7 @@ Release Notes
         * Update latest dependency checker to generate separate core, koalas, and dask dependencies (:pr:`815`, :pr:`825`)
         * Ignore latest dependency branch when checking for updates to the release notes (:pr:`827`)
         * Change from GitHub PAT to auto generated GitHub Token for dependency checker (:pr:`831`)
+        * Expand ``ColumnSchema`` semantic tag testing coverage and null ``logical_type`` testing coverage (:pr:`832`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`

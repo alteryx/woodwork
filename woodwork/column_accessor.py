@@ -32,7 +32,7 @@ class WoodworkColumnAccessor:
 
     def init(self, logical_type=None, semantic_tags=None,
              use_standard_tags=True, description=None, metadata=None,
-             schema=None):
+             schema=None, validate=True):
         """Initializes Woodwork typing information for a Series.
 
         Args:
@@ -53,10 +53,14 @@ class WoodworkColumnAccessor:
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the Series. Similarly, to avoid unintended typing information changes,
                 the same schema object should not be shared between Series.
+            validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
+                Should be set to False only when parameters and data are known to be valid.
+                Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
 
         if schema is not None:
-            _validate_schema(schema, self._series)
+            if validate:
+                _validate_schema(schema, self._series)
 
             extra_params = []
             if logical_type is not None:
@@ -76,13 +80,15 @@ class WoodworkColumnAccessor:
         else:
             logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
 
-            self._validate_logical_type(logical_type)
+            if validate:
+                self._validate_logical_type(logical_type)
 
             self._schema = ColumnSchema(logical_type=logical_type,
                                         semantic_tags=semantic_tags,
                                         use_standard_tags=use_standard_tags,
                                         description=description,
-                                        metadata=metadata)
+                                        metadata=metadata,
+                                        validate=validate)
 
     @property
     def schema(self):
@@ -232,7 +238,7 @@ class WoodworkColumnAccessor:
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(type(result), self._schema.logical_type)
                     if str(result.dtype) == valid_dtype:
-                        result.ww.init(schema=self.schema)
+                        result.ww.init(schema=self.schema, validate=False)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{valid_dtype}, and returned dtype, {result.dtype}'

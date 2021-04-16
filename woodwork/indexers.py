@@ -49,11 +49,11 @@ def _process_selection(selection, original_data):
             # Selecting a new Series from an existing Series
             schema = original_data.ww._schema
         if schema:
-            selection.ww.init(schema=copy.deepcopy(schema))
+            selection.ww.init(schema=copy.deepcopy(schema), validate=False)
     elif _is_dataframe(selection):
         # Selecting a new DataFrame from an existing DataFrame
         schema = original_data.ww.schema
         new_schema = schema._get_subset_schema(list(selection.columns))
-        selection.ww.init(schema=new_schema)
+        selection.ww.init(schema=new_schema, validate=False)
     # Selecting a single value or return selection from above
     return selection

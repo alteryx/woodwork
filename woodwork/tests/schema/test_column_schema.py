@@ -10,6 +10,10 @@ from woodwork.column_schema import (
     _validate_logical_type,
     _validate_metadata
 )
+from woodwork.exceptions import (
+    DuplicateTagsWarning,
+    StandardTagsChangedWarning
+)
 from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
@@ -146,6 +150,9 @@ def test_is_numeric():
     instantiated_column = ColumnSchema(logical_type=Integer())
     assert instantiated_column.is_numeric
 
+    empty_column = ColumnSchema()
+    assert not empty_column.is_numeric
+
 
 def test_is_categorical():
     categorical_column = ColumnSchema(logical_type=Categorical)
@@ -162,6 +169,9 @@ def test_is_categorical():
 
     no_standard_tags = ColumnSchema(logical_type=Categorical, use_standard_tags=False)
     assert no_standard_tags.is_categorical
+
+    empty_column = ColumnSchema()
+    assert not empty_column.is_categorical
 
 
 def test_is_boolean():
@@ -180,6 +190,9 @@ def test_is_boolean():
     nl_column = ColumnSchema(logical_type=NaturalLanguage)
     assert not nl_column.is_boolean
 
+    empty_column = ColumnSchema()
+    assert not empty_column.is_boolean
+
 
 def test_is_datetime():
     datetime_column = ColumnSchema(logical_type=Datetime)
@@ -197,6 +210,95 @@ def test_is_datetime():
     double_column = ColumnSchema(logical_type=Double)
     assert not double_column.is_datetime
 
+    empty_column = ColumnSchema()
+    assert not empty_column.is_datetime
+
+
+def test_set_semantic_tags_no_standard_tags():
+    semantic_tags = {'tag1', 'tag2'}
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags=semantic_tags)
+    assert schema.semantic_tags == semantic_tags
+
+    new_tag = ['new_tag']
+    schema._set_semantic_tags(new_tag)
+    assert schema.semantic_tags == set(new_tag)
+
+
+def test_set_semantic_tags_with_standard_tags():
+    semantic_tags = {'tag1', 'tag2'}
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags=semantic_tags, use_standard_tags=True)
+    assert schema.semantic_tags == semantic_tags.union({'category'})
+
+    new_tag = ['new_tag']
+    schema._set_semantic_tags(new_tag)
+    assert schema.semantic_tags == set(new_tag).union({'category'})
+
+
+def test_set_semantic_tags_no_logical_type():
+    semantic_tags = {'tag1', 'tag2'}
+    schema = ColumnSchema(semantic_tags=semantic_tags, use_standard_tags=False)
+
+    new_tag = ['new_tag']
+    schema._set_semantic_tags(new_tag)
+    assert schema.semantic_tags == set(new_tag)
+
+
+def test_add_custom_tags():
+    semantic_tags = 'initial_tag'
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags=semantic_tags, use_standard_tags=True)
+
+    schema._add_semantic_tags('string_tag', 'col_name')
+    assert schema.semantic_tags == {'initial_tag', 'string_tag', 'category'}
+
+    schema._add_semantic_tags(['list_tag'], 'col_name')
+    assert schema.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'category'}
+
+    schema._add_semantic_tags({'set_tag'}, 'col_name')
+    assert schema.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag', 'category'}
+
+
+def test_add_custom_tags_no_logical_type():
+    semantic_tags = 'initial_tag'
+    schema = ColumnSchema(semantic_tags=semantic_tags, use_standard_tags=False)
+
+    schema._add_semantic_tags('string_tag', 'col_name')
+    assert schema.semantic_tags == {'initial_tag', 'string_tag'}
+
+    schema._add_semantic_tags(['list_tag'], 'col_name')
+    assert schema.semantic_tags == {'initial_tag', 'string_tag', 'list_tag'}
+
+    schema._add_semantic_tags({'set_tag'}, 'col_name')
+    assert schema.semantic_tags == {'initial_tag', 'string_tag', 'list_tag', 'set_tag'}
+
+
+def test_warns_on_adding_duplicate_tag():
+    semantic_tags = ['first_tag', 'second_tag']
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags=semantic_tags, use_standard_tags=False)
+
+    expected_message = "Semantic tag(s) 'first_tag, second_tag' already present on column 'col_name'"
+    with pytest.warns(DuplicateTagsWarning) as record:
+        schema._add_semantic_tags(['first_tag', 'second_tag'], 'col_name')
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
+
+
+def test_reset_semantic_tags_with_standard_tags():
+    semantic_tags = 'initial_tag'
+    schema = ColumnSchema(semantic_tags=semantic_tags,
+                          logical_type=Categorical,
+                          use_standard_tags=True)
+
+    schema._reset_semantic_tags()
+    assert schema.semantic_tags == Categorical.standard_tags
+
+
+def test_reset_semantic_tags_without_standard_tags():
+    semantic_tags = 'initial_tag'
+    schema = ColumnSchema(semantic_tags=semantic_tags, use_standard_tags=False)
+
+    schema._reset_semantic_tags()
+    assert schema.semantic_tags == set()
+
 
 def test_reset_semantic_tags_returns_new_object():
     schema = ColumnSchema(logical_type=Integer, semantic_tags=set(), use_standard_tags=True)
@@ -205,6 +307,53 @@ def test_reset_semantic_tags_returns_new_object():
     schema._reset_semantic_tags()
     assert schema.semantic_tags is not standard_tags
     assert schema.semantic_tags == standard_tags
+
+
+def test_remove_semantic_tags():
+    tags_to_remove = [
+        'tag1',
+        ['tag1'],
+        {'tag1'}
+    ]
+
+    for tag in tags_to_remove:
+        schema = ColumnSchema(semantic_tags=['tag1', 'tag2'], use_standard_tags=False)
+        schema._remove_semantic_tags(tag, 'col_name')
+        assert schema.semantic_tags == {'tag2'}
+
+
+def test_remove_standard_semantic_tag():
+    # Check that warning is raised if use_standard_tags is True - tag should be removed
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags='tag1', use_standard_tags=True)
+    expected_message = 'Standard tags have been removed from "col_name"'
+    with pytest.warns(StandardTagsChangedWarning) as record:
+        schema._remove_semantic_tags(['tag1', 'category'], 'col_name')
+    assert len(record) == 1
+    assert record[0].message.args[0] == expected_message
+    assert schema.semantic_tags == set()
+
+    # Check that warning is not raised if use_standard_tags is False - tag should be removed
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags=['category', 'tag1'], use_standard_tags=False)
+
+    with pytest.warns(None) as record:
+        schema._remove_semantic_tags(['tag1', 'category'], 'col_name')
+    assert len(record) == 0
+    assert schema.semantic_tags == set()
+
+    # Check that warning is not raised if use_standard_tags is False and no Logical Type is specified
+    schema = ColumnSchema(semantic_tags=['category', 'tag1'], use_standard_tags=False)
+
+    with pytest.warns(None) as record:
+        schema._remove_semantic_tags(['tag1', 'category'], 'col_name')
+    assert len(record) == 0
+    assert schema.semantic_tags == set()
+
+
+def test_remove_semantic_tags_raises_error_with_invalid_tag():
+    schema = ColumnSchema(logical_type=Categorical, semantic_tags='tag1')
+    error_msg = re.escape("Semantic tag(s) 'invalid_tagname' not present on column 'col_name'")
+    with pytest.raises(LookupError, match=error_msg):
+        schema._remove_semantic_tags('invalid_tagname', 'col_name')
 
 
 def test_schema_equality():
