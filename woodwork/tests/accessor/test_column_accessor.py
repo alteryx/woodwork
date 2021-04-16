@@ -3,6 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 from woodwork.accessor_utils import init_series
 from woodwork.column_accessor import WoodworkColumnAccessor
@@ -752,3 +753,40 @@ def test_schema_property(sample_series):
     changed_schema.metadata['new'] = 1
 
     assert changed_schema != sample_series.ww._schema
+
+
+@patch("woodwork.column_accessor.WoodworkColumnAccessor._validate_logical_type")
+def test_validation_methods_called_init(mock_validate_logical_type, sample_series):
+    assert not mock_validate_logical_type.called
+
+    not_validated = sample_series.copy()
+    not_validated.ww.init(validate=False)
+
+    assert not mock_validate_logical_type.called
+
+    validated = sample_series.copy()
+    validated.ww.init(validate=True)
+
+    assert mock_validate_logical_type.called
+    assert validated.ww == not_validated.ww
+    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+
+
+@patch("woodwork.column_accessor._validate_schema")
+def test_validation_methods_called_init_with_schema(mock_validate_schema, sample_series):
+    assert not mock_validate_schema.called
+    schema_series = sample_series.copy()
+    schema_series.ww.init()
+    schema = schema_series.ww.schema
+
+    not_validated = sample_series.copy()
+    not_validated.ww.init(schema=schema, validate=False)
+
+    assert not mock_validate_schema.called
+
+    validated = sample_series.copy()
+    validated.ww.init(schema=schema, validate=True)
+
+    assert mock_validate_schema.called
+    assert validated.ww == not_validated.ww
+    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
