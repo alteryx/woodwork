@@ -14,6 +14,7 @@ Release Notes
         * Add ``WoodworkColumnAccessor.schema`` and handle copying column schema (:pr:`799`)
         * Allow initializing a ``WoodworkColumnAccessor`` with a ``ColumnSchema`` (:pr:`814`)
         * Add ``__repr__`` to ``ColumnSchema`` (:pr:`817`)
+        * Add validation control to WoodworkColumnAccessor (:pr:`833`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)

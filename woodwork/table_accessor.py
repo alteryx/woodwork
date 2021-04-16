@@ -208,7 +208,7 @@ class WoodworkTableAccessor:
         if column.use_standard_tags:
             column.semantic_tags |= column.logical_type.standard_tags
 
-        series.ww.init(schema=column)
+        series.ww.init(schema=column, validate=False)
 
         return series
 
@@ -662,7 +662,7 @@ class WoodworkTableAccessor:
         series = self._dataframe.pop(column_name)
 
         # Initialize Woodwork typing info for series
-        series.ww.init(schema=self.schema.columns[column_name])
+        series.ww.init(schema=self.schema.columns[column_name], validate=False)
 
         # Update schema to not include popped column
         del self._schema.columns[column_name]
