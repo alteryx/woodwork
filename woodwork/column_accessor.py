@@ -238,7 +238,7 @@ class WoodworkColumnAccessor:
                 if _is_series(result):
                     valid_dtype = _get_valid_dtype(type(result), self._schema.logical_type)
                     if str(result.dtype) == valid_dtype:
-                        result.ww.init(schema=self.schema)
+                        result.ww.init(schema=self.schema, validate=False)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
                             f'{valid_dtype}, and returned dtype, {result.dtype}'
