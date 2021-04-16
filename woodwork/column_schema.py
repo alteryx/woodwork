@@ -83,12 +83,12 @@ class ColumnSchema(object):
     @property
     def is_numeric(self):
         """Whether the ColumnSchema is numeric in nature"""
-        return 'numeric' in self.logical_type.standard_tags
+        return self.logical_type is not None and 'numeric' in self.logical_type.standard_tags
 
     @property
     def is_categorical(self):
         """Whether the ColumnSchema is categorical in nature"""
-        return 'category' in self.logical_type.standard_tags
+        return self.logical_type is not None and 'category' in self.logical_type.standard_tags
 
     @property
     def is_datetime(self):
@@ -126,8 +126,8 @@ class ColumnSchema(object):
         invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
         if invalid_tags:
             raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
-        standard_tags_to_remove = sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags)))
-        if standard_tags_to_remove and self.use_standard_tags:
+
+        if self.use_standard_tags and sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags))):
             warnings.warn(StandardTagsChangedWarning().get_warning_message(not self.use_standard_tags, name),
                           StandardTagsChangedWarning)
         self.semantic_tags = self.semantic_tags.difference(tags_to_remove)

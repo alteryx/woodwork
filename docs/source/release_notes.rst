@@ -40,6 +40,7 @@ Release Notes
         * Update latest dependency checker to generate separate core, koalas, and dask dependencies (:pr:`815`, :pr:`825`)
         * Ignore latest dependency branch when checking for updates to the release notes (:pr:`827`)
         * Change from GitHub PAT to auto generated GitHub Token for dependency checker (:pr:`831`)
+        * Expand ``ColumnSchema`` semantic tag testing coverage and null ``logical_type`` testing coverage (:pr:`832`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
