@@ -193,7 +193,7 @@ def numeric_time_index_df(request):
 @pytest.fixture()
 def describe_df_pandas():
     index_data = [0, 1, 2, 3, 4, 5, 6, 7]
-    boolean_data = [True, False, True, True, False, True, False, True]
+    boolean_data = [True, False, True, True, False, True, False, None]
     category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
     datetime_data = pd.to_datetime(['2020-01-01',
                                     '2020-02-01',

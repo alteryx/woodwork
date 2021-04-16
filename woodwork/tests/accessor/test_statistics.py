@@ -4,6 +4,7 @@ import pandas as pd
 from woodwork.logical_types import (
     URL,
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
@@ -231,7 +232,8 @@ def test_describe_accessor_method(describe_df):
                           Ordinal(order=('yellow', 'red', 'blue')),
                           PostalCode,
                           SubRegionCode]
-    boolean_ltypes = [Boolean]
+    boolean_ltypes = [BooleanNullable]
+    non_nullable_boolean_ltypes = [Boolean]
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
@@ -281,9 +283,29 @@ def test_describe_accessor_method(describe_df):
         assert stats_df.index.tolist() == expected_index
         assert expected_vals.equals(stats_df['category_col'].dropna())
 
-    # Test boolean columns
+    # Test nullable boolean columns
     boolean_data = describe_df[['boolean_col']]
     for ltype in boolean_ltypes:
+        expected_dtype = ltype.primary_dtype
+        expected_vals = pd.Series({
+            'physical_type': expected_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nan_count': 1,
+            'mode': True,
+            'num_true': 4,
+            'num_false': 3}, name='boolean_col')
+        boolean_data.ww.init(logical_types={'boolean_col': ltype}, semantic_tags={'boolean_col': 'custom_tag'})
+        stats_df = boolean_data.ww.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'boolean_col'}
+        assert stats_df.index.tolist() == expected_index
+        assert expected_vals.equals(stats_df['boolean_col'].dropna())
+
+    # Test non-nullable boolean columns
+    boolean_data = describe_df[['boolean_col']].fillna(True)
+    for ltype in non_nullable_boolean_ltypes:
         expected_dtype = ltype.primary_dtype
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
