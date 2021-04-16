@@ -4,13 +4,7 @@ import copy
 import pandas as pd
 
 import woodwork as ww
-from woodwork.column_schema import (
-    ColumnSchema,
-    _add_semantic_tags,
-    _remove_semantic_tags,
-    _reset_semantic_tags,
-    _set_semantic_tags
-)
+from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import ColumnNotPresentError
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
@@ -192,18 +186,13 @@ class TableSchema(object):
             if new_logical_type is not None:
                 self.columns[col_name].logical_type = new_logical_type
 
-            # Get new semantic tags, removing existing tags
+            # Set new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
             if new_semantic_tags is None:
-                new_semantic_tags = _reset_semantic_tags(new_logical_type.standard_tags, self.use_standard_tags[col_name])
+                self.columns[col_name]._reset_semantic_tags()
             else:
-                new_semantic_tags = _set_semantic_tags(new_semantic_tags,
-                                                       self.logical_types[col_name].standard_tags,
-                                                       self.use_standard_tags[col_name])
-                _validate_not_setting_index_tags(new_semantic_tags, col_name)
-
-            # Update the tags for the TableSchema
-            self.columns[col_name].semantic_tags = new_semantic_tags
+                self.columns[col_name]._set_semantic_tags(new_semantic_tags)
+                _validate_not_setting_index_tags(self.semantic_tags[col_name], col_name)
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)
@@ -222,8 +211,7 @@ class TableSchema(object):
         for col_name, tags_to_add in semantic_tags.items():
             tags_to_add = _convert_input_to_set(tags_to_add)
             _validate_not_setting_index_tags(tags_to_add, col_name)
-            new_semantic_tags = _add_semantic_tags(tags_to_add, self.semantic_tags[col_name], col_name)
-            self.columns[col_name].semantic_tags = new_semantic_tags
+            self.columns[col_name]._add_semantic_tags(tags_to_add, col_name)
 
     def remove_semantic_tags(self, semantic_tags):
         """Remove the semantic tags for any column names in the provided semantic_tags
@@ -238,19 +226,16 @@ class TableSchema(object):
         for col_name, tags_to_remove in semantic_tags.items():
             standard_tags = self.logical_types[col_name].standard_tags
             tags_to_remove = _convert_input_to_set(tags_to_remove)
+            original_tags = self.semantic_tags[col_name].copy()
 
-            new_semantic_tags = _remove_semantic_tags(tags_to_remove,
-                                                      self.semantic_tags[col_name],
-                                                      col_name,
-                                                      standard_tags,
-                                                      self.use_standard_tags[col_name])
+            self.columns[col_name]._remove_semantic_tags(tags_to_remove,
+                                                         col_name)
+
             # If the index is removed, reinsert any standard tags not explicitly removed
-            original_tags = self.semantic_tags[col_name]
-            if self.use_standard_tags[col_name] and 'index' in original_tags and 'index' not in new_semantic_tags:
+            if self.use_standard_tags[col_name] and 'index' in original_tags and 'index' not in self.columns[col_name].semantic_tags:
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
                 standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
-                new_semantic_tags = new_semantic_tags.union(standard_tags_to_reinsert)
-            self.columns[col_name].semantic_tags = new_semantic_tags
+                self.columns[col_name].semantic_tags = self.semantic_tags[col_name].union(standard_tags_to_reinsert)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
@@ -275,8 +260,7 @@ class TableSchema(object):
 
         for col_name in columns:
             original_tags = self.semantic_tags[col_name]
-            new_semantic_tags = _reset_semantic_tags(self.logical_types[col_name].standard_tags, self.use_standard_tags[col_name])
-            self.columns[col_name].semantic_tags = new_semantic_tags
+            self.columns[col_name]._reset_semantic_tags()
 
             if retain_index_tags and 'index' in original_tags:
                 self._set_index_tags(col_name)

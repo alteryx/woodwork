@@ -29,6 +29,7 @@ Release Notes
         * Store column typing information in a ``ColumnSchema`` object instead of a dictionary (:pr:`791`)
         * ``TableSchema`` does not use standard tags by default (:pr:`806`)
         * Store ``use_standard_tags`` on the ``ColumnSchema`` instead of the ``TableSchema`` (:pr:`809`)
+        * Move functions in ``column_schema.py`` to be methods on ``ColumnSchema`` (:pr:`829`)
     * Documentation Changes
         * Update Pygments version requirement (:pr:`751`)
         * Update spark config for docs build (:pr:`787`, :pr:`801`, :pr:`810`)
@@ -38,6 +39,7 @@ Release Notes
         * Separate latest unit tests into pandas, dask, koalas (:pr:`813`)
         * Update latest dependency checker to generate separate core, koalas, and dask dependencies (:pr:`815`, :pr:`825`)
         * Ignore latest dependency branch when checking for updates to the release notes (:pr:`827`)
+        * Change from GitHub PAT to auto generated GitHub Token for dependency checker (:pr:`831`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
