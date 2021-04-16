@@ -12,10 +12,12 @@ from woodwork.column_schema import (
 )
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     Datetime,
     Double,
     Integer,
+    IntegerNullable,
     NaturalLanguage,
     Ordinal
 )
@@ -126,6 +128,9 @@ def test_is_numeric():
     int_column = ColumnSchema(logical_type=Integer)
     assert int_column.is_numeric
 
+    nullable_int_column = ColumnSchema(logical_type=IntegerNullable)
+    assert nullable_int_column.is_numeric
+
     double_column = ColumnSchema(logical_type=Double)
     assert double_column.is_numeric
 
@@ -162,6 +167,9 @@ def test_is_categorical():
 def test_is_boolean():
     boolean_column = ColumnSchema(logical_type=Boolean)
     assert boolean_column.is_boolean
+
+    nullable_boolean_column = ColumnSchema(logical_type=BooleanNullable)
+    assert nullable_boolean_column.is_boolean
 
     instantiated_column = ColumnSchema(logical_type=Boolean())
     assert instantiated_column.is_boolean

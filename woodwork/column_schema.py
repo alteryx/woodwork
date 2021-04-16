@@ -5,7 +5,7 @@ from woodwork.exceptions import (
     DuplicateTagsWarning,
     StandardTagsChangedWarning
 )
-from woodwork.logical_types import Boolean, Datetime, Ordinal
+from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
@@ -98,7 +98,8 @@ class ColumnSchema(object):
     @property
     def is_boolean(self):
         """Whether the ColumnSchema is a Boolean column"""
-        return _get_ltype_class(self.logical_type) == Boolean
+        ltype_class = _get_ltype_class(self.logical_type)
+        return ltype_class == Boolean or ltype_class == BooleanNullable
 
     def _add_semantic_tags(self, new_tags, name):
         """Add the specified semantic tags to the current set of tags
