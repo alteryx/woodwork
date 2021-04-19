@@ -482,7 +482,7 @@ def test_accessor_init_with_string_logical_types(sample_df):
 
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'age': 'Integer',
+        'age': 'IntegerNullable',
         'signup_date': 'Datetime'
     }
     schema_df = sample_df.copy()
@@ -491,7 +491,7 @@ def test_accessor_init_with_string_logical_types(sample_df):
                       time_index='signup_date'
                       )
     assert schema_df.ww.columns['full_name'].logical_type == NaturalLanguage
-    assert schema_df.ww.columns['age'].logical_type == Integer
+    assert schema_df.ww.columns['age'].logical_type == IntegerNullable
     assert schema_df.ww.time_index == 'signup_date'
 
 
@@ -1145,14 +1145,14 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema = schema_df.ww.schema
 
     incorrect_int_dtype_df = schema_df.ww.astype({'id': 'Int64'})
-    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'boolean'})
+    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'Int64'})
     incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
     incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
 
     assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
             'dtype mismatch for column id between DataFrame dtype, Int64, and Integer dtype, int64')
     assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
-            'dtype mismatch for column is_registered between DataFrame dtype, boolean, and Boolean dtype, bool')
+            'dtype mismatch for column is_registered between DataFrame dtype, Int64, and BooleanNullable dtype, boolean')
     # Koalas backup dtypes make these checks not relevant
     if ks and not isinstance(sample_df, ks.DataFrame):
         assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
@@ -1385,7 +1385,7 @@ def test_select_ltypes_strings(sample_df):
                                      'signup_date': Datetime,
                                      })
 
-    df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'Boolean', 'datetime'])
+    df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'BooleanNullable', 'datetime'])
     assert len(df_multiple_ltypes.columns) == 5
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
@@ -1403,7 +1403,7 @@ def test_select_ltypes_objects(sample_df):
                                      'signup_date': Datetime,
                                      })
 
-    df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, Boolean, Datetime])
+    df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, BooleanNullable, Datetime])
     assert len(df_multiple_ltypes.columns) == 5
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
@@ -1573,10 +1573,9 @@ def test_select_single_inputs(sample_df):
     assert len(df_ltype_string.columns) == 1
     assert 'full_name' in df_ltype_string.columns
 
-    df_ltype_obj = schema_df.ww.select(Integer)
-    assert len(df_ltype_obj.columns) == 2
+    df_ltype_obj = schema_df.ww.select(IntegerNullable)
+    assert len(df_ltype_obj.columns) == 1
     assert 'age' in df_ltype_obj.columns
-    assert 'id' in df_ltype_obj.columns
 
     df_tag_string = schema_df.ww.select('index')
     assert len(df_tag_string.columns) == 1
@@ -1606,7 +1605,7 @@ def test_select_list_inputs(sample_df):
                           'is_registered': 'category'
                       })
 
-    df_just_strings = schema_df.ww.select(['PersonFullName', 'index', 'tag2', 'boolean'])
+    df_just_strings = schema_df.ww.select(['PersonFullName', 'index', 'tag2', 'boolean_nullable'])
     assert len(df_just_strings.columns) == 4
     assert 'id' in df_just_strings.columns
     assert 'full_name' in df_just_strings.columns
@@ -1614,13 +1613,12 @@ def test_select_list_inputs(sample_df):
     assert 'is_registered' in df_just_strings.columns
 
     df_mixed_selectors = schema_df.ww.select([PersonFullName, 'index', 'time_index', Integer])
-    assert len(df_mixed_selectors.columns) == 4
+    assert len(df_mixed_selectors.columns) == 3
     assert 'id' in df_mixed_selectors.columns
     assert 'full_name' in df_mixed_selectors.columns
     assert 'signup_date' in df_mixed_selectors.columns
-    assert 'age' in df_mixed_selectors.columns
 
-    df_common_tags = schema_df.ww.select(['category', 'numeric', Boolean, Datetime])
+    df_common_tags = schema_df.ww.select(['category', 'numeric', BooleanNullable, Datetime])
     assert len(df_common_tags.columns) == 3
     assert 'is_registered' in df_common_tags.columns
     assert 'age' in df_common_tags.columns
@@ -1646,11 +1644,11 @@ def test_select_semantic_tags_no_match(sample_df):
 
     assert len(schema_df.ww.select(['doesnt_exist']).columns) == 0
 
-    df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
+    df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean_nullable', 'category', PhoneNumber])
     assert len(df_multiple_unused.columns) == 2
 
     df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', PostalCode, Integer])
-    assert len(df_unused_ltype.columns) == 3
+    assert len(df_unused_ltype.columns) == 2
 
 
 def test_select_repetitive(sample_df):
@@ -1763,8 +1761,8 @@ def test_set_types(sample_df):
     assert original_df.ww.schema == sample_df.ww.schema
     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
 
-    sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
-    assert sample_df['is_registered'].dtype == 'int64'
+    sample_df.ww.set_types(logical_types={'is_registered': 'IntegerNullable'})
+    assert sample_df['is_registered'].dtype == 'Int64'
 
     sample_df.ww.set_types(semantic_tags={'signup_date': ['new_tag']},
                            logical_types={'full_name': 'Categorical'},
@@ -1804,8 +1802,8 @@ def test_pop(sample_df):
 
     assert isinstance(popped_series, type(sample_df['age']))
     assert popped_series.ww.semantic_tags == {'custom_tag', 'numeric'}
-    assert all(to_pandas(popped_series).values == [33, 25, 33, 57])
-    assert popped_series.ww.logical_type == Integer
+    pd.testing.assert_series_equal(to_pandas(popped_series), pd.Series([pd.NA, 33, 33, 57], dtype='Int64', name='age'))
+    assert popped_series.ww.logical_type == IntegerNullable
 
     assert 'age' not in schema_df.columns
     assert 'age' not in schema_df.ww.columns
@@ -1818,7 +1816,7 @@ def test_pop(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(
         name='table',
-        logical_types={'age': Integer},
+        logical_types={'age': IntegerNullable},
         semantic_tags={'age': 'custom_tag'},
         use_standard_tags=False)
 
@@ -1838,7 +1836,7 @@ def test_pop_index(sample_df):
 def test_pop_error(sample_df):
     sample_df.ww.init(
         name='table',
-        logical_types={'age': Integer},
+        logical_types={'age': IntegerNullable},
         semantic_tags={'age': 'custom_tag'},
         use_standard_tags=True)
 
@@ -2108,11 +2106,11 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change to column no change in types
     original_col = df.ww['age']
-    new_series = pd.Series([1, 2, 3, 4])
+    new_series = pd.Series([1, 2, 3, None], dtype='Int64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
-    dtype = 'int64'
+    dtype = 'Int64'
     new_series = init_series(new_series, use_standard_tags=True)
     df.ww['age'] = new_series
 
@@ -2188,7 +2186,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
 
-    select_df = schema_df.ww.select([NaturalLanguage, Integer, Boolean, Datetime])
+    select_df = schema_df.ww.select([NaturalLanguage, Integer, IntegerNullable, BooleanNullable, Datetime])
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
 
@@ -2250,18 +2248,14 @@ def test_accessor_types(sample_df):
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
 
-    string_dtype = 'string'
-    boolean_dtype = 'bool'
-    int_dtype = 'int64'
-
     correct_physical_types = {
-        'id': int_dtype,
-        'full_name': string_dtype,
-        'email': string_dtype,
-        'phone_number': string_dtype,
-        'age': int_dtype,
-        'signup_date': 'datetime64[ns]',
-        'is_registered': boolean_dtype,
+        'id': Integer.primary_dtype,
+        'full_name': NaturalLanguage.primary_dtype,
+        'email': NaturalLanguage.primary_dtype,
+        'phone_number': NaturalLanguage.primary_dtype,
+        'age': IntegerNullable.primary_dtype,
+        'signup_date': Datetime.primary_dtype,
+        'is_registered': BooleanNullable.primary_dtype,
     }
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
                                        index=list(correct_physical_types.keys()))
@@ -2272,9 +2266,9 @@ def test_accessor_types(sample_df):
         'full_name': NaturalLanguage,
         'email': NaturalLanguage,
         'phone_number': NaturalLanguage,
-        'age': Integer,
+        'age': IntegerNullable,
         'signup_date': Datetime,
-        'is_registered': Boolean,
+        'is_registered': BooleanNullable,
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))

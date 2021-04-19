@@ -19,7 +19,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_8.0.0.tar"
+TEST_FILE = "test_serialization_woodwork_table_schema_9.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -56,14 +56,18 @@ def test_to_dictionary(sample_df):
         table_type = 'pandas'
 
     if ks and isinstance(sample_df, ks.DataFrame):
-        cat_val = 'string'
+        cat_str = 'string'
+        cat_data = None
+        cat_dtype = None
     else:
-        cat_val = 'category'
+        cat_str = 'category'
+        cat_data = [33, 57]
+        cat_dtype = 'int64'
     int_val = 'int64'
     string_val = 'string'
-    bool_val = 'bool'
+    bool_val = 'boolean'
 
-    expected = {'schema_version': '8.0.0',
+    expected = {'schema_version': '9.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -71,7 +75,9 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 0,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Integer'},
-                                        'physical_type': {'type': int_val},
+                                        'physical_type': {'type': int_val,
+                                                          'cat_values': None,
+                                                          'cat_dtype': None},
                                         'semantic_tags': ['index', 'tag1'],
                                         'description': None,
                                         'metadata':{'is_sorted': True}},
@@ -79,7 +85,9 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 1,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                                        'physical_type': {'type': string_val},
+                                        'physical_type': {'type': string_val,
+                                                          'cat_values': None,
+                                                          'cat_dtype': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -87,7 +95,9 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 2,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                                        'physical_type': {'type': string_val},
+                                        'physical_type': {'type': string_val,
+                                                          'cat_values': None,
+                                                          'cat_dtype': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -95,7 +105,9 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 3,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                                        'physical_type': {'type': string_val},
+                                        'physical_type': {'type': string_val,
+                                                          'cat_values': None,
+                                                          'cat_dtype': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata': {}},
@@ -103,7 +115,9 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 4,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
-                                        'physical_type': {'type': cat_val},
+                                        'physical_type': {'type': cat_str,
+                                                          'cat_values': cat_data,
+                                                          'cat_dtype': cat_dtype},
                                         'semantic_tags': ['category'],
                                         'description': 'age of the user',
                                         'metadata':{'interesting_values': [33, 57]}},
@@ -112,15 +126,19 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {},
                                                          'type': 'Datetime'},
-                                        'physical_type': {'type': 'datetime64[ns]'},
+                                        'physical_type': {'type': 'datetime64[ns]',
+                                                          'cat_values': None,
+                                                          'cat_dtype': None},
                                         'semantic_tags': [],
                                         'description': 'original signup date',
                                         'metadata':{}},
                                        {'name': 'is_registered',
                                         'ordinal': 6,
                                         'use_standard_tags': True,
-                                        'logical_type': {'parameters': {}, 'type': 'Boolean'},
-                                        'physical_type': {'type': bool_val},
+                                        'logical_type': {'parameters': {}, 'type': 'BooleanNullable'},
+                                        'physical_type': {'type': bool_val,
+                                                          'cat_values': None,
+                                                          'cat_dtype': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}}],
@@ -162,6 +180,9 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
 
 def test_to_csv(sample_df, tmpdir):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        # Dask errors with pd.NA in some partitions, but not others
+        sample_df['age'] = sample_df['age'].fillna(25)
     sample_df.ww.init(
         name='test_data',
         index='id',

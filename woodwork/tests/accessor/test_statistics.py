@@ -546,7 +546,7 @@ def test_describe_with_include(sample_df):
     assert 'full_name' in col_name_df.columns
     assert len(semantic_tags_df.columns) == 2
 
-    logical_types_df = sample_df.ww.describe([Datetime, Boolean])
+    logical_types_df = sample_df.ww.describe([Datetime, BooleanNullable])
     assert 'signup_date', 'is_registered' in logical_types_df.columns
     assert len(logical_types_df.columns) == 2
 

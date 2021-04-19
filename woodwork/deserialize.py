@@ -12,7 +12,9 @@ import woodwork as ww
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import FORMATS, SCHEMA_VERSION
-from woodwork.utils import _is_s3, _is_url, import_or_raise
+from woodwork.utils import _is_s3, _is_url, import_or_none, import_or_raise
+
+ks = import_or_none('databricks.koalas')
 
 
 def read_table_typing_information(path):
@@ -57,6 +59,41 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     kwargs = loading_info.get('params', {})
     table_type = loading_info.get('table_type', 'pandas')
 
+    logical_types = {}
+    semantic_tags = {}
+    column_descriptions = {}
+    column_metadata = {}
+    use_standard_tags = {}
+    dtypes = {}
+    for col in table_typing_info['column_typing_info']:
+        col_name = col['name']
+
+        ltype_metadata = col['logical_type']
+        ltype = ww.type_system.str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
+
+        tags = col['semantic_tags']
+
+        if 'index' in tags:
+            tags.remove('index')
+        elif 'time_index' in tags:
+            tags.remove('time_index')
+
+        logical_types[col_name] = ltype
+        semantic_tags[col_name] = tags
+        column_descriptions[col_name] = col['description']
+        column_metadata[col_name] = col['metadata']
+        use_standard_tags[col_name] = col['use_standard_tags']
+
+        if col['physical_type']['type'] == 'category':
+            # Make sure categories are recreated properly
+            cat_values = col['physical_type']['cat_values']
+            cat_dtype = col['physical_type']['cat_dtype']
+            cat_object = pd.CategoricalDtype(pd.Series(cat_values, dtype=cat_dtype))
+            dtypes[col_name] = cat_object
+        elif not (ks and col['physical_type']['type'] == 'object'):
+            # Can't specify `object` for koalas
+            dtypes[col_name] = col['physical_type']['type']
+
     compression = kwargs['compression']
     if table_type == 'dask':
         DASK_ERR_MSG = (
@@ -85,35 +122,12 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
             engine=kwargs['engine'],
             compression=compression,
             encoding=kwargs['encoding'],
+            dtype=dtypes,
         )
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
     elif load_format == 'parquet':
         dataframe = lib.read_parquet(file, engine=kwargs['engine'])
-
-    logical_types = {}
-    semantic_tags = {}
-    column_descriptions = {}
-    column_metadata = {}
-    use_standard_tags = {}
-    for col in table_typing_info['column_typing_info']:
-        col_name = col['name']
-
-        ltype_metadata = col['logical_type']
-        ltype = ww.type_system.str_to_logical_type(ltype_metadata['type'], params=ltype_metadata['parameters'])
-
-        tags = col['semantic_tags']
-
-        if 'index' in tags:
-            tags.remove('index')
-        elif 'time_index' in tags:
-            tags.remove('time_index')
-
-        logical_types[col_name] = ltype
-        semantic_tags[col_name] = tags
-        column_descriptions[col_name] = col['description']
-        column_metadata[col_name] = col['metadata']
-        use_standard_tags[col_name] = col['use_standard_tags']
 
     dataframe.ww.init(
         name=table_typing_info.get('name'),
@@ -172,9 +186,9 @@ def _check_schema_version(saved_version_str):
     current = SCHEMA_VERSION.split('.')
 
     for c_num, s_num in zip_longest(current, saved, fillvalue=0):
-        if c_num > s_num:
+        if int(c_num) > int(s_num):
             break
-        elif c_num < s_num:
+        elif int(c_num) < int(s_num):
             warnings.warn(UpgradeSchemaWarning().get_warning_message(saved_version_str, SCHEMA_VERSION),
                           UpgradeSchemaWarning)
             break

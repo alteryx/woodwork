@@ -17,7 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '8.0.0'
+SCHEMA_VERSION = '9.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
@@ -32,6 +32,10 @@ def typing_info_to_dict(dataframe):
     Returns:
         dict: Dictionary containing Woodwork typing information
     """
+    if dd and isinstance(dataframe, dd.DataFrame):
+        # Need to determine the category info for Dask it can be saved below
+        category_cols = [colname for colname, col in dataframe.ww._schema.columns.items() if col.is_categorical]
+        dataframe = dataframe.ww.categorize(columns=category_cols)
     ordered_columns = dataframe.columns
     column_typing_info = [
         {'name': col_name,
@@ -42,7 +46,9 @@ def typing_info_to_dict(dataframe):
              'type': str(_get_ltype_class(col.logical_type))
          },
          'physical_type': {
-             'type': str(dataframe[col_name].dtype)
+             'type': str(dataframe[col_name].dtype),
+             'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None,
+             'cat_dtype': str(dataframe[col_name].dtype.categories.dtype) if str(dataframe[col_name].dtype) == 'category' else None
          },
          'semantic_tags': sorted(list(col.semantic_tags)),
          'description': col.description,
