@@ -2344,3 +2344,46 @@ def test_validation_methods_called(mock_validate_accessor_params, sample_df):
 
     assert validated_df.ww == not_validated_df.ww
     pd.testing.assert_frame_equal(to_pandas(validated_df), to_pandas(not_validated_df))
+
+
+def test_maintains_set_logical_type(sample_df):
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail("Koalas changed dtype on fillna which invalidates schema")
+    sample_df.ww.init(logical_types={'age': 'IntegerNullable'})
+    assert sample_df.ww.logical_types['age'] == IntegerNullable
+    new_df = sample_df.ww.fillna({'age': -1})
+    assert new_df.ww.logical_types['age'] == IntegerNullable
+
+
+def test_ltype_conversions_nullable_types():
+    df = pd.DataFrame({
+        'bool': pd.Series([True, False, True], dtype='bool'),
+        'bool_null': pd.Series([True, False, pd.NA], dtype='boolean'),
+        'int': pd.Series([1, 7, 3], dtype='int64'),
+        'int_null': pd.Series([1, 7, pd.NA], dtype='Int64')
+    })
+
+    df.ww.init()
+    assert df.ww.logical_types['bool'] == Boolean
+    assert df.ww.logical_types['bool_null'] == BooleanNullable
+    assert df.ww.logical_types['int'] == Integer
+    assert df.ww.logical_types['int_null'] == IntegerNullable
+
+    # Test valid conversions
+    df.ww.set_types({'bool': 'BooleanNullable', 'int': 'IntegerNullable'})
+    assert df.ww.logical_types['bool'] == BooleanNullable
+    assert df.ww.logical_types['int'] == IntegerNullable
+    df.ww.set_types({'bool': 'Boolean', 'int': 'Integer'})
+    assert df.ww.logical_types['bool'] == Boolean
+    assert df.ww.logical_types['int'] == Integer
+
+    # Test invalid conversions
+    error_msg = "Error converting datatype for bool_null from type boolean to type bool. " \
+        "Please confirm the underlying data is consistent with logical type Boolean."
+    with pytest.raises(TypeConversionError, match=error_msg):
+        df.ww.set_types({'bool_null': 'Boolean'})
+
+    error_msg = "Error converting datatype for int_null from type Int64 to type int64. " \
+        "Please confirm the underlying data is consistent with logical type Integer."
+    with pytest.raises(TypeConversionError, match=error_msg):
+        df.ww.set_types({'int_null': 'Integer'})
