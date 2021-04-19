@@ -87,8 +87,10 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         if col['physical_type']['type'] == 'category':
             # Make sure categories are recreated properly
             cat_values = col['physical_type']['cat_values']
-            cat_dtype = col['physical_type']['cat_dtype']
-            cat_object = pd.CategoricalDtype(pd.Series(cat_values, dtype=cat_dtype))
+            if table_type == 'pandas' and pd.__version__ > '1.1.5':
+                cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype='object'))
+            else:
+                cat_object = pd.CategoricalDtype(pd.Series(cat_values))
             dtypes[col_name] = cat_object
         elif not (ks and col['physical_type']['type'] == 'object'):
             # Can't specify `object` for koalas

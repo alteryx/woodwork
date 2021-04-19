@@ -58,11 +58,9 @@ def test_to_dictionary(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         cat_str = 'string'
         cat_data = None
-        cat_dtype = None
     else:
         cat_str = 'category'
         cat_data = [33, 57]
-        cat_dtype = 'int64'
     int_val = 'int64'
     string_val = 'string'
     bool_val = 'boolean'
@@ -76,8 +74,7 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Integer'},
                                         'physical_type': {'type': int_val,
-                                                          'cat_values': None,
-                                                          'cat_dtype': None},
+                                                          'cat_values': None},
                                         'semantic_tags': ['index', 'tag1'],
                                         'description': None,
                                         'metadata':{'is_sorted': True}},
@@ -86,8 +83,7 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                         'physical_type': {'type': string_val,
-                                                          'cat_values': None,
-                                                          'cat_dtype': None},
+                                                          'cat_values': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -96,8 +92,7 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                         'physical_type': {'type': string_val,
-                                                          'cat_values': None,
-                                                          'cat_dtype': None},
+                                                          'cat_values': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -106,8 +101,7 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
                                         'physical_type': {'type': string_val,
-                                                          'cat_values': None,
-                                                          'cat_dtype': None},
+                                                          'cat_values': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata': {}},
@@ -116,8 +110,7 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
                                         'physical_type': {'type': cat_str,
-                                                          'cat_values': cat_data,
-                                                          'cat_dtype': cat_dtype},
+                                                          'cat_values': cat_data},
                                         'semantic_tags': ['category'],
                                         'description': 'age of the user',
                                         'metadata':{'interesting_values': [33, 57]}},
@@ -127,8 +120,7 @@ def test_to_dictionary(sample_df):
                                         'logical_type': {'parameters': {},
                                                          'type': 'Datetime'},
                                         'physical_type': {'type': 'datetime64[ns]',
-                                                          'cat_values': None,
-                                                          'cat_dtype': None},
+                                                          'cat_values': None},
                                         'semantic_tags': [],
                                         'description': 'original signup date',
                                         'metadata':{}},
@@ -137,8 +129,7 @@ def test_to_dictionary(sample_df):
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'BooleanNullable'},
                                         'physical_type': {'type': bool_val,
-                                                          'cat_values': None,
-                                                          'cat_dtype': None},
+                                                          'cat_values': None},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}}],

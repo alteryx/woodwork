@@ -47,8 +47,7 @@ def typing_info_to_dict(dataframe):
          },
          'physical_type': {
              'type': str(dataframe[col_name].dtype),
-             'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None,
-             'cat_dtype': str(dataframe[col_name].dtype.categories.dtype) if str(dataframe[col_name].dtype) == 'category' else None
+             'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None
          },
          'semantic_tags': sorted(list(col.semantic_tags)),
          'description': col.description,
