@@ -92,9 +92,9 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
             else:
                 cat_object = pd.CategoricalDtype(pd.Series(cat_values))
             dtypes[col_name] = cat_object
-        elif not (ks and col['physical_type']['type'] == 'object'):
-            # Can't specify `object` for koalas
-            dtypes[col_name] = col['physical_type']['type']
+        # elif not (ks and col['physical_type']['type'] == 'object'):
+        #     # Can't specify `object` for koalas
+        #     dtypes[col_name] = col['physical_type']['type']
 
     compression = kwargs['compression']
     if table_type == 'dask':
