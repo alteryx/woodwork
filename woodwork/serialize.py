@@ -47,6 +47,7 @@ def typing_info_to_dict(dataframe):
          },
          'physical_type': {
              'type': str(dataframe[col_name].dtype),
+             # Store categorical values so they can be recreated if they are modified during serialization
              'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None
          },
          'semantic_tags': sorted(list(col.semantic_tags)),

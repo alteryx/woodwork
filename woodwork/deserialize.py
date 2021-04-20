@@ -12,9 +12,7 @@ import woodwork as ww
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import FORMATS, SCHEMA_VERSION
-from woodwork.utils import _is_s3, _is_url, import_or_none, import_or_raise
-
-ks = import_or_none('databricks.koalas')
+from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
 def read_table_typing_information(path):
@@ -64,7 +62,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     column_descriptions = {}
     column_metadata = {}
     use_standard_tags = {}
-    dtypes = {}
+    category_dtypes = {}
     for col in table_typing_info['column_typing_info']:
         col_name = col['name']
 
@@ -91,10 +89,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
                 cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype='object'))
             else:
                 cat_object = pd.CategoricalDtype(pd.Series(cat_values))
-            dtypes[col_name] = cat_object
-        # elif not (ks and col['physical_type']['type'] == 'object'):
-        #     # Can't specify `object` for koalas
-        #     dtypes[col_name] = col['physical_type']['type']
+            category_dtypes[col_name] = cat_object
 
     compression = kwargs['compression']
     if table_type == 'dask':
@@ -124,7 +119,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
             engine=kwargs['engine'],
             compression=compression,
             encoding=kwargs['encoding'],
-            dtype=dtypes,
+            dtype=category_dtypes,
         )
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
