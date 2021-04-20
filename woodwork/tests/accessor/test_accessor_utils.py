@@ -4,7 +4,8 @@ from woodwork.accessor_utils import (
     _get_valid_dtype,
     _is_dataframe,
     _is_series,
-    init_series
+    init_series,
+    is_schema_valid
 )
 from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import (
@@ -115,3 +116,22 @@ def test_get_valid_dtype(sample_series):
 
     valid_dtype = _get_valid_dtype(type(sample_series), Boolean)
     assert valid_dtype == 'boolean'
+
+
+def test_is_schema_valid_true(sample_df):
+    sample_df.ww.init(index='id', logical_types={'phone_number': 'Categorical'})
+    copy_df = sample_df.copy()
+
+    assert copy_df.ww.schema is None
+    assert is_schema_valid(copy_df, sample_df.ww.schema)
+
+
+def test_is_schema_valid_false(sample_df):
+    sample_df.ww.init()
+    schema = sample_df.ww.schema
+
+    invalid_dtype_df = sample_df.astype({'age': 'float64'})
+    assert not is_schema_valid(invalid_dtype_df, schema)
+
+    missing_col_df = sample_df.drop(columns={'is_registered'})
+    assert not is_schema_valid(missing_col_df, schema)

@@ -8,4 +8,4 @@ from .version import __version__
 import woodwork.column_accessor
 import woodwork.demo
 import woodwork.table_accessor
-from woodwork.accessor_utils import init_series
+from woodwork.accessor_utils import init_series, is_schema_valid

@@ -5,6 +5,7 @@ import pandas as pd
 
 import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
+    _get_invalid_schema_message,
     _get_valid_dtype,
     _is_dataframe,
     _update_column_dtype,
@@ -928,32 +929,6 @@ def _make_index(dataframe, index):
         raise TypeError('Cannot make index on a Koalas DataFrame.')
     else:
         dataframe.insert(0, index, range(len(dataframe)))
-
-
-def _get_invalid_schema_message(dataframe, schema):
-    dataframe_cols = set(dataframe.columns)
-    schema_cols = set(schema.columns.keys())
-
-    df_cols_not_in_schema = dataframe_cols - schema_cols
-    if df_cols_not_in_schema:
-        return f'The following columns in the DataFrame were missing from the typing information: '\
-            f'{df_cols_not_in_schema}'
-    schema_cols_not_in_df = schema_cols - dataframe_cols
-    if schema_cols_not_in_df:
-        return f'The following columns in the typing information were missing from the DataFrame: '\
-            f'{schema_cols_not_in_df}'
-    for name in dataframe.columns:
-        df_dtype = dataframe[name].dtype
-        valid_dtype = _get_valid_dtype(type(dataframe[name]), schema.logical_types[name])
-        if str(df_dtype) != valid_dtype:
-            return f'dtype mismatch for column {name} between DataFrame dtype, '\
-                f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
-    if schema.index is not None and isinstance(dataframe, pd.DataFrame):
-        # Index validation not performed for Dask/Koalas
-        if not all(dataframe.index == dataframe[schema.index]):
-            return 'Index mismatch between DataFrame and typing information'
-        elif not dataframe[schema.index].is_unique:
-            return 'Index column is not unique'
 
 
 def _raise_init_error():

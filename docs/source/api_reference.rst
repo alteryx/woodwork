@@ -195,6 +195,7 @@ General Utils
     :nosignatures:
 
     init_series
+    is_schema_valid
 
 Demo Data
 =========
