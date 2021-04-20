@@ -345,7 +345,7 @@ def test_set_logical_type_invalid_dtype_change(sample_series):
                      'and converting dtype to float.')
     sample_series.ww.init(logical_type='Categorical')
     error_message = "Error converting datatype for sample_series from type category to " \
-        "type Int64. Please confirm the underlying data is consistent with logical type Integer."
+        "type int64. Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_message):
         sample_series.ww.set_logical_type('Integer')
 
@@ -402,17 +402,17 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
 
 
 def test_series_methods_on_accessor_dtype_mismatch(sample_df):
-    ints_series = sample_df['id'].astype('Int64')
+    ints_series = sample_df['id']
     ints_series.ww.init()
 
     assert ints_series.ww.logical_type == Integer
-    assert str(ints_series.dtype) == 'Int64'
+    assert str(ints_series.dtype) == 'int64'
 
     warning = ("Operation performed by astype has invalidated the Woodwork typing information:\n "
-               "dtype mismatch between original dtype, Int64, and returned dtype, int64.\n "
+               "dtype mismatch between original dtype, int64, and returned dtype, Int64.\n "
                "Please initialize Woodwork with Series.ww.init")
     with pytest.warns(TypingInfoMismatchWarning, match=warning):
-        series = ints_series.ww.astype('int64')
+        series = ints_series.ww.astype('Int64')
     assert series.ww._schema is None
 
 

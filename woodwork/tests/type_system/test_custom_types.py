@@ -27,11 +27,11 @@ def test_custom_type_with_accessor(sample_df):
         standard_tags = {'age', 'numeric'}
 
     def ages_func(series):
-        if all(series > 20):
+        if all(series.dropna() > 20):
             return True
         return False
 
-    ww.type_system.add_type(AgesAbove20, inference_function=ages_func, parent='Integer')
+    ww.type_system.add_type(AgesAbove20, inference_function=ages_func, parent='IntegerNullable')
     sample_df.ww.init()
     assert sample_df.ww['age'].ww.logical_type == AgesAbove20
     assert sample_df.ww['age'].ww.semantic_tags == {'age', 'numeric'}

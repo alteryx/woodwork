@@ -236,7 +236,8 @@ def get_valid_mi_types():
             valid_types.append(ltype)
         elif 'numeric' in ltype.standard_tags:
             valid_types.append(ltype)
-        elif ltype == ww.logical_types.Datetime or ltype == ww.logical_types.Boolean:
+        elif (ltype == ww.logical_types.Datetime or ltype == ww.logical_types.Boolean or
+                ltype == ww.logical_types.BooleanNullable):
             valid_types.append(ltype)
 
     return valid_types

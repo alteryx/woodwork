@@ -40,6 +40,19 @@ class Boolean(LogicalType):
             [True, False, True]
             [0, 1, 1]
     """
+    primary_dtype = 'bool'
+
+
+class BooleanNullable(LogicalType):
+    """Represents Logical Types that contain binary values indicating true/false.
+    May also contain null values.
+
+    Examples:
+        .. code-block:: python
+
+            [True, False, None]
+            [0, 1, 1]
+    """
     primary_dtype = 'boolean'
 
 
@@ -123,6 +136,21 @@ class Integer(LogicalType):
         .. code-block:: python
 
             [100, 35, 0]
+            [-54, 73, 11]
+    """
+    primary_dtype = 'int64'
+    standard_tags = {'numeric'}
+
+
+class IntegerNullable(LogicalType):
+    """Represents Logical Types that contain positive and negative numbers
+    without a fractional component, including zero (0). May contain null
+    values. Has 'numeric' as a standard tag.
+
+    Examples:
+        .. code-block:: python
+
+            [100, 35, np.nan]
             [-54, 73, 11]
     """
     primary_dtype = 'Int64'
