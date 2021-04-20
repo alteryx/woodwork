@@ -91,9 +91,9 @@ def test_init_series_error_on_invalid_conversion(sample_series):
                      'and converting dtype to float.')
 
     error_message = "Error converting datatype for sample_series from type category to type Int64. " \
-        "Please confirm the underlying data is consistent with logical type Integer."
+        "Please confirm the underlying data is consistent with logical type IntegerNullable."
     with pytest.raises(TypeConversionError, match=error_message):
-        init_series(sample_series, logical_type='integer')
+        init_series(sample_series, logical_type='integer_nullable')
 
 
 def test_is_series(sample_df):
@@ -114,4 +114,4 @@ def test_get_valid_dtype(sample_series):
         assert valid_dtype == 'category'
 
     valid_dtype = _get_valid_dtype(type(sample_series), Boolean)
-    assert valid_dtype == 'boolean'
+    assert valid_dtype == 'bool'

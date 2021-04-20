@@ -10,11 +10,13 @@ from mock import patch
 import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
     Double,
     Integer,
+    IntegerNullable,
     Ordinal,
     PostalCode,
     SubRegionCode
@@ -129,18 +131,18 @@ def test_list_logical_types_customized_type_system():
     df = list_logical_types()
     assert len(all_ltypes) == len(df)
     # Check that URL is unregistered
-    assert df.loc[19, 'is_default_type']
-    assert not df.loc[19, 'is_registered']
+    assert df.loc[21, 'is_default_type']
+    assert not df.loc[21, 'is_registered']
 
     # Check that new registered type is present and shows as registered
     assert 'CustomRegistered' in df['name'].values
-    assert not df.loc[4, 'is_default_type']
-    assert df.loc[4, 'is_registered']
+    assert not df.loc[5, 'is_default_type']
+    assert df.loc[5, 'is_registered']
 
     # Check that new unregistered type is present and shows as not registered
     assert 'CustomNotRegistered' in df['name'].values
-    assert not df.loc[3, 'is_default_type']
-    assert not df.loc[3, 'is_registered']
+    assert not df.loc[4, 'is_default_type']
+    assert not df.loc[4, 'is_registered']
     ww.type_system.reset_defaults()
 
 
@@ -163,6 +165,10 @@ def test_read_csv_no_params(sample_df_pandas, tmpdir):
     assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
+    # pandas does not read data into nullable types currently, so the types
+    # in df_from_csv will be different than the types inferred from sample_df_pandas
+    # which uses the nullable types
+    schema_df = schema_df.astype({'age': 'float64', 'is_registered': 'object'})
     schema_df.ww.init()
 
     assert df_from_csv.ww.schema == schema_df.ww.schema
@@ -174,7 +180,9 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
     sample_df_pandas.to_csv(filepath, index=False)
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'phone_number': 'PhoneNumber'
+        'phone_number': 'PhoneNumber',
+        'is_registered': 'BooleanNullable',
+        'age': 'IntegerNullable'
     }
     semantic_tags = {
         'age': ['tag1', 'tag2'],
@@ -202,7 +210,7 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     sample_df_pandas.to_csv(filepath, index=False)
     nrows = 2
 
-    df_from_csv = ww.read_csv(filepath=filepath, nrows=nrows)
+    df_from_csv = ww.read_csv(filepath=filepath, nrows=nrows, dtype={'age': 'Int64', 'is_registered': 'boolean'})
     assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
@@ -439,11 +447,13 @@ def test_get_valid_mi_types():
     valid_types = get_valid_mi_types()
     expected_types = [
         Boolean,
+        BooleanNullable,
         Categorical,
         CountryCode,
         Datetime,
         Double,
         Integer,
+        IntegerNullable,
         Ordinal,
         PostalCode,
         SubRegionCode,

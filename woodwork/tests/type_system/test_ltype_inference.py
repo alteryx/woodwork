@@ -2,32 +2,30 @@
 import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
+    BooleanNullable,
     Categorical,
     Datetime,
     Double,
     Integer,
+    IntegerNullable,
     LogicalType,
     NaturalLanguage,
     Timedelta
 )
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 UNSUPPORTED_KOALAS_DTYPES = [
     'int32',
-    'Int64',
     'intp',
     'uint8',
     'uint16',
     'uint32',
     'uint64',
     'uintp',
-    'float32',  # compatible starting with 1.4.0
     'float_',
     'object',
-    'datetime64[ns]',  # compatible starting with 1.4.0
     'category',
-    'string',
-    'boolean',
 ]
 
 ks = import_or_none('databricks.koalas')
@@ -61,12 +59,15 @@ def test_double_inference(doubles):
 
 def test_boolean_inference(bools):
     dtypes = ['bool', 'boolean']
-    if ks and isinstance(bools[0], ks.Series):
-        dtypes = get_koalas_dtypes(dtypes)
+
     for series in bools:
         for dtype in dtypes:
-            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Boolean
+            cast_series = series.astype(dtype)
+            inferred_type = ww.type_system.infer_logical_type(cast_series)
+            if to_pandas(cast_series).isnull().any():
+                assert inferred_type == BooleanNullable
+            else:
+                assert inferred_type == Boolean
 
 
 def test_datetime_inference(datetimes):
@@ -150,8 +151,8 @@ def test_natural_language_inference_with_threshhold(long_strings):
 def test_pdna_inference(pdnas):
     expected_logical_types = [
         NaturalLanguage,
-        Integer,
-        Boolean,
+        IntegerNullable,
+        BooleanNullable,
     ]
 
     for index, series in enumerate(pdnas):

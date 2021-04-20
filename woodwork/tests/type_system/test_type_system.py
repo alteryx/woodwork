@@ -157,7 +157,7 @@ def test_add_duplicate_ltype(type_sys):
 
     type_sys.reset_defaults()
     ltype = type_sys.str_to_logical_type('Integer')
-    assert ltype.primary_dtype == 'Int64'
+    assert ltype.primary_dtype == 'int64'
     assert ltype == ww.logical_types.Integer
 
 

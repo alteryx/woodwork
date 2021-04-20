@@ -1,15 +1,18 @@
 from .inference_functions import (
     boolean_func,
+    boolean_nullable_func,
     categorical_func,
     datetime_func,
     double_func,
     integer_func,
+    integer_nullable_func,
     timedelta_func
 )
 
 from woodwork.logical_types import (
     URL,
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
@@ -17,6 +20,7 @@ from woodwork.logical_types import (
     EmailAddress,
     Filepath,
     Integer,
+    IntegerNullable,
     IPAddress,
     LatLong,
     LogicalType,
@@ -35,6 +39,7 @@ ks = import_or_none('databricks.koalas')
 
 DEFAULT_INFERENCE_FUNCTIONS = {
     Boolean: boolean_func,
+    BooleanNullable: boolean_nullable_func,
     Categorical: categorical_func,
     CountryCode: None,
     Datetime: datetime_func,
@@ -43,6 +48,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     Filepath: None,
     PersonFullName: None,
     Integer: integer_func,
+    IntegerNullable: integer_nullable_func,
     IPAddress: None,
     LatLong: None,
     NaturalLanguage: None,
@@ -56,10 +62,12 @@ DEFAULT_INFERENCE_FUNCTIONS = {
 
 # (ParentType, ChildType)
 DEFAULT_RELATIONSHIPS = [
+    (BooleanNullable, Boolean),
     (Categorical, CountryCode),
     (Categorical, Ordinal),
     (Categorical, PostalCode),
     (Categorical, SubRegionCode),
+    (IntegerNullable, Integer),
     (NaturalLanguage, EmailAddress),
     (NaturalLanguage, Filepath),
     (NaturalLanguage, PersonFullName),

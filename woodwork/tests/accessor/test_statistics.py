@@ -4,6 +4,7 @@ import pandas as pd
 from woodwork.logical_types import (
     URL,
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
@@ -11,6 +12,7 @@ from woodwork.logical_types import (
     EmailAddress,
     Filepath,
     Integer,
+    IntegerNullable,
     IPAddress,
     LatLong,
     NaturalLanguage,
@@ -60,6 +62,7 @@ def test_accessor_replace_nans_for_mutual_info():
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
         'floats': pd.Series([3.3, None, 2.3, 1.3]),
         'bools': pd.Series([True, None, True, False]),
+        'bools_pdna': pd.Series([True, pd.NA, True, False], dtype='boolean'),
         'int_to_cat_nan': pd.Series([1, np.nan, 3, 1], dtype='category'),
         'str': pd.Series(['test', np.nan, 'test2', 'test']),
         'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
@@ -73,6 +76,7 @@ def test_accessor_replace_nans_for_mutual_info():
     assert formatted_df['ints'].equals(pd.Series([2, 3, 5, 2], dtype='Int64'))
     assert formatted_df['floats'].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype='float'))
     assert formatted_df['bools'].equals(pd.Series([True, True, True, False], dtype='category'))
+    assert formatted_df['bools_pdna'].equals(pd.Series([True, True, True, False], dtype='boolean'))
     assert formatted_df['int_to_cat_nan'].equals(pd.Series([1, 1, 3, 1], dtype='category'))
     assert formatted_df['str'].equals(pd.Series(['test', 'test', 'test2', 'test'], dtype='category'))
     assert formatted_df['str_no_nan'].equals(pd.Series(['test', 'test2', 'test2', 'test'], dtype='category'))
@@ -83,7 +87,9 @@ def test_accessor_make_categorical_for_mutual_info():
     df = pd.DataFrame({
         'ints1': pd.Series([1, 2, 3, 2]),
         'ints2': pd.Series([1, 100, 1, 100]),
+        'ints3': pd.Series([1, 2, 3, 2], dtype='Int64'),
         'bools': pd.Series([True, False, True, False]),
+        'booleans': pd.Series([True, False, True, False], dtype='boolean'),
         'categories': pd.Series(['test', 'test2', 'test2', 'test']),
         'dates': pd.Series(['2020-01-01', '2019-01-02', '2020-08-03', '1997-01-04'])
     })
@@ -94,7 +100,9 @@ def test_accessor_make_categorical_for_mutual_info():
 
     assert formatted_num_bins_df['ints1'].equals(pd.Series([0, 1, 3, 1], dtype='int8'))
     assert formatted_num_bins_df['ints2'].equals(pd.Series([0, 1, 0, 1], dtype='int8'))
+    assert formatted_num_bins_df['ints3'].equals(pd.Series([0, 1, 3, 1], dtype='int8'))
     assert formatted_num_bins_df['bools'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
+    assert formatted_num_bins_df['booleans'].equals(pd.Series([1, 0, 1, 0], dtype='int8'))
     assert formatted_num_bins_df['categories'].equals(pd.Series([0, 1, 1, 0], dtype='int8'))
     assert formatted_num_bins_df['dates'].equals(pd.Series([2, 1, 3, 0], dtype='int8'))
 
@@ -224,11 +232,13 @@ def test_describe_accessor_method(describe_df):
                           Ordinal(order=('yellow', 'red', 'blue')),
                           PostalCode,
                           SubRegionCode]
-    boolean_ltypes = [Boolean]
+    boolean_ltypes = [BooleanNullable]
+    non_nullable_boolean_ltypes = [Boolean]
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
-    numeric_ltypes = [Double, Integer]
+    nullable_numeric_ltypes = [Double, IntegerNullable]
+    non_nullable_numeric_ltypes = [Integer]
     natural_language_ltypes = [EmailAddress, Filepath, PersonFullName, IPAddress,
                                PhoneNumber, URL]
     latlong_ltypes = [LatLong]
@@ -253,7 +263,7 @@ def test_describe_accessor_method(describe_df):
     # Test categorical columns
     category_data = describe_df[['category_col']]
     if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'object'
+        expected_dtype = 'string'
     else:
         expected_dtype = 'category'
 
@@ -271,15 +281,32 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'category_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['category_col'].dropna())
+        assert expected_vals.equals(stats_df['category_col'].dropna())
 
-    # Test boolean columns
+    # Test nullable boolean columns
     boolean_data = describe_df[['boolean_col']]
-    if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'bool'
-    else:
-        expected_dtype = 'boolean'
     for ltype in boolean_ltypes:
+        expected_dtype = ltype.primary_dtype
+        expected_vals = pd.Series({
+            'physical_type': expected_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'custom_tag'},
+            'count': 7,
+            'nan_count': 1,
+            'mode': True,
+            'num_true': 4,
+            'num_false': 3}, name='boolean_col')
+        boolean_data.ww.init(logical_types={'boolean_col': ltype}, semantic_tags={'boolean_col': 'custom_tag'})
+        stats_df = boolean_data.ww.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'boolean_col'}
+        assert stats_df.index.tolist() == expected_index
+        assert expected_vals.equals(stats_df['boolean_col'].dropna())
+
+    # Test non-nullable boolean columns
+    boolean_data = describe_df[['boolean_col']].fillna(True)
+    for ltype in non_nullable_boolean_ltypes:
+        expected_dtype = ltype.primary_dtype
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
             'logical_type': ltype,
@@ -294,7 +321,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'boolean_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['boolean_col'].dropna())
+        assert expected_vals.equals(stats_df['boolean_col'].dropna())
 
     # Test datetime columns
     datetime_data = describe_df[['datetime_col']]
@@ -315,7 +342,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['datetime_col'].dropna())
+        assert expected_vals.equals(stats_df['datetime_col'].dropna())
 
     # Test formatted datetime columns
     formatted_datetime_data = describe_df[['formatted_datetime_col']]
@@ -346,7 +373,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'formatted_datetime_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
+        assert expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
 
     # Test timedelta columns - Skip for Koalas
     if not (ks and isinstance(describe_df, ks.DataFrame)):
@@ -365,11 +392,11 @@ def test_describe_accessor_method(describe_df):
             assert isinstance(stats_df, pd.DataFrame)
             assert set(stats_df.columns) == {'col'}
             assert stats_df.index.tolist() == expected_index
-            expected_vals.equals(stats_df['col'].dropna())
+            assert expected_vals.equals(stats_df['col'].dropna())
 
-    # Test numeric columns
+    # Test numeric columns with nullable ltypes
     numeric_data = describe_df[['numeric_col']]
-    for ltype in numeric_ltypes:
+    for ltype in nullable_numeric_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.primary_dtype,
             'logical_type': ltype,
@@ -390,14 +417,36 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'numeric_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['numeric_col'].dropna())
+        assert expected_vals.equals(stats_df['numeric_col'].dropna())
+
+    # Test numeric with non-nullable ltypes
+    numeric_data = describe_df[['numeric_col']].fillna(0)
+    for ltype in non_nullable_numeric_ltypes:
+        expected_vals = pd.Series({
+            'physical_type': ltype.primary_dtype,
+            'logical_type': ltype,
+            'semantic_tags': {'numeric', 'custom_tag'},
+            'count': 8,
+            'nunique': 7,
+            'nan_count': 0,
+            'mean': 18.25,
+            'mode': 10,
+            'std': 18.460382289804137,
+            'min': 0,
+            'first_quartile': 7.75,
+            'second_quartile': 13.5,
+            'third_quartile': 23,
+            'max': 56}, name='numeric_col')
+        numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
+        stats_df = numeric_data.ww.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {'numeric_col'}
+        assert stats_df.index.tolist() == expected_index
+        assert expected_vals.equals(stats_df['numeric_col'].dropna())
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
-    if ks and isinstance(category_data, ks.DataFrame):
-        expected_dtype = 'object'
-    else:
-        expected_dtype = 'string'
+    expected_dtype = 'string'
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
@@ -413,7 +462,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'natural_language_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['natural_language_col'].dropna())
+        assert expected_vals.equals(stats_df['natural_language_col'].dropna())
 
     # Test latlong columns
     latlong_data = describe_df[['latlong_col']]
@@ -434,7 +483,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'latlong_col'}
         assert stats_df.index.tolist() == expected_index
-        expected_vals.equals(stats_df['latlong_col'].dropna())
+        assert expected_vals.equals(stats_df['latlong_col'].dropna())
 
 
 def test_describe_with_improper_tags(describe_df):
@@ -465,7 +514,7 @@ def test_describe_with_no_semantic_tags(describe_df):
 
     logical_types = {
         'category_col': Categorical,
-        'numeric_col': Integer,
+        'numeric_col': IntegerNullable,
     }
 
     df.ww.init(logical_types=logical_types, use_standard_tags=False)
@@ -497,7 +546,7 @@ def test_describe_with_include(sample_df):
     assert 'full_name' in col_name_df.columns
     assert len(semantic_tags_df.columns) == 2
 
-    logical_types_df = sample_df.ww.describe([Datetime, Boolean])
+    logical_types_df = sample_df.ww.describe([Datetime, BooleanNullable])
     assert 'signup_date', 'is_registered' in logical_types_df.columns
     assert len(logical_types_df.columns) == 2
 
@@ -517,7 +566,7 @@ def test_describe_with_no_match(sample_df):
 
 def test_value_counts(categorical_df):
     logical_types = {
-        'ints': Integer,
+        'ints': IntegerNullable,
         'categories1': Categorical,
         'bools': Boolean,
         'categories2': Categorical,

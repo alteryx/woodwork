@@ -16,6 +16,7 @@ from woodwork.exceptions import (
 from woodwork.logical_types import (
     URL,
     Boolean,
+    BooleanNullable,
     Categorical,
     CountryCode,
     Datetime,
@@ -23,6 +24,7 @@ from woodwork.logical_types import (
     EmailAddress,
     Filepath,
     Integer,
+    IntegerNullable,
     IPAddress,
     LatLong,
     NaturalLanguage,
@@ -457,11 +459,7 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
 
     numeric_time_index_df.ww.set_time_index('with_null')
     assert numeric_time_index_df.ww.time_index == 'with_null'
-    if ks and isinstance(numeric_time_index_df, ks.DataFrame):
-        ltype = Double
-    else:
-        ltype = Integer
-    assert numeric_time_index_df.ww.logical_types['with_null'] == ltype
+    assert numeric_time_index_df.ww.logical_types['with_null'] == IntegerNullable
     assert numeric_time_index_df.ww.semantic_tags['with_null'] == {'time_index', 'numeric'}
 
 
@@ -484,7 +482,7 @@ def test_accessor_init_with_string_logical_types(sample_df):
 
     logical_types = {
         'full_name': 'NaturalLanguage',
-        'age': 'Integer',
+        'age': 'IntegerNullable',
         'signup_date': 'Datetime'
     }
     schema_df = sample_df.copy()
@@ -493,7 +491,7 @@ def test_accessor_init_with_string_logical_types(sample_df):
                       time_index='signup_date'
                       )
     assert schema_df.ww.columns['full_name'].logical_type == NaturalLanguage
-    assert schema_df.ww.columns['age'].logical_type == Integer
+    assert schema_df.ww.columns['age'].logical_type == IntegerNullable
     assert schema_df.ww.time_index == 'signup_date'
 
 
@@ -505,7 +503,7 @@ def test_int_dtype_inference_on_init():
         'ints_NA_specified': pd.Series([1, pd.NA], dtype='Int64')})
     df.ww.init()
 
-    assert df['ints_no_nans'].dtype == 'Int64'
+    assert df['ints_no_nans'].dtype == 'int64'
     assert df['ints_nan'].dtype == 'float64'
     assert df['ints_NA'].dtype == 'category'
     assert df['ints_NA_specified'].dtype == 'Int64'
@@ -519,7 +517,7 @@ def test_bool_dtype_inference_on_init():
         'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean")})
     df.ww.init()
 
-    assert df['bools_no_nans'].dtype == 'boolean'
+    assert df['bools_no_nans'].dtype == 'bool'
     assert df['bool_nan'].dtype == 'category'
     assert df['bool_NA'].dtype == 'category'
     assert df['bool_NA_specified'].dtype == 'boolean'
@@ -714,16 +712,19 @@ def test_sets_boolean_dtype_on_init():
         pd.Series([True, pd.NA, True], name=column_name),
     ]
 
-    logical_type = Boolean
+    logical_types = [Boolean, BooleanNullable]
     for series in series_list:
-        series = series.astype('object')
-        ltypes = {
-            column_name: logical_type,
-        }
-        df = pd.DataFrame(series)
-        df.ww.init(logical_types=ltypes)
-        assert df.ww.columns[column_name].logical_type == logical_type
-        assert df[column_name].dtype == logical_type.primary_dtype
+        for logical_type in logical_types:
+            if series.isnull().any() and logical_type == Boolean:
+                continue
+            series = series.astype('object')
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            df.ww.init(logical_types=ltypes)
+            assert df.ww.columns[column_name].logical_type == logical_type
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_int64_dtype_on_init():
@@ -735,10 +736,12 @@ def test_sets_int64_dtype_on_init():
         pd.Series([1, pd.NA, 3], name=column_name),
     ]
 
-    logical_types = [Integer]
+    logical_types = [Integer, IntegerNullable]
     for series in series_list:
         series = series.astype('object')
         for logical_type in logical_types:
+            if series.isnull().any() and logical_type == Integer:
+                continue
             ltypes = {
                 column_name: logical_type,
             }
@@ -818,7 +821,7 @@ def test_invalid_dtype_casting():
         column_name: Integer,
     }
     err_msg = 'Error converting datatype for test_series from type object to type ' \
-        'Int64. Please confirm the underlying data is consistent with logical type Integer.'
+        'int64. Please confirm the underlying data is consistent with logical type Integer.'
     with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
@@ -1141,15 +1144,15 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema_df.ww.init(logical_types={'age': 'Categorical'})
     schema = schema_df.ww.schema
 
-    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'int64'})
-    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'bool'})
+    incorrect_int_dtype_df = schema_df.ww.astype({'id': 'Int64'})
+    incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'Int64'})
     incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
     incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
 
     assert (_get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
-            'dtype mismatch for column id between DataFrame dtype, int64, and Integer dtype, Int64')
+            'dtype mismatch for column id between DataFrame dtype, Int64, and Integer dtype, int64')
     assert (_get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
-            'dtype mismatch for column is_registered between DataFrame dtype, bool, and Boolean dtype, boolean')
+            'dtype mismatch for column is_registered between DataFrame dtype, Int64, and BooleanNullable dtype, boolean')
     # Koalas backup dtypes make these checks not relevant
     if ks and not isinstance(sample_df, ks.DataFrame):
         assert (_get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
@@ -1189,7 +1192,7 @@ def test_dataframe_methods_on_accessor(sample_df):
 
     pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
 
-    ltype_dtype = 'Int64'
+    ltype_dtype = 'int64'
     new_dtype = 'string'
 
     warning = 'Operation performed by astype has invalidated the Woodwork typing information:\n '\
@@ -1382,7 +1385,7 @@ def test_select_ltypes_strings(sample_df):
                                      'signup_date': Datetime,
                                      })
 
-    df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'Boolean', 'datetime'])
+    df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'BooleanNullable', 'datetime'])
     assert len(df_multiple_ltypes.columns) == 5
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
@@ -1400,7 +1403,7 @@ def test_select_ltypes_objects(sample_df):
                                      'signup_date': Datetime,
                                      })
 
-    df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, Boolean, Datetime])
+    df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, BooleanNullable, Datetime])
     assert len(df_multiple_ltypes.columns) == 5
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
@@ -1570,10 +1573,9 @@ def test_select_single_inputs(sample_df):
     assert len(df_ltype_string.columns) == 1
     assert 'full_name' in df_ltype_string.columns
 
-    df_ltype_obj = schema_df.ww.select(Integer)
-    assert len(df_ltype_obj.columns) == 2
+    df_ltype_obj = schema_df.ww.select(IntegerNullable)
+    assert len(df_ltype_obj.columns) == 1
     assert 'age' in df_ltype_obj.columns
-    assert 'id' in df_ltype_obj.columns
 
     df_tag_string = schema_df.ww.select('index')
     assert len(df_tag_string.columns) == 1
@@ -1603,7 +1605,7 @@ def test_select_list_inputs(sample_df):
                           'is_registered': 'category'
                       })
 
-    df_just_strings = schema_df.ww.select(['PersonFullName', 'index', 'tag2', 'boolean'])
+    df_just_strings = schema_df.ww.select(['PersonFullName', 'index', 'tag2', 'boolean_nullable'])
     assert len(df_just_strings.columns) == 4
     assert 'id' in df_just_strings.columns
     assert 'full_name' in df_just_strings.columns
@@ -1611,13 +1613,12 @@ def test_select_list_inputs(sample_df):
     assert 'is_registered' in df_just_strings.columns
 
     df_mixed_selectors = schema_df.ww.select([PersonFullName, 'index', 'time_index', Integer])
-    assert len(df_mixed_selectors.columns) == 4
+    assert len(df_mixed_selectors.columns) == 3
     assert 'id' in df_mixed_selectors.columns
     assert 'full_name' in df_mixed_selectors.columns
     assert 'signup_date' in df_mixed_selectors.columns
-    assert 'age' in df_mixed_selectors.columns
 
-    df_common_tags = schema_df.ww.select(['category', 'numeric', Boolean, Datetime])
+    df_common_tags = schema_df.ww.select(['category', 'numeric', BooleanNullable, Datetime])
     assert len(df_common_tags.columns) == 3
     assert 'is_registered' in df_common_tags.columns
     assert 'age' in df_common_tags.columns
@@ -1643,11 +1644,11 @@ def test_select_semantic_tags_no_match(sample_df):
 
     assert len(schema_df.ww.select(['doesnt_exist']).columns) == 0
 
-    df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean', 'category', PhoneNumber])
+    df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean_nullable', 'category', PhoneNumber])
     assert len(df_multiple_unused.columns) == 2
 
     df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', PostalCode, Integer])
-    assert len(df_unused_ltype.columns) == 3
+    assert len(df_unused_ltype.columns) == 2
 
 
 def test_select_repetitive(sample_df):
@@ -1760,7 +1761,7 @@ def test_set_types(sample_df):
     assert original_df.ww.schema == sample_df.ww.schema
     pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
 
-    sample_df.ww.set_types(logical_types={'is_registered': 'Integer'})
+    sample_df.ww.set_types(logical_types={'is_registered': 'IntegerNullable'})
     assert sample_df['is_registered'].dtype == 'Int64'
 
     sample_df.ww.set_types(semantic_tags={'signup_date': ['new_tag']},
@@ -1801,8 +1802,8 @@ def test_pop(sample_df):
 
     assert isinstance(popped_series, type(sample_df['age']))
     assert popped_series.ww.semantic_tags == {'custom_tag', 'numeric'}
-    assert all(to_pandas(popped_series).values == [33, 25, 33, 57])
-    assert popped_series.ww.logical_type == Integer
+    pd.testing.assert_series_equal(to_pandas(popped_series), pd.Series([pd.NA, 33, 33, 57], dtype='Int64', name='age'))
+    assert popped_series.ww.logical_type == IntegerNullable
 
     assert 'age' not in schema_df.columns
     assert 'age' not in schema_df.ww.columns
@@ -1815,7 +1816,7 @@ def test_pop(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(
         name='table',
-        logical_types={'age': Integer},
+        logical_types={'age': IntegerNullable},
         semantic_tags={'age': 'custom_tag'},
         use_standard_tags=False)
 
@@ -1835,7 +1836,7 @@ def test_pop_index(sample_df):
 def test_pop_error(sample_df):
     sample_df.ww.init(
         name='table',
-        logical_types={'age': Integer},
+        logical_types={'age': IntegerNullable},
         semantic_tags={'age': 'custom_tag'},
         use_standard_tags=True)
 
@@ -2041,10 +2042,10 @@ def test_setitem_new_column(sample_df):
     df = sample_df.copy()
     df.ww.init(use_standard_tags=False)
 
-    new_series = pd.Series([1, 2, 3])
+    new_series = pd.Series([1, 2, 3, 4])
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
-    dtype = 'Int64'
+    dtype = 'int64'
 
     df.ww['test_col2'] = new_series
     assert 'test_col2' in df.columns
@@ -2105,7 +2106,7 @@ def test_setitem_overwrite_column(sample_df):
 
     # Change to column no change in types
     original_col = df.ww['age']
-    new_series = pd.Series([1, 2, 3])
+    new_series = pd.Series([1, 2, 3, None], dtype='Int64')
     if ks and isinstance(sample_df, ks.DataFrame):
         new_series = ks.Series(new_series)
 
@@ -2185,7 +2186,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
 
-    select_df = schema_df.ww.select([NaturalLanguage, Integer, Boolean, Datetime])
+    select_df = schema_df.ww.select([NaturalLanguage, Integer, IntegerNullable, BooleanNullable, Datetime])
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
 
@@ -2247,18 +2248,14 @@ def test_accessor_types(sample_df):
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
 
-    string_dtype = 'string'
-    boolean_dtype = 'boolean'
-    int_dtype = 'Int64'
-
     correct_physical_types = {
-        'id': int_dtype,
-        'full_name': string_dtype,
-        'email': string_dtype,
-        'phone_number': string_dtype,
-        'age': int_dtype,
-        'signup_date': 'datetime64[ns]',
-        'is_registered': boolean_dtype,
+        'id': Integer.primary_dtype,
+        'full_name': NaturalLanguage.primary_dtype,
+        'email': NaturalLanguage.primary_dtype,
+        'phone_number': NaturalLanguage.primary_dtype,
+        'age': IntegerNullable.primary_dtype,
+        'signup_date': Datetime.primary_dtype,
+        'is_registered': BooleanNullable.primary_dtype,
     }
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
                                        index=list(correct_physical_types.keys()))
@@ -2269,9 +2266,9 @@ def test_accessor_types(sample_df):
         'full_name': NaturalLanguage,
         'email': NaturalLanguage,
         'phone_number': NaturalLanguage,
-        'age': Integer,
+        'age': IntegerNullable,
         'signup_date': Datetime,
-        'is_registered': Boolean,
+        'is_registered': BooleanNullable,
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
@@ -2347,3 +2344,46 @@ def test_validation_methods_called(mock_validate_accessor_params, sample_df):
 
     assert validated_df.ww == not_validated_df.ww
     pd.testing.assert_frame_equal(to_pandas(validated_df), to_pandas(not_validated_df))
+
+
+def test_maintains_set_logical_type(sample_df):
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pytest.xfail("Koalas changed dtype on fillna which invalidates schema")
+    sample_df.ww.init(logical_types={'age': 'IntegerNullable'})
+    assert sample_df.ww.logical_types['age'] == IntegerNullable
+    new_df = sample_df.ww.fillna({'age': -1})
+    assert new_df.ww.logical_types['age'] == IntegerNullable
+
+
+def test_ltype_conversions_nullable_types():
+    df = pd.DataFrame({
+        'bool': pd.Series([True, False, True], dtype='bool'),
+        'bool_null': pd.Series([True, False, pd.NA], dtype='boolean'),
+        'int': pd.Series([1, 7, 3], dtype='int64'),
+        'int_null': pd.Series([1, 7, pd.NA], dtype='Int64')
+    })
+
+    df.ww.init()
+    assert df.ww.logical_types['bool'] == Boolean
+    assert df.ww.logical_types['bool_null'] == BooleanNullable
+    assert df.ww.logical_types['int'] == Integer
+    assert df.ww.logical_types['int_null'] == IntegerNullable
+
+    # Test valid conversions
+    df.ww.set_types({'bool': 'BooleanNullable', 'int': 'IntegerNullable'})
+    assert df.ww.logical_types['bool'] == BooleanNullable
+    assert df.ww.logical_types['int'] == IntegerNullable
+    df.ww.set_types({'bool': 'Boolean', 'int': 'Integer'})
+    assert df.ww.logical_types['bool'] == Boolean
+    assert df.ww.logical_types['int'] == Integer
+
+    # Test invalid conversions
+    error_msg = "Error converting datatype for bool_null from type boolean to type bool. " \
+        "Please confirm the underlying data is consistent with logical type Boolean."
+    with pytest.raises(TypeConversionError, match=error_msg):
+        df.ww.set_types({'bool_null': 'Boolean'})
+
+    error_msg = "Error converting datatype for int_null from type Int64 to type int64. " \
+        "Please confirm the underlying data is consistent with logical type Integer."
+    with pytest.raises(TypeConversionError, match=error_msg):
+        df.ww.set_types({'int_null': 'Integer'})

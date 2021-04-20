@@ -43,9 +43,9 @@ def sample_df_pandas():
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
         'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
-        'age': [33, 25, 33, 57],
+        'age': pd.Series([pd.NA, 33, 33, 57], dtype='Int64'),
         'signup_date': [pd.to_datetime('2020-09-01')] * 4,
-        'is_registered': [True, False, True, True],
+        'is_registered': pd.Series([pd.NA, False, True, True], dtype='boolean'),
     })
 
 
@@ -168,8 +168,8 @@ def time_index_df(request):
 def numeric_time_index_df_pandas():
     return pd.DataFrame({
         'floats': pd.Series([1, 2, 3, 4], dtype='float'),
-        'ints': pd.Series([1, -2, 3, 4], dtype='Int64'),
-        'with_null': pd.Series([1, 2, pd.NA, 4], dtype='Int64'),
+        'ints': pd.Series([1, -2, 3, 4], dtype='int64'),
+        'with_null': pd.Series([1, pd.NA, 3, 4], dtype='Int64'),
     })
 
 
@@ -182,8 +182,6 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 @pytest.fixture()
 def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
     ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
-    numeric_time_index_df_pandas['ints'] = numeric_time_index_df_pandas['ints'].astype('int64')
-    numeric_time_index_df_pandas['with_null'] = numeric_time_index_df_pandas['ints'].astype('float')
     return ks.from_pandas(numeric_time_index_df_pandas)
 
 
@@ -195,7 +193,7 @@ def numeric_time_index_df(request):
 @pytest.fixture()
 def describe_df_pandas():
     index_data = [0, 1, 2, 3, 4, 5, 6, 7]
-    boolean_data = [True, False, True, True, False, True, False, True]
+    boolean_data = [True, False, True, True, False, True, False, None]
     category_data = ['red', 'blue', 'red', np.nan, 'red', 'blue', 'red', 'yellow']
     datetime_data = pd.to_datetime(['2020-01-01',
                                     '2020-02-01',
