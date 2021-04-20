@@ -122,7 +122,18 @@ def _get_valid_dtype(series_type, logical_type):
     return valid_dtype
 
 
-def _get_invalid_schema_message(dataframe, schema):
+def get_invalid_schema_message(dataframe, schema):
+    """Return a message indicating the reason that the provided schema cannot be used to
+    initialize Woodwork on the dataframe. If the schema is valid for the dataframe,
+    None will be returned.
+
+    Args:
+        dataframe (DataFrame): The dataframe against which to check the schema.
+        schema (ww.TableSchema): The schema to use in the validity check.
+
+    Returns:
+        str or None: The reason that the schema is invalid for the dataframe
+    """
     dataframe_cols = set(dataframe.columns)
     schema_cols = set(schema.columns.keys())
 
@@ -149,17 +160,17 @@ def _get_invalid_schema_message(dataframe, schema):
 
 
 def is_schema_valid(dataframe, schema):
-    """Check if the provided schema is valid for initializing Woodwork on the provided dataframe
+    """Check if a schema is valid for initializing Woodwork on a dataframe
 
     Args:
-        dataframe (DataFrame): The dataframe against which to check the schema for validity.
-        schema (ww.TableSchema): The schema for which validity is determined.
+        dataframe (DataFrame): The dataframe against which to check the schema.
+        schema (ww.TableSchema): The schema to use in the validity check.
 
     Returns:
         boolean: Boolean indicating whether the schema is valid for the dataframe
     """
 
-    invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
+    invalid_schema_message = get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:
         return False
     return True

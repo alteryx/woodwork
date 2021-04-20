@@ -5,10 +5,10 @@ import pandas as pd
 
 import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
-    _get_invalid_schema_message,
     _get_valid_dtype,
     _is_dataframe,
     _update_column_dtype,
+    get_invalid_schema_message,
     init_series
 )
 from woodwork.exceptions import (
@@ -607,7 +607,7 @@ class WoodworkTableAccessor:
 
                 # Try to initialize Woodwork with the existing schema
                 if _is_dataframe(result):
-                    invalid_schema_message = _get_invalid_schema_message(result, self._schema)
+                    invalid_schema_message = get_invalid_schema_message(result, self._schema)
                     if invalid_schema_message:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
@@ -618,7 +618,8 @@ class WoodworkTableAccessor:
                 else:
                     # Confirm that the schema is still valid on original DataFrame
                     # Important for inplace operations
-                    invalid_schema_message = _get_invalid_schema_message(self._dataframe, self._schema)
+                    invalid_schema_message = get_invalid_schema_message(self._dataframe, self._schema)
+
                     if invalid_schema_message:
                         warnings.warn(TypingInfoMismatchWarning().get_warning_message(attr, invalid_schema_message, 'DataFrame'),
                                       TypingInfoMismatchWarning)
@@ -911,7 +912,7 @@ def _check_logical_types(dataframe_columns, logical_types):
 def _check_schema(dataframe, schema):
     if not isinstance(schema, TableSchema):
         raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
-    invalid_schema_message = _get_invalid_schema_message(dataframe, schema)
+    invalid_schema_message = get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
 

@@ -194,6 +194,7 @@ General Utils
     :toctree: generated
     :nosignatures:
 
+    get_invalid_schema_message
     init_series
     is_schema_valid
 
