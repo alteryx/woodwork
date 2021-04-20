@@ -2,7 +2,16 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.2.0 April 20, 2021**
     .. warning::
         This Woodwork release does not support Python 3.6
 
@@ -15,8 +24,7 @@ Release Notes
         * Allow initializing a ``WoodworkColumnAccessor`` with a ``ColumnSchema`` (:pr:`814`)
         * Add ``__repr__`` to ``ColumnSchema`` (:pr:`817`)
         * Add ``BooleanNullable`` and ``IntegerNullable`` logical types (:pr:`830`)
-        * Add validation control to WoodworkColumnAccessor (:pr:`833`)
-    * Fixes
+        * Add validation control to ``WoodworkColumnAccessor`` (:pr:`833`)
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
         * Rename ``ZIPCode`` logical type to ``PostalCode`` (:pr:`741`)
