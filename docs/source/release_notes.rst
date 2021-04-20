@@ -16,6 +16,7 @@ Release Notes
         * Add ``__repr__`` to ``ColumnSchema`` (:pr:`817`)
         * Add ``BooleanNullable`` and ``IntegerNullable`` logical types (:pr:`830`)
         * Add validation control to WoodworkColumnAccessor (:pr:`833`)
+        * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
     * Fixes
     * Changes
         * Rename ``FullName`` logical type to ``PersonFullName`` (:pr:`740`)
