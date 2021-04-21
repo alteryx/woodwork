@@ -3,6 +3,7 @@ import re
 import pytest
 from mock import patch
 
+from woodwork.exceptions import ColumnNotPresentError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -43,13 +44,13 @@ def test_validate_params_errors(sample_column_names):
 
 def test_check_index_errors(sample_column_names):
     error_message = 'Specified index column `foo` not found in TableSchema.'
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_index(column_names=sample_column_names, index='foo')
 
 
 def test_check_time_index_errors(sample_column_names):
     error_message = 'Specified time index column `foo` not found in TableSchema'
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_time_index(column_names=sample_column_names, time_index='foo', logical_type=Integer)
 
     error_msg = 'Time index column must be a Datetime or numeric column'
@@ -79,7 +80,7 @@ def test_check_logical_types_errors(sample_column_names):
         'occupation': None,
     }
     error_message = re.escape("logical_types contains columns that are not present in TableSchema: ['birthday', 'occupation']")
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
     bad_logical_types_keys = {
@@ -90,7 +91,7 @@ def test_check_logical_types_errors(sample_column_names):
         'age': None,
     }
     error_message = re.escape("logical_types is missing columns that are present in TableSchema: ['is_registered', 'signup_date']")
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
     bad_logical_types_keys = {'email': 1}
@@ -123,8 +124,8 @@ def test_check_semantic_tags_errors(sample_column_names):
         'birthday': None,
         'occupation': None,
     }
-    error_message = re.escape("semantic_tags contains columns that do not exist: ['birthday', 'occupation']")
-    with pytest.raises(LookupError, match=error_message):
+    error_message = re.escape("semantic_tags contains columns that are not present in TableSchema: ['birthday', 'occupation']")
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
 
     error_message = "semantic_tags for id must be a string, set or list"
@@ -146,8 +147,8 @@ def test_check_column_metadata_errors(sample_column_names):
     column_metadata = {
         'invalid_col': {'description': 'not a valid column'}
     }
-    err_msg = re.escape("column_metadata contains columns that do not exist: ['invalid_col']")
-    with pytest.raises(LookupError, match=err_msg):
+    err_msg = re.escape("column_metadata contains columns that are not present in TableSchema: ['invalid_col']")
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
         _check_column_metadata(sample_column_names, column_metadata=column_metadata)
 
 
@@ -159,8 +160,8 @@ def test_check_column_description_errors(sample_column_names):
     column_descriptions = {
         'invalid_col': 'a description'
     }
-    err_msg = re.escape("column_descriptions contains columns that do not exist: ['invalid_col']")
-    with pytest.raises(LookupError, match=err_msg):
+    err_msg = re.escape("column_descriptions contains columns that are not present in TableSchema: ['invalid_col']")
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
         _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
 
 
@@ -169,8 +170,8 @@ def test_check_use_standard_tags_errors(sample_column_names):
     with pytest.raises(TypeError, match=error_message):
         _check_use_standard_tags(sample_column_names, use_standard_tags=1)
 
-    error_message = re.escape("use_standard_tags contains columns that do not exist: ['invalid_col']")
-    with pytest.raises(LookupError, match=error_message):
+    error_message = re.escape("use_standard_tags contains columns that are not present in TableSchema: ['invalid_col']")
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_use_standard_tags(sample_column_names, use_standard_tags={'invalid_col': True})
 
     error_message = "use_standard_tags for column id must be a boolean"
@@ -371,8 +372,8 @@ def test_schema_col_descriptions_errors(sample_column_names, sample_inferred_log
         'invalid_col': 'not a valid column',
         'signup_date': 'date of account creation'
     }
-    err_msg = re.escape("column_descriptions contains columns that do not exist: ['invalid_col']")
-    with pytest.raises(LookupError, match=err_msg):
+    err_msg = re.escape("column_descriptions contains columns that are not present in TableSchema: ['invalid_col']")
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
         TableSchema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
 
 

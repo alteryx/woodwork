@@ -660,7 +660,7 @@ class WoodworkTableAccessor:
         if self._schema is None:
             _raise_init_error()
         if column_name not in self._dataframe.columns:
-            raise LookupError(f'Column with name {column_name} not found in DataFrame')
+            raise ColumnNotPresentError(column_name)
 
         series = self._dataframe.pop(column_name)
 
@@ -693,7 +693,7 @@ class WoodworkTableAccessor:
 
         not_present = [col for col in columns if col not in self._dataframe.columns]
         if not_present:
-            raise ValueError(f'{not_present} not found in DataFrame')
+            raise ColumnNotPresentError(not_present)
 
         return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns])
 
@@ -877,8 +877,8 @@ def _check_unique_column_names(dataframe):
 def _check_index(dataframe, index, make_index=False):
     if not make_index and index not in dataframe.columns:
         # User specifies an index that is not in the dataframe, without setting make_index to True
-        raise LookupError(f'Specified index column `{index}` not found in dataframe. '
-                          'To create a new index column, set make_index to True.')
+        raise ColumnNotPresentError(f'Specified index column `{index}` not found in dataframe. '
+                                    'To create a new index column, set make_index to True.')
     if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
         # Does not check for Dask as Dask does not support is_unique
@@ -895,7 +895,7 @@ def _check_index(dataframe, index, make_index=False):
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
     if time_index not in dataframe.columns:
-        raise LookupError(f'Specified time index column `{time_index}` not found in dataframe')
+        raise ColumnNotPresentError(f'Specified time index column `{time_index}` not found in dataframe')
     if not (_is_numeric_series(dataframe[time_index], logical_type) or
             col_is_datetime(dataframe[time_index], datetime_format=datetime_format)):
         raise TypeError('Time index column must contain datetime or numeric values')
@@ -906,8 +906,8 @@ def _check_logical_types(dataframe_columns, logical_types):
         raise TypeError('logical_types must be a dictionary')
     cols_not_found = set(logical_types.keys()).difference(set(dataframe_columns))
     if cols_not_found:
-        raise LookupError('logical_types contains columns that are not present in '
-                          f'dataframe: {sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError('logical_types contains columns that are not present in '
+                                    f'dataframe: {sorted(list(cols_not_found))}')
 
 
 def _check_schema(dataframe, schema):

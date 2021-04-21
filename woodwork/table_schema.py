@@ -253,8 +253,7 @@ class TableSchema(object):
         columns = _convert_input_to_set(columns, "columns")
         cols_not_found = sorted(list(columns.difference(set(self.columns.keys()))))
         if cols_not_found:
-            raise LookupError("Input contains columns that are not present in "
-                              f"dataframe: '{', '.join(cols_not_found)}'")
+            raise ColumnNotPresentError(cols_not_found)
         if not columns:
             columns = self.columns.keys()
 
@@ -519,12 +518,12 @@ def _check_column_names(column_names):
 def _check_index(column_names, index):
     if index not in column_names:
         # User specifies an index that is not in the list of column names
-        raise LookupError(f'Specified index column `{index}` not found in TableSchema.')
+        raise ColumnNotPresentError(f'Specified index column `{index}` not found in TableSchema.')
 
 
 def _check_time_index(column_names, time_index, logical_type):
     if time_index not in column_names:
-        raise LookupError(f'Specified time index column `{time_index}` not found in TableSchema')
+        raise ColumnNotPresentError(f'Specified time index column `{time_index}` not found in TableSchema')
     ltype_class = _get_ltype_class(logical_type)
 
     if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):
@@ -539,12 +538,12 @@ def _check_logical_types(column_names, logical_types, require_all_cols=True):
 
     cols_not_found_in_schema = cols_in_ltypes.difference(cols_in_schema)
     if cols_not_found_in_schema:
-        raise LookupError('logical_types contains columns that are not present in '
-                          f'TableSchema: {sorted(list(cols_not_found_in_schema))}')
+        raise ColumnNotPresentError('logical_types contains columns that are not present in '
+                                    f'TableSchema: {sorted(list(cols_not_found_in_schema))}')
     cols_not_found_in_ltypes = cols_in_schema.difference(cols_in_ltypes)
     if cols_not_found_in_ltypes and require_all_cols:
-        raise LookupError(f'logical_types is missing columns that are present in '
-                          f'TableSchema: {sorted(list(cols_not_found_in_ltypes))}')
+        raise ColumnNotPresentError(f'logical_types is missing columns that are present in '
+                                    f'TableSchema: {sorted(list(cols_not_found_in_ltypes))}')
 
     for col_name, logical_type in logical_types.items():
         if _get_ltype_class(logical_type) not in ww.type_system.registered_types:
@@ -558,8 +557,8 @@ def _check_semantic_tags(column_names, semantic_tags):
         raise TypeError('semantic_tags must be a dictionary')
     cols_not_found = set(semantic_tags.keys()).difference(set(column_names))
     if cols_not_found:
-        raise LookupError('semantic_tags contains columns that do not exist: '
-                          f'{sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError('semantic_tags contains columns that are not present in '
+                                    f'TableSchema: {sorted(list(cols_not_found))}')
 
     for col_name, col_tags in semantic_tags.items():
         if not isinstance(col_tags, (str, list, set)):
@@ -571,8 +570,8 @@ def _check_column_descriptions(column_names, column_descriptions):
         raise TypeError('column_descriptions must be a dictionary')
     cols_not_found = set(column_descriptions.keys()).difference(set(column_names))
     if cols_not_found:
-        raise LookupError('column_descriptions contains columns that do not exist: '
-                          f'{sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError('column_descriptions contains columns that are not present in '
+                                    f'TableSchema: {sorted(list(cols_not_found))}')
 
 
 def _check_table_metadata(table_metadata):
@@ -585,8 +584,8 @@ def _check_column_metadata(column_names, column_metadata):
         raise TypeError('Column metadata must be a dictionary.')
     cols_not_found = set(column_metadata.keys()).difference(set(column_names))
     if cols_not_found:
-        raise LookupError('column_metadata contains columns that do not exist: '
-                          f'{sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError('column_metadata contains columns that are not present in '
+                                    f'TableSchema: {sorted(list(cols_not_found))}')
 
 
 def _check_use_standard_tags(column_names, use_standard_tags):
@@ -595,8 +594,8 @@ def _check_use_standard_tags(column_names, use_standard_tags):
     if isinstance(use_standard_tags, dict):
         cols_not_found = set(use_standard_tags.keys()).difference(set(column_names))
         if cols_not_found:
-            raise LookupError('use_standard_tags contains columns that do not exist: '
-                              f'{sorted(list(cols_not_found))}')
+            raise ColumnNotPresentError('use_standard_tags contains columns that are not present in '
+                                        f'TableSchema: {sorted(list(cols_not_found))}')
 
         for col_name, use_standard_tags_for_col in use_standard_tags.items():
             if not isinstance(use_standard_tags_for_col, bool):
