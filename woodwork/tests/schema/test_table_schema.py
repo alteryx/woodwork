@@ -424,7 +424,7 @@ def test_set_logical_types_invalid_data(sample_column_names, sample_inferred_log
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     error_message = re.escape("logical_types contains columns that are not present in TableSchema: ['birthday']")
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         schema.set_types(logical_types={'birthday': Double})
 
     error_message = ("Logical Types must be of the LogicalType class "
@@ -645,8 +645,8 @@ def test_reset_semantic_tags_with_time_index(sample_column_names, sample_inferre
 
 def test_reset_semantic_tags_invalid_column(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, sample_inferred_logical_types,)
-    error_msg = "Input contains columns that are not present in dataframe: 'invalid_column'"
-    with pytest.raises(LookupError, match=error_msg):
+    error_msg = re.escape("Column(s) \'[\'invalid_column\']\' not found in DataFrame")
+    with pytest.raises(ColumnNotPresentError, match=error_msg):
         schema.reset_semantic_tags('invalid_column')
 
 
@@ -792,7 +792,7 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     error = re.escape("Specified index column `testing` not found in TableSchema.")
-    with pytest.raises(LookupError, match=error):
+    with pytest.raises(ColumnNotPresentError, match=error):
         schema.set_index('testing')
 
 
@@ -836,7 +836,7 @@ def test_set_time_index_errors(sample_column_names, sample_inferred_logical_type
     schema = TableSchema(sample_column_names, sample_inferred_logical_types)
 
     error = re.escape("Specified time index column `testing` not found in TableSchema")
-    with pytest.raises(LookupError, match=error):
+    with pytest.raises(ColumnNotPresentError, match=error):
         schema.set_time_index('testing')
 
     error = re.escape("Time index column must be a Datetime or numeric column.")
