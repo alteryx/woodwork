@@ -692,7 +692,7 @@ class WoodworkTableAccessor:
 
         not_present = [col for col in columns if col not in self._dataframe.columns]
         if not_present:
-            raise ValueError(f'{not_present} not found in DataFrame')
+            raise ColumnNotPresentError(not_present)
 
         return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns])
 

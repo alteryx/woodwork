@@ -1831,15 +1831,15 @@ def test_accessor_drop_indices(sample_df):
 def test_accessor_drop_errors(sample_df):
     sample_df.ww.init()
 
-    error = re.escape("['not_present'] not found in DataFrame")
-    with pytest.raises(ValueError, match=error):
+    error = re.escape("Column(s) '['not_present']' not found in DataFrame")
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.drop('not_present')
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.drop(['age', 'not_present'])
 
-    error = re.escape("['not_present1', 4] not found in DataFrame")
-    with pytest.raises(ValueError, match=error):
+    error = re.escape("Column(s) '['not_present1', 4]' not found in DataFrame")
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.drop(['not_present1', 4])
 
 
