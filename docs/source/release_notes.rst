@@ -7,6 +7,7 @@ Release Notes
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
     * Fixes
     * Changes
+        * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
     * Documentation Changes
     * Testing Changes
 
