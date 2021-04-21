@@ -47,3 +47,7 @@ class ColumnNotPresentError(KeyError):
             return super().__init__(f"Column with name '{column}' not found in DataFrame")
         elif isinstance(column, list):
             return super().__init__(f"Column(s) '{column}' not found in DataFrame")
+
+
+class WoodworkNotInitError(AttributeError):
+    pass

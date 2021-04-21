@@ -11,7 +11,8 @@ from woodwork.exceptions import (
     ColumnNotPresentError,
     ParametersIgnoredWarning,
     TypeConversionError,
-    TypingInfoMismatchWarning
+    TypingInfoMismatchWarning,
+    WoodworkNotInitError
 )
 from woodwork.logical_types import (
     URL,
@@ -207,7 +208,7 @@ def test_accessor_init_errors_methods(sample_df):
     for method in public_methods:
         func = getattr(sample_df.ww, method)
         method_args = method_args_dict[method]
-        with pytest.raises(AttributeError, match=error):
+        with pytest.raises(WoodworkNotInitError, match=error):
             if method_args:
                 func(*method_args)
             else:
@@ -220,7 +221,7 @@ def test_accessor_init_errors_properties(sample_df):
 
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     for prop in props:
-        with pytest.raises(AttributeError, match=error):
+        with pytest.raises(WoodworkNotInitError, match=error):
             getattr(sample_df.ww, prop)
 
 
@@ -267,7 +268,7 @@ def test_accessor_getattr(sample_df):
     assert schema_df.ww.schema is None
 
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
-    with pytest.raises(AttributeError, match=error):
+    with pytest.raises(WoodworkNotInitError, match=error):
         schema_df.ww.index
 
     schema_df.ww.init()
@@ -328,7 +329,7 @@ def test_getitem(sample_df):
 
 def test_getitem_init_error(sample_df):
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
-    with pytest.raises(AttributeError, match=error):
+    with pytest.raises(WoodworkNotInitError, match=error):
         sample_df.ww['age']
 
 
@@ -2227,7 +2228,7 @@ def test_accessor_types(sample_df):
 
 def test_accessor_repr(small_df):
     error = 'Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init'
-    with pytest.raises(AttributeError, match=error):
+    with pytest.raises(WoodworkNotInitError, match=error):
         repr(small_df.ww)
     small_df.ww.init()
 

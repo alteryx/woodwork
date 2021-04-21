@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from woodwork.exceptions import WoodworkNotInitError
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import (
     Categorical,
@@ -51,20 +52,20 @@ def test_locIndexer_class(sample_df):
 def test_error_before_table_init(sample_df):
     error_message = "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_df.ww.iloc[:, :]
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_df.ww.loc[:, :]
 
 
 def test_error_before_column_init(sample_series):
     error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_series.ww.iloc[:]
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_series.ww.loc[:]
 
 

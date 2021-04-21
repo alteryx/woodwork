@@ -14,7 +14,8 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     ParametersIgnoredWarning,
-    TypingInfoMismatchWarning
+    TypingInfoMismatchWarning,
+    WoodworkNotInitError
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime
@@ -933,7 +934,7 @@ def _make_index(dataframe, index):
 
 
 def _raise_init_error():
-    raise AttributeError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    raise WoodworkNotInitError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
 
 
 @pd.api.extensions.register_dataframe_accessor('ww')
