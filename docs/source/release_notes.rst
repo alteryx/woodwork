@@ -8,6 +8,7 @@ Release Notes
     * Fixes
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
+        * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
     * Documentation Changes
     * Testing Changes
 

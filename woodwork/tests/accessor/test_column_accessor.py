@@ -11,7 +11,8 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypeConversionError,
-    TypingInfoMismatchWarning
+    TypingInfoMismatchWarning,
+    WoodworkNotInitError
 )
 from woodwork.logical_types import (
     Categorical,
@@ -145,7 +146,7 @@ def test_error_accessing_properties_before_init(sample_series):
 
     error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     for prop in props:
-        with pytest.raises(AttributeError, match=error):
+        with pytest.raises(WoodworkNotInitError, match=error):
             getattr(sample_series.ww, prop)
 
 
@@ -165,7 +166,7 @@ def test_error_accessing_methods_before_init(sample_series):
     for method in public_methods:
         func = getattr(sample_series.ww, method)
         method_args = method_args_dict[method]
-        with pytest.raises(AttributeError, match=error):
+        with pytest.raises(WoodworkNotInitError, match=error):
             if method_args:
                 func(*method_args)
             else:
@@ -220,7 +221,7 @@ def test_accessor_description(sample_series):
 
 def test_description_setter_error_before_init(sample_series):
     err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
-    with pytest.raises(AttributeError, match=err_msg):
+    with pytest.raises(WoodworkNotInitError, match=err_msg):
         sample_series.ww.description = "description"
 
 
@@ -250,7 +251,7 @@ def test_accessor_repr(sample_series):
 
 def test_accessor_repr_error_before_init(sample_series):
     err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
-    with pytest.raises(AttributeError, match=err_msg):
+    with pytest.raises(WoodworkNotInitError, match=err_msg):
         sample_series.ww.__repr__()
 
 
@@ -490,7 +491,7 @@ def test_series_methods_on_accessor_new_schema_object(sample_series):
 
 def test_series_getattr_errors(sample_series):
     error_message = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_series.ww.shape
 
     sample_series.ww.init()
@@ -645,7 +646,7 @@ def test_accessor_metadata(sample_series):
 
 def test_metadata_setter_error_before_init(sample_series):
     err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
-    with pytest.raises(AttributeError, match=err_msg):
+    with pytest.raises(WoodworkNotInitError, match=err_msg):
         sample_series.ww.metadata = {"key": "val"}
 
 

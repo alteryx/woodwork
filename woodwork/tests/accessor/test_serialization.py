@@ -8,7 +8,11 @@ from mock import patch
 
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
-from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
+from woodwork.exceptions import (
+    OutdatedSchemaWarning,
+    UpgradeSchemaWarning,
+    WoodworkNotInitError
+)
 from woodwork.logical_types import Ordinal
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -34,16 +38,16 @@ def xfail_tmp_disappears(dataframe):
 def test_error_before_table_init(sample_df, tmpdir):
     error_message = "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_df.ww.to_dictionary()
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_df.ww.to_pickle(str(tmpdir))
 
-    with pytest.raises(AttributeError, match=error_message):
+    with pytest.raises(WoodworkNotInitError, match=error_message):
         sample_df.ww.to_parquet(str(tmpdir))
 
 

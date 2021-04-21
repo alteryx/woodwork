@@ -11,7 +11,8 @@ from woodwork.column_schema import (
 )
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
-    TypingInfoMismatchWarning
+    TypingInfoMismatchWarning,
+    WoodworkNotInitError
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
@@ -350,7 +351,7 @@ def _validate_schema(schema, series):
 
 
 def _raise_init_error():
-    raise AttributeError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
+    raise WoodworkNotInitError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
 
 
 @pd.api.extensions.register_series_accessor('ww')
