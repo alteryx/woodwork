@@ -57,7 +57,7 @@ ks = import_or_none('databricks.koalas')
 
 def test_check_index_errors(sample_df):
     error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
     if isinstance(sample_df, pd.DataFrame):
@@ -87,13 +87,13 @@ def test_check_logical_types_errors(sample_df):
         'occupation': None,
     }
     error_message = re.escape("logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']")
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
 
 
 def test_check_time_index_errors(sample_df):
     error_message = 'Specified time index column `foo` not found in dataframe'
-    with pytest.raises(LookupError, match=error_message):
+    with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_time_index(dataframe=sample_df, time_index='foo')
 
 
@@ -1679,7 +1679,7 @@ def test_accessor_set_index_errors(sample_df):
     sample_df.ww.init()
 
     error = 'Specified index column `testing` not found in TableSchema.'
-    with pytest.raises(LookupError, match=error):
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.set_index('testing')
 
     if isinstance(sample_df, pd.DataFrame):
@@ -1777,7 +1777,7 @@ def test_pop_error(sample_df):
         semantic_tags={'age': 'custom_tag'},
         use_standard_tags=True)
 
-    with pytest.raises(LookupError, match="Column with name missing not found in DataFrame"):
+    with pytest.raises(ColumnNotPresentError, match="Column with name 'missing' not found in DataFrame"):
         sample_df.ww.pop("missing")
 
 
@@ -1831,15 +1831,15 @@ def test_accessor_drop_indices(sample_df):
 def test_accessor_drop_errors(sample_df):
     sample_df.ww.init()
 
-    error = re.escape("['not_present'] not found in DataFrame")
-    with pytest.raises(ValueError, match=error):
+    error = re.escape("Column(s) '['not_present']' not found in DataFrame")
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.drop('not_present')
 
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.drop(['age', 'not_present'])
 
-    error = re.escape("['not_present1', 4] not found in DataFrame")
-    with pytest.raises(ValueError, match=error):
+    error = re.escape("Column(s) '['not_present1', 4]' not found in DataFrame")
+    with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.drop(['not_present1', 4])
 
 
