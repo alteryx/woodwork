@@ -7,6 +7,7 @@ Release Notes
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
     * Fixes
     * Changes
+        * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
     * Documentation Changes
     * Testing Changes
 
