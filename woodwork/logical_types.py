@@ -31,6 +31,19 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         return str(self.__class__)
 
 
+class Age(LogicalType):
+    """Represents Logical Types that contain positive numbers. Has 'numeric' as a standard tag.
+
+    Examples:
+        .. code-block:: python
+
+            [15, 22, 45]
+            [30, 62, 87]
+    """
+    primary_dtype = 'Int64'
+    standard_tags = {'numeric'}
+
+
 class Boolean(LogicalType):
     """Represents Logical Types that contain binary values indicating true/false.
 
