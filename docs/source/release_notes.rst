@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
+        * Add logical type for ``Age`` (:pr:`849`)
     * Fixes
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
@@ -13,7 +14,7 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 **v0.2.0 April 20, 2021**
     .. warning::
