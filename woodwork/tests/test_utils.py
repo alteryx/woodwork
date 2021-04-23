@@ -138,14 +138,14 @@ def test_list_logical_types_customized_type_system():
 
     # Check that new registered type is present and shows as registered
     index = df.name == 'CustomRegistered'
-    assert not index.empty
+    assert index.any()
     custom = df[index].iloc[0]
     assert not custom.is_default_type
     assert custom.is_registered
 
     # Check that new unregistered type is present and shows as not registered
     index = df.name == 'CustomNotRegistered'
-    assert not index.empty
+    assert index.any()
     custom = df[index].iloc[0]
     assert not custom.is_default_type
     assert not custom.is_registered
