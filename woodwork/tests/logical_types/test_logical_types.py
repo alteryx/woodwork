@@ -2,6 +2,11 @@ import pytest
 
 from woodwork.logical_types import Age, Boolean, Categorical, Datetime, Ordinal
 
+COLUMN_TO_LOGICAL_TYPE = {
+    'argnames': 'column,logical_type',
+    'argvalues': [('age', Age)],
+}
+
 
 def test_logical_eq():
     assert Boolean == Boolean
@@ -42,7 +47,7 @@ def test_ordinal_init_with_order():
     assert ordinal_from_tuple.order == order
 
 
-@pytest.mark.parametrize('column,logical_type', [('age', Age)])
+@pytest.mark.parametrize(**COLUMN_TO_LOGICAL_TYPE)
 def test_init(sample_df, column, logical_type):
     sample_df.ww.init(logical_types={column: logical_type})
     actual = sample_df.ww[column].ww.logical_type
@@ -50,7 +55,7 @@ def test_init(sample_df, column, logical_type):
     assert actual == logical_type, info
 
 
-@pytest.mark.parametrize('column,logical_type', [('age', Age)])
+@pytest.mark.parametrize(**COLUMN_TO_LOGICAL_TYPE)
 def test_set_types(sample_df, column, logical_type):
     sample_df.ww.init()
     before = sample_df.ww[column].ww.logical_type
