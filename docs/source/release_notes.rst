@@ -11,9 +11,10 @@ Release Notes
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
     * Documentation Changes
     * Testing Changes
+        * Remove unecessary argument in codecov upload job (:pr:`853`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.2.0 April 20, 2021**
     .. warning::
