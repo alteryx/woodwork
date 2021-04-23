@@ -43,7 +43,7 @@ def test_ordinal_init_with_order():
 
 
 @pytest.mark.parametrize('column,logical_type', [('age', Age)])
-def test_ww_init(sample_df, column, logical_type):
+def test_init(sample_df, column, logical_type):
     sample_df.ww.init(logical_types={column: logical_type})
     actual = sample_df.ww[column].ww.logical_type
     info = f'"{column}" not initialized as "{logical_type}"'
@@ -51,7 +51,7 @@ def test_ww_init(sample_df, column, logical_type):
 
 
 @pytest.mark.parametrize('column,logical_type', [('age', Age)])
-def test_ww_set_types(sample_df, column, logical_type):
+def test_set_types(sample_df, column, logical_type):
     sample_df.ww.init()
     before = sample_df.ww[column].ww.logical_type
     info = f'"{column}" already set as "{logical_type}""'
