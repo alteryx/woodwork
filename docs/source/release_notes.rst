@@ -5,16 +5,19 @@ Release Notes
 **Future Release**
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
-        * Add logical type for ``Age`` (:pr:`849`)
+        * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
     * Fixes
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
     * Documentation Changes
     * Testing Changes
+        * Remove unnecessary argument in codecov upload job (:pr:`853`)
+        * Change from GitHub Token to regenerated GitHub PAT dependency checkers (:pr:`855`)
+        * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.2.0 April 20, 2021**
     .. warning::

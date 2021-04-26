@@ -60,7 +60,7 @@ df.ww
 ```
                    Physical Type     Logical Type Semantic Tag(s)
 Column
-order_product_id           Int64          Integer       ['index']
+order_product_id           int64          Integer       ['index']
 order_id                category      Categorical    ['category']
 product_id              category      Categorical    ['category']
 description               string  NaturalLanguage              []
@@ -70,7 +70,7 @@ unit_price               float64           Double     ['numeric']
 customer_name             string   PersonFullName              []
 country                 category      Categorical    ['category']
 total                    float64           Double     ['numeric']
-cancelled                boolean          Boolean              []
+cancelled                   bool          Boolean              []
 ```
 
 We now have initialized Woodwork on the DataFrame with the specified logical types assigned. For columns that did not have a specified logical type value, Woodwork has automatically inferred the logical type based on the underlying data. Additionally, Woodwork has automatically assigned semantic tags to some of the columns, based on the inferred or assigned logical type.
