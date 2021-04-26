@@ -13,6 +13,7 @@ Release Notes
     * Testing Changes
         * Remove unnecessary argument in codecov upload job (:pr:`853`)
         * Change from GitHub Token to regenerated GitHub PAT dependency checkers (:pr:`855`)
+        * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
