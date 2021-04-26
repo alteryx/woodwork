@@ -76,6 +76,7 @@ DEFAULT_RELATIONSHIPS = [
     (Integer, Age),
     (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer),
+    (NaturalLanguage, Address),
     (NaturalLanguage, EmailAddress),
     (NaturalLanguage, Filepath),
     (NaturalLanguage, PersonFullName),
