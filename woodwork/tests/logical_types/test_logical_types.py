@@ -1,6 +1,7 @@
 import pytest
 
 from woodwork.logical_types import (
+    Address,
     Age,
     AgeNullable,
     Boolean,
@@ -11,7 +12,11 @@ from woodwork.logical_types import (
 
 COLUMN_TO_LOGICAL_TYPE = {
     'argnames': 'column,logical_type',
-    'argvalues': [('id', Age), ('age', AgeNullable)],
+    'argvalues': [
+        ('email', Address),
+        ('id', Age),
+        ('age', AgeNullable),
+    ],
 }
 
 
