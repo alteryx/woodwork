@@ -307,10 +307,10 @@ class TableSchema(object):
             if validate:
                 _check_index(self.columns.keys(), new_index)
 
-            if 'time_index' in self.columns[new_index].semantic_tags:
-                info = f'"{new_index}" is already set as the time index. '
-                info += 'A time index cannot also be the index.'
-                raise ValueError(info)
+                if 'time_index' in self.columns[new_index].semantic_tags:
+                    info = f'"{new_index}" is already set as the time index. '
+                    info += 'A time index cannot also be the index.'
+                    raise ValueError(info)
 
             self._set_index_tags(new_index)
 
