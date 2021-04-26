@@ -66,12 +66,12 @@ DEFAULT_INFERENCE_FUNCTIONS = {
 
 # (ParentType, ChildType)
 DEFAULT_RELATIONSHIPS = [
-    (AgeNullable, Age),
     (BooleanNullable, Boolean),
     (Categorical, CountryCode),
     (Categorical, Ordinal),
     (Categorical, PostalCode),
     (Categorical, SubRegionCode),
+    (Integer, Age),
     (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer),
     (NaturalLanguage, EmailAddress),
