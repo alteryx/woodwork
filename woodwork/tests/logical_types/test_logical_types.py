@@ -1,10 +1,17 @@
 import pytest
 
-from woodwork.logical_types import Age, Boolean, Categorical, Datetime, Ordinal
+from woodwork.logical_types import (
+    Age,
+    AgeNullable,
+    Boolean,
+    Categorical,
+    Datetime,
+    Ordinal
+)
 
 COLUMN_TO_LOGICAL_TYPE = {
     'argnames': 'column,logical_type',
-    'argvalues': [('age', Age)],
+    'argvalues': [('id', Age), ('age', AgeNullable)],
 }
 
 

@@ -40,6 +40,19 @@ class Age(LogicalType):
             [15, 22, 45]
             [30, 62, 87]
     """
+    primary_dtype = 'int64'
+    standard_tags = {'numeric'}
+
+
+class AgeNullable(LogicalType):
+    """Represents Logical Types that contain positive numbers. Has 'numeric' as a standard tag. May also contain null values.
+
+    Examples:
+        .. code-block:: python
+
+            [np.nan, 22, 45]
+            [30, 62, np.nan]
+    """
     primary_dtype = 'Int64'
     standard_tags = {'numeric'}
 
