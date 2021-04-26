@@ -12,9 +12,10 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Remove unnecessary argument in codecov upload job (:pr:`853`)
+        * Change from GitHub Token to regenerated GitHub PAT dependency checkers (:pr:`855`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.2.0 April 20, 2021**
     .. warning::
