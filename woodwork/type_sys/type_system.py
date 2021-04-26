@@ -71,6 +71,8 @@ DEFAULT_RELATIONSHIPS = [
     (Categorical, Ordinal),
     (Categorical, PostalCode),
     (Categorical, SubRegionCode),
+    (Integer, Age),
+    (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer),
     (NaturalLanguage, EmailAddress),
     (NaturalLanguage, Filepath),
