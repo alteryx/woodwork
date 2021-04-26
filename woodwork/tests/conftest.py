@@ -39,12 +39,12 @@ def sample_df(request):
 @pytest.fixture()
 def sample_df_pandas():
     return pd.DataFrame({
-        'id': pd.Series(range(4),dtype="Int64"),
-        'full_name': pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],dtype="string"),
-        'email': pd.Series(['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],dtype="string"),
-        'phone_number': pd.Series(['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],dtype="string"),
+        'id': pd.Series(range(4), dtype="Int64"),
+        'full_name': pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'], dtype="string"),
+        'email': pd.Series(['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'], dtype="string"),
+        'phone_number': pd.Series(['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'], dtype="string"),
         'age': pd.Series([pd.NA, 33, 33, 57], dtype='Int64'),
-        'signup_date': pd.Series([pd.to_datetime('2020-09-01')] * 4,dtype="datetime64[ns]"),
+        'signup_date': pd.Series([pd.to_datetime('2020-09-01')] * 4, dtype="datetime64[ns]"),
         'is_registered': pd.Series([pd.NA, False, True, True], dtype='boolean'),
     })
 
@@ -69,13 +69,13 @@ def sample_unsorted_df(request):
 @pytest.fixture()
 def sample_unsorted_df_pandas():
     return pd.DataFrame({
-        'id': pd.Series([3, 1, 2, 0],dtype="Int64"),
-        'full_name': pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],dtype="string"),
-        'email': pd.Series(['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],dtype="string"),
-        'phone_number': pd.Series(['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],dtype="string"),
-        'age': pd.Series([33, 25, 33, 57],dtype="Int64",
-        'signup_date': pd.Series(pd.to_datetime(['2020-09-01', '2020-08-01', '2020-08-02', '2020-09-01']),dtype="datetime64[ns]"),
-        'is_registered': pd.Series([True, False, True, True],dtype="boolean"),
+        'id': pd.Series([3, 1, 2, 0], dtype="Int64"),
+        'full_name': pd.Series(['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'], dtype="string"),
+        'email': pd.Series(['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'], dtype="string"),
+        'phone_number': pd.Series(['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'], dtype="string"),
+        'age': pd.Series([33, 25, 33, 57], dtype="Int64"),
+        'signup_date': pd.Series(pd.to_datetime(['2020-09-01', '2020-08-01', '2020-08-02', '2020-09-01']), dtype="datetime64[ns]"),
+        'is_registered': pd.Series([True, False, True, True], dtype="boolean"),
     })
 
 
@@ -138,12 +138,12 @@ def sample_datetime_series_koalas(sample_datetime_series_pandas):
 @pytest.fixture()
 def time_index_df_pandas():
     return pd.DataFrame({
-        'id': pd.Series([0, 1, 2, 3],dtype="Int64"),
-        'times': pd.Series(['2019-01-01', '2019-01-02', '2019-01-03', pd.NA],dtype="datetime64[ns]"),
-        'ints': pd.Series([1, 2, 3, 4],dtype="Int64"),
-        'strs': pd.Series(['1', '2', '3', '4'],dtype="string"),
-        'letters': pd.Series(['a', 'b', 'c', 'd'],dtype="string"),
-        'bools': pd.Series([True, False, False, True],dtype="boolean"),
+        'id': pd.Series([0, 1, 2, 3], dtype="Int64"),
+        'times': pd.Series(['2019-01-01', '2019-01-02', '2019-01-03', pd.NA], dtype="datetime64[ns]"),
+        'ints': pd.Series([1, 2, 3, 4], dtype="Int64"),
+        'strs': pd.Series(['1', '2', '3', '4'], dtype="string"),
+        'letters': pd.Series(['a', 'b', 'c', 'd'], dtype="string"),
+        'bools': pd.Series([True, False, False, True], dtype="boolean"),
     })
 
 
@@ -268,9 +268,9 @@ def describe_df(request):
 def df_same_mi_pandas():
     return pd.DataFrame({
         'ints': pd.Series([2, pd.NA, 5, 2], dtype='Int64'),
-        'floats': pd.Series([1, None, 100, 1],dtype='float'),
+        'floats': pd.Series([1, None, 100, 1], dtype='float'),
         'nans': pd.Series([None, None, None, None]),
-        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test'],dtype="string"),
+        'nat_lang': pd.Series(['this is a very long sentence inferred as a string', None, 'test', 'test'], dtype="string"),
     })
 
 
@@ -296,11 +296,11 @@ def df_same_mi(request):
 @pytest.fixture()
 def df_mi_pandas():
     return pd.DataFrame({
-        'ints': pd.Series([1, 2, 1],dtype="Int64"),
-        'bools': pd.Series([True, False, True],dtype="boolean"),
-        'strs2': pd.Series(['bye', 'hi', 'bye'],dtype="string"),
-        'strs': pd.Series(['hi', 'hi', 'hi'],dtype="string"),
-        'dates': pd.Series(['2020-01-01', '2020-01-01', '1997-01-04'],dtype="datetime64[ns]")
+        'ints': pd.Series([1, 2, 1], dtype="Int64"),
+        'bools': pd.Series([True, False, True], dtype="boolean"),
+        'strs2': pd.Series(['bye', 'hi', 'bye'], dtype="string"),
+        'strs': pd.Series(['hi', 'hi', 'hi'], dtype="string"),
+        'dates': pd.Series(['2020-01-01', '2020-01-01', '1997-01-04'], dtype="datetime64[ns]")
     })
 
 
@@ -324,10 +324,10 @@ def df_mi(request):
 @pytest.fixture()
 def df_mi_unique_pandas():
     return pd.DataFrame({
-        'unique': pd.Series(['hi', 'bye', 'hello', 'goodbye'],dtype="string"),
-        'unique_with_one_nan': pd.Series(['hi', 'bye', None, 'goodbye'],dtype="string"),
-        'unique_with_nans': pd.Series([1, None, None, 2],dtype="Int64"),
-        'ints': pd.Series([1, 2, 1, 2],dtype="Int64"),
+        'unique': pd.Series(['hi', 'bye', 'hello', 'goodbye'], dtype="string"),
+        'unique_with_one_nan': pd.Series(['hi', 'bye', None, 'goodbye'], dtype="string"),
+        'unique_with_nans': pd.Series([1, None, None, 2], dtype="Int64"),
+        'ints': pd.Series([1, 2, 1, 2], dtype="Int64"),
     })
 
 
