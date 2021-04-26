@@ -10,6 +10,7 @@ from mock import patch
 import woodwork as ww
 from woodwork.logical_types import (
     Age,
+    AgeNullable,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -453,6 +454,7 @@ def test_get_valid_mi_types():
     valid_types = get_valid_mi_types()
     expected_types = [
         Age,
+        AgeNullable,
         Boolean,
         BooleanNullable,
         Categorical,
