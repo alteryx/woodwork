@@ -795,9 +795,17 @@ def test_set_index_errors(sample_column_names, sample_inferred_logical_types):
     with pytest.raises(ColumnNotPresentError, match=error):
         schema.set_index('testing')
 
-    schema.set_index('id')
     match = '"id" is already set as the index. '
     match += 'An index cannot also be the time index.'
+    with pytest.raises(ValueError, match=match):
+        TableSchema(
+            sample_column_names,
+            sample_inferred_logical_types,
+            index='id',
+            time_index='id',
+        )
+
+    schema.set_index('id')
     with pytest.raises(ValueError, match=match):
         schema.set_time_index('id')
 
