@@ -32,7 +32,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
 
 class Age(LogicalType):
-    """Represents Logical Types that contain positive numbers. Has 'numeric' as a standard tag.
+    """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -45,7 +45,7 @@ class Age(LogicalType):
 
 
 class AgeNullable(LogicalType):
-    """Represents Logical Types that contain positive numbers. Has 'numeric' as a standard tag. May also contain null values.
+    """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag. May also contain null values.
 
     Examples:
         .. code-block:: python
