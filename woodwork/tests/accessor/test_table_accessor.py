@@ -825,6 +825,21 @@ def test_invalid_dtype_casting():
     with pytest.raises(TypeConversionError, match=err_msg):
         pd.DataFrame(series).ww.init(logical_types=ltypes)
 
+    # pandas >1.2.0 gives an object dtype when casting a series with missing
+    # values to `bool` but does not error. Woodwork should not allow this to succeed.
+    # Earlier versions of pandas cast to the correct dtype, but replace missing values
+    # with True, so this error will only happen on newer versions of pandas
+    # TODO: Remove the 'if' condition once we bump pandas min version to 1.2.0 or higher.
+    if pd.__version__ > '1.1.5':
+        series = pd.Series(['a', 'b', None], name=column_name, dtype='category')
+        ltypes = {
+            column_name: Boolean,
+        }
+        err_msg = 'Error converting datatype for test_series from type category to type ' \
+            'bool. Please confirm the underlying data is consistent with logical type Boolean.'
+        with pytest.raises(TypeConversionError, match=err_msg):
+            pd.DataFrame(series).ww.init(logical_types=ltypes)
+
 
 def test_make_index(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
