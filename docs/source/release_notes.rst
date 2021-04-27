@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
     * Fixes
+        * Fix bug where invalid casting to ``Boolean`` would not raise error (:pr:`863`)
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
