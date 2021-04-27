@@ -829,7 +829,8 @@ def test_invalid_dtype_casting():
     # values with `.astype('bool')` but does not error. Woodwork should not allow this to succeed.
     # Earlier versions of pandas cast to the correct dtype, replacing missing values
     # with True, so this error will only happen on newer versions of pandas
-    # TODO: Remove the 'if' condition once we bump pandas min version to 1.2.0 or higher.
+    # TODO: Remove the 'if' condition once we bump pandas min version to 1.2.0 or higher
+    # but leave the test in place.
     if pd.__version__ > '1.1.5':
         series = pd.Series(['a', 'b', None], name=column_name, dtype='category')
         ltypes = {
