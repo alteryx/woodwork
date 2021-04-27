@@ -153,7 +153,8 @@ def get_invalid_schema_message(dataframe, schema):
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
         # Index validation not performed for Dask/Koalas
-        if not all(dataframe.index == dataframe[schema.index]):
+        if not all((dataframe.index == dataframe[schema.index]) |
+                   (pd.isnull(dataframe.index) & pd.isnull(dataframe[schema.index]))):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
             return 'Index column is not unique'
