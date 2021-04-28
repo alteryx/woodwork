@@ -718,8 +718,8 @@ class WoodworkTableAccessor:
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
-        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
-        PostalCode, and SubRegionCode
+        follows:  Age, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
+        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -745,8 +745,8 @@ class WoodworkTableAccessor:
     def mutual_information(self, num_bins=10, nrows=None, include_index=False):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
-        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
-        PostalCode, and SubRegionCode
+        follows:  Age, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
+        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
 
         Args:
             num_bins (int): Determines number of bins to use for converting
