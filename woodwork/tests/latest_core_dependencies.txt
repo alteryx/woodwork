@@ -2,4 +2,4 @@ click==7.1.2
 numpy==1.20.2
 pandas==1.2.4
 pyarrow==4.0.0
-scikit-learn==0.24.1
+scikit-learn==0.24.2
