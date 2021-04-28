@@ -181,6 +181,12 @@ def test_get_invalid_schema_message_index_checks(sample_df):
     not_unique_df.index.name = None
     assert get_invalid_schema_message(not_unique_df, schema) == 'Index column is not unique'
 
+    nan_df = pd.DataFrame({'id': pd.Series([5, 4, None, 2], dtype='float64'), 'col': pd.Series(['b', 'b', 'b', 'd'], dtype='category')})
+    nan_df.ww.init(index='id')
+    nan_df_schema = nan_df.ww.schema
+
+    assert get_invalid_schema_message(nan_df, nan_df_schema) is None
+
 
 def test_is_schema_valid_true(sample_df):
     sample_df.ww.init(index='id', logical_types={'phone_number': 'Categorical'})
