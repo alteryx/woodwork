@@ -6,6 +6,7 @@ Release Notes
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
     * Fixes
+        * Raise error when a column is set as the index and time index (:pr:`859`)
         * Fix bug where invalid casting to ``Boolean`` would not raise error (:pr:`863`)
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
@@ -17,7 +18,7 @@ Release Notes
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.2.0 April 20, 2021**
     .. warning::
