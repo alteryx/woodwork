@@ -1,13 +1,6 @@
 import pytest
 
-from woodwork.logical_types import (
-    Age,
-    AgeNullable,
-    Boolean,
-    Categorical,
-    Datetime,
-    Ordinal
-)
+from woodwork.logical_types import Boolean, Categorical, Datetime, Ordinal
 
 
 def test_logical_eq():
