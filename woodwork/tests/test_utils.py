@@ -9,6 +9,8 @@ from mock import patch
 
 import woodwork as ww
 from woodwork.logical_types import (
+    Age,
+    AgeNullable,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -131,18 +133,23 @@ def test_list_logical_types_customized_type_system():
     df = list_logical_types()
     assert len(all_ltypes) == len(df)
     # Check that URL is unregistered
-    assert df.loc[21, 'is_default_type']
-    assert not df.loc[21, 'is_registered']
+    url = df[df.name == 'URL'].iloc[0]
+    assert url.is_default_type
+    assert not url.is_registered
 
     # Check that new registered type is present and shows as registered
-    assert 'CustomRegistered' in df['name'].values
-    assert not df.loc[5, 'is_default_type']
-    assert df.loc[5, 'is_registered']
+    index = df.name == 'CustomRegistered'
+    assert index.any()
+    custom = df[index].iloc[0]
+    assert not custom.is_default_type
+    assert custom.is_registered
 
     # Check that new unregistered type is present and shows as not registered
-    assert 'CustomNotRegistered' in df['name'].values
-    assert not df.loc[4, 'is_default_type']
-    assert not df.loc[4, 'is_registered']
+    index = df.name == 'CustomNotRegistered'
+    assert index.any()
+    custom = df[index].iloc[0]
+    assert not custom.is_default_type
+    assert not custom.is_registered
     ww.type_system.reset_defaults()
 
 
@@ -446,6 +453,8 @@ def test_is_valid_latlong_series():
 def test_get_valid_mi_types():
     valid_types = get_valid_mi_types()
     expected_types = [
+        Age,
+        AgeNullable,
         Boolean,
         BooleanNullable,
         Categorical,

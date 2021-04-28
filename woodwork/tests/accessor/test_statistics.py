@@ -3,6 +3,8 @@ import pandas as pd
 
 from woodwork.logical_types import (
     URL,
+    Age,
+    AgeNullable,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -237,8 +239,8 @@ def test_describe_accessor_method(describe_df):
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
-    nullable_numeric_ltypes = [Double, IntegerNullable]
-    non_nullable_numeric_ltypes = [Integer]
+    nullable_numeric_ltypes = [Double, IntegerNullable, AgeNullable]
+    non_nullable_numeric_ltypes = [Integer, Age]
     natural_language_ltypes = [EmailAddress, Filepath, PersonFullName, IPAddress,
                                PhoneNumber, URL]
     latlong_ltypes = [LatLong]

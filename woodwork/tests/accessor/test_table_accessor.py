@@ -16,6 +16,8 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import (
     URL,
+    Age,
+    AgeNullable,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -736,11 +738,11 @@ def test_sets_int64_dtype_on_init():
         pd.Series([1, pd.NA, 3], name=column_name),
     ]
 
-    logical_types = [Integer, IntegerNullable]
+    logical_types = [Integer, IntegerNullable, Age, AgeNullable]
     for series in series_list:
         series = series.astype('object')
         for logical_type in logical_types:
-            if series.isnull().any() and logical_type == Integer:
+            if series.isnull().any() and logical_type in [Integer, Age]:
                 continue
             ltypes = {
                 column_name: logical_type,
