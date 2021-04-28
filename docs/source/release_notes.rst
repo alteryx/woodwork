@@ -13,6 +13,7 @@ Release Notes
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
+        * Remove check requiring ``Ordinal`` instance for initializing a ``ColumnSchema`` object (:pr:`870`)
     * Documentation Changes
     * Testing Changes
         * Remove unnecessary argument in codecov upload job (:pr:`853`)

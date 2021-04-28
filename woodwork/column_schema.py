@@ -5,7 +5,7 @@ from woodwork.exceptions import (
     DuplicateTagsWarning,
     StandardTagsChangedWarning
 )
-from woodwork.logical_types import Boolean, BooleanNullable, Datetime, Ordinal
+from woodwork.logical_types import Boolean, BooleanNullable, Datetime
 from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
@@ -21,7 +21,7 @@ class ColumnSchema(object):
         """Create ColumnSchema
 
         Args:
-            logical_type (str, LogicalType, optional): The column's LogicalType.
+            logical_type (LogicalType, optional): The column's LogicalType.
             semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
             use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
                     on the specified logical type if a logical type is defined for the column. Defaults to False.
@@ -163,8 +163,6 @@ def _validate_logical_type(logical_type):
 
     if ltype_class not in ww.type_system.registered_types:
         raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
-    if ltype_class == Ordinal and not isinstance(logical_type, Ordinal):
-        raise TypeError("Must use an Ordinal instance with order values defined")
 
 
 def _validate_description(column_description):
