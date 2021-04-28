@@ -8,6 +8,7 @@ Release Notes
     * Fixes
         * Raise error when a column is set as the index and time index (:pr:`859`)
         * Allow NaNs in index for schema validation check (:pr:`862`)
+        * Fix bug where invalid casting to ``Boolean`` would not raise error (:pr:`863`)
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
