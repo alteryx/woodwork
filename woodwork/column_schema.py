@@ -21,7 +21,7 @@ class ColumnSchema(object):
         """Create ColumnSchema
 
         Args:
-            logical_type (str, LogicalType, optional): The column's LogicalType.
+            logical_type (LogicalType, optional): The column's LogicalType.
             semantic_tags (str, list, set, optional): The semantic tag(s) specified for the column.
             use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
                     on the specified logical type if a logical type is defined for the column. Defaults to False.
