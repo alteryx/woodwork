@@ -5,6 +5,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
+        * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
     * Fixes
         * Raise error when a column is set as the index and time index (:pr:`859`)
         * Allow NaNs in index for schema validation check (:pr:`862`)
