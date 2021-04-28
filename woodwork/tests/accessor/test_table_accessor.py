@@ -742,7 +742,7 @@ def test_sets_int64_dtype_on_init():
     for series in series_list:
         series = series.astype('object')
         for logical_type in logical_types:
-            if series.isnull().any() and logical_type == Integer:
+            if series.isnull().any() and logical_type in [Integer, Age]:
                 continue
             ltypes = {
                 column_name: logical_type,
