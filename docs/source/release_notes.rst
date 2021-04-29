@@ -8,9 +8,13 @@ Release Notes
         * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
         * Add logical type for ``Address`` (:pr:`858`)
     * Fixes
+        * Raise error when a column is set as the index and time index (:pr:`859`)
+        * Allow NaNs in index for schema validation check (:pr:`862`)
+        * Fix bug where invalid casting to ``Boolean`` would not raise error (:pr:`863`)
     * Changes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
+        * Remove check requiring ``Ordinal`` instance for initializing a ``ColumnSchema`` object (:pr:`870`)
     * Documentation Changes
     * Testing Changes
         * Remove unnecessary argument in codecov upload job (:pr:`853`)
@@ -18,7 +22,7 @@ Release Notes
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.2.0 April 20, 2021**
     .. warning::

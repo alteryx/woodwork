@@ -68,6 +68,9 @@ def _update_column_dtype(series, logical_type):
     new_dtype = _get_valid_dtype(type(series), logical_type)
     if new_dtype != str(series.dtype):
         # Update the underlying series
+        error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
+            f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
+            f'logical type {logical_type}.'
         try:
             if _get_ltype_class(logical_type) == Datetime:
                 if dd and isinstance(series, dd.Series):
@@ -82,10 +85,11 @@ def _update_column_dtype(series, logical_type):
                     series = pd.to_datetime(series, format=logical_type.datetime_format)
             else:
                 series = series.astype(new_dtype)
+                if str(series.dtype) != new_dtype:
+                    # Catch conditions when Panads does not error but did not
+                    # convert to the specified dtype (example: 'category' -> 'bool')
+                    raise TypeConversionError(error_msg)
         except (TypeError, ValueError):
-            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
-                f'logical type {logical_type}.'
             raise TypeConversionError(error_msg)
     return series
 
@@ -153,7 +157,7 @@ def get_invalid_schema_message(dataframe, schema):
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
         # Index validation not performed for Dask/Koalas
-        if not all(dataframe.index == dataframe[schema.index]):
+        if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(pd.Series(dataframe[schema.index].values)):
             return 'Index mismatch between DataFrame and typing information'
         elif not dataframe[schema.index].is_unique:
             return 'Index column is not unique'
