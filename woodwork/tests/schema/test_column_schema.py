@@ -38,10 +38,6 @@ def test_validate_logical_type_errors():
         _validate_logical_type(Integer)
     ww.type_system.reset_defaults()
 
-    error_msg = 'Must use an Ordinal instance with order values defined'
-    with pytest.raises(TypeError, match=error_msg):
-        ColumnSchema(Ordinal)
-
 
 def test_validate_description_errors():
     match = re.escape("Column description must be a string")

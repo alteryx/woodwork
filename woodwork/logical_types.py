@@ -31,6 +31,32 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         return str(self.__class__)
 
 
+class Age(LogicalType):
+    """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag.
+
+    Examples:
+        .. code-block:: python
+
+            [15, 22, 45]
+            [30, 62, 87]
+    """
+    primary_dtype = 'int64'
+    standard_tags = {'numeric'}
+
+
+class AgeNullable(LogicalType):
+    """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag. May also contain null values.
+
+    Examples:
+        .. code-block:: python
+
+            [np.nan, 22, 45]
+            [30, 62, np.nan]
+    """
+    primary_dtype = 'Int64'
+    standard_tags = {'numeric'}
+
+
 class Boolean(LogicalType):
     """Represents Logical Types that contain binary values indicating true/false.
 

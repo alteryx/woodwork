@@ -127,6 +127,8 @@ Logical Types
 .. autosummary::
     :toctree: generated/
 
+    Age
+    AgeNullable
     Boolean
     Categorical
     CountryCode

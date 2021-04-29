@@ -306,6 +306,12 @@ class TableSchema(object):
         if new_index is not None:
             if validate:
                 _check_index(self.columns.keys(), new_index)
+
+                if 'time_index' in self.columns[new_index].semantic_tags:
+                    info = f'"{new_index}" is already set as the time index. '
+                    info += 'A time index cannot also be the index.'
+                    raise ValueError(info)
+
             self._set_index_tags(new_index)
 
     def set_time_index(self, new_time_index, validate=True):
@@ -322,6 +328,12 @@ class TableSchema(object):
         if new_time_index is not None:
             if validate:
                 _check_time_index(self.columns.keys(), new_time_index, self.logical_types.get(new_time_index))
+
+                if 'index' in self.columns[new_time_index].semantic_tags:
+                    info = f'"{new_time_index}" is already set as the index. '
+                    info += 'An index cannot also be the time index.'
+                    raise ValueError(info)
+
             self._set_time_index_tags(new_time_index)
 
     def rename(self, columns):
