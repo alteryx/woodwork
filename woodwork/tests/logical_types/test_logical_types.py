@@ -1,23 +1,6 @@
 import pytest
 
-from woodwork.logical_types import (
-    Address,
-    Age,
-    AgeNullable,
-    Boolean,
-    Categorical,
-    Datetime,
-    Ordinal
-)
-
-COLUMN_TO_LOGICAL_TYPE = {
-    'argnames': 'column,logical_type',
-    'argvalues': [
-        ('email', Address),
-        ('id', Age),
-        ('age', AgeNullable),
-    ],
-}
+from woodwork.logical_types import Boolean, Categorical, Datetime, Ordinal
 
 
 def test_logical_eq():
@@ -57,24 +40,3 @@ def test_ordinal_init_with_order():
     order = ('bronze', 'silver', 'gold')
     ordinal_from_tuple = Ordinal(order=order)
     assert ordinal_from_tuple.order == order
-
-
-@pytest.mark.parametrize(**COLUMN_TO_LOGICAL_TYPE)
-def test_init(sample_df, column, logical_type):
-    sample_df.ww.init(logical_types={column: logical_type})
-    actual = sample_df.ww[column].ww.logical_type
-    info = f'"{column}" not initialized as "{logical_type}"'
-    assert actual == logical_type, info
-
-
-@pytest.mark.parametrize(**COLUMN_TO_LOGICAL_TYPE)
-def test_set_types(sample_df, column, logical_type):
-    sample_df.ww.init()
-    before = sample_df.ww[column].ww.logical_type
-    info = f'"{column}" already set as "{logical_type}""'
-    assert before != logical_type, info
-
-    sample_df.ww.set_types(logical_types={column: logical_type})
-    after = sample_df.ww[column].ww.logical_type
-    info = f'"{column}" not set as "{logical_type}"'
-    assert after == logical_type, info
