@@ -42,13 +42,7 @@ def test_error_before_table_init(sample_df, tmpdir):
         sample_df.ww.to_dictionary()
 
     with pytest.raises(WoodworkNotInitError, match=error_message):
-        sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
-
-    with pytest.raises(WoodworkNotInitError, match=error_message):
-        sample_df.ww.to_pickle(str(tmpdir))
-
-    with pytest.raises(WoodworkNotInitError, match=error_message):
-        sample_df.ww.to_parquet(str(tmpdir))
+        sample_df.ww.to_disk(str(tmpdir), format='csv')
 
 
 def test_to_dictionary(sample_df):
@@ -163,7 +157,7 @@ def test_unserializable_table(sample_df, tmpdir):
 
     error = "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
     with pytest.raises(TypeError, match=error):
-        sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+        sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
@@ -187,8 +181,7 @@ def test_to_csv(sample_df, tmpdir):
                              'age': 'age of the user'},
         column_metadata={'id': {'is_sorted': True},
                          'age': {'interesting_values': [33, 57]}})
-
-    sample_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
     pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -198,7 +191,7 @@ def test_to_csv(sample_df, tmpdir):
 
 def test_to_csv_with_latlong(latlong_df, tmpdir):
     latlong_df.ww.init(index='tuple_ints', logical_types={col: 'LatLong' for col in latlong_df.columns})
-    latlong_df.ww.to_csv(str(tmpdir))
+    latlong_df.ww.to_disk(str(tmpdir))
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
     pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -210,13 +203,13 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     no_standard_tags_df = sample_df.copy()
     no_standard_tags_df.ww.init(use_standard_tags=False)
 
-    no_standard_tags_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    no_standard_tags_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
     deserialized_no_tags_df = deserialize.read_woodwork_table(str(tmpdir))
 
     standard_tags_df = sample_df.copy()
     standard_tags_df.ww.init(use_standard_tags=True)
 
-    standard_tags_df.ww.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    standard_tags_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
     deserialized_tags_df = deserialize.read_woodwork_table(str(tmpdir))
 
     assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
@@ -230,9 +223,9 @@ def test_to_pickle(sample_df, tmpdir):
     if not isinstance(sample_df, pd.DataFrame):
         msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
         with pytest.raises(ValueError, match=msg):
-            sample_df.ww.to_pickle(str(tmpdir))
+            sample_df.ww.to_disk(str(tmpdir), format='pickle')
     else:
-        sample_df.ww.to_pickle(str(tmpdir))
+        sample_df.ww.to_disk(str(tmpdir), format='pickle')
         deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
         pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -245,9 +238,9 @@ def test_to_pickle_with_latlong(latlong_df, tmpdir):
     if not isinstance(latlong_df, pd.DataFrame):
         msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
         with pytest.raises(ValueError, match=msg):
-            latlong_df.ww.to_pickle(str(tmpdir))
+            latlong_df.ww.to_disk(str(tmpdir), format='pickle')
     else:
-        latlong_df.ww.to_pickle(str(tmpdir))
+        latlong_df.ww.to_disk(str(tmpdir), format='pickle')
         deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
         pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
@@ -257,7 +250,7 @@ def test_to_pickle_with_latlong(latlong_df, tmpdir):
 
 def test_to_parquet(sample_df, tmpdir):
     sample_df.ww.init(index='id')
-    sample_df.ww.to_parquet(str(tmpdir))
+    sample_df.ww.to_disk(str(tmpdir), format='parquet')
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
     pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
                                   to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
@@ -266,7 +259,7 @@ def test_to_parquet(sample_df, tmpdir):
 
 def test_to_parquet_with_latlong(latlong_df, tmpdir):
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
-    latlong_df.ww.to_parquet(str(tmpdir))
+    latlong_df.ww.to_disk(str(tmpdir), format='parquet')
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
     pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
@@ -306,7 +299,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
         index='id',
         semantic_tags={'id': 'tag1'},
         logical_types={'age': Ordinal(order=[25, 33, 57])})
-    sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
 
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
@@ -318,7 +311,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
 
 def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
     sample_df_pandas.ww.init()
-    sample_df_pandas.ww.to_pickle(TEST_S3_URL)
+    sample_df_pandas.ww.to_disk(TEST_S3_URL, format='pickle')
     make_public(s3_client, s3_bucket)
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
 
@@ -331,7 +324,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
-    sample_df.ww.to_parquet(TEST_S3_URL)
+    sample_df.ww.to_disk(TEST_S3_URL, format='parquet')
     make_public(s3_client, s3_bucket)
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
 
@@ -349,7 +342,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
         time_index='signup_date',
         semantic_tags={'id': 'tag1'},
         logical_types={'age': Ordinal(order=[25, 33, 57])})
-    sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
 
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
@@ -361,7 +354,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
 
 def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
     sample_df_pandas.ww.init()
-    sample_df_pandas.ww.to_pickle(TEST_S3_URL, profile_name=False)
+    sample_df_pandas.ww.to_disk(TEST_S3_URL, format='pickle', profile_name=False)
     make_public(s3_client, s3_bucket)
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
 
@@ -373,7 +366,7 @@ def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
-    sample_df.ww.to_parquet(TEST_S3_URL, profile_name=False)
+    sample_df.ww.to_disk(TEST_S3_URL, format='parquet', profile_name=False)
     make_public(s3_client, s3_bucket)
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
 
@@ -425,7 +418,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
     xfail_tmp_disappears(sample_df)
     sample_df.ww.init()
-    sample_df.ww.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name='test')
 
@@ -437,7 +430,7 @@ def test_serialize_url_csv(sample_df):
     sample_df.ww.init()
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
-        sample_df.ww.to_csv(URL, encoding='utf-8', engine='python')
+        sample_df.ww.to_disk(URL, format='csv', encoding='utf-8', engine='python')
 
 
 def test_serialize_subdirs_not_removed(sample_df, tmpdir):

@@ -33,10 +33,8 @@ WoodworkTableAccessor
     WoodworkTableAccessor.set_time_index
     WoodworkTableAccessor.set_types
     WoodworkTableAccessor.time_index
-    WoodworkTableAccessor.to_csv
+    WoodworkTableAccessor.to_disk
     WoodworkTableAccessor.to_dictionary
-    WoodworkTableAccessor.to_parquet
-    WoodworkTableAccessor.to_pickle
     WoodworkTableAccessor.types
     WoodworkTableAccessor.use_standard_tags
     WoodworkTableAccessor.value_counts

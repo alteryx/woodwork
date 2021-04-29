@@ -200,10 +200,8 @@ def test_accessor_init_errors_methods(sample_df):
         'set_index': ['id'],
         'set_time_index': ['signup_date'],
         'set_types': [{'id': 'Integer'}],
-        'to_csv': ['dir'],
+        'to_disk': ['dir'],
         'to_dictionary': None,
-        'to_parquet': ['dir'],
-        'to_pickle': ['dir'],
         'value_counts': None,
 
     }
