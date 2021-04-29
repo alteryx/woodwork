@@ -36,6 +36,7 @@ class Address(LogicalType):
 
     Examples:
         .. code-block:: python
+
             ['1 Miller Drive, New York, NY 12345', '1 Berkeley Street, Boston, MA 67891']
             ['26387 Russell Hill, Dallas, TX 34521', '54305 Oxford Street, Seattle, WA 95132']
     """
