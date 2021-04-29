@@ -11,6 +11,7 @@ Release Notes
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
     * Documentation Changes
     * Testing Changes
+        * Specify the dtypes in conftest (:pr:`854`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
