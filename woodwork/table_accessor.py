@@ -501,69 +501,41 @@ class WoodworkTableAccessor:
             _raise_init_error()
         return serialize.typing_info_to_dict(self._dataframe)
 
-    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
-        """Write Woodwork table to disk in the CSV format, location specified by `path`.
-            Path could be a local path or a S3 path.
-            If writing to S3 a tar archive of files will be written.
-
-            Args:
-                path (str) : Location on disk to write to (will be created as a directory)
-                sep (str) : String of length 1. Field delimiter for the output file.
-                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
-                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
-                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-        """
-        if self._schema is None:
-            _raise_init_error()
-        serialize.write_woodwork_table(self._dataframe, path, format='csv', index=False,
-                                       sep=sep, encoding=encoding, engine=engine,
-                                       compression=compression, profile_name=profile_name)
-
-    def to_pickle(self, path, compression=None, profile_name=None):
-        """Write Woodwork table to disk in the pickle format, location specified by `path`.
-            Path could be a local path or a S3 path.
-            If writing to S3 a tar archive of files will be written.
-
-            Args:
-                path (str) : Location on disk to write to (will be created as a directory)
-                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-        """
-        if self._schema is None:
-            _raise_init_error()
-        serialize.write_woodwork_table(self._dataframe, path, format='pickle',
-                                       compression=compression, profile_name=profile_name)
-
-    def to_parquet(self, path, compression=None, profile_name=None):
-        """Write Woodwork table to disk in the parquet format, location specified by `path`.
-
-            Path could be a local path or a S3 path.
-
+    def to_disk(self, path, format='csv', compression=None, profile_name=None, **kwargs):
+        """Write Woodwork table to disk in the format specified by `format`, location specified by `path`.
+            Path could be a local path or an S3 path.
             If writing to S3 a tar archive of files will be written.
 
             Note:
                 As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
                 for serialization to parquet.
 
+
             Args:
-                path (str): location on disk to write to (will be created as a directory)
-                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                path (str) : Location on disk to write to (will be created as a directory)
+                format (str) : Format to use for writing Woodwork data. Defaults to csv. Possible values are: {'csv', 'pickle', 'parquet'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
+                kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
         """
         if self._schema is None:
             _raise_init_error()
-        import_error_message = (
-            "The pyarrow library is required to serialize to parquet.\n"
-            "Install via pip:\n"
-            "    pip install pyarrow\n"
-            "Install via conda:\n"
-            "   conda install pyarrow -c conda-forge"
-        )
-        import_or_raise('pyarrow', import_error_message)
-        serialize.write_woodwork_table(self._dataframe, path, format='parquet',
-                                       engine='pyarrow', compression=compression,
-                                       profile_name=profile_name)
+        default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'engine': 'python', 'index': False}
+        if format == 'csv':
+            kwargs = {**default_csv_kwargs, **kwargs}
+        elif format == 'parquet':
+            import_error_message = (
+                "The pyarrow library is required to serialize to parquet.\n"
+                "Install via pip:\n"
+                "    pip install pyarrow\n"
+                "Install via conda:\n"
+                "   conda install pyarrow -c conda-forge"
+            )
+            import_or_raise('pyarrow', import_error_message)
+            kwargs['engine'] = 'pyarrow'
+        serialize.write_woodwork_table(self._dataframe, path, format=format,
+                                       compression=compression, profile_name=profile_name,
+                                       **kwargs)
 
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
