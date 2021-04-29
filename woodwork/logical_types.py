@@ -31,6 +31,17 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         return str(self.__class__)
 
 
+class Address(LogicalType):
+    """Represents Logical Types that contain address values.
+
+    Examples:
+        .. code-block:: python
+            ['1 Miller Drive, New York, NY 12345', '1 Berkeley Street, Boston, MA 67891']
+            ['26387 Russell Hill, Dallas, TX 34521', '54305 Oxford Street, Seattle, WA 95132']
+    """
+    primary_dtype = 'string'
+
+
 class Age(LogicalType):
     """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag.
 
