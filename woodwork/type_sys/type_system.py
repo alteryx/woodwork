@@ -11,6 +11,7 @@ from .inference_functions import (
 
 from woodwork.logical_types import (
     URL,
+    Address,
     Age,
     AgeNullable,
     Boolean,
@@ -40,6 +41,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 DEFAULT_INFERENCE_FUNCTIONS = {
+    Address: None,
     Age: None,
     AgeNullable: None,
     Boolean: boolean_func,
@@ -74,6 +76,7 @@ DEFAULT_RELATIONSHIPS = [
     (Integer, Age),
     (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer),
+    (NaturalLanguage, Address),
     (NaturalLanguage, EmailAddress),
     (NaturalLanguage, Filepath),
     (NaturalLanguage, PersonFullName),

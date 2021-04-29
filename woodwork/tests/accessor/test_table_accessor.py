@@ -16,6 +16,7 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import (
     URL,
+    Address,
     Age,
     AgeNullable,
     Boolean,
@@ -685,6 +686,7 @@ def test_sets_string_dtype_on_init():
     ]
 
     logical_types = [
+        Address,
         Filepath,
         PersonFullName,
         IPAddress,

@@ -127,6 +127,7 @@ Logical Types
 .. autosummary::
     :toctree: generated/
 
+    Address
     Age
     AgeNullable
     Boolean
