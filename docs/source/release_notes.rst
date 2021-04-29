@@ -7,6 +7,7 @@ Release Notes
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
         * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
         * Add logical type for ``Address`` (:pr:`858`)
+        * Add generic ``to_disk`` function to save Woodwork schema and data (:pr:`872`)
     * Fixes
         * Raise error when a column is set as the index and time index (:pr:`859`)
         * Allow NaNs in index for schema validation check (:pr:`862`)
@@ -22,7 +23,11 @@ Release Notes
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
+
+**Breaking Changes**
+    * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or 
+      ``df.ww.to_parquet``. Use ``df.ww.to_disk`` instead.
 
 **v0.2.0 April 20, 2021**
     .. warning::
