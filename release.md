@@ -31,7 +31,8 @@ If you'd like to create a development release, which won't be deployed to pypi a
 1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date
 
     ```
-    **v0.13.3 September 28, 2020**
+    v0.13.3 Sep 28, 2020
+    ====================
     ```
 
 2. Remove any unused Release Notes sections for this release (e.g. Fixes, Testing Changes)
@@ -40,7 +41,8 @@ If you'd like to create a development release, which won't be deployed to pypi a
 5. Add a commented out "Future Release" section with all of the Release Notes sections above the current section
 
     ```
-    .. **Future Release**
+    .. Future Release
+      ==============
         * Enhancements
         * Fixes
         * Changes
