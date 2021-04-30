@@ -18,7 +18,7 @@ Future Release
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
         * Remove check requiring ``Ordinal`` instance for initializing a ``ColumnSchema`` object (:pr:`870`)
     * Documentation Changes
-        * Improve formatting of release notes (:pr:``)
+        * Improve formatting of release notes (:pr:`874`)
     * Testing Changes
         * Remove unnecessary argument in codecov upload job (:pr:`853`)
         * Change from GitHub Token to regenerated GitHub PAT dependency checkers (:pr:`855`)
