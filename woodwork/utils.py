@@ -2,12 +2,18 @@
 import ast
 import importlib
 import re
+from mimetypes import guess_type
 
 import numpy as np
 import pandas as pd
 
 import woodwork as ww
 
+# Dictionary mapping formats/content types to the appropriate pandas read function
+type_to_read_func_map = {
+    'csv': pd.read_csv,
+    'text/csv': pd.read_csv,
+}
 
 def import_or_none(library):
     """Attempts to import the requested library.
@@ -59,19 +65,21 @@ def _validate_string_tags(semantic_tags, error_language):
         raise TypeError(f"{error_language} must contain only strings")
 
 
-def read_csv(filepath=None,
-             name=None,
-             index=None,
-             time_index=None,
-             semantic_tags=None,
-             logical_types=None,
-             use_standard_tags=True,
-             validate=True,
-             **kwargs):
-    """Read data from the specified CSV file and return a DataFrame with initialized Woodwork typing information.
+def read_file(filepath=None,
+              content_type=None,
+              name=None,
+              index=None,
+              time_index=None,
+              semantic_tags=None,
+              logical_types=None,
+              use_standard_tags=True,
+              validate=True,
+              **kwargs):
+    """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
 
     Args:
         filepath (str): A valid string path to the file to read
+        content_type (str): Content type of file to read
         name (str, optional): Name used to identify the DataFrame.
         index (str, optional): Name of the index column.
         time_index (str, optional): Name of the time index column.
@@ -92,13 +100,24 @@ def read_csv(filepath=None,
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
-        **kwargs: Additional keyword arguments to pass to the underlying ``pandas.read_csv`` function. For more
+        **kwargs: Additional keyword arguments to pass to the underlying pandas read file function. For more
             information on available keywords refer to the pandas documentation.
 
     Returns:
-        pd.DataFrame: DataFrame created from the specified CSV file with Woodwork typing information initialized.
+        pd.DataFrame: DataFrame created from the specified file with Woodwork typing information initialized.
     """
-    dataframe = pd.read_csv(filepath, **kwargs)
+    if content_type is None:
+        inferred_type, encoding = guess_type(filepath)
+        if inferred_type is None:
+            raise RuntimeError('Content type could not be inferred. Please specify content_type and try again.')
+        if encoding is not None and 'encoding' not in kwargs:
+            kwargs['encoding'] = encoding
+        content_type = inferred_type
+
+    if content_type not in type_to_read_func_map:
+        raise RuntimeError('Reading from content type {} is not currently supported'.format(content_type))
+
+    dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
     dataframe.ww.init(name=name,
                       index=index,
                       time_index=time_index,

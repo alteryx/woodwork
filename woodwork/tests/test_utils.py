@@ -168,7 +168,7 @@ def test_read_csv_no_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
 
-    df_from_csv = ww.read_csv(filepath=filepath)
+    df_from_csv = ww.read_file(filepath=filepath)
     assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
@@ -195,11 +195,11 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
         'age': ['tag1', 'tag2'],
         'is_registered': ['tag3', 'tag4']
     }
-    df_from_csv = ww.read_csv(filepath=filepath,
-                              index='id',
-                              time_index='signup_date',
-                              logical_types=logical_types,
-                              semantic_tags=semantic_tags)
+    df_from_csv = ww.read_file(filepath=filepath,
+                               index='id',
+                               time_index='signup_date',
+                               logical_types=logical_types,
+                               semantic_tags=semantic_tags)
     assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
@@ -217,7 +217,7 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
     sample_df_pandas.to_csv(filepath, index=False)
     nrows = 2
 
-    df_from_csv = ww.read_csv(filepath=filepath, nrows=nrows, dtype={'age': 'Int64', 'is_registered': 'boolean'})
+    df_from_csv = ww.read_file(filepath=filepath, nrows=nrows, dtype={'age': 'Int64', 'is_registered': 'boolean'})
     assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
@@ -234,9 +234,9 @@ def test_read_csv_validation_control(mock_validate_accessor_params, sample_df_pa
     sample_df_pandas.to_csv(filepath, index=False)
 
     assert not mock_validate_accessor_params.called
-    ww.read_csv(filepath=filepath, validate=False)
+    ww.read_file(filepath=filepath, validate=False)
     assert not mock_validate_accessor_params.called
-    ww.read_csv(filepath=filepath)
+    ww.read_file(filepath=filepath)
     assert mock_validate_accessor_params.called
 
 
