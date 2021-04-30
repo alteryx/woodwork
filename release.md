@@ -42,7 +42,7 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
     ```
     .. Future Release
-      =============
+      ==============
         * Enhancements
         * Fixes
         * Changes
