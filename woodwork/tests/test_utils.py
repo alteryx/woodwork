@@ -164,7 +164,43 @@ def test_list_semantic_tags():
                 assert name in log_type.standard_tags
 
 
-def test_read_csv_no_params(sample_df_pandas, tmpdir):
+def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample')
+    sample_df_pandas.to_csv(filepath, index=False)
+
+    no_type_error = "Content type could not be inferred. Please specify content_type and try again."
+    with pytest.raises(RuntimeError, match=no_type_error):
+        ww.read_file(filepath=filepath)
+
+
+def test_read_file_errors_unhandled_content_type(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample')
+    sample_df_pandas.to_csv(filepath, index=False)
+
+    no_type_error = "Content type could not be inferred. Please specify content_type and try again."
+    with pytest.raises(RuntimeError, match=no_type_error):
+        ww.read_file(filepath=filepath)
+
+
+def test_read_file_uses_supplied_content_type(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample')
+    sample_df_pandas.to_csv(filepath, index=False)
+
+    df_from_csv = ww.read_file(filepath=filepath, content_type='csv')
+    assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
+
+    schema_df = sample_df_pandas.copy()
+    # pandas does not read data into nullable types currently, so the types
+    # in df_from_csv will be different than the types inferred from sample_df_pandas
+    # which uses the nullable types
+    schema_df = schema_df.astype({'age': 'float64', 'is_registered': 'object'})
+    schema_df.ww.init()
+
+    assert df_from_csv.ww.schema == schema_df.ww.schema
+    pd.testing.assert_frame_equal(schema_df, df_from_csv)
+
+
+def test_read_file_no_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
 
@@ -182,7 +218,7 @@ def test_read_csv_no_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
-def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
+def test_read_file_with_woodwork_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
     logical_types = {
@@ -212,7 +248,7 @@ def test_read_csv_with_woodwork_params(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
-def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
+def test_read_file_with_pandas_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
     nrows = 2
@@ -229,7 +265,7 @@ def test_read_csv_with_pandas_params(sample_df_pandas, tmpdir):
 
 
 @patch("woodwork.table_accessor._validate_accessor_params")
-def test_read_csv_validation_control(mock_validate_accessor_params, sample_df_pandas, tmpdir):
+def test_read_file_validation_control(mock_validate_accessor_params, sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
 
