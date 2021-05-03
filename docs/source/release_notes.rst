@@ -2,8 +2,18 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.2.0 May 3, 2021
+==================
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
         * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
@@ -27,7 +37,7 @@ Future Release
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
