@@ -31,7 +31,7 @@ Future Release
 Breaking Changes
 ++++++++++++++++
     * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or
-        ``df.ww.to_parquet``. Use ``df.ww.to_disk`` instead.
+    ``df.ww.to_parquet``. Use ``df.ww.to_disk`` instead.
     * The ``read_csv`` function has been renamed to ``read_file``.
 
 
