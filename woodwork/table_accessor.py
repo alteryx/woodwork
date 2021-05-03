@@ -36,6 +36,7 @@ from woodwork.utils import (
     import_or_none,
     import_or_raise
 )
+import weakref
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -43,7 +44,7 @@ ks = import_or_none('databricks.koalas')
 
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
-        self._dataframe = dataframe
+        self._dataframe = weakref.ref(dataframe)
         self._schema = None
 
     def init(self,
@@ -99,7 +100,7 @@ class WoodworkTableAccessor:
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
-            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema, use_standard_tags)
+            _validate_accessor_params(self._dataframe(), index, make_index, time_index, logical_types, schema, use_standard_tags)
         if schema is not None:
             self._schema = schema
             extra_params = []
@@ -126,12 +127,12 @@ class WoodworkTableAccessor:
         else:
             self.make_index = make_index
             if make_index:
-                _make_index(self._dataframe, index)
+                _make_index(self._dataframe(), index)
 
             # Perform type inference and update underlying data
             parsed_logical_types = {}
-            for name in self._dataframe.columns:
-                series = self._dataframe[name]
+            for name in self._dataframe().columns:
+                series = self._dataframe()[name]
 
                 logical_type = None
                 if logical_types:
@@ -142,9 +143,9 @@ class WoodworkTableAccessor:
 
                 updated_series = _update_column_dtype(series, logical_type)
                 if updated_series is not series:
-                    self._dataframe[name] = updated_series
+                    self._dataframe()[name] = updated_series
 
-            column_names = list(self._dataframe.columns)
+            column_names = list(self._dataframe().columns)
 
             # TableSchema uses a different default for use_standard_tags so we need to define it here
             if isinstance(use_standard_tags, bool):
@@ -173,7 +174,7 @@ class WoodworkTableAccessor:
 
         # Only check pandas DataFrames for equality
         if isinstance(self._dataframe, pd.DataFrame) and isinstance(other.ww._dataframe, pd.DataFrame):
-            return self._dataframe.equals(other.ww._dataframe)
+            return self._dataframe().equals(other.ww._dataframe)
         return True
 
     def __getattr__(self, attr):
@@ -184,7 +185,7 @@ class WoodworkTableAccessor:
             _raise_init_error()
         if hasattr(self._schema, attr):
             return self._make_schema_call(attr)
-        if hasattr(self._dataframe, attr):
+        if hasattr(self._dataframe(), attr):
             return self._make_dataframe_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
@@ -193,7 +194,7 @@ class WoodworkTableAccessor:
         if self._schema is None:
             _raise_init_error()
         if isinstance(key, list):
-            columns = set(self._dataframe.columns)
+            columns = set(self._dataframe().columns)
             diff = list(set(key).difference(columns))
 
             if diff:
@@ -201,10 +202,10 @@ class WoodworkTableAccessor:
 
             return self._get_subset_df_with_schema(key, use_dataframe_order=False)
 
-        if key not in self._dataframe:
+        if key not in self._dataframe():
             raise ColumnNotPresentError(key)
 
-        series = self._dataframe[key]
+        series = self._dataframe()[key]
         column = copy.deepcopy(self._schema.columns[key])
         column.semantic_tags -= {'index', 'time_index'}
         if column.use_standard_tags:
@@ -228,7 +229,7 @@ class WoodworkTableAccessor:
         if column.ww._schema is None:
             column = init_series(column, use_standard_tags=True)
 
-        self._dataframe[col_name] = column
+        self._dataframe()[col_name] = column
         self._schema.columns[col_name] = column.ww._schema
 
     def __repr__(self):
@@ -247,7 +248,7 @@ class WoodworkTableAccessor:
         typing_info = self._schema._get_typing_info().copy()
         typing_info.insert(0, 'Physical Type', pd.Series(self.physical_types))
         # Maintain the same column order used in the DataFrame
-        typing_info = typing_info.loc[list(self._dataframe.columns), :]
+        typing_info = typing_info.loc[list(self._dataframe().columns), :]
         return typing_info
 
     @property
@@ -301,7 +302,7 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _locIndexer(self._dataframe)
+        return _locIndexer(self._dataframe())
 
     @property
     def schema(self):
@@ -314,7 +315,7 @@ class WoodworkTableAccessor:
         """A dictionary containing physical types for each column"""
         if self._schema is None:
             _raise_init_error()
-        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+        return {col_name: _get_valid_dtype(type(self._dataframe()[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe().columns}
 
     @property
     def types(self):
@@ -376,7 +377,7 @@ class WoodworkTableAccessor:
         self._schema.set_index(new_index)
 
         if self._schema.index is not None:
-            _check_index(self._dataframe, self._schema.index)
+            _check_index(self._dataframe(), self._schema.index)
         self._set_underlying_index()
 
     def set_time_index(self, new_time_index):
@@ -414,10 +415,10 @@ class WoodworkTableAccessor:
                                retain_index_tags=retain_index_tags)
         # go through changed ltypes and update dtype if necessary
         for col_name, logical_type in logical_types.items():
-            series = self._dataframe[col_name]
+            series = self._dataframe()[col_name]
             updated_series = _update_column_dtype(series, logical_type)
             if updated_series is not series:
-                self._dataframe[col_name] = updated_series
+                self._dataframe()[col_name] = updated_series
 
     def select(self, include=None, exclude=None):
         """Create a DataFrame with Woodwork typing information initialized
@@ -566,23 +567,23 @@ class WoodworkTableAccessor:
                                        profile_name=profile_name)
 
     def _sort_columns(self, already_sorted):
-        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+        if dd and isinstance(self._dataframe(), dd.DataFrame) or (ks and isinstance(self._dataframe(), ks.DataFrame)):
             already_sorted = True  # Skip sorting for Dask and Koalas input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
             if self._schema.index is None:
                 sort_cols = [self._schema.time_index]
-            self._dataframe.sort_values(sort_cols, inplace=True)
+            self._dataframe().sort_values(sort_cols, inplace=True)
 
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
         specified by the TableSchema. Does not change the underlying index if no Woodwork index is
         specified. Only sets underlying index for pandas DataFrames.
         """
-        if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
-            self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
+        if isinstance(self._dataframe(), pd.DataFrame) and self._schema.index is not None:
+            self._dataframe().set_index(self._schema.index, drop=False, inplace=True)
             # Drop index name to not overlap with the original column
-            self._dataframe.index.name = None
+            self._dataframe().index.name = None
 
     def _make_schema_call(self, attr):
         """Forwards the requested attribute onto the schema object.
@@ -599,7 +600,7 @@ class WoodworkTableAccessor:
         """Forwards the requested attribute onto the dataframe object. Intercepts return value,
         attempting to initialize Woodwork with the current schema when a new DataFrame is returned.
         Confirms schema is still valid for the original DataFrame."""
-        dataframe_attr = getattr(self._dataframe, attr)
+        dataframe_attr = getattr(self._dataframe(), attr)
 
         if callable(dataframe_attr):
             def wrapper(*args, **kwargs):
@@ -638,12 +639,12 @@ class WoodworkTableAccessor:
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
         if use_dataframe_order:
-            cols_to_include = [col_name for col_name in self._dataframe.columns if col_name in cols_to_include]
+            cols_to_include = [col_name for col_name in self._dataframe().columns if col_name in cols_to_include]
         else:
-            cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
+            cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe().columns]
 
-        new_schema = self._schema._get_subset_schema(cols_to_include)
-        new_df = self._dataframe[cols_to_include]
+        new_schema = self.schema._get_subset_schema(cols_to_include)
+        new_df = self._dataframe()[cols_to_include]
         new_df.ww.init(schema=new_schema, validate=False)
 
         return new_df
@@ -659,10 +660,10 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        if column_name not in self._dataframe.columns:
+        if column_name not in self._dataframe().columns:
             raise ColumnNotPresentError(column_name)
 
-        series = self._dataframe.pop(column_name)
+        series = self._dataframe().pop(column_name)
 
         # Initialize Woodwork typing info for series
         series.ww.init(schema=self.schema.columns[column_name], validate=False)
@@ -691,11 +692,11 @@ class WoodworkTableAccessor:
         if not isinstance(columns, (list, set)):
             columns = [columns]
 
-        not_present = [col for col in columns if col not in self._dataframe.columns]
+        not_present = [col for col in columns if col not in self._dataframe().columns]
         if not_present:
             raise ColumnNotPresentError(not_present)
 
-        return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns])
+        return self._get_subset_df_with_schema([col for col in self._dataframe().columns if col not in columns])
 
     def rename(self, columns):
         """Renames columns in a DataFrame, maintaining Woodwork typing information.
@@ -709,7 +710,7 @@ class WoodworkTableAccessor:
         if self._schema is None:
             _raise_init_error()
         new_schema = self._schema.rename(columns)
-        new_df = self._dataframe.rename(columns=columns)
+        new_df = self._dataframe().rename(columns=columns)
 
         new_df.ww.init(schema=new_schema)
         return new_df
@@ -785,7 +786,7 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_describe_dict(self._dataframe, include=include)
+        return _get_describe_dict(self._dataframe(), include=include)
 
     def describe(self, include=None):
         """Calculates statistics for data contained in the DataFrame.
