@@ -9,6 +9,7 @@ Future Release
         * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
         * Add logical type for ``Address`` (:pr:`858`)
         * Add generic ``to_disk`` function to save Woodwork schema and data (:pr:`872`)
+        * Add generic ``read_file`` function to read file as Woodwork DataFrame (:pr:`878`)
     * Fixes
         * Raise error when a column is set as the index and time index (:pr:`859`)
         * Allow NaNs in index for schema validation check (:pr:`862`)
@@ -30,8 +31,10 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-    * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or 
+    * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or
       ``df.ww.to_parquet``. Use ``df.ww.to_disk`` instead.
+    * The ``read_csv`` function has been replaced by ``read_file``.
+
 
 v0.2.0 Apr 20, 2021
 ===================
