@@ -77,12 +77,15 @@ def test_accessor_init_with_schema_errors(sample_series):
     with pytest.raises(TypeError, match=error):
         head_series.ww.init(schema=int)
 
-    ltype_dtype = 'category'
     if ks and isinstance(sample_series, ks.Series):
         ltype_dtype = 'string'
-    error = f"dtype mismatch between Series dtype object, and Categorical dtype, {ltype_dtype}"
+        new_dtype = '<U0'
+    else:
+        ltype_dtype = 'category'
+        new_dtype = 'object'
 
-    diff_dtype_series = sample_series.astype('object')
+    error = re.escape(f"dtype mismatch between Series dtype {new_dtype}, and Categorical dtype, {ltype_dtype}")
+    diff_dtype_series = sample_series.astype(new_dtype)
     with pytest.raises(ValueError, match=error):
         diff_dtype_series.ww.init(schema=schema)
 
@@ -124,12 +127,15 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    series = sample_series.astype('object')
-    series_dtype = 'object'
+    if ks and isinstance(sample_series, ks.Series):
+        series_dtype = '<U0'
+    else:
+        series_dtype = 'object'
+    series = sample_series.astype(series_dtype)
     correct_dtype = 'string'
-    error_message = f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with " \
-        f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before initializing " \
-        "or use the woodwork.init_series function to initialize."
+    error_message = re.escape(f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with "
+                              f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before "
+                              "initializing or use the woodwork.init_series function to initialize.")
     with pytest.raises(ValueError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
 
