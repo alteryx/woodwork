@@ -178,8 +178,8 @@ def test_read_file_errors_unsupported(sample_df_pandas, tmpdir):
     sample_df_pandas.to_feather(filepath)
 
     content_type = "application/feather"
-    no_type_error = "Reading from content type {} is not currently supported".format(content_type)
-    with pytest.raises(RuntimeError, match=no_type_error):
+    not_supported_error = "Reading from content type {} is not currently supported".format(content_type)
+    with pytest.raises(RuntimeError, match=not_supported_error):
         ww.read_file(filepath=filepath, content_type=content_type)
 
 
