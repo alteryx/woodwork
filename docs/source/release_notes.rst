@@ -12,7 +12,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v0.2.0 May 3, 2021
+v0.3.0 May 3, 2021
 ==================
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
