@@ -107,11 +107,9 @@ def read_file(filepath=None,
         pd.DataFrame: DataFrame created from the specified file with Woodwork typing information initialized.
     """
     if content_type is None:
-        inferred_type, encoding = guess_type(filepath)
+        inferred_type, _ = guess_type(filepath)
         if inferred_type is None:
             raise RuntimeError('Content type could not be inferred. Please specify content_type and try again.')
-        if encoding is not None and 'encoding' not in kwargs:
-            kwargs['encoding'] = encoding
         content_type = inferred_type
 
     if content_type not in type_to_read_func_map:
