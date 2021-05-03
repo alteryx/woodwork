@@ -210,20 +210,6 @@ def test_read_file_uses_supplied_content_type(sample_df_pandas, tmpdir):
     pd.testing.assert_frame_equal(schema_df, df_from_csv)
 
 
-def test_read_file_encoding(sample_df_pandas, tmpdir):
-    filepath = os.path.join(tmpdir, 'sample')
-    sample_df_pandas.to_csv(filepath, index=False, encoding='utf-16')
-    sample_df_pandas.ww.init()
-
-    df_from_csv = ww.read_file(filepath=filepath,
-                               content_type='csv',
-                               encoding='utf-16',
-                               logical_types=sample_df_pandas.ww.logical_types)
-    assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
-    assert df_from_csv.ww.schema == sample_df_pandas.ww.schema
-    pd.testing.assert_frame_equal(sample_df_pandas, df_from_csv)
-
-
 def test_read_file_no_params(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.csv')
     sample_df_pandas.to_csv(filepath, index=False)
