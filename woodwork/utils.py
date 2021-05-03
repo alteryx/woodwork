@@ -16,6 +16,7 @@ type_to_read_func_map = {
     'text/csv': pd.read_csv,
 }
 
+
 def import_or_none(library):
     """Attempts to import the requested library.
 
