@@ -173,6 +173,16 @@ def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
         ww.read_file(filepath=filepath)
 
 
+def test_read_file_errors_unsupported(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample')
+    sample_df_pandas.to_feather(filepath)
+
+    content_type = "application/feather"
+    no_type_error = "Reading from content type {} is not currently supported".format(content_type)
+    with pytest.raises(RuntimeError, match=no_type_error):
+        ww.read_file(filepath=filepath, content_type=content_type)
+
+
 def test_read_file_errors_unhandled_content_type(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample')
     sample_df_pandas.to_csv(filepath, index=False)
@@ -198,6 +208,20 @@ def test_read_file_uses_supplied_content_type(sample_df_pandas, tmpdir):
 
     assert df_from_csv.ww.schema == schema_df.ww.schema
     pd.testing.assert_frame_equal(schema_df, df_from_csv)
+
+
+def test_read_file_encoding(sample_df_pandas, tmpdir):
+    filepath = os.path.join(tmpdir, 'sample')
+    sample_df_pandas.to_csv(filepath, index=False, encoding='utf-16')
+    sample_df_pandas.ww.init()
+
+    df_from_csv = ww.read_file(filepath=filepath,
+                               content_type='csv',
+                               encoding='utf-16',
+                               logical_types=sample_df_pandas.ww.logical_types)
+    assert isinstance(df_from_csv.ww.schema, ww.table_schema.TableSchema)
+    assert df_from_csv.ww.schema == sample_df_pandas.ww.schema
+    pd.testing.assert_frame_equal(sample_df_pandas, df_from_csv)
 
 
 def test_read_file_no_params(sample_df_pandas, tmpdir):
