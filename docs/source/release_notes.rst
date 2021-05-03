@@ -17,6 +17,7 @@ Future Release
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
         * Remove check requiring ``Ordinal`` instance for initializing a ``ColumnSchema`` object (:pr:`870`)
+        * Increase koalas min version to 1.8.0 (:pr:`885`)
     * Documentation Changes
         * Improve formatting of release notes (:pr:`874`)
     * Testing Changes

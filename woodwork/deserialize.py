@@ -85,7 +85,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         if col['physical_type']['type'] == 'category':
             # Make sure categories are recreated properly
             cat_values = col['physical_type']['cat_values']
-            if table_type == 'pandas' and pd.__version__ > '1.1.5':
+            if table_type == 'pandas':
                 cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype='object'))
             else:
                 cat_object = pd.CategoricalDtype(pd.Series(cat_values))
