@@ -148,15 +148,16 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
 
     incorrect_int_dtype_df = schema_df.ww.astype({'id': 'Int64'})
     incorrect_bool_dtype_df = schema_df.ww.astype({'is_registered': 'Int64'})
-    incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
-    incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
 
     assert (get_invalid_schema_message(incorrect_int_dtype_df, schema) ==
             'dtype mismatch for column id between DataFrame dtype, Int64, and Integer dtype, int64')
     assert (get_invalid_schema_message(incorrect_bool_dtype_df, schema) ==
             'dtype mismatch for column is_registered between DataFrame dtype, Int64, and BooleanNullable dtype, boolean')
+
     # Koalas backup dtypes make these checks not relevant
     if ks and not isinstance(sample_df, ks.DataFrame):
+        incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
+        incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
         assert (get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
                 'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
         assert (get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
