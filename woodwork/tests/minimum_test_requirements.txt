@@ -6,4 +6,4 @@ mock==4.0.3
 boto3==1.10.45
 moto[all]==1.3.14
 smart-open==5.0.0
-pyarrow==2.0.0
+pyarrow==3.0.0
