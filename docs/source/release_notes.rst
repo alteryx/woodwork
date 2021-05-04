@@ -8,11 +8,12 @@ Future Release
         * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
     * Fixes
     * Changes
+        * Remove command line functions for list logical and semantic tags (:pr:`891`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`
 
 v0.3.0 May 3, 2021
 ==================
