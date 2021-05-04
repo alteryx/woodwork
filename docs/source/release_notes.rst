@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+        * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
 
 Future Release
 ==============

@@ -84,16 +84,19 @@ class TableSchema(object):
 
         self.metadata = table_metadata or {}
 
-    def __eq__(self, other):
+    def __eq__(self, other, deep=True):
         if self.name != other.name:
             return False
         if self.index != other.index:
             return False
         if self.time_index != other.time_index:
             return False
-        if self.columns != other.columns:
+        if set(self.columns.keys()) != set(other.columns.keys()):
             return False
-        if self.metadata != other.metadata:
+        for col_name in self.columns:
+            if not self.columns[col_name].__eq__(other.columns[col_name], deep=deep):
+                return False
+        if deep and self.metadata != other.metadata:
             return False
 
         return True
