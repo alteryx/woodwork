@@ -16,8 +16,8 @@ class _iLocIndexer:
             raise TypeError("iloc is not supported for Dask Series")
 
     def __getitem__(self, key):
-        selection = self.data.iloc[key]
-        return _process_selection(selection, self.data)
+        selection = self.data().iloc[key]
+        return _process_selection(selection, self.data())
 
 
 class _locIndexer:
@@ -25,8 +25,8 @@ class _locIndexer:
         self.data = data
 
     def __getitem__(self, key):
-        selection = self.data.loc[key]
-        return _process_selection(selection, self.data)
+        selection = self.data().loc[key]
+        return _process_selection(selection, self.data())
 
 
 def _process_selection(selection, original_data):

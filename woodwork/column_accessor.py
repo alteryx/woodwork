@@ -21,6 +21,7 @@ from woodwork.utils import (
     _is_valid_latlong_series,
     import_or_none
 )
+import weakref
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -28,7 +29,7 @@ ks = import_or_none('databricks.koalas')
 
 class WoodworkColumnAccessor:
     def __init__(self, series):
-        self._series = series
+        self._series = weakref.ref(series)
         self._schema = None
 
     def init(self, logical_type=None, semantic_tags=None,
@@ -61,7 +62,7 @@ class WoodworkColumnAccessor:
 
         if schema is not None:
             if validate:
-                _validate_schema(schema, self._series)
+                _validate_schema(schema, self._series())
 
             extra_params = []
             if logical_type is not None:
@@ -79,7 +80,7 @@ class WoodworkColumnAccessor:
 
             self._schema = schema
         else:
-            logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
+            logical_type = _get_column_logical_type(self._series(), logical_type, self._series().name)
 
             if validate:
                 self._validate_logical_type(logical_type)
@@ -199,10 +200,10 @@ class WoodworkColumnAccessor:
     def __eq__(self, other):
         if self._schema != other._schema:
             return False
-        if self._series.name != other._series.name:
+        if self._series().name != other._series.name:
             return False
-        if isinstance(self._series, pd.Series):
-            return self._series.equals(other._series)
+        if isinstance(self._series(), pd.Series):
+            return self._series().equals(other._series)
         return True
 
     def __getattr__(self, attr):
@@ -210,7 +211,7 @@ class WoodworkColumnAccessor:
         # If the method is present on Series, uses that method.
         if self._schema is None:
             _raise_init_error()
-        if hasattr(self._series, attr):
+        if hasattr(self._series(), attr):
             return self._make_series_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
@@ -218,8 +219,8 @@ class WoodworkColumnAccessor:
     def __repr__(self):
         if self._schema is None:
             _raise_init_error()
-        msg = u"<Series: {} ".format(self._series.name)
-        msg += u"(Physical Type = {}) ".format(self._series.dtype)
+        msg = u"<Series: {} ".format(self._series().name)
+        msg += u"(Physical Type = {}) ".format(self._series().dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
         msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
@@ -256,9 +257,9 @@ class WoodworkColumnAccessor:
     def _validate_logical_type(self, logical_type):
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
-        valid_dtype = _get_valid_dtype(type(self._series), logical_type)
-        if valid_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
+        valid_dtype = _get_valid_dtype(type(self._series()), logical_type)
+        if valid_dtype != str(self._series().dtype):
+            raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series().dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
                              f"dtype to '{valid_dtype}' before initializing or use the "
                              "woodwork.init_series function to initialize.")
@@ -280,7 +281,7 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         self._schema._add_semantic_tags(semantic_tags,
-                                        self._series.name)
+                                        self._series().name)
 
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from the current tags.
@@ -291,7 +292,7 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         self._schema._remove_semantic_tags(semantic_tags,
-                                           self._series.name)
+                                           self._series().name)
 
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
@@ -319,7 +320,7 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         # Create a new series without a schema to prevent new series from sharing a common
         # schema with current series
-        new_series = self._series.copy()
+        new_series = self._series().copy()
         new_series._schema = None
         return init_series(new_series,
                            logical_type=logical_type,
