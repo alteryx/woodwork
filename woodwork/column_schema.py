@@ -56,7 +56,7 @@ class ColumnSchema(object):
             return False
         if self.description != other.description:
             return False
-        if self.metadata != other.metadata:
+        if deep and self.metadata != other.metadata:
             return False
 
         return True
