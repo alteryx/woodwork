@@ -325,7 +325,7 @@ def test_getitem(sample_df):
     series = df.ww['id']
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
     assert series.ww.logical_type == Integer
-    assert series.ww.semantic_tags == {'numeric'}
+    assert series.ww.semantic_tags == {'index', 'numeric'}
 
 
 def test_getitem_init_error(sample_df):
