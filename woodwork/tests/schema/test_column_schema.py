@@ -386,6 +386,23 @@ def test_schema_equality():
     assert datetime_col_instantiated == datetime_col_param
 
 
+def test_schema_shallow_equality():
+    no_metadata_1 = ColumnSchema(logical_type=Categorical)
+    no_metadata_2 = ColumnSchema(logical_type=Categorical)
+
+    assert no_metadata_1.__eq__(no_metadata_2, deep=False)
+    assert no_metadata_1.__eq__(no_metadata_2, deep=True)
+
+    metadata_1 = ColumnSchema(logical_type=Categorical, metadata={'interesting_values': ['a', 'b']})
+    metadata_2 = ColumnSchema(logical_type=Categorical, metadata={'interesting_values': ['a', 'b']})
+    metadata_3 = ColumnSchema(logical_type=Categorical, metadata={'interesting_values': ['c', 'd']})
+
+    assert metadata_1.__eq__(metadata_2, deep=False)
+    assert metadata_1.__eq__(metadata_2, deep=True)
+    assert metadata_1.__eq__(metadata_3, deep=False)
+    assert not metadata_1.__eq__(metadata_3, deep=True)
+
+
 def test_schema_repr():
     assert (repr(ColumnSchema(logical_type=Datetime, semantic_tags='time_index')) ==
             "<ColumnSchema (Logical Type = Datetime) (Semantic Tags = ['time_index'])>")

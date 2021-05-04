@@ -360,11 +360,11 @@ def test_accessor_equality(sample_df):
     assert schema_df.ww != copy_df.ww
 
     # Confirm not equal with same schema but different data - only pandas
-    iloc_df = schema_df.ww.loc[:2, :]
+    loc_df = schema_df.ww.loc[:2, :]
     if isinstance(sample_df, pd.DataFrame):
-        assert schema_df.ww != iloc_df
+        assert schema_df.ww != loc_df
     else:
-        assert schema_df.ww == iloc_df
+        assert schema_df.ww == loc_df
 
 
 def test_accessor_equality_make_index(sample_df_pandas):
@@ -378,6 +378,30 @@ def test_accessor_equality_make_index(sample_df_pandas):
     pd.testing.assert_frame_equal(schema_df, made_index_df)
 
     assert made_index_df.ww != schema_df.ww
+
+
+def test_accessor_shallow_equality(sample_df):
+    metadata_table = sample_df.copy()
+    metadata_table.ww.init(table_metadata={'user': 'user0'})
+    diff_metadata_table = sample_df.copy()
+    diff_metadata_table.ww.init(table_metadata={'user': 'user2'})
+
+    assert diff_metadata_table.ww.__eq__(metadata_table, deep=False)
+    assert not diff_metadata_table.ww.__eq__(metadata_table, deep=True)
+
+    schema = metadata_table.ww.schema
+    diff_data_table = metadata_table.ww.loc[:2, :]
+    same_data_table = metadata_table.ww.copy()
+
+    assert diff_data_table.ww.schema.__eq__(schema, deep=True)
+    assert same_data_table.ww.schema.__eq__(schema, deep=True)
+
+    assert same_data_table.ww.__eq__(metadata_table.ww, deep=False)
+    assert same_data_table.ww.__eq__(metadata_table.ww, deep=True)
+
+    assert diff_data_table.ww.__eq__(metadata_table.ww, deep=False)
+    if isinstance(sample_df, pd.DataFrame):
+        assert not diff_data_table.ww.__eq__(metadata_table.ww, deep=True)
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):

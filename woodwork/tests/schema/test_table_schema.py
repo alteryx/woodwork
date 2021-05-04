@@ -167,6 +167,39 @@ def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logi
     assert schema != no_standard_tags_schema
 
 
+def test_schema_shallow_equality(sample_column_names, sample_inferred_logical_types):
+    metadata_table_1 = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                   table_metadata={'user': 'user0'}
+                                   )
+    metadata_table_2 = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                   table_metadata={'user': 'user0'}
+                                   )
+
+    assert metadata_table_1.__eq__(metadata_table_2, deep=False)
+    assert metadata_table_1.__eq__(metadata_table_2, deep=True)
+
+    diff_metadata_table = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                      table_metadata={'user': 'user1'}
+                                      )
+
+    assert metadata_table_1.__eq__(diff_metadata_table, deep=False)
+    assert not metadata_table_1.__eq__(diff_metadata_table, deep=True)
+
+    diff_col_metadata_table = TableSchema(sample_column_names, sample_inferred_logical_types,
+                                          table_metadata={'user': 'user0'},
+                                          column_metadata={'id': {'interesting_values': [0]}}
+                                          )
+
+    assert metadata_table_1.__eq__(diff_col_metadata_table, deep=False)
+    assert not metadata_table_1.__eq__(diff_col_metadata_table, deep=True)
+
+    diff_ltype_table = TableSchema(sample_column_names, {**sample_inferred_logical_types, 'id': Categorical},
+                                   table_metadata={'user': 'user0'}
+                                   )
+    assert not metadata_table_1.__eq__(diff_ltype_table, deep=False)
+    assert not metadata_table_1.__eq__(diff_ltype_table, deep=True)
+
+
 def test_schema_table_metadata(sample_column_names, sample_inferred_logical_types):
     metadata = {'secondary_time_index': {'is_registered': 'age'}, 'date_created': '11/13/20'}
 
