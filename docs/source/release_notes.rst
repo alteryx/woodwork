@@ -15,6 +15,12 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`
 
+Breaking Changes
+++++++++++++++++
+    * The command line functions ``python -m woodwork list-logical-types`` and ``python -m woodwork list-semantic-tags``
+      no longer exist. Please call the underlying Python functions ``ww.list_logical_types()`` and
+      ``ww.list_semantic_tags()``.
+
 v0.3.0 May 3, 2021
 ==================
     * Enhancements
