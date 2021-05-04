@@ -206,7 +206,6 @@ class WoodworkTableAccessor:
 
         series = self._dataframe[key]
         column = copy.deepcopy(self._schema.columns[key])
-        column.semantic_tags -= {'index', 'time_index'}
         if column.use_standard_tags:
             column.semantic_tags |= column.logical_type.standard_tags
 

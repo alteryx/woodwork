@@ -42,7 +42,6 @@ def _process_selection(selection, original_data):
         elif _is_dataframe(original_data):
             # Selecting a single column from a DataFrame
             schema = original_data.ww.schema.columns[selection.name]
-            schema.semantic_tags = schema.semantic_tags - {'index'} - {'time_index'}
             if schema.use_standard_tags:
                 schema.semantic_tags |= schema.logical_type.standard_tags
         else:
