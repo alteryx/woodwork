@@ -12,6 +12,18 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * Keep index and time index tags for single column (:pr:`887`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
+
 v0.3.0 May 3, 2021
 ==================
     * Enhancements
