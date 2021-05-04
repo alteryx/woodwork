@@ -8,23 +8,12 @@ Future Release
         * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
     * Fixes
     * Changes
-    * Documentation Changes
-    * Testing Changes
-
-    Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
-
-Future Release
-==============
-    * Enhancements
-    * Fixes
-    * Changes
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`jeff-hernandez`, :user:`tamargrey`
 
 v0.3.0 May 3, 2021
 ==================
