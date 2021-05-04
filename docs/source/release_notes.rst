@@ -17,7 +17,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Keep index and time index tags for single column (:pr:`887`)
+        * Keep index and time index tags for single column (:pr:`888`)
     * Documentation Changes
     * Testing Changes
 
