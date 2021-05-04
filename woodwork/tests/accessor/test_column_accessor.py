@@ -627,6 +627,36 @@ def test_accessor_equality(sample_series):
         assert str_col.ww == changed_series.ww
 
 
+def test_accessor_shallow_equality(sample_series):
+    metadata_col = init_series(sample_series.copy(), logical_type='NaturalLanguage',
+                               metadata={'interesting_values': ['a', 'b']})
+    diff_metadata_col = init_series(sample_series.copy(), logical_type='NaturalLanguage',
+                                    metadata={'interesting_values': ['c']})
+
+    assert metadata_col.ww.__eq__(diff_metadata_col.ww, deep=False)
+    assert not metadata_col.ww.__eq__(diff_metadata_col.ww, deep=True)
+
+    schema = metadata_col.ww.schema
+    diff_data_col = metadata_col.replace({'a': '1'})
+    # dtype gets changed to object in replace
+    diff_data_col = diff_data_col.astype('string')
+
+    diff_data_col.ww.init(schema=schema)
+    same_data_col = metadata_col.ww.copy()
+
+    assert diff_data_col.ww.schema == metadata_col.ww.schema
+    assert same_data_col.ww.schema == metadata_col.ww.schema
+
+    assert diff_data_col.ww.__eq__(metadata_col.ww, deep=False)
+    assert same_data_col.ww.__eq__(metadata_col.ww, deep=False)
+    assert same_data_col.ww.__eq__(metadata_col.ww, deep=True)
+    if isinstance(sample_series, pd.Series):
+        # We only check underlying data for equality with pandas dataframes
+        assert not diff_data_col.ww.__eq__(metadata_col.ww, deep=True)
+    else:
+        assert diff_data_col.ww.__eq__(metadata_col.ww, deep=True)
+
+
 def test_accessor_metadata(sample_series):
     column_metadata = {'metadata_field': [1, 2, 3], 'created_by': 'user0'}
 

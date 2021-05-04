@@ -46,7 +46,6 @@ class ColumnSchema(object):
         semantic_tags = self._get_column_tags(semantic_tags, validate)
         self.semantic_tags = semantic_tags
 
-    # --> dont include metadata if shallow
     def __eq__(self, other, deep=True):
         if self.use_standard_tags != other.use_standard_tags:
             return False
