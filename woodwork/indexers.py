@@ -42,8 +42,6 @@ def _process_selection(selection, original_data):
         elif _is_dataframe(original_data):
             # Selecting a single column from a DataFrame
             schema = original_data.ww.schema.columns[selection.name]
-            if schema.use_standard_tags:
-                schema.semantic_tags |= schema.logical_type.standard_tags
         else:
             # Selecting a new Series from an existing Series
             schema = original_data.ww._schema

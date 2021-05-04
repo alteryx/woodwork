@@ -157,7 +157,7 @@ def test_iloc_indices_column(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     sample_df.ww.init(index='id', time_index='signup_date')
     sliced_index = sample_df.ww.iloc[:, 0]
-    assert sliced_index.ww.semantic_tags == {'index', 'numeric'}
+    assert sliced_index.ww.semantic_tags == {'index'}
 
     sliced_time_index = sample_df.ww.iloc[:, 5]
     assert sliced_time_index.ww.semantic_tags == {'time_index'}
@@ -166,7 +166,7 @@ def test_iloc_indices_column(sample_df):
 def test_loc_indices_column(sample_df):
     sample_df.ww.init(index='id', time_index='signup_date')
     sliced_index = sample_df.ww.loc[:, 'id']
-    assert sliced_index.ww.semantic_tags == {'index', 'numeric'}
+    assert sliced_index.ww.semantic_tags == {'index'}
 
     sliced_time_index = sample_df.ww.loc[:, 'signup_date']
     assert sliced_time_index.ww.semantic_tags == {'time_index'}
