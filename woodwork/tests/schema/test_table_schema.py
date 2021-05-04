@@ -194,7 +194,7 @@ def test_schema_shallow_equality(sample_column_names, sample_inferred_logical_ty
     assert not metadata_table_1.__eq__(diff_col_metadata_table, deep=True)
 
     diff_ltype_table = TableSchema(sample_column_names, {**sample_inferred_logical_types, 'id': Categorical},
-                                   table_metadata={'user': 'user1'}
+                                   table_metadata={'user': 'user0'}
                                    )
     assert not metadata_table_1.__eq__(diff_ltype_table, deep=False)
     assert not metadata_table_1.__eq__(diff_ltype_table, deep=True)
