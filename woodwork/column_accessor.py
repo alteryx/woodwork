@@ -196,7 +196,8 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         return self._schema.use_standard_tags
 
-    def __eq__(self, other):
+    # --> pass deep to column schema
+    def __eq__(self, other, deep=True):
         if self._schema != other._schema:
             return False
         if self._series.name != other._series.name:

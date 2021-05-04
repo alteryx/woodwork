@@ -164,7 +164,8 @@ class WoodworkTableAccessor:
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
 
-    def __eq__(self, other):
+    # --> pass to table schema
+    def __eq__(self, other, deep=True):
         if self.make_index != other.ww.make_index:
             return False
 
