@@ -84,7 +84,6 @@ class TableSchema(object):
 
         self.metadata = table_metadata or {}
 
-    # --> pass deep to column schema
     def __eq__(self, other, deep=True):
         if self.name != other.name:
             return False

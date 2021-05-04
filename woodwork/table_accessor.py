@@ -164,16 +164,15 @@ class WoodworkTableAccessor:
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
 
-    # --> pass to table schema
     def __eq__(self, other, deep=True):
         if self.make_index != other.ww.make_index:
             return False
 
-        if self._schema != other.ww._schema:
+        if not self._schema.__eq__(other.ww._schema, deep=deep):
             return False
 
         # Only check pandas DataFrames for equality
-        if isinstance(self._dataframe, pd.DataFrame) and isinstance(other.ww._dataframe, pd.DataFrame):
+        if deep and isinstance(self._dataframe, pd.DataFrame) and isinstance(other.ww._dataframe, pd.DataFrame):
             return self._dataframe.equals(other.ww._dataframe)
         return True
 

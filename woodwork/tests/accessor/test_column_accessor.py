@@ -644,8 +644,8 @@ def test_accessor_shallow_equality(sample_series):
     diff_data_col.ww.init(schema=schema)
     same_data_col = metadata_col.ww.copy()
 
-    assert diff_data_col.ww.schema == metadata_col.ww.schema
-    assert same_data_col.ww.schema == metadata_col.ww.schema
+    assert diff_data_col.ww.schema.__eq__(metadata_col.ww.schema, deep=True)
+    assert same_data_col.ww.schema.__eq__(metadata_col.ww.schema, deep=True)
 
     assert diff_data_col.ww.__eq__(metadata_col.ww, deep=False)
     assert same_data_col.ww.__eq__(metadata_col.ww, deep=False)
