@@ -92,9 +92,10 @@ class TableSchema(object):
             return False
         if self.time_index != other.time_index:
             return False
-        if self.columns != other.columns:
-            return False
-        if self.metadata != other.metadata:
+        for col_name in self.columns:
+            if not self.columns[col_name].__eq__(other.columns[col_name], deep=deep):
+                return False
+        if deep and self.metadata != other.metadata:
             return False
 
         return True
