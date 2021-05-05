@@ -2,10 +2,34 @@
 
 Release Notes
 -------------
-**Future Release**
+Future Release
+==============
+    * Enhancements
+        * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
+    * Fixes
+    * Changes
+        * Remove command line functions for list logical and semantic tags (:pr:`891`)
+        * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
+
+Breaking Changes
+++++++++++++++++
+    * The command line functions ``python -m woodwork list-logical-types`` and ``python -m woodwork list-semantic-tags``
+      no longer exist. Please call the underlying Python functions ``ww.list_logical_types()`` and
+      ``ww.list_semantic_tags()``.
+
+v0.3.0 May 3, 2021
+==================
     * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
         * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
+        * Add logical type for ``Address`` (:pr:`858`)
+        * Add generic ``to_disk`` function to save Woodwork schema and data (:pr:`872`)
+        * Add generic ``read_file`` function to read file as Woodwork DataFrame (:pr:`878`)
     * Fixes
         * Raise error when a column is set as the index and time index (:pr:`859`)
         * Allow NaNs in index for schema validation check (:pr:`862`)
@@ -14,7 +38,9 @@ Release Notes
         * Consistently use ``ColumnNotPresentError`` for mismatches between user input and dataframe/schema columns (:pr:`837`)
         * Raise custom ``WoodworkNotInitError`` when accessing Woodwork attributes before initialization (:pr:`838`)
         * Remove check requiring ``Ordinal`` instance for initializing a ``ColumnSchema`` object (:pr:`870`)
+        * Increase koalas min version to 1.8.0 (:pr:`885`)
     * Documentation Changes
+        * Improve formatting of release notes (:pr:`874`)
     * Testing Changes
         * Specify the dtypes in conftest (:pr:`854`)
         * Remove unnecessary argument in codecov upload job (:pr:`853`)
@@ -22,9 +48,17 @@ Release Notes
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.2.0 April 20, 2021**
+Breaking Changes
+++++++++++++++++
+    * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or
+      ``df.ww.to_parquet``. Use ``df.ww.to_disk`` instead.
+    * The ``read_csv`` function has been replaced by ``read_file``.
+
+
+v0.2.0 Apr 20, 2021
+===================
     .. warning::
         This Woodwork release does not support Python 3.6
 
@@ -67,7 +101,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**Breaking Changes**
+Breaking Changes
+++++++++++++++++
     * The ``ZIPCode`` logical type has been renamed to ``PostalCode``
     * The ``FullName`` logical type has been renamed to ``PersonFullName``
     * The ``Schema`` object has been renamed to ``TableSchema``
@@ -77,7 +112,8 @@ Release Notes
       values. The new ``BooleanNullable`` and ``IntegerNullable`` logical types should be used if
       null values are present.
 
-**v0.1.0 March 22, 2021**
+v0.1.0 Mar 22, 2021
+===================
     * Enhancements
         * Implement Schema and Accessor API (:pr:`497`)
         * Add Schema class that holds typing info (:pr:`499`)
@@ -152,10 +188,12 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**Breaking Changes**
+Breaking Changes
+++++++++++++++++
     * The ``DataTable`` and ``DataColumn`` classes have been removed and replaced by new ``WoodworkTableAccessor`` and ``WoodworkColumnAccessor`` classes which are used through the ``ww`` namespace available on DataFrames after importing Woodwork.
 
-**v0.0.11 March 15, 2021**
+v0.0.11 Mar 15, 2021
+====================
     * Changes
         * Restrict Koalas version to ``<1.7.0`` due to breaking changes (:pr:`674`)
         * Include unique columns in mutual information calculations (:pr:`687`)
@@ -170,7 +208,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.10 February 25, 2021**
+v0.0.10 Feb 25, 2021
+====================
     * Changes
         * Avoid calculating mutualinfo for non-unique columns (:pr:`563`)
         * Preserve underlying DataFrame index if index column is not specified (:pr:`588`)
@@ -183,7 +222,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`johnbridstrup`, :user:`tamargrey`
 
-**v0.0.9 February 5, 2021**
+v0.0.9 Feb 5, 2021
+==================
     * Enhancements
         * Add Python 3.9 support without Koalas testing (:pr:`511`)
         * Add ``get_valid_mi_types`` function to list LogicalTypes valid for mutual information calculation (:pr:`517`)
@@ -201,7 +241,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.8 January 25, 2021**
+v0.0.8 Jan 25, 2021
+===================
     * Enhancements
         * Add ``DataTable.df`` property for accessing the underling DataFrame (:pr:`470`)
         * Set index of underlying DataFrame to match DataTable index (:pr:`464`)
@@ -217,7 +258,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.7 December 14, 2020**
+v0.0.7 Dec 14, 2020
+===================
     * Enhancements
         * Allow for user-defined logical types and inference functions in TypeSystem object (:pr:`424`)
         * Add ``__repr__`` to DataTable (:pr:`425`)
@@ -242,7 +284,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.6 November 30, 2020**
+v0.0.6 Nov 30, 2020
+===================
     * Enhancements
         * Add support for creating DataTable from Koalas DataFrame (:pr:`327`)
         * Add ability to initialize DataTable with numpy array (:pr:`367`)
@@ -275,14 +318,16 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**Breaking Changes**
+Breaking Changes
+++++++++++++++++
     * The ``DataTable.set_semantic_tags`` method was removed. ``DataTable.set_types`` can be used instead.
     * The ``DataTable.set_logical_types`` method was removed. ``DataTable.set_types`` can be used instead.
     * ``WholeNumber`` was removed from LogicalTypes. Columns that were previously inferred as WholeNumber will now be inferred as Integer.
     * The ``DataTable.get_mutual_information`` was renamed to ``DataTable.mutual_information``.
     * The ``copy_dataframe`` parameter was removed from DataTable initialization.
 
-**v0.0.5 November 11, 2020**
+v0.0.5 Nov 11, 2020
+===================
     * Enhancements
         * Add ``__eq__`` to DataTable and DataColumn and update LogicalType equality (:pr:`318`)
         * Add ``value_counts()`` method to DataTable (:pr:`342`)
@@ -322,12 +367,14 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**Breaking Changes**
+Breaking Changes
+++++++++++++++++
     * The ``DataColumn.to_pandas`` method was renamed to ``DataColumn.to_series``.
     * The ``DataTable.to_pandas`` method was renamed to ``DataTable.to_dataframe``.
     * ``copy`` is no longer a parameter of ``DataTable.to_dataframe`` or ``DataColumn.to_series``.
 
-**v0.0.4 October 21, 2020**
+v0.0.4 Oct 21, 2020
+===================
     * Enhancements
         * Add optional ``include`` parameter for ``DataTable.describe()`` to filter results (:pr:`228`)
         * Add ``make_index`` parameter to ``DataTable.__init__`` to enable optional creation of a new index column (:pr:`238`)
@@ -355,7 +402,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`ctduffy`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.3 October 9, 2020**
+v0.0.3 Oct 9, 2020
+==================
     * Enhancements
         * Implement setitem on DataTable to create/overwrite an existing DataColumn (:pr:`165`)
         * Add ``to_pandas`` method to DataColumn to access the underlying series (:pr:`169`)
@@ -397,7 +445,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.0.2 September 28, 2020**
+v0.0.2 Sep 28, 2020
+===================
     * Fixes
         * Fix formatting issue when printing global config variables (:pr:`138`)
     * Changes
@@ -410,7 +459,8 @@ Release Notes
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
-**v0.1.0 September 24, 2020**
+v0.1.0 Sep 24, 2020
+===================
     * Add ``natural_language_threshold`` global config option used for Categorical/NaturalLanguage type inference (:pr:`135`)
     * Add global config options and add ``datetime_format`` option for type inference (:pr:`134`)
     * Fix bug with Integer and WholeNumber inference in column with ``pd.NA`` values (:pr:`133`)

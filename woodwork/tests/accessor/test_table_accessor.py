@@ -16,6 +16,7 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import (
     URL,
+    Address,
     Age,
     AgeNullable,
     Boolean,
@@ -199,10 +200,8 @@ def test_accessor_init_errors_methods(sample_df):
         'set_index': ['id'],
         'set_time_index': ['signup_date'],
         'set_types': [{'id': 'Integer'}],
-        'to_csv': ['dir'],
+        'to_disk': ['dir'],
         'to_dictionary': None,
-        'to_parquet': ['dir'],
-        'to_pickle': ['dir'],
         'value_counts': None,
 
     }
@@ -326,7 +325,7 @@ def test_getitem(sample_df):
     series = df.ww['id']
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
     assert series.ww.logical_type == Integer
-    assert series.ww.semantic_tags == {'numeric'}
+    assert series.ww.semantic_tags == {'index'}
 
 
 def test_getitem_init_error(sample_df):
@@ -361,11 +360,11 @@ def test_accessor_equality(sample_df):
     assert schema_df.ww != copy_df.ww
 
     # Confirm not equal with same schema but different data - only pandas
-    iloc_df = schema_df.ww.loc[:2, :]
+    loc_df = schema_df.ww.loc[:2, :]
     if isinstance(sample_df, pd.DataFrame):
-        assert schema_df.ww != iloc_df
+        assert schema_df.ww != loc_df
     else:
-        assert schema_df.ww == iloc_df
+        assert schema_df.ww == loc_df
 
 
 def test_accessor_equality_make_index(sample_df_pandas):
@@ -379,6 +378,30 @@ def test_accessor_equality_make_index(sample_df_pandas):
     pd.testing.assert_frame_equal(schema_df, made_index_df)
 
     assert made_index_df.ww != schema_df.ww
+
+
+def test_accessor_shallow_equality(sample_df):
+    metadata_table = sample_df.copy()
+    metadata_table.ww.init(table_metadata={'user': 'user0'})
+    diff_metadata_table = sample_df.copy()
+    diff_metadata_table.ww.init(table_metadata={'user': 'user2'})
+
+    assert diff_metadata_table.ww.__eq__(metadata_table, deep=False)
+    assert not diff_metadata_table.ww.__eq__(metadata_table, deep=True)
+
+    schema = metadata_table.ww.schema
+    diff_data_table = metadata_table.ww.loc[:2, :]
+    same_data_table = metadata_table.ww.copy()
+
+    assert diff_data_table.ww.schema.__eq__(schema, deep=True)
+    assert same_data_table.ww.schema.__eq__(schema, deep=True)
+
+    assert same_data_table.ww.__eq__(metadata_table.ww, deep=False)
+    assert same_data_table.ww.__eq__(metadata_table.ww, deep=True)
+
+    assert diff_data_table.ww.__eq__(metadata_table.ww, deep=False)
+    if isinstance(sample_df, pd.DataFrame):
+        assert not diff_data_table.ww.__eq__(metadata_table.ww, deep=True)
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):
@@ -685,6 +708,7 @@ def test_sets_string_dtype_on_init():
     ]
 
     logical_types = [
+        Address,
         Filepath,
         PersonFullName,
         IPAddress,
@@ -829,19 +853,14 @@ def test_invalid_dtype_casting():
 
     # pandas >=1.2.0 converts to an object dtype when converting a series with missing
     # values with `.astype('bool')` but does not error. Woodwork should not allow this to succeed.
-    # Earlier versions of pandas cast to the correct dtype, replacing missing values
-    # with True, so this error will only happen on newer versions of pandas
-    # TODO: Remove the 'if' condition once we bump pandas min version to 1.2.0 or higher
-    # but leave the test in place.
-    if pd.__version__ > '1.1.5':
-        series = pd.Series(['a', 'b', None], name=column_name, dtype='category')
-        ltypes = {
-            column_name: Boolean,
-        }
-        err_msg = 'Error converting datatype for test_series from type category to type ' \
-            'bool. Please confirm the underlying data is consistent with logical type Boolean.'
-        with pytest.raises(TypeConversionError, match=err_msg):
-            pd.DataFrame(series).ww.init(logical_types=ltypes)
+    series = pd.Series(['a', 'b', None], name=column_name, dtype='category')
+    ltypes = {
+        column_name: Boolean,
+    }
+    err_msg = 'Error converting datatype for test_series from type category to type ' \
+        'bool. Please confirm the underlying data is consistent with logical type Boolean.'
+    with pytest.raises(TypeConversionError, match=err_msg):
+        pd.DataFrame(series).ww.init(logical_types=ltypes)
 
 
 def test_make_index(sample_df):

@@ -157,28 +157,28 @@ def test_iloc_indices_column(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     sample_df.ww.init(index='id', time_index='signup_date')
     sliced_index = sample_df.ww.iloc[:, 0]
-    assert sliced_index.ww.semantic_tags == {'numeric'}
+    assert sliced_index.ww.semantic_tags == {'index'}
 
     sliced_time_index = sample_df.ww.iloc[:, 5]
-    assert sliced_time_index.ww.semantic_tags == set()
+    assert sliced_time_index.ww.semantic_tags == {'time_index'}
 
 
 def test_loc_indices_column(sample_df):
     sample_df.ww.init(index='id', time_index='signup_date')
     sliced_index = sample_df.ww.loc[:, 'id']
-    assert sliced_index.ww.semantic_tags == {'numeric'}
+    assert sliced_index.ww.semantic_tags == {'index'}
 
     sliced_time_index = sample_df.ww.loc[:, 'signup_date']
-    assert sliced_time_index.ww.semantic_tags == set()
+    assert sliced_time_index.ww.semantic_tags == {'time_index'}
 
 
 def test_indexer_uses_standard_tags(sample_df):
     sample_df.ww.init(index='id', time_index='age', use_standard_tags={'id': False, 'age': True})
     sliced_index = sample_df.ww.loc[:, 'id']
-    assert sliced_index.ww.semantic_tags == set()
+    assert sliced_index.ww.semantic_tags == {'index'}
 
     sliced_time_index = sample_df.ww.loc[:, 'age']
-    assert sliced_time_index.ww.semantic_tags == {'numeric'}
+    assert sliced_time_index.ww.semantic_tags == {'numeric', 'time_index'}
 
 
 def test_iloc_with_properties(sample_df):

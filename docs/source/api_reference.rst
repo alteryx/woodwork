@@ -33,10 +33,8 @@ WoodworkTableAccessor
     WoodworkTableAccessor.set_time_index
     WoodworkTableAccessor.set_types
     WoodworkTableAccessor.time_index
-    WoodworkTableAccessor.to_csv
+    WoodworkTableAccessor.to_disk
     WoodworkTableAccessor.to_dictionary
-    WoodworkTableAccessor.to_parquet
-    WoodworkTableAccessor.to_pickle
     WoodworkTableAccessor.types
     WoodworkTableAccessor.use_standard_tags
     WoodworkTableAccessor.value_counts
@@ -127,6 +125,7 @@ Logical Types
 .. autosummary::
     :toctree: generated/
 
+    Address
     Age
     AgeNullable
     Boolean
@@ -188,7 +187,7 @@ General Utils
     :nosignatures:
 
     get_valid_mi_types
-    read_csv
+    read_file
 
 .. currentmodule:: woodwork.accessor_utils
 
