@@ -1,5 +1,6 @@
 import copy
 import warnings
+import weakref
 
 import pandas as pd
 
@@ -28,8 +29,12 @@ ks = import_or_none('databricks.koalas')
 
 class WoodworkColumnAccessor:
     def __init__(self, series):
-        self._series = series
+        self._series_weakref = weakref.ref(series)
         self._schema = None
+
+    @property
+    def _series(self):
+        return self._series_weakref()
 
     def init(self, logical_type=None, semantic_tags=None,
              use_standard_tags=True, description=None, metadata=None,
