@@ -10,11 +10,12 @@ Future Release
     * Changes
         * Remove command line functions for list logical and semantic tags (:pr:`891`)
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
+        * Update accessors to store weak reference to data (:pr:`894`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
