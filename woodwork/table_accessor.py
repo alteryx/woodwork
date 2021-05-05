@@ -47,10 +47,6 @@ class WoodworkTableAccessor:
         self._dataframe_weakref = weakref.ref(dataframe)
         self._schema = None
 
-    @property
-    def _dataframe(self):
-        return self._dataframe_weakref()
-
     def init(self,
              index=None,
              time_index=None,
@@ -251,6 +247,10 @@ class WoodworkTableAccessor:
         # Maintain the same column order used in the DataFrame
         typing_info = typing_info.loc[list(self._dataframe.columns), :]
         return typing_info
+
+    @property
+    def _dataframe(self):
+        return self._dataframe_weakref()
 
     @property
     def iloc(self):

@@ -32,10 +32,6 @@ class WoodworkColumnAccessor:
         self._series_weakref = weakref.ref(series)
         self._schema = None
 
-    @property
-    def _series(self):
-        return self._series_weakref()
-
     def init(self, logical_type=None, semantic_tags=None,
              use_standard_tags=True, description=None, metadata=None,
              schema=None, validate=True):
@@ -95,6 +91,10 @@ class WoodworkColumnAccessor:
                                         description=description,
                                         metadata=metadata,
                                         validate=validate)
+
+    @property
+    def _series(self):
+        return self._series_weakref()
 
     @property
     def schema(self):
