@@ -42,6 +42,7 @@ v0.3.0 May 3, 2021
     * Documentation Changes
         * Improve formatting of release notes (:pr:`874`)
     * Testing Changes
+        * Specify the dtypes in conftest (:pr:`854`)
         * Remove unnecessary argument in codecov upload job (:pr:`853`)
         * Change from GitHub Token to regenerated GitHub PAT dependency checkers (:pr:`855`)
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
