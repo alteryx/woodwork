@@ -8,12 +8,19 @@ Future Release
         * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
     * Fixes
     * Changes
+        * Remove command line functions for list logical and semantic tags (:pr:`891`)
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`tamargrey`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
+
+Breaking Changes
+++++++++++++++++
+    * The command line functions ``python -m woodwork list-logical-types`` and ``python -m woodwork list-semantic-tags``
+      no longer exist. Please call the underlying Python functions ``ww.list_logical_types()`` and
+      ``ww.list_semantic_tags()``.
 
 v0.3.0 May 3, 2021
 ==================
