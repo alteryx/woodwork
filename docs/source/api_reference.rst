@@ -187,7 +187,7 @@ General Utils
     :nosignatures:
 
     get_valid_mi_types
-    read_csv
+    read_file
 
 .. currentmodule:: woodwork.accessor_utils
 

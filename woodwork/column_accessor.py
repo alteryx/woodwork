@@ -201,12 +201,12 @@ class WoodworkColumnAccessor:
             _raise_init_error()
         return self._schema.use_standard_tags
 
-    def __eq__(self, other):
-        if self._schema != other._schema:
+    def __eq__(self, other, deep=True):
+        if not self._schema.__eq__(other._schema, deep=deep):
             return False
         if self._series.name != other._series.name:
             return False
-        if isinstance(self._series, pd.Series):
+        if deep and isinstance(self._series, pd.Series):
             return self._series.equals(other._series)
         return True
 

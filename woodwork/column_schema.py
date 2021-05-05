@@ -46,7 +46,7 @@ class ColumnSchema(object):
         semantic_tags = self._get_column_tags(semantic_tags, validate)
         self.semantic_tags = semantic_tags
 
-    def __eq__(self, other):
+    def __eq__(self, other, deep=True):
         if self.use_standard_tags != other.use_standard_tags:
             return False
         if self.logical_type != other.logical_type:
@@ -55,7 +55,7 @@ class ColumnSchema(object):
             return False
         if self.description != other.description:
             return False
-        if self.metadata != other.metadata:
+        if deep and self.metadata != other.metadata:
             return False
 
         return True

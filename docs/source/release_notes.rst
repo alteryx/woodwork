@@ -5,10 +5,31 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
+    * Fixes
+    * Changes
+        * Remove command line functions for list logical and semantic tags (:pr:`891`)
+        * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
+
+Breaking Changes
+++++++++++++++++
+    * The command line functions ``python -m woodwork list-logical-types`` and ``python -m woodwork list-semantic-tags``
+      no longer exist. Please call the underlying Python functions ``ww.list_logical_types()`` and
+      ``ww.list_semantic_tags()``.
+
+v0.3.0 May 3, 2021
+==================
+    * Enhancements
         * Add ``is_schema_valid`` and ``get_invalid_schema_message`` functions for checking schema validity (:pr:`834`)
         * Add logical type for ``Age`` and ``AgeNullable`` (:pr:`849`)
         * Add logical type for ``Address`` (:pr:`858`)
         * Add generic ``to_disk`` function to save Woodwork schema and data (:pr:`872`)
+        * Add generic ``read_file`` function to read file as Woodwork DataFrame (:pr:`878`)
     * Fixes
         * Raise error when a column is set as the index and time index (:pr:`859`)
         * Allow NaNs in index for schema validation check (:pr:`862`)
@@ -26,12 +47,14 @@ Future Release
         * Update README.md with non-nullable dtypes in code example (:pr:`856`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
-    * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or 
+    * Woodwork tables can no longer be saved using to disk ``df.ww.to_csv``, ``df.ww.to_pickle``, or
       ``df.ww.to_parquet``. Use ``df.ww.to_disk`` instead.
+    * The ``read_csv`` function has been replaced by ``read_file``.
+
 
 v0.2.0 Apr 20, 2021
 ===================
