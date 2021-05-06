@@ -30,6 +30,9 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def __str__(self):
         return str(self.__class__)
 
+    def transform(self, series):
+        pass
+
 
 class Address(LogicalType):
     """Represents Logical Types that contain address values.
