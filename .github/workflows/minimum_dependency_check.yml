@@ -17,31 +17,34 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Set up python 3.7
-        uses: actions/setup-python@v2
+      - name: Run min dep generator - test reqs
+        id: min_dep_gen_test
+        uses: FeatureLabs/minimum-dependency-generator@v1
         with:
-          python-version: 3.7
-      - name: Install requirements for minimum dependency checker
-        run: |
-          python -m pip install --upgrade pip
-          pip config --site set global.progress_bar off
-          python -m pip install -r tools/minimum_dependency/requirements.txt
+          requirements_paths: 'test-requirements.txt'
       - name: Update minimum test dependencies
-        run: |
-          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_test_requirements.txt INPUT_PATHS='test-requirements.txt'
-          cat woodwork/tests/minimum_test_requirements.txt
+        run: printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" >> woodwork/tests/minimum_test_requirements.txt
+      - name: Run min dep generator - core reqs
+        id: min_dep_gen_core
+        uses: FeatureLabs/minimum-dependency-generator@v1
+        with:
+          requirements_paths: 'requirements.txt'
       - name: Update minimum core dependencies
-        run: |
-          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_core_requirements.txt INPUT_PATHS='requirements.txt'
-          cat woodwork/tests/minimum_core_requirements.txt
+        run: printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" >> woodwork/tests/minimum_core_requirements.txt
+      - name: Run min dep generator - koalas
+        id: min_dep_gen_koalas
+        uses: FeatureLabs/minimum-dependency-generator@v1
+        with:
+          requirements_paths: 'koalas-requirements.txt requirements.txt'
       - name: Update minimum koalas dependencies
-        run: |
-          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_koalas_requirements.txt INPUT_PATHS='koalas-requirements.txt requirements.txt'
-          cat woodwork/tests/minimum_koalas_requirements.txt
+        run: printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" >> woodwork/tests/minimum_koalas_requirements.txt
+      - name: Run min dep generator - dask
+        id: min_dep_gen_dask
+        uses: FeatureLabs/minimum-dependency-generator@v1
+        with:
+          requirements_paths: 'dask-requirements.txt requirements.txt'
       - name: Update minimum dask dependencies
-        run: |
-          make gen-min-deps OUTPUT_FILEPATH=woodwork/tests/minimum_dask_requirements.txt INPUT_PATHS='dask-requirements.txt requirements.txt'
-          cat woodwork/tests/minimum_dask_requirements.txt
+        run: printf "${{ steps.min_dep_gen_dask.outputs.min_reqs }}" >> woodwork/tests/minimum_dask_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
