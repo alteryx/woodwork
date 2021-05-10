@@ -12,6 +12,7 @@ Future Release
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
     * Documentation Changes
     * Testing Changes
+        * Use Minimum Dependency Generator GitHub Action and remove tools folder (:pr:`897`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
