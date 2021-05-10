@@ -24,29 +24,62 @@ jobs:
         uses: alteryx/minimum-dependency-generator@v2.0.0
         with:
           requirements_paths: 'test-requirements.txt'
-      - name: Update minimum test dependencies
-        run: printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > woodwork/tests/minimum_test_requirements.txt
+      - name: Check if min test deps have changed
+        id: check_min_test
+        continue-on-error: true
+        run: |
+          mkdir /tmp/dependencies_updated_artifacts
+          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > /tmp/minimum_test_requirements.txt
+          diff /tmp/minimum_test_requirements.txt /tests/minimum_test_requirements.txt
+      - name: write output file if min test deps changed
+        if: steps.check_min_test.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > woodwork/tests/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
         uses: alteryx/minimum-dependency-generator@v2.0.0
         with:
           requirements_paths: 'requirements.txt'
-      - name: Update minimum core dependencies
-        run: printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > woodwork/tests/minimum_core_requirements.txt
+      - name: Check if min core deps have changed
+        id: check_core_deps
+        continue-on-error: true
+        run: |
+          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
+          diff /tmp/minimum_core_requirements.txt /tests/minimum_core_requirements.txt
+      - name: write output file if min core deps changed
+        if: steps.check_core_deps.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > woodwork/tests/minimum_core_requirements.txt
       - name: Run min dep generator - koalas
         id: min_dep_gen_koalas
         uses: alteryx/minimum-dependency-generator@v2.0.0
         with:
           requirements_paths: 'koalas-requirements.txt requirements.txt'
-      - name: Update minimum koalas dependencies
-        run: printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > woodwork/tests/minimum_koalas_requirements.txt
+      - name: Check if min core deps have changed
+        id: check_koalas_deps
+        continue-on-error: true
+        run: |
+          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > /tmp/minimum_koalas_requirements.txt
+          diff /tmp/minimum_koalas_requirements.txt /tests/minimum_koalas_requirements.txt
+      - name: write output file if min koalas deps changed
+        if: steps.check_koalas_deps.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > woodwork/tests/minimum_koalas_requirements.txt
       - name: Run min dep generator - dask
         id: min_dep_gen_dask
         uses: alteryx/minimum-dependency-generator@v2.0.0
         with:
           requirements_paths: 'dask-requirements.txt requirements.txt'
-      - name: Update minimum dask dependencies
-        run: printf "${{ steps.min_dep_gen_dask.outputs.min_reqs }}" > woodwork/tests/minimum_dask_requirements.txt
+      - name: Check if min dask deps have changed
+        id: check_dask_deps
+        continue-on-error: true
+        run: |
+          printf "${{ steps.min_dep_gen_dask.outputs.min_reqs }}" > /tmp/minimum_dask_requirements.txt
+          diff /tmp/minimum_dask_requirements.txt /tests/minimum_dask_requirements.txt
+      - name: write output file if min dask deps changed
+        if: steps.check_dask_deps.outcome != 'success'
+        run: |
+          printf "${{ steps.min_dep_gen_dask.outputs.min_reqs }}" > woodwork/tests/minimum_dask_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
