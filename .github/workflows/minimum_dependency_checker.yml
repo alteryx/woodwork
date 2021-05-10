@@ -21,7 +21,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run min dep generator - test reqs
         id: min_dep_gen_test
-        uses: alteryx/minimum-dependency-generator@v2.1.0
+        uses: alteryx/minimum-dependency-generator@v2.1
         with:
           requirements_paths: 'test-requirements.txt'
       - name: Check if min test deps have changed
@@ -37,7 +37,7 @@ jobs:
           printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > woodwork/tests/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@v2.1.0
+        uses: alteryx/minimum-dependency-generator@v2.1
         with:
           requirements_paths: 'requirements.txt'
       - name: Check if min core deps have changed
@@ -52,7 +52,7 @@ jobs:
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > woodwork/tests/minimum_core_requirements.txt
       - name: Run min dep generator - koalas
         id: min_dep_gen_koalas
-        uses: alteryx/minimum-dependency-generator@v2.1.0
+        uses: alteryx/minimum-dependency-generator@v2.1
         with:
           requirements_paths: 'koalas-requirements.txt requirements.txt'
       - name: Check if min core deps have changed
@@ -67,7 +67,7 @@ jobs:
           printf "${{ steps.min_dep_gen_koalas.outputs.min_reqs }}" > woodwork/tests/minimum_koalas_requirements.txt
       - name: Run min dep generator - dask
         id: min_dep_gen_dask
-        uses: alteryx/minimum-dependency-generator@v2.1.0
+        uses: alteryx/minimum-dependency-generator@v2.1
         with:
           requirements_paths: 'dask-requirements.txt requirements.txt'
       - name: Check if min dask deps have changed
