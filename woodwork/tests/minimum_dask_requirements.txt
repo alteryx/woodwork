@@ -1,3 +1,6 @@
 dask[dataframe]==2.30.0
 pandas==1.2.0
 scikit-learn==0.22
+dask[dataframe]==2.30.0
+pandas==1.2.1
+scikit-learn==0.22
