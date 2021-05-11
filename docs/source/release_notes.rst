@@ -4,6 +4,21 @@ Release Notes
 -------------
 Future Release
 ==============
+    .. warning::
+        This Woodwork release uses a weak reference for maintaining a reference from the
+        accessor to the DataFrame. Because of this, chaining a Woodwork call onto a DataFrame
+        or Series initialization call can be problematic.
+
+        Instead of calling ``pd.DataFrame({'id':[1, 2, 3]}).ww.init()``, first store the dataframe in a new
+        variable and then initialize Woodwork:
+
+        .. code-block:: python
+
+            df = pd.DataFrame({'id':[1, 2, 3]})
+            df.ww.init()
+
+
+
     * Enhancements
         * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
         * Add support for reading from parquet files to ``woodwork.read_file`` (:pr:`909`)
