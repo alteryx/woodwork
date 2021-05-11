@@ -27,6 +27,7 @@ PYARROW_ERR_MSG = (
 # Add new mimetypes
 add_type('application/parquet', '.parquet')
 
+
 def import_or_none(library):
     """Attempts to import the requested library.
 
