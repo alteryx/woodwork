@@ -12,6 +12,7 @@ import woodwork as ww
 type_to_read_func_map = {
     'csv': pd.read_csv,
     'text/csv': pd.read_csv,
+    'parquet': pd.read_parquet,
     'application/parquet': pd.read_parquet
 }
 

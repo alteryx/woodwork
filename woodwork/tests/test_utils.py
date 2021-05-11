@@ -281,17 +281,19 @@ def test_read_file_parquet(sample_df_pandas, tmpdir):
     filepath = os.path.join(tmpdir, 'sample.parquet')
     sample_df_pandas.to_parquet(filepath, index=False)
 
-    df_from_parquet = ww.read_file(filepath=filepath,
-                                   content_type='application/parquet',
-                                   index='id',
-                                   use_nullable_dtypes=True)
-    assert isinstance(df_from_parquet.ww.schema, ww.table_schema.TableSchema)
+    content_types = ['parquet', 'application/parquet']
+    for content_type in content_types:
+        df_from_parquet = ww.read_file(filepath=filepath,
+                                    content_type=content_type,
+                                    index='id',
+                                    use_nullable_dtypes=True)
+        assert isinstance(df_from_parquet.ww.schema, ww.table_schema.TableSchema)
 
-    schema_df = sample_df_pandas.copy()
-    schema_df.ww.init(index='id')
+        schema_df = sample_df_pandas.copy()
+        schema_df.ww.init(index='id')
 
-    assert df_from_parquet.ww.schema == schema_df.ww.schema
-    pd.testing.assert_frame_equal(df_from_parquet, schema_df)
+        assert df_from_parquet.ww.schema == schema_df.ww.schema
+        pd.testing.assert_frame_equal(df_from_parquet, schema_df)
 
 
 def test_is_numeric_datetime_series(time_index_df):
