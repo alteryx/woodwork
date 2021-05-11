@@ -1,7 +1,7 @@
 import ast
 import importlib
 import re
-from mimetypes import guess_type
+from mimetypes import add_type, guess_type
 
 import numpy as np
 import pandas as pd
@@ -24,6 +24,8 @@ PYARROW_ERR_MSG = (
     "    conda install 'pyarrow>=3.0.0'"
 )
 
+# Add new mimetypes
+add_type('application/parquet', '.parquet')
 
 def import_or_none(library):
     """Attempts to import the requested library.
