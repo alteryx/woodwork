@@ -12,7 +12,16 @@ import woodwork as ww
 type_to_read_func_map = {
     'csv': pd.read_csv,
     'text/csv': pd.read_csv,
+    'application/parquet': pd.read_parquet
 }
+
+PYARROW_ERR_MSG = (
+    "The pyarrow library is required to read from parquet files.\n"
+    "Install via pip:\n"
+    "    pip install 'pyarrow>=3.0.0'\n"
+    "Install via conda:\n"
+    "    conda install 'pyarrow>=3.0.0'"
+)
 
 
 def import_or_none(library):
@@ -114,6 +123,10 @@ def read_file(filepath=None,
 
     if content_type not in type_to_read_func_map:
         raise RuntimeError('Reading from content type {} is not currently supported'.format(content_type))
+
+    if content_type == 'application/parquet':
+        import_or_raise('pyarrow', PYARROW_ERR_MSG)
+        kwargs['engine'] = 'pyarrow'
 
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
     dataframe.ww.init(name=name,
