@@ -32,14 +32,14 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
     assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
-    assert series.ww.logical_type == Categorical
+    assert isinstance(series.ww.logical_type, Categorical)
     assert series.ww.semantic_tags == {'category'}
 
     series = init_series(sample_series, logical_type='natural_language')
     assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), NaturalLanguage)
     assert series.dtype == correct_dtype
-    assert series.ww.logical_type == NaturalLanguage
+    assert isinstance(series.ww.logical_type, NaturalLanguage)
     assert series.ww.semantic_tags == set()
 
 
@@ -53,14 +53,14 @@ def test_init_series_valid_conversion_inferred_ltype(sample_series):
     assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
-    assert series.ww.logical_type == Categorical
+    assert isinstance(series.ww.logical_type, Categorical)
     assert series.ww.semantic_tags == {'category'}
 
 
 def test_init_series_with_datetime(sample_datetime_series):
     series = init_series(sample_datetime_series, logical_type='datetime')
     assert series.dtype == 'datetime64[ns]'
-    assert series.ww.logical_type == Datetime
+    assert isinstance(series.ww.logical_type, Datetime)
 
 
 def test_init_series_all_parameters(sample_series):
@@ -80,7 +80,7 @@ def test_init_series_all_parameters(sample_series):
     assert series is not sample_series
     correct_dtype = _get_valid_dtype(type(sample_series), Categorical)
     assert series.dtype == correct_dtype
-    assert series.ww.logical_type == Categorical
+    assert isinstance(series.ww.logical_type, Categorical)
     assert series.ww.semantic_tags == {'custom_tag'}
     assert series.ww.metadata == metadata
     assert series.ww.description == description
