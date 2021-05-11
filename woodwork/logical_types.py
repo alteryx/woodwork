@@ -1,7 +1,12 @@
 import pandas as pd
 
+from woodwork.accessor_utils import _get_valid_dtype
+from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
-from woodwork.utils import camel_to_snake
+from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 class ClassNameDescriptor(object):
@@ -31,7 +36,21 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         return str(self.__class__)
 
     def transform(self, series):
-        pass
+        new_dtype = _get_valid_dtype(type(series), self)
+        if new_dtype != str(series.dtype):
+            # Update the underlying series
+            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
+                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
+                f'logical type {type(self)}.'
+            try:
+                series = series.astype(new_dtype)
+                if str(series.dtype) != new_dtype:
+                    # Catch conditions when Panads does not error but did not
+                    # convert to the specified dtype (example: 'category' -> 'bool')
+                    raise TypeConversionError(error_msg)
+            except (TypeError, ValueError):
+                raise TypeConversionError(error_msg)
+        return series
 
 
 class Address(LogicalType):
@@ -151,6 +170,27 @@ class Datetime(LogicalType):
 
     def __init__(self, datetime_format=None):
         self.datetime_format = datetime_format
+
+    def transform(self, series):
+        new_dtype = _get_valid_dtype(type(series), self)
+        if new_dtype != str(series.dtype):
+            # Update the underlying series
+            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
+                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
+                f'logical type {type(self)}.'
+            try:
+                if dd and isinstance(series, dd.Series):
+                    name = series.name
+                    series = dd.to_datetime(series, format=self.datetime_format)
+                    series.name = name
+                elif ks and isinstance(series, ks.Series):
+                    series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
+                else:
+                    series = pd.to_datetime(series, format=self.datetime_format)
+            except (TypeError, ValueError):
+                raise TypeConversionError(error_msg)
+
+        return series
 
 
 class Double(LogicalType):
@@ -274,6 +314,21 @@ class LatLong(LogicalType):
     """
     primary_dtype = 'object'
 
+    def transform(self, series):
+        # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
+        if dd and isinstance(series, dd.Series):
+            name = series.name
+            meta = (series, tuple([float, float]))
+            series = series.apply(_reformat_to_latlong, meta=meta)
+            series.name = name
+        elif ks and isinstance(series, ks.Series):
+            formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+            series = ks.from_pandas(formatted_series)
+        else:
+            series = series.apply(_reformat_to_latlong)
+
+        return super().transform(series)
+
 
 class NaturalLanguage(LogicalType):
     """Represents Logical Types that contain text or characters representing
@@ -324,6 +379,10 @@ class Ordinal(LogicalType):
                 error_msg = f'Ordinal column {series.name} contains values that are not present ' \
                     f'in the order values provided: {sorted(list(missing_order_vals))}'
                 raise ValueError(error_msg)
+
+    def transform(self, series):
+        self._validate_data(series)
+        return super().transform(series)
 
 
 class PhoneNumber(LogicalType):

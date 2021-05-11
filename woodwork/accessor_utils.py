@@ -1,13 +1,6 @@
 import pandas as pd
 
-from woodwork.exceptions import TypeConversionError
-from woodwork.logical_types import Datetime, LatLong, Ordinal
-from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import (
-    _get_column_logical_type,
-    _reformat_to_latlong,
-    import_or_none
-)
+from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -51,47 +44,7 @@ def init_series(series, logical_type=None, semantic_tags=None,
 def _update_column_dtype(series, logical_type):
     """Update the dtype of the underlying series to match the dtype corresponding
     to the LogicalType for the column."""
-    if isinstance(logical_type, Ordinal):
-        logical_type._validate_data(series)
-    if _get_ltype_class(logical_type) == LatLong:
-        # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
-        if dd and isinstance(series, dd.Series):
-            name = series.name
-            meta = (series, tuple([float, float]))
-            series = series.apply(_reformat_to_latlong, meta=meta)
-            series.name = name
-        elif ks and isinstance(series, ks.Series):
-            formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
-            series = ks.from_pandas(formatted_series)
-        else:
-            series = series.apply(_reformat_to_latlong)
-    new_dtype = _get_valid_dtype(type(series), logical_type)
-    if new_dtype != str(series.dtype):
-        # Update the underlying series
-        error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-            f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
-            f'logical type {logical_type}.'
-        try:
-            if _get_ltype_class(logical_type) == Datetime:
-                if dd and isinstance(series, dd.Series):
-                    name = series.name
-                    series = dd.to_datetime(series, format=logical_type.datetime_format)
-                    series.name = name
-                elif ks and isinstance(series, ks.Series):
-                    series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                      format=logical_type.datetime_format),
-                                       name=series.name)
-                else:
-                    series = pd.to_datetime(series, format=logical_type.datetime_format)
-            else:
-                series = series.astype(new_dtype)
-                if str(series.dtype) != new_dtype:
-                    # Catch conditions when Panads does not error but did not
-                    # convert to the specified dtype (example: 'category' -> 'bool')
-                    raise TypeConversionError(error_msg)
-        except (TypeError, ValueError):
-            raise TypeConversionError(error_msg)
-    return series
+    return logical_type.transform(series)
 
 
 def _is_series(data):
