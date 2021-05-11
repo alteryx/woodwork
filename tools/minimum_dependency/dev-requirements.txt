@@ -1,3 +1,0 @@
-flake8==3.8.3
-autopep8==1.5.4
-isort==5.4.2

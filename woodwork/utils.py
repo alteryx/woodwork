@@ -1,7 +1,7 @@
 import ast
 import importlib
 import re
-from mimetypes import guess_type
+from mimetypes import add_type, guess_type
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,20 @@ import woodwork as ww
 type_to_read_func_map = {
     'csv': pd.read_csv,
     'text/csv': pd.read_csv,
+    'parquet': pd.read_parquet,
+    'application/parquet': pd.read_parquet
 }
+
+PYARROW_ERR_MSG = (
+    "The pyarrow library is required to read from parquet files.\n"
+    "Install via pip:\n"
+    "    pip install 'pyarrow>=3.0.0'\n"
+    "Install via conda:\n"
+    "    conda install 'pyarrow>=3.0.0'"
+)
+
+# Add new mimetypes
+add_type('application/parquet', '.parquet')
 
 
 def import_or_none(library):
@@ -77,6 +90,10 @@ def read_file(filepath=None,
               **kwargs):
     """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
 
+        Note:
+            As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
+            for reading from parquet.
+
     Args:
         filepath (str): A valid string path to the file to read
         content_type (str): Content type of file to read
@@ -114,6 +131,10 @@ def read_file(filepath=None,
 
     if content_type not in type_to_read_func_map:
         raise RuntimeError('Reading from content type {} is not currently supported'.format(content_type))
+
+    if content_type in ['parquet', 'application/parquet']:
+        import_or_raise('pyarrow', PYARROW_ERR_MSG)
+        kwargs['engine'] = 'pyarrow'
 
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
     dataframe.ww.init(name=name,
