@@ -309,7 +309,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
     col_descriptions = {}
     col_metadata = {}
     table_metadata = {}
-    use_standard_tags = True  # --> just go with the first
+    use_standard_tags = {}
 
     col_names_seen = set()
     index = None
@@ -363,6 +363,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
             if col_schema.metadata:
                 col_metadata[name] = col_schema.metadata
             col_descriptions[name] = col_schema.description
+            use_standard_tags[name] = col_schema.use_standard_tags
 
             col_names_seen.add(name)
 
@@ -403,6 +404,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
     # update the schema and initalize it - do it piecemeal on new df and dont make fn to combine schemas
     # table metadata gets combined - error if overlapping elements
     # any col metadata or descriptions in index or tindex or extra semantic tags? cols get combined - maybe warn??
+    # --> init the TableSchema and then init with schema - that way we control valudation
     combined_df.ww.init(name=table_name or None,
                         index=index,
                         time_index=time_index,
@@ -410,6 +412,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
                         semantic_tags=semantic_tags,
                         table_metadata=table_metadata or None,
                         column_metadata=col_metadata,
-                        column_descriptions=col_descriptions)
+                        column_descriptions=col_descriptions,
+                        use_standard_tags=use_standard_tags)
     # --> make sure the order of columns matches
     return combined_df

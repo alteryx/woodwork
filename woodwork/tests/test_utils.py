@@ -725,7 +725,20 @@ def test_concat_table_order(sample_df):
 
 
 def test_different_use_standard_tags(sample_df):
-    pass
+    sample_df.ww.init(use_standard_tags={'age': False, 'full_name': False, 'id': True}, logical_types={'full_name': 'Categorical'})
+
+    assert sample_df.ww.semantic_tags['id'] == {'numeric'}
+    assert sample_df.ww.semantic_tags['full_name'] == set()
+    assert sample_df.ww.semantic_tags['age'] == set()
+
+    df1 = sample_df.ww[['id', 'full_name', 'email']]
+    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+
+    combined_df = concat([df1, df2])
+
+    assert combined_df.ww.semantic_tags['id'] == {'numeric'}
+    assert combined_df.ww.semantic_tags['full_name'] == set()
+    assert combined_df.ww.semantic_tags['age'] == set()
 
 
 def test_concat_combine_metadatas(sample_df):
