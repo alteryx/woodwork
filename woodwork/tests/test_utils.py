@@ -284,9 +284,9 @@ def test_read_file_parquet(sample_df_pandas, tmpdir):
     content_types = ['parquet', 'application/parquet']
     for content_type in content_types:
         df_from_parquet = ww.read_file(filepath=filepath,
-                                    content_type=content_type,
-                                    index='id',
-                                    use_nullable_dtypes=True)
+                                       content_type=content_type,
+                                       index='id',
+                                       use_nullable_dtypes=True)
         assert isinstance(df_from_parquet.ww.schema, ww.table_schema.TableSchema)
 
         schema_df = sample_df_pandas.copy()
