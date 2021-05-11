@@ -125,7 +125,7 @@ def read_file(filepath=None,
     if content_type not in type_to_read_func_map:
         raise RuntimeError('Reading from content type {} is not currently supported'.format(content_type))
 
-    if content_type == 'application/parquet':
+    if content_type in ['parquet', 'application/parquet']:
         import_or_raise('pyarrow', PYARROW_ERR_MSG)
         kwargs['engine'] = 'pyarrow'
 
