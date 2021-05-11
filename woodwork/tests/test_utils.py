@@ -41,10 +41,12 @@ from woodwork.utils import (
     _reformat_to_latlong,
     _to_latlong_float,
     camel_to_snake,
+    concat,
     get_valid_mi_types,
     import_or_none,
     import_or_raise
 )
+from woodwork.tests.testing_utils import to_pandas
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -566,3 +568,56 @@ def test_parse_logical_type_errors():
     error = "Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
         _parse_logical_type(int, 'col_name')
+
+
+def test_concat_cols_ww_dfs(sample_df):
+    sample_df.ww.init()
+    df1 = sample_df.ww[['id', 'full_name', 'email']]
+    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+
+    combined_df = concat([df1, df2])
+    assert combined_df.ww == sample_df.ww
+
+    pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
+    assert to_pandas(combined_df).equals(pandas_combined_df)
+
+
+def test_concat_cols_uninit_dfs(sample_df):
+    df1 = sample_df[['id', 'full_name', 'email']]
+    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+
+    combined_df = concat([df1, df2])
+    assert df1.ww.schema is not None
+    assert df2.ww.schema is not None
+    assert combined_df.ww.schema is not None
+
+    pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
+    assert to_pandas(combined_df).equals(pandas_combined_df)
+
+
+def test_concat_cols_combo_dfs(sample_df):
+    df1 = sample_df[['id', 'full_name', 'email']]
+    sample_df.ww.init()
+    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+
+    combined_df = concat([df1, df2])
+    assert df1.ww.schema is not None
+
+    pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
+    assert to_pandas(combined_df).equals(pandas_combined_df)
+
+
+def test_concat_cols_with_series(sample_df):
+    df = sample_df[['id', 'full_name', 'email', 'phone_number', 'age']]
+    s1 = sample_df['signup_date']
+    sample_df.ww.init()
+    s2 = sample_df['is_registered']
+
+    combined_df = concat([df, s1, s2])
+
+    pandas_combined_df = pd.concat([to_pandas(df), to_pandas(s1), to_pandas(s2)], axis=1, join='outer', ignore_index=False)
+    assert to_pandas(combined_df).equals(pandas_combined_df)
+
+
+def test_concat_cols_with_indexes():
+    pass

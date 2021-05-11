@@ -298,3 +298,49 @@ def _parse_logical_type(logical_type, name):
         return logical_type
     else:
         raise TypeError(f"Invalid logical type specified for '{name}'")
+
+
+def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False):
+    # Validate input parameters
+    # Initialize woodwork on any objs that don't have schemas
+    for obj in objs:
+        if obj.ww.schema is None:
+            obj.ww.init()
+
+    # Vertical::
+    # confirm all the table schemas are equal (EXACTLY!!!!!!)
+
+    # Horizontal::
+    # Prepare data for concat - remove redundant index and time index cols (raise warnings),
+    # error if conflicting woodwork indexes or underlying dtypes or logical types (col schema must be equal??)
+
+    # Make concat call for each of the libraries
+    # --> this is super awkward - just import the libraries ahead of time and check if it's a series or a df you idiot
+    type_string = str(type(objs[0]))
+    if 'pandas' in type_string:
+        lib = pd
+    elif 'koalas' in type_string:
+        KOALAS_ERR_MSG = (
+            'Cannot concat Koalas DataFrames - unable to import Koalas.\n\n'
+            'Please install with pip or conda:\n\n'
+            'python -m pip install "woodwork[koalas]"\n\n'
+            'conda install koalas\n\n'
+            'conda install pyspark'
+        )
+        lib = import_or_raise('databricks.koalas', KOALAS_ERR_MSG)
+    elif 'dask' in type_string:
+        DASK_ERR_MSG = (
+            'Cannot concat Dask DataFrames - unable to import Dask.\n\n'
+            'Please install with pip or conda:\n\n'
+            'python -m pip install "woodwork[dask]"\n\n'
+            'conda install dask'
+        )
+        lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
+    combined_df = lib.concat(objs, axis=axis, join=join, ignore_index=ignore_index)
+
+    # validate results
+    # update the schema and initalize it - do it piecemeal on new df and dont make fn to combine schemas
+    # table metadata gets combined - error if overlapping elements
+    # any col metadata or descriptions in index or tindex or extra semantic tags? cols get combined - maybe warn??
+    combined_df.ww.init()
+    return combined_df
