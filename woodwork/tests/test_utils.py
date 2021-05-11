@@ -716,8 +716,19 @@ def test_concat_cols_with_different_underlying_index_dtypes(sample_df):
         concat([df1, df2])
 
 
-def test_concat_Table_names(sample_df):
-    pass
+def test_concat_table_names(sample_df):
+    df1 = sample_df[['id', 'signup_date']]
+    df1.ww.init(name=0)
+    df2 = sample_df[['full_name', 'age']]
+    df2.ww.init(name='1')
+    df3 = sample_df[['phone_number', 'is_registered']]
+    df3.ww.init(name='2')
+
+    combined_df = concat([df1, df2, df3])
+    assert combined_df.ww.name == '0_1_2'
+
+    combined_df = concat([df3, df2, df1])
+    assert combined_df.ww.name == '2_1_0'
 
 
 def test_concat_table_order(sample_df):
@@ -725,7 +736,8 @@ def test_concat_table_order(sample_df):
 
 
 def test_different_use_standard_tags(sample_df):
-    sample_df.ww.init(use_standard_tags={'age': False, 'full_name': False, 'id': True}, logical_types={'full_name': 'Categorical'})
+    sample_df.ww.init(use_standard_tags={'age': False, 'full_name': False, 'id': True},
+                      logical_types={'full_name': 'Categorical'})
 
     assert sample_df.ww.semantic_tags['id'] == {'numeric'}
     assert sample_df.ww.semantic_tags['full_name'] == set()
@@ -742,4 +754,24 @@ def test_different_use_standard_tags(sample_df):
 
 
 def test_concat_combine_metadatas(sample_df):
-    pass
+    df1 = sample_df[['id', 'full_name', 'email']]
+    df1.ww.init(table_metadata={'created_by': 'user0', 'test_key': 'test_val1'}, column_metadata={'id': {'interesting_values': [1, 2]}})
+    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df2.ww.init(table_metadata={'table_type': 'single', 'test_key': 'test_val2'}, column_metadata={'age': {'interesting_values': [33]}})
+
+    combined_df_1 = concat([df1, df2])
+
+    # The first table sets the metadata when there's overlap
+    assert combined_df_1.ww.metadata == {'created_by': 'user0',
+                                         'table_type': 'single',
+                                         'test_key': 'test_val1'}
+    assert combined_df_1.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
+    assert combined_df_1.ww.columns['age'].metadata == {'interesting_values': [33]}
+
+    combined_df_2 = concat([df2, df1])
+
+    assert combined_df_2.ww.metadata == {'created_by': 'user0',
+                                         'table_type': 'single',
+                                         'test_key': 'test_val2'}
+    assert combined_df_2.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
+    assert combined_df_2.ww.columns['age'].metadata == {'interesting_values': [33]}

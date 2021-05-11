@@ -328,8 +328,9 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
 
             # Combine table names
             if obj.ww.name is not None:
-                table_name += obj.ww.name
-                table_name += '_'
+                if table_name:
+                    table_name += '_'
+                table_name += str(obj.ww.name)
 
             if obj.ww.index is not None:
                 if index is None:
