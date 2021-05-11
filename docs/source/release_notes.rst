@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
         * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
+        * Add support for reading from parquet files to ``woodwork.read_file`` (:pr:`909`)
     * Fixes
     * Changes
         * Remove command line functions for list logical and semantic tags (:pr:`891`)
@@ -15,7 +16,7 @@ Future Release
         * Use Minimum Dependency Generator GitHub Action and remove tools folder (:pr:`897`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
