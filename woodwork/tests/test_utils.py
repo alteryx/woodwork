@@ -634,7 +634,50 @@ def test_concat_rows(sample_df):
     assert combined_df.ww.schema == original_schema
 
 
-def test_concat_cols_with_indexes():
+def test_concat_cols_with_conflicting_ww_indexes(sample_df):
+    df1 = sample_df[['id', 'phone_number', 'email']]
+    df1.ww.init(index='id')
+    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+    df2.ww.init(index='full_name')
+
+    error = 'Cannot concat dataframes with different Woodwork index columns.'
+    with pytest.raises(ValueError, match=error):
+        concat([df1, df2])
+
+    df1 = sample_df[['id', 'phone_number', 'email']]
+    df1.ww.init(time_index='id')
+    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+    df2.ww.init(time_index='signup_date')
+
+    error = 'Cannot concat dataframes with different Woodwork time index columns.'
+    with pytest.raises(ValueError, match=error):
+        concat([df1, df2])
+
+
+def test_concat_cols_with_ww_indexes(sample_df):
+    df1 = sample_df[['id', 'phone_number', 'email']]
+    df1.ww.init(index='id')
+    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+    df2.ww.init(time_index='signup_date')
+
+    combined_df = concat([df1, df2])
+    assert combined_df.ww.index == 'id'
+    assert combined_df.ww.time_index == 'signup_date'
+
+
+def test_concat_cols_with_duplicate_ww_indexes(sample_df):
+    df1 = sample_df[['id', 'phone_number', 'signup_date', 'email']]
+    df1.ww.init(index='id', time_index='signup_date')
+    df2 = sample_df[['full_name', 'age', 'id', 'signup_date', 'is_registered']]
+    df2.ww.init(index='id', time_index='signup_date')
+
+    combined_df = concat([df1, df2])
+    assert combined_df.ww.index == 'id'
+    assert combined_df.ww.time_index == 'signup_date'
+    assert len(set(combined_df.columns)) == len(set(sample_df.columns))
+
+
+def test_concat_cols_with_different_underlying_indexes(sample_df):
     pass
 
 

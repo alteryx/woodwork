@@ -321,11 +321,8 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
             obj.ww.init()
 
         # --> should these be deep copies or _schema????
-        columns = [obj.ww.schema]
         # --> maybe it's better to implement a schema concat method????
         if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
-            columns = obj.ww.schema.columns
-
             # Keep the first occurance of a key in metadata
             table_metadata = {**obj.ww.metadata, **table_metadata}
 
@@ -334,7 +331,25 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
                 table_name += obj.ww.name
                 table_name += '_'
 
-            # --> record index columns - if there's conflicting values then raise an error. Do the same for time index
+            if obj.ww.index is not None:
+                if index is None:
+                    index = obj.ww.index
+                elif obj.ww.index != index:
+                    raise ValueError('Cannot concat dataframes with different Woodwork index columns.')
+                elif obj.ww.index == index:
+                    # remove the column from the dataframe to avoid duplicates
+                    obj.ww.pop(index)
+            if obj.ww.time_index is not None:
+                if time_index is None:
+                    time_index = obj.ww.time_index
+                elif obj.ww.time_index != time_index:
+                    raise ValueError('Cannot concat dataframes with different Woodwork time index columns.')
+                elif obj.ww.time_index == time_index:
+                    obj.ww.pop(time_index)
+
+            columns = obj.ww.schema.columns
+        else:
+            columns = {obj.name: obj.ww.schema}
 
         for name, col_schema in columns.items():
             if name in col_names_seen:
@@ -386,6 +401,8 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
     # table metadata gets combined - error if overlapping elements
     # any col metadata or descriptions in index or tindex or extra semantic tags? cols get combined - maybe warn??
     combined_df.ww.init(name=table_name or None,
+                        index=index,
+                        time_index=time_index,
                         logical_types=logical_types,
                         semantic_tags=semantic_tags,
                         table_metadata=table_metadata or None,
