@@ -335,16 +335,19 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
                 if index is None:
                     index = obj.ww.index
                 elif obj.ww.index != index:
-                    raise ValueError('Cannot concat dataframes with different Woodwork index columns.')
-                elif obj.ww.index == index:
-                    # remove the column from the dataframe to avoid duplicates
+                    raise IndexError('Cannot concat dataframes with different Woodwork index columns.')
+                elif axis and obj.ww.index == index:
+                    # Remove the column from the dataframe to avoid duplicates columns
+                    # --> this will remove it from the inputted data.... not great :/
                     obj.ww.pop(index)
             if obj.ww.time_index is not None:
                 if time_index is None:
                     time_index = obj.ww.time_index
                 elif obj.ww.time_index != time_index:
-                    raise ValueError('Cannot concat dataframes with different Woodwork time index columns.')
-                elif obj.ww.time_index == time_index:
+                    raise IndexError('Cannot concat dataframes with different Woodwork time index columns.')
+                elif axis and obj.ww.time_index == time_index:
+                    # Remove the column from the dataframe to avoid duplicates columns
+                    # --> this will remove it from the inputted data.... not great :/
                     obj.ww.pop(time_index)
 
             columns = obj.ww.schema.columns

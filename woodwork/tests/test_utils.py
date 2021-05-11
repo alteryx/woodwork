@@ -641,7 +641,7 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
     df2.ww.init(index='full_name')
 
     error = 'Cannot concat dataframes with different Woodwork index columns.'
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(IndexError, match=error):
         concat([df1, df2])
 
     df1 = sample_df[['id', 'phone_number', 'email']]
@@ -650,7 +650,7 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
     df2.ww.init(time_index='signup_date')
 
     error = 'Cannot concat dataframes with different Woodwork time index columns.'
-    with pytest.raises(ValueError, match=error):
+    with pytest.raises(IndexError, match=error):
         concat([df1, df2])
 
 
@@ -677,6 +677,28 @@ def test_concat_cols_with_duplicate_ww_indexes(sample_df):
     assert len(set(combined_df.columns)) == len(set(sample_df.columns))
 
 
+def test_concat_rows_with_ww_indexes(sample_df):
+    sample_df.ww.init(index='id')
+    original_schema = sample_df.ww.schema
+    copy_df = sample_df.ww.copy()
+
+    if isinstance(sample_df, pd.DataFrame):
+        # Only pandas checks index uniqueness
+        error = 'Index column must be unique'
+        with pytest.raises(IndexError, match=error):
+            concat([sample_df, copy_df], axis=0)
+
+    sample_df.ww.init(time_index='signup_date')
+    original_schema = sample_df.ww.schema
+    copy_df = sample_df.ww.copy()
+
+    combined_df = concat([sample_df, copy_df], axis=0)
+    assert len(combined_df) == 8
+
+    assert combined_df.ww.time_index == 'signup_date'
+    assert combined_df.ww.schema == original_schema
+
+
 def test_concat_cols_with_different_underlying_indexes(sample_df):
     pass
 
@@ -690,4 +712,8 @@ def test_concat_table_order(sample_df):
 
 
 def test_different_use_standard_tags(sample_df):
+    pass
+
+
+def test_concat_combine_metadatas(sample_df):
     pass
