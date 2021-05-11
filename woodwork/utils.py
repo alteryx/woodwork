@@ -90,6 +90,10 @@ def read_file(filepath=None,
               **kwargs):
     """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
 
+        Note:
+            As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
+            for reading from parquet.
+                
     Args:
         filepath (str): A valid string path to the file to read
         content_type (str): Content type of file to read
