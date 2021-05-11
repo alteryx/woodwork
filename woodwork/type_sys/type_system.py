@@ -286,10 +286,10 @@ class TypeSystem(object):
 
         if len(type_matches) == 0:
             # If no matches, set type to default type (NaturalLanguage)
-            return self.default_type
+            logical_type = self.default_type
         elif len(type_matches) == 1:
             # If we match only one type, return it
-            return type_matches[0]
+            logical_type = type_matches[0]
         else:
             # If multiple matches, get the most specific one. If multiple
             # matches have the same level of specificity, the first
@@ -301,7 +301,9 @@ class TypeSystem(object):
                 if ltype_depth > best_depth:
                     best_match = logical_type
                     best_depth = ltype_depth
-            return best_match
+            logical_type = best_match
+
+        return logical_type()
 
     def _get_logical_types(self):
         """Returns a dictionary of logical type name strings and logical type classes"""
