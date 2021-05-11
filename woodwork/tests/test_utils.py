@@ -699,8 +699,21 @@ def test_concat_rows_with_ww_indexes(sample_df):
     assert combined_df.ww.schema == original_schema
 
 
-def test_concat_cols_with_different_underlying_indexes(sample_df):
-    pass
+def test_concat_cols_with_different_underlying_index_dtypes(sample_df):
+    # --> this is very different for the diff dataframe types unless we catch the error ourselves
+    df1 = sample_df[['id', 'signup_date']]
+    df1.ww.init()
+    df2 = sample_df[['full_name', 'age']].set_index('full_name', drop=False)
+    df2.index.name = None
+    df2.ww.init()
+
+    assert df1.index.dtype == 'int64'
+    assert str(df2.index.dtype) == 'object'
+
+    error = 'Index column must be unique'
+    with pytest.raises(IndexError, match=error):
+        # --> might be better to have a different, more specialized error here??
+        concat([df1, df2])
 
 
 def test_concat_Table_names(sample_df):
