@@ -9,7 +9,7 @@ Future Release
         accessor to the DataFrame. Because of this, chaining a Woodwork call onto a DataFrame
         or Series initialization call can be problematic.
 
-        Instead of calling ``pd.DataFrame({'id':[1, 2, 3]}).ww.init()``, first store the dataframe in a new
+        Instead of calling ``pd.DataFrame({'id':[1, 2, 3]}).ww.init()``, first store the DataFrame in a new
         variable and then initialize Woodwork:
 
         .. code-block:: python
