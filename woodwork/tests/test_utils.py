@@ -571,12 +571,16 @@ def test_parse_logical_type_errors():
 
 
 def test_concat_cols_ww_dfs(sample_df):
-    sample_df.ww.init()
+    sample_df.ww.init(logical_types={'full_name': 'Categorical'}, semantic_tags={'age': 'test_tag'},
+                      table_metadata={'created_by': 'user0'})
     df1 = sample_df.ww[['id', 'full_name', 'email']]
     df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
 
     combined_df = concat([df1, df2])
     assert combined_df.ww == sample_df.ww
+    assert combined_df.ww.logical_types['full_name'] == Categorical
+    assert 'test_tag' in combined_df.ww.semantic_tags['age']
+    assert combined_df.ww.metadata == {'created_by': 'user0'}
 
     pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
     assert to_pandas(combined_df).equals(pandas_combined_df)
@@ -598,7 +602,7 @@ def test_concat_cols_uninit_dfs(sample_df):
 def test_concat_cols_combo_dfs(sample_df):
     df1 = sample_df[['id', 'full_name', 'email']]
     sample_df.ww.init()
-    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
 
     combined_df = concat([df1, df2])
     assert df1.ww.schema is not None
@@ -619,5 +623,28 @@ def test_concat_cols_with_series(sample_df):
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
 
+def test_concat_rows(sample_df):
+    sample_df.ww.init()
+    original_schema = sample_df.ww.schema
+    copy_df = sample_df.ww.copy()
+
+    combined_df = concat([sample_df, copy_df], axis=0)
+    assert len(combined_df) == 8
+
+    assert combined_df.ww.schema == original_schema
+
+
 def test_concat_cols_with_indexes():
+    pass
+
+
+def test_concat_Table_names(sample_df):
+    pass
+
+
+def test_concat_table_order(sample_df):
+    pass
+
+
+def test_different_use_standard_tags(sample_df):
     pass
