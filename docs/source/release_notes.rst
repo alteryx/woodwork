@@ -6,8 +6,8 @@ Future Release
 ==============
     .. warning::
         This Woodwork release uses a weak reference for maintaining a reference from the
-        accessor to the DataFrame. Because of this, chaining a Woodwork call onto a DataFrame
-        or Series initialization call can be problematic.
+        accessor to the DataFrame. Because of this, chaining a Woodwork call onto another
+        call that creates a new DataFrame or Series object can be problematic.
 
         Instead of calling ``pd.DataFrame({'id':[1, 2, 3]}).ww.init()``, first store the DataFrame in a new
         variable and then initialize Woodwork:
