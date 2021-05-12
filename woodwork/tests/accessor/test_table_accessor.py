@@ -1,10 +1,11 @@
 import re
+from inspect import isclass
 
 import numpy as np
 import pandas as pd
 import pytest
 from mock import patch
-from inspect import isclass
+
 import woodwork as ww
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
