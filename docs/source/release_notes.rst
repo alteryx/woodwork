@@ -2,19 +2,48 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
-        * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
     * Fixes
     * Changes
-        * Remove command line functions for list logical and semantic tags (:pr:`891`)
-        * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
     * Documentation Changes
     * Testing Changes
 
+.. Thanks to the following people for contributing to this release:
+
+
+v0.3.1 May 12, 2021
+===================
+    .. warning::
+        This Woodwork release uses a weak reference for maintaining a reference from the
+        accessor to the DataFrame. Because of this, chaining a Woodwork call onto another
+        call that creates a new DataFrame or Series object can be problematic.
+
+        Instead of calling ``pd.DataFrame({'id':[1, 2, 3]}).ww.init()``, first store the DataFrame in a new
+        variable and then initialize Woodwork:
+
+        .. code-block:: python
+
+            df = pd.DataFrame({'id':[1, 2, 3]})
+            df.ww.init()
+
+
+    * Enhancements
+        * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
+        * Add support for reading from parquet files to ``woodwork.read_file`` (:pr:`909`)
+    * Changes
+        * Remove command line functions for list logical and semantic tags (:pr:`891`)
+        * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
+        * Update accessors to store weak reference to data (:pr:`894`)
+    * Documentation Changes
+        * Update nbsphinx version to fix docs build issue (:pr:`911`, :pr:`913`)
+    * Testing Changes
+        * Use Minimum Dependency Generator GitHub Action and remove tools folder (:pr:`897`)
+        * Move all latest and minimum dependencies into 1 folder (:pr:`912`)
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++

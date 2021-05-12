@@ -147,7 +147,7 @@ def test_accessor_init_with_semantic_tags(sample_series):
 
 
 def test_error_accessing_properties_before_init(sample_series):
-    props_to_exclude = ['iloc', 'loc', 'schema']
+    props_to_exclude = ['iloc', 'loc', 'schema', '_series']
     props = [prop for prop in dir(sample_series.ww) if is_property(WoodworkColumnAccessor, prop) and prop not in props_to_exclude]
 
     error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"

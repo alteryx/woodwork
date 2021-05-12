@@ -1,5 +1,4 @@
-dask==2.30.0
-numpy==1.20.2
+numpy==1.20.3
 pandas==1.2.4
 pyarrow==4.0.0
 scikit-learn==0.24.2
