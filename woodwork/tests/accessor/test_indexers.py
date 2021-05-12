@@ -131,7 +131,7 @@ def test_loc_column(sample_series):
 
     sliced = series.ww.loc[2:]
     assert sliced.name == "sample_series"
-    assert sliced.ww.logical_type == logical_type
+    assert isinstance(sliced.ww.logical_type, logical_type)
     assert sliced.ww.semantic_tags == {'category', 'tag1', 'tag2'}
     pd.testing.assert_series_equal(to_pandas(sliced), to_pandas(series.loc[2:]))
 
@@ -148,7 +148,7 @@ def test_loc_column(sample_series):
     series.ww.init(use_standard_tags=False)
     sliced = series.ww.loc[:]
     assert sliced.name
-    assert sliced.ww.logical_type == logical_type
+    assert isinstance(sliced.ww.logical_type, logical_type)
     assert sliced.ww.semantic_tags == set()
 
 
@@ -201,14 +201,16 @@ def test_iloc_with_properties(sample_df):
     sliced = df.ww.iloc[1:3, 1:3]
     assert sliced.shape == (2, 2)
     assert sliced.ww.semantic_tags == {'full_name': {'category', 'tag1'}, 'email': {'tag2'}}
-    assert sliced.ww.logical_types == {'full_name': Categorical, 'email': EmailAddress}
+    assert isinstance(sliced.ww.logical_types['full_name'], Categorical)
+    assert isinstance(sliced.ww.logical_types['email'], EmailAddress)
     assert sliced.ww.index is None
 
     df = sample_df.copy()
     df.ww.init(logical_types=logical_types, use_standard_tags=False)
     sliced = df.ww.iloc[:, [0, 5]]
     assert sliced.ww.semantic_tags == {'id': set(), 'signup_date': set()}
-    assert sliced.ww.logical_types == {'id': Integer, 'signup_date': Datetime}
+    assert isinstance(sliced.ww.logical_types['id'], Integer)
+    assert isinstance(sliced.ww.logical_types['signup_date'], Datetime)
     assert sliced.ww.index is None
 
 
