@@ -40,7 +40,7 @@ def test_accessor_init(sample_series):
     assert sample_series.ww._schema is None
     sample_series.ww.init()
     assert isinstance(sample_series.ww._schema, ColumnSchema)
-    assert sample_series.ww.logical_type == Categorical
+    assert isinstance(sample_series.ww.logical_type, Categorical)
     assert sample_series.ww.semantic_tags == {'category'}
 
 
@@ -63,7 +63,7 @@ def test_accessor_init_with_schema(sample_series):
     assert iloc_series.ww._schema is schema
     assert iloc_series.ww.description == 'this is a column'
     assert iloc_series.ww.semantic_tags == {'test_tag', 'category'}
-    assert iloc_series.ww.logical_type == Categorical
+    assert isinstance(iloc_series.ww.logical_type, Categorical)
 
 
 def test_accessor_init_with_schema_errors(sample_series):
@@ -104,7 +104,7 @@ def test_accessor_with_schema_parameter_warning(sample_series):
                             use_standard_tags=False, schema=schema)
 
     assert head_series.ww.semantic_tags == {'category', 'test_tag'}
-    assert head_series.ww.logical_type == Categorical
+    assert isinstance(head_series.ww.logical_type, Categorical)
     assert head_series.ww.description == 'this is a column'
     assert head_series.ww.metadata == {}
 
@@ -112,17 +112,17 @@ def test_accessor_with_schema_parameter_warning(sample_series):
 def test_accessor_init_with_logical_type(sample_series):
     series = sample_series.astype('string')
     series.ww.init(logical_type=NaturalLanguage)
-    assert series.ww.logical_type == NaturalLanguage
+    assert isinstance(series.ww.logical_type, NaturalLanguage)
     assert series.ww.semantic_tags == set()
 
     series = sample_series.astype('string')
     series.ww.init(logical_type="natural_language")
-    assert series.ww.logical_type == NaturalLanguage
+    assert isinstance(series.ww.logical_type, NaturalLanguage)
     assert series.ww.semantic_tags == set()
 
     series = sample_series.astype('string')
     series.ww.init(logical_type="NaturalLanguage")
-    assert series.ww.logical_type == NaturalLanguage
+    assert isinstance(series.ww.logical_type, NaturalLanguage)
     assert series.ww.semantic_tags == set()
 
 
@@ -321,8 +321,8 @@ def test_set_logical_type_without_standard_tags(sample_series):
                           use_standard_tags=False)
 
     new_series = sample_series.ww.set_logical_type('CountryCode')
-    assert sample_series.ww.logical_type == Categorical
-    assert new_series.ww.logical_type == CountryCode
+    assert isinstance(sample_series.ww.logical_type, Categorical)
+    assert isinstance(new_series.ww.logical_type, CountryCode)
     assert new_series.ww.semantic_tags == set()
 
 
@@ -338,9 +338,9 @@ def test_set_logical_type_valid_dtype_change(sample_series):
         original_dtype = 'category'
     new_dtype = 'string'
 
-    assert sample_series.ww.logical_type == Categorical
+    assert isinstance(sample_series.ww.logical_type, Categorical)
     assert sample_series.dtype == original_dtype
-    assert new_series.ww.logical_type == NaturalLanguage
+    assert isinstance(new_series.ww.logical_type, NaturalLanguage)
     assert new_series.dtype == new_dtype
 
 
@@ -412,7 +412,7 @@ def test_series_methods_on_accessor_dtype_mismatch(sample_df):
     ints_series = sample_df['id']
     ints_series.ww.init()
 
-    assert ints_series.ww.logical_type == Integer
+    assert isinstance(ints_series.ww.logical_type, Integer)
     assert str(ints_series.dtype) == 'int64'
 
     warning = ("Operation performed by astype has invalidated the Woodwork typing information:\n "
@@ -563,7 +563,7 @@ def test_ordinal_with_nan_values():
 def test_latlong_init_with_valid_series(latlongs):
     series = latlongs[0]
     series.ww.init(logical_type="LatLong")
-    assert series.ww.logical_type == LatLong
+    assert isinstance(series.ww.logical_type, LatLong)
 
 
 def test_latlong_init_error_with_invalid_series(latlongs):
@@ -585,7 +585,7 @@ def test_latlong_formatting_with_init_series(latlongs):
     expected_series.ww.init(logical_type=LatLong)
     for series in latlongs:
         new_series = init_series(series, logical_type=LatLong)
-        assert new_series.ww.logical_type == LatLong
+        assert isinstance(new_series.ww.logical_type, LatLong)
         pd.testing.assert_series_equal(to_pandas(new_series), to_pandas(expected_series))
         assert expected_series.ww._schema == new_series.ww._schema
 
