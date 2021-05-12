@@ -7,7 +7,6 @@ import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
     _get_valid_dtype,
     _is_dataframe,
-    _update_column_dtype,
     get_invalid_schema_message,
     init_series
 )
@@ -140,7 +139,7 @@ class WoodworkTableAccessor:
                 logical_type = _get_column_logical_type(series, logical_type, name)
                 parsed_logical_types[name] = logical_type
 
-                updated_series = _update_column_dtype(series, logical_type)
+                updated_series = logical_type.transform(series)
                 if updated_series is not series:
                     self._dataframe[name] = updated_series
 
@@ -412,7 +411,7 @@ class WoodworkTableAccessor:
         # go through changed ltypes and update dtype if necessary
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
-            updated_series = _update_column_dtype(series, logical_type)
+            updated_series = logical_type.transform(series)
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 

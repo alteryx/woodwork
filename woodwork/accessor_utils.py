@@ -32,19 +32,13 @@ def init_series(series, logical_type=None, semantic_tags=None,
     """
     logical_type = _get_column_logical_type(series, logical_type, series.name)
 
-    new_series = _update_column_dtype(series, logical_type)
+    new_series = logical_type.transform(series)
     new_series.ww.init(logical_type=logical_type,
                        semantic_tags=semantic_tags,
                        use_standard_tags=use_standard_tags,
                        description=description,
                        metadata=metadata)
     return new_series
-
-
-def _update_column_dtype(series, logical_type):
-    """Update the dtype of the underlying series to match the dtype corresponding
-    to the LogicalType for the column."""
-    return logical_type.transform(series)
 
 
 def _is_series(data):
