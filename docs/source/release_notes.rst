@@ -2,8 +2,19 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+
+v0.3.1 May 12, 2021
+===================
     .. warning::
         This Woodwork release uses a weak reference for maintaining a reference from the
         accessor to the DataFrame. Because of this, chaining a Woodwork call onto another
@@ -18,11 +29,9 @@ Future Release
             df.ww.init()
 
 
-
     * Enhancements
         * Add ``deep`` parameter to Woodwork Accessor and Schema equality checks (:pr:`889`)
         * Add support for reading from parquet files to ``woodwork.read_file`` (:pr:`909`)
-    * Fixes
     * Changes
         * Remove command line functions for list logical and semantic tags (:pr:`891`)
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
