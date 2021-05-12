@@ -275,7 +275,7 @@ def _parse_logical_type(logical_type, name):
     if isclass(logical_type):
         logical_type = logical_type()
 
-    if type(logical_type) in ww.type_system.registered_types:
-        return logical_type
-    else:
+    if type(logical_type) not in ww.type_system.registered_types:
         raise TypeError(f"Invalid logical type specified for '{name}'")
+
+    return logical_type
