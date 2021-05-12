@@ -11,6 +11,7 @@ Future Release
     * Changes
         * Remove command line functions for list logical and semantic tags (:pr:`891`)
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
+        * Move all latest and minimum dependencies into 1 folder (:pr:`912`)
     * Documentation Changes
     * Testing Changes
         * Use Minimum Dependency Generator GitHub Action and remove tools folder (:pr:`897`)
