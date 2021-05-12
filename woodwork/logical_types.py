@@ -174,22 +174,14 @@ class Datetime(LogicalType):
     def transform(self, series):
         new_dtype = _get_valid_dtype(type(series), self)
         if new_dtype != str(series.dtype):
-            # Update the underlying series
-            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
-                f'logical type {type(self)}.'
-            try:
-                if dd and isinstance(series, dd.Series):
-                    name = series.name
-                    series = dd.to_datetime(series, format=self.datetime_format)
-                    series.name = name
-                elif ks and isinstance(series, ks.Series):
-                    series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
-                else:
-                    series = pd.to_datetime(series, format=self.datetime_format)
-            except (TypeError, ValueError):
-                raise TypeConversionError(error_msg)
-
+            if dd and isinstance(series, dd.Series):
+                name = series.name
+                series = dd.to_datetime(series, format=self.datetime_format)
+                series.name = name
+            elif ks and isinstance(series, ks.Series):
+                series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
+            else:
+                series = pd.to_datetime(series, format=self.datetime_format)
         return series
 
 
