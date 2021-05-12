@@ -349,6 +349,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
                 elif axis and obj.ww.time_index == time_index:
                     # Remove the column from the dataframe to avoid duplicates columns
                     # --> this will remove it from the inputted data.... not great :/
+                    # --> maybe we dont remove but after concat we remove duplicates!!!
                     obj.ww.pop(time_index)
 
             columns = obj.ww.schema.columns
@@ -357,11 +358,12 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
 
         for name, col_schema in columns.items():
             if name in col_names_seen:
+                # --> maybe raise a warning for these columns that their typing info is gonna get ignored??
                 # Do not look at typing information for duplicate columns
                 continue
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
-            if col_schema.metadata:
+            if col_schema.metadata:  # --> confirm this is actually necessary - eqyality i think
                 col_metadata[name] = col_schema.metadata
             col_descriptions[name] = col_schema.description
             use_standard_tags[name] = col_schema.use_standard_tags
@@ -371,39 +373,20 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
     # Vertical::
     # confirm all the table schemas are equal (EXACTLY!!!!!!)
 
-    # Horizontal::
-    # Prepare data for concat - remove redundant index and time index cols (raise warnings),
-    # error if conflicting woodwork indexes or underlying dtypes or logical types (col schema must be equal??)
-
-    # get the typing information from the
-
     # Make concat call for each of the libraries
-    # --> this is super awkward - just import the libraries ahead of time and check if it's a series or a df you idiot
     type_string = str(type(objs[0]))
-    if 'pandas' in type_string:
-        lib = pd
-    elif 'koalas' in type_string:
-        KOALAS_ERR_MSG = (
-            'Cannot concat Koalas DataFrames - unable to import Koalas.\n\n'
-            'Please install with pip or conda:\n\n'
-            'python -m pip install "woodwork[koalas]"\n\n'
-            'conda install koalas\n\n'
-            'conda install pyspark'
-        )
-        lib = import_or_raise('databricks.koalas', KOALAS_ERR_MSG)
-    elif 'dask' in type_string:
-        DASK_ERR_MSG = (
-            'Cannot concat Dask DataFrames - unable to import Dask.\n\n'
-            'Please install with pip or conda:\n\n'
-            'python -m pip install "woodwork[dask]"\n\n'
-            'conda install dask'
-        )
-        lib = import_or_raise('dask.dataframe', DASK_ERR_MSG)
+
+    dd = import_or_none('dask.dataframe')
+    ks = import_or_none('databricks.koalas')
+
+    lib = pd
+    if ks and isinstance(obj, (ks.Series, ks.DataFrame)):
+        lib = ks
+    elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
+        lib = dd
+
     combined_df = lib.concat(objs, axis=axis, join=join, ignore_index=ignore_index)
 
-    # validate results
-    # update the schema and initalize it - do it piecemeal on new df and dont make fn to combine schemas
-    # table metadata gets combined - error if overlapping elements
     # any col metadata or descriptions in index or tindex or extra semantic tags? cols get combined - maybe warn??
     # --> init the TableSchema and then init with schema - that way we control valudation
     combined_df.ww.init(name=table_name or None,
@@ -415,6 +398,6 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
                         column_metadata=col_metadata,
                         column_descriptions=col_descriptions,
                         use_standard_tags=use_standard_tags,
-                        validate=validate_schema)
+                        validate=validate_schema)  # --> add already sorted as param??????
     # --> make sure the order of columns matches
     return combined_df
