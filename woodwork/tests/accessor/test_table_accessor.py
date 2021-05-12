@@ -217,7 +217,7 @@ def test_accessor_init_errors_methods(sample_df):
 
 
 def test_accessor_init_errors_properties(sample_df):
-    props_to_exclude = ['iloc', 'loc', 'schema']
+    props_to_exclude = ['iloc', 'loc', 'schema', '_dataframe']
     props = [prop for prop in dir(sample_df.ww) if is_property(WoodworkTableAccessor, prop) and prop not in props_to_exclude]
 
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
@@ -827,10 +827,12 @@ def test_invalid_dtype_casting():
     ltypes = {
         column_name: Double,
     }
+
     err_msg = 'Error converting datatype for test_series from type object to type ' \
         'float64. Please confirm the underlying data is consistent with logical type Double.'
+    df = pd.DataFrame(series)
     with pytest.raises(TypeConversionError, match=err_msg):
-        pd.DataFrame(series).ww.init(logical_types=ltypes)
+        df.ww.init(logical_types=ltypes)
 
     # Cannot cast Datetime to Double
     df = pd.DataFrame({column_name: ['2020-01-01', '2020-01-02', '2020-01-03']})
@@ -848,8 +850,9 @@ def test_invalid_dtype_casting():
     }
     err_msg = 'Error converting datatype for test_series from type object to type ' \
         'int64. Please confirm the underlying data is consistent with logical type Integer.'
+    df = pd.DataFrame(series)
     with pytest.raises(TypeConversionError, match=err_msg):
-        pd.DataFrame(series).ww.init(logical_types=ltypes)
+        df.ww.init(logical_types=ltypes)
 
     # pandas >=1.2.0 converts to an object dtype when converting a series with missing
     # values with `.astype('bool')` but does not error. Woodwork should not allow this to succeed.
@@ -859,8 +862,9 @@ def test_invalid_dtype_casting():
     }
     err_msg = 'Error converting datatype for test_series from type category to type ' \
         'bool. Please confirm the underlying data is consistent with logical type Boolean.'
+    df = pd.DataFrame(series)
     with pytest.raises(TypeConversionError, match=err_msg):
-        pd.DataFrame(series).ww.init(logical_types=ltypes)
+        df.ww.init(logical_types=ltypes)
 
 
 def test_make_index(sample_df):
