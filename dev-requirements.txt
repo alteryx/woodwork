@@ -12,5 +12,6 @@ pygments==2.8.1
 jupyter==1.0.0
 pandoc==1.0.2
 ipykernel==5.3.4
+MarkupSafe==1.1.1
 -r dask-requirements.txt
 -r koalas-requirements.txt

@@ -28,6 +28,7 @@ Future Release
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
         * Update accessors to store weak reference to data (:pr:`894`)
     * Documentation Changes
+        * Pin MarkupSafe version to fix docs build issue (:pr:`911`)
     * Testing Changes
         * Use Minimum Dependency Generator GitHub Action and remove tools folder (:pr:`897`)
 
