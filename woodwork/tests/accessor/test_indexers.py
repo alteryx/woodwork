@@ -84,7 +84,7 @@ def test_iloc_column(sample_series):
 
     sliced = series.ww.iloc[2:]
     assert sliced.name == "sample_series"
-    assert sliced.ww.logical_type == logical_type
+    assert isinstance(sliced.ww.logical_type, logical_type)
     assert sliced.ww.semantic_tags == {'category', 'tag1', 'tag2'}
     assert sliced.ww.description == description
     assert sliced.ww.metadata == metadata
@@ -96,7 +96,7 @@ def test_iloc_column(sample_series):
     series.ww.init(use_standard_tags=False)
     sliced = series.ww.iloc[:]
     assert sliced.name
-    assert sliced.ww.logical_type == logical_type
+    assert isinstance(sliced.ww.logical_type, logical_type)
     assert sliced.ww.semantic_tags == set()
 
 
@@ -235,7 +235,7 @@ def test_iloc_dimensionality(sample_df):
     assert sliced_series_row.name == 1
 
     sliced_series_col = sample_df.ww.iloc[:, 1]
-    assert sliced_series_col.ww.logical_type == Categorical
+    assert isinstance(sliced_series_col.ww.logical_type, Categorical)
     assert sliced_series_col.ww.semantic_tags == {'tag1', 'category'}
     assert sliced_series_col.ww.name == 'full_name'
 
