@@ -688,6 +688,10 @@ def test_concat_rows_with_ww_indexes(sample_df):
         with pytest.raises(IndexError, match=error):
             concat([sample_df, copy_df], axis=0)
 
+        # Without schema validation this does not get caught
+        combined_df = concat([sample_df, copy_df], axis=0, validate_schema=False)
+        assert combined_df.ww.index == 'id'
+
     sample_df.ww.init(time_index='signup_date')
     original_schema = sample_df.ww.schema
     copy_df = sample_df.ww.copy()
@@ -699,21 +703,21 @@ def test_concat_rows_with_ww_indexes(sample_df):
     assert combined_df.ww.schema == original_schema
 
 
-def test_concat_cols_with_different_underlying_index_dtypes(sample_df):
-    # --> this is very different for the diff dataframe types unless we catch the error ourselves
-    df1 = sample_df[['id', 'signup_date']]
-    df1.ww.init()
-    df2 = sample_df[['full_name', 'age']].set_index('full_name', drop=False)
-    df2.index.name = None
-    df2.ww.init()
+# def test_concat_cols_with_different_underlying_index_dtypes(sample_df):
+#     # --> this is very different for the diff dataframe types unless we catch the error ourselves
+#     df1 = sample_df[['id', 'signup_date']]
+#     df1.ww.init()
+#     df2 = sample_df[['full_name', 'age']].set_index('full_name', drop=False)
+#     df2.index.name = None
+#     df2.ww.init()
 
-    assert df1.index.dtype == 'int64'
-    assert str(df2.index.dtype) == 'object'
+#     assert df1.index.dtype == 'int64'
+#     assert str(df2.index.dtype) == 'object'
 
-    error = 'Index column must be unique'
-    with pytest.raises(IndexError, match=error):
-        # --> might be better to have a different, more specialized error here??
-        concat([df1, df2])
+#     error = 'Index column must be unique'
+#     with pytest.raises(IndexError, match=error):
+#         # --> might be better to have a different, more specialized error here??
+#         concat([df1, df2])
 
 
 def test_concat_table_names(sample_df):
@@ -731,11 +735,15 @@ def test_concat_table_names(sample_df):
     assert combined_df.ww.name == '2_1_0'
 
 
-def test_concat_table_order(sample_df):
+def test_concat_cols_table_order(sample_df):
     pass
 
 
-def test_different_use_standard_tags(sample_df):
+def test_concat_rows_table_order(sample_df):
+    pass
+
+
+def test_concat_cols_different_use_standard_tags(sample_df):
     sample_df.ww.init(use_standard_tags={'age': False, 'full_name': False, 'id': True},
                       logical_types={'full_name': 'Categorical'})
 
@@ -751,6 +759,17 @@ def test_different_use_standard_tags(sample_df):
     assert combined_df.ww.semantic_tags['id'] == {'numeric'}
     assert combined_df.ww.semantic_tags['full_name'] == set()
     assert combined_df.ww.semantic_tags['age'] == set()
+
+
+def test_concat_rows_different_schema(sample_df):
+    pass
+    # A table with the same column names will be valid but ltypes or use_Standard_tags
+    # or semantic tags can be different but it'll only take from thefirst table
+
+
+def test_concat_rows_different_columns(sample_df):
+    pass
+    # should work if dtypes dont change
 
 
 def test_concat_combine_metadatas(sample_df):
@@ -775,3 +794,57 @@ def test_concat_combine_metadatas(sample_df):
                                          'test_key': 'test_val2'}
     assert combined_df_2.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
     assert combined_df_2.ww.columns['age'].metadata == {'interesting_values': [33]}
+
+
+@patch("woodwork.table_accessor._validate_accessor_params")
+def test_concat_rows_validate_schema(mock_validate_accessor_params, sample_df):
+    sample_df.ww.init(validate=False)
+    original_schema = sample_df.ww.schema
+    copy_df = sample_df.ww.copy()
+
+    assert not mock_validate_accessor_params.called
+
+    concat([sample_df, copy_df], axis=0, validate_schema=False)
+
+    assert not mock_validate_accessor_params.called
+
+    concat([sample_df, copy_df], axis=0, validate_schema=True)
+
+    assert mock_validate_accessor_params.called
+
+
+def test_concat_cols_mismatched_index_adds_nans(sample_df):
+    sample_df.ww.init(index='id')
+
+    df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
+    df2 = sample_df.ww.loc[[1, 2, 3], ['id', 'email']]
+
+    if isinstance(sample_df, pd.DataFrame):
+        # Only pandas shows the dtype change because Dask and Koalas won't show until compute
+        error = "Error converting datatype for id from type float64 to type int64. Please confirm the underlying data is consistent with logical type Integer."
+        with pytest.raises(ww.exceptions.TypeConversionError, match=error):
+            concat([df1, df2])
+
+    # If the dtype can handle nans, it won't change
+    sample_df.ww.init(index='id', logical_types={'id': 'IntegerNullable'})
+
+    df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
+    df2 = sample_df.ww.loc[[1, 2, 3], ['id', 'email']]
+
+    combined_df = concat([df1, df2])
+    assert len(combined_df) == 4
+
+
+def test_concat_cols_duplicates(sample_df):
+    df1 = sample_df[['id', 'full_name', 'age']]
+    df2 = sample_df[['id', 'email', 'signup_date']]
+
+    # different error for Koalas because it gets caught at concat
+    if ks and isinstance(sample_df, ks.DataFrame):
+        error_type = ValueError
+        error = re.escape("Labels have to be unique; however, got duplicated labels ['id'].")
+    else:
+        error_type = IndexError
+        error = 'Dataframe cannot contain duplicate columns names'
+    with pytest.raises(error_type, match=error):
+        concat([df1, df2])

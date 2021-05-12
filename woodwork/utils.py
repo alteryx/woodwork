@@ -300,7 +300,7 @@ def _parse_logical_type(logical_type, name):
         raise TypeError(f"Invalid logical type specified for '{name}'")
 
 
-def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False):
+def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True):
     # Validate input parameters
     # Initialize woodwork on any objs that don't have schemas
     table_name = ''
@@ -414,6 +414,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=False
                         table_metadata=table_metadata or None,
                         column_metadata=col_metadata,
                         column_descriptions=col_descriptions,
-                        use_standard_tags=use_standard_tags)
+                        use_standard_tags=use_standard_tags,
+                        validate=validate_schema)
     # --> make sure the order of columns matches
     return combined_df
