@@ -29,19 +29,19 @@ jobs:
           python-version: 3.7
       - name: Install woodwork - minimum tests requirements
         run: |
-          python -m pip install -r woodwork/tests/minimum_test_requirements.txt
+          python -m pip install -r woodwork/tests/requirement_files/minimum_test_requirements.txt
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install woodwork - minimum koalas, core requirements
         run: |
-          python -m pip install -r woodwork/tests/minimum_koalas_requirements.txt
+          python -m pip install -r woodwork/tests/requirement_files/minimum_koalas_requirements.txt
       - if: ${{ matrix.libraries == 'dask' }}
         name: Install woodwork - minimum dask, core requirements
         run: |
-          python -m pip install -r woodwork/tests/minimum_dask_requirements.txt
+          python -m pip install -r woodwork/tests/requirement_files/minimum_dask_requirements.txt
       - if: ${{ matrix.libraries == 'core' }}
         name: Install woodwork - minimum core requirements
         run: |
-          python -m pip install -r woodwork/tests/minimum_core_requirements.txt
+          python -m pip install -r woodwork/tests/requirement_files/minimum_core_requirements.txt
       - name: Run unit tests without code coverage
         run: |
           python -m pytest woodwork/ -n 2
