@@ -43,7 +43,7 @@ def test_integer_inference(integers):
     for series in integers:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Integer
+            assert isinstance(inferred_type, Integer)
 
 
 def test_double_inference(doubles):
@@ -54,7 +54,7 @@ def test_double_inference(doubles):
     for series in doubles:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Double
+            assert isinstance(inferred_type, Double)
 
 
 def test_boolean_inference(bools):
@@ -65,9 +65,9 @@ def test_boolean_inference(bools):
             cast_series = series.astype(dtype)
             inferred_type = ww.type_system.infer_logical_type(cast_series)
             if to_pandas(cast_series).isnull().any():
-                assert inferred_type == BooleanNullable
+                assert isinstance(inferred_type, BooleanNullable)
             else:
-                assert inferred_type == Boolean
+                assert isinstance(inferred_type, Boolean)
 
 
 def test_datetime_inference(datetimes):
@@ -78,7 +78,7 @@ def test_datetime_inference(datetimes):
     for series in datetimes:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Datetime
+            assert isinstance(inferred_type, Datetime)
 
 
 def test_categorical_inference(categories):
@@ -88,7 +88,7 @@ def test_categorical_inference(categories):
     for series in categories:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Categorical
+            assert isinstance(inferred_type, Categorical)
 
 
 def test_categorical_integers_inference(integers):
@@ -99,7 +99,7 @@ def test_categorical_integers_inference(integers):
     for series in integers:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Categorical
+            assert isinstance(inferred_type, Categorical)
     ww.config.reset_option('numeric_categorical_threshold')
 
 
@@ -111,7 +111,7 @@ def test_categorical_double_inference(doubles):
     for series in doubles:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Categorical
+            assert isinstance(inferred_type, Categorical)
     ww.config.reset_option('numeric_categorical_threshold')
 
 
@@ -120,7 +120,7 @@ def test_timedelta_inference(timedeltas):
     for series in timedeltas:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Timedelta
+            assert isinstance(inferred_type, Timedelta)
 
 
 def test_natural_language_inference(strings):
@@ -131,7 +131,7 @@ def test_natural_language_inference(strings):
     for series in strings:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert inferred_type == NaturalLanguage
+            assert isinstance(inferred_type, NaturalLanguage)
 
 
 def test_natural_language_inference_with_threshhold(long_strings):
@@ -142,9 +142,9 @@ def test_natural_language_inference_with_threshhold(long_strings):
     ww.config.set_option('natural_language_threshold', 19)
     for dtype in dtypes:
         inferred_type = ww.type_system.infer_logical_type(long_strings[0].astype(dtype))
-        assert inferred_type == NaturalLanguage
+        assert isinstance(inferred_type, NaturalLanguage)
         inferred_type = ww.type_system.infer_logical_type(long_strings[1].astype(dtype))
-        assert inferred_type == Categorical
+        assert isinstance(inferred_type, Categorical)
     ww.config.reset_option('natural_language_threshold')
 
 
@@ -157,7 +157,7 @@ def test_pdna_inference(pdnas):
 
     for index, series in enumerate(pdnas):
         inferred_type = ww.type_system.infer_logical_type(series)
-        assert inferred_type == expected_logical_types[index]
+        assert isinstance(inferred_type, expected_logical_types[index])
 
 
 def test_updated_ltype_inference(integers, type_sys):
@@ -176,5 +176,5 @@ def test_updated_ltype_inference(integers, type_sys):
     for series in integers:
         for dtype in dtypes:
             inferred_type = type_sys.infer_logical_type(series.astype(dtype))
-            assert inferred_type == Integer
+            assert isinstance(inferred_type, Integer)
             assert inferred_type.primary_dtype == 'string'
