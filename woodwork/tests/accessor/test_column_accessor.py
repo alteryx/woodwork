@@ -507,7 +507,7 @@ def test_series_getattr_errors(sample_series):
 
 
 def test_ordinal_requires_instance_on_init(sample_series):
-    error_msg = 'Must use an Ordinal instance with order values defined'
+    error_msg = "missing 1 required positional argument: 'order'"
     with pytest.raises(TypeError, match=error_msg):
         sample_series.ww.init(logical_type=Ordinal)
     with pytest.raises(TypeError, match=error_msg):
@@ -517,7 +517,7 @@ def test_ordinal_requires_instance_on_init(sample_series):
 def test_ordinal_requires_instance_on_update(sample_series):
     sample_series.ww.init(logical_type="Categorical")
 
-    error_msg = 'Must use an Ordinal instance with order values defined'
+    error_msg = "missing 1 required positional argument: 'order'"
     with pytest.raises(TypeError, match=error_msg):
         sample_series.ww.set_logical_type(Ordinal)
     with pytest.raises(TypeError, match=error_msg):
