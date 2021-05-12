@@ -12,7 +12,7 @@ Future Release
         * Remove command line functions for list logical and semantic tags (:pr:`891`)
         * Keep index and time index tags for single column when selecting from a table (:pr:`888`)
     * Documentation Changes
-        * Pin MarkupSafe version to fix docs build issue (:pr:`911`)
+        * Update nbsphinx version to fix docs build issue (:pr:`911`, :pr:`913`)
     * Testing Changes
         * Use Minimum Dependency Generator GitHub Action and remove tools folder (:pr:`897`)
         * Move all latest and minimum dependencies into 1 folder (:pr:`912`)
