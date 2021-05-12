@@ -19,6 +19,7 @@ from woodwork.logical_types import (
     Double,
     Integer,
     IntegerNullable,
+    NaturalLanguage,
     Ordinal,
     PostalCode,
     SubRegionCode
@@ -762,14 +763,35 @@ def test_concat_cols_different_use_standard_tags(sample_df):
 
 
 def test_concat_rows_different_schema(sample_df):
-    pass
-    # A table with the same column names will be valid but ltypes or use_Standard_tags
-    # or semantic tags can be different but it'll only take from thefirst table
+    df1 = sample_df.copy()
+    df1.ww.init(logical_types={'age': 'AgeNullable'})
+    df2 = sample_df.copy()
+    df2.ww.init(logical_types={'age': 'IntegerNullable'})
+    df3 = sample_df.copy()
+    df3.ww.init(logical_types={'age': 'NaturalLanguage'})
+
+    assert df2.ww.schema != df1.ww.schema
+
+    combined_df_1 = concat([df1, df2], axis=0)
+    combined_df_1.ww.logical_types['age'] == AgeNullable
+
+    combined_df_2 = concat([df2, df1], axis=0)
+    combined_df_2.ww.logical_types['age'] == IntegerNullable
+
+    combined_df_3 = concat([df3, df2], axis=0)
+    combined_df_3.ww.logical_types['age'] == NaturalLanguage
+    assert str(combined_df_3['age'].dtype) == 'string'
 
 
 def test_concat_rows_different_columns(sample_df):
-    pass
+    sample_df.ww.init(time_index='signup_date')
+    df1 = sample_df.ww[['id', 'signup_date', 'full_name', 'email']]
+    df2 = sample_df.ww[['id', 'signup_date', 'phone_number', 'age', 'is_registered']]
     # should work if dtypes dont change
+
+    combined_df = concat([df1, df2], axis=0)
+    assert combined_df.ww.schema == sample_df.ww.schema
+    assert to_pandas(combined_df).equals(pd.concat([to_pandas(df1), to_pandas(df2)]))
 
 
 def test_concat_combine_metadatas(sample_df):
@@ -848,3 +870,7 @@ def test_concat_cols_duplicates(sample_df):
         error = 'Dataframe cannot contain duplicate columns names'
     with pytest.raises(error_type, match=error):
         concat([df1, df2])
+
+
+def test_concat_cols_join(sample_df):
+    pass
