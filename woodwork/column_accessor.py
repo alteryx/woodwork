@@ -265,7 +265,7 @@ class WoodworkColumnAccessor:
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
-        elif logical_type == LatLong:
+        elif isinstance(logical_type, LatLong):
             if not _is_valid_latlong_series(self._series):
                 raise ValueError("Cannot initialize Woodwork. Series does not contain properly formatted "
                                  "LatLong data. Try reformatting before initializing or use the "
