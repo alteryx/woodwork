@@ -355,11 +355,14 @@ class Ordinal(LogicalType):
     backup_dtype = 'string'
     standard_tags = {'category'}
 
-    def __init__(self, order):
-        if not isinstance(order, (list, tuple)):
+    def __init__(self, order=None):
+        if order is None:
+            raise TypeError("Must use an Ordinal instance with order values defined")
+        elif not isinstance(order, (list, tuple)):
             raise TypeError("Order values must be specified in a list or tuple")
         if len(order) != len(set(order)):
             raise ValueError("Order values cannot contain duplicates")
+
         self.order = order
 
     def _validate_data(self, series):

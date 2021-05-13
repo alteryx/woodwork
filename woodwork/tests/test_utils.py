@@ -556,7 +556,7 @@ def test_parse_logical_type():
 
 
 def test_parse_logical_type_errors():
-    error = "missing 1 required positional argument: 'order'"
+    error = "Must use an Ordinal instance with order values defined"
     with pytest.raises(TypeError, match=error):
         _parse_logical_type('Ordinal', 'col_name')
 
