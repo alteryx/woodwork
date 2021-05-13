@@ -5,7 +5,7 @@ Release Notes
 Future Release
   ==============
     * Enhancements
-        * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`9161)
+        * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
     * Fixes
     * Changes
     * Documentation Changes

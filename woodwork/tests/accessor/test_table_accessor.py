@@ -1679,7 +1679,7 @@ def test_select_instantiated_ltype():
 
 def test_select_return_schema(sample_df):
     sample_df.ww.init()
-    
+
     # Multiple column matches
     df_schema = sample_df.ww.select(include='NaturalLanguage', return_schema=True)
     assert isinstance(df_schema, TableSchema)
@@ -1691,7 +1691,7 @@ def test_select_return_schema(sample_df):
     assert isinstance(single_schema, TableSchema)
     assert len(single_schema.columns) == 1
     assert single_schema == sample_df.ww.select(include='BooleanNullable').ww.schema
-    
+
     # No matches
     empty_schema = sample_df.ww.select(include='Double', return_schema=True)
     assert isinstance(empty_schema, TableSchema)
