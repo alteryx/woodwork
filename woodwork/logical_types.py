@@ -182,7 +182,7 @@ class Datetime(LogicalType):
                 series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
             else:
                 series = pd.to_datetime(series, format=self.datetime_format)
-        return series
+        return super().transform(series)
 
 
 class Double(LogicalType):
