@@ -61,18 +61,6 @@ def _is_dataframe(data):
     return False
 
 
-def _get_valid_dtype(series_type, logical_type):
-    """Return the dtype that is considered valid for a series
-    with the given logical_type"""
-    backup_dtype = logical_type.backup_dtype
-    if ks and series_type == ks.Series and backup_dtype:
-        valid_dtype = backup_dtype
-    else:
-        valid_dtype = logical_type.primary_dtype
-
-    return valid_dtype
-
-
 def get_invalid_schema_message(dataframe, schema):
     """Return a message indicating the reason that the provided schema cannot be used to
     initialize Woodwork on the dataframe. If the schema is valid for the dataframe,
@@ -98,7 +86,7 @@ def get_invalid_schema_message(dataframe, schema):
             f'{schema_cols_not_in_df}'
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
-        valid_dtype = _get_valid_dtype(type(dataframe[name]), schema.logical_types[name])
+        valid_dtype = schema.logical_types[name]._get_valid_dtype(type(dataframe[name]))
         if str(df_dtype) != valid_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
                 f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'

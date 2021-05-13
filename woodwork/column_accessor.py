@@ -4,7 +4,7 @@ import weakref
 
 import pandas as pd
 
-from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
+from woodwork.accessor_utils import _is_series, init_series
 from woodwork.column_schema import (
     ColumnSchema,
     _validate_description,
@@ -242,7 +242,7 @@ class WoodworkColumnAccessor:
 
                 # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
-                    valid_dtype = _get_valid_dtype(type(result), self._schema.logical_type)
+                    valid_dtype = self._schema.logical_type._get_valid_dtype(type(result))
                     if str(result.dtype) == valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
                     else:
@@ -261,7 +261,7 @@ class WoodworkColumnAccessor:
     def _validate_logical_type(self, logical_type):
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
-        valid_dtype = _get_valid_dtype(type(self._series), logical_type)
+        valid_dtype = logical_type._get_valid_dtype(type(self._series))
         if valid_dtype != str(self._series.dtype):
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
@@ -350,7 +350,7 @@ def _validate_schema(schema, series):
     if not isinstance(schema, ColumnSchema):
         raise TypeError('Provided schema must be a Woodwork.ColumnSchema object.')
 
-    valid_dtype = _get_valid_dtype(type(series), schema.logical_type)
+    valid_dtype = schema.logical_type._get_valid_dtype(type(series))
     if str(series.dtype) != valid_dtype:
         raise ValueError(f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}")
 

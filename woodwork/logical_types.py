@@ -1,6 +1,5 @@
 import pandas as pd
 
-from woodwork.accessor_utils import _get_valid_dtype
 from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none
@@ -35,8 +34,16 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def __str__(self):
         return str(self.__class__)
 
+    @classmethod
+    def _get_valid_dtype(cls, series_type):
+        """Return the dtype that is considered valid for a series with the given logical_type"""
+        if ks and series_type == ks.Series and cls.backup_dtype:
+            return cls.backup_dtype
+        else:
+            return cls.primary_dtype
+
     def transform(self, series):
-        new_dtype = _get_valid_dtype(type(series), self)
+        new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             # Update the underlying series
             error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
@@ -172,7 +179,7 @@ class Datetime(LogicalType):
         self.datetime_format = datetime_format
 
     def transform(self, series):
-        new_dtype = _get_valid_dtype(type(series), self)
+        new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             if dd and isinstance(series, dd.Series):
                 name = series.name

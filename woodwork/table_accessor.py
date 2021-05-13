@@ -6,7 +6,6 @@ import pandas as pd
 
 import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
-    _get_valid_dtype,
     _is_dataframe,
     get_invalid_schema_message,
     init_series
@@ -315,7 +314,7 @@ class WoodworkTableAccessor:
         """A dictionary containing physical types for each column"""
         if self._schema is None:
             _raise_init_error()
-        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+        return {col_name: self._schema.logical_types[col_name]._get_valid_dtype(type(self._dataframe[col_name])) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
