@@ -419,7 +419,7 @@ class WoodworkTableAccessor:
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
-    def select(self, include=None, exclude=None):
+    def select(self, include=None, exclude=None, return_schema=False):
         """Create a DataFrame with Woodwork typing information initialized
         that includes only columns whose Logical Type and semantic tags match
         conditions specified in the list of types and tags to include or exclude.
@@ -433,6 +433,8 @@ class WoodworkTableAccessor:
                 types, semantic tags to include in the DataFrame.
             exclude (str or LogicalType or list[str or LogicalType]): Logical
                 types, semantic tags to exclude from the DataFrame.
+            return_schema (boolen): If True, return only the schema for the
+                matching columns. Defaults to False
 
         Returns:
             DataFrame: The subset of the original DataFrame that matches the
@@ -447,6 +449,9 @@ class WoodworkTableAccessor:
             raise ValueError("Must specify values for either 'include' or 'exclude'.")
 
         cols_to_include = self._schema._filter_cols(include, exclude)
+
+        if return_schema:
+            return self._schema._get_subset_schema(cols_to_include)
         return self._get_subset_df_with_schema(cols_to_include)
 
     def add_semantic_tags(self, semantic_tags):

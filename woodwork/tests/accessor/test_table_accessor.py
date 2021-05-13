@@ -1681,6 +1681,27 @@ def test_select_instantiated_ltype():
         df.ww.select(ymd_format)
 
 
+def test_select_return_schema(sample_df):
+    sample_df.ww.init()
+
+    # Multiple column matches
+    df_schema = sample_df.ww.select(include='NaturalLanguage', return_schema=True)
+    assert isinstance(df_schema, TableSchema)
+    assert len(df_schema.columns) == 3
+    assert df_schema == sample_df.ww.select(include='NaturalLanguage').ww.schema
+
+    # Single column match
+    single_schema = sample_df.ww.select(include='BooleanNullable', return_schema=True)
+    assert isinstance(single_schema, TableSchema)
+    assert len(single_schema.columns) == 1
+    assert single_schema == sample_df.ww.select(include='BooleanNullable').ww.schema
+
+    # No matches
+    empty_schema = sample_df.ww.select(include='Double', return_schema=True)
+    assert isinstance(empty_schema, TableSchema)
+    assert len(empty_schema.columns) == 0
+
+
 def test_select_include_and_exclude_error(sample_df):
     sample_df.ww.init()
     err_msg = "Cannot specify values for both 'include' and 'exclude' in a single call."
