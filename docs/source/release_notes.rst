@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
+Future Release
   ==============
     * Enhancements
+        * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`9161)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 
 v0.3.1 May 12, 2021
