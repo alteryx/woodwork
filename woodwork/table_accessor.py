@@ -611,7 +611,7 @@ class WoodworkTableAccessor:
         # Directly return non-callable DataFrame attributes
         return dataframe_attr
 
-    def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True):
+    def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True, in_place=False):
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order."""
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
@@ -622,6 +622,11 @@ class WoodworkTableAccessor:
             cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
+        if in_place:
+            cols_to_drop = [col_name for col_name in self._dataframe.columns if col_name not in cols_to_include]
+            self._dataframe.drop(cols_to_drop, axis='columns', inplace=True)
+            self.init(schema=new_schema, validate=False)
+            return
         new_df = self._dataframe[cols_to_include]
         new_df.ww.init(schema=new_schema, validate=False)
 
@@ -651,7 +656,7 @@ class WoodworkTableAccessor:
 
         return series
 
-    def drop(self, columns):
+    def drop(self, columns, in_place=False):
         """Drop specified columns from a DataFrame.
 
         Args:
@@ -665,6 +670,7 @@ class WoodworkTableAccessor:
             DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
             instead of calling ``DataFrame.ww.drop``.
         """
+        print('edited properly')
         if self._schema is None:
             _raise_init_error()
         if not isinstance(columns, (list, set)):
@@ -674,7 +680,7 @@ class WoodworkTableAccessor:
         if not_present:
             raise ColumnNotPresentError(not_present)
 
-        return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns])
+        return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns], in_place=in_place)
 
     def rename(self, columns):
         """Renames columns in a DataFrame, maintaining Woodwork typing information.

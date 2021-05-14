@@ -1861,6 +1861,17 @@ def test_accessor_drop(sample_df):
     assert single_input_df.ww.schema == list_input_df.ww.schema
     assert to_pandas(single_input_df).equals(to_pandas(list_input_df))
 
+    if not (dd and isinstance(sample_df, dd.DataFrame) or (ks and isinstance(sample_df, ks.DataFrame))):
+        inplace_df = schema_df.copy()
+        inplace_df.ww.init()
+        inplace_df.ww.drop(['is_registered'], in_place=True)
+        assert len(inplace_df.ww.columns) == (len(schema_df.columns) - 1)
+        assert 'is_registered' not in inplace_df.ww.columns
+        assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(inplace_df))
+        # should be equal to the single input example above
+        assert single_input_df.ww.schema == inplace_df.ww.schema
+        assert to_pandas(single_input_df).equals(to_pandas(inplace_df))
+
     multiple_list_df = schema_df.ww.drop(['age', 'full_name', 'is_registered'])
     assert len(multiple_list_df.ww.columns) == (len(schema_df.columns) - 3)
     assert 'is_registered' not in multiple_list_df.ww.columns
