@@ -43,6 +43,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
             return cls.primary_dtype
 
     def transform(self, series):
+        """Converts the series dtype to match the logical type's if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             # Update the underlying series
@@ -179,6 +180,7 @@ class Datetime(LogicalType):
         self.datetime_format = datetime_format
 
     def transform(self, series):
+        """Converts the series data to a formatted datetime."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             if dd and isinstance(series, dd.Series):
@@ -314,7 +316,7 @@ class LatLong(LogicalType):
     primary_dtype = 'object'
 
     def transform(self, series):
-        # Reformat LatLong columns to be a length two tuple (or list for Koalas) of floats
+        """Formats a series to be a tuple (or list for Koalas) of two floats."""
         if dd and isinstance(series, dd.Series):
             name = series.name
             meta = (series, tuple([float, float]))
@@ -383,6 +385,7 @@ class Ordinal(LogicalType):
                 raise ValueError(error_msg)
 
     def transform(self, series):
+        """Validates the series and converts the dtype to match the logical type's if it is different."""
         self._validate_data(series)
         return super().transform(series)
 
