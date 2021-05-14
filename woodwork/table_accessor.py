@@ -671,7 +671,6 @@ class WoodworkTableAccessor:
             DataFrame directly and then reinitialize Woodwork with ``DataFrame.ww.init``
             instead of calling ``DataFrame.ww.drop``.
         """
-        print('edited properly')
         if self._schema is None:
             _raise_init_error()
         if not isinstance(columns, (list, set)):
