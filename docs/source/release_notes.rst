@@ -12,6 +12,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Update when minimum unit tests will run to include minimum text files (:pr:`917`)
+        * Create separate worksflows for each CI job (:pr:`919`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`
