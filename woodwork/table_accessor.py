@@ -683,9 +683,9 @@ class WoodworkTableAccessor:
 
         if inplace:
             if dd and isinstance(self._dataframe, dd.DataFrame):
-                raise ValueError('Inplace renaming not supported for Dask')
+                raise ValueError('Drop inplace not supported for Dask')
             if ks and isinstance(self._dataframe, ks.DataFrame):
-                raise ValueError('Inplace renaming not supported for Koalas')
+                raise ValueError('Drop inplace not supported for Koalas')
         return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns], inplace=inplace)
 
     def rename(self, columns, inplace=False):
@@ -704,9 +704,9 @@ class WoodworkTableAccessor:
         new_schema = self._schema.rename(columns)
         if inplace:
             if dd and isinstance(self._dataframe, dd.DataFrame):
-                raise ValueError('Inplace renaming not supported for Dask')
+                raise ValueError('Rename inplace not supported for Dask')
             if ks and isinstance(self._dataframe, ks.DataFrame):
-                raise ValueError('Inplace renaming not supported for Koalas')
+                raise ValueError('Rename inplace not supported for Koalas')
             self._dataframe.rename(columns=columns, inplace=True)
             self.init(schema=new_schema)
             return

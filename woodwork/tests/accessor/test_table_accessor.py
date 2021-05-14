@@ -1861,13 +1861,21 @@ def test_accessor_drop(sample_df):
     assert single_input_df.ww.schema == list_input_df.ww.schema
     assert to_pandas(single_input_df).equals(to_pandas(list_input_df))
 
+    inplace_df = schema_df.copy()
+    inplace_df.ww.init()
     if isinstance(sample_df, pd.DataFrame):
-        inplace_df = schema_df.copy()
-        inplace_df.ww.init()
         inplace_df.ww.drop(['is_registered'], inplace=True)
         assert len(inplace_df.ww.columns) == (len(schema_df.columns) - 1)
         assert 'is_registered' not in inplace_df.ww.columns
         assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(inplace_df))
+    if dd and isinstance(sample_df, dd.DataFrame):
+        error = 'Drop inplace not supported for Dask'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.drop(['is_registered'], inplace=True)
+    if ks and isinstance(sample_df, ks.DataFrame):
+        error = 'Drop inplace not supported for Koalas'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.drop(['is_registered'], inplace=True)
 
     multiple_list_df = schema_df.ww.drop(['age', 'full_name', 'is_registered'])
     assert len(multiple_list_df.ww.columns) == (len(schema_df.columns) - 3)
@@ -1960,10 +1968,18 @@ def test_accessor_rename(sample_df):
     assert sample_df.ww.schema == original_df.ww.schema
     assert_underlying_data_same(new_df, original_df)
 
+    inplace_df = sample_df.ww.copy()
     if isinstance(sample_df, pd.DataFrame):
-        inplace_df = sample_df.ww.copy()
         inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
         assert_underlying_data_same(inplace_df, original_df)
+    if dd and isinstance(sample_df, dd.DataFrame):
+        error = 'Rename inplace not supported for Dask'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
+    if ks and isinstance(sample_df, ks.DataFrame):
+        error = 'Rename inplace not supported for Koalas'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
 
 
 def test_accessor_rename_indices(sample_df):
