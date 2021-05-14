@@ -661,6 +661,7 @@ class WoodworkTableAccessor:
 
         Args:
             columns (str or list[str]): Column name or names to drop. Must be present in the DataFrame.
+            inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
             DataFrame: DataFrame with the specified columns removed, maintaining Woodwork typing information.
@@ -692,6 +693,7 @@ class WoodworkTableAccessor:
 
         Args:
             columns (dict[str -> str]): A dictionary mapping current column names to new column names.
+            inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
             DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
