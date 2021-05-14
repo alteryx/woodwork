@@ -14,7 +14,7 @@ Future Release
         * Update when minimum unit tests will run to include minimum text files (:pr:`917`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 
 v0.3.1 May 12, 2021
