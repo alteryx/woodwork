@@ -614,6 +614,12 @@ class WoodworkTableAccessor:
     def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True, inplace=False):
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order."""
+        if inplace:
+            if dd and isinstance(self._dataframe, dd.DataFrame):
+                raise ValueError('Drop inplace not supported for Dask')
+            if ks and isinstance(self._dataframe, ks.DataFrame):
+                raise ValueError('Drop inplace not supported for Koalas')
+
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
         if use_dataframe_order:
@@ -664,7 +670,7 @@ class WoodworkTableAccessor:
             inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
-            DataFrame: DataFrame with the specified columns removed, maintaining Woodwork typing information.
+            DataFrame or None: DataFrame with the specified columns removed, maintaining Woodwork typing information or None if inplace=True.
 
         Note:
             This method is used for removing columns only. To remove rows with ``drop``, go through the
@@ -679,12 +685,6 @@ class WoodworkTableAccessor:
         not_present = [col for col in columns if col not in self._dataframe.columns]
         if not_present:
             raise ColumnNotPresentError(not_present)
-
-        if inplace:
-            if dd and isinstance(self._dataframe, dd.DataFrame):
-                raise ValueError('Drop inplace not supported for Dask')
-            if ks and isinstance(self._dataframe, ks.DataFrame):
-                raise ValueError('Drop inplace not supported for Koalas')
         return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns], inplace=inplace)
 
     def rename(self, columns, inplace=False):
@@ -695,7 +695,7 @@ class WoodworkTableAccessor:
             inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
-            DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
+            DataFrame or None: DataFrame with the specified columns renamed, maintaining Woodwork typing information or None if inplace=True.
         """
         if self._schema is None:
             _raise_init_error()
