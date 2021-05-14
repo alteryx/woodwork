@@ -1,0 +1,35 @@
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+name: Lint Check
+jobs:
+  lint_test:
+    name: ${{ matrix.python_version }} lint test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.7", "3.8", "3.9"]
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Install woodwork with dev, test, and optional requirements
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dask]
+          python -m pip install -e .[koalas]
+          python -m pip install -r dev-requirements.txt
+          python -m pip install -r test-requirements.txt
+      - name: Run lint test
+        run: make lint
