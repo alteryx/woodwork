@@ -12,10 +12,11 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update when minimum unit tests will run to include minimum text files (:pr:`917`)
+        * Create separate worksflows for each CI job (:pr:`919`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`tuethan1999`
-
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 v0.3.1 May 12, 2021
 ===================

@@ -7,61 +7,6 @@ on:
 
 name: Unit Tests - Latest Dependencies
 jobs:
-  build_docs:
-    name: 3.7 build docs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Install woodwork with doc requirements
-        run: |
-          sudo apt update
-          sudo apt install -y pandoc
-          sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-          pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
-          python -m pip install -e .
-          python -m pip install -r dev-requirements.txt
-      - name: Build docs
-        run: |
-          make -C docs/ html
-          ls docs/build/html
-
-  lint_test:
-    name: ${{ matrix.python_version }} lint test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python_version: ["3.7", "3.8", "3.9"]
-    steps:
-      - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python_version }}
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Install woodwork with dev, test, and optional requirements
-        run: |
-          pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
-          python -m pip install -e .[dask]
-          python -m pip install -e .[koalas]
-          python -m pip install -r dev-requirements.txt
-          python -m pip install -r test-requirements.txt
-      - name: Run lint test
-        run: make lint
-
   unit_latest_tests:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
     runs-on: ubuntu-latest
