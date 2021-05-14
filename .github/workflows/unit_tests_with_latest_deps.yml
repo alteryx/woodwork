@@ -16,6 +16,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Get number of CPU cores
+        id: cpu_cores
         uses: SimenB/github-actions-cpu-cores@v1
       - name: run tests
-        run: echo ${{ steps.cpu-cores.outputs.count }}
+        run: echo ${{ steps.cpu_cores.outputs.count }}
+      - name: run tests
+        run: printf ${{ steps.cpu_cores.outputs.count }}
