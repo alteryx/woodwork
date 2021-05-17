@@ -137,6 +137,8 @@ def test_set_accessor_name(sample_df):
     error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
     with pytest.raises(WoodworkNotInitError, match=error):
         df.ww.name
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.name = 'name'
 
     df.ww.init()
 
