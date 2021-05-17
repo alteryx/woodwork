@@ -3,7 +3,6 @@ import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.logical_types import Datetime, Double, LatLong
-from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import get_valid_mi_types, import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -46,7 +45,7 @@ def _get_describe_dict(dataframe, include=None):
 
         # Any LatLong columns will be using lists, which we must convert
         # back to tuples so we can calculate the mode, which requires hashable values
-        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) == LatLong]
         df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
     else:
         df = dataframe
@@ -119,7 +118,7 @@ def _replace_nans_for_mutual_info(schema, data):
 
         if column.is_numeric or column.is_datetime:
             mean = series.mean()
-            if isinstance(mean, float) and not _get_ltype_class(column.logical_type) == Double:
+            if isinstance(mean, float) and not type(column.logical_type) == Double:
                 data[column_name] = series.astype('float')
             data[column_name] = series.fillna(mean)
         elif column.is_categorical or column.is_boolean:
@@ -184,7 +183,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         (perfect dependency).
         """
     valid_types = get_valid_mi_types()
-    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) in valid_types]
+    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) in valid_types]
 
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
