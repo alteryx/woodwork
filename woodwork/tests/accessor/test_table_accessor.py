@@ -132,6 +132,34 @@ def test_accessor_schema_property(sample_df):
     assert sample_df.ww._schema == sample_df.ww.schema
 
 
+def test_set_accessor_name(sample_df):
+    df = sample_df.copy()
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.name
+
+    df.ww.init()
+
+    assert df.ww.name is None
+
+    df.ww.name = 'name'
+
+    assert df.ww.schema.name == 'name'
+    assert df.ww.name == 'name'
+
+
+def test_name_persists_after_drop(sample_df):
+    df = sample_df.copy()
+    df.ww.init()
+
+    df.ww.name = 'name'
+    assert df.ww.name == 'name'
+
+    dropped_df = df.ww.drop(['id'])
+    assert dropped_df.ww.name == 'name'
+    assert dropped_df.ww.schema.name == 'name'
+
+
 def test_accessor_physical_types_property(sample_df):
     sample_df.ww.init(logical_types={'age': 'Categorical'})
 
