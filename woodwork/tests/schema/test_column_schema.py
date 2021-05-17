@@ -80,7 +80,7 @@ def test_validation_methods_called(mock_validate_logical_type, mock_validate_des
 def test_column_schema():
     column = ColumnSchema(logical_type=Integer, semantic_tags='test_tag')
 
-    assert column.logical_type == Integer
+    assert isinstance(column.logical_type, Integer)
     assert column.semantic_tags == {'test_tag'}
 
     assert column.description is None
@@ -112,7 +112,7 @@ def test_column_schema_null_params():
     assert just_tags.semantic_tags == {'numeric', 'time_index'}
 
     just_ltype = ColumnSchema(logical_type=Integer)
-    assert just_ltype.logical_type == Integer
+    assert isinstance(just_ltype.logical_type, Integer)
     assert just_ltype.semantic_tags == set()
 
     error = "Cannot use standard tags when logical_type is None"
@@ -379,9 +379,7 @@ def test_schema_equality():
     datetime_col_format = ColumnSchema(logical_type=datetime_ltype_instantiated)
     datetime_col_param = ColumnSchema(logical_type=Datetime(datetime_format=None))
     datetime_col_instantiated = ColumnSchema(logical_type=Datetime())
-    datetime_col = ColumnSchema(logical_type=Datetime)
 
-    assert datetime_col != datetime_col_instantiated
     assert datetime_col_instantiated != datetime_col_format
     assert datetime_col_instantiated == datetime_col_param
 
