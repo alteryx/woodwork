@@ -905,7 +905,28 @@ def test_concat_different_table_types(sample_df_pandas, sample_df_dask):
         concat([sample_df_dask, sample_df_pandas], axis=0)
 
 
-def test_concat_cols_join(sample_df):
+def test_concat_cols_inner_join(sample_df):
+    df1 = sample_df[['id', 'full_name', 'age']]
+    df2 = sample_df[['email', 'signup_date']]
+
+
+def test_concat_rows_inner_join(sample_df):
+    # --> broken because losing columns breaks the i
+    df1 = sample_df[['signup_date', 'email', 'age']]
+    df1.ww.init(time_index='signup_date')
+
+    df2 = sample_df[['id', 'email', 'signup_date', 'age']]
+    df2.ww.init(index='id', time_index='signup_date')
+
+    # If we lose a column in the inner join, we lose its typing information
+    inner_combined = concat([df1, df2], join='inner', axis=0)
+    assert set(inner_combined.columns) == {'email', 'age', 'signup_date'}
+    assert inner_combined.ww.index is None
+    assert inner_combined.ww.time_index == 'signup_date'
+
+
+def test_concat_inner_join_no_overlap(sample_df):
+    # --> test rows and cols
     pass
 
 

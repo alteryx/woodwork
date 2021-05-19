@@ -403,6 +403,23 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
 
     combined_df = lib.concat(objs, axis=axis, join=join)
 
+    # Inner joins can lose columns, invalidating the typing information we collected ahead of time
+    if join == 'inner':
+        combined_cols = set(combined_df.columns)
+        if time_index not in combined_cols:
+            time_index = None
+        if index not in combined_cols:
+            index = None
+
+        def filter_cols(typing_dict):
+            return {name: typing_val for name, typing_val in typing_dict.items() if name in combined_cols}
+
+        logical_types = filter_cols(logical_types)
+        semantic_tags = filter_cols(semantic_tags)
+        col_metadata = filter_cols(col_metadata)
+        col_descriptions = filter_cols(col_descriptions)
+        use_standard_tags = filter_cols(use_standard_tags)
+
     # Initialize Woodwork with all of the typing information from the input objs
     # performing type inference on any columns that did not already have Woodwork initialized
     combined_df.ww.init(name=table_name or None,
