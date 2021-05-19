@@ -592,10 +592,16 @@ def test_concat_cols_uninit_dfs(sample_df):
     df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
 
     combined_df = concat([df1, df2])
-    assert df1.ww.schema is not None
-    assert df2.ww.schema is not None
+    assert df1.ww.schema is None
+    assert df2.ww.schema is None
     assert combined_df.ww.schema is not None
 
+    # Though the input dataframes don't have Woodwork initalized,
+    # the concatenated DataFrame has Woodwork initialized for all the columns
+    assert combined_df.ww.logical_types['id'] == Integer
+
+    df1.ww.init()
+    df2.ww.init()
     pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
@@ -606,8 +612,11 @@ def test_concat_cols_combo_dfs(sample_df):
     df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
 
     combined_df = concat([df1, df2])
-    assert df1.ww.schema is not None
+    assert df1.ww.schema is None
+    assert combined_df.ww.logical_types['age'] == IntegerNullable
 
+    df1.ww.init()
+    df2.ww.init()
     pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
@@ -620,6 +629,9 @@ def test_concat_cols_with_series(sample_df):
 
     combined_df = concat([df, s1, s2])
 
+    df.ww.init()
+    s1.ww.init()
+    s2.ww.init()
     pandas_combined_df = pd.concat([to_pandas(df), to_pandas(s1), to_pandas(s2)], axis=1, join='outer', ignore_index=False)
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
@@ -734,14 +746,6 @@ def test_concat_table_names(sample_df):
 
     combined_df = concat([df3, df2, df1])
     assert combined_df.ww.name == '2_1_0'
-
-
-def test_concat_cols_table_order(sample_df):
-    pass
-
-
-def test_concat_rows_table_order(sample_df):
-    pass
 
 
 def test_concat_cols_different_use_standard_tags(sample_df):
@@ -871,5 +875,43 @@ def test_concat_cols_duplicates(sample_df):
         concat([df1, df2])
 
 
+def test_concat_axis_params(sample_df):
+    df1 = sample_df[['id', 'full_name', 'age']]
+    df2 = sample_df[['email', 'signup_date']]
+    df1.ww.init(logical_types={'id': 'IntegerNullable'})
+    df2.ww.init()
+
+    axis_0 = concat([df1, df2], axis=0)
+    axis_index = concat([df1, df2], axis='index')
+    assert axis_0.ww == axis_index.ww
+    assert to_pandas(axis_0).equals(to_pandas(axis_index))
+
+    axis_1 = concat([df1, df2], axis=1)
+    axis_columns = concat([df1, df2], axis='columns')
+    assert axis_1.ww == axis_columns.ww
+    assert to_pandas(axis_1).equals(to_pandas(axis_columns))
+
+    error = 'No axis named test'
+    with pytest.raises(ValueError, match=error):
+        concat([df1, df2], axis='test')
+
+
+def test_concat_different_table_types():
+    pass
+
+
 def test_concat_cols_join(sample_df):
+    pass
+
+
+def test_concat_cols_table_order(sample_df):
+    pass
+
+
+def test_concat_rows_table_order(sample_df):
+    pass
+
+
+def test_concat_all_series(sample_df):
+    # both rows and cols
     pass

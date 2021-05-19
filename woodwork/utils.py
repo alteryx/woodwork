@@ -300,9 +300,25 @@ def _parse_logical_type(logical_type, name):
         raise TypeError(f"Invalid logical type specified for '{name}'")
 
 
-def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True):
-    # Validate input parameters
-    # Initialize woodwork on any objs that don't have schemas
+def concat(objs, axis=1, join='outer', validate_schema=True):
+    """
+    Concatenate Woodwork objects along a particular axis.
+
+    Args:
+        objs (list[Series, DataFrame]): The Woodwork objects to be concatenated. If Woodwork
+            is not initialized on any of the objects, type inference will be performed.
+        axis ({0/’index’, 1/’columns’}, optional): The axis to concatenate along. Defaults to 1.
+        join ({'inner', 'outer'}, optiona): How to handle indexes on other axis. Defaults to 'outer'.
+        validate_schema (bool, optional): Whether validation should be performed on the typing information
+            for the concatenated DataFrame. Defaults to True.
+
+    Returns:
+        object, type of objs: When concatenating all Series along the index (axis=0), a Series is returned.
+            When objs contains at least one DataFrame, a DataFrame is returned.
+            When concatenating along the columns (axis=1), a DataFrame is returned.
+    """
+    # --> consider adding sort
+    # --> consider adding ignore index
     table_name = ''
     logical_types = {}
     semantic_tags = {}
@@ -311,17 +327,14 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
     table_metadata = {}
     use_standard_tags = {}
 
-    col_names_seen = set()
     index = None
     time_index = None
 
+    # Record the typing information for all the columns that have Woodwork schemas
+    col_names_seen = set()
     for obj in objs:
-        # Initialize Woodwork with no parameters if not already initalized
-        if obj.ww.schema is None:
-            obj.ww.init()
-
         # --> should these be deep copies or _schema????
-        # --> maybe it's better to implement a schema concat method????
+        ww_columns = {}
         if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
             # Keep the first occurance of a key in metadata
             table_metadata = {**obj.ww.metadata, **table_metadata}
@@ -332,6 +345,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
                     table_name += '_'
                 table_name += str(obj.ww.name)
 
+            # Handle table indexes
             if obj.ww.index is not None:
                 if index is None:
                     index = obj.ww.index
@@ -349,17 +363,18 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
                 elif axis and obj.ww.time_index == time_index:
                     # Remove the column from the dataframe to avoid duplicates columns
                     # --> this will remove it from the inputted data.... not great :/
-                    # --> maybe we dont remove but after concat we remove duplicates!!!
+                    # --> maybe we dont remove but after concat we remove duplicates!!! or select just the relevant cols
                     obj.ww.pop(time_index)
 
-            columns = obj.ww.schema.columns
-        else:
-            columns = {obj.name: obj.ww.schema}
+            ww_columns = obj.ww.schema.columns
+        elif isinstance(obj.ww.schema, ww.column_schema.ColumnSchema):
+            ww_columns = {obj.name: obj.ww.schema}
 
-        for name, col_schema in columns.items():
+        for name, col_schema in ww_columns.items():
+            # Do not look at typing information for duplicate columns.
+            # Means that index columns will only have first occurrance's typing information
             if name in col_names_seen:
                 # --> maybe raise a warning for these columns that their typing info is gonna get ignored??
-                # Do not look at typing information for duplicate columns
                 continue
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
@@ -370,6 +385,7 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
 
             col_names_seen.add(name)
 
+    # Perform concatenation with the correct library
     dd = import_or_none('dask.dataframe')
     ks = import_or_none('databricks.koalas')
 
@@ -379,10 +395,10 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
     elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
         lib = dd
 
-    combined_df = lib.concat(objs, axis=axis, join=join, ignore_index=ignore_index)
+    combined_df = lib.concat(objs, axis=axis, join=join)
 
-    # any col metadata or descriptions in index or tindex or extra semantic tags? cols get combined - maybe warn??
-    # --> init the TableSchema and then init with schema - that way we control valudation
+    # Initialize Woodwork with all of the typing information from the input objs
+    # performing type inference on any columns that did not already have Woodwork initialized
     combined_df.ww.init(name=table_name or None,
                         index=index,
                         time_index=time_index,
