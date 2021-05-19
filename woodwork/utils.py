@@ -317,6 +317,9 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
             When objs contains at least one DataFrame, a DataFrame is returned.
             When concatenating along the columns (axis=1), a DataFrame is returned.
     """
+    if not objs:
+        raise ValueError('No objects to concatenate')
+
     # --> consider adding sort
     # --> consider adding ignore index
     table_name = ''
@@ -335,7 +338,10 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
     for obj in objs:
         # --> should these be deep copies or _schema????
         ww_columns = {}
-        if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
+        if obj is None:
+            # --> not confident that this is the right choice. We need to be able to use the elements of objs to get the library type so it's hard if any element can be None
+            raise ValueError('Cannont include None in list of objects to concatenate')
+        elif isinstance(obj.ww.schema, ww.table_schema.TableSchema):
             # Keep the first occurance of a key in metadata
             table_metadata = {**obj.ww.metadata, **table_metadata}
 

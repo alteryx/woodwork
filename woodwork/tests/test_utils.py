@@ -896,8 +896,13 @@ def test_concat_axis_params(sample_df):
         concat([df1, df2], axis='test')
 
 
-def test_concat_different_table_types():
-    pass
+def test_concat_different_table_types(sample_df_pandas, sample_df_dask):
+    sample_df_pandas.ww.init()
+    sample_df_dask.ww.init()
+
+    error = re.escape("cannot concatenate object of type '<class 'dask.dataframe.core.DataFrame'>'; only Series and DataFrame objs are valid")
+    with pytest.raises(TypeError, match=error):
+        concat([sample_df_dask, sample_df_pandas], axis=0)
 
 
 def test_concat_cols_join(sample_df):
@@ -915,3 +920,18 @@ def test_concat_rows_table_order(sample_df):
 def test_concat_all_series(sample_df):
     # both rows and cols
     pass
+
+
+def test_concat_empty_list():
+    error = 'No objects to concatenate'
+    with pytest.raises(ValueError, match=error):
+        concat([])
+
+
+def test_concat_with_none(sample_df):
+    df1 = sample_df[['id', 'full_name', 'email']]
+    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+
+    error = 'Cannont include None in list of objects to concatenate'
+    with pytest.raises(ValueError, match=error):
+        combined_df_with_none = concat([df1, df2, None])
