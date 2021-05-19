@@ -821,7 +821,6 @@ def test_concat_combine_metadatas(sample_df):
 @patch("woodwork.table_accessor._validate_accessor_params")
 def test_concat_rows_validate_schema(mock_validate_accessor_params, sample_df):
     sample_df.ww.init(validate=False)
-    original_schema = sample_df.ww.schema
     copy_df = sample_df.ww.copy()
 
     assert not mock_validate_accessor_params.called

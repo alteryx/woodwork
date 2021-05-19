@@ -370,12 +370,6 @@ def concat(objs, axis=1, join='outer', ignore_index=False, validate_schema=True)
 
             col_names_seen.add(name)
 
-    # Vertical::
-    # confirm all the table schemas are equal (EXACTLY!!!!!!)
-
-    # Make concat call for each of the libraries
-    type_string = str(type(objs[0]))
-
     dd = import_or_none('dask.dataframe')
     ks = import_or_none('databricks.koalas')
 
