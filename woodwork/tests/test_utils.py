@@ -906,12 +906,19 @@ def test_concat_different_table_types(sample_df_pandas, sample_df_dask):
 
 
 def test_concat_cols_inner_join(sample_df):
-    df1 = sample_df[['id', 'full_name', 'age']]
-    df2 = sample_df[['email', 'signup_date']]
+    df1 = sample_df.loc[[0, 1, 2], ['id', 'full_name', 'age']]
+    df1.ww.init(index='id')
+    df2 = sample_df.loc[[2, 3], ['email', 'signup_date']]
+    df2.ww.init(time_index='signup_date')
+
+    inner_combined = concat([df1, df2], join='inner', axis=1)
+    assert set(inner_combined.columns) == {'id', 'email', 'full_name', 'age', 'signup_date'}
+    assert len(inner_combined) == 1
+    assert inner_combined.ww.index == 'id'
+    assert inner_combined.ww.time_index == 'signup_date'
 
 
 def test_concat_rows_inner_join(sample_df):
-    # --> broken because losing columns breaks the i
     df1 = sample_df[['signup_date', 'email', 'age']]
     df1.ww.init(time_index='signup_date')
 
