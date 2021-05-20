@@ -19,8 +19,10 @@ WoodworkTableAccessor
     WoodworkTableAccessor.init
     WoodworkTableAccessor.loc
     WoodworkTableAccessor.logical_types
+    WoodworkTableAccessor.metadata
     WoodworkTableAccessor.mutual_information
     WoodworkTableAccessor.mutual_information_dict
+    WoodworkTableAccessor.name
     WoodworkTableAccessor.physical_types
     WoodworkTableAccessor.pop
     WoodworkTableAccessor.remove_semantic_tags
