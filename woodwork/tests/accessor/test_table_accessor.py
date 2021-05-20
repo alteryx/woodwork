@@ -168,6 +168,44 @@ def test_name_persists_after_drop(sample_df):
     assert dropped_df.ww.schema.name == 'name'
 
 
+def test_set_accessor_metadata(sample_df):
+    df = sample_df.copy()
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.metadata
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.metadata = {'new': 'metadata'}
+
+    df.ww.init()
+    assert df.ww.metadata == {}
+    df.ww.metadata = {'new': 'metadata'}
+    #breakpoint()
+    df.ww.metadata
+    assert df.ww.schema.metadata == {'new': 'metadata'}
+    assert df.ww.metadata == {'new': 'metadata'}
+
+
+def test_set_metadata_after_init_with_metadata(sample_df):
+    df = sample_df.copy()
+    df.ww.init(table_metadata={'new': 'metadata'})
+    assert df.ww.metadata == {'new': 'metadata'}
+    df.ww.metadata = {'new': 'new_metadata'}
+    assert df.ww.schema.metadata == {'new': 'new_metadata'}
+    assert df.ww.metadata == {'new': 'new_metadata'}
+
+
+def test_metadata_persists_after_drop(sample_df):
+    df = sample_df.copy()
+    df.ww.init()
+
+    df.ww.metadata = {'new': 'metadata'}
+    assert df.ww.metadata == {'new': 'metadata'}
+
+    dropped_df = df.ww.drop(['id'])
+    assert dropped_df.ww.metadata == {'new': 'metadata'}
+    assert dropped_df.ww.schema.metadata == {'new': 'metadata'}
+
+
 def test_accessor_physical_types_property(sample_df):
     sample_df.ww.init(logical_types={'age': 'Categorical'})
 

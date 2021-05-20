@@ -263,6 +263,20 @@ class WoodworkTableAccessor:
         self._schema.name = new_name
 
     @property
+    def metadata(self):
+        """Metadata of the DataFrame"""
+        if self._schema is None:
+            _raise_init_error()
+        return self._schema.metadata
+
+    @metadata.setter
+    def metadata(self, new_metadata):
+        """Set metadata of the DataFrame"""
+        if self._schema is None:
+            _raise_init_error()
+        self._schema.metadata = new_metadata
+
+    @property
     def _dataframe(self):
         return self._dataframe_weakref()
 
