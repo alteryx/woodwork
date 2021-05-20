@@ -360,22 +360,19 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                 table_name += str(obj.ww.name)
 
             # Handle table indexes
-            if obj.ww.index is not None:
-                if index is None:
-                    index = obj.ww.index
-                elif obj.ww.index != index:
-                    raise IndexError('Cannot concat dataframes with different Woodwork index columns.')
-                elif axis in {1, 'columns'} and obj.ww.index == index:
-                    # Do not include the column from the dataframe to avoid duplicates columns
-                    drop_cols.append(index)
-            if obj.ww.time_index is not None:
-                if time_index is None:
-                    time_index = obj.ww.time_index
-                elif obj.ww.time_index != time_index:
-                    raise IndexError('Cannot concat dataframes with different Woodwork time index columns.')
-                elif axis in {1, 'columns'} and obj.ww.time_index == time_index:
-                    # Do not include the column from the dataframe to avoid duplicates columns
-                    drop_cols.append(time_index)
+            for idx_type, obj_idx, table_idx in [('index', obj.ww.index, index),
+                                                 ('time_index', obj.ww.time_index, time_index)]:
+                if obj_idx is not None:
+                    if table_idx is None:
+                        if idx_type == 'index':
+                            index = obj_idx
+                        elif idx_type == 'time_index':
+                            time_index = obj_idx
+                    elif obj_idx != table_idx:
+                        raise IndexError(f'Cannot concat dataframes with different Woodwork {idx_type} columns.')
+                    elif axis in {1, 'columns'} and obj_idx == table_idx:
+                        # Do not include the column from the dataframe to avoid duplicates columns
+                        drop_cols.append(table_idx)
 
             # To avoid changing input objects, create a new DataFrame without the index columns
             if drop_cols:

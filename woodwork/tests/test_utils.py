@@ -662,7 +662,7 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
     df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
     df2.ww.init(time_index='signup_date')
 
-    error = 'Cannot concat dataframes with different Woodwork time index columns.'
+    error = 'Cannot concat dataframes with different Woodwork time_index columns.'
     with pytest.raises(IndexError, match=error):
         concat([df1, df2])
 
