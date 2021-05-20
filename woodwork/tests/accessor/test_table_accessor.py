@@ -141,13 +141,19 @@ def test_set_accessor_name(sample_df):
         df.ww.name = 'name'
 
     df.ww.init()
-
     assert df.ww.name is None
-
     df.ww.name = 'name'
-
     assert df.ww.schema.name == 'name'
     assert df.ww.name == 'name'
+
+
+def test_rename_init_with_name(sample_df):
+    df = sample_df.copy()
+    df.ww.init(name='name')
+    assert df.ww.name is 'name'
+    df.ww.name = 'new_name'
+    assert df.ww.schema.name == 'new_name'
+    assert df.ww.name == 'new_name'
 
 
 def test_name_persists_after_drop(sample_df):
