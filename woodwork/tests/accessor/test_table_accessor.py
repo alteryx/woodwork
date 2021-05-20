@@ -150,7 +150,7 @@ def test_set_accessor_name(sample_df):
 def test_rename_init_with_name(sample_df):
     df = sample_df.copy()
     df.ww.init(name='name')
-    assert df.ww.name is 'name'
+    assert df.ww.name == 'name'
     df.ww.name = 'new_name'
     assert df.ww.schema.name == 'new_name'
     assert df.ww.name == 'new_name'
@@ -179,7 +179,6 @@ def test_set_accessor_metadata(sample_df):
     df.ww.init()
     assert df.ww.metadata == {}
     df.ww.metadata = {'new': 'metadata'}
-    #breakpoint()
     df.ww.metadata
     assert df.ww.schema.metadata == {'new': 'metadata'}
     assert df.ww.metadata == {'new': 'metadata'}
