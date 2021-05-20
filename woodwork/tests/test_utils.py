@@ -1,7 +1,6 @@
 
 import os
 import re
-from woodwork.accessor_utils import init_series
 
 import numpy as np
 import pandas as pd
@@ -9,7 +8,6 @@ import pytest
 from mock import patch
 
 import woodwork as ww
-from woodwork import logical_types
 from woodwork.logical_types import (
     Age,
     AgeNullable,
@@ -985,4 +983,4 @@ def test_concat_with_none(sample_df):
 
     error = 'Cannont include None in list of objects to concatenate'
     with pytest.raises(ValueError, match=error):
-        combined_df_with_none = concat([df1, df2, None])
+        concat([df1, df2, None])
