@@ -197,6 +197,32 @@ def test_mutual_info_unique_cols(df_mi_unique):
     assert 'ints' in cols_used
 
 
+def test_mutual_info_progress_callback(df_mi):
+    df_mi.ww.init(logical_types={'dates': Datetime(datetime_format='%Y-%m-%d')})
+
+    class MockProgressCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
+            self.total_elapsed_time = 0
+
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+            self.total_elapsed_time = time_elapsed
+
+    mock_progress_callback = MockProgressCallback()
+
+    df_mi.ww.mutual_information(progress_callback=mock_progress_callback)
+
+    assert len(mock_progress_callback.progress_history) == 16
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+    assert mock_progress_callback.total_elapsed_time > 0
+
+
 def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
 

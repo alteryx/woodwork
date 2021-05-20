@@ -1,3 +1,5 @@
+from timeit import default_timer as timer
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
@@ -158,7 +160,8 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     return data
 
 
-def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False):
+def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False,
+                                 progress_callback=None):
     """Calculates mutual information between all pairs of columns in the DataFrame that
     support mutual information. Logical Types that support mutual information are as
     follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
@@ -176,6 +179,11 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             included as long as its LogicalType is valid for mutual information calculations.
             If False, the index column will not have mutual information calculated for it.
             Defaults to False.
+        progress_callback (callable): function to be called with incremental progress updates.
+            Has the following parameters:
+                update: percentage change (float between 0 and 100) in progress since last call
+                progress_percent: percentage (float between 0 and 100) of total computation completed
+                time_elapsed: total time in seconds that has elapsed since start of call
 
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
@@ -183,6 +191,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         Mutual information values are between 0 (no mutual information) and 1
         (perfect dependency).
         """
+    start_time = timer()
     valid_types = get_valid_mi_types()
     valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) in valid_types]
 
@@ -210,18 +219,35 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     # calculate mutual info for all pairs of columns
     mutual_info = []
     col_names = data.columns.to_list()
+
+    n = len(col_names)
+    total_loops = (n * n + n) / 2
+
+    def update_progress(start_time, increment, current, total, progress_callback):
+        new_progress = current + increment
+        if progress_callback is not None:
+            elapsed_time = timer() - start_time
+            progress_callback((increment / total) * 100, (new_progress / total) * 100, elapsed_time)
+
+        return new_progress
+
+    current_progress = update_progress(start_time, 0, 0, total_loops, progress_callback)
     for i, a_col in enumerate(col_names):
         for j in range(i, len(col_names)):
             b_col = col_names[j]
             if a_col == b_col:
                 # Ignore because the mutual info for a column with itself will always be 1
+                current_progress = update_progress(start_time, 1, current_progress, total_loops, progress_callback)
                 continue
             else:
                 mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                 mutual_info.append(
                     {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                 )
+                current_progress = update_progress(start_time, 1, current_progress, total_loops, progress_callback)
+
     mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
+
     return mutual_info
 
 
