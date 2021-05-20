@@ -2,6 +2,7 @@ import ast
 import importlib
 import re
 from mimetypes import add_type, guess_type
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -336,7 +337,6 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
     # Record the typing information for all the columns that have Woodwork schemas
     col_names_seen = set()
     for obj in objs:
-        # --> should these be deep copies or _schema????
         ww_columns = {}
         if obj is None:
             # --> not confident that this is the right choice. We need to be able to use the elements of objs to get the library type so it's hard if any element can be None
@@ -380,7 +380,6 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
             # Do not look at typing information for duplicate columns.
             # Means that index columns will only have first occurrance's typing information
             if name in col_names_seen:
-                # --> maybe raise a warning for these columns that their typing info is gonna get ignored??
                 continue
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
@@ -402,6 +401,12 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
         lib = dd
 
     combined_df = lib.concat(objs, axis=axis, join=join)
+
+    # Cannot initialize Woodwork on series output
+    # --> we can handle if we really want to we'll just need to account for this case when collecting typging info
+    if not isinstance(combined_df, lib.DataFrame):
+        warnings.warn('Woodwork not initialized on the output of ww.concat', ww.exceptions.WoodworkNotInitWarning)
+        return combined_df
 
     # Inner joins can lose columns, invalidating the typing information we collected ahead of time
     if join == 'inner':
@@ -431,6 +436,5 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                         column_metadata=col_metadata,
                         column_descriptions=col_descriptions,
                         use_standard_tags=use_standard_tags,
-                        validate=validate_schema)  # --> add already sorted as param??????
-    # --> make sure the order of columns matches
+                        validate=validate_schema)
     return combined_df

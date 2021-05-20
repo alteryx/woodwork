@@ -1,6 +1,7 @@
 
 import os
 import re
+from woodwork.accessor_utils import init_series
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ import pytest
 from mock import patch
 
 import woodwork as ww
+from woodwork import logical_types
 from woodwork.logical_types import (
     Age,
     AgeNullable,
@@ -932,22 +934,37 @@ def test_concat_rows_inner_join(sample_df):
     assert inner_combined.ww.time_index == 'signup_date'
 
 
-def test_concat_inner_join_no_overlap(sample_df):
-    # --> test rows and cols
-    pass
+def test_concat_table_order(sample_df):
+    df1 = sample_df[['id', 'signup_date']]
+    df1.ww.init(index='id')
+    df2 = sample_df[['id', 'age']]
+    df2.ww.init(index='id')
+
+    combined_df1 = concat([df1.ww.copy(), df2.ww.copy()])
+    combined_df2 = concat([df2.ww.copy(), df1.ww.copy()])
+
+    assert set(combined_df1.columns) == set(combined_df2.columns)
+
+    assert list(combined_df1.columns) == ['id', 'signup_date', 'age']
+    assert list(combined_df2.columns) == ['id', 'age', 'signup_date']
 
 
-def test_concat_cols_table_order(sample_df):
-    pass
+def test_concat_cols_all_series(sample_df):
+    age_series = ww.init_series(sample_df['age'], logical_type='Double')
+    combined_df = concat([sample_df['id'], age_series, sample_df['is_registered']], axis=1)
+
+    assert isinstance(combined_df.ww.schema, ww.table_schema.TableSchema)
+    assert set(combined_df.columns) == {'id', 'age', 'is_registered'}
+    assert combined_df.ww.logical_types['age'] == Double
 
 
-def test_concat_rows_table_order(sample_df):
-    pass
+def test_concat_rows_all_series(sample_df):
+    warning = 'Woodwork not initialized on the output of ww.concat'
+    with pytest.warns(ww.exceptions.WoodworkNotInitWarning, match=warning):
+        combined_series = concat([sample_df['age'], sample_df['age']], axis=0)
 
-
-def test_concat_all_series(sample_df):
-    # both rows and cols
-    pass
+    assert combined_series.ww.schema is None
+    assert combined_series.name == 'age'
 
 
 def test_concat_empty_list():
