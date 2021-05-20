@@ -303,7 +303,11 @@ def _parse_logical_type(logical_type, name):
 
 def concat(objs, axis=1, join='outer', validate_schema=True):
     """
-    Concatenate Woodwork objects along a particular axis.
+    Concatenate Woodwork objects along a particular axis. Cannot concatenate DataFrames
+    with conflicting Woodwork index or time index columns. If DataFrames have the same Woodwork
+    index or time index columns, the first appearance of the column will be included in the
+    concatenated DataFrame. As Woodwork does not allow duplicate column names,
+    will not allow duplicate columns at concatenation. 
 
     Args:
         objs (list[Series, DataFrame]): The Woodwork objects to be concatenated. If Woodwork
@@ -314,9 +318,10 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
             for the concatenated DataFrame. Defaults to True.
 
     Returns:
-        object, type of objs: When concatenating all Series along the index (axis=0), a Series is returned.
-            When objs contains at least one DataFrame, a DataFrame is returned.
-            When concatenating along the columns (axis=1), a DataFrame is returned.
+        object, type of objs: When objs contains at least one DataFrame, a Woodwork DataFrame is returned.
+            When concatenating along the columns (axis=1), a Woodwork DataFrame is returned.
+            When concatenating along the index (axis=1) with only series, a series is returned
+            without Woodwork initialized.
     """
     if not objs:
         raise ValueError('No objects to concatenate')
@@ -360,7 +365,7 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                     index = obj.ww.index
                 elif obj.ww.index != index:
                     raise IndexError('Cannot concat dataframes with different Woodwork index columns.')
-                elif axis and obj.ww.index == index:
+                elif axis in {1, 'columns'} and obj.ww.index == index:
                     # Do not include the column from the dataframe to avoid duplicates columns
                     drop_cols.append(index)
             if obj.ww.time_index is not None:
@@ -368,11 +373,11 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                     time_index = obj.ww.time_index
                 elif obj.ww.time_index != time_index:
                     raise IndexError('Cannot concat dataframes with different Woodwork time index columns.')
-                elif axis and obj.ww.time_index == time_index:
+                elif axis in {1, 'columns'} and obj.ww.time_index == time_index:
                     # Do not include the column from the dataframe to avoid duplicates columns
                     drop_cols.append(time_index)
 
-            # To avoid changing input objects, create a new DataFrame without the duplicate indexes
+            # To avoid changing input objects, create a new DataFrame without the index columns
             if drop_cols:
                 obj_to_add = obj.ww.drop(columns=drop_cols)
             ww_columns = obj_to_add.ww.schema.columns

@@ -722,23 +722,6 @@ def test_concat_rows_with_ww_indexes(sample_df):
     assert combined_df.ww.schema == original_schema
 
 
-# def test_concat_cols_with_different_underlying_index_dtypes(sample_df):
-#     # --> this is very different for the diff dataframe types unless we catch the error ourselves
-#     df1 = sample_df[['id', 'signup_date']]
-#     df1.ww.init()
-#     df2 = sample_df[['full_name', 'age']].set_index('full_name', drop=False)
-#     df2.index.name = None
-#     df2.ww.init()
-
-#     assert df1.index.dtype == 'int64'
-#     assert str(df2.index.dtype) == 'object'
-
-#     error = 'Index column must be unique'
-#     with pytest.raises(IndexError, match=error):
-#         # --> might be better to have a different, more specialized error here??
-#         concat([df1, df2])
-
-
 def test_concat_table_names(sample_df):
     df1 = sample_df[['id', 'signup_date']]
     df1.ww.init(name=0)
@@ -900,6 +883,28 @@ def test_concat_axis_params(sample_df):
     error = 'No axis named test'
     with pytest.raises(ValueError, match=error):
         concat([df1, df2], axis='test')
+
+
+def test_concat_axis_params_with_index(sample_df):
+    df1 = sample_df[['id', 'signup_date', 'full_name', 'age']]
+    df2 = sample_df[['id', 'email', 'signup_date']]
+    df1.ww.init(index='id', time_index='signup_date')
+    df2.ww.init(index='id', time_index='signup_date')
+
+    axis_1 = concat([df1, df2], axis=1)
+    axis_columns = concat([df1, df2], axis='columns')
+    assert axis_1.ww == axis_columns.ww
+    assert to_pandas(axis_1).equals(to_pandas(axis_columns))
+
+    if ks and isinstance(sample_df, ks.DataFrame):
+        df2['id'] = [4, 5, 6, 7]
+    else:
+        df2['id'] = pd.Series([4, 5, 6, 7], dtype='int64')
+
+    axis_0 = concat([df1, df2], axis=0)
+    axis_index = concat([df1, df2], axis='index')
+    assert axis_0.ww == axis_index.ww
+    assert to_pandas(axis_0).equals(to_pandas(axis_index))
 
 
 def test_concat_different_table_types(sample_df_pandas, sample_df_dask):
