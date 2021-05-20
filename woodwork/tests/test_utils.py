@@ -24,6 +24,7 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode
 )
+from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,
@@ -47,7 +48,6 @@ from woodwork.utils import (
     import_or_none,
     import_or_raise
 )
-from woodwork.tests.testing_utils import to_pandas
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
