@@ -307,7 +307,7 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
     with conflicting Woodwork index or time index columns. If DataFrames have the same Woodwork
     index or time index columns, the first appearance of the column will be included in the
     concatenated DataFrame. As Woodwork does not allow duplicate column names,
-    will not allow duplicate columns at concatenation. 
+    will not allow duplicate columns at concatenation.
 
     Args:
         objs (list[Series, DataFrame]): The Woodwork objects to be concatenated. If Woodwork
