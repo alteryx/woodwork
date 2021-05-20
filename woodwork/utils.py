@@ -334,14 +334,17 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
     index = None
     time_index = None
 
+    concat_objs = []
     # Record the typing information for all the columns that have Woodwork schemas
     col_names_seen = set()
     for obj in objs:
         ww_columns = {}
+        obj_to_add = obj
         if obj is None:
             # --> not confident that this is the right choice. We need to be able to use the elements of objs to get the library type so it's hard if any element can be None
             raise ValueError('Cannont include None in list of objects to concatenate')
         elif isinstance(obj.ww.schema, ww.table_schema.TableSchema):
+            drop_cols = []
             # Keep the first occurance of a key in metadata
             table_metadata = {**obj.ww.metadata, **table_metadata}
 
@@ -358,24 +361,27 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                 elif obj.ww.index != index:
                     raise IndexError('Cannot concat dataframes with different Woodwork index columns.')
                 elif axis and obj.ww.index == index:
-                    # Remove the column from the dataframe to avoid duplicates columns
-                    # --> this will remove it from the inputted data.... not great :/
-                    obj.ww.pop(index)
+                    # Do not include the column from the dataframe to avoid duplicates columns
+                    drop_cols.append(index)
             if obj.ww.time_index is not None:
                 if time_index is None:
                     time_index = obj.ww.time_index
                 elif obj.ww.time_index != time_index:
                     raise IndexError('Cannot concat dataframes with different Woodwork time index columns.')
                 elif axis and obj.ww.time_index == time_index:
-                    # Remove the column from the dataframe to avoid duplicates columns
-                    # --> this will remove it from the inputted data.... not great :/
-                    # --> maybe we dont remove but after concat we remove duplicates!!! or select just the relevant cols
-                    obj.ww.pop(time_index)
+                    # Do not include the column from the dataframe to avoid duplicates columns
+                    drop_cols.append(time_index)
 
-            ww_columns = obj.ww.schema.columns
+            # To avoid changing input objects, create a new DataFrame without the duplicate indexes
+            if drop_cols:
+                obj_to_add = obj.ww.drop(columns=drop_cols)
+            ww_columns = obj_to_add.ww.schema.columns
         elif isinstance(obj.ww.schema, ww.column_schema.ColumnSchema):
             ww_columns = {obj.name: obj.ww.schema}
 
+        concat_objs.append(obj_to_add)
+
+        # Compile the typing information per column
         for name, col_schema in ww_columns.items():
             # Do not look at typing information for duplicate columns.
             # Means that index columns will only have first occurrance's typing information
@@ -400,7 +406,7 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
     elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
         lib = dd
 
-    combined_df = lib.concat(objs, axis=axis, join=join)
+    combined_df = lib.concat(concat_objs, axis=axis, join=join)
 
     # Cannot initialize Woodwork on series output
     # --> we can handle if we really want to we'll just need to account for this case when collecting typging info

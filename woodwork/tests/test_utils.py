@@ -691,6 +691,12 @@ def test_concat_cols_with_duplicate_ww_indexes(sample_df):
     assert combined_df.ww.time_index == 'signup_date'
     assert len(set(combined_df.columns)) == len(set(sample_df.columns))
 
+    # confirm that the columns that are "lost" in the resulting df are still in the original dataframes
+    assert 'id' in df1.columns
+    assert 'signup_date' in df1.columns
+    assert 'id' in df2.columns
+    assert 'signup_date' in df2.columns
+
 
 def test_concat_rows_with_ww_indexes(sample_df):
     sample_df.ww.init(index='id')
