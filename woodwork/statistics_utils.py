@@ -181,9 +181,9 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             Defaults to False.
         progress_callback (callable): function to be called with incremental progress updates.
             Has the following parameters:
-                update: percentage change (float between 0 and 100) in progress since last call
-                progress_percent: percentage (float between 0 and 100) of total computation completed
-                time_elapsed: total time in seconds that has elapsed since start of call
+            update: percentage change (float between 0 and 100) in progress since last call
+            progress_percent: percentage (float between 0 and 100) of total computation completed
+            time_elapsed: total time in seconds that has elapsed since start of call
 
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
