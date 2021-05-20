@@ -391,8 +391,7 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                 continue
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
-            if col_schema.metadata:  # --> confirm this is actually necessary - eqyality i think
-                col_metadata[name] = col_schema.metadata
+            col_metadata[name] = col_schema.metadata
             col_descriptions[name] = col_schema.description
             use_standard_tags[name] = col_schema.use_standard_tags
 
