@@ -250,14 +250,14 @@ class WoodworkTableAccessor:
 
     @property
     def name(self):
-        """Name of the underlying schema"""
+        """Name of the DataFrame"""
         if self._schema is None:
             _raise_init_error()
         return self._schema.name
 
     @name.setter
     def name(self, new_name):
-        """Sets the name of the underlying schema"""
+        """Set name of the DataFrame"""
         if self._schema is None:
             _raise_init_error()
         self._schema.name = new_name
