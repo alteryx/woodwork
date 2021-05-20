@@ -929,7 +929,7 @@ def test_concat_cols_inner_join(sample_df):
     assert inner_combined.ww.time_index == 'signup_date'
 
 
-def test_concat_rows_inner_join(sample_df):
+def test_concat_rows_inner_join_lose_index(sample_df):
     df1 = sample_df[['signup_date', 'email', 'age']]
     df1.ww.init(time_index='signup_date')
 
@@ -941,6 +941,20 @@ def test_concat_rows_inner_join(sample_df):
     assert set(inner_combined.columns) == {'email', 'age', 'signup_date'}
     assert inner_combined.ww.index is None
     assert inner_combined.ww.time_index == 'signup_date'
+
+
+def test_concat_rows_inner_join_lose_time_index(sample_df):
+    df1 = sample_df[['signup_date', 'email', 'age']]
+    df1.ww.init(time_index='signup_date')
+
+    df2 = sample_df[['id', 'email', 'age']]
+    df2.ww.init(index='id')
+
+    # If we lose a column in the inner join, we lose its typing information
+    inner_combined = concat([df1, df2], join='inner', axis=0)
+    assert set(inner_combined.columns) == {'email', 'age'}
+    assert inner_combined.ww.index is None
+    assert inner_combined.ww.time_index is None
 
 
 def test_concat_table_order(sample_df):
