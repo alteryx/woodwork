@@ -56,11 +56,11 @@ class TableSchema(object):
         """
         if validate:
             # Check that inputs are valid
-            _validate_params(column_names, index, time_index, logical_types, column_metadata, semantic_tags, column_descriptions,
+            _validate_params(column_names, name, index, time_index, logical_types, table_metadata, column_metadata, semantic_tags, column_descriptions,
                              use_standard_tags)
 
-        self.name = name
-        self.metadata = table_metadata
+        self._name = name
+        self._metadata = table_metadata or {}
 
         # use_standard_tags should be a dictionary mapping each column to its boolean
         if isinstance(use_standard_tags, bool):
@@ -521,15 +521,20 @@ class TableSchema(object):
                            validate=False)
 
 
-def _validate_params(column_names, index, time_index, logical_types, column_metadata,
-                     semantic_tags, column_descriptions, use_standard_tags):
+def _validate_params(column_names, name, index, time_index, logical_types,
+                     table_metadata, column_metadata, semantic_tags, column_descriptions,
+                     use_standard_tags):
     """Check that values supplied during TableSchema initialization are valid"""
     _check_column_names(column_names)
     _check_use_standard_tags(column_names, use_standard_tags)
+    if name:
+        _check_name(name)
     if index is not None:
         _check_index(column_names, index)
     if logical_types:
         _check_logical_types(column_names, logical_types)
+    if table_metadata:
+        _check_table_metadata(table_metadata)
     if column_metadata:
         _check_column_metadata(column_names, column_metadata)
     if time_index is not None:

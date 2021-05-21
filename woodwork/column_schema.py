@@ -29,12 +29,15 @@ class ColumnSchema(object):
             metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
             validate (bool, optional): Whether to perform parameter validation. Defaults to True.
         """
-        self.metadata = metadata
-        self.description = description
+        metadata = metadata or {}
 
         if validate:
             if logical_type is not None:
                 _validate_logical_type(logical_type)
+            _validate_description(description)
+            _validate_metadata(metadata)
+        self._metadata = metadata
+        self._description = description
         self.logical_type = logical_type
 
         self.use_standard_tags = use_standard_tags
@@ -79,7 +82,7 @@ class ColumnSchema(object):
     @property
     def description(self):
         return self._description
-
+    
     @description.setter
     def description(self, description):
         _validate_description(description)
@@ -88,7 +91,7 @@ class ColumnSchema(object):
     @property
     def metadata(self):
         return self._metadata
-
+    
     @metadata.setter
     def metadata(self, metadata):
         metadata = metadata or {}
