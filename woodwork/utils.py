@@ -305,7 +305,7 @@ def _update_progress(start_time, current_time, progress_increment,
     """Helper function for updating progress of a function and making a call to the progress callback
     function, if provided. Adds the progress increment to the current progress amount and returns the
     updated progress amount.
-    
+
     If provided, the callback function should accept the following parameters:
         update: percentage change (float between 0 and 100) in progress since last call
         progress_percent: percentage (float between 0 and 100) of total computation completed
