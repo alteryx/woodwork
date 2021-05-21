@@ -298,3 +298,13 @@ def _parse_logical_type(logical_type, name):
         return logical_type
     else:
         raise TypeError(f"Invalid logical type specified for '{name}'")
+
+
+def _update_progress(start_time, current_time, progress_increment,
+                     current_progress, total, callback_function):
+    new_progress = current_progress + progress_increment
+    if callback_function is not None:
+        elapsed_time = current_time - start_time
+        callback_function((progress_increment / total) * 100, (new_progress / total) * 100, elapsed_time)
+
+    return new_progress

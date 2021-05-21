@@ -217,7 +217,15 @@ def test_mutual_info_progress_callback(df_mi):
 
     df_mi.ww.mutual_information(progress_callback=mock_progress_callback)
 
-    assert len(mock_progress_callback.progress_history) == 16
+    # Should be 18 total calls
+    assert len(mock_progress_callback.progress_history) == 18
+
+    # First call should be 1 of 26 units complete
+    assert np.isclose(mock_progress_callback.progress_history[0], 1 / 26 * 100)
+    # After second call should be 6 of 26 units complete
+    assert np.isclose(mock_progress_callback.progress_history[1], 6 / 26 * 100)
+
+    # Should be 100% at end with a positive elapsed time
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
     assert mock_progress_callback.total_elapsed_time > 0
