@@ -25,7 +25,11 @@ from woodwork.statistics_utils import (
     _get_mutual_information_dict,
     _get_value_counts
 )
-from woodwork.table_schema import TableSchema, _check_name, _check_table_metadata
+from woodwork.table_schema import (
+    TableSchema,
+    _check_name,
+    _check_table_metadata
+)
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
