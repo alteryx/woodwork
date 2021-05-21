@@ -504,8 +504,8 @@ def _validate_params(column_names, name, index, time_index, logical_types,
     """Check that values supplied during TableSchema initialization are valid"""
     _check_column_names(column_names)
     _check_use_standard_tags(column_names, use_standard_tags)
-    if name and not isinstance(name, str):
-        raise TypeError('TableSchema name must be a string')
+    if name:
+        _check_name(name)
     if index is not None:
         _check_index(column_names, index)
     if logical_types:
@@ -520,6 +520,11 @@ def _validate_params(column_names, name, index, time_index, logical_types,
         _check_semantic_tags(column_names, semantic_tags)
     if column_descriptions:
         _check_column_descriptions(column_names, column_descriptions)
+
+
+def _check_name(name):
+    if not isinstance(name, str):
+        raise TypeError('TableSchema name must be a string')
 
 
 def _check_column_names(column_names):

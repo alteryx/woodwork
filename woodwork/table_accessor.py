@@ -25,7 +25,7 @@ from woodwork.statistics_utils import (
     _get_mutual_information_dict,
     _get_value_counts
 )
-from woodwork.table_schema import TableSchema
+from woodwork.table_schema import TableSchema, _check_name, _check_table_metadata
 from woodwork.type_sys.utils import (
     _get_ltype_class,
     _is_numeric_series,
@@ -256,11 +256,12 @@ class WoodworkTableAccessor:
         return self._schema.name
 
     @name.setter
-    def name(self, new_name):
+    def name(self, name):
         """Set name of the DataFrame"""
         if self._schema is None:
             _raise_init_error()
-        self._schema.name = new_name
+        _check_name(name)
+        self._schema.name = name
 
     @property
     def metadata(self):
@@ -270,11 +271,12 @@ class WoodworkTableAccessor:
         return self._schema.metadata
 
     @metadata.setter
-    def metadata(self, new_metadata):
+    def metadata(self, metadata):
         """Set metadata of the DataFrame"""
         if self._schema is None:
             _raise_init_error()
-        self._schema.metadata = new_metadata
+        _check_table_metadata(metadata)
+        self._schema.metadata = metadata
 
     @property
     def _dataframe(self):

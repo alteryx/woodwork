@@ -156,6 +156,19 @@ def test_rename_init_with_name(sample_df):
     assert df.ww.name == 'new_name'
 
 
+def test_name_error_on_init(sample_df):
+    err_msg = "TableSchema name must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.init(name=123)
+
+
+def test_name_error_on_update(sample_df):
+    sample_df.ww.init()
+    err_msg = "TableSchema name must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.name = 123
+
+
 def test_name_persists_after_drop(sample_df):
     df = sample_df.copy()
     df.ww.init()
@@ -203,6 +216,19 @@ def test_metadata_persists_after_drop(sample_df):
     dropped_df = df.ww.drop(['id'])
     assert dropped_df.ww.metadata == {'new': 'metadata'}
     assert dropped_df.ww.schema.metadata == {'new': 'metadata'}
+
+
+def test_metadata_error_on_init(sample_df):
+    err_msg = 'Table metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.init(table_metadata=123)
+
+
+def test_metadata_error_on_update(sample_df):
+    sample_df.ww.init()
+    err_msg = 'Table metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.metadata = 123
 
 
 def test_accessor_physical_types_property(sample_df):
