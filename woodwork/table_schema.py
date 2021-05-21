@@ -134,7 +134,7 @@ class TableSchema(object):
     def name(self):
         """Name of schema"""
         return self._name
-    
+
     @name.setter
     def name(self, name):
         """Set name of schema"""

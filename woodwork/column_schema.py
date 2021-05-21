@@ -79,7 +79,7 @@ class ColumnSchema(object):
     @property
     def description(self):
         return self._description
-    
+
     @description.setter
     def description(self, description):
         _validate_description(description)
@@ -88,7 +88,7 @@ class ColumnSchema(object):
     @property
     def metadata(self):
         return self._metadata
-    
+
     @metadata.setter
     def metadata(self, metadata):
         metadata = metadata or {}
