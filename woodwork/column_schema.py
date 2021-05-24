@@ -81,6 +81,7 @@ class ColumnSchema(object):
 
     @property
     def description(self):
+        """Description of the column"""
         return self._description
     
     @description.setter
@@ -90,6 +91,7 @@ class ColumnSchema(object):
 
     @property
     def metadata(self):
+        """Metadata of the column"""
         return self._metadata
     
     @metadata.setter
