@@ -192,7 +192,6 @@ def test_set_accessor_metadata(sample_df):
     df.ww.init()
     assert df.ww.metadata == {}
     df.ww.metadata = {'new': 'metadata'}
-    df.ww.metadata
     assert df.ww.schema.metadata == {'new': 'metadata'}
     assert df.ww.metadata == {'new': 'metadata'}
 
