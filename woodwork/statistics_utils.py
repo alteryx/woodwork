@@ -160,8 +160,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     return data
 
 
-def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False,
-                                 progress_callback=None):
+def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False, callback=None):
     """Calculates mutual information between all pairs of columns in the DataFrame that
     support mutual information. Logical Types that support mutual information are as
     follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
@@ -179,7 +178,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             included as long as its LogicalType is valid for mutual information calculations.
             If False, the index column will not have mutual information calculated for it.
             Defaults to False.
-        progress_callback (callable): function to be called with incremental progress updates.
+        callback (callable): function to be called with incremental updates.
             Has the following parameters:
             update: percentage change (float between 0 and 100) in progress since last call
             progress_percent: percentage (float between 0 and 100) of total computation completed
@@ -217,13 +216,13 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n/2) for main calculation loop
     n = len(data.columns)
     total_loops = 1 + 2 * n + (n * n + n) / 2
-    current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, progress_callback)
+    current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, callback)
 
     data = _replace_nans_for_mutual_info(dataframe.ww.schema, data)
-    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, progress_callback)
+    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, callback)
 
     data = _make_categorical_for_mutual_info(dataframe.ww.schema, data, num_bins)
-    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, progress_callback)
+    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, callback)
 
     # calculate mutual info for all pairs of columns
     mutual_info = []
@@ -233,14 +232,14 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             b_col = col_names[j]
             if a_col == b_col:
                 # Ignore because the mutual info for a column with itself will always be 1
-                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, progress_callback)
+                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, callback)
                 continue
             else:
                 mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                 mutual_info.append(
                     {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                 )
-                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, progress_callback)
+                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, callback)
     mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
 
     return mutual_info
