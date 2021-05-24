@@ -301,7 +301,7 @@ def _parse_logical_type(logical_type, name):
         raise TypeError(f"Invalid logical type specified for '{name}'")
 
 
-def concat(objs, axis=1, join='outer', validate_schema=True):
+def concat(objs, validate_schema=True):
     """
     Concatenate Woodwork objects along a particular axis. Cannot concatenate DataFrames
     with conflicting Woodwork index or time index columns. If DataFrames have the same Woodwork
@@ -370,7 +370,7 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
                             time_index = obj_idx
                     elif obj_idx != table_idx:
                         raise IndexError(f'Cannot concat dataframes with different Woodwork {idx_type} columns.')
-                    elif axis in {1, 'columns'} and obj_idx == table_idx:
+                    elif obj_idx == table_idx:
                         # Do not include the column from the dataframe to avoid duplicates columns
                         drop_cols.append(table_idx)
 
@@ -407,30 +407,7 @@ def concat(objs, axis=1, join='outer', validate_schema=True):
     elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
         lib = dd
 
-    combined_df = lib.concat(concat_objs, axis=axis, join=join)
-
-    # Cannot initialize Woodwork on series output
-    # --> we can handle if we really want to we'll just need to account for this case when collecting typging info
-    if not isinstance(combined_df, lib.DataFrame):
-        warnings.warn('Woodwork not initialized on the output of ww.concat', ww.exceptions.WoodworkNotInitWarning)
-        return combined_df
-
-    # Inner joins can lose columns, invalidating the typing information we collected ahead of time
-    if join == 'inner':
-        combined_cols = set(combined_df.columns)
-        if time_index not in combined_cols:
-            time_index = None
-        if index not in combined_cols:
-            index = None
-
-        def filter_cols(typing_dict):
-            return {name: typing_val for name, typing_val in typing_dict.items() if name in combined_cols}
-
-        logical_types = filter_cols(logical_types)
-        semantic_tags = filter_cols(semantic_tags)
-        col_metadata = filter_cols(col_metadata)
-        col_descriptions = filter_cols(col_descriptions)
-        use_standard_tags = filter_cols(use_standard_tags)
+    combined_df = lib.concat(concat_objs, axis=1, join='outer')
 
     # Initialize Woodwork with all of the typing information from the input objs
     # performing type inference on any columns that did not already have Woodwork initialized

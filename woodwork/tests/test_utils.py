@@ -587,419 +587,434 @@ def test_concat_cols_ww_dfs(sample_df):
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
 
-def test_concat_cols_uninit_dfs(sample_df):
-    df1 = sample_df[['id', 'full_name', 'email']]
-    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+# def test_concat_cols_uninit_dfs(sample_df):
+#     df1 = sample_df[['id', 'full_name', 'email']]
+#     df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
 
-    combined_df = concat([df1, df2])
-    assert df1.ww.schema is None
-    assert df2.ww.schema is None
-    assert combined_df.ww.schema is not None
+#     combined_df = concat([df1, df2])
+#     assert df1.ww.schema is None
+#     assert df2.ww.schema is None
+#     assert combined_df.ww.schema is not None
 
-    # Though the input dataframes don't have Woodwork initalized,
-    # the concatenated DataFrame has Woodwork initialized for all the columns
-    assert combined_df.ww.logical_types['id'] == Integer
+#     # Though the input dataframes don't have Woodwork initalized,
+#     # the concatenated DataFrame has Woodwork initialized for all the columns
+#     assert combined_df.ww.logical_types['id'] == Integer
 
-    df1.ww.init()
-    df2.ww.init()
-    pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+#     df1.ww.init()
+#     df2.ww.init()
+#     pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
+#     assert to_pandas(combined_df).equals(pandas_combined_df)
 
 
-def test_concat_cols_combo_dfs(sample_df):
-    df1 = sample_df[['id', 'full_name', 'email']]
-    sample_df.ww.init()
-    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+# def test_concat_cols_combo_dfs(sample_df):
+#     df1 = sample_df[['id', 'full_name', 'email']]
+#     sample_df.ww.init()
+#     df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
 
-    combined_df = concat([df1, df2])
-    assert df1.ww.schema is None
-    assert combined_df.ww.logical_types['age'] == IntegerNullable
+#     combined_df = concat([df1, df2])
+#     assert df1.ww.schema is None
+#     assert combined_df.ww.logical_types['age'] == IntegerNullable
 
-    df1.ww.init()
-    df2.ww.init()
-    pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+#     df1.ww.init()
+#     df2.ww.init()
+#     pandas_combined_df = pd.concat([to_pandas(df1), to_pandas(df2)], axis=1, join='outer', ignore_index=False)
+#     assert to_pandas(combined_df).equals(pandas_combined_df)
 
 
-def test_concat_cols_with_series(sample_df):
-    df = sample_df[['id', 'full_name', 'email', 'phone_number', 'age']]
-    s1 = sample_df['signup_date']
-    sample_df.ww.init()
-    s2 = sample_df['is_registered']
+# def test_concat_cols_with_series(sample_df):
+#     df = sample_df[['id', 'full_name', 'email', 'phone_number', 'age']]
+#     s1 = sample_df['signup_date']
+#     sample_df.ww.init()
+#     s2 = sample_df['is_registered']
 
-    combined_df = concat([df, s1, s2])
+#     combined_df = concat([df, s1, s2])
 
-    df.ww.init()
-    s1.ww.init()
-    s2.ww.init()
-    pandas_combined_df = pd.concat([to_pandas(df), to_pandas(s1), to_pandas(s2)], axis=1, join='outer', ignore_index=False)
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+#     df.ww.init()
+#     s1.ww.init()
+#     s2.ww.init()
+#     pandas_combined_df = pd.concat([to_pandas(df), to_pandas(s1), to_pandas(s2)], axis=1, join='outer', ignore_index=False)
+#     assert to_pandas(combined_df).equals(pandas_combined_df)
 
 
-def test_concat_rows(sample_df):
-    sample_df.ww.init()
-    original_schema = sample_df.ww.schema
-    copy_df = sample_df.ww.copy()
+# def test_concat_rows(sample_df):
+#     sample_df.ww.init()
+#     original_schema = sample_df.ww.schema
+#     copy_df = sample_df.ww.copy()
 
-    combined_df = concat([sample_df, copy_df], axis=0)
-    assert len(combined_df) == 8
+#     combined_df = concat([sample_df, copy_df], axis=0)
+#     assert len(combined_df) == 8
 
-    assert combined_df.ww.schema == original_schema
+#     assert combined_df.ww.schema == original_schema
 
 
-def test_concat_cols_with_conflicting_ww_indexes(sample_df):
-    df1 = sample_df[['id', 'phone_number', 'email']]
-    df1.ww.init(index='id')
-    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
-    df2.ww.init(index='full_name')
+# def test_concat_cols_with_conflicting_ww_indexes(sample_df):
+#     df1 = sample_df[['id', 'phone_number', 'email']]
+#     df1.ww.init(index='id')
+#     df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+#     df2.ww.init(index='full_name')
 
-    error = 'Cannot concat dataframes with different Woodwork index columns.'
-    with pytest.raises(IndexError, match=error):
-        concat([df1, df2])
+#     error = 'Cannot concat dataframes with different Woodwork index columns.'
+#     with pytest.raises(IndexError, match=error):
+#         concat([df1, df2])
 
-    df1 = sample_df[['id', 'phone_number', 'email']]
-    df1.ww.init(time_index='id')
-    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
-    df2.ww.init(time_index='signup_date')
+#     df1 = sample_df[['id', 'phone_number', 'email']]
+#     df1.ww.init(time_index='id')
+#     df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+#     df2.ww.init(time_index='signup_date')
 
-    error = 'Cannot concat dataframes with different Woodwork time_index columns.'
-    with pytest.raises(IndexError, match=error):
-        concat([df1, df2])
+#     error = 'Cannot concat dataframes with different Woodwork time_index columns.'
+#     with pytest.raises(IndexError, match=error):
+#         concat([df1, df2])
 
 
-def test_concat_cols_with_ww_indexes(sample_df):
-    df1 = sample_df[['id', 'phone_number', 'email']]
-    df1.ww.init(index='id')
-    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
-    df2.ww.init(time_index='signup_date')
+# def test_concat_cols_with_ww_indexes(sample_df):
+#     df1 = sample_df[['id', 'phone_number', 'email']]
+#     df1.ww.init(index='id')
+#     df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+#     df2.ww.init(time_index='signup_date')
 
-    combined_df = concat([df1, df2])
-    assert combined_df.ww.index == 'id'
-    assert combined_df.ww.time_index == 'signup_date'
+#     combined_df = concat([df1, df2])
+#     assert combined_df.ww.index == 'id'
+#     assert combined_df.ww.time_index == 'signup_date'
 
 
-def test_concat_cols_with_duplicate_ww_indexes(sample_df):
-    df1 = sample_df[['id', 'phone_number', 'signup_date', 'email']]
-    df1.ww.init(index='id', time_index='signup_date')
-    df2 = sample_df[['full_name', 'age', 'id', 'signup_date', 'is_registered']]
-    df2.ww.init(index='id', time_index='signup_date')
+# def test_concat_cols_with_duplicate_ww_indexes(sample_df):
+#     df1 = sample_df[['id', 'phone_number', 'signup_date', 'email']]
+#     df1.ww.init(index='id', time_index='signup_date')
+#     df2 = sample_df[['full_name', 'age', 'id', 'signup_date', 'is_registered']]
+#     df2.ww.init(index='id', time_index='signup_date')
 
-    combined_df = concat([df1, df2])
-    assert combined_df.ww.index == 'id'
-    assert combined_df.ww.time_index == 'signup_date'
-    assert len(set(combined_df.columns)) == len(set(sample_df.columns))
+#     combined_df = concat([df1, df2])
+#     assert combined_df.ww.index == 'id'
+#     assert combined_df.ww.time_index == 'signup_date'
+#     assert len(set(combined_df.columns)) == len(set(sample_df.columns))
 
-    # confirm that the columns that are "lost" in the resulting df are still in the original dataframes
-    assert 'id' in df1.columns
-    assert 'signup_date' in df1.columns
-    assert 'id' in df2.columns
-    assert 'signup_date' in df2.columns
+#     # confirm that the columns that are "lost" in the resulting df are still in the original dataframes
+#     assert 'id' in df1.columns
+#     assert 'signup_date' in df1.columns
+#     assert 'id' in df2.columns
+#     assert 'signup_date' in df2.columns
 
 
-def test_concat_rows_with_ww_indexes(sample_df):
-    sample_df.ww.init(index='id')
-    original_schema = sample_df.ww.schema
-    copy_df = sample_df.ww.copy()
+# def test_concat_rows_with_ww_indexes(sample_df):
+#     sample_df.ww.init(index='id')
+#     original_schema = sample_df.ww.schema
+#     copy_df = sample_df.ww.copy()
 
-    if isinstance(sample_df, pd.DataFrame):
-        # Only pandas checks index uniqueness
-        error = 'Index column must be unique'
-        with pytest.raises(IndexError, match=error):
-            concat([sample_df, copy_df], axis=0)
+#     if isinstance(sample_df, pd.DataFrame):
+#         # Only pandas checks index uniqueness
+#         error = 'Index column must be unique'
+#         with pytest.raises(IndexError, match=error):
+#             concat([sample_df, copy_df], axis=0)
 
-        # Without schema validation this does not get caught
-        combined_df = concat([sample_df, copy_df], axis=0, validate_schema=False)
-        assert combined_df.ww.index == 'id'
+#         # Without schema validation this does not get caught
+#         combined_df = concat([sample_df, copy_df], axis=0, validate_schema=False)
+#         assert combined_df.ww.index == 'id'
 
-    sample_df.ww.init(time_index='signup_date')
-    original_schema = sample_df.ww.schema
-    copy_df = sample_df.ww.copy()
+#     sample_df.ww.init(time_index='signup_date')
+#     original_schema = sample_df.ww.schema
+#     copy_df = sample_df.ww.copy()
 
-    combined_df = concat([sample_df, copy_df], axis=0)
-    assert len(combined_df) == 8
+#     combined_df = concat([sample_df, copy_df], axis=0)
+#     assert len(combined_df) == 8
 
-    assert combined_df.ww.time_index == 'signup_date'
-    assert combined_df.ww.schema == original_schema
+#     assert combined_df.ww.time_index == 'signup_date'
+#     assert combined_df.ww.schema == original_schema
 
 
-def test_concat_table_names(sample_df):
-    df1 = sample_df[['id', 'signup_date']]
-    df1.ww.init(name=0)
-    df2 = sample_df[['full_name', 'age']]
-    df2.ww.init(name='1')
-    df3 = sample_df[['phone_number', 'is_registered']]
-    df3.ww.init(name='2')
+# def test_concat_table_names(sample_df):
+#     df1 = sample_df[['id', 'signup_date']]
+#     df1.ww.init(name=0)
+#     df2 = sample_df[['full_name', 'age']]
+#     df2.ww.init(name='1')
+#     df3 = sample_df[['phone_number', 'is_registered']]
+#     df3.ww.init(name='2')
 
-    combined_df = concat([df1, df2, df3])
-    assert combined_df.ww.name == '0_1_2'
+#     combined_df = concat([df1, df2, df3])
+#     assert combined_df.ww.name == '0_1_2'
 
-    combined_df = concat([df3, df2, df1])
-    assert combined_df.ww.name == '2_1_0'
+#     combined_df = concat([df3, df2, df1])
+#     assert combined_df.ww.name == '2_1_0'
 
 
-def test_concat_cols_different_use_standard_tags(sample_df):
-    sample_df.ww.init(use_standard_tags={'age': False, 'full_name': False, 'id': True},
-                      logical_types={'full_name': 'Categorical'})
+# def test_concat_cols_different_use_standard_tags(sample_df):
+#     sample_df.ww.init(use_standard_tags={'age': False, 'full_name': False, 'id': True},
+#                       logical_types={'full_name': 'Categorical'})
 
-    assert sample_df.ww.semantic_tags['id'] == {'numeric'}
-    assert sample_df.ww.semantic_tags['full_name'] == set()
-    assert sample_df.ww.semantic_tags['age'] == set()
+#     assert sample_df.ww.semantic_tags['id'] == {'numeric'}
+#     assert sample_df.ww.semantic_tags['full_name'] == set()
+#     assert sample_df.ww.semantic_tags['age'] == set()
 
-    df1 = sample_df.ww[['id', 'full_name', 'email']]
-    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+#     df1 = sample_df.ww[['id', 'full_name', 'email']]
+#     df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
 
-    combined_df = concat([df1, df2])
+#     combined_df = concat([df1, df2])
 
-    assert combined_df.ww.semantic_tags['id'] == {'numeric'}
-    assert combined_df.ww.semantic_tags['full_name'] == set()
-    assert combined_df.ww.semantic_tags['age'] == set()
+#     assert combined_df.ww.semantic_tags['id'] == {'numeric'}
+#     assert combined_df.ww.semantic_tags['full_name'] == set()
+#     assert combined_df.ww.semantic_tags['age'] == set()
 
 
-def test_concat_rows_different_schema(sample_df):
-    df1 = sample_df.copy()
-    df1.ww.init(logical_types={'age': 'AgeNullable'})
-    df2 = sample_df.copy()
-    df2.ww.init(logical_types={'age': 'IntegerNullable'})
-    df3 = sample_df.copy()
-    df3.ww.init(logical_types={'age': 'NaturalLanguage'})
+# def test_concat_rows_different_schema(sample_df):
+#     df1 = sample_df.copy()
+#     df1.ww.init(logical_types={'age': 'AgeNullable'})
+#     df2 = sample_df.copy()
+#     df2.ww.init(logical_types={'age': 'IntegerNullable'})
+#     df3 = sample_df.copy()
+#     df3.ww.init(logical_types={'age': 'NaturalLanguage'})
 
-    assert df2.ww.schema != df1.ww.schema
+#     assert df2.ww.schema != df1.ww.schema
 
-    combined_df_1 = concat([df1, df2], axis=0)
-    combined_df_1.ww.logical_types['age'] == AgeNullable
+#     combined_df_1 = concat([df1, df2], axis=0)
+#     combined_df_1.ww.logical_types['age'] == AgeNullable
 
-    combined_df_2 = concat([df2, df1], axis=0)
-    combined_df_2.ww.logical_types['age'] == IntegerNullable
+#     combined_df_2 = concat([df2, df1], axis=0)
+#     combined_df_2.ww.logical_types['age'] == IntegerNullable
 
-    combined_df_3 = concat([df3, df2], axis=0)
-    combined_df_3.ww.logical_types['age'] == NaturalLanguage
-    assert str(combined_df_3['age'].dtype) == 'string'
+#     combined_df_3 = concat([df3, df2], axis=0)
+#     combined_df_3.ww.logical_types['age'] == NaturalLanguage
+#     assert str(combined_df_3['age'].dtype) == 'string'
 
 
-def test_concat_rows_different_columns(sample_df):
-    sample_df.ww.init(time_index='signup_date')
-    df1 = sample_df.ww[['id', 'signup_date', 'full_name', 'email']]
-    df2 = sample_df.ww[['id', 'signup_date', 'phone_number', 'age', 'is_registered']]
-    # should work if dtypes dont change
+# def test_concat_cols_different_schema(sample_df):
+#     df1 = sample_df[['id', 'age']]
+#     df1.ww.init(index='id', logical_types={'id': 'AgeNullable'})
+#     df2 = sample_df[['id', 'signup_date']]
+#     df2.ww.init(index='id', logical_types={'id': 'IntegerNullable'})
 
-    combined_df = concat([df1, df2], axis=0)
-    assert combined_df.ww.schema == sample_df.ww.schema
-    assert to_pandas(combined_df).equals(pd.concat([to_pandas(df1), to_pandas(df2)]))
+#     assert df2.ww.schema != df1.ww.schema
 
+#     combined_df_1 = concat([df1.ww.copy(), df2.ww.copy()], axis=1)
+#     combined_df_1.ww.logical_types['id'] == AgeNullable
 
-def test_concat_combine_metadatas(sample_df):
-    df1 = sample_df[['id', 'full_name', 'email']]
-    df1.ww.init(table_metadata={'created_by': 'user0', 'test_key': 'test_val1'}, column_metadata={'id': {'interesting_values': [1, 2]}})
-    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
-    df2.ww.init(table_metadata={'table_type': 'single', 'test_key': 'test_val2'}, column_metadata={'age': {'interesting_values': [33]}})
+#     combined_df_2 = concat([df2.ww.copy(), df1.ww.copy()], axis=1)
+#     combined_df_2.ww.logical_types['id'] == IntegerNullable
 
-    combined_df_1 = concat([df1, df2])
 
-    # The first table sets the metadata when there's overlap
-    assert combined_df_1.ww.metadata == {'created_by': 'user0',
-                                         'table_type': 'single',
-                                         'test_key': 'test_val1'}
-    assert combined_df_1.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
-    assert combined_df_1.ww.columns['age'].metadata == {'interesting_values': [33]}
+# def test_concat_rows_different_columns(sample_df):
+#     sample_df.ww.init(time_index='signup_date')
+#     df1 = sample_df.ww[['id', 'signup_date', 'full_name', 'email']]
+#     df2 = sample_df.ww[['id', 'signup_date', 'phone_number', 'age', 'is_registered']]
+#     # should work if dtypes dont change
 
-    combined_df_2 = concat([df2, df1])
+#     combined_df = concat([df1, df2], axis=0)
+#     assert combined_df.ww.schema == sample_df.ww.schema
+#     assert to_pandas(combined_df).equals(pd.concat([to_pandas(df1), to_pandas(df2)]))
 
-    assert combined_df_2.ww.metadata == {'created_by': 'user0',
-                                         'table_type': 'single',
-                                         'test_key': 'test_val2'}
-    assert combined_df_2.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
-    assert combined_df_2.ww.columns['age'].metadata == {'interesting_values': [33]}
 
+# def test_concat_combine_metadatas(sample_df):
+#     df1 = sample_df[['id', 'full_name', 'email']]
+#     df1.ww.init(table_metadata={'created_by': 'user0', 'test_key': 'test_val1'}, column_metadata={'id': {'interesting_values': [1, 2]}})
+#     df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+#     df2.ww.init(table_metadata={'table_type': 'single', 'test_key': 'test_val2'}, column_metadata={'age': {'interesting_values': [33]}})
 
-@patch("woodwork.table_accessor._validate_accessor_params")
-def test_concat_rows_validate_schema(mock_validate_accessor_params, sample_df):
-    sample_df.ww.init(validate=False)
-    copy_df = sample_df.ww.copy()
+#     combined_df_1 = concat([df1, df2])
 
-    assert not mock_validate_accessor_params.called
+#     # The first table sets the metadata when there's overlap
+#     assert combined_df_1.ww.metadata == {'created_by': 'user0',
+#                                          'table_type': 'single',
+#                                          'test_key': 'test_val1'}
+#     assert combined_df_1.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
+#     assert combined_df_1.ww.columns['age'].metadata == {'interesting_values': [33]}
 
-    concat([sample_df, copy_df], axis=0, validate_schema=False)
+#     combined_df_2 = concat([df2, df1])
 
-    assert not mock_validate_accessor_params.called
+#     assert combined_df_2.ww.metadata == {'created_by': 'user0',
+#                                          'table_type': 'single',
+#                                          'test_key': 'test_val2'}
+#     assert combined_df_2.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
+#     assert combined_df_2.ww.columns['age'].metadata == {'interesting_values': [33]}
 
-    concat([sample_df, copy_df], axis=0, validate_schema=True)
 
-    assert mock_validate_accessor_params.called
+# @patch("woodwork.table_accessor._validate_accessor_params")
+# def test_concat_rows_validate_schema(mock_validate_accessor_params, sample_df):
+#     sample_df.ww.init(validate=False)
+#     copy_df = sample_df.ww.copy()
 
+#     assert not mock_validate_accessor_params.called
 
-def test_concat_cols_mismatched_index_adds_nans(sample_df):
-    sample_df.ww.init(index='id')
+#     concat([sample_df, copy_df], axis=0, validate_schema=False)
 
-    df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
-    df2 = sample_df.ww.loc[[1, 2, 3], ['id', 'email']]
+#     assert not mock_validate_accessor_params.called
 
-    if isinstance(sample_df, pd.DataFrame):
-        # Only pandas shows the dtype change because Dask and Koalas won't show until compute
-        error = "Error converting datatype for id from type float64 to type int64. Please confirm the underlying data is consistent with logical type Integer."
-        with pytest.raises(ww.exceptions.TypeConversionError, match=error):
-            concat([df1, df2])
+#     concat([sample_df, copy_df], axis=0, validate_schema=True)
 
-    # If the dtype can handle nans, it won't change
-    sample_df.ww.init(index='id', logical_types={'id': 'IntegerNullable'})
+#     assert mock_validate_accessor_params.called
 
-    df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
-    df2 = sample_df.ww.loc[[1, 2, 3], ['id', 'email']]
 
-    combined_df = concat([df1, df2])
-    assert len(combined_df) == 4
+# def test_concat_cols_mismatched_index_adds_nans(sample_df):
+#     sample_df.ww.init(index='id')
 
+#     df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
+#     df2 = sample_df.ww.loc[[1, 2, 3], ['id', 'email']]
 
-def test_concat_cols_duplicates(sample_df):
-    df1 = sample_df[['id', 'full_name', 'age']]
-    df2 = sample_df[['id', 'email', 'signup_date']]
+#     if isinstance(sample_df, pd.DataFrame):
+#         # Only pandas shows the dtype change because Dask and Koalas won't show until compute
+#         error = "Error converting datatype for id from type float64 to type int64. Please confirm the underlying data is consistent with logical type Integer."
+#         with pytest.raises(ww.exceptions.TypeConversionError, match=error):
+#             concat([df1, df2])
 
-    # different error for Koalas because it gets caught at concat
-    if ks and isinstance(sample_df, ks.DataFrame):
-        error_type = ValueError
-        error = re.escape("Labels have to be unique; however, got duplicated labels ['id'].")
-    else:
-        error_type = IndexError
-        error = 'Dataframe cannot contain duplicate columns names'
-    with pytest.raises(error_type, match=error):
-        concat([df1, df2])
+#     # If the dtype can handle nans, it won't change
+#     sample_df.ww.init(index='id', logical_types={'id': 'IntegerNullable'})
 
+#     df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
+#     df2 = sample_df.ww.loc[[1, 2, 3], ['id', 'email']]
 
-def test_concat_axis_params(sample_df):
-    df1 = sample_df[['id', 'full_name', 'age']]
-    df2 = sample_df[['email', 'signup_date']]
-    df1.ww.init(logical_types={'id': 'IntegerNullable'})
-    df2.ww.init()
+#     combined_df = concat([df1, df2])
+#     assert len(combined_df) == 4
 
-    axis_0 = concat([df1, df2], axis=0)
-    axis_index = concat([df1, df2], axis='index')
-    assert axis_0.ww == axis_index.ww
-    assert to_pandas(axis_0).equals(to_pandas(axis_index))
 
-    axis_1 = concat([df1, df2], axis=1)
-    axis_columns = concat([df1, df2], axis='columns')
-    assert axis_1.ww == axis_columns.ww
-    assert to_pandas(axis_1).equals(to_pandas(axis_columns))
+# def test_concat_cols_duplicates(sample_df):
+#     df1 = sample_df[['id', 'full_name', 'age']]
+#     df2 = sample_df[['id', 'email', 'signup_date']]
 
-    error = 'No axis named test'
-    with pytest.raises(ValueError, match=error):
-        concat([df1, df2], axis='test')
+#     # different error for Koalas because it gets caught at concat
+#     if ks and isinstance(sample_df, ks.DataFrame):
+#         error_type = ValueError
+#         error = re.escape("Labels have to be unique; however, got duplicated labels ['id'].")
+#     else:
+#         error_type = IndexError
+#         error = 'Dataframe cannot contain duplicate columns names'
+#     with pytest.raises(error_type, match=error):
+#         concat([df1, df2])
 
 
-def test_concat_axis_params_with_index(sample_df):
-    df1 = sample_df[['id', 'signup_date', 'full_name', 'age']]
-    df2 = sample_df[['id', 'email', 'signup_date']]
-    df1.ww.init(index='id', time_index='signup_date')
-    df2.ww.init(index='id', time_index='signup_date')
+# def test_concat_axis_params(sample_df):
+#     df1 = sample_df[['id', 'full_name', 'age']]
+#     df2 = sample_df[['email', 'signup_date']]
+#     df1.ww.init(logical_types={'id': 'IntegerNullable'})
+#     df2.ww.init()
 
-    axis_1 = concat([df1, df2], axis=1)
-    axis_columns = concat([df1, df2], axis='columns')
-    assert axis_1.ww == axis_columns.ww
-    assert to_pandas(axis_1).equals(to_pandas(axis_columns))
+#     axis_0 = concat([df1, df2], axis=0)
+#     axis_index = concat([df1, df2], axis='index')
+#     assert axis_0.ww == axis_index.ww
+#     assert to_pandas(axis_0).equals(to_pandas(axis_index))
 
-    if ks and isinstance(sample_df, ks.DataFrame):
-        df2['id'] = [4, 5, 6, 7]
-    else:
-        df2['id'] = pd.Series([4, 5, 6, 7], dtype='int64')
+#     axis_1 = concat([df1, df2], axis=1)
+#     axis_columns = concat([df1, df2], axis='columns')
+#     assert axis_1.ww == axis_columns.ww
+#     assert to_pandas(axis_1).equals(to_pandas(axis_columns))
 
-    axis_0 = concat([df1, df2], axis=0)
-    axis_index = concat([df1, df2], axis='index')
-    assert axis_0.ww == axis_index.ww
-    assert to_pandas(axis_0).equals(to_pandas(axis_index))
+#     error = 'No axis named test'
+#     with pytest.raises(ValueError, match=error):
+#         concat([df1, df2], axis='test')
 
 
-def test_concat_different_table_types(sample_df_pandas, sample_df_dask):
-    sample_df_pandas.ww.init()
-    sample_df_dask.ww.init()
+# def test_concat_axis_params_with_index(sample_df):
+#     df1 = sample_df[['id', 'signup_date', 'full_name', 'age']]
+#     df2 = sample_df[['id', 'email', 'signup_date']]
+#     df1.ww.init(index='id', time_index='signup_date')
+#     df2.ww.init(index='id', time_index='signup_date')
 
-    error = re.escape("cannot concatenate object of type '<class 'dask.dataframe.core.DataFrame'>'; only Series and DataFrame objs are valid")
-    with pytest.raises(TypeError, match=error):
-        concat([sample_df_dask, sample_df_pandas], axis=0)
+#     axis_1 = concat([df1, df2], axis=1)
+#     axis_columns = concat([df1, df2], axis='columns')
+#     assert axis_1.ww == axis_columns.ww
+#     assert to_pandas(axis_1).equals(to_pandas(axis_columns))
 
+#     if ks and isinstance(sample_df, ks.DataFrame):
+#         df2['id'] = [4, 5, 6, 7]
+#     else:
+#         df2['id'] = pd.Series([4, 5, 6, 7], dtype='int64')
 
-def test_concat_cols_inner_join(sample_df):
-    df1 = sample_df.loc[[0, 1, 2], ['id', 'full_name', 'age']]
-    df1.ww.init(index='id')
-    df2 = sample_df.loc[[2, 3], ['email', 'signup_date']]
-    df2.ww.init(time_index='signup_date')
+#     axis_0 = concat([df1, df2], axis=0)
+#     axis_index = concat([df1, df2], axis='index')
+#     assert axis_0.ww == axis_index.ww
+#     assert to_pandas(axis_0).equals(to_pandas(axis_index))
 
-    inner_combined = concat([df1, df2], join='inner', axis=1)
-    assert set(inner_combined.columns) == {'id', 'email', 'full_name', 'age', 'signup_date'}
-    assert len(inner_combined) == 1
-    assert inner_combined.ww.index == 'id'
-    assert inner_combined.ww.time_index == 'signup_date'
 
+# def test_concat_different_table_types(sample_df_pandas, sample_df_dask):
+#     sample_df_pandas.ww.init()
+#     sample_df_dask.ww.init()
 
-def test_concat_rows_inner_join_lose_index(sample_df):
-    df1 = sample_df[['signup_date', 'email', 'age']]
-    df1.ww.init(time_index='signup_date')
+#     error = re.escape("cannot concatenate object of type '<class 'dask.dataframe.core.DataFrame'>'; only Series and DataFrame objs are valid")
+#     with pytest.raises(TypeError, match=error):
+#         concat([sample_df_dask, sample_df_pandas], axis=0)
 
-    df2 = sample_df[['id', 'email', 'signup_date', 'age']]
-    df2.ww.init(index='id', time_index='signup_date')
 
-    # If we lose a column in the inner join, we lose its typing information
-    inner_combined = concat([df1, df2], join='inner', axis=0)
-    assert set(inner_combined.columns) == {'email', 'age', 'signup_date'}
-    assert inner_combined.ww.index is None
-    assert inner_combined.ww.time_index == 'signup_date'
+# def test_concat_cols_inner_join(sample_df):
+#     df1 = sample_df.loc[[0, 1, 2], ['id', 'full_name', 'age']]
+#     df1.ww.init(index='id')
+#     df2 = sample_df.loc[[2, 3], ['email', 'signup_date']]
+#     df2.ww.init(time_index='signup_date')
 
+#     inner_combined = concat([df1, df2], join='inner', axis=1)
+#     assert set(inner_combined.columns) == {'id', 'email', 'full_name', 'age', 'signup_date'}
+#     assert len(inner_combined) == 1
+#     assert inner_combined.ww.index == 'id'
+#     assert inner_combined.ww.time_index == 'signup_date'
 
-def test_concat_rows_inner_join_lose_time_index(sample_df):
-    df1 = sample_df[['signup_date', 'email', 'age']]
-    df1.ww.init(time_index='signup_date')
 
-    df2 = sample_df[['id', 'email', 'age']]
-    df2.ww.init(index='id')
+# def test_concat_rows_inner_join_lose_index(sample_df):
+#     df1 = sample_df[['signup_date', 'email', 'age']]
+#     df1.ww.init(time_index='signup_date')
 
-    # If we lose a column in the inner join, we lose its typing information
-    inner_combined = concat([df1, df2], join='inner', axis=0)
-    assert set(inner_combined.columns) == {'email', 'age'}
-    assert inner_combined.ww.index is None
-    assert inner_combined.ww.time_index is None
+#     df2 = sample_df[['id', 'email', 'signup_date', 'age']]
+#     df2.ww.init(index='id', time_index='signup_date')
 
+#     # If we lose a column in the inner join, we lose its typing information
+#     inner_combined = concat([df1, df2], join='inner', axis=0)
+#     assert set(inner_combined.columns) == {'email', 'age', 'signup_date'}
+#     assert inner_combined.ww.index is None
+#     assert inner_combined.ww.time_index == 'signup_date'
 
-def test_concat_table_order(sample_df):
-    df1 = sample_df[['id', 'signup_date']]
-    df1.ww.init(index='id')
-    df2 = sample_df[['id', 'age']]
-    df2.ww.init(index='id')
 
-    combined_df1 = concat([df1.ww.copy(), df2.ww.copy()])
-    combined_df2 = concat([df2.ww.copy(), df1.ww.copy()])
+# def test_concat_rows_inner_join_lose_time_index(sample_df):
+#     df1 = sample_df[['signup_date', 'email', 'age']]
+#     df1.ww.init(time_index='signup_date')
 
-    assert set(combined_df1.columns) == set(combined_df2.columns)
+#     df2 = sample_df[['id', 'email', 'age']]
+#     df2.ww.init(index='id')
 
-    assert list(combined_df1.columns) == ['id', 'signup_date', 'age']
-    assert list(combined_df2.columns) == ['id', 'age', 'signup_date']
+#     # If we lose a column in the inner join, we lose its typing information
+#     inner_combined = concat([df1, df2], join='inner', axis=0)
+#     assert set(inner_combined.columns) == {'email', 'age'}
+#     assert inner_combined.ww.index is None
+#     assert inner_combined.ww.time_index is None
 
 
-def test_concat_cols_all_series(sample_df):
-    age_series = ww.init_series(sample_df['age'], logical_type='Double')
-    combined_df = concat([sample_df['id'], age_series, sample_df['is_registered']], axis=1)
+# def test_concat_table_order(sample_df):
+#     df1 = sample_df[['id', 'signup_date']]
+#     df1.ww.init(index='id')
+#     df2 = sample_df[['id', 'age']]
+#     df2.ww.init(index='id')
 
-    assert isinstance(combined_df.ww.schema, ww.table_schema.TableSchema)
-    assert set(combined_df.columns) == {'id', 'age', 'is_registered'}
-    assert combined_df.ww.logical_types['age'] == Double
+#     combined_df1 = concat([df1.ww.copy(), df2.ww.copy()])
+#     combined_df2 = concat([df2.ww.copy(), df1.ww.copy()])
 
+#     assert set(combined_df1.columns) == set(combined_df2.columns)
 
-def test_concat_rows_all_series(sample_df):
-    warning = 'Woodwork not initialized on the output of ww.concat'
-    with pytest.warns(ww.exceptions.WoodworkNotInitWarning, match=warning):
-        combined_series = concat([sample_df['age'], sample_df['age']], axis=0)
+#     assert list(combined_df1.columns) == ['id', 'signup_date', 'age']
+#     assert list(combined_df2.columns) == ['id', 'age', 'signup_date']
 
-    assert combined_series.ww.schema is None
-    assert combined_series.name == 'age'
 
+# def test_concat_cols_all_series(sample_df):
+#     age_series = ww.init_series(sample_df['age'], logical_type='Double')
+#     combined_df = concat([sample_df['id'], age_series, sample_df['is_registered']], axis=1)
 
-def test_concat_empty_list():
-    error = 'No objects to concatenate'
-    with pytest.raises(ValueError, match=error):
-        concat([])
+#     assert isinstance(combined_df.ww.schema, ww.table_schema.TableSchema)
+#     assert set(combined_df.columns) == {'id', 'age', 'is_registered'}
+#     assert combined_df.ww.logical_types['age'] == Double
 
 
-def test_concat_with_none(sample_df):
-    df1 = sample_df[['id', 'full_name', 'email']]
-    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+# def test_concat_rows_all_series(sample_df):
+#     warning = 'Woodwork not initialized on the output of ww.concat'
+#     with pytest.warns(ww.exceptions.WoodworkNotInitWarning, match=warning):
+#         combined_series = concat([sample_df['age'], sample_df['age']], axis=0)
 
-    error = 'Cannont include None in list of objects to concatenate'
-    with pytest.raises(ValueError, match=error):
-        concat([df1, df2, None])
+#     assert combined_series.ww.schema is None
+#     assert combined_series.name == 'age'
+
+
+# def test_concat_empty_list():
+#     error = 'No objects to concatenate'
+#     with pytest.raises(ValueError, match=error):
+#         concat([])
+
+
+# def test_concat_with_none(sample_df):
+#     df1 = sample_df[['id', 'full_name', 'email']]
+#     df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+
+#     error = 'Cannont include None in list of objects to concatenate'
+#     with pytest.raises(ValueError, match=error):
+#         concat([df1, df2, None])
