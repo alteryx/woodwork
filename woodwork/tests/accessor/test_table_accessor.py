@@ -157,14 +157,14 @@ def test_rename_init_with_name(sample_df):
 
 
 def test_name_error_on_init(sample_df):
-    err_msg = "TableSchema name must be a string"
+    err_msg = "Table name must be a string"
     with pytest.raises(TypeError, match=err_msg):
         sample_df.ww.init(name=123)
 
 
 def test_name_error_on_update(sample_df):
     sample_df.ww.init()
-    err_msg = "TableSchema name must be a string"
+    err_msg = "Table name must be a string"
     with pytest.raises(TypeError, match=err_msg):
         sample_df.ww.name = 123
 

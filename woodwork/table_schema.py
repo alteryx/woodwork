@@ -547,7 +547,7 @@ def _validate_params(column_names, name, index, time_index, logical_types,
 
 def _check_name(name):
     if not isinstance(name, str):
-        raise TypeError('TableSchema name must be a string')
+        raise TypeError('Table name must be a string')
 
 
 def _check_column_names(column_names):
