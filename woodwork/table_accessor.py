@@ -24,10 +24,7 @@ from woodwork.statistics_utils import (
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
-from woodwork.type_sys.utils import (
-    _is_numeric_series,
-    col_is_datetime
-)
+from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.utils import (
     _get_column_logical_type,
     _parse_logical_type,
