@@ -310,9 +310,9 @@ def _update_progress(start_time, current_time, progress_increment,
         update: percentage change (float between 0 and 100) in progress since last call
         progress_percent: percentage (float between 0 and 100) of total computation completed
         time_elapsed: total time in seconds that has elapsed since start of call"""
-    new_progress = current_progress + progress_increment
     if callback_function is not None:
+        new_progress = current_progress + progress_increment
         elapsed_time = current_time - start_time
         callback_function((progress_increment / total) * 100, (new_progress / total) * 100, elapsed_time)
 
-    return new_progress
+        return new_progress
