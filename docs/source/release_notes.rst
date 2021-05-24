@@ -8,7 +8,7 @@ Future Release
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
     * Fixes
-        * Fix bug when setting table name through accessor (:pr:`942`)
+        * Fix bug when setting table name and metadata through accessor (:pr:`942`)
     * Changes
     * Documentation Changes
     * Testing Changes
