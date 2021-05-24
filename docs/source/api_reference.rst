@@ -74,9 +74,11 @@ TableSchema
     TableSchema.add_semantic_tags
     TableSchema.index
     TableSchema.logical_types
+    TableSchema.metadata
     TableSchema.rename
     TableSchema.remove_semantic_tags
     TableSchema.reset_semantic_tags
+    TableSchema.name
     TableSchema.semantic_tags
     TableSchema.set_index
     TableSchema.set_time_index
@@ -93,10 +95,12 @@ ColumnSchema
     :toctree: generated/
 
     ColumnSchema
+    ColumnSchema.description
     ColumnSchema.is_boolean
     ColumnSchema.is_categorical
     ColumnSchema.is_datetime
     ColumnSchema.is_numeric
+    ColumnSchema.metadata
     
 Serialization
 =============
