@@ -249,6 +249,34 @@ class WoodworkTableAccessor:
         return typing_info
 
     @property
+    def name(self):
+        """Name of the DataFrame"""
+        if self._schema is None:
+            _raise_init_error()
+        return self._schema.name
+
+    @name.setter
+    def name(self, name):
+        """Set name of the DataFrame"""
+        if self._schema is None:
+            _raise_init_error()
+        self._schema.name = name
+
+    @property
+    def metadata(self):
+        """Metadata of the DataFrame"""
+        if self._schema is None:
+            _raise_init_error()
+        return self._schema.metadata
+
+    @metadata.setter
+    def metadata(self, metadata):
+        """Set metadata of the DataFrame"""
+        if self._schema is None:
+            _raise_init_error()
+        self._schema.metadata = metadata
+
+    @property
     def _dataframe(self):
         return self._dataframe_weakref()
 
