@@ -25,7 +25,6 @@ from woodwork.statistics_utils import (
 )
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import (
-    _get_ltype_class,
     _is_numeric_series,
     col_is_datetime
 )
@@ -840,7 +839,7 @@ def _validate_accessor_params(dataframe, index, make_index, time_index, logical_
             logical_type = None
             if logical_types is not None and time_index in logical_types:
                 logical_type = logical_types[time_index]
-                if _get_ltype_class(logical_types[time_index]) == Datetime:
+                if type(logical_types[time_index]) == Datetime:
                     datetime_format = logical_types[time_index].datetime_format
 
             _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
