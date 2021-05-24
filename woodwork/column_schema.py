@@ -83,7 +83,7 @@ class ColumnSchema(object):
     def description(self):
         """Description of the column"""
         return self._description
-    
+
     @description.setter
     def description(self, description):
         _validate_description(description)
@@ -93,7 +93,7 @@ class ColumnSchema(object):
     def metadata(self):
         """Metadata of the column"""
         return self._metadata
-    
+
     @metadata.setter
     def metadata(self, metadata):
         metadata = metadata or {}

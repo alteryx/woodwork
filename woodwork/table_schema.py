@@ -56,8 +56,8 @@ class TableSchema(object):
         """
         if validate:
             # Check that inputs are valid
-            _validate_params(column_names, name, index, time_index, logical_types, table_metadata, column_metadata, semantic_tags, column_descriptions,
-                             use_standard_tags)
+            _validate_params(column_names, name, index, time_index, logical_types, table_metadata,
+                             column_metadata, semantic_tags, column_descriptions, use_standard_tags)
 
         self._name = name
         self._metadata = table_metadata or {}
