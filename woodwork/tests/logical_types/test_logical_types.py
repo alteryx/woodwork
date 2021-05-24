@@ -1,6 +1,13 @@
+import pandas as pd
 import pytest
 
-from woodwork.logical_types import Boolean, Categorical, Datetime, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    LatLong,
+    Ordinal
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -55,3 +62,33 @@ def test_get_valid_dtype(sample_series):
 
     valid_dtype = Boolean._get_valid_dtype(type(sample_series))
     assert valid_dtype == 'bool'
+
+
+def test_latlong_transform(latlong_df):
+    nan = float('nan')
+    expected_data = {
+        'tuple_ints': [(1.0, 2.0), (3.0, 4.0)],
+        'tuple_strings': [(1.0, 2.0), (3.0, 4.0)],
+        'string_tuple': [(1.0, 2.0), (3.0, 4.0)],
+        'bracketless_string_tuple': [(1.0, 2.0), (3.0, 4.0)],
+        'list_strings': [(1.0, 2.0), (3.0, 4.0)],
+        'combo_tuple_types': [(1.0, 2.0), (3.0, 4.0)],
+        'null_value': [nan, (3.0, 4.0)],
+        'null_latitude': [(nan, 2.0), (3.0, 4.0)],
+        'both_null': [nan, (3.0, 4.0)],
+    }
+
+    latlong = LatLong()
+    for column in latlong_df:
+        series = latlong_df[column]
+        actual = latlong.transform(series)
+
+        if isinstance(actual, dd.Series):
+            actual = actual.compute()
+        elif isinstance(actual, ks.Series):
+            actual = actual.to_pandas()
+
+        actual = actual.apply(pd.Series)
+        series = pd.Series(expected_data[column])
+        expected = series.apply(pd.Series)
+        assert actual.equals(expected)
