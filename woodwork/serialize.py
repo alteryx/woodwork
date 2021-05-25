@@ -38,11 +38,9 @@ def typing_info_to_dict(dataframe):
         dataframe = dataframe.ww.categorize(columns=category_cols)
     ordered_columns = dataframe.columns
 
-    def get_physical_type_dict(column):
-        type_dict = {}
-        column_dtype = str(column.dtype)
-        type_dict['type'] = column_dtype
-        if column_dtype == 'category':
+    def _get_physical_type_dict(column):
+        type_dict = {'type': str(column.dtype)}
+        if str(column.dtype) == 'category':
             type_dict['cat_values'] = column.dtype.categories.to_list()
             type_dict['cat_dtype'] = str(column.dtype.categories.dtype)
         return type_dict
@@ -55,7 +53,7 @@ def typing_info_to_dict(dataframe):
              'parameters': _get_specified_ltype_params(col.logical_type),
              'type': str(_get_ltype_class(col.logical_type))
          },
-         'physical_type': get_physical_type_dict(dataframe[col_name]),
+         'physical_type': _get_physical_type_dict(dataframe[col_name]),
          'semantic_tags': sorted(list(col.semantic_tags)),
          'description': col.description,
          'metadata': col.metadata,
