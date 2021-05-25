@@ -832,11 +832,32 @@ def test_concat_table_order(sample_df):
 
 def test_concat_cols_all_series(sample_df):
     age_series = ww.init_series(sample_df['age'], logical_type='Double')
-    combined_df = concat_columns([sample_df['id'], age_series, sample_df['is_registered']])
+    combined_df_1 = concat_columns([sample_df['id'], age_series, sample_df['is_registered']])
+    combined_df_2 = concat_columns([age_series, sample_df['id'], sample_df['is_registered']])
 
-    assert isinstance(combined_df.ww.schema, ww.table_schema.TableSchema)
-    assert set(combined_df.columns) == {'id', 'age', 'is_registered'}
-    assert combined_df.ww.logical_types['age'] == Double
+    assert isinstance(combined_df_1.ww.schema, ww.table_schema.TableSchema)
+    assert list(combined_df_1.columns) == ['id', 'age', 'is_registered']
+    assert list(combined_df_2.columns) == ['age', 'id', 'is_registered']
+    assert combined_df_1.ww.logical_types['age'] == Double
+
+
+def test_concat_cols_row_order(sample_df):
+    sample_df.ww.init(index='id')
+    pd.testing.assert_index_equal(to_pandas(sample_df.index), pd.Index([0, 1, 2, 3]))
+
+    df1 = sample_df.ww.loc[:, ['id', 'full_name']]
+    df2 = sample_df.ww.loc[[2, 3, 0, 1], ['email', 'phone_number']]
+    df3 = sample_df.ww.loc[[3, 1, 0, 2], ['age', 'signup_date', 'is_registered']]
+
+    combined_df = concat_columns([df1, df2, df3])
+
+    assert sample_df.ww == combined_df.ww
+
+    # koalas does not preserve index order in the same way
+    if ks and isinstance(sample_df, ks.DataFrame):
+        pd.testing.assert_index_equal(to_pandas(combined_df.index), pd.Index([2, 0, 1, 3]))
+    else:
+        pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))
 
 
 def test_concat_empty_list():
