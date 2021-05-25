@@ -8,7 +8,6 @@ import pytest
 from mock import patch
 
 import woodwork as ww
-from woodwork import logical_types
 from woodwork.logical_types import (
     Age,
     AgeNullable,
