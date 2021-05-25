@@ -1992,7 +1992,7 @@ def test_accessor_rename_inplace(sample_df):
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
 
-    elif isinstance(sample_df, pd.DataFrame):
+    else:
         inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
 
         assert original_df.columns.get_loc('age') == inplace_df.columns.get_loc('birthday')
