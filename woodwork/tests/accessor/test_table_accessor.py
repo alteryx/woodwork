@@ -2110,11 +2110,11 @@ def test_accessor_rename_inplace(sample_df):
         new_df.ww.rename({'age': 'full_name', 'full_name': 'age'}, inplace=True)
 
         pd.testing.assert_series_equal(to_pandas(original_df['age']),
-                                    to_pandas(new_df['full_name']),
-                                    check_names=False)
+                                       to_pandas(new_df['full_name']),
+                                       check_names=False)
         pd.testing.assert_series_equal(to_pandas(original_df['full_name']),
-                                    to_pandas(new_df['age']),
-                                    check_names=False)
+                                       to_pandas(new_df['age']),
+                                       check_names=False)
 
         assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
         assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
