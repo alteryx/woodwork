@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
     * Fixes
+        * Fix bug when setting table name and metadata through accessor (:pr:`942`)
     * Changes
         * Add logical type method to transform data (:pr:`915`)
     * Documentation Changes
@@ -16,7 +17,7 @@ Future Release
         * Create separate worksflows for each CI job (:pr:`919`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 
 v0.3.1 May 12, 2021

@@ -111,7 +111,6 @@ class WoodworkColumnAccessor:
     def description(self, description):
         if self._schema is None:
             _raise_init_error()
-        _validate_description(description)
         self._schema.description = description
 
     @property
@@ -185,7 +184,6 @@ class WoodworkColumnAccessor:
     def metadata(self, metadata):
         if self._schema is None:
             _raise_init_error()
-        _validate_metadata(metadata)
         self._schema.metadata = metadata
 
     @property

@@ -28,7 +28,7 @@ from woodwork.table_schema import (
 
 
 def test_validate_params_errors(sample_column_names):
-    error_message = 'TableSchema name must be a string'
+    error_message = 'Table name must be a string'
     with pytest.raises(TypeError, match=error_message):
         _validate_params(column_names=sample_column_names,
                          name=1,
