@@ -698,7 +698,7 @@ class WoodworkTableAccessor:
             inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
-            DataFrame or None: DataFrame with the specified columns removed, maintaining Woodwork typing information or None if inplace=True.
+            DataFrame or None: DataFrame with the specified columns removed, maintaining Woodwork typing information or None if inplace=True. Only possible for pandas dataframes.
 
         Note:
             This method is used for removing columns only. To remove rows with ``drop``, go through the
@@ -723,7 +723,7 @@ class WoodworkTableAccessor:
             inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
-            DataFrame or None: DataFrame with the specified columns renamed, maintaining Woodwork typing information or None if inplace=True.
+            DataFrame or None: DataFrame with the specified columns renamed, maintaining Woodwork typing information or None if inplace=True. Only possible for pandas dataframes.
         """
         if self._schema is None:
             _raise_init_error()
