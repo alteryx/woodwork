@@ -5,11 +5,7 @@ import weakref
 import pandas as pd
 
 from woodwork.accessor_utils import _is_series, init_series
-from woodwork.column_schema import (
-    ColumnSchema,
-    _validate_description,
-    _validate_metadata
-)
+from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning,
