@@ -37,6 +37,16 @@ def typing_info_to_dict(dataframe):
         category_cols = [colname for colname, col in dataframe.ww._schema.columns.items() if col.is_categorical]
         dataframe = dataframe.ww.categorize(columns=category_cols)
     ordered_columns = dataframe.columns
+
+    def get_physical_type_dict(column):
+        type_dict = {}
+        column_dtype = str(column.dtype)
+        type_dict['type'] = column_dtype
+        if column_dtype == 'category':
+            type_dict['cat_values'] = column.dtype.categories.to_list()
+            type_dict['cat_dtype'] = str(column.dtype.categories.dtype)
+        return type_dict
+
     column_typing_info = [
         {'name': col_name,
          'ordinal': ordered_columns.get_loc(col_name),
@@ -45,12 +55,7 @@ def typing_info_to_dict(dataframe):
              'parameters': _get_specified_ltype_params(col.logical_type),
              'type': str(_get_ltype_class(col.logical_type))
          },
-         'physical_type': {
-             'type': str(dataframe[col_name].dtype),
-             # Store categorical values so they can be recreated if they are modified during serialization
-             'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None,
-             'cat_dtype': str(dataframe[col_name].dtype.categories.dtype) if str(dataframe[col_name].dtype) == 'category' else None
-         },
+         'physical_type': get_physical_type_dict(dataframe[col_name]),
          'semantic_tags': sorted(list(col.semantic_tags)),
          'description': col.description,
          'metadata': col.metadata,
