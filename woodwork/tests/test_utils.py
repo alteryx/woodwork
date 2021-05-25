@@ -8,6 +8,7 @@ import pytest
 from mock import patch
 
 import woodwork as ww
+from woodwork import logical_types
 from woodwork.logical_types import (
     Age,
     AgeNullable,
@@ -765,7 +766,7 @@ def test_concat_cols_validate_schema(mock_validate_accessor_params, sample_df):
     assert mock_validate_accessor_params.called
 
 
-def test_concat_cols_mismatched_index_adds_nans(sample_df):
+def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
     sample_df.ww.init(index='id')
 
     df1 = sample_df.ww.loc[[0, 1, 2], ['id', 'full_name']]
@@ -785,6 +786,18 @@ def test_concat_cols_mismatched_index_adds_nans(sample_df):
 
     combined_df = concat_columns([df1, df2])
     assert len(combined_df) == 4
+
+
+def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df_pandas):
+    # Only pandas checks for index uniqueness
+    sample_df_pandas.ww.init(index='id', logical_types={'id': 'IntegerNullable'})
+
+    df1 = sample_df_pandas.ww.loc[[0, 1], ['id', 'full_name']]
+    df2 = sample_df_pandas.ww.loc[[2, 3], ['signup_date', 'email']]
+
+    error = "Index column must be unique"
+    with pytest.raises(IndexError, match=error):
+        concat_columns([df1, df2])
 
 
 def test_concat_cols_duplicates(sample_df):
