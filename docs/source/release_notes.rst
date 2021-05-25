@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
+        * Add option to read and write arrow/feather files (:pr:`948`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
     * Changes
