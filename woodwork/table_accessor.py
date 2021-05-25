@@ -715,7 +715,7 @@ class WoodworkTableAccessor:
         new_df.ww.init(schema=new_schema)
         return new_df
 
-    def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False):
+    def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
@@ -732,6 +732,11 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
+            callback (callable): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -741,9 +746,9 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows, include_index=include_index)
+        return _get_mutual_information_dict(self._dataframe, num_bins, nrows, include_index, callback)
 
-    def mutual_information(self, num_bins=10, nrows=None, include_index=False):
+    def mutual_information(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Age, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
@@ -759,6 +764,11 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
+            callback (callable): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
@@ -766,7 +776,7 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        mutual_info = self.mutual_information_dict(num_bins, nrows, include_index)
+        mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
 
     def describe_dict(self, include=None):
