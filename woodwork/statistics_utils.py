@@ -178,11 +178,11 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             included as long as its LogicalType is valid for mutual information calculations.
             If False, the index column will not have mutual information calculated for it.
             Defaults to False.
-        callback (callable): function to be called with incremental updates.
-            Has the following parameters:
-            update: percentage change (float between 0 and 100) in progress since last call
-            progress_percent: percentage (float between 0 and 100) of total computation completed
-            time_elapsed: total time in seconds that has elapsed since start of call
+        callback (callable): function to be called with incremental updates. Has the following parameters:
+
+            - update: percentage change (float between 0 and 100) in progress since last call
+            - progress_percent: percentage (float between 0 and 100) of total computation completed
+            - time_elapsed: total time in seconds that has elapsed since start of call
 
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
@@ -213,7 +213,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         data = data.loc[:, not_null_cols]
 
     # Setup for progress callback and make initial call
-    # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n/2) for main calculation loop
+    # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n)/2 for main calculation loop
     n = len(data.columns)
     total_loops = 1 + 2 * n + (n * n + n) / 2
     current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, callback)

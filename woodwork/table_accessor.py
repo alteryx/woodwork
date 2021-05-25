@@ -738,11 +738,11 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable): function to be called with incremental updates.
-                Has the following parameters:
-                update: percentage change (float between 0 and 100) in progress since last call
-                progress_percent: percentage (float between 0 and 100) of total computation completed
-                time_elapsed: total time in seconds that has elapsed since start of call
+            callback (callable): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -770,11 +770,11 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable): function to be called with incremental updates.
-                Has the following parameters:
-                update: percentage change (float between 0 and 100) in progress since last call
-                progress_percent: percentage (float between 0 and 100) of total computation completed
-                time_elapsed: total time in seconds that has elapsed since start of call
+            callback (callable): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
