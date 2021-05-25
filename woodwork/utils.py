@@ -313,7 +313,7 @@ def concat_columns(objs, validate_schema=True):
             for the concatenated DataFrame. Defaults to True.
 
     Returns:
-        DataFrame: A Woodwork dataframe whose typing information is also a concatenation of the input dataframes. 
+        DataFrame: A Woodwork dataframe whose typing information is also a concatenation of the input dataframes.
     """
     if not objs:
         raise ValueError('No objects to concatenate')
