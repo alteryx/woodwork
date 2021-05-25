@@ -17,7 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '9.0.0'
+SCHEMA_VERSION = '10.0.0'
 FORMATS = ['csv', 'pickle', 'parquet']
 
 
@@ -48,7 +48,8 @@ def typing_info_to_dict(dataframe):
          'physical_type': {
              'type': str(dataframe[col_name].dtype),
              # Store categorical values so they can be recreated if they are modified during serialization
-             'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None
+             'cat_values': dataframe[col_name].dtype.categories.to_list() if str(dataframe[col_name].dtype) == 'category' else None,
+             'cat_dtype': str(dataframe[col_name].dtype.categories.dtype) if str(dataframe[col_name].dtype) == 'category' else None
          },
          'semantic_tags': sorted(list(col.semantic_tags)),
          'description': col.description,
