@@ -748,21 +748,22 @@ def test_concat_combine_metadatas(sample_df):
     assert combined_df.ww.columns['age'].metadata == {'interesting_values': [33]}
 
 
-# --> change to calculate on col concat
-# @patch("woodwork.table_accessor._validate_accessor_params")
-# def test_concat_rows_validate_schema(mock_validate_accessor_params, sample_df):
-#     sample_df.ww.init(validate=False)
-#     copy_df = sample_df.ww.copy()
+@patch("woodwork.table_accessor._validate_accessor_params")
+def test_concat_cols_validate_schema(mock_validate_accessor_params, sample_df):
+    df1 = sample_df[['id', 'full_name', 'email']]
+    df1.ww.init(validate=False)
+    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df2.ww.init(validate=False)
 
-#     assert not mock_validate_accessor_params.called
+    assert not mock_validate_accessor_params.called
 
-#     concat([sample_df, copy_df], axis=0, validate_schema=False)
+    concat([df1, df2], validate_schema=False)
 
-#     assert not mock_validate_accessor_params.called
+    assert not mock_validate_accessor_params.called
 
-#     concat([sample_df, copy_df], axis=0, validate_schema=True)
+    concat([df1, df2], validate_schema=True)
 
-#     assert mock_validate_accessor_params.called
+    assert mock_validate_accessor_params.called
 
 
 def test_concat_cols_mismatched_index_adds_nans(sample_df):
