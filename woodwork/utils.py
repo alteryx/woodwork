@@ -397,6 +397,7 @@ def concat(objs, validate_schema=True):
             col_names_seen.add(name)
 
     # Perform concatenation with the correct library
+    obj = objs[0]
     dd = import_or_none('dask.dataframe')
     ks = import_or_none('databricks.koalas')
 
