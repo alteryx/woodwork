@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import pytest
 
@@ -65,7 +67,11 @@ def test_get_valid_dtype(sample_series):
 
 
 def test_latlong_transform(latlong_df):
+    df_type = str(type(latlong_df))
+    dask = 'dask' in df_type
+    koalas = 'koalas' in df_type
     nan = float('nan')
+
     expected_data = {
         'tuple_ints': [(1.0, 2.0), (3.0, 4.0)],
         'tuple_strings': [(1.0, 2.0), (3.0, 4.0)],
@@ -83,12 +89,36 @@ def test_latlong_transform(latlong_df):
         series = latlong_df[column]
         actual = latlong.transform(series)
 
-        if isinstance(actual, dd.Series):
+        if dask:
             actual = actual.compute()
-        elif isinstance(actual, ks.Series):
+        elif koalas:
             actual = actual.to_pandas()
 
         actual = actual.apply(pd.Series)
         series = pd.Series(expected_data[column])
         expected = series.apply(pd.Series)
         assert actual.equals(expected)
+
+
+def test_datetime_transform(datetimes):
+    datetime = Datetime()
+    for series in datetimes:
+        assert str(series.dtype) == 'object'
+        transform = datetime.transform(series)
+        assert str(transform.dtype) == 'datetime64[ns]'
+
+
+def test_ordinal_transform(sample_series):
+    series_type = str(type(sample_series))
+    dask = 'dask' in series_type
+    koalas = 'koalas' in series_type
+
+    if dask or koalas:
+        pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
+
+    ordinal_incomplete_order = Ordinal(order=['a', 'b'])
+    error_msg = re.escape("Ordinal column sample_series contains values that are not "
+                          "present in the order values provided: ['c']")
+
+    with pytest.raises(ValueError, match=error_msg):
+        ordinal_incomplete_order.transform(sample_series)
