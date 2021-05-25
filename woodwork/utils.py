@@ -95,7 +95,7 @@ def read_file(filepath=None,
 
         Note:
             As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
-            for reading from parquet.
+            for reading from parquet and arrow.
 
     Args:
         filepath (str): A valid string path to the file to read
