@@ -800,8 +800,9 @@ def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df_pandas):
 
 
 def test_concat_cols_duplicates(sample_df):
-    df1 = sample_df[['id', 'full_name', 'age']]
-    df2 = sample_df[['id', 'email', 'signup_date']]
+    sample_df.ww.init()
+    df1 = sample_df.ww[['id', 'full_name', 'age']]
+    df2 = sample_df.ww[['id', 'email', 'signup_date']]
 
     # different error for Koalas because it gets caught at concat
     if ks and isinstance(sample_df, ks.DataFrame):
