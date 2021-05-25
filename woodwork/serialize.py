@@ -18,7 +18,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 SCHEMA_VERSION = '9.0.0'
-FORMATS = ['csv', 'pickle', 'parquet']
+FORMATS = ['csv', 'pickle', 'parquet', 'arrow']
 
 
 def typing_info_to_dict(dataframe):
@@ -178,6 +178,12 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
         dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
 
         dataframe.to_parquet(file, **kwargs)
+    elif format == 'arrow':
+        dataframe = dataframe.ww.copy()
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
+        dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
+
+        dataframe.to_feather(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
