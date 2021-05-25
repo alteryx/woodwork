@@ -1,7 +1,6 @@
 import ast
 import importlib
 import re
-import warnings
 from mimetypes import add_type, guess_type
 
 import numpy as np
@@ -301,27 +300,20 @@ def _parse_logical_type(logical_type, name):
         raise TypeError(f"Invalid logical type specified for '{name}'")
 
 
-def concat(objs, validate_schema=True):
+def concat_columns(objs, validate_schema=True):
     """
-    Concatenate Woodwork objects along a particular axis. Cannot concatenate DataFrames
-    with conflicting Woodwork index or time index columns. If DataFrames have the same Woodwork
-    index or time index columns, the first appearance of the column will be included in the
-    concatenated DataFrame. As Woodwork does not allow duplicate column names,
+    Concatenate Woodwork objects along the columns axis. There can only be one index and time index
+    set across the objects passed in. As Woodwork does not allow duplicate column names,
     will not allow duplicate columns at concatenation.
 
     Args:
         objs (list[Series, DataFrame]): The Woodwork objects to be concatenated. If Woodwork
             is not initialized on any of the objects, type inference will be performed.
-        axis ({0/’index’, 1/’columns’}, optional): The axis to concatenate along. Defaults to 1.
-        join ({'inner', 'outer'}, optiona): How to handle indexes on other axis. Defaults to 'outer'.
         validate_schema (bool, optional): Whether validation should be performed on the typing information
             for the concatenated DataFrame. Defaults to True.
 
     Returns:
-        object, type of objs: When objs contains at least one DataFrame, a Woodwork DataFrame is returned.
-            When concatenating along the columns (axis=1), a Woodwork DataFrame is returned.
-            When concatenating along the index (axis=1) with only series, a series is returned
-            without Woodwork initialized.
+        DataFrame: A Woodwork dataframe whose typing information is also a concatenation of the input dataframes. 
     """
     if not objs:
         raise ValueError('No objects to concatenate')
