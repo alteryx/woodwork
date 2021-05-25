@@ -326,8 +326,6 @@ def concat(objs, validate_schema=True):
     if not objs:
         raise ValueError('No objects to concatenate')
 
-    # --> consider adding sort
-    # --> consider adding ignore index
     table_name = ''
     logical_types = {}
     semantic_tags = {}
@@ -345,10 +343,7 @@ def concat(objs, validate_schema=True):
     for obj in objs:
         ww_columns = {}
         obj_to_add = obj
-        if obj is None:
-            # --> not confident that this is the right choice. We need to be able to use the elements of objs to get the library type so it's hard if any element can be None
-            raise ValueError('Cannont include None in list of objects to concatenate')
-        elif isinstance(obj.ww.schema, ww.table_schema.TableSchema):
+        if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
             drop_cols = []
             # Keep the first occurance of a key in metadata
             table_metadata = {**obj.ww.metadata, **table_metadata}
