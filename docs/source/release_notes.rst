@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
-        * Add ``concat`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
+        * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
     * Changes

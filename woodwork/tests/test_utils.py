@@ -699,7 +699,7 @@ def test_concat_cols_with_duplicate_ww_indexes(sample_df):
     combined_df = concat_columns([df1, df2])
     assert combined_df.ww.index == 'id'
     assert combined_df.ww.time_index == 'signup_date'
-    assert len(set(combined_df.columns)) == len(set(sample_df.columns))
+    assert len(combined_df.columns) == len(sample_df.columns)
 
 
 def test_concat_table_names(sample_df):
