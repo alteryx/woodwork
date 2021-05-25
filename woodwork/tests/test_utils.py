@@ -576,6 +576,7 @@ def test_concat_cols_ww_dfs(sample_df):
                       table_metadata={'created_by': 'user0'})
     df1 = sample_df.ww[['id', 'full_name', 'email']]
     df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df2.ww.metadata = None
 
     combined_df = concat([df1, df2])
     assert combined_df.ww == sample_df.ww
@@ -732,28 +733,27 @@ def test_concat_cols_different_use_standard_tags(sample_df):
 #     combined_df_2.ww.logical_types['id'] == IntegerNullable
 
 
-# def test_concat_combine_metadatas(sample_df):
-#     df1 = sample_df[['id', 'full_name', 'email']]
-#     df1.ww.init(table_metadata={'created_by': 'user0', 'test_key': 'test_val1'}, column_metadata={'id': {'interesting_values': [1, 2]}})
-#     df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
-#     df2.ww.init(table_metadata={'table_type': 'single', 'test_key': 'test_val2'}, column_metadata={'age': {'interesting_values': [33]}})
+def test_concat_combine_metadatas(sample_df):
+    df1 = sample_df[['id', 'full_name', 'email']]
+    df1.ww.init(table_metadata={'created_by': 'user0', 'test_key': 'test_val1'},
+                column_metadata={'id': {'interesting_values': [1, 2]}})
+    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df2.ww.init(table_metadata={'table_type': 'single', 'test_key': 'test_val2'},
+                column_metadata={'age': {'interesting_values': [33]}})
 
-#     combined_df_1 = concat([df1, df2])
+    error = "Cannot resolve overlapping keys in table metadata: {'test_key'}"
+    with pytest.raises(ValueError, match=error):
+        concat([df1, df2])
 
-#     # The first table sets the metadata when there's overlap
-#     assert combined_df_1.ww.metadata == {'created_by': 'user0',
-#                                          'table_type': 'single',
-#                                          'test_key': 'test_val1'}
-#     assert combined_df_1.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
-#     assert combined_df_1.ww.columns['age'].metadata == {'interesting_values': [33]}
+    del df2.ww.metadata['test_key']
 
-#     combined_df_2 = concat([df2, df1])
+    combined_df = concat([df1, df2])
 
-#     assert combined_df_2.ww.metadata == {'created_by': 'user0',
-#                                          'table_type': 'single',
-#                                          'test_key': 'test_val2'}
-#     assert combined_df_2.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
-#     assert combined_df_2.ww.columns['age'].metadata == {'interesting_values': [33]}
+    assert combined_df.ww.metadata == {'created_by': 'user0',
+                                       'table_type': 'single',
+                                       'test_key': 'test_val1'}
+    assert combined_df.ww.columns['id'].metadata == {'interesting_values': [1, 2]}
+    assert combined_df.ww.columns['age'].metadata == {'interesting_values': [33]}
 
 
 # --> change to calculate on col concat

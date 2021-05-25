@@ -345,7 +345,11 @@ def concat(objs, validate_schema=True):
         obj_to_add = obj
         if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
             drop_cols = []
-            # Keep the first occurance of a key in metadata
+            # Raise error if there's overlap between table metadata
+            overlapping_keys = obj.ww.metadata.keys() & table_metadata.keys()
+            if overlapping_keys:
+                raise ValueError(f'Cannot resolve overlapping keys in table metadata: {overlapping_keys}')
+
             table_metadata = {**obj.ww.metadata, **table_metadata}
 
             # Combine table names
