@@ -19,7 +19,6 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`tuethan1999`
- 
 
 v0.3.1 May 12, 2021
 ===================
