@@ -319,6 +319,7 @@ def concat_columns(objs, validate_schema=True):
         raise ValueError('No objects to concatenate')
 
     table_name = ''
+
     logical_types = {}
     semantic_tags = {}
     col_descriptions = {}
@@ -329,7 +330,6 @@ def concat_columns(objs, validate_schema=True):
     index = None
     time_index = None
 
-    concat_objs = []
     # Record the typing information for all the columns that have Woodwork schemas
     col_names_seen = set()
     for obj in objs:
@@ -349,30 +349,28 @@ def concat_columns(objs, validate_schema=True):
                 table_name += str(obj.ww.name)
 
             # Cannot have multiple tables with indexes or time indexes set
-            for idx_type, obj_idx, table_idx in [('index', obj.ww.index, index),
-                                                 ('time_index', obj.ww.time_index, time_index)]:
-                if obj_idx is not None:
-                    if table_idx is None:
-                        if idx_type == 'index':
-                            index = obj_idx
-                        elif idx_type == 'time_index':
-                            time_index = obj_idx
-                    else:
-                        raise IndexError(f'Cannot have {idx_type} columns set on more than one table in objs. '
-                                         f'Please remove the {idx_type} columns from all but one table.')
+            if obj.ww.index is not None:
+                if index is None:
+                    index = obj.ww.index
+                else:
+                    raise IndexError('Cannot set the Woodwork index of multiple input objects. '
+                                     'Please remove the index columns from all but one table.')
+            if obj.ww.time_index is not None:
+                if time_index is None:
+                    time_index = obj.ww.time_index
+                else:
+                    raise IndexError('Cannot set the Woodwork time index of multiple input objects. '
+                                     'Please remove the time index columns from all but one table.')
 
             ww_columns = obj.ww.schema.columns
         elif isinstance(obj.ww.schema, ww.column_schema.ColumnSchema):
             ww_columns = {obj.name: obj.ww.schema}
 
-        concat_objs.append(obj)
-
         # Compile the typing information per column
         for name, col_schema in ww_columns.items():
-            # Do not look at typing information for duplicate columns.
-            # Means that index columns will only have first occurrance's typing information
             if name in col_names_seen:
-                continue
+                raise ValueError(f"Duplicate column '{name}' has been found in more than one input object. "
+                                 "Please remove duplicate columns from all but one table.")
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
             col_metadata[name] = col_schema.metadata
@@ -392,7 +390,7 @@ def concat_columns(objs, validate_schema=True):
     elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
         lib = dd
 
-    combined_df = lib.concat(concat_objs, axis=1, join='outer')
+    combined_df = lib.concat(objs, axis=1, join='outer')
 
     # Initialize Woodwork with all of the typing information from the input objs
     # performing type inference on any columns that did not already have Woodwork initialized

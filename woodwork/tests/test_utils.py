@@ -645,8 +645,9 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
     df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
     df2.ww.init(index='full_name')
 
-    error = ('Cannot have index columns set on more than one table in objs. '
+    error = ('Cannot set the Woodwork index of multiple input objects. '
              'Please remove the index columns from all but one table.')
+
     with pytest.raises(IndexError, match=error):
         concat_columns([df1, df2])
 
@@ -655,8 +656,8 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
     df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
     df2.ww.init(time_index='signup_date')
 
-    error = ('Cannot have time_index columns set on more than one table in objs. '
-             'Please remove the time_index columns from all but one table.')
+    error = ('Cannot set the Woodwork time index of multiple input objects. '
+             'Please remove the time index columns from all but one table.')
     with pytest.raises(IndexError, match=error):
         concat_columns([df1, df2])
 
@@ -678,17 +679,24 @@ def test_concat_cols_with_duplicate_ww_indexes(sample_df):
     df2 = sample_df[['full_name', 'age', 'id', 'signup_date', 'is_registered']]
     df2.ww.init(index='id', time_index='signup_date')
 
-    error = ('Cannot have index columns set on more than one table in objs. '
+    error = ('Cannot set the Woodwork index of multiple input objects. '
              'Please remove the index columns from all but one table.')
     with pytest.raises(IndexError, match=error):
         concat_columns([df1, df2])
 
-    new_df2 = df2.ww.drop(['id', 'signup_date'])
+    df2.ww.pop('id')
+
+    error = ('Cannot set the Woodwork time index of multiple input objects. '
+             'Please remove the time index columns from all but one table.')
+    with pytest.raises(IndexError, match=error):
+        concat_columns([df1, df2])
+
+    df2.ww.pop('signup_date')
 
     # Because underlying index is set, this won't change concat operation
-    pd.testing.assert_index_equal(to_pandas(df1.index), to_pandas(new_df2.index))
+    pd.testing.assert_index_equal(to_pandas(df1.index), to_pandas(df2.index))
 
-    combined_df = concat_columns([df1, new_df2])
+    combined_df = concat_columns([df1, df2])
     assert combined_df.ww.index == 'id'
     assert combined_df.ww.time_index == 'signup_date'
     assert len(set(combined_df.columns)) == len(set(sample_df.columns))
@@ -806,19 +814,28 @@ def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df_pandas):
         concat_columns([df1, df2])
 
 
-def test_concat_cols_duplicates(sample_df):
+def test_concat_cols_duplicate_columns(sample_df):
+    sample_df.ww.init()
+    df1 = sample_df.ww[['id', 'full_name', 'age']]
+    df2 = sample_df.ww[['full_name', 'email', 'signup_date']]
+
+    error = ("Duplicate column 'full_name' has been found in more than one input object. "
+             "Please remove duplicate columns from all but one table.")
+    with pytest.raises(ValueError, match=error):
+        concat_columns([df1, df2])
+
+
+def test_concat_cols_duplicate_columns_one_index(sample_df):
     sample_df.ww.init()
     df1 = sample_df.ww[['id', 'full_name', 'age']]
     df2 = sample_df.ww[['id', 'email', 'signup_date']]
+    df2.ww.set_index('id')
+    assert df1.ww.index is None
+    assert df2.ww.index == 'id'
 
-    # different error for Koalas because it gets caught at concat
-    if ks and isinstance(sample_df, ks.DataFrame):
-        error_type = ValueError
-        error = re.escape("Labels have to be unique; however, got duplicated labels ['id'].")
-    else:
-        error_type = IndexError
-        error = 'Dataframe cannot contain duplicate columns names'
-    with pytest.raises(error_type, match=error):
+    error = ("Duplicate column 'id' has been found in more than one input object. "
+             "Please remove duplicate columns from all but one table.")
+    with pytest.raises(ValueError, match=error):
         concat_columns([df1, df2])
 
 
