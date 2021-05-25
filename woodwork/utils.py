@@ -13,11 +13,13 @@ type_to_read_func_map = {
     'csv': pd.read_csv,
     'text/csv': pd.read_csv,
     'parquet': pd.read_parquet,
-    'application/parquet': pd.read_parquet
+    'application/parquet': pd.read_parquet,
+    'arrow': pd.read_feather,
+    'application/arrow': pd.read_feather
 }
 
 PYARROW_ERR_MSG = (
-    "The pyarrow library is required to read from parquet files.\n"
+    "The pyarrow library is required to read from parquet/arrow files.\n"
     "Install via pip:\n"
     "    pip install 'pyarrow>=3.0.0'\n"
     "Install via conda:\n"
@@ -26,6 +28,7 @@ PYARROW_ERR_MSG = (
 
 # Add new mimetypes
 add_type('application/parquet', '.parquet')
+add_type('application/arrow', '.arrow')
 
 
 def import_or_none(library):
@@ -132,9 +135,10 @@ def read_file(filepath=None,
     if content_type not in type_to_read_func_map:
         raise RuntimeError('Reading from content type {} is not currently supported'.format(content_type))
 
-    if content_type in ['parquet', 'application/parquet']:
+    if content_type in ['parquet', 'application/parquet', 'arrow', 'application/parquet']:
         import_or_raise('pyarrow', PYARROW_ERR_MSG)
-        kwargs['engine'] = 'pyarrow'
+        if content_type in ['parquet', 'application/parquet']:
+            kwargs['engine'] = 'pyarrow'
 
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
     dataframe.ww.init(name=name,
