@@ -132,6 +132,104 @@ def test_accessor_schema_property(sample_df):
     assert sample_df.ww._schema == sample_df.ww.schema
 
 
+def test_set_accessor_name(sample_df):
+    df = sample_df.copy()
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.name
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.name = 'name'
+
+    df.ww.init()
+    assert df.ww.name is None
+    df.ww.name = 'name'
+    assert df.ww.schema.name == 'name'
+    assert df.ww.name == 'name'
+
+
+def test_rename_init_with_name(sample_df):
+    df = sample_df.copy()
+    df.ww.init(name='name')
+    assert df.ww.name == 'name'
+    df.ww.name = 'new_name'
+    assert df.ww.schema.name == 'new_name'
+    assert df.ww.name == 'new_name'
+
+
+def test_name_error_on_init(sample_df):
+    err_msg = "Table name must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.init(name=123)
+
+
+def test_name_error_on_update(sample_df):
+    sample_df.ww.init()
+    err_msg = "Table name must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.name = 123
+
+
+def test_name_persists_after_drop(sample_df):
+    df = sample_df.copy()
+    df.ww.init()
+
+    df.ww.name = 'name'
+    assert df.ww.name == 'name'
+
+    dropped_df = df.ww.drop(['id'])
+    assert dropped_df.ww.name == 'name'
+    assert dropped_df.ww.schema.name == 'name'
+
+
+def test_set_accessor_metadata(sample_df):
+    df = sample_df.copy()
+    error = re.escape("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.metadata
+    with pytest.raises(WoodworkNotInitError, match=error):
+        df.ww.metadata = {'new': 'metadata'}
+
+    df.ww.init()
+    assert df.ww.metadata == {}
+    df.ww.metadata = {'new': 'metadata'}
+    assert df.ww.schema.metadata == {'new': 'metadata'}
+    assert df.ww.metadata == {'new': 'metadata'}
+
+
+def test_set_metadata_after_init_with_metadata(sample_df):
+    df = sample_df.copy()
+    df.ww.init(table_metadata={'new': 'metadata'})
+    assert df.ww.metadata == {'new': 'metadata'}
+    df.ww.metadata = {'new': 'new_metadata'}
+    assert df.ww.schema.metadata == {'new': 'new_metadata'}
+    assert df.ww.metadata == {'new': 'new_metadata'}
+
+
+def test_metadata_persists_after_drop(sample_df):
+    df = sample_df.copy()
+    df.ww.init()
+
+    df.ww.metadata = {'new': 'metadata'}
+    assert df.ww.metadata == {'new': 'metadata'}
+
+    dropped_df = df.ww.drop(['id'])
+    assert dropped_df.ww.metadata == {'new': 'metadata'}
+    assert dropped_df.ww.schema.metadata == {'new': 'metadata'}
+
+
+def test_metadata_error_on_init(sample_df):
+    err_msg = 'Table metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.init(table_metadata=123)
+
+
+def test_metadata_error_on_update(sample_df):
+    sample_df.ww.init()
+    err_msg = 'Table metadata must be a dictionary.'
+    with pytest.raises(TypeError, match=err_msg):
+        sample_df.ww.metadata = 123
+
+
 def test_accessor_physical_types_property(sample_df):
     sample_df.ww.init(logical_types={'age': 'Categorical'})
 

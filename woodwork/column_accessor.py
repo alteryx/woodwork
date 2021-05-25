@@ -5,11 +5,7 @@ import weakref
 import pandas as pd
 
 from woodwork.accessor_utils import _get_valid_dtype, _is_series, init_series
-from woodwork.column_schema import (
-    ColumnSchema,
-    _validate_description,
-    _validate_metadata
-)
+from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning,
@@ -111,7 +107,6 @@ class WoodworkColumnAccessor:
     def description(self, description):
         if self._schema is None:
             _raise_init_error()
-        _validate_description(description)
         self._schema.description = description
 
     @property
@@ -185,7 +180,6 @@ class WoodworkColumnAccessor:
     def metadata(self, metadata):
         if self._schema is None:
             _raise_init_error()
-        _validate_metadata(metadata)
         self._schema.metadata = metadata
 
     @property
