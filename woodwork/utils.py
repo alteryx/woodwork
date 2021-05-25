@@ -342,9 +342,7 @@ def concat(objs, validate_schema=True):
     col_names_seen = set()
     for obj in objs:
         ww_columns = {}
-        obj_to_add = obj
         if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
-            drop_cols = []
             # Raise error if there's overlap between table metadata
             overlapping_keys = obj.ww.metadata.keys() & table_metadata.keys()
             if overlapping_keys:
@@ -358,7 +356,7 @@ def concat(objs, validate_schema=True):
                     table_name += '_'
                 table_name += str(obj.ww.name)
 
-            # Handle table indexes
+            # Cannot have multiple tables with indexes or time indexes set
             for idx_type, obj_idx, table_idx in [('index', obj.ww.index, index),
                                                  ('time_index', obj.ww.time_index, time_index)]:
                 if obj_idx is not None:
@@ -367,20 +365,15 @@ def concat(objs, validate_schema=True):
                             index = obj_idx
                         elif idx_type == 'time_index':
                             time_index = obj_idx
-                    elif obj_idx != table_idx:
-                        raise IndexError(f'Cannot concat dataframes with different Woodwork {idx_type} columns.')
-                    elif obj_idx == table_idx:
-                        # Do not include the column from the dataframe to avoid duplicates columns
-                        drop_cols.append(table_idx)
+                    else:
+                        raise IndexError(f'Cannot have {idx_type} columns set on more than one table in objs. '
+                                         f'Please remove the {idx_type} columns from all but one table.')
 
-            # To avoid changing input objects, create a new DataFrame without the index columns
-            if drop_cols:
-                obj_to_add = obj.ww.drop(columns=drop_cols)
-            ww_columns = obj_to_add.ww.schema.columns
+            ww_columns = obj.ww.schema.columns
         elif isinstance(obj.ww.schema, ww.column_schema.ColumnSchema):
             ww_columns = {obj.name: obj.ww.schema}
 
-        concat_objs.append(obj_to_add)
+        concat_objs.append(obj)
 
         # Compile the typing information per column
         for name, col_schema in ww_columns.items():
