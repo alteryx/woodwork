@@ -1976,7 +1976,6 @@ def test_accessor_drop(sample_df):
 def test_accessor_drop_inplace(sample_df):
     inplace_df = sample_df.copy()
     inplace_df.ww.init()
-    schema_df = inplace_df.copy()
 
     if dd and isinstance(sample_df, dd.DataFrame):
         error = 'Drop inplace not supported for Dask'
@@ -1990,7 +1989,7 @@ def test_accessor_drop_inplace(sample_df):
         inplace_df.ww.drop(['is_registered'], inplace=True)
         assert len(inplace_df.ww.columns) == (len(sample_df.columns) - 1)
         assert 'is_registered' not in inplace_df.ww.columns
-        assert to_pandas(schema_df).drop('is_registered', axis='columns').equals(to_pandas(inplace_df))
+        assert to_pandas(inplace_df).drop('is_registered', axis='columns').equals(to_pandas(inplace_df))
 
 
 def test_accessor_drop_indices(sample_df):
