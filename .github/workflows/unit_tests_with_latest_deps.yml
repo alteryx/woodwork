@@ -53,6 +53,8 @@ jobs:
         run: |
           cd unpacked_sdist
           pytest woodwork/ -n 2
+        env:
+          PYARROW_IGNORE_TIMEZONE: 1
       - if: ${{ matrix.python_version == 3.7 }}
         name: Run unit tests with code coverage
         run: |
