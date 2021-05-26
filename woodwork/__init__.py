@@ -2,7 +2,7 @@
 from .config import config
 from .type_sys import type_system
 from .type_sys.utils import list_logical_types, list_semantic_tags
-from .utils import read_file
+from .utils import concat_columns, read_file
 from .version import __version__
 
 import woodwork.column_accessor
