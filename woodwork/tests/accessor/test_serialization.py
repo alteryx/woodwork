@@ -117,7 +117,7 @@ def test_to_dictionary(sample_df):
                                        {'name': 'signup_date',
                                         'ordinal': 5,
                                         'use_standard_tags': True,
-                                        'logical_type': {'parameters': {},
+                                        'logical_type': {'parameters': {'datetime_format': None},
                                                          'type': 'Datetime'},
                                         'physical_type': {'type': 'datetime64[ns]'},
                                         'semantic_tags': [],

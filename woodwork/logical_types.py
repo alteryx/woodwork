@@ -1,7 +1,11 @@
 import pandas as pd
 
+from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
-from woodwork.utils import camel_to_snake
+from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none
+
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
 
 
 class ClassNameDescriptor(object):
@@ -29,6 +33,32 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def __str__(self):
         return str(self.__class__)
+
+    @classmethod
+    def _get_valid_dtype(cls, series_type):
+        """Return the dtype that is considered valid for a series with the given logical_type"""
+        if ks and series_type == ks.Series and cls.backup_dtype:
+            return cls.backup_dtype
+        else:
+            return cls.primary_dtype
+
+    def transform(self, series):
+        """Converts the series dtype to match the logical type's if it is different."""
+        new_dtype = self._get_valid_dtype(type(series))
+        if new_dtype != str(series.dtype):
+            # Update the underlying series
+            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
+                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
+                f'logical type {type(self)}.'
+            try:
+                series = series.astype(new_dtype)
+                if str(series.dtype) != new_dtype:
+                    # Catch conditions when Panads does not error but did not
+                    # convert to the specified dtype (example: 'category' -> 'bool')
+                    raise TypeConversionError(error_msg)
+            except (TypeError, ValueError):
+                raise TypeConversionError(error_msg)
+        return series
 
 
 class Address(LogicalType):
@@ -148,6 +178,20 @@ class Datetime(LogicalType):
 
     def __init__(self, datetime_format=None):
         self.datetime_format = datetime_format
+
+    def transform(self, series):
+        """Converts the series data to a formatted datetime."""
+        new_dtype = self._get_valid_dtype(type(series))
+        if new_dtype != str(series.dtype):
+            if dd and isinstance(series, dd.Series):
+                name = series.name
+                series = dd.to_datetime(series, format=self.datetime_format)
+                series.name = name
+            elif ks and isinstance(series, ks.Series):
+                series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
+            else:
+                series = pd.to_datetime(series, format=self.datetime_format)
+        return super().transform(series)
 
 
 class Double(LogicalType):
@@ -271,6 +315,21 @@ class LatLong(LogicalType):
     """
     primary_dtype = 'object'
 
+    def transform(self, series):
+        """Formats a series to be a tuple (or list for Koalas) of two floats."""
+        if dd and isinstance(series, dd.Series):
+            name = series.name
+            meta = (series, tuple([float, float]))
+            series = series.apply(_reformat_to_latlong, meta=meta)
+            series.name = name
+        elif ks and isinstance(series, ks.Series):
+            formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+            series = ks.from_pandas(formatted_series)
+        else:
+            series = series.apply(_reformat_to_latlong)
+
+        return super().transform(series)
+
 
 class NaturalLanguage(LogicalType):
     """Represents Logical Types that contain text or characters representing
@@ -305,11 +364,14 @@ class Ordinal(LogicalType):
     backup_dtype = 'string'
     standard_tags = {'category'}
 
-    def __init__(self, order):
-        if not isinstance(order, (list, tuple)):
+    def __init__(self, order=None):
+        if order is None:
+            raise TypeError("Must use an Ordinal instance with order values defined")
+        elif not isinstance(order, (list, tuple)):
             raise TypeError("Order values must be specified in a list or tuple")
         if len(order) != len(set(order)):
             raise ValueError("Order values cannot contain duplicates")
+
         self.order = order
 
     def _validate_data(self, series):
@@ -321,6 +383,11 @@ class Ordinal(LogicalType):
                 error_msg = f'Ordinal column {series.name} contains values that are not present ' \
                     f'in the order values provided: {sorted(list(missing_order_vals))}'
                 raise ValueError(error_msg)
+
+    def transform(self, series):
+        """Validates the series and converts the dtype to match the logical type's if it is different."""
+        self._validate_data(series)
+        return super().transform(series)
 
 
 class PhoneNumber(LogicalType):

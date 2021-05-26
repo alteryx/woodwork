@@ -1,6 +1,7 @@
 import ast
 import importlib
 import re
+from inspect import isclass
 from mimetypes import add_type, guess_type
 
 import numpy as np
@@ -291,13 +292,14 @@ def _get_column_logical_type(series, logical_type, name):
 def _parse_logical_type(logical_type, name):
     if isinstance(logical_type, str):
         logical_type = ww.type_system.str_to_logical_type(logical_type)
-    ltype_class = ww.type_sys.utils._get_ltype_class(logical_type)
-    if ltype_class == ww.logical_types.Ordinal and not isinstance(logical_type, ww.logical_types.Ordinal):
-        raise TypeError("Must use an Ordinal instance with order values defined")
-    if ltype_class in ww.type_system.registered_types:
-        return logical_type
-    else:
+
+    if isclass(logical_type):
+        logical_type = logical_type()
+
+    if type(logical_type) not in ww.type_system.registered_types:
         raise TypeError(f"Invalid logical type specified for '{name}'")
+
+    return logical_type
 
 
 def _update_progress(start_time, current_time, progress_increment,

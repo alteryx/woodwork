@@ -6,9 +6,7 @@ import pandas as pd
 
 import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
-    _get_valid_dtype,
     _is_dataframe,
-    _update_column_dtype,
     get_invalid_schema_message,
     init_series
 )
@@ -26,11 +24,7 @@ from woodwork.statistics_utils import (
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
-from woodwork.type_sys.utils import (
-    _get_ltype_class,
-    _is_numeric_series,
-    col_is_datetime
-)
+from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.utils import (
     _get_column_logical_type,
     _parse_logical_type,
@@ -141,7 +135,7 @@ class WoodworkTableAccessor:
                 logical_type = _get_column_logical_type(series, logical_type, name)
                 parsed_logical_types[name] = logical_type
 
-                updated_series = _update_column_dtype(series, logical_type)
+                updated_series = logical_type.transform(series)
                 if updated_series is not series:
                     self._dataframe[name] = updated_series
 
@@ -344,7 +338,7 @@ class WoodworkTableAccessor:
         """A dictionary containing physical types for each column"""
         if self._schema is None:
             _raise_init_error()
-        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+        return {col_name: self._schema.logical_types[col_name]._get_valid_dtype(type(self._dataframe[col_name])) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
@@ -445,7 +439,7 @@ class WoodworkTableAccessor:
         # go through changed ltypes and update dtype if necessary
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
-            updated_series = _update_column_dtype(series, logical_type)
+            updated_series = logical_type.transform(series)
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
@@ -901,7 +895,7 @@ def _validate_accessor_params(dataframe, index, make_index, time_index, logical_
             logical_type = None
             if logical_types is not None and time_index in logical_types:
                 logical_type = logical_types[time_index]
-                if _get_ltype_class(logical_types[time_index]) == Datetime:
+                if type(logical_types[time_index]) == Datetime:
                     datetime_format = logical_types[time_index].datetime_format
 
             _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)

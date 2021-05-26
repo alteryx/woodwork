@@ -207,7 +207,7 @@ def test_schema_init_with_name_and_indices(sample_column_names, sample_inferred_
     assert schema.name == 'schema'
     assert schema.index == 'id'
     assert schema.time_index == 'signup_date'
-    assert schema.columns[schema.time_index].logical_type == Datetime
+    assert isinstance(schema.columns[schema.time_index].logical_type, Datetime)
 
 
 def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_logical_types):
@@ -220,7 +220,7 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
     )
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
-    assert date_col.logical_type == Integer
+    assert isinstance(date_col.logical_type, Integer)
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
@@ -232,7 +232,7 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
     )
     date_col = schema.columns['signup_date']
     assert schema.time_index == 'signup_date'
-    assert date_col.logical_type == Double
+    assert isinstance(date_col.logical_type, Double)
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
@@ -244,13 +244,13 @@ def test_schema_init_with_logical_type_classes(sample_column_names, sample_infer
     schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **logical_types},
                          name='schema')
 
-    full_logical_types = {'id': Integer,
-                          'full_name': NaturalLanguage,
-                          'email': NaturalLanguage,
-                          'phone_number': NaturalLanguage,
-                          'age': Double,
-                          'signup_date': Datetime,
-                          'is_registered': Boolean}
+    full_logical_types = {'id': Integer(),
+                          'full_name': NaturalLanguage(),
+                          'email': NaturalLanguage(),
+                          'phone_number': NaturalLanguage(),
+                          'age': Double(),
+                          'signup_date': Datetime(),
+                          'is_registered': Boolean()}
     assert schema.logical_types == full_logical_types
 
 
