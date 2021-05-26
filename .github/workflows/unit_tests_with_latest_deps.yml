@@ -61,6 +61,8 @@ jobs:
           cd unpacked_sdist/
           coverage erase
           pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
+        env:
+          PYARROW_IGNORE_TIMEZONE: 1
       - if: ${{ matrix.python_version == 3.7 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
