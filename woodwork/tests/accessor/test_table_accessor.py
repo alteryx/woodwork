@@ -1993,6 +1993,7 @@ def test_accessor_drop_inplace(sample_df):
 
         assert sample_df.drop('is_registered', axis='columns').equals(inplace_df)
 
+
 def test_accessor_drop_indices(sample_df):
     sample_df.ww.init(index='id', time_index='signup_date')
     assert sample_df.ww.index == 'id'
