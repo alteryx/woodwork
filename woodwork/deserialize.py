@@ -85,8 +85,9 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         if col['physical_type']['type'] == 'category':
             # Make sure categories are recreated properly
             cat_values = col['physical_type']['cat_values']
+            cat_dtype = col['physical_type']['cat_dtype']
             if table_type == 'pandas':
-                cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype='object'))
+                cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             else:
                 cat_object = pd.CategoricalDtype(pd.Series(cat_values))
             category_dtypes[col_name] = cat_object
@@ -191,6 +192,6 @@ def _check_schema_version(saved_version_str):
             break
 
     # Check if saved has older major version.
-    if current[0] > saved[0]:
+    if int(current[0]) > int(saved[0]):
         warnings.warn(OutdatedSchemaWarning().get_warning_message(saved_version_str),
                       OutdatedSchemaWarning)

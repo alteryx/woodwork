@@ -522,3 +522,34 @@ def sample_inferred_logical_types():
             'age': Integer,
             'signup_date': Datetime,
             'is_registered': Boolean}
+
+
+@pytest.fixture
+def serialize_df_pandas():
+    df = pd.DataFrame({
+        'id': [0, 1, 2],
+        'cat_int': [1, 2, 1],
+        'ord_int': [1, 2, 1],
+        'cat_float': [1.0, 2.0, 1.0],
+        'ord_float': [1.0, 2.0, 1.0],
+        'cat_bool': [True, False, True],
+        'ord_bool': [True, False, True],
+    })
+    return df
+
+
+@pytest.fixture()
+def serialize_df_dask(serialize_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(serialize_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def serialize_df_koalas(serialize_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(serialize_df_pandas)
+
+
+@pytest.fixture(params=['serialize_df_pandas', 'serialize_df_dask', 'serialize_df_koalas'])
+def serialize_df(request):
+    return request.getfixturevalue(request.param)
