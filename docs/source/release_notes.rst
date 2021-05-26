@@ -11,6 +11,7 @@ Future Release
         * Add option to pass progress callback function to mutual information functions (:pr:`943`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
+        * Fix bug in which the dtype of category values were not restored properly on deserialization (:pr:`949`)
     * Changes
     * Documentation Changes
     * Testing Changes
