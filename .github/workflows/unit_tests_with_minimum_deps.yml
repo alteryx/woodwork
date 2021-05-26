@@ -24,6 +24,7 @@ jobs:
           python-version: 3.7
       - name: Install woodwork - minimum tests requirements
         run: |
+          python -m pip install -e . --no-dependencies
           python -m pip install -r woodwork/tests/requirement_files/minimum_test_requirements.txt
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install woodwork - minimum koalas, core requirements
