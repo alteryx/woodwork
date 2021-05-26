@@ -1974,6 +1974,7 @@ def test_accessor_drop(sample_df):
 
 
 def test_accessor_drop_inplace(sample_df):
+    sample_df.ww.init()
     inplace_df = sample_df.copy()
     inplace_df.ww.init()
 
@@ -1989,8 +1990,8 @@ def test_accessor_drop_inplace(sample_df):
         inplace_df.ww.drop(['is_registered'], inplace=True)
         assert len(inplace_df.ww.columns) == (len(sample_df.columns) - 1)
         assert 'is_registered' not in inplace_df.ww.columns
-        assert to_pandas(inplace_df).drop('is_registered', axis='columns').equals(to_pandas(inplace_df))
 
+        assert sample_df.drop('is_registered', axis='columns').equals(inplace_df)
 
 def test_accessor_drop_indices(sample_df):
     sample_df.ww.init(index='id', time_index='signup_date')
