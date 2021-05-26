@@ -555,7 +555,7 @@ def serialize_df(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture
+@pytest.fixture()
 def pandas_datetimes():
     return [
         pd.Series(['3/11/2000', '3/12/2000', '3/13/2000', '3/14/2000']),
@@ -563,12 +563,12 @@ def pandas_datetimes():
     ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def dask_datetimes(pandas_datetimes):
     return [pd_to_dask(series) for series in pandas_datetimes]
 
 
-@pytest.fixture
+@pytest.fixture()
 def koalas_datetimes(pandas_datetimes):
     return [pd_to_koalas(series) for series in pandas_datetimes]
 
