@@ -20,6 +20,7 @@ ks = import_or_none('databricks.koalas')
 SCHEMA_VERSION = '9.0.0'
 FORMATS = ['csv', 'pickle', 'parquet', 'arrow']
 
+
 def typing_info_to_dict(dataframe):
     """Creates the description for a Woodwork table, including typing information for each column
     and loading information.
