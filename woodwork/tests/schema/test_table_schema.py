@@ -60,13 +60,13 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     assert returned_types.shape[1] == 2
     assert len(returned_types.index) == len(sample_column_names)
     correct_logical_types = {
-        'id': Integer,
-        'full_name': NaturalLanguage,
-        'email': NaturalLanguage,
-        'phone_number': NaturalLanguage,
-        'age': Integer,
-        'signup_date': Datetime,
-        'is_registered': Boolean,
+        'id': Integer(),
+        'full_name': NaturalLanguage(),
+        'email': NaturalLanguage(),
+        'phone_number': NaturalLanguage(),
+        'age': Integer(),
+        'signup_date': Datetime(),
+        'is_registered': Boolean(),
         'formatted_date': ymd_format
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
@@ -430,7 +430,7 @@ def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags['age'] == {'numeric'}
 
     # Verify signup date column was unchanged
-    assert schema.logical_types['signup_date'] == Datetime
+    assert isinstance(schema.logical_types['signup_date'], Datetime)
     assert schema.semantic_tags['signup_date'] == {'secondary_time_index'}
 
 
@@ -445,11 +445,11 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
 
     # An empty set should reset the tags
     schema.set_types(semantic_tags={'full_name': set()}, retain_index_tags=False)
-    assert schema.logical_types['full_name'] == NaturalLanguage
+    assert isinstance(schema.logical_types['full_name'], NaturalLanguage)
     assert schema.semantic_tags['full_name'] == set()
 
     schema.set_types(semantic_tags={'age': set()})
-    assert schema.logical_types['age'] == Integer
+    assert isinstance(schema.logical_types['age'], Integer)
     assert schema.semantic_tags['age'] == {'numeric'}
 
 
@@ -873,7 +873,7 @@ def test_set_time_index(sample_column_names, sample_inferred_logical_types):
 def test_set_numeric_datetime_time_index(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(sample_column_names, {**sample_inferred_logical_types, 'age': Datetime})
 
-    assert schema.logical_types['age'] == Datetime
+    assert isinstance(schema.logical_types['age'], Datetime)
     assert schema.semantic_tags['age'] == set()
 
     schema.set_time_index('age')

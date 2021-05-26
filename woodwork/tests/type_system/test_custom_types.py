@@ -18,7 +18,7 @@ def test_register_custom_logical_type(type_sys):
     assert CustomLogicalType in type_sys.registered_types
     assert (Categorical, CustomLogicalType) in type_sys.relationships
     assert type_sys.inference_functions[CustomLogicalType] is custom_func
-    assert type_sys.infer_logical_type(pd.Series(['a', 'b', 'a'])) == CustomLogicalType
+    assert isinstance(type_sys.infer_logical_type(pd.Series(['a', 'b', 'a'])), CustomLogicalType)
 
 
 def test_custom_type_with_accessor(sample_df):
@@ -33,7 +33,7 @@ def test_custom_type_with_accessor(sample_df):
 
     ww.type_system.add_type(AgesAbove20, inference_function=ages_func, parent='IntegerNullable')
     sample_df.ww.init()
-    assert sample_df.ww['age'].ww.logical_type == AgesAbove20
+    assert isinstance(sample_df.ww['age'].ww.logical_type, AgesAbove20)
     assert sample_df.ww['age'].ww.semantic_tags == {'age', 'numeric'}
     assert sample_df['age'].dtype == 'float64'
     # Reset global type system to original settings
@@ -50,7 +50,7 @@ def test_accessor_override_default_function(sample_df):
     ww.type_system.update_inference_function('Double', inference_function=new_double_func)
     ww.type_system.update_inference_function('Integer', inference_function=None)
     sample_df.ww.init()
-    assert sample_df.ww['age'].ww.logical_type == Double
+    assert isinstance(sample_df.ww['age'].ww.logical_type, Double)
     assert sample_df['age'].dtype == 'float64'
     # Reset global type system to original settings
     ww.type_system.reset_defaults()

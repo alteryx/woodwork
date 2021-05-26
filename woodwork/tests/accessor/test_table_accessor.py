@@ -1,4 +1,5 @@
 import re
+from inspect import isclass
 
 import numpy as np
 import pandas as pd
@@ -275,7 +276,7 @@ def test_init_accessor_with_schema(sample_df):
     assert iloc_df.ww.name == 'test_schema'
     assert iloc_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
     # Extra parameters do not take effect
-    assert iloc_df.ww.logical_types['id'] == Integer
+    assert isinstance(iloc_df.ww.logical_types['id'], Integer)
 
 
 def test_accessor_init_errors_methods(sample_df):
@@ -407,7 +408,7 @@ def test_getitem(sample_df):
     assert subset == list(df_subset.ww._schema.columns)
     assert df_subset.ww.index is None
     assert df_subset.ww.time_index is None
-    assert df_subset.ww.logical_types['age'] == Double
+    assert isinstance(df_subset.ww.logical_types['age'], Double)
     assert df_subset.ww.semantic_tags['age'] == {'custom_tag', 'numeric'}
 
     subset = df.ww[[]]
@@ -417,12 +418,12 @@ def test_getitem(sample_df):
 
     series = df.ww['age']
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['age']))
-    assert series.ww.logical_type == Double
+    assert isinstance(series.ww.logical_type, Double)
     assert series.ww.semantic_tags == {'custom_tag', 'numeric'}
 
     series = df.ww['id']
     pd.testing.assert_series_equal(to_pandas(series), to_pandas(df['id']))
-    assert series.ww.logical_type == Integer
+    assert isinstance(series.ww.logical_type, Integer)
     assert series.ww.semantic_tags == {'index'}
 
 
@@ -510,7 +511,7 @@ def test_accessor_init_with_valid_string_time_index(time_index_df):
     assert time_index_df.ww.name == 'schema'
     assert time_index_df.ww.index == 'id'
     assert time_index_df.ww.time_index == 'times'
-    assert time_index_df.ww.columns[time_index_df.ww.time_index].logical_type == Datetime
+    assert isinstance(time_index_df.ww.columns[time_index_df.ww.time_index].logical_type, Datetime)
 
 
 def test_accessor_init_with_numeric_datetime_time_index(time_index_df):
@@ -531,7 +532,7 @@ def test_accessor_with_numeric_time_index(time_index_df):
     schema_df.ww.init(time_index='ints')
     date_col = schema_df.ww.columns['ints']
     assert schema_df.ww.time_index == 'ints'
-    assert date_col.logical_type == Integer
+    assert isinstance(date_col.logical_type, Integer)
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     # Specify logical type for time index on init
@@ -539,14 +540,14 @@ def test_accessor_with_numeric_time_index(time_index_df):
     schema_df.ww.init(time_index='ints', logical_types={'ints': 'Double'})
     date_col = schema_df.ww.columns['ints']
     assert schema_df.ww.time_index == 'ints'
-    assert date_col.logical_type == Double
+    assert isinstance(date_col.logical_type, Double)
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     schema_df = time_index_df.copy()
     schema_df.ww.init(time_index='strs', logical_types={'strs': 'Double'})
     date_col = schema_df.ww.columns['strs']
     assert schema_df.ww.time_index == 'strs'
-    assert date_col.logical_type == Double
+    assert isinstance(date_col.logical_type, Double)
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
     error_msg = 'Time index column must contain datetime or numeric values'
@@ -565,24 +566,24 @@ def test_accessor_with_numeric_time_index(time_index_df):
     schema_df.ww.set_time_index('ints')
     date_col = schema_df.ww.columns['ints']
     assert schema_df.ww.time_index == 'ints'
-    assert date_col.logical_type == Double
+    assert isinstance(date_col.logical_type, Double)
     assert date_col.semantic_tags == {'numeric', 'time_index'}
 
 
 def test_numeric_time_index_dtypes(numeric_time_index_df):
     numeric_time_index_df.ww.init(time_index='ints')
     assert numeric_time_index_df.ww.time_index == 'ints'
-    assert numeric_time_index_df.ww.logical_types['ints'] == Integer
+    assert isinstance(numeric_time_index_df.ww.logical_types['ints'], Integer)
     assert numeric_time_index_df.ww.semantic_tags['ints'] == {'time_index', 'numeric'}
 
     numeric_time_index_df.ww.set_time_index('floats')
     assert numeric_time_index_df.ww.time_index == 'floats'
-    assert numeric_time_index_df.ww.logical_types['floats'] == Double
+    assert isinstance(numeric_time_index_df.ww.logical_types['floats'], Double)
     assert numeric_time_index_df.ww.semantic_tags['floats'] == {'time_index', 'numeric'}
 
     numeric_time_index_df.ww.set_time_index('with_null')
     assert numeric_time_index_df.ww.time_index == 'with_null'
-    assert numeric_time_index_df.ww.logical_types['with_null'] == IntegerNullable
+    assert isinstance(numeric_time_index_df.ww.logical_types['with_null'], IntegerNullable)
     assert numeric_time_index_df.ww.semantic_tags['with_null'] == {'time_index', 'numeric'}
 
 
@@ -600,8 +601,8 @@ def test_accessor_init_with_string_logical_types(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(name='schema',
                       logical_types=logical_types)
-    assert schema_df.ww.columns['full_name'].logical_type == NaturalLanguage
-    assert schema_df.ww.columns['age'].logical_type == Double
+    assert isinstance(schema_df.ww.columns['full_name'].logical_type, NaturalLanguage)
+    assert isinstance(schema_df.ww.columns['age'].logical_type, Double)
 
     logical_types = {
         'full_name': 'NaturalLanguage',
@@ -613,8 +614,8 @@ def test_accessor_init_with_string_logical_types(sample_df):
                       logical_types=logical_types,
                       time_index='signup_date'
                       )
-    assert schema_df.ww.columns['full_name'].logical_type == NaturalLanguage
-    assert schema_df.ww.columns['age'].logical_type == IntegerNullable
+    assert isinstance(schema_df.ww.columns['full_name'].logical_type, NaturalLanguage)
+    assert isinstance(schema_df.ww.columns['age'].logical_type, IntegerNullable)
     assert schema_df.ww.time_index == 'signup_date'
 
 
@@ -714,7 +715,7 @@ def test_datetime_inference_with_format_param():
     assert df['mdy_special'].dtype == 'datetime64[ns]'
 
     assert df.ww.time_index == 'ymd_special'
-    assert df.ww['dates'].ww.logical_type == Datetime
+    assert isinstance(df.ww['dates'].ww.logical_type, Datetime)
     assert isinstance(df.ww['ymd_special'].ww.logical_type, Datetime)
     assert isinstance(df.ww['mdy_special'].ww.logical_type, Datetime)
 
@@ -771,6 +772,9 @@ def test_sets_category_dtype_on_init():
     for series in series_list:
         series = series.astype('object')
         for logical_type in logical_types:
+            if isclass(logical_type):
+                logical_type = logical_type()
+
             ltypes = {
                 column_name: logical_type,
             }
@@ -787,7 +791,7 @@ def test_sets_object_dtype_on_init(latlong_df):
         }
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
-        assert df.ww.columns[column_name].logical_type == LatLong
+        assert isinstance(df.ww.columns[column_name].logical_type, LatLong)
         assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
@@ -823,7 +827,7 @@ def test_sets_string_dtype_on_init():
             }
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
-            assert df.ww.columns[column_name].logical_type == logical_type
+            assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -847,7 +851,7 @@ def test_sets_boolean_dtype_on_init():
             }
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
-            assert df.ww.columns[column_name].logical_type == logical_type
+            assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -871,7 +875,7 @@ def test_sets_int64_dtype_on_init():
             }
             df = pd.DataFrame(series)
             df.ww.init(logical_types=ltypes)
-            assert df.ww.columns[column_name].logical_type == logical_type
+            assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
             assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -891,7 +895,7 @@ def test_sets_float64_dtype_on_init():
         }
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
-        assert df.ww.columns[column_name].logical_type == logical_type
+        assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -913,7 +917,7 @@ def test_sets_datetime64_dtype_on_init():
         }
         df = pd.DataFrame(series)
         df.ww.init(logical_types=ltypes)
-        assert df.ww.columns[column_name].logical_type == logical_type
+        assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
         assert df[column_name].dtype == logical_type.primary_dtype
 
 
@@ -1156,7 +1160,7 @@ def test_accessor_already_sorted(sample_unsorted_df):
                       time_index='signup_date')
 
     assert schema_df.ww.time_index == 'signup_date'
-    assert schema_df.ww.columns[schema_df.ww.time_index].logical_type == Datetime
+    assert isinstance(schema_df.ww.columns[schema_df.ww.time_index].logical_type, Datetime)
 
     sorted_df = to_pandas(sample_unsorted_df).sort_values(['signup_date', 'id']).set_index('id', drop=False)
     sorted_df.index.name = None
@@ -1170,7 +1174,7 @@ def test_accessor_already_sorted(sample_unsorted_df):
                       already_sorted=True)
 
     assert schema_df.ww.time_index == 'signup_date'
-    assert schema_df.ww.columns[schema_df.ww.time_index].logical_type == Datetime
+    assert isinstance(schema_df.ww.columns[schema_df.ww.time_index].logical_type, Datetime)
 
     unsorted_df = to_pandas(sample_unsorted_df.set_index('id', drop=False))
     unsorted_df.index.name = None
@@ -1901,7 +1905,7 @@ def test_pop(sample_df):
     assert isinstance(popped_series, type(sample_df['age']))
     assert popped_series.ww.semantic_tags == {'custom_tag', 'numeric'}
     pd.testing.assert_series_equal(to_pandas(popped_series), pd.Series([pd.NA, 33, 33, 57], dtype='Int64', name='age'))
-    assert popped_series.ww.logical_type == IntegerNullable
+    assert isinstance(popped_series.ww.logical_type, IntegerNullable)
 
     assert 'age' not in schema_df.columns
     assert 'age' not in schema_df.ww.columns
@@ -2148,7 +2152,7 @@ def test_setitem_new_column(sample_df):
     df.ww['test_col2'] = new_series
     assert 'test_col2' in df.columns
     assert 'test_col2' in df.ww._schema.columns.keys()
-    assert df.ww['test_col2'].ww.logical_type == Integer
+    assert isinstance(df.ww['test_col2'].ww.logical_type, Integer)
     assert df.ww['test_col2'].ww.use_standard_tags is True
     assert df.ww['test_col2'].ww.semantic_tags == {'numeric'}
     assert df.ww['test_col2'].name == 'test_col2'
@@ -2167,7 +2171,7 @@ def test_setitem_new_column(sample_df):
 
     df.ww['test_col3'] = new_series
     assert 'test_col3' in df.ww.columns
-    assert df.ww['test_col3'].ww.logical_type == Double
+    assert isinstance(df.ww['test_col3'].ww.logical_type, Double)
     assert df.ww['test_col3'].ww.use_standard_tags is False
     assert df.ww['test_col3'].ww.semantic_tags == {'test_tag'}
     assert df.ww['test_col3'].name == 'test_col3'
@@ -2187,7 +2191,7 @@ def test_setitem_new_column(sample_df):
     new_series = init_series(new_series)
     df.ww['test_col'] = new_series
     assert 'test_col' in df.ww.columns
-    assert df.ww['test_col'].ww.logical_type == Categorical
+    assert isinstance(df.ww['test_col'].ww.logical_type, Categorical)
     assert df.ww['test_col'].ww.use_standard_tags is True
     assert df.ww['test_col'].ww.semantic_tags == {'category'}
     assert df.ww['test_col'].name == 'test_col'
@@ -2214,7 +2218,7 @@ def test_setitem_overwrite_column(sample_df):
 
     assert 'age' in df.columns
     assert 'age' in df.ww._schema.columns.keys()
-    assert df.ww['age'].ww.logical_type == original_col.ww.logical_type
+    assert isinstance(df.ww['age'].ww.logical_type, type(original_col.ww.logical_type))
     assert df.ww['age'].ww.semantic_tags == original_col.ww.semantic_tags
     assert df.ww['age'].dtype == dtype
     assert original_col is not df.ww['age']
@@ -2235,7 +2239,7 @@ def test_setitem_overwrite_column(sample_df):
 
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
-    assert df.ww['full_name'].ww.logical_type == Double
+    assert isinstance(df.ww['full_name'].ww.logical_type, Double)
     assert df.ww['full_name'].ww.use_standard_tags is False
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag'}
     assert df.ww['full_name'].dtype == 'float'
@@ -2259,7 +2263,7 @@ def test_setitem_overwrite_column(sample_df):
 
     assert 'full_name' in df.columns
     assert 'full_name' in df.ww._schema.columns.keys()
-    assert df.ww['full_name'].ww.logical_type == Double
+    assert isinstance(df.ww['full_name'].ww.logical_type, Double)
     assert df.ww['full_name'].ww.use_standard_tags is True
     assert df.ww['full_name'].ww.semantic_tags == {'test_tag', 'numeric'}
     assert df.ww['full_name'].dtype == 'float'
@@ -2360,13 +2364,13 @@ def test_accessor_types(sample_df):
     assert correct_physical_types.equals(returned_types['Physical Type'])
 
     correct_logical_types = {
-        'id': Integer,
-        'full_name': NaturalLanguage,
-        'email': NaturalLanguage,
-        'phone_number': NaturalLanguage,
-        'age': IntegerNullable,
-        'signup_date': Datetime,
-        'is_registered': BooleanNullable,
+        'id': Integer(),
+        'full_name': NaturalLanguage(),
+        'email': NaturalLanguage(),
+        'phone_number': NaturalLanguage(),
+        'age': IntegerNullable(),
+        'signup_date': Datetime(),
+        'is_registered': BooleanNullable(),
     }
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
@@ -2448,9 +2452,9 @@ def test_maintains_set_logical_type(sample_df):
     if ks and isinstance(sample_df, ks.DataFrame):
         pytest.xfail("Koalas changed dtype on fillna which invalidates schema")
     sample_df.ww.init(logical_types={'age': 'IntegerNullable'})
-    assert sample_df.ww.logical_types['age'] == IntegerNullable
+    assert isinstance(sample_df.ww.logical_types['age'], IntegerNullable)
     new_df = sample_df.ww.fillna({'age': -1})
-    assert new_df.ww.logical_types['age'] == IntegerNullable
+    assert isinstance(new_df.ww.logical_types['age'], IntegerNullable)
 
 
 def test_ltype_conversions_nullable_types():
@@ -2462,18 +2466,18 @@ def test_ltype_conversions_nullable_types():
     })
 
     df.ww.init()
-    assert df.ww.logical_types['bool'] == Boolean
-    assert df.ww.logical_types['bool_null'] == BooleanNullable
-    assert df.ww.logical_types['int'] == Integer
-    assert df.ww.logical_types['int_null'] == IntegerNullable
+    assert isinstance(df.ww.logical_types['bool'], Boolean)
+    assert isinstance(df.ww.logical_types['bool_null'], BooleanNullable)
+    assert isinstance(df.ww.logical_types['int'], Integer)
+    assert isinstance(df.ww.logical_types['int_null'], IntegerNullable)
 
     # Test valid conversions
     df.ww.set_types({'bool': 'BooleanNullable', 'int': 'IntegerNullable'})
-    assert df.ww.logical_types['bool'] == BooleanNullable
-    assert df.ww.logical_types['int'] == IntegerNullable
+    assert isinstance(df.ww.logical_types['bool'], BooleanNullable)
+    assert isinstance(df.ww.logical_types['int'], IntegerNullable)
     df.ww.set_types({'bool': 'Boolean', 'int': 'Integer'})
-    assert df.ww.logical_types['bool'] == Boolean
-    assert df.ww.logical_types['int'] == Integer
+    assert isinstance(df.ww.logical_types['bool'], Boolean)
+    assert isinstance(df.ww.logical_types['int'], Integer)
 
     # Test invalid conversions
     error_msg = "Error converting datatype for bool_null from type boolean to type bool. " \

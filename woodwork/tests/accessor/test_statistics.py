@@ -1,3 +1,5 @@
+from inspect import isclass
+
 import numpy as np
 import pandas as pd
 
@@ -304,6 +306,9 @@ def test_describe_accessor_method(describe_df):
         expected_dtype = 'category'
 
     for ltype in categorical_ltypes:
+        if isclass(ltype):
+            ltype = ltype()
+
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
             'logical_type': ltype,
@@ -325,7 +330,7 @@ def test_describe_accessor_method(describe_df):
         expected_dtype = ltype.primary_dtype
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
@@ -345,7 +350,7 @@ def test_describe_accessor_method(describe_df):
         expected_dtype = ltype.primary_dtype
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'custom_tag'},
             'count': 8,
             'nan_count': 0,
@@ -364,7 +369,7 @@ def test_describe_accessor_method(describe_df):
     for ltype in datetime_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.primary_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'custom_tag'},
             'count': 7,
             'nunique': 6,
@@ -417,7 +422,7 @@ def test_describe_accessor_method(describe_df):
         for ltype in timedelta_ltypes:
             expected_vals = pd.Series({
                 'physical_type': ltype.primary_dtype,
-                'logical_type': ltype,
+                'logical_type': ltype(),
                 'semantic_tags': {'custom_tag'},
                 'count': 7,
                 'nan_count': 1,
@@ -435,7 +440,7 @@ def test_describe_accessor_method(describe_df):
     for ltype in nullable_numeric_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.primary_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7,
             'nunique': 6,
@@ -460,7 +465,7 @@ def test_describe_accessor_method(describe_df):
     for ltype in non_nullable_numeric_ltypes:
         expected_vals = pd.Series({
             'physical_type': ltype.primary_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 8,
             'nunique': 7,
@@ -486,7 +491,7 @@ def test_describe_accessor_method(describe_df):
     for ltype in natural_language_ltypes:
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'custom_tag'},
             'count': 7,
             'nan_count': 1,
@@ -507,7 +512,7 @@ def test_describe_accessor_method(describe_df):
         mode = [0, 0] if ks and isinstance(describe_df, ks.DataFrame) else (0, 0)
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
-            'logical_type': ltype,
+            'logical_type': ltype(),
             'semantic_tags': {'custom_tag'},
             'count': 6,
             'nan_count': 2,
@@ -538,7 +543,7 @@ def test_describe_with_improper_tags(describe_df):
     stats_df = df.ww.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert stats_df['boolean_col']['logical_type'] == Boolean
+    assert isinstance(stats_df['boolean_col']['logical_type'], Boolean)
     assert stats_df['boolean_col']['semantic_tags'] == {'category'}
     # Make sure numeric stats were not computed with improper 'numeric' tag
     assert stats_df['natural_language_col']['semantic_tags'] == {'numeric'}
