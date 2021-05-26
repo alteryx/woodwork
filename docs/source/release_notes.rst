@@ -25,7 +25,7 @@ v0.4.0 May 26, 2021
         * Add logical type method to transform data (:pr:`915`)
     * Testing Changes
         * Update when minimum unit tests will run to include minimum text files (:pr:`917`)
-        * Create separate worksflows for each CI job (:pr:`919`)
+        * Create separate workflows for each CI job (:pr:`919`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
