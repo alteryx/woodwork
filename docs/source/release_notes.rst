@@ -3,21 +3,23 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+        * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
+    
 
 v0.4.0 May 26, 2021
 ===================
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
-        * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
         * Add option to pass progress callback function to mutual information functions (:pr:`943`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
@@ -29,7 +31,7 @@ v0.4.0 May 26, 2021
         * Create separate workflows for each CI job (:pr:`919`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 
 v0.3.1 May 12, 2021
