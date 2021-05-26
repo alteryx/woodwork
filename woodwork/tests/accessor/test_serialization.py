@@ -13,7 +13,7 @@ from woodwork.exceptions import (
     UpgradeSchemaWarning,
     WoodworkNotInitError
 )
-from woodwork.logical_types import Ordinal
+from woodwork.logical_types import Categorical, Ordinal
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
@@ -23,7 +23,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_9.0.0.tar"
+TEST_FILE = "test_serialization_woodwork_table_schema_10.0.0.tar"
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -48,22 +48,29 @@ def test_error_before_table_init(sample_df, tmpdir):
 def test_to_dictionary(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         table_type = 'dask'
+        cat_type_dict = {
+            'type': 'category',
+            'cat_values': [33, 57],
+            'cat_dtype': 'int64'
+        }
     elif ks and isinstance(sample_df, ks.DataFrame):
         table_type = 'koalas'
+        cat_type_dict = {
+            'type': 'string'
+        }
     else:
         table_type = 'pandas'
+        cat_type_dict = {
+            'type': 'category',
+            'cat_values': [33, 57],
+            'cat_dtype': 'object'
+        }
 
-    if ks and isinstance(sample_df, ks.DataFrame):
-        cat_str = 'string'
-        cat_data = None
-    else:
-        cat_str = 'category'
-        cat_data = [33, 57]
     int_val = 'int64'
     string_val = 'string'
     bool_val = 'boolean'
 
-    expected = {'schema_version': '9.0.0',
+    expected = {'schema_version': '10.0.0',
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -71,8 +78,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 0,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Integer'},
-                                        'physical_type': {'type': int_val,
-                                                          'cat_values': None},
+                                        'physical_type': {'type': int_val},
                                         'semantic_tags': ['index', 'tag1'],
                                         'description': None,
                                         'metadata':{'is_sorted': True}},
@@ -80,8 +86,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 1,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                                        'physical_type': {'type': string_val,
-                                                          'cat_values': None},
+                                        'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -89,8 +94,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 2,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                                        'physical_type': {'type': string_val,
-                                                          'cat_values': None},
+                                        'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -98,8 +102,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 3,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
-                                        'physical_type': {'type': string_val,
-                                                          'cat_values': None},
+                                        'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata': {}},
@@ -107,18 +110,16 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 4,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
-                                        'physical_type': {'type': cat_str,
-                                                          'cat_values': cat_data},
+                                        'physical_type': cat_type_dict,
                                         'semantic_tags': ['category'],
                                         'description': 'age of the user',
                                         'metadata':{'interesting_values': [33, 57]}},
                                        {'name': 'signup_date',
                                         'ordinal': 5,
                                         'use_standard_tags': True,
-                                        'logical_type': {'parameters': {},
+                                        'logical_type': {'parameters': {'datetime_format': None},
                                                          'type': 'Datetime'},
-                                        'physical_type': {'type': 'datetime64[ns]',
-                                                          'cat_values': None},
+                                        'physical_type': {'type': 'datetime64[ns]'},
                                         'semantic_tags': [],
                                         'description': 'original signup date',
                                         'metadata':{}},
@@ -126,8 +127,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 6,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'BooleanNullable'},
-                                        'physical_type': {'type': bool_val,
-                                                          'cat_values': None},
+                                        'physical_type': {'type': bool_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}}],
@@ -288,6 +288,30 @@ def test_to_arrow_with_latlong(latlong_df, tmpdir):
     pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
                                   to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
     assert latlong_df.ww.schema == deserialized_df.ww.schema
+
+
+def test_categorical_dtype_serialization(serialize_df, tmpdir):
+    ltypes = {
+        'cat_int': Categorical,
+        'ord_int': Ordinal(order=[1, 2]),
+        'cat_float': Categorical,
+        'ord_float': Ordinal(order=[1.0, 2.0]),
+        'cat_bool': Categorical,
+        'ord_bool': Ordinal(order=[True, False]),
+    }
+    if isinstance(serialize_df, pd.DataFrame):
+        formats = ['csv', 'pickle', 'parquet']
+    else:
+        formats = ['csv']
+
+    for format in formats:
+        df = serialize_df.copy()
+        df.ww.init(index='id', logical_types=ltypes)
+        df.ww.to_disk(str(tmpdir), format=format)
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                      to_pandas(df, index=df.ww.index, sort_index=True))
+        assert deserialized_df.ww.schema == df.ww.schema
 
 
 @pytest.fixture

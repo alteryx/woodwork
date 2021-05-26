@@ -522,3 +522,57 @@ def sample_inferred_logical_types():
             'age': Integer,
             'signup_date': Datetime,
             'is_registered': Boolean}
+
+
+@pytest.fixture()
+def serialize_df_pandas():
+    df = pd.DataFrame({
+        'id': [0, 1, 2],
+        'cat_int': [1, 2, 1],
+        'ord_int': [1, 2, 1],
+        'cat_float': [1.0, 2.0, 1.0],
+        'ord_float': [1.0, 2.0, 1.0],
+        'cat_bool': [True, False, True],
+        'ord_bool': [True, False, True],
+    })
+    return df
+
+
+@pytest.fixture()
+def serialize_df_dask(serialize_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(serialize_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def serialize_df_koalas(serialize_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(serialize_df_pandas)
+
+
+@pytest.fixture(params=['serialize_df_pandas', 'serialize_df_dask', 'serialize_df_koalas'])
+def serialize_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def pandas_datetimes():
+    return [
+        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000', '3/14/2000']),
+        pd.Series(['3/11/2000', np.nan, '3/13/2000', '3/14/2000']),
+    ]
+
+
+@pytest.fixture()
+def dask_datetimes(pandas_datetimes):
+    return [pd_to_dask(series) for series in pandas_datetimes]
+
+
+@pytest.fixture()
+def koalas_datetimes(pandas_datetimes):
+    return [pd_to_koalas(series) for series in pandas_datetimes]
+
+
+@pytest.fixture(params=['pandas_datetimes', 'dask_datetimes', 'koalas_datetimes'])
+def datetimes(request):
+    return request.getfixturevalue(request.param)

@@ -6,9 +6,7 @@ import pandas as pd
 
 import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
-    _get_valid_dtype,
     _is_dataframe,
-    _update_column_dtype,
     get_invalid_schema_message,
     init_series
 )
@@ -26,11 +24,7 @@ from woodwork.statistics_utils import (
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
-from woodwork.type_sys.utils import (
-    _get_ltype_class,
-    _is_numeric_series,
-    col_is_datetime
-)
+from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.utils import (
     _get_column_logical_type,
     _parse_logical_type,
@@ -141,7 +135,7 @@ class WoodworkTableAccessor:
                 logical_type = _get_column_logical_type(series, logical_type, name)
                 parsed_logical_types[name] = logical_type
 
-                updated_series = _update_column_dtype(series, logical_type)
+                updated_series = logical_type.transform(series)
                 if updated_series is not series:
                     self._dataframe[name] = updated_series
 
@@ -344,7 +338,7 @@ class WoodworkTableAccessor:
         """A dictionary containing physical types for each column"""
         if self._schema is None:
             _raise_init_error()
-        return {col_name: _get_valid_dtype(type(self._dataframe[col_name]), self._schema.logical_types[col_name]) for col_name in self._dataframe.columns}
+        return {col_name: self._schema.logical_types[col_name]._get_valid_dtype(type(self._dataframe[col_name])) for col_name in self._dataframe.columns}
 
     @property
     def types(self):
@@ -445,7 +439,7 @@ class WoodworkTableAccessor:
         # go through changed ltypes and update dtype if necessary
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
-            updated_series = _update_column_dtype(series, logical_type)
+            updated_series = logical_type.transform(series)
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
@@ -721,7 +715,7 @@ class WoodworkTableAccessor:
         new_df.ww.init(schema=new_schema)
         return new_df
 
-    def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False):
+    def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
@@ -738,6 +732,11 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
+            callback (callable): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -747,9 +746,9 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_mutual_information_dict(self._dataframe, num_bins=num_bins, nrows=nrows, include_index=include_index)
+        return _get_mutual_information_dict(self._dataframe, num_bins, nrows, include_index, callback)
 
-    def mutual_information(self, num_bins=10, nrows=None, include_index=False):
+    def mutual_information(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Age, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
@@ -765,6 +764,11 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
+            callback (callable): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
@@ -772,7 +776,7 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        mutual_info = self.mutual_information_dict(num_bins, nrows, include_index)
+        mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
 
     def describe_dict(self, include=None):
@@ -870,7 +874,7 @@ def _validate_accessor_params(dataframe, index, make_index, time_index, logical_
             logical_type = None
             if logical_types is not None and time_index in logical_types:
                 logical_type = logical_types[time_index]
-                if _get_ltype_class(logical_types[time_index]) == Datetime:
+                if type(logical_types[time_index]) == Datetime:
                     datetime_format = logical_types[time_index].datetime_format
 
             _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)

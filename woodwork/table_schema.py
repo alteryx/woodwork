@@ -434,7 +434,7 @@ class TableSchema(object):
             selectors = exclude
 
         ltypes_used = set()
-        ltypes_in_schema = {_get_ltype_class(col.logical_type) for col in self.columns.values()}
+        ltypes_in_schema = {type(col.logical_type) for col in self.columns.values()}
 
         tags_used = set()
         tags_in_schema = {tag for col in self.columns.values() for tag in col.semantic_tags}
@@ -471,7 +471,7 @@ class TableSchema(object):
 
         cols_to_return = set()
         for col_name, col in self.columns.items():
-            is_match = (_get_ltype_class(col.logical_type) in ltypes_used or
+            is_match = (type(col.logical_type) in ltypes_used or
                         col.semantic_tags.intersection(tags_used) or
                         col_name in col_name_matches)
             if include is not None and is_match:

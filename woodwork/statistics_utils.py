@@ -1,10 +1,11 @@
+from timeit import default_timer as timer
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.logical_types import Datetime, Double, LatLong
-from woodwork.type_sys.utils import _get_ltype_class
-from woodwork.utils import get_valid_mi_types, import_or_none
+from woodwork.utils import _update_progress, get_valid_mi_types, import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -46,7 +47,7 @@ def _get_describe_dict(dataframe, include=None):
 
         # Any LatLong columns will be using lists, which we must convert
         # back to tuples so we can calculate the mode, which requires hashable values
-        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) == LatLong]
         df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
     else:
         df = dataframe
@@ -119,7 +120,7 @@ def _replace_nans_for_mutual_info(schema, data):
 
         if column.is_numeric or column.is_datetime:
             mean = series.mean()
-            if isinstance(mean, float) and not _get_ltype_class(column.logical_type) == Double:
+            if isinstance(mean, float) and not type(column.logical_type) == Double:
                 data[column_name] = series.astype('float')
             data[column_name] = series.fillna(mean)
         elif column.is_categorical or column.is_boolean:
@@ -158,7 +159,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     return data
 
 
-def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False):
+def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False, callback=None):
     """Calculates mutual information between all pairs of columns in the DataFrame that
     support mutual information. Logical Types that support mutual information are as
     follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
@@ -176,6 +177,11 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             included as long as its LogicalType is valid for mutual information calculations.
             If False, the index column will not have mutual information calculated for it.
             Defaults to False.
+        callback (callable): function to be called with incremental updates. Has the following parameters:
+
+            - update: percentage change (float between 0 and 100) in progress since last call
+            - progress_percent: percentage (float between 0 and 100) of total computation completed
+            - time_elapsed: total time in seconds that has elapsed since start of call
 
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
@@ -183,8 +189,9 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         Mutual information values are between 0 (no mutual information) and 1
         (perfect dependency).
         """
+    start_time = timer()
     valid_types = get_valid_mi_types()
-    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) in valid_types]
+    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) in valid_types]
 
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
@@ -204,8 +211,17 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     if set(not_null_cols) != set(valid_columns):
         data = data.loc[:, not_null_cols]
 
+    # Setup for progress callback and make initial call
+    # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n)/2 for main calculation loop
+    n = len(data.columns)
+    total_loops = 1 + 2 * n + (n * n + n) / 2
+    current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, callback)
+
     data = _replace_nans_for_mutual_info(dataframe.ww.schema, data)
+    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, callback)
+
     data = _make_categorical_for_mutual_info(dataframe.ww.schema, data, num_bins)
+    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, callback)
 
     # calculate mutual info for all pairs of columns
     mutual_info = []
@@ -215,13 +231,16 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             b_col = col_names[j]
             if a_col == b_col:
                 # Ignore because the mutual info for a column with itself will always be 1
+                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, callback)
                 continue
             else:
                 mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                 mutual_info.append(
                     {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                 )
+                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, callback)
     mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
+
     return mutual_info
 
 
