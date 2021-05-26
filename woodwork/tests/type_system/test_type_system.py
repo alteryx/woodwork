@@ -88,7 +88,7 @@ def test_type_system_default_type(default_inference_functions, default_relations
     assert type_sys.default_type == SubRegionCode
     type_sys.update_inference_function(Categorical, None)
     test_series = pd.Series(['a', 'b', 'c'])
-    assert type_sys.infer_logical_type(test_series) == SubRegionCode
+    assert isinstance(type_sys.infer_logical_type(test_series), SubRegionCode)
     assert SubRegionCode in type_sys.registered_types
 
 
@@ -249,7 +249,7 @@ def test_inference_multiple_matches_same_depth(default_relationships):
     inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
     # Should match CountryCode - same depth as Integer, but CountryCode parent
     # (Categorical) is tried and found first
-    assert inferred_type == CountryCode
+    assert isinstance(inferred_type, CountryCode)
 
 
 def test_inference_multiple_matches_different_depths(default_relationships):
@@ -269,7 +269,7 @@ def test_inference_multiple_matches_different_depths(default_relationships):
     type_sys.add_type(SubRegionCode, inference_function=always_true, parent=CountryCode)
     inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
     # Should match SubRegionCode as it is the deepest match
-    assert inferred_type == SubRegionCode
+    assert isinstance(inferred_type, SubRegionCode)
 
 
 def test_reset_defaults(type_sys, default_inference_functions, default_relationships):

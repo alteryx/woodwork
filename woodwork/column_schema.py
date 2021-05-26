@@ -1,4 +1,5 @@
 import warnings
+from inspect import isclass
 
 import woodwork as ww
 from woodwork.exceptions import (
@@ -6,7 +7,6 @@ from woodwork.exceptions import (
     StandardTagsChangedWarning
 )
 from woodwork.logical_types import Boolean, BooleanNullable, Datetime
-from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 
@@ -30,6 +30,9 @@ class ColumnSchema(object):
             validate (bool, optional): Whether to perform parameter validation. Defaults to True.
         """
         metadata = metadata or {}
+
+        if isclass(logical_type):
+            logical_type = logical_type()
 
         if validate:
             if logical_type is not None:
@@ -113,12 +116,12 @@ class ColumnSchema(object):
     @property
     def is_datetime(self):
         """Whether the ColumnSchema is a Datetime column"""
-        return _get_ltype_class(self.logical_type) == Datetime
+        return type(self.logical_type) == Datetime
 
     @property
     def is_boolean(self):
         """Whether the ColumnSchema is a Boolean column"""
-        ltype_class = _get_ltype_class(self.logical_type)
+        ltype_class = type(self.logical_type)
         return ltype_class == Boolean or ltype_class == BooleanNullable
 
     def _add_semantic_tags(self, new_tags, name):
@@ -179,9 +182,7 @@ class ColumnSchema(object):
 
 
 def _validate_logical_type(logical_type):
-    ltype_class = _get_ltype_class(logical_type)
-
-    if ltype_class not in ww.type_system.registered_types:
+    if type(logical_type) not in ww.type_system.registered_types:
         raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
 
 

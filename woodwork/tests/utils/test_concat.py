@@ -21,7 +21,7 @@ def test_concat_cols_ww_dfs(sample_df):
 
     combined_df = concat_columns([df1, df2])
     assert combined_df.ww == sample_df.ww
-    assert combined_df.ww.logical_types['full_name'] == Categorical
+    assert isinstance(combined_df.ww.logical_types['full_name'], Categorical)
     assert 'test_tag' in combined_df.ww.semantic_tags['age']
     assert combined_df.ww.metadata == {'created_by': 'user0'}
 
@@ -41,7 +41,7 @@ def test_concat_cols_uninit_dfs(sample_df):
 
     # Though the input dataframes don't have Woodwork initalized,
     # the concatenated DataFrame has Woodwork initialized for all the columns
-    assert combined_df.ww.logical_types['id'] == Integer
+    assert isinstance(combined_df.ww.logical_types['id'], Integer)
     assert combined_df.ww == sample_df.ww
 
     df1.ww.init()
@@ -175,7 +175,7 @@ def test_concat_cols_different_use_standard_tags(sample_df):
     assert combined_df.ww.semantic_tags['id'] == {'numeric'}
     assert combined_df.ww.semantic_tags['full_name'] == set()
     assert combined_df.ww.semantic_tags['age'] == set()
-    assert combined_df.ww.logical_types['full_name'] == Categorical
+    assert isinstance(combined_df.ww.logical_types['full_name'], Categorical)
     assert not combined_df.ww.use_standard_tags['age']
     assert not combined_df.ww.use_standard_tags['full_name']
     assert combined_df.ww.use_standard_tags['id']
@@ -304,7 +304,7 @@ def test_concat_cols_all_series(sample_df):
     assert isinstance(combined_df_1.ww.schema, ww.table_schema.TableSchema)
     assert list(combined_df_1.columns) == ['id', 'age', 'is_registered']
     assert list(combined_df_2.columns) == ['age', 'id', 'is_registered']
-    assert combined_df_1.ww.logical_types['age'] == Double
+    assert isinstance(combined_df_1.ww.logical_types['age'], Double)
 
 
 def test_concat_cols_row_order(sample_df):
