@@ -8,8 +8,10 @@ Future Release
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
         * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
+        * Add option to pass progress callback function to mutual information functions (:pr:`943`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
+        * Fix bug in which the dtype of category values were not restored properly on deserialization (:pr:`949`)
     * Changes
     * Documentation Changes
     * Testing Changes
