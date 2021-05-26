@@ -30,13 +30,13 @@ def to_pandas(df, index=None, sort_index=False):
     Returns:
         Pandas DataFrame
     """
-    if isinstance(df, (pd.DataFrame, pd.Series)):
+    if isinstance(df, (pd.DataFrame, pd.Series, pd.Index)):
         return df
 
-    if dd and isinstance(df, (dd.DataFrame, dd.Series)):
+    if dd and isinstance(df, (dd.DataFrame, dd.Series, dd.Index)):
         pd_df = df.compute()
 
-    if ks and isinstance(df, (ks.DataFrame, ks.Series)):
+    if ks and isinstance(df, (ks.DataFrame, ks.Series, ks.Index)):
         pd_df = df.to_pandas()
 
     if index:
