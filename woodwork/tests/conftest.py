@@ -524,6 +524,7 @@ def sample_inferred_logical_types():
             'is_registered': Boolean}
 
 
+@pytest.fixture()
 def serialize_df_pandas():
     df = pd.DataFrame({
         'id': [0, 1, 2],
