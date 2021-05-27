@@ -318,7 +318,6 @@ class TypeSystem(object):
     def str_to_logical_type(self, logical_str, params=None, raise_error=True):
         """Helper function for converting a string value to the corresponding logical type object.
         If a dictionary of params for the logical type is provided, apply them."""
-
         logical_str_lower = logical_str.lower()
         logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in self._get_logical_types().items()}
 

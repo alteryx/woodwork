@@ -11,9 +11,10 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`tamargrey`, :user:`thehomebrewnerd`
     
 
 v0.4.0 May 26, 2021
