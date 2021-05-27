@@ -11,10 +11,11 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-       * Update minimum unit tests to run on all pull requests (:pr:`952`)
+        * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
+        * Update minimum unit tests to run on all pull requests (:pr:`952`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
     
 
 v0.4.0 May 26, 2021
