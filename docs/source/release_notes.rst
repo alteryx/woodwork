@@ -9,6 +9,7 @@ Future Release
         * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
     * Fixes
     * Changes
+        * Change write_dataframe to only copy dataframe if it contains LatLong (:pr:`955`)
     * Documentation Changes
     * Testing Changes
         * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
