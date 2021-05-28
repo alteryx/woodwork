@@ -183,7 +183,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
                 latlong_columns.append(col_name)
         if len(latlong_columns) > 0:
             dataframe = dataframe.ww.copy()
-            dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)        
+            dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
         dataframe.to_parquet(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
