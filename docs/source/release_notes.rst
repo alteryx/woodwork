@@ -22,6 +22,7 @@ v0.4.0 May 26, 2021
 ===================
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
+        * Add dropping and renaming columns inplace (:pr:`920`)
         * Add option to pass progress callback function to mutual information functions (:pr:`943`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
@@ -34,7 +35,6 @@ v0.4.0 May 26, 2021
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
-
 
 v0.3.1 May 12, 2021
 ===================
