@@ -114,13 +114,13 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     else:
         lib = pd
 
+    if 'index' in kwargs.keys():
+        del kwargs['index']
     if load_format == 'csv':
         dataframe = lib.read_csv(
             file,
-            engine=kwargs['engine'],
-            compression=compression,
-            encoding=kwargs['encoding'],
             dtype=category_dtypes,
+            **kwargs
         )
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)

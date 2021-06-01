@@ -155,19 +155,12 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
     file = os.path.join(path, location)
 
     if format == 'csv':
-        compression = kwargs['compression']
         if ks and isinstance(dataframe, ks.DataFrame):
             dataframe = dataframe.ww.copy()
             columns = list(dataframe.select_dtypes('object').columns)
             dataframe[columns] = dataframe[columns].astype(str)
-            compression = str(compression)
-        dataframe.to_csv(
-            file,
-            index=kwargs['index'],
-            sep=kwargs['sep'],
-            encoding=kwargs['encoding'],
-            compression=compression
-        )
+            kwargs['compression'] = str(kwargs['compression'])
+        dataframe.to_csv(file, **kwargs)
     elif format == 'pickle':
         # Dask and Koalas currently do not support to_pickle
         if not isinstance(dataframe, pd.DataFrame):

@@ -549,8 +549,12 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'engine': 'python', 'index': False}
         if format == 'csv':
+            default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'index': False}
+            if ks and isinstance(self._dataframe, ks.DataFrame):
+                default_csv_kwargs['multiline'] = True
+                default_csv_kwargs['ignoreLeadingWhitespace'] = False
+                default_csv_kwargs['ignoreTrailingWhitespace'] = False
             kwargs = {**default_csv_kwargs, **kwargs}
         elif format == 'parquet':
             import_error_message = (

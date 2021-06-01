@@ -157,7 +157,7 @@ def test_unserializable_table(sample_df, tmpdir):
 
     error = "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
     with pytest.raises(TypeError, match=error):
-        sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
+        sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8')
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
@@ -181,7 +181,7 @@ def test_to_csv(sample_df, tmpdir):
                              'age': 'age of the user'},
         column_metadata={'id': {'is_sorted': True},
                          'age': {'interesting_values': [33, 57]}})
-    sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
+    sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8')
     deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
     pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -199,17 +199,34 @@ def test_to_csv_with_latlong(latlong_df, tmpdir):
     assert deserialized_df.ww.schema == latlong_df.ww.schema
 
 
+def test_to_disk_with_whitespace(whitespace_df, tmpdir):
+    formats = ['csv', 'parquet', 'pickle']
+    for format in formats:
+        df = whitespace_df.copy()
+        df.ww.init(index='id', logical_types={'comments': 'NaturalLanguage'})
+        if format == 'pickle' and not isinstance(df, pd.DataFrame):
+            msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+            with pytest.raises(ValueError, match=msg):
+                df.ww.to_disk(str(tmpdir), format='pickle')
+        else:
+            df.ww.to_disk(str(tmpdir), format=format)
+            deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+            assert deserialized_df.ww.schema == df.ww.schema
+            pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                          to_pandas(df, index=df.ww.index, sort_index=True))
+
+
 def test_to_csv_use_standard_tags(sample_df, tmpdir):
     no_standard_tags_df = sample_df.copy()
     no_standard_tags_df.ww.init(use_standard_tags=False)
 
-    no_standard_tags_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
+    no_standard_tags_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8')
     deserialized_no_tags_df = deserialize.read_woodwork_table(str(tmpdir))
 
     standard_tags_df = sample_df.copy()
     standard_tags_df.ww.init(use_standard_tags=True)
 
-    standard_tags_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
+    standard_tags_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8')
     deserialized_tags_df = deserialize.read_woodwork_table(str(tmpdir))
 
     assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
@@ -323,7 +340,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
         index='id',
         semantic_tags={'id': 'tag1'},
         logical_types={'age': Ordinal(order=[25, 33, 57])})
-    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', engine='python')
+    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8')
     make_public(s3_client, s3_bucket)
 
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
@@ -366,7 +383,7 @@ def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
         time_index='signup_date',
         semantic_tags={'id': 'tag1'},
         logical_types={'age': Ordinal(order=[25, 33, 57])})
-    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', engine='python', profile_name=False)
+    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', profile_name=False)
     make_public(s3_client, s3_bucket)
 
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
@@ -442,7 +459,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
     xfail_tmp_disappears(sample_df)
     sample_df.ww.init()
-    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', engine='python', profile_name='test')
+    sample_df.ww.to_disk(TEST_S3_URL, format='csv', encoding='utf-8', profile_name='test')
     make_public(s3_client, s3_bucket)
     deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name='test')
 
@@ -454,7 +471,7 @@ def test_serialize_url_csv(sample_df):
     sample_df.ww.init()
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
-        sample_df.ww.to_disk(URL, format='csv', encoding='utf-8', engine='python')
+        sample_df.ww.to_disk(URL, format='csv', encoding='utf-8')
 
 
 def test_serialize_subdirs_not_removed(sample_df, tmpdir):
