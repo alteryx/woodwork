@@ -550,7 +550,7 @@ class WoodworkTableAccessor:
         if self._schema is None:
             _raise_init_error()
         if format == 'csv':
-            default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'index': False}
+            default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'engine': 'python', 'index': False}
             if ks and isinstance(self._dataframe, ks.DataFrame):
                 default_csv_kwargs['multiline'] = True
                 default_csv_kwargs['ignoreLeadingWhitespace'] = False
