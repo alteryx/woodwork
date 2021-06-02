@@ -175,9 +175,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
         latlong_columns = []
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
-        for col_name, col in dataframe.ww.columns.items():
-            if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong:
-                latlong_columns.append(col_name)
+        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
         if len(latlong_columns) > 0:
             dataframe = dataframe.ww.copy()
             dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
