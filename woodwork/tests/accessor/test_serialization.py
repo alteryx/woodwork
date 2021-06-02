@@ -199,6 +199,23 @@ def test_to_csv_with_latlong(latlong_df, tmpdir):
     assert deserialized_df.ww.schema == latlong_df.ww.schema
 
 
+def test_to_disk_with_whitespace(whitespace_df, tmpdir):
+    formats = ['csv', 'parquet', 'pickle']
+    for format in formats:
+        df = whitespace_df.copy()
+        df.ww.init(index='id', logical_types={'comments': 'NaturalLanguage'})
+        if format == 'pickle' and not isinstance(df, pd.DataFrame):
+            msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
+            with pytest.raises(ValueError, match=msg):
+                df.ww.to_disk(str(tmpdir), format='pickle')
+        else:
+            df.ww.to_disk(str(tmpdir), format=format)
+            deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+            assert deserialized_df.ww.schema == df.ww.schema
+            pd.testing.assert_frame_equal(to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+                                          to_pandas(df, index=df.ww.index, sort_index=True))
+
+
 def test_to_csv_use_standard_tags(sample_df, tmpdir):
     no_standard_tags_df = sample_df.copy()
     no_standard_tags_df.ww.init(use_standard_tags=False)

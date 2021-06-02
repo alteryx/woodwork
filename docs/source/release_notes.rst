@@ -9,6 +9,7 @@ Future Release
         * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
         * Add optional automatic update checker (:pr:`959`)
     * Fixes
+        * Fix issue related to serialization/deserialization of data with whitespace and newline characters (:pr:`957`)
     * Changes
     * Documentation Changes
     * Testing Changes
