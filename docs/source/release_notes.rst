@@ -11,6 +11,7 @@ Future Release
     * Fixes
         * Fix issue related to serialization/deserialization of data with whitespace and newline characters (:pr:`957`)
     * Changes
+        * Change write_dataframe to only copy dataframe if it contains LatLong (:pr:`955`)
     * Documentation Changes
     * Testing Changes
         * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
