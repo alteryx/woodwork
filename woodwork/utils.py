@@ -6,15 +6,25 @@ from mimetypes import add_type, guess_type
 
 import numpy as np
 import pandas as pd
+import pandas.api.types as pdtypes
 
 import woodwork as ww
+
+def read_avro(filepath, **kwargs):
+    import fastavro
+    with open(filepath, 'rb') as fp:
+        reader = fastavro.reader(fp)
+        df = pd.DataFrame.from_records([r for r in reader])
+        return df
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
 type_to_read_func_map = {
     'csv': pd.read_csv,
     'text/csv': pd.read_csv,
     'parquet': pd.read_parquet,
-    'application/parquet': pd.read_parquet
+    'application/parquet': pd.read_parquet,
+    'avro': read_avro,
+    'application/avro': read_avro
 }
 
 PYARROW_ERR_MSG = (
@@ -27,6 +37,7 @@ PYARROW_ERR_MSG = (
 
 # Add new mimetypes
 add_type('application/parquet', '.parquet')
+add_type('application/avro', '.avro')
 
 
 def import_or_none(library):
@@ -137,6 +148,8 @@ def read_file(filepath=None,
         import_or_raise('pyarrow', PYARROW_ERR_MSG)
         kwargs['engine'] = 'pyarrow'
 
+    if content_type in ['avro', 'application/avro']:
+        import_or_raise('fastavro', 'install fastavro')
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
     dataframe.ww.init(name=name,
                       index=index,
@@ -318,3 +331,35 @@ def _update_progress(start_time, current_time, progress_increment,
         callback_function((progress_increment / total) * 100, (new_progress / total) * 100, elapsed_time)
 
         return new_progress
+
+
+def convert_column_dtype_to_avro_type(column, return_new_column=False):
+    avro_type = ["string"]
+    dtype = np.object
+    if pdtypes.is_bool_dtype(column.dtype):
+        avro_type = ["boolean"]
+        # use object, prevents using numpy booleans (which don't work with avro writer)
+        # numpy boolean != python boolean
+        column = column.astype(object)
+    elif pdtypes.is_integer_dtype(column.dtype):
+        avro_type = ["int"]
+        column = column.astype(pd.Int64Dtype())
+        if column.isnull().values.any():
+            # <NA> don't work with writer
+            dtype = np.object
+        else:
+            dtype = np.int64
+    elif pdtypes.is_float_dtype(column.dtype):
+        avro_type = ["float"]
+        column = column.astype(np.float64)
+        dtype = np.float64
+    else:
+        # categorical
+        # datetime
+        #  -> object (pandas dtype for string)
+        column[column.notnull()] = column.astype(str)
+    avro_type.insert(0, "null")
+    if return_new_column:
+        column = column.to_numpy(dtype=dtype, na_value=None)
+        return column, avro_type
+    return avro_type

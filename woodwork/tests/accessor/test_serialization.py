@@ -267,6 +267,36 @@ def test_to_parquet_with_latlong(latlong_df, tmpdir):
     assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
+def test_to_avro(sample_df, tmpdir):
+    sample_df.ww.init(index='id')
+    error_text = 'to_avro only supported for pandas dataframes'
+    if (dd and isinstance(sample_df, dd.DataFrame)) or (ks and isinstance(sample_df, ks.DataFrame)):
+        error_text = 'to_avro only supported for pandas dataframes'
+        with pytest.raises(ValueError, match=error_text):
+            sample_df.ww.to_disk(str(tmpdir), format='avro')
+    else:
+        sample_df.ww.to_disk(str(tmpdir), format='avro')
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                    to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+        assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+def test_to_avro_with_latlong(latlong_df, tmpdir):
+    latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
+    if (dd and isinstance(latlong_df, dd.DataFrame)) or (ks and isinstance(latlong_df, ks.DataFrame)):
+        error_text = 'to_avro only supported for pandas dataframes'
+        with pytest.raises(ValueError, match=error_text):
+            latlong_df.ww.to_disk(str(tmpdir), format='avro')
+    else:
+        latlong_df.ww.to_disk(str(tmpdir), format='avro')
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+
+        pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
+                                    to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+        assert latlong_df.ww.schema == deserialized_df.ww.schema
+
+
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
     ltypes = {
         'cat_int': Categorical,

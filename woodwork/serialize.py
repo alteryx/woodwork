@@ -18,7 +18,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 SCHEMA_VERSION = '10.0.0'
-FORMATS = ['csv', 'pickle', 'parquet']
+FORMATS = ['csv', 'pickle', 'parquet', 'avro']
 
 
 def typing_info_to_dict(dataframe):
@@ -182,6 +182,8 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
         dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
 
         dataframe.to_parquet(file, **kwargs)
+    elif format == 'avro':
+        dataframe.ww.to_avro(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))

@@ -17,20 +17,22 @@ from woodwork.exceptions import (
     WoodworkNotInitError
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, LatLong
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
-from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
+from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime, _get_ltype_class
 from woodwork.utils import (
     _get_column_logical_type,
     _parse_logical_type,
     import_or_none,
-    import_or_raise
+    import_or_raise,
+    convert_column_dtype_to_avro_type
 )
+import numpy as np
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -565,6 +567,42 @@ class WoodworkTableAccessor:
         serialize.write_woodwork_table(self._dataframe, path, format=format,
                                        compression=compression, profile_name=profile_name,
                                        **kwargs)
+
+
+    def to_avro(self, path, **kwargs):
+        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+            raise ValueError('to_avro only supported for pandas dataframes')
+        import_error_message = (
+            "The fastavro library is required to write to avro.\n"
+            "Install via pip:\n"
+            "    pip install fastavro\n"
+            "Install via conda:\n"
+            "   conda install fastavro -c conda-forge"
+        )
+        fastavro = import_or_raise('fastavro', import_error_message)
+
+        df = self._dataframe.ww.copy()
+        latlong_columns = [col_name for col_name, col in self._dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == LatLong]
+        df[latlong_columns] = df[latlong_columns].astype(str)
+        avro_fields = []
+        for col in df.columns:
+            df[col], avro_type = convert_column_dtype_to_avro_type(
+                df[col], return_new_column=True
+            )
+            avro_fields.append({"name": col, "type": avro_type})
+        schema = {
+            "doc": path,
+            "name": "Record",
+            "namespace": "com.alteryx.tempo",
+            "type": "record",
+            "fields": avro_fields,
+        }
+        parsed_schema = fastavro.parse_schema(schema)
+        records = df.to_dict("records")
+
+        with open(path, 'wb') as fp:
+            fastavro.writer(fp, parsed_schema, records)
+
 
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
