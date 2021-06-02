@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
+        * Add optional automatic update checker (:pr:`959`)
     * Fixes
         * Fix issue related to serialization/deserialization of data with whitespace and newline characters (:pr:`957`)
     * Changes
@@ -16,7 +17,7 @@ Future Release
         * Update minimum unit tests to run on all pull requests (:pr:`952`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
     
 
 v0.4.0 May 26, 2021

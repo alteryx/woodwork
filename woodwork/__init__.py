@@ -1,4 +1,6 @@
 # flake8: noqa
+import pkg_resources
+
 from .config import config
 from .type_sys import type_system
 from .type_sys.utils import list_logical_types, list_semantic_tags
@@ -13,3 +15,12 @@ from woodwork.accessor_utils import (
     init_series,
     is_schema_valid
 )
+
+# Call functions registered by other libraries when woodwork is imported
+for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'):
+    try:
+        method = entry_point.load()
+        if callable(method):
+            method('woodwork')
+    except Exception:
+        pass

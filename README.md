@@ -38,6 +38,14 @@ or from the conda-forge channel on [conda](https://anaconda.org/conda-forge/wood
 conda install -c conda-forge woodwork
 ```
 
+### Add-ons
+**Update checker** - Receive automatic notifications of new Woodwork releases
+```
+python -m pip install woodwork[update_checker]
+```
+
+
+
 ## Example
 
 Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for four of the columns.
