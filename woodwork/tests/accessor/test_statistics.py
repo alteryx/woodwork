@@ -605,6 +605,45 @@ def test_describe_with_no_match(sample_df):
     assert df.empty
 
 
+def test_describe_callback(describe_df):
+    describe_df.ww.init(index='index_col')
+
+    class MockCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
+            self.total_elapsed_time = 0
+
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+            self.total_elapsed_time = time_elapsed
+
+    mock_callback = MockCallback()
+
+    describe_df.ww.describe(callback=mock_callback)
+
+    # Koalas df does not have timedelta column
+    if ks and isinstance(describe_df, ks.DataFrame):
+        ncalls = 9
+    else:
+        ncalls = 10
+
+    assert len(mock_callback.progress_history) == ncalls
+
+    # First call should be 1 unit complete
+    assert np.isclose(mock_callback.progress_history[0], 1 / ncalls * 100)
+    # After second call should be 2 unit complete
+    assert np.isclose(mock_callback.progress_history[1], 2 / ncalls * 100)
+
+    # Should be 100% at end with a positive elapsed time
+    assert np.isclose(mock_callback.total_update, 100.0)
+    assert np.isclose(mock_callback.total_progress_percent, 100.0)
+    assert mock_callback.total_elapsed_time > 0
+
+
 def test_value_counts(categorical_df):
     logical_types = {
         'ints': IntegerNullable,
