@@ -172,7 +172,6 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
             raise ValueError(msg)
         dataframe.to_pickle(file, **kwargs)
     elif format == 'parquet':
-        latlong_columns = []
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet format.
         latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
