@@ -334,6 +334,16 @@ def _update_progress(start_time, current_time, progress_increment,
 
 
 def convert_column_dtype_to_avro_type(column, return_new_column=False):
+    """
+    Convert a pandas series dtype into an avro type. Optionally convert the series into a numpy array compatable with the avro type.
+
+    Args:
+        column: pandas series
+
+    Returns:
+        avro_type: the avro type of the column
+        column: a numpy array compatible with avro_type
+    """
     avro_type = ["string"]
     dtype = np.object
     if pdtypes.is_bool_dtype(column.dtype):
@@ -361,5 +371,5 @@ def convert_column_dtype_to_avro_type(column, return_new_column=False):
     avro_type.insert(0, "null")
     if return_new_column:
         column = column.to_numpy(dtype=dtype, na_value=None)
-        return column, avro_type
+        return avro_type, column
     return avro_type

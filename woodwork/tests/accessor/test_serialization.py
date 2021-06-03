@@ -269,9 +269,8 @@ def test_to_parquet_with_latlong(latlong_df, tmpdir):
 
 def test_to_avro(sample_df, tmpdir):
     sample_df.ww.init(index='id')
-    error_text = 'to_avro only supported for pandas dataframes'
     if (dd and isinstance(sample_df, dd.DataFrame)) or (ks and isinstance(sample_df, ks.DataFrame)):
-        error_text = 'to_avro only supported for pandas dataframes'
+        error_text = 'Only Pandas dataframes support writing to avro'
         with pytest.raises(ValueError, match=error_text):
             sample_df.ww.to_disk(str(tmpdir), format='avro')
     else:
@@ -285,7 +284,7 @@ def test_to_avro(sample_df, tmpdir):
 def test_to_avro_with_latlong(latlong_df, tmpdir):
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
     if (dd and isinstance(latlong_df, dd.DataFrame)) or (ks and isinstance(latlong_df, ks.DataFrame)):
-        error_text = 'to_avro only supported for pandas dataframes'
+        error_text = 'Only Pandas dataframes support writing to avro'
         with pytest.raises(ValueError, match=error_text):
             latlong_df.ww.to_disk(str(tmpdir), format='avro')
     else:

@@ -544,7 +544,7 @@ class WoodworkTableAccessor:
 
             Args:
                 path (str) : Location on disk to write to (will be created as a directory)
-                format (str) : Format to use for writing Woodwork data. Defaults to csv. Possible values are: {'csv', 'pickle', 'parquet'}.
+                format (str) : Format to use for writing Woodwork data. Defaults to csv. Possible values are: {'csv', 'pickle', 'parquet', 'avro'}.
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
                 kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
@@ -570,8 +570,15 @@ class WoodworkTableAccessor:
 
 
     def to_avro(self, path, **kwargs):
+        """
+        Writes underlying dataframe out to an avro file.
+        
+        Args:
+            path (str) : Location on disk to write to (will be created as a directory)
+            kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
+        """
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
-            raise ValueError('to_avro only supported for pandas dataframes')
+            raise ValueError('Only Pandas dataframes support writing to avro')
         import_error_message = (
             "The fastavro library is required to write to avro.\n"
             "Install via pip:\n"
@@ -586,7 +593,7 @@ class WoodworkTableAccessor:
         df[latlong_columns] = df[latlong_columns].astype(str)
         avro_fields = []
         for col in df.columns:
-            df[col], avro_type = convert_column_dtype_to_avro_type(
+            avro_type, df[col] = convert_column_dtype_to_avro_type(
                 df[col], return_new_column=True
             )
             avro_fields.append({"name": col, "type": avro_type})
