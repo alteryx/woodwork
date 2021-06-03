@@ -18,7 +18,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 SCHEMA_VERSION = '10.0.0'
-FORMATS = ['csv', 'pickle', 'parquet', 'arrow']
+FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather']
 
 
 def typing_info_to_dict(dataframe):
@@ -174,7 +174,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
             msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
             raise ValueError(msg)
         dataframe.to_pickle(file, **kwargs)
-    elif format == 'parquet' or format == 'arrow':
+    elif format in ['parquet', 'arrow', 'feather']:
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet and arrow/feather format.
         dataframe = dataframe.ww.copy()

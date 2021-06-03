@@ -290,6 +290,29 @@ def test_to_arrow_with_latlong(latlong_df, tmpdir):
     assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
+def test_to_feather(sample_df, tmpdir):
+    if not isinstance(sample_df, pd.DataFrame):
+        pytest.xfail('Arrow IPC format (Feather) not supported on Dask or Koalas')
+    sample_df.ww.init(index='id')
+    sample_df.ww.to_disk(str(tmpdir), format='feather')
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+def test_to_feather_with_latlong(latlong_df, tmpdir):
+    if not isinstance(latlong_df, pd.DataFrame):
+        pytest.xfail('Arrow IPC format (Feather) not supported on Dask or Koalas')
+    latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
+    latlong_df.ww.to_disk(str(tmpdir), format='feather')
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+
+    pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
+                                  to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+    assert latlong_df.ww.schema == deserialized_df.ww.schema
+
+
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
     ltypes = {
         'cat_int': Categorical,
