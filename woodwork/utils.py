@@ -367,6 +367,7 @@ def convert_column_dtype_to_avro_type(column, return_new_column=False):
         # categorical
         # datetime
         #  -> object (pandas dtype for string)
+        # <NA> don't work with writer
         column[column.notnull()] = column.astype(str)
     avro_type.insert(0, "null")
     if return_new_column:
