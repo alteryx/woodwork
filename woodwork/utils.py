@@ -10,12 +10,14 @@ import pandas.api.types as pdtypes
 
 import woodwork as ww
 
+
 def read_avro(filepath, **kwargs):
     import fastavro
     with open(filepath, 'rb') as fp:
         reader = fastavro.reader(fp)
         df = pd.DataFrame.from_records([r for r in reader])
         return df
+
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
 type_to_read_func_map = {

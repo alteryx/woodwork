@@ -1,7 +1,6 @@
 
 import os
 import re
-from woodwork.tests.conftest import describe_df
 
 import numpy as np
 import pandas as pd
@@ -580,7 +579,7 @@ def test_convert_column_dtype_to_avro_type(describe_df_pandas):
         avro_fields.append({"name": col, "type": avro_type})
         if avro_type[1] == 'float':
             continue
-        assert df[col].map(lambda x: x is not None and x != x).sum() == 0 # check for Nan values that aren't None
+        assert df[col].map(lambda x: x is not None and x != x).sum() == 0  # check for Nan values that aren't None
     expected_fields = [{'name': 'index_col', 'type': ['null', 'int']},
                        {'name': 'boolean_col', 'type': ['null', 'string']},
                        {'name': 'category_col', 'type': ['null', 'string']},

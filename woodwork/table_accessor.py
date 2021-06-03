@@ -24,15 +24,18 @@ from woodwork.statistics_utils import (
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
-from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime, _get_ltype_class
+from woodwork.type_sys.utils import (
+    _get_ltype_class,
+    _is_numeric_series,
+    col_is_datetime
+)
 from woodwork.utils import (
     _get_column_logical_type,
     _parse_logical_type,
+    convert_column_dtype_to_avro_type,
     import_or_none,
-    import_or_raise,
-    convert_column_dtype_to_avro_type
+    import_or_raise
 )
-import numpy as np
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -568,11 +571,10 @@ class WoodworkTableAccessor:
                                        compression=compression, profile_name=profile_name,
                                        **kwargs)
 
-
     def to_avro(self, path, **kwargs):
         """
         Writes underlying dataframe out to an avro file.
-        
+
         Args:
             path (str) : Location on disk to write to (will be created as a directory)
             kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
@@ -609,7 +611,6 @@ class WoodworkTableAccessor:
 
         with open(path, 'wb') as fp:
             fastavro.writer(fp, parsed_schema, records)
-
 
     def _sort_columns(self, already_sorted):
         if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):

@@ -277,7 +277,7 @@ def test_to_avro(sample_df, tmpdir):
         sample_df.ww.to_disk(str(tmpdir), format='avro')
         deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
         pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
-                                    to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+                                      to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
         assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
@@ -292,7 +292,7 @@ def test_to_avro_with_latlong(latlong_df, tmpdir):
         deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
 
         pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
-                                    to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+                                      to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
         assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
