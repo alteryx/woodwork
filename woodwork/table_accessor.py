@@ -803,7 +803,7 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
                 - update: percentage change (float between 0 and 100) in progress since last call
                 - progress_percent: percentage (float between 0 and 100) of total computation completed
@@ -835,7 +835,7 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
                 - update: percentage change (float between 0 and 100) in progress since last call
                 - progress_percent: percentage (float between 0 and 100) of total computation completed
@@ -850,7 +850,7 @@ class WoodworkTableAccessor:
         mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
 
-    def describe_dict(self, include=None):
+    def describe_dict(self, include=None, callback=None):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -859,6 +859,11 @@ class WoodworkTableAccessor:
                 combining any of the three. It follows the most broad specification. Favors logical types
                 then semantic tag then column name. If no matching columns are found, an empty DataFrame
                 will be returned.
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -867,9 +872,9 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_describe_dict(self._dataframe, include=include)
+        return _get_describe_dict(self._dataframe, include=include, callback=callback)
 
-    def describe(self, include=None):
+    def describe(self, include=None, callback=None):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -878,13 +883,18 @@ class WoodworkTableAccessor:
                 combining any of the three. It follows the most broad specification. Favors logical types
                 then semantic tag then column name. If no matching columns are found, an empty DataFrame
                 will be returned.
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = self.describe_dict(include=include)
+        results = self.describe_dict(include=include, callback=callback)
         index_order = [
             'physical_type',
             'logical_type',
