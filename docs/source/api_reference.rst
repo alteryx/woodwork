@@ -36,6 +36,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.set_types
     WoodworkTableAccessor.time_index
     WoodworkTableAccessor.to_disk
+    WoddworkTableAccessor.to_avro
     WoodworkTableAccessor.to_dictionary
     WoodworkTableAccessor.types
     WoodworkTableAccessor.use_standard_tags
