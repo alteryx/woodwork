@@ -478,6 +478,38 @@ def latlongs(request):
 
 
 @pytest.fixture()
+def whitespace_df_pandas():
+    return pd.DataFrame({
+        'id': [0, 1, 2, 3, 4, 5],
+        'comments': [
+            '\nleading newline',
+            'trailing newline\n',
+            '\n',
+            'newline in \n the middle',
+            '    leading whitespace',
+            'trailing whitespace ',
+        ]
+    })
+
+
+@pytest.fixture()
+def whitespace_df_dask(whitespace_df_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(whitespace_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def whitespace_df_koalas(whitespace_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(whitespace_df_pandas)
+
+
+@pytest.fixture(params=['whitespace_df_pandas', 'whitespace_df_dask', 'whitespace_df_koalas'])
+def whitespace_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
 def falsy_names_df_pandas():
     return pd.DataFrame({
         0: ['a', 'b', 'c'],

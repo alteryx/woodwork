@@ -2,12 +2,6 @@ name: Unit Tests - Minimum Dependencies
 on:
   pull_request:
     types: [opened, synchronize]
-    paths:
-      - 'requirements.txt'
-      - 'test-requirements.txt'
-      - 'dask-requirements.txt'
-      - 'koalas-requirements.txt'
-      - 'woodwork/tests/requirement_files/**'
   push:
     branches:
       - main
@@ -30,6 +24,7 @@ jobs:
           python-version: 3.7
       - name: Install woodwork - minimum tests requirements
         run: |
+          python -m pip install -e . --no-dependencies
           python -m pip install -r woodwork/tests/requirement_files/minimum_test_requirements.txt
       - if: ${{ matrix.libraries == 'koalas' }}
         name: Install woodwork - minimum koalas, core requirements
@@ -44,5 +39,6 @@ jobs:
         run: |
           python -m pip install -r woodwork/tests/requirement_files/minimum_core_requirements.txt
       - name: Run unit tests without code coverage
-        run: |
-          python -m pytest woodwork/ -n 2
+        run: python -m pytest woodwork/ -n 2
+        env:
+          PYARROW_IGNORE_TIMEZONE: 1

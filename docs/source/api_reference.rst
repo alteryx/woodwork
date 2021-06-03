@@ -193,6 +193,7 @@ General Utils
     :toctree: generated
     :nosignatures:
 
+    concat_columns
     get_valid_mi_types
     read_file
 

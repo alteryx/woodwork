@@ -51,3 +51,7 @@ class ColumnNotPresentError(KeyError):
 
 class WoodworkNotInitError(AttributeError):
     pass
+
+
+class WoodworkNotInitWarning(UserWarning):
+    pass

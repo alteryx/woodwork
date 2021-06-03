@@ -23,6 +23,7 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode
 )
+from woodwork.type_sys.type_system import DEFAULT_INFERENCE_FUNCTIONS
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,
@@ -114,10 +115,9 @@ def test_list_logical_types_default():
                                'standard_tags', 'is_default_type', 'is_registered', 'parent_type'}
 
     assert len(all_ltypes) == len(df)
-    for name in df['name']:
-        assert ww.type_system.str_to_logical_type(name) in all_ltypes
-    assert all(df['is_default_type'])
-    assert all(df['is_registered'])
+    default_types_set = {str(cls) for cls in DEFAULT_INFERENCE_FUNCTIONS.keys()}
+    listed_as_default = set(df[df['is_default_type']]['name'])
+    assert listed_as_default == default_types_set
 
 
 def test_list_logical_types_customized_type_system():

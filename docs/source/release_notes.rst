@@ -3,20 +3,29 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+        * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
+        * Add optional automatic update checker (:pr:`959`)
     * Fixes
+        * Fix issue related to serialization/deserialization of data with whitespace and newline characters (:pr:`957`)
     * Changes
+        * Change write_dataframe to only copy dataframe if it contains LatLong (:pr:`955`)
     * Documentation Changes
     * Testing Changes
+        * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
+        * Update minimum unit tests to run on all pull requests (:pr:`952`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
+    
 
 v0.4.0 May 26, 2021
 ===================
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
+        * Add dropping and renaming columns inplace (:pr:`920`)
         * Add option to pass progress callback function to mutual information functions (:pr:`943`)
         * Add support to read and write avro files (:pr:`961`)
     * Fixes
@@ -30,7 +39,6 @@ v0.4.0 May 26, 2021
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
-
 
 v0.3.1 May 12, 2021
 ===================
