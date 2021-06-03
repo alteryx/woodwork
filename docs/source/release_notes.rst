@@ -18,6 +18,7 @@ v0.4.0 May 26, 2021
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
         * Add option to pass progress callback function to mutual information functions (:pr:`943`)
+        * Add support to read and write avro files (:pr:`961`)
     * Fixes
         * Fix bug when setting table name and metadata through accessor (:pr:`942`)
         * Fix bug in which the dtype of category values were not restored properly on deserialization (:pr:`949`)
