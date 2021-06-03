@@ -1,6 +1,7 @@
 
 import os
 import re
+from woodwork.tests.conftest import describe_df
 
 import numpy as np
 import pandas as pd
@@ -41,6 +42,7 @@ from woodwork.utils import (
     _reformat_to_latlong,
     _to_latlong_float,
     camel_to_snake,
+    convert_column_dtype_to_avro_type,
     get_valid_mi_types,
     import_or_none,
     import_or_raise
@@ -566,3 +568,25 @@ def test_parse_logical_type_errors():
     error = "Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
         _parse_logical_type(int, 'col_name')
+
+
+def test_convert_column_dtype_to_avro_type(describe_df_pandas):
+    df = describe_df_pandas.copy().drop('latlong_col', axis='columns')
+    avro_fields = []
+    for col in df.columns:
+        avro_type, df[col] = convert_column_dtype_to_avro_type(
+            df[col], return_new_column=True
+        )
+        avro_fields.append({"name": col, "type": avro_type})
+        if avro_type[1] == 'float':
+            continue
+        assert df[col].map(lambda x: x is not None and x != x).sum() == 0 # check for Nan values that aren't None
+    expected_fields = [{'name': 'index_col', 'type': ['null', 'int']},
+                       {'name': 'boolean_col', 'type': ['null', 'string']},
+                       {'name': 'category_col', 'type': ['null', 'string']},
+                       {'name': 'datetime_col', 'type': ['null', 'string']},
+                       {'name': 'formatted_datetime_col', 'type': ['null', 'string']},
+                       {'name': 'numeric_col', 'type': ['null', 'float']},
+                       {'name': 'natural_language_col', 'type': ['null', 'string']},
+                       {'name': 'timedelta_col', 'type': ['null', 'string']}]
+    assert expected_fields == avro_fields
