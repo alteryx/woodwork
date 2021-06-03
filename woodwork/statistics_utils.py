@@ -11,22 +11,28 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 
-def _get_describe_dict(dataframe, include=None):
+def _get_describe_dict(dataframe, include=None, callback=None):
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
     Args:
         dataframe (pd.DataFrame): DataFrame to be described with Woodwork typing information initialized
         include (list[str or LogicalType], optional): filter for what columns to include in the
-        statistics returned. Can be a list of column names, semantic tags, logical types, or a list
-        combining any of the three. It follows the most broad specification. Favors logical types
-        then semantic tag then column name. If no matching columns are found, an empty DataFrame
-        will be returned.
+            statistics returned. Can be a list of column names, semantic tags, logical types, or a list
+            combining any of the three. It follows the most broad specification. Favors logical types
+            then semantic tag then column name. If no matching columns are found, an empty DataFrame
+            will be returned.
+        callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+
+            - update: percentage change (float between 0 and 100) in progress since last call
+            - progress_percent: percentage (float between 0 and 100) of total computation completed
+            - time_elapsed: total time in seconds that has elapsed since start of call
 
     Returns:
         dict[str -> dict]: A dictionary with a key for each column in the data or for each column
         matching the logical types, semantic tags or column names specified in ``include``, paired
         with a value containing a dictionary containing relevant statistics for that column.
     """
+    start_time = timer()
     agg_stats_to_calculate = {
         'category': ["count", "nunique"],
         'numeric': ["count", "max", "min", "nunique", "mean", "std"],
@@ -52,8 +58,14 @@ def _get_describe_dict(dataframe, include=None):
     else:
         df = dataframe
 
+    # Setup for progress callback and make initial call
+    # Assume 1 unit for general preprocessing, plus main loop over column
+    total_loops = 1 + len(cols_to_include)
+    current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, callback)
+
     for column_name, column in cols_to_include:
         if 'index' in column.semantic_tags:
+            current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, callback)
             continue
         values = {}
         logical_type = column.logical_type
@@ -92,6 +104,7 @@ def _get_describe_dict(dataframe, include=None):
         values["logical_type"] = logical_type
         values["semantic_tags"] = semantic_tags
         results[column_name] = values
+        current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, callback)
     return results
 
 
@@ -177,7 +190,7 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             included as long as its LogicalType is valid for mutual information calculations.
             If False, the index column will not have mutual information calculated for it.
             Defaults to False.
-        callback (callable): function to be called with incremental updates. Has the following parameters:
+        callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
             - update: percentage change (float between 0 and 100) in progress since last call
             - progress_percent: percentage (float between 0 and 100) of total computation completed
