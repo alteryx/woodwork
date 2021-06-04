@@ -549,8 +549,12 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'engine': 'python', 'index': False}
         if format == 'csv':
+            default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'engine': 'python', 'index': False}
+            if ks and isinstance(self._dataframe, ks.DataFrame):
+                default_csv_kwargs['multiline'] = True
+                default_csv_kwargs['ignoreLeadingWhitespace'] = False
+                default_csv_kwargs['ignoreTrailingWhitespace'] = False
             kwargs = {**default_csv_kwargs, **kwargs}
         elif format == 'parquet':
             import_error_message = (
@@ -633,9 +637,15 @@ class WoodworkTableAccessor:
         # Directly return non-callable DataFrame attributes
         return dataframe_attr
 
-    def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True):
+    def _get_subset_df_with_schema(self, cols_to_include, use_dataframe_order=True, inplace=False):
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order."""
+        if inplace:
+            if dd and isinstance(self._dataframe, dd.DataFrame):
+                raise ValueError('Drop inplace not supported for Dask')
+            if ks and isinstance(self._dataframe, ks.DataFrame):
+                raise ValueError('Drop inplace not supported for Koalas')
+
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
         if use_dataframe_order:
@@ -644,6 +654,11 @@ class WoodworkTableAccessor:
             cols_to_include = [col_name for col_name in cols_to_include if col_name in self._dataframe.columns]
 
         new_schema = self._schema._get_subset_schema(cols_to_include)
+        if inplace:
+            cols_to_drop = [col_name for col_name in self._dataframe.columns if col_name not in cols_to_include]
+            self._dataframe.drop(cols_to_drop, axis='columns', inplace=True)
+            self.init(schema=new_schema, validate=False)
+            return
         new_df = self._dataframe[cols_to_include]
         new_df.ww.init(schema=new_schema, validate=False)
 
@@ -673,14 +688,15 @@ class WoodworkTableAccessor:
 
         return series
 
-    def drop(self, columns):
+    def drop(self, columns, inplace=False):
         """Drop specified columns from a DataFrame.
 
         Args:
             columns (str or list[str]): Column name or names to drop. Must be present in the DataFrame.
+            inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
-            DataFrame: DataFrame with the specified columns removed, maintaining Woodwork typing information.
+            DataFrame or None: DataFrame with the specified columns removed, maintaining Woodwork typing information or None if inplace=True. Only possible for pandas dataframes.
 
         Note:
             This method is used for removing columns only. To remove rows with ``drop``, go through the
@@ -695,21 +711,30 @@ class WoodworkTableAccessor:
         not_present = [col for col in columns if col not in self._dataframe.columns]
         if not_present:
             raise ColumnNotPresentError(not_present)
+        return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns], inplace=inplace)
 
-        return self._get_subset_df_with_schema([col for col in self._dataframe.columns if col not in columns])
-
-    def rename(self, columns):
+    def rename(self, columns, inplace=False):
         """Renames columns in a DataFrame, maintaining Woodwork typing information.
 
         Args:
             columns (dict[str -> str]): A dictionary mapping current column names to new column names.
+            inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
-            DataFrame: DataFrame with the specified columns renamed, maintaining Woodwork typing information.
+            DataFrame or None: DataFrame with the specified columns renamed, maintaining Woodwork typing information or None if inplace=True. Only possible for pandas dataframes.
         """
         if self._schema is None:
             _raise_init_error()
+
         new_schema = self._schema.rename(columns)
+        if inplace:
+            if dd and isinstance(self._dataframe, dd.DataFrame):
+                raise ValueError('Rename inplace not supported for Dask')
+            if ks and isinstance(self._dataframe, ks.DataFrame):
+                raise ValueError('Rename inplace not supported for Koalas')
+            self._dataframe.rename(columns=columns, inplace=True)
+            self.init(schema=new_schema)
+            return
         new_df = self._dataframe.rename(columns=columns)
 
         new_df.ww.init(schema=new_schema)
@@ -732,7 +757,7 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
                 - update: percentage change (float between 0 and 100) in progress since last call
                 - progress_percent: percentage (float between 0 and 100) of total computation completed
@@ -764,7 +789,7 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
                 - update: percentage change (float between 0 and 100) in progress since last call
                 - progress_percent: percentage (float between 0 and 100) of total computation completed
@@ -779,7 +804,7 @@ class WoodworkTableAccessor:
         mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
 
-    def describe_dict(self, include=None):
+    def describe_dict(self, include=None, callback=None):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -788,6 +813,11 @@ class WoodworkTableAccessor:
                 combining any of the three. It follows the most broad specification. Favors logical types
                 then semantic tag then column name. If no matching columns are found, an empty DataFrame
                 will be returned.
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -796,9 +826,9 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_describe_dict(self._dataframe, include=include)
+        return _get_describe_dict(self._dataframe, include=include, callback=callback)
 
-    def describe(self, include=None):
+    def describe(self, include=None, callback=None):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -807,13 +837,18 @@ class WoodworkTableAccessor:
                 combining any of the three. It follows the most broad specification. Favors logical types
                 then semantic tag then column name. If no matching columns are found, an empty DataFrame
                 will be returned.
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+
+                - update: percentage change (float between 0 and 100) in progress since last call
+                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = self.describe_dict(include=include)
+        results = self.describe_dict(include=include, callback=callback)
         index_order = [
             'physical_type',
             'logical_type',

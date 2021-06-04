@@ -155,19 +155,16 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
     file = os.path.join(path, location)
 
     if format == 'csv':
-        compression = kwargs['compression']
+        # engine kwarg not needed for writing, only reading
+        csv_kwargs = kwargs.copy()
+        if 'engine' in csv_kwargs.keys():
+            del csv_kwargs['engine']
         if ks and isinstance(dataframe, ks.DataFrame):
             dataframe = dataframe.ww.copy()
             columns = list(dataframe.select_dtypes('object').columns)
             dataframe[columns] = dataframe[columns].astype(str)
-            compression = str(compression)
-        dataframe.to_csv(
-            file,
-            index=kwargs['index'],
-            sep=kwargs['sep'],
-            encoding=kwargs['encoding'],
-            compression=compression
-        )
+            csv_kwargs['compression'] = str(csv_kwargs['compression'])
+        dataframe.to_csv(file, **csv_kwargs)
     elif format == 'pickle':
         # Dask and Koalas currently do not support to_pickle
         if not isinstance(dataframe, pd.DataFrame):
@@ -177,9 +174,10 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
     elif format in ['parquet', 'arrow', 'feather']:
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet and arrow/feather format.
-        dataframe = dataframe.ww.copy()
         latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
-        dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
+        if len(latlong_columns) > 0:
+            dataframe = dataframe.ww.copy()
+            dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
         if format == 'parquet':
             dataframe.to_parquet(file, **kwargs)
         else:

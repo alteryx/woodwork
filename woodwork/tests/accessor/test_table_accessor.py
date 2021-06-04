@@ -1977,6 +1977,27 @@ def test_accessor_drop(sample_df):
     assert to_pandas(multiple_list_df).equals(to_pandas(different_order_df))
 
 
+def test_accessor_drop_inplace(sample_df):
+    sample_df.ww.init()
+    inplace_df = sample_df.copy()
+    inplace_df.ww.init()
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        error = 'Drop inplace not supported for Dask'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.drop(['is_registered'], inplace=True)
+    elif ks and isinstance(sample_df, ks.DataFrame):
+        error = 'Drop inplace not supported for Koalas'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.drop(['is_registered'], inplace=True)
+    else:
+        inplace_df.ww.drop(['is_registered'], inplace=True)
+        assert len(inplace_df.ww.columns) == (len(sample_df.columns) - 1)
+        assert 'is_registered' not in inplace_df.ww.columns
+
+        assert sample_df.drop('is_registered', axis='columns').equals(inplace_df)
+
+
 def test_accessor_drop_indices(sample_df):
     sample_df.ww.init(index='id', time_index='signup_date')
     assert sample_df.ww.index == 'id'
@@ -2051,6 +2072,58 @@ def test_accessor_rename(sample_df):
 
     assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
     assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
+
+
+def test_accessor_rename_inplace(sample_df):
+    table_metadata = {'table_info': 'this is text'}
+    id_description = 'the id of the row'
+    sample_df.ww.init(index='id',
+                      time_index='signup_date',
+                      table_metadata=table_metadata,
+                      column_descriptions={'id': id_description},
+                      semantic_tags={'age': 'test_tag'},
+                      logical_types={'age': Double})
+    original_df = sample_df.ww.copy()
+    inplace_df = sample_df.ww.copy()
+
+    if dd and isinstance(sample_df, dd.DataFrame):
+        error = 'Rename inplace not supported for Dask'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
+    elif ks and isinstance(sample_df, ks.DataFrame):
+        error = 'Rename inplace not supported for Koalas'
+        with pytest.raises(ValueError, match=error):
+            inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
+
+    else:
+        inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
+
+        assert original_df.columns.get_loc('age') == inplace_df.columns.get_loc('birthday')
+        pd.testing.assert_series_equal(to_pandas(original_df['age']),
+                                       to_pandas(inplace_df['birthday']),
+                                       check_names=False)
+
+        # confirm that metadata and descriptions are there
+        assert inplace_df.ww.metadata == table_metadata
+        assert inplace_df.ww.columns['id'].description == id_description
+
+        old_col = sample_df.ww.columns['age']
+        new_col = inplace_df.ww.columns['birthday']
+        assert old_col.logical_type == new_col.logical_type
+        assert old_col.semantic_tags == new_col.semantic_tags
+
+        new_df = sample_df.ww.copy()
+        new_df.ww.rename({'age': 'full_name', 'full_name': 'age'}, inplace=True)
+
+        pd.testing.assert_series_equal(to_pandas(original_df['age']),
+                                       to_pandas(new_df['full_name']),
+                                       check_names=False)
+        pd.testing.assert_series_equal(to_pandas(original_df['full_name']),
+                                       to_pandas(new_df['age']),
+                                       check_names=False)
+
+        assert original_df.columns.get_loc('age') == new_df.columns.get_loc('full_name')
+        assert original_df.columns.get_loc('full_name') == new_df.columns.get_loc('age')
 
 
 def test_accessor_rename_indices(sample_df):

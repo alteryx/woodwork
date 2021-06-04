@@ -309,6 +309,113 @@ def _parse_logical_type(logical_type, name):
     return logical_type
 
 
+def concat_columns(objs, validate_schema=True):
+    """
+    Concatenate Woodwork objects along the columns axis. There can only be one index and time index
+    set across the objects passed in. As Woodwork does not allow duplicate column names,
+    will not allow duplicate columns at concatenation.
+
+    Args:
+        objs (list[Series, DataFrame]): The Woodwork objects to be concatenated. If Woodwork
+            is not initialized on any of the objects, type inference will be performed.
+        validate_schema (bool, optional): Whether validation should be performed on the typing information
+            for the concatenated DataFrame. Defaults to True.
+
+    Returns:
+        DataFrame: A Woodwork dataframe whose typing information is also a concatenation of the input dataframes.
+    """
+    if not objs:
+        raise ValueError('No objects to concatenate')
+
+    table_name = ''
+
+    logical_types = {}
+    semantic_tags = {}
+    col_descriptions = {}
+    col_metadata = {}
+    table_metadata = {}
+    use_standard_tags = {}
+
+    index = None
+    time_index = None
+
+    # Record the typing information for all the columns that have Woodwork schemas
+    col_names_seen = set()
+    for obj in objs:
+        ww_columns = {}
+        if isinstance(obj.ww.schema, ww.table_schema.TableSchema):
+            # Raise error if there's overlap between table metadata
+            overlapping_keys = obj.ww.metadata.keys() & table_metadata.keys()
+            if overlapping_keys:
+                raise ValueError(f'Cannot resolve overlapping keys in table metadata: {overlapping_keys}')
+
+            table_metadata = {**obj.ww.metadata, **table_metadata}
+
+            # Combine table names
+            if obj.ww.name is not None:
+                if table_name:
+                    table_name += '_'
+                table_name += str(obj.ww.name)
+
+            # Cannot have multiple tables with indexes or time indexes set
+            if obj.ww.index is not None:
+                if index is None:
+                    index = obj.ww.index
+                else:
+                    raise IndexError('Cannot set the Woodwork index of multiple input objects. '
+                                     'Please remove the index columns from all but one table.')
+            if obj.ww.time_index is not None:
+                if time_index is None:
+                    time_index = obj.ww.time_index
+                else:
+                    raise IndexError('Cannot set the Woodwork time index of multiple input objects. '
+                                     'Please remove the time index columns from all but one table.')
+
+            ww_columns = obj.ww.schema.columns
+        elif isinstance(obj.ww.schema, ww.column_schema.ColumnSchema):
+            ww_columns = {obj.name: obj.ww.schema}
+
+        # Compile the typing information per column
+        for name, col_schema in ww_columns.items():
+            if name in col_names_seen:
+                raise ValueError(f"Duplicate column '{name}' has been found in more than one input object. "
+                                 "Please remove duplicate columns from all but one table.")
+            logical_types[name] = col_schema.logical_type
+            semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
+            col_metadata[name] = col_schema.metadata
+            col_descriptions[name] = col_schema.description
+            use_standard_tags[name] = col_schema.use_standard_tags
+
+            col_names_seen.add(name)
+
+    # Perform concatenation with the correct library
+    obj = objs[0]
+    dd = import_or_none('dask.dataframe')
+    ks = import_or_none('databricks.koalas')
+
+    lib = pd
+    if ks and isinstance(obj, (ks.Series, ks.DataFrame)):
+        lib = ks
+    elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
+        lib = dd
+
+    combined_df = lib.concat(objs, axis=1, join='outer')
+
+    # Initialize Woodwork with all of the typing information from the input objs
+    # performing type inference on any columns that did not already have Woodwork initialized
+    combined_df.ww.init(name=table_name or None,
+                        index=index,
+                        time_index=time_index,
+                        logical_types=logical_types,
+                        semantic_tags=semantic_tags,
+                        table_metadata=table_metadata or None,
+                        column_metadata=col_metadata,
+                        column_descriptions=col_descriptions,
+                        use_standard_tags=use_standard_tags,
+                        validate=validate_schema)
+    return combined_df
+
+
 def _update_progress(start_time, current_time, progress_increment,
                      current_progress, total, callback_function):
     """Helper function for updating progress of a function and making a call to the progress callback

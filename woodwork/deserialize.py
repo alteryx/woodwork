@@ -92,7 +92,6 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
                 cat_object = pd.CategoricalDtype(pd.Series(cat_values))
             category_dtypes[col_name] = cat_object
 
-    compression = kwargs['compression']
     if table_type == 'dask':
         DASK_ERR_MSG = (
             'Cannot load Dask DataFrame - unable to import Dask.\n\n'
@@ -110,17 +109,18 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
             'conda install pyspark'
         )
         lib = import_or_raise('databricks.koalas', KOALAS_ERR_MSG)
-        compression = str(compression)
+        if 'compression' in kwargs.keys():
+            kwargs['compression'] = str(kwargs['compression'])
     else:
         lib = pd
 
+    if 'index' in kwargs.keys():
+        del kwargs['index']
     if load_format == 'csv':
         dataframe = lib.read_csv(
             file,
-            engine=kwargs['engine'],
-            compression=compression,
-            encoding=kwargs['encoding'],
             dtype=category_dtypes,
+            **kwargs
         )
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
