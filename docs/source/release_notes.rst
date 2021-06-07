@@ -17,7 +17,8 @@ Future Release
     * Testing Changes
         * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
         * Update minimum unit tests to run on all pull requests (:pr:`952`)
-
+        * Pass token to authorize uploading of codecov reports (:pr:`969`)
+        
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
     
