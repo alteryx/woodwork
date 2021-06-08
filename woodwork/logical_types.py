@@ -365,18 +365,18 @@ class Ordinal(LogicalType):
     standard_tags = {'category'}
 
     def __init__(self, order=None):
-        if order is None:
-            raise TypeError("Must use an Ordinal instance with order values defined")
-        elif not isinstance(order, (list, tuple)):
-            raise TypeError("Order values must be specified in a list or tuple")
-        if len(order) != len(set(order)):
-            raise ValueError("Order values cannot contain duplicates")
-
         self.order = order
 
     def _validate_data(self, series):
-        """Confirm the supplied series does not contain any values that are not
-        in the specified order values"""
+        """Make sure order values are properly defined and confirm the supplied series
+        does not contain any values that are not in the specified order values"""
+        if self.order is None:
+            raise TypeError("Must use an Ordinal instance with order values defined")
+        elif not isinstance(self.order, (list, tuple)):
+            raise TypeError("Order values must be specified in a list or tuple")
+        if len(self.order) != len(set(self.order)):
+            raise ValueError("Order values cannot contain duplicates")
+
         if isinstance(series, pd.Series):
             missing_order_vals = set(series.dropna().values).difference(self.order)
             if missing_order_vals:
