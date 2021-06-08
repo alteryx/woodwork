@@ -11,6 +11,7 @@ Future Release
         * Add optional automatic update checker (:pr:`959`)
     * Fixes
         * Fix issue related to serialization/deserialization of data with whitespace and newline characters (:pr:`957`)
+        * Update to allow initializing a ``ColumnSchema`` object with an ``Ordinal`` logical type without order values (:pr:`972`)
     * Changes
         * Change write_dataframe to only copy dataframe if it contains LatLong (:pr:`955`)
     * Documentation Changes
