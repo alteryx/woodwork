@@ -28,6 +28,7 @@ v0.4.0 May 26, 2021
 ===================
     * Enhancements
         * Add option to return ``TableSchema`` instead of ``DataFrame`` from table accessor ``select`` method (:pr:`916`)
+        * Add option to read and write arrow/feather files (:pr:`948`)
         * Add dropping and renaming columns inplace (:pr:`920`)
         * Add option to pass progress callback function to mutual information functions (:pr:`943`)
     * Fixes
