@@ -7,7 +7,7 @@ on:
 
 name: Install Test
 jobs:
-  install_ft_complete:
+  install_ww_complete:
     name: ${{ matrix.python_version }} install woodwork complete
     runs-on: ubuntu-latest
     strategy:
