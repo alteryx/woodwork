@@ -28,10 +28,12 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          python -m pip install "$(cat dev-requirements.txt | grep pytest)"
           python -m pip install -e unpacked_sdist/[complete]
       - name: Test by importing packages
         run: |
           printf "import alteryx_open_src_update_checker" >> 'test_update_checker.py'
+          coverage erase
           pytest test_update_checker.py --cov=woodwork --cov-config=../.coveragerc
         env:
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
