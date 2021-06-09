@@ -409,13 +409,6 @@ def test_parse_logical_type():
 
 
 def test_parse_logical_type_errors():
-    error = "Must use an Ordinal instance with order values defined"
-    with pytest.raises(TypeError, match=error):
-        _parse_logical_type('Ordinal', 'col_name')
-
-    with pytest.raises(TypeError, match=error):
-        _parse_logical_type(Ordinal, 'col_name')
-
     error = "Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
         _parse_logical_type(int, 'col_name')

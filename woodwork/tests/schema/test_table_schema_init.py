@@ -10,7 +10,8 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
-    NaturalLanguage
+    NaturalLanguage,
+    Ordinal
 )
 from woodwork.table_schema import (
     TableSchema,
@@ -461,3 +462,9 @@ def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logica
                                                                  'signup_date': False})
     assert default_schema.use_standard_tags == partial_dict_default_schema.use_standard_tags
     assert default_schema == partial_dict_default_schema
+
+
+def test_ordinal_without_init():
+    schema = TableSchema(column_names=['ordinal_col'], logical_types={'ordinal_col': Ordinal})
+    assert isinstance(schema.logical_types['ordinal_col'], Ordinal)
+    assert schema.logical_types['ordinal_col'].order is None
