@@ -38,11 +38,13 @@ def test_instantiated_type_str():
 
 
 def test_ordinal_order_errors():
+    series = pd.Series([1, 2, 3]).astype('category')
+
     with pytest.raises(TypeError, match='Order values must be specified in a list or tuple'):
-        Ordinal(order='not_valid')
+        Ordinal(order='not_valid').transform(series)
 
     with pytest.raises(ValueError, match='Order values cannot contain duplicates'):
-        Ordinal(order=['a', 'b', 'b'])
+        Ordinal(order=['a', 'b', 'b']).transform(series)
 
 
 def test_ordinal_init_with_order():

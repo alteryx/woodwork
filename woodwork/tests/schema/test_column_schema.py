@@ -410,3 +410,9 @@ def test_schema_repr():
             "<ColumnSchema (Semantic Tags = ['category', 'foreign_key'])>")
     assert (repr(ColumnSchema()) ==
             "<ColumnSchema>")
+
+
+def test_ordinal_without_init():
+    schema = ColumnSchema(logical_type=Ordinal)
+    assert isinstance(schema.logical_type, Ordinal)
+    assert schema.logical_type.order is None
