@@ -37,7 +37,8 @@ jobs:
           pytest test_update_checker.py --cov=woodwork --cov-config=./.coveragerc
         env:
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
-      - name: Upload coverage to Codecov
+      - if: ${{ matrix.python_version == 3.7 }}
+        name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
