@@ -8,7 +8,7 @@ Future Release
     * Enhancements
         * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
         * Add option to pass progress callback function to mutual information functions (:pr:`958`)
-        * Add optional automatic update checker (:pr:`959`)
+        * Add optional automatic update checker (:pr:`959`, :pr:`970`)
     * Fixes
         * Fix issue related to serialization/deserialization of data with whitespace and newline characters (:pr:`957`)
     * Changes
@@ -17,7 +17,8 @@ Future Release
     * Testing Changes
         * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
         * Update minimum unit tests to run on all pull requests (:pr:`952`)
-
+        * Pass token to authorize uploading of codecov reports (:pr:`969`)
+        
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
     
