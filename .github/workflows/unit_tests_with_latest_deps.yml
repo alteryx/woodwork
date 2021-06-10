@@ -55,6 +55,7 @@ jobs:
           pytest woodwork/ -n 2
         env:
           PYARROW_IGNORE_TIMEZONE: 1
+          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - if: ${{ matrix.python_version == 3.7 }}
         name: Run unit tests with code coverage
         run: |
@@ -65,6 +66,7 @@ jobs:
           pytest woodwork/ -n 2 --cov=woodwork --cov-config=../.coveragerc
         env:
           PYARROW_IGNORE_TIMEZONE: 1
+          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - if: ${{ matrix.python_version == 3.7 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

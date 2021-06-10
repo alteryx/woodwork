@@ -42,3 +42,4 @@ jobs:
         run: python -m pytest woodwork/ -n 2
         env:
           PYARROW_IGNORE_TIMEZONE: 1
+          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
