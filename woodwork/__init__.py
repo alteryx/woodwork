@@ -22,5 +22,5 @@ for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'
         method = entry_point.load()
         if callable(method):
             method('woodwork')
-    except Exception:
+    except Exception:  # pragma: no cover
         pass
