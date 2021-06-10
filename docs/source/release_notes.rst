@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.4.1 Jun 9, 2021
+==================
     * Enhancements
         * Add ``concat_columns`` util function to concatenate multiple Woodwork objects into one, retaining typing information (:pr:`932`)
         * Add option to pass progress callback function to mutual information functions (:pr:`958`)
@@ -14,14 +24,13 @@ Future Release
         * Update to allow initializing a ``ColumnSchema`` object with an ``Ordinal`` logical type without order values (:pr:`972`)
     * Changes
         * Change write_dataframe to only copy dataframe if it contains LatLong (:pr:`955`)
-    * Documentation Changes
     * Testing Changes
         * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
         * Update minimum unit tests to run on all pull requests (:pr:`952`)
         * Pass token to authorize uploading of codecov reports (:pr:`969`)
         
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`
+    :user:`frances-h`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
     
 
 v0.4.0 May 26, 2021
