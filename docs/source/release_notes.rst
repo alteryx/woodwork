@@ -22,6 +22,7 @@ Breaking Changes
     progress units complete so far, total units to complete, the progress unit of measurement, and time elapsed
     since start of calculation. Additionally, progress is now being reported in the units specified by the unit of
     measurement parameter instead of percentage of total.
+
     
 v0.4.1 Jun 9, 2021
 ==================
