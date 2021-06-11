@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Pass additional progress information in callback functions (:pr:`979`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,14 @@ Future Release
         * Add env setting to update checker (:pr:`978`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+    * Progress callback functions are now expected to accept five parameters: progress increment since last call,
+    progress units complete so far, total units to complete, the progress unit of measurement, and time elapsed
+    since start of calculation. Additionally, progress is now being reported in the units specified by the unit of
+    measurement parameter instead of percentage of total.
     
 v0.4.1 Jun 9, 2021
 ==================
