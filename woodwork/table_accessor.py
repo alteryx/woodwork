@@ -759,8 +759,10 @@ class WoodworkTableAccessor:
                 Defaults to False.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - update (int/float): change in progress since last call
+                - progress (int/float): the progress so far in the calculations
+                - total (int/float): the total number of calculations to do
+                - unit (str): what is the units of progress/total
                 - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
@@ -791,8 +793,10 @@ class WoodworkTableAccessor:
                 Defaults to False.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - update (int/float): change in progress since last call
+                - progress (int/float): the progress so far in the calculations
+                - total (int/float): the total number of calculations to do
+                - unit (str): what is the units of progress/total
                 - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
@@ -815,8 +819,10 @@ class WoodworkTableAccessor:
                 will be returned.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - update (int/float): change in progress since last call
+                - progress (int/float): the progress so far in the calculations
+                - total (int/float): the total number of calculations to do
+                - unit (str): what is the units of progress/total
                 - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:
@@ -839,8 +845,10 @@ class WoodworkTableAccessor:
                 will be returned.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
+                - update (int/float): change in progress since last call
+                - progress (int/float): the progress so far in the calculations
+                - total (int/float): the total number of calculations to do
+                - unit (str): what is the units of progress/total
                 - time_elapsed: total time in seconds that has elapsed since start of call
 
         Returns:

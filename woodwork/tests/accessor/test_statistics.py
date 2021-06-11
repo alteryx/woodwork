@@ -206,13 +206,13 @@ def test_mutual_info_callback(df_mi):
         def __init__(self):
             self.progress_history = []
             self.total_update = 0
-            self.total_progress_percent = 0
             self.total_elapsed_time = 0
 
-        def __call__(self, update, progress_percent, time_elapsed):
+        def __call__(self, update, progress, total, unit, time_elapsed):
             self.total_update += update
-            self.total_progress_percent = progress_percent
-            self.progress_history.append(progress_percent)
+            self.total = total
+            self.progress_history.append(progress)
+            self.unit = unit
             self.total_elapsed_time = time_elapsed
 
     mock_callback = MockCallback()
@@ -222,14 +222,16 @@ def test_mutual_info_callback(df_mi):
     # Should be 18 total calls
     assert len(mock_callback.progress_history) == 18
 
-    # First call should be 1 of 26 units complete
-    assert np.isclose(mock_callback.progress_history[0], 1 / 26 * 100)
+    assert mock_callback.unit == 'calculations'
+    # First call should be 1 of 26 calculations complete
+    assert mock_callback.progress_history[0] == 1
     # After second call should be 6 of 26 units complete
-    assert np.isclose(mock_callback.progress_history[1], 6 / 26 * 100)
+    assert mock_callback.progress_history[1] == 6
 
-    # Should be 100% at end with a positive elapsed time
-    assert np.isclose(mock_callback.total_update, 100.0)
-    assert np.isclose(mock_callback.total_progress_percent, 100.0)
+    # Should be 26 calculations at end with a positive elapsed time
+    assert mock_callback.total == 26
+    assert mock_callback.total_update == 26
+    assert mock_callback.progress_history[-1] == 26
     assert mock_callback.total_elapsed_time > 0
 
 
@@ -612,19 +614,20 @@ def test_describe_callback(describe_df):
         def __init__(self):
             self.progress_history = []
             self.total_update = 0
-            self.total_progress_percent = 0
             self.total_elapsed_time = 0
 
-        def __call__(self, update, progress_percent, time_elapsed):
+        def __call__(self, update, progress, total, unit, time_elapsed):
             self.total_update += update
-            self.total_progress_percent = progress_percent
-            self.progress_history.append(progress_percent)
+            self.total = total
+            self.progress_history.append(progress)
+            self.unit = unit
             self.total_elapsed_time = time_elapsed
 
     mock_callback = MockCallback()
 
     describe_df.ww.describe(callback=mock_callback)
 
+    assert mock_callback.unit == 'calculations'
     # Koalas df does not have timedelta column
     if ks and isinstance(describe_df, ks.DataFrame):
         ncalls = 9
@@ -634,13 +637,14 @@ def test_describe_callback(describe_df):
     assert len(mock_callback.progress_history) == ncalls
 
     # First call should be 1 unit complete
-    assert np.isclose(mock_callback.progress_history[0], 1 / ncalls * 100)
+    assert mock_callback.progress_history[0] == 1
     # After second call should be 2 unit complete
-    assert np.isclose(mock_callback.progress_history[1], 2 / ncalls * 100)
+    assert mock_callback.progress_history[1] == 2
 
-    # Should be 100% at end with a positive elapsed time
-    assert np.isclose(mock_callback.total_update, 100.0)
-    assert np.isclose(mock_callback.total_progress_percent, 100.0)
+    # Should be ncalls at end with a positive elapsed time
+    assert mock_callback.total == ncalls
+    assert mock_callback.total_update == ncalls
+    assert mock_callback.progress_history[-1] == ncalls
     assert mock_callback.total_elapsed_time > 0
 
 
