@@ -18,15 +18,16 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-    Progress callback functions are now expected to accept five parameters: 
-    
+    * Progress callback functions parameters have changed and progress is now being reported in the units
+      specified by the unit of measurement parameter instead of percentage of total. Progress callback
+      functions now are expected to accept the following five parameters:
+
         * progress increment since last call
         * progress units complete so far
         * total units to complete
         * the progress unit of measurement
         * time elapsed since start of calculation
-        
-    Additionally, progress is now being reported in the units specified by the unit of measurement parameter instead of percentage of total.
+
 
 v0.4.1 Jun 9, 2021
 ==================
