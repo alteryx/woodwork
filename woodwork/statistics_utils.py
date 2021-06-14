@@ -23,9 +23,9 @@ def _get_describe_dict(dataframe, include=None, callback=None):
             will be returned.
         callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-            - update (int/float): change in progress since last call
-            - progress (int/float): the progress so far in the calculations
-            - total (int/float): the total number of calculations to do
+            - update (int): change in progress since last call
+            - progress (int): the progress so far in the calculations
+            - total (int): the total number of calculations to do
             - unit (str): what is the units of progress/total
             - time_elapsed: total time in seconds that has elapsed since start of call
 
@@ -195,9 +195,9 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             Defaults to False.
         callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-            - update (int/float): change in progress since last call
-            - progress (int/float): the progress so far in the calculations
-            - total (int/float): the total number of calculations to do
+            - update (int): change in progress since last call
+            - progress (int): the progress so far in the calculations
+            - total (int): the total number of calculations to do
             - unit (str): what is the units of progress/total
             - time_elapsed: total time in seconds that has elapsed since start of call
 
