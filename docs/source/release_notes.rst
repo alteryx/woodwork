@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Pass additional progress information in callback functions (:pr:`979`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,8 +14,21 @@ Future Release
         * Add env setting to update checker (:pr:`978`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
-    
+    :user:`gsheni`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+    * Progress callback functions parameters have changed and progress is now being reported in the units
+      specified by the unit of measurement parameter instead of percentage of total. Progress callback
+      functions now are expected to accept the following five parameters:
+
+        * progress increment since last call
+        * progress units complete so far
+        * total units to complete
+        * the progress unit of measurement
+        * time elapsed since start of calculation
+
+
 v0.4.1 Jun 9, 2021
 ==================
     * Enhancements
@@ -30,7 +44,7 @@ v0.4.1 Jun 9, 2021
         * Fix bug in ``test_list_logical_types_default`` (:pr:`954`)
         * Update minimum unit tests to run on all pull requests (:pr:`952`)
         * Pass token to authorize uploading of codecov reports (:pr:`969`)
-        
+
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
     

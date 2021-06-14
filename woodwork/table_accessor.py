@@ -759,9 +759,11 @@ class WoodworkTableAccessor:
                 Defaults to False.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -791,9 +793,11 @@ class WoodworkTableAccessor:
                 Defaults to False.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
@@ -815,9 +819,11 @@ class WoodworkTableAccessor:
                 will be returned.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -839,9 +845,11 @@ class WoodworkTableAccessor:
                 will be returned.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
-                - update: percentage change (float between 0 and 100) in progress since last call
-                - progress_percent: percentage (float between 0 and 100) of total computation completed
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original

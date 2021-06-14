@@ -417,18 +417,21 @@ def concat_columns(objs, validate_schema=True):
 
 
 def _update_progress(start_time, current_time, progress_increment,
-                     current_progress, total, callback_function):
+                     current_progress, total, unit, callback_function):
     """Helper function for updating progress of a function and making a call to the progress callback
     function, if provided. Adds the progress increment to the current progress amount and returns the
     updated progress amount.
 
     If provided, the callback function should accept the following parameters:
-        update: percentage change (float between 0 and 100) in progress since last call
-        progress_percent: percentage (float between 0 and 100) of total computation completed
-        time_elapsed: total time in seconds that has elapsed since start of call"""
+        - update (int): change in progress since last call
+        - progress (int): the progress so far in the calculations
+        - total (int): the total number of calculations to do
+        - unit (str): unit of measurement for progress/total
+        - time_elapsed (float): total time in seconds elapsed since start of call
+    """
     if callback_function is not None:
         new_progress = current_progress + progress_increment
         elapsed_time = current_time - start_time
-        callback_function((progress_increment / total) * 100, (new_progress / total) * 100, elapsed_time)
+        callback_function(progress_increment, new_progress, total, unit, elapsed_time)
 
         return new_progress
