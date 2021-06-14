@@ -762,8 +762,8 @@ class WoodworkTableAccessor:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
-                - unit (str): what is the units of progress/total
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -796,8 +796,8 @@ class WoodworkTableAccessor:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
-                - unit (str): what is the units of progress/total
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
@@ -822,8 +822,8 @@ class WoodworkTableAccessor:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
-                - unit (str): what is the units of progress/total
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -848,8 +848,8 @@ class WoodworkTableAccessor:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
-                - unit (str): what is the units of progress/total
-                - time_elapsed: total time in seconds that has elapsed since start of call
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original

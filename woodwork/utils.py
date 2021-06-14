@@ -423,9 +423,12 @@ def _update_progress(start_time, current_time, progress_increment,
     updated progress amount.
 
     If provided, the callback function should accept the following parameters:
-        update: percentage change (float between 0 and 100) in progress since last call
-        progress_percent: percentage (float between 0 and 100) of total computation completed
-        time_elapsed: total time in seconds that has elapsed since start of call"""
+        - update (int): change in progress since last call
+        - progress (int): the progress so far in the calculations
+        - total (int): the total number of calculations to do
+        - unit (str): unit of measurement for progress/total
+        - time_elapsed (float): total time in seconds elapsed since start of call
+    """
     if callback_function is not None:
         new_progress = current_progress + progress_increment
         elapsed_time = current_time - start_time

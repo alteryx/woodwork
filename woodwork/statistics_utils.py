@@ -26,8 +26,8 @@ def _get_describe_dict(dataframe, include=None, callback=None):
             - update (int): change in progress since last call
             - progress (int): the progress so far in the calculations
             - total (int): the total number of calculations to do
-            - unit (str): what is the units of progress/total
-            - time_elapsed: total time in seconds that has elapsed since start of call
+            - unit (str): unit of measurement for progress/total
+            - time_elapsed (float): total time in seconds elapsed since start of call
 
     Returns:
         dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -198,8 +198,8 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             - update (int): change in progress since last call
             - progress (int): the progress so far in the calculations
             - total (int): the total number of calculations to do
-            - unit (str): what is the units of progress/total
-            - time_elapsed: total time in seconds that has elapsed since start of call
+            - unit (str): unit of measurement for progress/total
+            - time_elapsed (float): total time in seconds elapsed since start of call
 
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
