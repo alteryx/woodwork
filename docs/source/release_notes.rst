@@ -18,7 +18,7 @@ Future Release
 
 Breaking Changes
 ++++++++++++++++
-    * Progress callback functions are now expected to accept five parameters: 
+    Progress callback functions are now expected to accept five parameters: 
     
         * progress increment since last call
         * progress units complete so far
