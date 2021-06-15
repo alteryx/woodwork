@@ -825,6 +825,17 @@ class WoodworkTableAccessor:
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
 
+            extra_stats (bool): If True, will calculate a histogram and top values for numeric columns, top values
+                for categorical columns and recent values for datetime columns. Output can be controlled by bins,
+                top_x and recent_x parameters.
+            bins (int): Number of bins to use when calculating histogram
+                for numeric columns. Defaults to 10. Will be ignored unless extra_stats=True.
+            top_x (int): Number of values to get when getting the most frequent
+                values for categorical columns. Defaults to 10. Will be ignored unless extra_stats=True.
+            recent_x (int): Number of recent values to get when getting the most recent
+                dates to calculate frequency for datetime columns. Defaults to 10. Will be ignored unless
+                extra_stats=True.
+
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
             matching the logical types, semantic tags or column names specified in ``include``, paired
@@ -851,6 +862,17 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
+
+            extra_stats (bool): If True, will calculate a histogram and top values for numeric columns, top values
+                for categorical columns and recent values for datetime columns. Output can be controlled by bins,
+                top_x and recent_x parameters.
+            bins (int): Number of bins to use when calculating histogram
+                for numeric columns. Defaults to 10. Will be ignored unless extra_stats=True.
+            top_x (int): Number of values to get when getting the most frequent
+                values for categorical columns. Defaults to 10. Will be ignored unless extra_stats=True.
+            recent_x (int): Number of recent values to get when getting the most recent
+                dates to calculate frequency for datetime columns. Defaults to 10. Will be ignored unless
+                extra_stats=True.
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original

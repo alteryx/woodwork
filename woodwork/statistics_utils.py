@@ -40,11 +40,12 @@ def _get_describe_dict(dataframe, include=None, callback=None,
             for categorical columns and recent values for datetime columns. Output can be controlled by bins,
             top_x and recent_x parameters.
         bins (int): Number of bins to use when calculating histogram
-            for numeric columns. Defaults to 10.
+            for numeric columns. Defaults to 10. Will be ignored unless extra_stats=True.
         top_x (int): Number of values to get when getting the most frequent
-            values for categorical columns. Defaults to 10
+            values for categorical columns. Defaults to 10. Will be ignored unless extra_stats=True.
         recent_x (int): Number of recent values to get when getting the most recent
-            dates to calculate frequency for datetime columns. Defaults to 10.
+            dates to calculate frequency for datetime columns. Defaults to 10. Will be ignored unless
+            extra_stats=True.
 
     Returns:
         dict[str -> dict]: A dictionary with a key for each column in the data or for each column
