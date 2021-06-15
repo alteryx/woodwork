@@ -377,15 +377,12 @@ def _get_top_values_categorical(series, num_x):
     return top_lt
 
 
-def _get_recent_values(column, num_x, dropna=False):
+def _get_recent_values(column, num_x):
     """Get the most frequent, recent values for a given datetime column.
 
     Args:
         column (pd.Series): data to use find most frequent
         num_x (int): the number of recent values to retrieve.
-        dropna (bool): determines whether to remove NaN values when
-            finding recent datetimes (used for frequency count).
-            Defaults to False
 
     Returns:
         recent_list (list(dict)): a list of dictionary with keys `count` and
@@ -393,7 +390,7 @@ def _get_recent_values(column, num_x, dropna=False):
     """
     datetimes = pd.to_datetime(column, infer_datetime_format=True, errors="coerce")
     datetimes = getattr(datetimes.dt, "date")
-    frequencies = datetimes.value_counts(dropna=dropna)
+    frequencies = datetimes.value_counts(dropna=False)
     values = frequencies.sort_index(ascending=True)[:num_x]
     df = values.reset_index()
     df.columns = ["value", "count"]
