@@ -125,7 +125,7 @@ def _get_describe_dict(dataframe, include=None, callback=None,
         values["logical_type"] = logical_type
         values["semantic_tags"] = semantic_tags
 
-        # Calculate extra details stats, if requested
+        # Calculate extra detailed stats, if requested
         if extra_stats:
             if column.is_numeric:
                 values["histogram"] = _get_histogram_values(series, bins=bins)
