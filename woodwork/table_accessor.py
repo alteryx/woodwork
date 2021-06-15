@@ -808,7 +808,7 @@ class WoodworkTableAccessor:
         mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
 
-    def describe_dict(self, include=None, callback=None):
+    def describe_dict(self, include=None, callback=None, extra_stats=False, bins=10, top_x=10, recent_x=10):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -832,9 +832,10 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_describe_dict(self._dataframe, include=include, callback=callback)
+        return _get_describe_dict(self._dataframe, include=include, callback=callback,
+                                  extra_stats=extra_stats, bins=bins, top_x=top_x, recent_x=recent_x)
 
-    def describe(self, include=None, callback=None):
+    def describe(self, include=None, callback=None, extra_stats=False, bins=10, top_x=10, recent_x=10):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -856,7 +857,8 @@ class WoodworkTableAccessor:
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = self.describe_dict(include=include, callback=callback)
+        results = self.describe_dict(include=include, callback=callback,
+                                     extra_stats=extra_stats, bins=bins, top_x=top_x, recent_x=recent_x)
         index_order = [
             'physical_type',
             'logical_type',
@@ -875,6 +877,8 @@ class WoodworkTableAccessor:
             'num_true',
             'num_false',
         ]
+        if extra_stats:
+            index_order = index_order + ['histogram', 'top_values', 'recent_values']
         return pd.DataFrame(results).reindex(index_order)
 
     def value_counts(self, ascending=False, top_n=10, dropna=False):
