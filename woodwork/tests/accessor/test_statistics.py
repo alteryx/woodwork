@@ -681,6 +681,7 @@ def test_describe_dict_extra_stats(describe_df):
     assert isinstance(desc_dict['datetime_col']['recent_values'], list)
     assert desc_dict['datetime_col'].get('histogram') is None
     assert desc_dict['datetime_col'].get('top_values') is None
+
     # numeric columns should have histogram
     for col in ['numeric_col', 'nullable_integer_col', 'integer_col', 'small_range_col']:
         assert isinstance(desc_dict[col]['histogram'], list)

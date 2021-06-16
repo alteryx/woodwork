@@ -889,7 +889,6 @@ class WoodworkTableAccessor:
             'num_true',
             'num_false',
         ]
-
         return pd.DataFrame(results).reindex(index_order)
 
     def value_counts(self, ascending=False, top_n=10, dropna=False):
