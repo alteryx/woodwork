@@ -33,9 +33,9 @@ from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
-    _get_recent_values,
+    _get_numeric_value_counts_in_range,
+    _get_oldest_value_counts,
     _get_top_values_categorical,
-    _get_top_values_numeric,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info
 )
@@ -654,7 +654,7 @@ def test_describe_callback(describe_df):
     assert mock_callback.total_elapsed_time > 0
 
 
-def test_describe_extra_stats(describe_df):
+def test_describe_dict_extra_stats(describe_df):
     describe_df = describe_df.drop(columns=['boolean_col', 'natural_language_col', 'formatted_datetime_col',
                                             'timedelta_col', 'latlong_col'])
     describe_df['nullable_integer_col'] = describe_df['numeric_col']
@@ -670,30 +670,26 @@ def test_describe_extra_stats(describe_df):
         'small_range_col': 'Integer',
     }
     describe_df.ww.init(index='index_col', logical_types=ltypes)
-    df = describe_df.ww.describe(extra_stats=True)
-
-    for val in ['histogram', 'top_values', 'recent_values']:
-        assert val in df.index
+    desc_dict = describe_df.ww.describe_dict(extra_stats=True)
 
     # category columns should have top_values
-    assert isinstance(df['category_col']['top_values'], list)
-    assert pd.isnull(df['category_col']['histogram'])
-    assert pd.isnull(df['category_col']['recent_values'])
+    assert isinstance(desc_dict['category_col']['top_values'], list)
+    assert desc_dict['category_col'].get('histogram') is None
+    assert desc_dict['category_col'].get('recent_values') is None
 
     # datetime columns should have recent_values
-    assert isinstance(df['datetime_col']['recent_values'], list)
-    assert pd.isnull(df['datetime_col']['histogram'])
-    assert pd.isnull(df['datetime_col']['top_values'])
-
+    assert isinstance(desc_dict['datetime_col']['recent_values'], list)
+    assert desc_dict['datetime_col'].get('histogram') is None
+    assert desc_dict['datetime_col'].get('top_values') is None
     # numeric columns should have histogram
     for col in ['numeric_col', 'nullable_integer_col', 'integer_col', 'small_range_col']:
-        assert isinstance(df[col]['histogram'], list)
-        assert pd.isnull(df[col]['recent_values'])
+        assert isinstance(desc_dict[col]['histogram'], list)
+        assert desc_dict[col].get('recent_values') is None
         if col == 'small_range_col':
             # If values are in a narrow range, top values should be present
-            assert isinstance(df[col]['top_values'], list)
+            assert isinstance(desc_dict[col]['top_values'], list)
         else:
-            assert pd.isnull(df[col]['top_values'])
+            assert desc_dict[col].get('top_values') is None
 
 
 def test_value_counts(categorical_df):
@@ -738,9 +734,9 @@ def test_value_counts(categorical_df):
         assert len(val_cts_2[col]) == 2
 
 
-def test_datetime_recent():
+def test_datetime_get_oldest_value_counts():
     times = [
-        datetime(2019, 1, 1, 1, 10, 0, 1),
+        datetime(2019, 2, 2, 1, 10, 0, 1),
         datetime(2019, 2, 2, 2, 20, 1, 0),
         datetime(2019, 3, 1, 3, 30, 1, 0),
         datetime(2019, 1, 1, 4, 40, 1, 0),
@@ -752,15 +748,15 @@ def test_datetime_recent():
     # Verify NaNs, strings, empty string don't break
     times.extend([np.nan, pd.NaT, " ", "test"])
     clipped_times = [x.date() for x in times[:-4]]
-    values = _get_recent_values(pd.Series(times), num_x=3)
+    values = _get_oldest_value_counts(pd.Series(times), num_x=3)
     expected_values = [
-        {"value": datetime(2019, 1, 1), "count": 3},
-        {"value": datetime(2019, 2, 2), "count": 2},
-        {"value": datetime(2019, 3, 1), "count": 1},
+        {"value": datetime(2019, 1, 1).date(), "count": 2},
+        {"value": datetime(2019, 2, 2).date(), "count": 3},
+        {"value": datetime(2019, 3, 1).date(), "count": 1},
     ]
     for val in values:
         assert val["value"] in clipped_times
-    assert len(values) == len(expected_values)
+    assert values == expected_values
 
 
 def test_numeric_histogram():
@@ -784,17 +780,17 @@ def test_numeric_histogram():
         (
             ["a", "b", "b", "c", "c", "c", np.nan],
             [
-                {"count": 1, "value": "a"},
-                {"count": 2, "value": "b"},
-                {"count": 3, "value": "c"},
+                {"value": "a", "count": 1},
+                {"value": "b", "count": 2},
+                {"value": "c", "count": 3},
             ],
         ),
         (
             [1, 2, 2, 3],
             [
-                {"count": 1, "value": 1},
-                {"count": 1, "value": 3},
-                {"count": 2, "value": 2},
+                {"value": 1, "count": 1},
+                {"value": 3, "count": 1},
+                {"value": 2, "count": 2},
             ],
         ),
     ],
@@ -802,8 +798,7 @@ def test_numeric_histogram():
 def test_get_top_values_categorical(input_series, expected):
     column = pd.Series(input_series)
     top_values = _get_top_values_categorical(column, 10)
-    for x in top_values:
-        assert x in expected
+    assert top_values == expected
 
 
 @pytest.mark.parametrize(
@@ -812,25 +807,24 @@ def test_get_top_values_categorical(input_series, expected):
         (
             [1, 2, 2, 3, 3, 3, np.nan],
             [
-                {"count": 0, "value": 0},
-                {"count": 1, "value": 1},
-                {"count": 2, "value": 2},
-                {"count": 3, "value": 3},
+                {"value": 0, "count": 0},
+                {"value": 1, "count": 1},
+                {"value": 2, "count": 2},
+                {"value": 3, "count": 3},
             ],
         ),
         (
             [1, 2, 2, 3],
             [
-                {"count": 0, "value": 0},
-                {"count": 1, "value": 1},
-                {"count": 1, "value": 3},
-                {"count": 2, "value": 2},
+                {"value": 0, "count": 0},
+                {"value": 1, "count": 1},
+                {"value": 2, "count": 2},
+                {"value": 3, "count": 1},
             ],
         ),
     ],
 )
-def test_get_top_values_numeric(input_series, expected):
+def test_get_numeric_value_counts_in_range(input_series, expected):
     column = pd.Series(input_series)
-    top_values = _get_top_values_numeric(column, range(4))
-    for x in top_values:
-        assert x in expected
+    top_values = _get_numeric_value_counts_in_range(column, range(4))
+    assert top_values == expected
