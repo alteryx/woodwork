@@ -9,7 +9,6 @@ from woodwork.logical_types import (
     Integer,
     IntegerNullable,
     LogicalType,
-    NaturalLanguage,
     Timedelta,
     Unknown
 )
