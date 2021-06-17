@@ -18,7 +18,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def _get_describe_dict(dataframe, include=None, callback=None,
-                       extra_stats=False, bins=10, top_x=10, oldest_x=10):
+                       extra_stats=False, bins=10, top_x=10, recent_x=10):
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
     Args:
@@ -37,17 +37,16 @@ def _get_describe_dict(dataframe, include=None, callback=None,
             - time_elapsed (float): total time in seconds elapsed since start of call
 
         extra_stats (bool): If True, will calculate a histogram for numeric columns, top values
-            for categorical columns and value counts for the oldest values in datetime columns. Will also
+            for categorical columns and value counts for the most recent values in datetime columns. Will also
             calculate value counts within the range of values present for integer columns if the range of
             values present is less than or equal to than the number of bins used to compute the histogram.
-            Output can be controlled by bins, top_x and oldest_x parameters.
+            Output can be controlled by bins, top_x and recent_x parameters.
         bins (int): Number of bins to use when calculating histogram for numeric columns. Defaults to 10.
             Will be ignored unless extra_stats=True.
         top_x (int): Number of items to return when getting the most frequently occurring values for categorical
             columns. Defaults to 10. Will be ignored unless extra_stats=True.
-        oldest_x (int): Number of values to get when getting the least recent
-            dates to calculate frequency for datetime columns. Defaults to 10. Will be ignored unless
-            extra_stats=True.
+        recent_x (int): Number of values to return when calculating value counts for the most recent dates in
+            datetime columns. Defaults to 10. Will be ignored unless extra_stats=True.
 
     Returns:
         dict[str -> dict]: A dictionary with a key for each column in the data or for each column
@@ -140,7 +139,7 @@ def _get_describe_dict(dataframe, include=None, callback=None,
             elif column.is_categorical:
                 values["top_values"] = _get_top_values_categorical(series, top_x)
             elif column.is_datetime:
-                values["recent_values"] = _get_oldest_value_counts(series, oldest_x)
+                values["recent_values"] = _get_recent_value_counts(series, recent_x)
 
         results[column_name] = values
         current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, unit, callback)
@@ -382,8 +381,8 @@ def _get_top_values_categorical(series, num_x):
     return top_lt
 
 
-def _get_oldest_value_counts(column, num_x):
-    """Get the the number of occurrences of the x oldest values in a datetime column.
+def _get_recent_value_counts(column, num_x):
+    """Get the the number of occurrences of the x most recent values in a datetime column.
 
     Args:
         column (pd.Series): data to use find value counts
@@ -391,12 +390,11 @@ def _get_oldest_value_counts(column, num_x):
 
     Returns:
         value_counts (list(dict)): a list of dictionary with keys `value` and
-            `count`. Output is sorted in ascending order by date.
+            `count`. Output is sorted in descending order by date.
     """
-    datetimes = pd.to_datetime(column, infer_datetime_format=True, errors="coerce")
-    datetimes = getattr(datetimes.dt, "date")
+    datetimes = getattr(column.dt, "date")
     frequencies = datetimes.value_counts(dropna=False)
-    values = frequencies.sort_index(ascending=True)[:num_x]
+    values = frequencies.sort_index(ascending=False)[:num_x]
     df = values.reset_index()
     df.columns = ["value", "count"]
 

@@ -34,7 +34,7 @@ from woodwork.statistics_utils import (
     _get_histogram_values,
     _get_mode,
     _get_numeric_value_counts_in_range,
-    _get_oldest_value_counts,
+    _get_recent_value_counts,
     _get_top_values_categorical,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info
@@ -735,28 +735,24 @@ def test_value_counts(categorical_df):
         assert len(val_cts_2[col]) == 2
 
 
-def test_datetime_get_oldest_value_counts():
-    times = [
+def test_datetime_get_recent_value_counts():
+    times = pd.Series([
         datetime(2019, 2, 2, 1, 10, 0, 1),
-        datetime(2019, 2, 2, 2, 20, 1, 0),
+        datetime(2019, 4, 2, 2, 20, 1, 0),
         datetime(2019, 3, 1, 3, 30, 1, 0),
-        datetime(2019, 1, 1, 4, 40, 1, 0),
+        datetime(2019, 5, 1, 4, 40, 1, 0),
         datetime(2019, 1, 1, 5, 50, 1, 0),
-        datetime(2019, 2, 2, 6, 10, 1, 0),
-        datetime(2019, 4, 1, 7, 20, 1, 0),
+        datetime(2019, 4, 2, 6, 10, 1, 0),
+        datetime(2019, 4, 2, 7, 20, 1, 0),
         datetime(2019, 5, 1, 8, 30, 0, 0),
-    ]
-    # Verify NaNs, strings, empty string don't break
-    times.extend([np.nan, pd.NaT, " ", "test"])
-    clipped_times = [x.date() for x in times[:-4]]
-    values = _get_oldest_value_counts(pd.Series(times), num_x=3)
+        pd.NaT,
+    ])
+    values = _get_recent_value_counts(times, num_x=3)
     expected_values = [
-        {"value": datetime(2019, 1, 1).date(), "count": 2},
-        {"value": datetime(2019, 2, 2).date(), "count": 3},
+        {"value": datetime(2019, 5, 1).date(), "count": 2},
+        {"value": datetime(2019, 4, 2).date(), "count": 3},
         {"value": datetime(2019, 3, 1).date(), "count": 1},
     ]
-    for val in values:
-        assert val["value"] in clipped_times
     assert values == expected_values
 
 
