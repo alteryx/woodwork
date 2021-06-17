@@ -48,7 +48,7 @@ python -m pip install woodwork[update_checker]
 
 ## Example
 
-Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for four of the columns.
+Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for five of the columns.
 
 ```python
 import pandas as pd
@@ -61,6 +61,7 @@ df.ww.set_types(logical_types={
     'customer_name': 'PersonFullName',
     'country': 'Categorical',
     'order_id': 'Categorical'
+    'description': 'NaturalLanguage',
 })
 df.ww
 ```
@@ -71,7 +72,7 @@ Column
 order_product_id           int64          Integer       ['index']
 order_id                category      Categorical    ['category']
 product_id              category      Categorical    ['category']
-description               string          Unknown              []
+description               string  NaturalLanguage              []
 quantity                   Int64          Integer     ['numeric']
 order_date        datetime64[ns]         Datetime              []
 unit_price               float64           Double     ['numeric']
