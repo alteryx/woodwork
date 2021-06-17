@@ -754,8 +754,8 @@ def test_datetime_get_recent_value_counts():
     ])
     values = _get_recent_value_counts(times, num_x=3)
     expected_values = [
-        {"value": datetime(2019, 5, 1).date(), "count": 2},
         {"value": datetime(2019, 4, 2).date(), "count": 3},
+        {"value": datetime(2019, 5, 1).date(), "count": 2},
         {"value": datetime(2019, 3, 1).date(), "count": 1},
     ]
     assert values == expected_values
@@ -782,17 +782,17 @@ def test_numeric_histogram():
         (
             ["a", "b", "b", "c", "c", "c", np.nan],
             [
-                {"value": "a", "count": 1},
-                {"value": "b", "count": 2},
                 {"value": "c", "count": 3},
+                {"value": "b", "count": 2},
+                {"value": "a", "count": 1},
             ],
         ),
         (
             [1, 2, 2, 3],
             [
+                {"value": 2, "count": 2},
                 {"value": 1, "count": 1},
                 {"value": 3, "count": 1},
-                {"value": 2, "count": 2},
             ],
         ),
     ],

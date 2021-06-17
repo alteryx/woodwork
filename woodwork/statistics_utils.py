@@ -353,8 +353,7 @@ def _get_numeric_value_counts_in_range(series, _range):
 
     Returns:
         value_counts (list(dict)): a list of dictionaries with keys `value` and
-            `count`. Output is sorted in ascending order by the values defined in
-            the input range.
+            `count`. Output is sorted in descending order based on the value counts.
     """
     frequencies = series.value_counts(dropna=True)
     value_counts = [{"value": i, "count": frequencies[i] if i in frequencies else 0} for i in _range]
@@ -370,14 +369,14 @@ def _get_top_values_categorical(series, num_x):
 
     Returns:
         top_list (list(dict)): a list of dictionary with keys `value` and `count`.
-            Output is sorted in ascending order based on the value counts.
+            Output is sorted in descending order based on the value counts.
     """
     frequencies = series.value_counts(dropna=True)
     df = frequencies.head(num_x).reset_index()
     df.columns = ["value", "count"]
-    top_lt = list(df.to_dict(orient="index").values())
-    top_lt = sorted(top_lt, key=lambda i: (i["count"], i["value"]))
-    return top_lt
+    df = df.sort_values(["count", "value"], ascending=[False, True])
+    value_counts = list(df.to_dict(orient="index").values())
+    return value_counts
 
 
 def _get_recent_value_counts(column, num_x):
@@ -389,15 +388,16 @@ def _get_recent_value_counts(column, num_x):
 
     Returns:
         value_counts (list(dict)): a list of dictionary with keys `value` and
-            `count`. Output is sorted in descending order by date.
+            `count`. Output is sorted in descending order based on the value counts.
     """
     datetimes = getattr(column.dt, "date")
     frequencies = datetimes.value_counts(dropna=False)
     values = frequencies.sort_index(ascending=False)[:num_x]
     df = values.reset_index()
     df.columns = ["value", "count"]
-
-    return list(df.to_dict(orient="index").values())
+    df = df.sort_values(["count", "value"], ascending=[False, True])
+    value_counts = list(df.to_dict(orient="index").values())
+    return value_counts
 
 
 def _get_histogram_values(series, bins=10):
