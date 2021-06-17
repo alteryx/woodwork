@@ -354,7 +354,7 @@ class Unknown(LogicalType):
             ["This is a short sentence.",
              1.0,
              True]
-    
+
     """
     primary_dtype = 'string'
 
