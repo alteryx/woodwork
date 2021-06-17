@@ -70,7 +70,7 @@ def test_to_dictionary(sample_df):
     string_val = 'string'
     bool_val = 'boolean'
 
-    expected = {'schema_version': '10.0.0',
+    expected = {'schema_version': serialize.SCHEMA_VERSION,
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
