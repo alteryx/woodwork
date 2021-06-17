@@ -71,7 +71,7 @@ Column
 order_product_id           int64          Integer       ['index']
 order_id                category      Categorical    ['category']
 product_id              category      Categorical    ['category']
-description               string  NaturalLanguage              []
+description               string          Unknown              []
 quantity                   Int64          Integer     ['numeric']
 order_date        datetime64[ns]         Datetime              []
 unit_price               float64           Double     ['numeric']

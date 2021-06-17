@@ -287,7 +287,7 @@ class TypeSystem(object):
         type_matches = get_inference_matches(self.root_types, series)
 
         if len(type_matches) == 0:
-            # If no matches, set type to default type (NaturalLanguage)
+            # If no matches, set type to default type (Unknown)
             logical_type = self.default_type
         elif len(type_matches) == 1:
             # If we match only one type, return it

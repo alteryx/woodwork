@@ -169,7 +169,7 @@ def timedeltas(request):
     return request.getfixturevalue(request.param)
 
 
-# NaturalLanguage Inference Fixtures
+# Unknown Inference Fixtures
 @pytest.fixture
 def pandas_strings():
     return [
@@ -192,10 +192,10 @@ def strings(request):
     return request.getfixturevalue(request.param)
 
 
-# NaturalLanguage Inference with Threshold
+# Categorical Inference with Threshold
 @pytest.fixture
 def pandas_long_strings():
-    natural_language_series = pd.Series([
+    unknown_series = pd.Series([
         '01234567890123456789',
         '01234567890123456789',
         '01234567890123456789',
@@ -205,7 +205,7 @@ def pandas_long_strings():
         '0123456789012345678',
         '0123456789012345678',
         '0123456789012345678'])
-    return [natural_language_series, category_series]
+    return [unknown_series, category_series]
 
 
 @pytest.fixture
