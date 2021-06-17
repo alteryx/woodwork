@@ -9,6 +9,7 @@ Future Release
         * Pass additional progress information in callback functions (:pr:`979`)
     * Fixes
     * Changes
+        * Add Unknown Logical Type as the default inferred type (:pr:`992`)
     * Documentation Changes
     * Testing Changes
         * Add env setting to update checker (:pr:`978`)
@@ -27,6 +28,8 @@ Breaking Changes
         * total units to complete
         * the progress unit of measurement
         * time elapsed since start of calculation
+    * The default inferred type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
+      The global config ``natural_language_threshold`` has been renamed to ``numeric_categorical_threshold``.
 
 
 v0.4.1 Jun 9, 2021
