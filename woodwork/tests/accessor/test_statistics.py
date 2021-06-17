@@ -245,6 +245,10 @@ def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
 
     stats_dict = _get_describe_dict(describe_df)
+    stats_dict_to_df = pd.DataFrame(stats_dict)
+    for extra in ['histogram', 'top_values', 'recent_values']:
+        assert extra not in stats_dict_to_df.index
+
     index_order = ['physical_type',
                    'logical_type',
                    'semantic_tags',
@@ -261,7 +265,8 @@ def test_get_describe_dict(describe_df):
                    'max',
                    'num_true',
                    'num_false']
-    stats_dict_to_df = pd.DataFrame(stats_dict).reindex(index_order)
+
+    stats_dict_to_df = stats_dict_to_df.reindex(index_order)
     stats_df = describe_df.ww.describe()
     pd.testing.assert_frame_equal(stats_df, stats_dict_to_df)
 
