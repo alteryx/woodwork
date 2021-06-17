@@ -142,7 +142,7 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
         incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
         incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
         assert (get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
-                'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
+                'dtype mismatch for column full_name between DataFrame dtype, object, and Unknown dtype, string')
         assert (get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
                 'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
 

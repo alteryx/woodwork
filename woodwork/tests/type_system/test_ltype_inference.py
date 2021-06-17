@@ -10,7 +10,8 @@ from woodwork.logical_types import (
     IntegerNullable,
     LogicalType,
     NaturalLanguage,
-    Timedelta
+    Timedelta,
+    Unknown
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -131,7 +132,7 @@ def test_natural_language_inference(strings):
     for series in strings:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert isinstance(inferred_type, NaturalLanguage)
+            assert isinstance(inferred_type, Unknown)
 
 
 def test_natural_language_inference_with_threshhold(long_strings):
@@ -142,7 +143,7 @@ def test_natural_language_inference_with_threshhold(long_strings):
     ww.config.set_option('natural_language_threshold', 19)
     for dtype in dtypes:
         inferred_type = ww.type_system.infer_logical_type(long_strings[0].astype(dtype))
-        assert isinstance(inferred_type, NaturalLanguage)
+        assert isinstance(inferred_type, Unknown)
         inferred_type = ww.type_system.infer_logical_type(long_strings[1].astype(dtype))
         assert isinstance(inferred_type, Categorical)
     ww.config.reset_option('natural_language_threshold')
@@ -150,7 +151,7 @@ def test_natural_language_inference_with_threshhold(long_strings):
 
 def test_pdna_inference(pdnas):
     expected_logical_types = [
-        NaturalLanguage,
+        Unknown,
         IntegerNullable,
         BooleanNullable,
     ]

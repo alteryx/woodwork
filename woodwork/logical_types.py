@@ -345,6 +345,20 @@ class NaturalLanguage(LogicalType):
     primary_dtype = 'string'
 
 
+class Unknown(LogicalType):
+    """Represents Logical Types that cannot be inferred as a specific Logical Type
+
+    Examples:
+        .. code-block:: python
+
+            ["This is a short sentence.",
+             1.0,
+             True]
+    
+    """
+    primary_dtype = 'string'
+
+
 class Ordinal(LogicalType):
     """Represents Logical Types that contain ordered discrete values.
     Has 'category' as a standard tag.

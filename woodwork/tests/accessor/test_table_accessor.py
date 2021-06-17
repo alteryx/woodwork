@@ -37,7 +37,8 @@ from woodwork.logical_types import (
     PersonFullName,
     PhoneNumber,
     PostalCode,
-    SubRegionCode
+    SubRegionCode,
+    Unknown
 )
 from woodwork.table_accessor import (
     WoodworkTableAccessor,
@@ -1783,10 +1784,10 @@ def test_select_return_schema(sample_df):
     sample_df.ww.init()
 
     # Multiple column matches
-    df_schema = sample_df.ww.select(include='NaturalLanguage', return_schema=True)
+    df_schema = sample_df.ww.select(include='Unknown', return_schema=True)
     assert isinstance(df_schema, TableSchema)
     assert len(df_schema.columns) == 3
-    assert df_schema == sample_df.ww.select(include='NaturalLanguage').ww.schema
+    assert df_schema == sample_df.ww.select(include='Unknown').ww.schema
 
     # Single column match
     single_schema = sample_df.ww.select(include='BooleanNullable', return_schema=True)
@@ -2361,7 +2362,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
 
-    select_df = schema_df.ww.select([NaturalLanguage, Integer, IntegerNullable, BooleanNullable, Datetime])
+    select_df = schema_df.ww.select([Unknown, Integer, IntegerNullable, BooleanNullable, Datetime])
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
 
@@ -2425,9 +2426,9 @@ def test_accessor_types(sample_df):
 
     correct_physical_types = {
         'id': Integer.primary_dtype,
-        'full_name': NaturalLanguage.primary_dtype,
-        'email': NaturalLanguage.primary_dtype,
-        'phone_number': NaturalLanguage.primary_dtype,
+        'full_name': Unknown.primary_dtype,
+        'email': Unknown.primary_dtype,
+        'phone_number': Unknown.primary_dtype,
         'age': IntegerNullable.primary_dtype,
         'signup_date': Datetime.primary_dtype,
         'is_registered': BooleanNullable.primary_dtype,
@@ -2438,9 +2439,9 @@ def test_accessor_types(sample_df):
 
     correct_logical_types = {
         'id': Integer(),
-        'full_name': NaturalLanguage(),
-        'email': NaturalLanguage(),
-        'phone_number': NaturalLanguage(),
+        'full_name': Unknown(),
+        'email': Unknown(),
+        'phone_number': Unknown(),
         'age': IntegerNullable(),
         'signup_date': Datetime(),
         'is_registered': BooleanNullable(),

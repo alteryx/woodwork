@@ -33,7 +33,8 @@ from woodwork.logical_types import (
     PhoneNumber,
     PostalCode,
     SubRegionCode,
-    Timedelta
+    Timedelta,
+    Unknown
 )
 from woodwork.utils import import_or_none
 
@@ -63,7 +64,8 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     PostalCode: None,
     SubRegionCode: None,
     Timedelta: timedelta_func,
-    URL: None
+    URL: None,
+    Unknown: None
 }
 
 # (ParentType, ChildType)
@@ -85,7 +87,7 @@ DEFAULT_RELATIONSHIPS = [
     (NaturalLanguage, URL),
 ]
 
-DEFAULT_TYPE = NaturalLanguage
+DEFAULT_TYPE = Unknown
 
 
 class TypeSystem(object):
