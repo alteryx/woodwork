@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+import pyorc
 import pytest
 from mock import patch
 
@@ -91,3 +92,48 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         schema_df = schema_df.head(kwargs["nrows"])
 
     pd.testing.assert_frame_equal(df, schema_df)
+
+
+def test_read_file_orc(sample_df_pandas, orc_data):
+    
+
+    breakpoint()
+    # index = 'id'
+    # time_index = 'signup_date'
+    # schema_df = sample_df_pandas.copy()
+    # schema_df.ww.init(index=index, time_index=time_index)
+
+    # output_df = sample_df_pandas.copy().replace({pd.NA: None})
+    # pyorc_struct = "struct<id:int,full_name:string,email:string,phone_number:string,age:int,signup_date:timestamp,is_registered:boolean>"
+    # output = open(filepath, 'wb')
+    # writer = pyorc.Writer(output, pyorc_struct, struct_repr = pyorc.StructRepr.DICT)
+    # writer.writerows(output_df.to_dict(orient="records"))
+    # writer.close()
+    # output.close()
+
+    # for content_type in [None, 'orc', 'appliction/orc']:
+    #     df = ww.read_file(filepath=filepath,
+    #                       content_type=content_type,
+    #                       index=index,
+    #                       time_index=time_index)
+    #     assert isinstance(df.ww.schema, ww.table_schema.TableSchema)
+    #     assert df.ww.schema == schema_df.ww.schema
+    #     pd.testing.assert_frame_equal(df, schema_df)
+
+
+@pytest.fixture
+def orc_data():
+    def create_file():
+        df = pd.DataFrame({
+            'num': [1,2,3,4],
+            'bool': [True, False, False, True],
+            'text': ['apple', 'pear', 'orange', 'grape']
+        })
+        import io
+        data = io.BytesIO()
+        with pyorc.Writer(data, "struct<num:int,bool:boolean,text:string>", struct_repr = pyorc.StructRepr.DICT) as writer:
+            writer.writerows(df.to_dict(orient="records"))
+        data.seek(0)
+        return data
+
+    return create_file
