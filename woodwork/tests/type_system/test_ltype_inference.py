@@ -124,7 +124,7 @@ def test_timedelta_inference(timedeltas):
             assert isinstance(inferred_type, Timedelta)
 
 
-def test_natural_language_inference(strings):
+def test_unknown_inference(strings):
     dtypes = ['object', 'string']
     if ks and isinstance(strings[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
@@ -135,18 +135,18 @@ def test_natural_language_inference(strings):
             assert isinstance(inferred_type, Unknown)
 
 
-def test_natural_language_inference_with_threshhold(long_strings):
+def test_unknwon_inference_with_threshhold(long_strings):
     dtypes = ['object', 'string']
     if ks and isinstance(long_strings[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
 
-    ww.config.set_option('natural_language_threshold', 19)
+    ww.config.set_option('categorical_threshold', 19)
     for dtype in dtypes:
         inferred_type = ww.type_system.infer_logical_type(long_strings[0].astype(dtype))
         assert isinstance(inferred_type, Unknown)
         inferred_type = ww.type_system.infer_logical_type(long_strings[1].astype(dtype))
         assert isinstance(inferred_type, Categorical)
-    ww.config.reset_option('natural_language_threshold')
+    ww.config.reset_option('categorical_threshold')
 
 
 def test_pdna_inference(pdnas):
