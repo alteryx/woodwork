@@ -808,7 +808,7 @@ class WoodworkTableAccessor:
         mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
 
-    def describe_dict(self, include=None, callback=None):
+    def describe_dict(self, include=None, callback=None, extra_stats=False, bins=10, top_x=10, recent_x=10):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -825,6 +825,18 @@ class WoodworkTableAccessor:
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
 
+            extra_stats (bool): If True, will calculate a histogram for numeric columns, top values
+                for categorical columns and value counts for the most recent values in datetime columns. Will also
+                calculate value counts within the range of values present for integer columns if the range of
+                values present is less than or equal to than the number of bins used to compute the histogram.
+                Output can be controlled by bins, top_x and recent_x parameters.
+            bins (int): Number of bins to use when calculating histogram for numeric columns. Defaults to 10.
+                Will be ignored unless extra_stats=True.
+            top_x (int): Number of items to return when getting the most frequently occurring values for categorical
+                columns. Defaults to 10. Will be ignored unless extra_stats=True.
+            recent_x (int): Number of values to return when calculating value counts for the most recent dates in
+                datetime columns. Defaults to 10. Will be ignored unless extra_stats=True.
+
         Returns:
             dict[str -> dict]: A dictionary with a key for each column in the data or for each column
             matching the logical types, semantic tags or column names specified in ``include``, paired
@@ -832,7 +844,8 @@ class WoodworkTableAccessor:
         """
         if self._schema is None:
             _raise_init_error()
-        return _get_describe_dict(self._dataframe, include=include, callback=callback)
+        return _get_describe_dict(self._dataframe, include=include, callback=callback,
+                                  extra_stats=extra_stats, bins=bins, top_x=top_x, recent_x=recent_x)
 
     def describe(self, include=None, callback=None):
         """Calculates statistics for data contained in the DataFrame.
