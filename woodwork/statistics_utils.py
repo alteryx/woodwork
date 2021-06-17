@@ -357,9 +357,8 @@ def _get_numeric_value_counts_in_range(series, _range):
             the input range.
     """
     frequencies = series.value_counts(dropna=True)
-    return [
-        {"value": i, "count": frequencies[i] if i in frequencies else 0} for i in _range
-    ]
+    value_counts = [{"value": i, "count": frequencies[i] if i in frequencies else 0} for i in _range]
+    return sorted(value_counts, key=lambda i: (-i["count"], i["value"]))
 
 
 def _get_top_values_categorical(series, num_x):

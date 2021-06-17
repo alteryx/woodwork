@@ -807,26 +807,26 @@ def test_get_top_values_categorical(input_series, expected):
     "input_series, expected",
     [
         (
-            [1, 2, 2, 3, 3, 3, np.nan],
+            pd.Series([1, 2, 2, 3, 3, 3, pd.NA], dtype='Int64'),
             [
-                {"value": 0, "count": 0},
-                {"value": 1, "count": 1},
-                {"value": 2, "count": 2},
                 {"value": 3, "count": 3},
+                {"value": 2, "count": 2},
+                {"value": 1, "count": 1},
+                {"value": 0, "count": 0},
             ],
         ),
         (
-            [1, 2, 2, 3],
+            pd.Series([1, 2, 2, 3], dtype='int64'),
             [
-                {"value": 0, "count": 0},
-                {"value": 1, "count": 1},
                 {"value": 2, "count": 2},
+                {"value": 1, "count": 1},
                 {"value": 3, "count": 1},
+                {"value": 0, "count": 0},
             ],
         ),
     ],
 )
 def test_get_numeric_value_counts_in_range(input_series, expected):
-    column = pd.Series(input_series)
+    column = input_series
     top_values = _get_numeric_value_counts_in_range(column, range(4))
     assert top_values == expected
