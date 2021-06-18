@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Pass additional progress information in callback functions (:pr:`979`)
+        * Add option to read and write orc files (:pr:`997`)
     * Fixes
     * Changes
     * Documentation Changes
