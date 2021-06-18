@@ -536,8 +536,6 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 def test_deserialize_url_csv(sample_df_pandas):
     sample_df_pandas.ww.init(index='id')
     deserialized_df = deserialize.read_woodwork_table(URL)
-    print(sample_df_pandas.ww.logical_types)
-    print(deserialized_df.ww.logical_types)
     pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
