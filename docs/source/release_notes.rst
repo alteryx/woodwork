@@ -9,6 +9,7 @@ Future Release
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
     * Fixes
+        * Prevent docs from logging on build (:pr:`994`)
     * Changes
     * Documentation Changes
     * Testing Changes
