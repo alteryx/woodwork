@@ -231,7 +231,7 @@ def _is_valid_latlong_series(series):
     dd = import_or_none('dask.dataframe')
     ks = import_or_none('databricks.koalas')
     if dd and isinstance(series, dd.Series):
-        series = series.compute()
+        series = series = series.get_partition(0).compute()
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
         bracket_type = list
