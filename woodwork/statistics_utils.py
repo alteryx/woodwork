@@ -148,6 +148,9 @@ def _get_describe_dict(dataframe, include=None, callback=None,
 
 def _get_mode(series):
     """Get the mode value for a series"""
+    if str(series.dtype) == 'boolean':
+        # pandas 1.3.0 introduced bug where mode can't be calculated on BooleanDtype with nans
+        series = series.astype('object')
     mode_values = series.mode()
     if len(mode_values) > 0:
         return mode_values[0]
