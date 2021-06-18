@@ -40,8 +40,8 @@ conda install -c conda-forge woodwork
 
 ### Add-ons
 **Update checker** - Receive automatic notifications of new Woodwork releases
-```
-python -m pip install woodwork[update_checker]
+```bash
+python -m pip install "woodwork[update_checker]"
 ```
 
 

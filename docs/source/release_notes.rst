@@ -11,12 +11,14 @@ Future Release
     * Fixes
     * Changes
         * Add Unknown Logical Type as the default inferred type (:pr:`992`)
+        * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
+        * Add instructions for installing the update checker (:pr:`993`)
     * Testing Changes
-        * Add env setting to update checker (:pr:`978`)
+        * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
