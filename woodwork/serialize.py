@@ -5,7 +5,6 @@ import tarfile
 import tempfile
 
 import pandas as pd
-from pyarrow import Table, orc
 
 import woodwork as ww
 from woodwork.s3_utils import get_transport_params, use_smartopen
@@ -207,5 +206,6 @@ def _create_archive(tmpdir):
 
 
 def save_orc_file(dataframe, filepath):
+    from pyarrow import Table, orc
     pa_table = Table.from_pandas(dataframe, preserve_index=False)
     orc.write_table(pa_table, filepath)

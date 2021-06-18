@@ -556,9 +556,9 @@ class WoodworkTableAccessor:
                 default_csv_kwargs['ignoreLeadingWhitespace'] = False
                 default_csv_kwargs['ignoreTrailingWhitespace'] = False
             kwargs = {**default_csv_kwargs, **kwargs}
-        elif format == 'parquet':
+        elif format in ['parquet', 'orc']:
             import_error_message = (
-                "The pyarrow library is required to serialize to parquet.\n"
+                f"The pyarrow library is required to serialize to {format}.\n"
                 "Install via pip:\n"
                 "    pip install pyarrow\n"
                 "Install via conda:\n"
