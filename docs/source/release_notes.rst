@@ -9,12 +9,11 @@ Future Release
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
     * Fixes
-        * Stop docs from logging on build (:pr:`994`)
     * Changes
     * Documentation Changes
       * Add instructions for installing the update checker (:pr:`993`)
     * Testing Changes
-        * Add env setting to update checker (:pr:`978`)
+        * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`frances-h`
