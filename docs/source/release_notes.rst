@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Pass additional progress information in callback functions (:pr:`979`)
+        * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
     * Fixes
     * Changes
         * Add Unknown Logical Type as the default inferred type (:pr:`992`)

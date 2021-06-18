@@ -1,7 +1,9 @@
+from datetime import datetime
 from inspect import isclass
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from woodwork.logical_types import (
     URL,
@@ -29,7 +31,11 @@ from woodwork.logical_types import (
 )
 from woodwork.statistics_utils import (
     _get_describe_dict,
+    _get_histogram_values,
     _get_mode,
+    _get_numeric_value_counts_in_range,
+    _get_recent_value_counts,
+    _get_top_values_categorical,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info
 )
@@ -239,6 +245,10 @@ def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
 
     stats_dict = _get_describe_dict(describe_df)
+    stats_dict_to_df = pd.DataFrame(stats_dict)
+    for extra in ['histogram', 'top_values', 'recent_values']:
+        assert extra not in stats_dict_to_df.index
+
     index_order = ['physical_type',
                    'logical_type',
                    'semantic_tags',
@@ -255,7 +265,8 @@ def test_get_describe_dict(describe_df):
                    'max',
                    'num_true',
                    'num_false']
-    stats_dict_to_df = pd.DataFrame(stats_dict).reindex(index_order)
+
+    stats_dict_to_df = stats_dict_to_df.reindex(index_order)
     stats_df = describe_df.ww.describe()
     pd.testing.assert_frame_equal(stats_df, stats_dict_to_df)
 
@@ -648,6 +659,45 @@ def test_describe_callback(describe_df):
     assert mock_callback.total_elapsed_time > 0
 
 
+def test_describe_dict_extra_stats(describe_df):
+    describe_df = describe_df.drop(columns=['boolean_col', 'natural_language_col', 'formatted_datetime_col',
+                                            'timedelta_col', 'latlong_col'])
+    describe_df['nullable_integer_col'] = describe_df['numeric_col']
+    describe_df['integer_col'] = describe_df['numeric_col'].fillna(0)
+    describe_df['small_range_col'] = describe_df['numeric_col'].fillna(0) // 10
+
+    ltypes = {
+        'category_col': 'Categorical',
+        'datetime_col': 'Datetime',
+        'numeric_col': 'Double',
+        'nullable_integer_col': 'IntegerNullable',
+        'integer_col': 'Integer',
+        'small_range_col': 'Integer',
+    }
+    describe_df.ww.init(index='index_col', logical_types=ltypes)
+    desc_dict = describe_df.ww.describe_dict(extra_stats=True)
+
+    # category columns should have top_values
+    assert isinstance(desc_dict['category_col']['top_values'], list)
+    assert desc_dict['category_col'].get('histogram') is None
+    assert desc_dict['category_col'].get('recent_values') is None
+
+    # datetime columns should have recent_values
+    assert isinstance(desc_dict['datetime_col']['recent_values'], list)
+    assert desc_dict['datetime_col'].get('histogram') is None
+    assert desc_dict['datetime_col'].get('top_values') is None
+
+    # numeric columns should have histogram
+    for col in ['numeric_col', 'nullable_integer_col', 'integer_col', 'small_range_col']:
+        assert isinstance(desc_dict[col]['histogram'], list)
+        assert desc_dict[col].get('recent_values') is None
+        if col == 'small_range_col':
+            # If values are in a narrow range, top values should be present
+            assert isinstance(desc_dict[col]['top_values'], list)
+        else:
+            assert desc_dict[col].get('top_values') is None
+
+
 def test_value_counts(categorical_df):
     logical_types = {
         'ints': IntegerNullable,
@@ -688,3 +738,95 @@ def test_value_counts(categorical_df):
     val_cts_2 = categorical_df.ww.value_counts(top_n=2)
     for col in val_cts_2:
         assert len(val_cts_2[col]) == 2
+
+
+def test_datetime_get_recent_value_counts():
+    times = pd.Series([
+        datetime(2019, 2, 2, 1, 10, 0, 1),
+        datetime(2019, 4, 2, 2, 20, 1, 0),
+        datetime(2019, 3, 1, 3, 30, 1, 0),
+        datetime(2019, 5, 1, 4, 40, 1, 0),
+        datetime(2019, 1, 1, 5, 50, 1, 0),
+        datetime(2019, 4, 2, 6, 10, 1, 0),
+        datetime(2019, 4, 2, 7, 20, 1, 0),
+        datetime(2019, 5, 1, 8, 30, 0, 0),
+        pd.NaT,
+    ])
+    values = _get_recent_value_counts(times, num_x=3)
+    expected_values = [
+        {"value": datetime(2019, 4, 2).date(), "count": 3},
+        {"value": datetime(2019, 5, 1).date(), "count": 2},
+        {"value": datetime(2019, 3, 1).date(), "count": 1},
+    ]
+    assert values == expected_values
+
+
+def test_numeric_histogram():
+    column = pd.Series(np.random.randn(1000))
+    column.append(pd.Series([np.nan, " ", "test"]))
+    bins = 7
+    values = _get_histogram_values(column, bins=bins)
+    assert len(values) == bins
+    total = 0
+    for info in values:
+        assert "bins" in info
+        assert "frequency" in info
+        freq = info["frequency"]
+        total += freq
+    assert total == 1000
+
+
+@pytest.mark.parametrize(
+    "input_series, expected",
+    [
+        (
+            ["a", "b", "b", "c", "c", "c", np.nan],
+            [
+                {"value": "c", "count": 3},
+                {"value": "b", "count": 2},
+                {"value": "a", "count": 1},
+            ],
+        ),
+        (
+            [1, 2, 2, 3],
+            [
+                {"value": 2, "count": 2},
+                {"value": 1, "count": 1},
+                {"value": 3, "count": 1},
+            ],
+        ),
+    ],
+)
+def test_get_top_values_categorical(input_series, expected):
+    column = pd.Series(input_series)
+    top_values = _get_top_values_categorical(column, 10)
+    assert top_values == expected
+
+
+@pytest.mark.parametrize(
+    "input_series, expected",
+    [
+        (
+            pd.Series([1, 2, 2, 3, 3, 3, pd.NA], dtype='Int64'),
+            [
+                {"value": 3, "count": 3},
+                {"value": 2, "count": 2},
+                {"value": 1, "count": 1},
+                {"value": 0, "count": 0},
+            ],
+        ),
+        (
+            pd.Series([1, 2, 2, 3], dtype='int64'),
+            [
+                {"value": 2, "count": 2},
+                {"value": 1, "count": 1},
+                {"value": 3, "count": 1},
+                {"value": 0, "count": 0},
+            ],
+        ),
+    ],
+)
+def test_get_numeric_value_counts_in_range(input_series, expected):
+    column = input_series
+    top_values = _get_numeric_value_counts_in_range(column, range(4))
+    assert top_values == expected
