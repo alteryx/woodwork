@@ -45,7 +45,6 @@ class WoodworkTableAccessor:
              index=None,
              time_index=None,
              logical_types=None,
-             make_index=False,
              already_sorted=False,
              schema=None,
              validate=True,
@@ -58,11 +57,6 @@ class WoodworkTableAccessor:
             time_index (str, optional): Name of the time index column.
             logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column.
-            make_index (bool, optional): If True, will create a new unique, numeric index column with the
-                name specified by ``index`` and will add the new index column to the supplied DataFrame.
-                If True, the name specified in ``index`` cannot match an existing column name in
-                ``dataframe``. If False, the name is specified in ``index`` must match a column
-                present in the ``dataframe``. Defaults to False.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
@@ -94,14 +88,12 @@ class WoodworkTableAccessor:
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
-            _validate_accessor_params(self._dataframe, index, make_index, time_index, logical_types, schema, use_standard_tags)
+            _validate_accessor_params(self._dataframe, index, time_index, logical_types, schema, use_standard_tags)
         if schema is not None:
             self._schema = schema
             extra_params = []
             if index is not None:
                 extra_params.append('index')
-            if make_index:
-                extra_params.append('make_index')
             if time_index is not None:
                 extra_params.append('time_index')
             if logical_types is not None:
@@ -115,14 +107,7 @@ class WoodworkTableAccessor:
             if extra_params:
                 warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
-            # We need to store make_index on the Accessor when initializing with a schema
-            # but we still should ignore any make_index value passed in here
-            self.make_index = False
         else:
-            self.make_index = make_index
-            if make_index:
-                _make_index(self._dataframe, index)
-
             # Perform type inference and update underlying data
             parsed_logical_types = {}
             for name in self._dataframe.columns:
@@ -160,9 +145,6 @@ class WoodworkTableAccessor:
                 self._sort_columns(already_sorted)
 
     def __eq__(self, other, deep=True):
-        if self.make_index != other.ww.make_index:
-            return False
-
         if not self._schema.__eq__(other.ww._schema, deep=deep):
             return False
 
@@ -620,7 +602,6 @@ class WoodworkTableAccessor:
                     else:
                         copied_schema = self.schema
                         result.ww.init(schema=copied_schema, validate=False)
-                        result.ww.make_index = self.make_index
                 else:
                     # Confirm that the schema is still valid on original DataFrame
                     # Important for inplace operations
@@ -914,15 +895,15 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
 
-def _validate_accessor_params(dataframe, index, make_index, time_index, logical_types, schema, use_standard_tags):
+def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags):
     _check_unique_column_names(dataframe)
     _check_use_standard_tags(use_standard_tags)
     if schema is not None:
         _check_schema(dataframe, schema)
     else:
         # We ignore these parameters if a schema is passed
-        if index is not None or make_index:
-            _check_index(dataframe, index, make_index)
+        if index is not None:
+            _check_index(dataframe, index)
         if logical_types:
             _check_logical_types(dataframe.columns, logical_types)
         if time_index is not None:
@@ -941,23 +922,14 @@ def _check_unique_column_names(dataframe):
         raise IndexError('Dataframe cannot contain duplicate columns names')
 
 
-def _check_index(dataframe, index, make_index=False):
-    if not make_index and index not in dataframe.columns:
-        # User specifies an index that is not in the dataframe, without setting make_index to True
-        raise ColumnNotPresentError(f'Specified index column `{index}` not found in dataframe. '
-                                    'To create a new index column, set make_index to True.')
-    if index is not None and not make_index and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
+def _check_index(dataframe, index):
+    if index not in dataframe.columns:
+        # User specifies an index that is not in the dataframe
+        raise ColumnNotPresentError(f'Specified index column `{index}` not found in dataframe')
+    if index is not None and isinstance(dataframe, pd.DataFrame) and not dataframe[index].is_unique:
         # User specifies an index that is in the dataframe but not unique
         # Does not check for Dask as Dask does not support is_unique
         raise IndexError('Index column must be unique')
-    if make_index and index is not None and index in dataframe.columns:
-        # User sets make_index to True, but supplies an index name that matches a column already present
-        raise IndexError('When setting make_index to True, '
-                         'the name specified for index cannot match an existing column name')
-    if make_index and index is None:
-        # User sets make_index to True, but does not supply a name for the index
-        raise IndexError('When setting make_index to True, '
-                         'the name for the new index must be specified in the index parameter')
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
@@ -988,16 +960,6 @@ def _check_schema(dataframe, schema):
 def _check_use_standard_tags(use_standard_tags):
     if not isinstance(use_standard_tags, (bool, dict)):
         raise TypeError('use_standard_tags must be a dictionary or a boolean')
-
-
-def _make_index(dataframe, index):
-    if dd and isinstance(dataframe, dd.DataFrame):
-        dataframe[index] = 1
-        dataframe[index] = dataframe[index].cumsum() - 1
-    elif ks and isinstance(dataframe, ks.DataFrame):
-        raise TypeError('Cannot make index on a Koalas DataFrame.')
-    else:
-        dataframe.insert(0, index, range(len(dataframe)))
 
 
 def _raise_init_error():
