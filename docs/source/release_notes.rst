@@ -10,6 +10,7 @@ Future Release
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
     * Fixes
     * Changes
+        * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
       * Add instructions for installing the update checker (:pr:`993`)
     * Testing Changes
