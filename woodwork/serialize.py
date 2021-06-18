@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 
 import pandas as pd
+from pyarrow import Table, orc
 
 import woodwork as ww
 from woodwork.s3_utils import get_transport_params, use_smartopen
@@ -18,7 +19,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 SCHEMA_VERSION = '10.0.0'
-FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather']
+FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
 
 
 def typing_info_to_dict(dataframe):
@@ -171,7 +172,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
             msg = 'DataFrame type not compatible with pickle serialization. Please serialize to another format.'
             raise ValueError(msg)
         dataframe.to_pickle(file, **kwargs)
-    elif format in ['parquet', 'arrow', 'feather']:
+    elif format in ['parquet', 'arrow', 'feather', 'orc']:
         # Latlong columns in pandas and Dask DataFrames contain tuples, which raises
         # an error in parquet and arrow/feather format.
         latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if _get_ltype_class(col.logical_type) == ww.logical_types.LatLong]
@@ -180,6 +181,12 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
             dataframe[latlong_columns] = dataframe[latlong_columns].astype(str)
         if format == 'parquet':
             dataframe.to_parquet(file, **kwargs)
+        elif format == 'orc':
+            # Serialization to orc relies on pyarrow.Table.from_pandas which doesn't work with Dask
+            if dd and isinstance(dataframe, dd.DataFrame):
+                msg = 'DataFrame type not compatible with orc serialization. Please serialize to another format.'
+                raise ValueError(msg)
+            save_orc_file(dataframe, file)
         else:
             dataframe.to_feather(file, **kwargs)
     else:
@@ -197,3 +204,8 @@ def _create_archive(tmpdir):
     tar.add(str(tmpdir) + '/data', arcname='/data')
     tar.close()
     return file_path
+
+
+def save_orc_file(dataframe, filepath):
+    pa_table = Table.from_pandas(dataframe, preserve_index=False)
+    orc.write_table(pa_table, filepath)
