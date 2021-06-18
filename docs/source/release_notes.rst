@@ -12,11 +12,12 @@ Future Release
         * Prevent docs from logging on build (:pr:`994`)
     * Changes
     * Documentation Changes
+      * Add instructions for installing the update checker (:pr:`993`)
     * Testing Changes
         * Add env setting to update checker (:pr:`978`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
