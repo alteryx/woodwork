@@ -8,7 +8,8 @@ from woodwork.logical_types import (
     CountryCode,
     Double,
     Integer,
-    NaturalLanguage
+    NaturalLanguage,
+    Unknown
 )
 from woodwork.type_sys.inference_functions import (
     categorical_func,
@@ -250,7 +251,7 @@ def default_inference_functions():
         Integer: integer_func,
         Categorical: categorical_func,
         CountryCode: None,
-        NaturalLanguage: None,
+        Unknown: None,
     }
 
 
@@ -263,4 +264,4 @@ def default_relationships():
 def type_sys(default_inference_functions, default_relationships):
     return TypeSystem(inference_functions=default_inference_functions,
                       relationships=default_relationships,
-                      default_type=NaturalLanguage)
+                      default_type=Unknown)
