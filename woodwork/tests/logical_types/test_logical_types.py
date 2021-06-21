@@ -112,8 +112,8 @@ def test_datetime_transform(datetimes):
 
 
 def test_datetime_conversion_error():
-    series = pd.Series(['a', 'b', 'c'])
-    match = 'Error converting datatype for None from type object to type datetime64[ns]. '
+    series = pd.Series(['a', 'b', 'c'], name='series')
+    match = 'Error converting datatype for series from type object to type datetime64[ns]. '
     match += 'Please confirm the underlying data is consistent with logical type Datetime.'
     with pytest.raises(TypeConversionError, match=re.escape(match)):
         Datetime().transform(series)
