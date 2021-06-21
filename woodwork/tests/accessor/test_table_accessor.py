@@ -906,9 +906,7 @@ def test_sets_datetime64_dtype_on_init():
         pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
         pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
         pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
-        # Inferring datetime64[ns] from data containing strings is deprecated
-        # and will be removed in a future version. Only this was a problem.
-        # pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name, dtype='object'),
     ]
 
     logical_type = Datetime
