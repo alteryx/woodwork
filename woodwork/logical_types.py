@@ -183,14 +183,20 @@ class Datetime(LogicalType):
         """Converts the series data to a formatted datetime."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
-            if dd and isinstance(series, dd.Series):
-                name = series.name
-                series = dd.to_datetime(series, format=self.datetime_format)
-                series.name = name
-            elif ks and isinstance(series, ks.Series):
-                series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
-            else:
-                series = pd.to_datetime(series, format=self.datetime_format)
+            try:
+                if dd and isinstance(series, dd.Series):
+                    name = series.name
+                    series = dd.to_datetime(series, format=self.datetime_format)
+                    series.name = name
+                elif ks and isinstance(series, ks.Series):
+                    series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
+                else:
+                    series = pd.to_datetime(series, format=self.datetime_format)
+            except (TypeError, ValueError):
+                message = f'Error converting datatype for {series.name} from type {str(series.dtype)} '
+                message += f'to type {new_dtype}. Please confirm the underlying data is consistent with '
+                message += f'logical type {type(self)}.'
+                raise TypeConversionError(message)
         return super().transform(series)
 
 
