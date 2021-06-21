@@ -47,14 +47,15 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             # Update the underlying series
+            error = TypeConversionError(series, new_dtype, type(self))
             try:
                 series = series.astype(new_dtype)
                 if str(series.dtype) != new_dtype:
                     # Catch conditions when Panads does not error but did not
                     # convert to the specified dtype (example: 'category' -> 'bool')
-                    raise TypeConversionError(series, new_dtype, type(self))
+                    raise error
             except (TypeError, ValueError):
-                raise TypeConversionError(series, new_dtype, type(self))
+                raise error
         return series
 
 
