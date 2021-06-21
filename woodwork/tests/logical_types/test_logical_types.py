@@ -111,12 +111,15 @@ def test_datetime_transform(datetimes):
         assert str(transform.dtype) == 'datetime64[ns]'
 
 
-def test_datetime_conversion_error():
-    series = pd.Series(['a', 'b', 'c'], name='series')
-    match = 'Error converting datatype for series from type object to type datetime64[ns]. '
+def test_datetime_conversion_error(sample_series):
+    if dd and isinstance(sample_series, dd.Series):
+        pytest.xfail('Dask does not show error until compute is made.')
+
+    dtype = str(sample_series.dtype)
+    match = f'Error converting datatype for sample_series from type {dtype} to type datetime64[ns]. '
     match += 'Please confirm the underlying data is consistent with logical type Datetime.'
     with pytest.raises(TypeConversionError, match=re.escape(match)):
-        Datetime().transform(series)
+        Datetime().transform(sample_series)
 
 
 def test_ordinal_transform(sample_series):
