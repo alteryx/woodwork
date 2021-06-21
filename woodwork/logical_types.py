@@ -351,9 +351,9 @@ class Unknown(LogicalType):
     Examples:
         .. code-block:: python
 
-            ["This is a short sentence.",
-             1.0,
-             True]
+            ["ax23n9ck23l",
+             "1,28&*_%*&&xejc",
+             "xnmvz@@Dcmeods-0"]
 
     """
     primary_dtype = 'string'

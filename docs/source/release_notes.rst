@@ -10,7 +10,7 @@ Future Release
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
     * Fixes
     * Changes
-        * Add Unknown Logical Type as the default inferred type (:pr:`992`)
+        * Add Unknown Logical Type as the default type (:pr:`992`)
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
@@ -31,8 +31,8 @@ Breaking Changes
         * total units to complete
         * the progress unit of measurement
         * time elapsed since start of calculation
-    * The default inferred type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
-      The global config ``natural_language_threshold`` has been renamed to ``numeric_categorical_threshold``.
+    * The default type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
+      The global config ``natural_language_threshold`` has been renamed to ``categorical_threshold``.
 
 
 v0.4.1 Jun 9, 2021

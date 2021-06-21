@@ -60,7 +60,7 @@ df.ww.set_types(logical_types={
     'quantity': 'Integer',
     'customer_name': 'PersonFullName',
     'country': 'Categorical',
-    'order_id': 'Categorical'
+    'order_id': 'Categorical',
     'description': 'NaturalLanguage',
 })
 df.ww

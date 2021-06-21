@@ -91,7 +91,7 @@ DEFAULT_TYPE = Unknown
 
 
 class TypeSystem(object):
-    def __init__(self, inference_functions=None, relationships=None, default_type=NaturalLanguage):
+    def __init__(self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
 
@@ -104,7 +104,7 @@ class TypeSystem(object):
                 second element should be the child LogicalType. If not specified, will default to an empty list
                 indicating all types should be considered root types with no children.
             default_type (LogicalType, optional): The default LogicalType to use if no inference matches are
-                found. If not specified, will default to the built-in NaturalLanguage LogicalType.
+                found. If not specified, will default to the built-in Unknown LogicalType.
         """
         self.default_type = default_type
         if inference_functions:
