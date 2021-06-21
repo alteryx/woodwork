@@ -42,7 +42,7 @@ def _is_numeric_series(series, logical_type):
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
     if dd and isinstance(series, dd.Series):
-        series = series.compute()
+        series = series.get_partition(0).compute()
 
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
