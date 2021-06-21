@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import pytest
 
+from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -108,6 +109,14 @@ def test_datetime_transform(datetimes):
         assert str(series.dtype) == 'object'
         transform = datetime.transform(series)
         assert str(transform.dtype) == 'datetime64[ns]'
+
+
+def test_datetime_conversion_error():
+    series = pd.Series(['a', 'b', 'c'])
+    match = 'Error converting datatype for None from type object to type datetime64[ns]. '
+    match += 'Please confirm the underlying data is consistent with logical type Datetime.'
+    with pytest.raises(TypeConversionError, match=re.escape(match)):
+        Datetime().transform(series)
 
 
 def test_ordinal_transform(sample_series):
