@@ -14,6 +14,7 @@ try:
 except AttributeError:
     collectionsAbc = collections
 
+
 class TableSchema(object):
     def __init__(self, column_names,
                  logical_types,
