@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import pytest
 
+from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -108,6 +109,17 @@ def test_datetime_transform(datetimes):
         assert str(series.dtype) == 'object'
         transform = datetime.transform(series)
         assert str(transform.dtype) == 'datetime64[ns]'
+
+
+def test_datetime_conversion_error(sample_series):
+    if dd and isinstance(sample_series, dd.Series):
+        pytest.xfail('Dask does not show error until compute is made.')
+
+    dtype = str(sample_series.dtype)
+    match = f'Error converting datatype for sample_series from type {dtype} to type datetime64[ns]. '
+    match += 'Please confirm the underlying data is consistent with logical type Datetime.'
+    with pytest.raises(TypeConversionError, match=re.escape(match)):
+        Datetime().transform(sample_series)
 
 
 def test_ordinal_transform(sample_series):
