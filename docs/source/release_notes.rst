@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
+        * Retain schema when calling ``series.ww.to_frame()`` (:pr:`1004`)
     * Fixes
     * Changes
         * Remove version restriction for dask requirements (:pr:`998`)
