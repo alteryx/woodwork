@@ -263,7 +263,7 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 
 def setup(app):
-    home_dir = os.environ.get('HOME', '/home/docs')
+    home_dir = '/home/docs'
     ipython_p = Path(home_dir + "/.ipython/profile_default/startup")
     ipython_p.mkdir(parents=True, exist_ok=True)
     file_p = os.path.abspath(os.path.dirname(__file__))
