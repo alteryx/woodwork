@@ -128,6 +128,8 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         dataframe = lib.read_parquet(file, engine=kwargs['engine'])
     elif load_format in ['arrow', 'feather']:
         dataframe = lib.read_feather(file)
+    elif load_format == 'orc':
+        dataframe = lib.read_orc(file)
 
     dataframe.ww.init(
         name=table_typing_info.get('name'),

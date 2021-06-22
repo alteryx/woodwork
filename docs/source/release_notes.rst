@@ -8,12 +8,17 @@ Future Release
     * Enhancements
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
+        * Add option to read and write orc files (:pr:`997`)
+        * Retain schema when calling ``series.ww.to_frame()`` (:pr:`1004`)
     * Fixes
+        * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
     * Changes
         * Use Unknown as the default logical type in place of NaturalLanguage (:pr:`992`)
+        * Remove ``make_index`` parameter from ``DataFrame.ww.init`` :pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
+        * Disable pdf format with documentation build (:pr:`1002`)
     * Testing Changes
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
@@ -33,6 +38,7 @@ Breaking Changes
         * time elapsed since start of calculation
     * The default type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
       The global config ``natural_language_threshold`` has been renamed to ``categorical_threshold``.
+    * ``DataFrame.ww.init`` no longer accepts the make_index parameter
 
 
 v0.4.1 Jun 9, 2021

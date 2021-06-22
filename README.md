@@ -55,7 +55,7 @@ import pandas as pd
 import woodwork as ww
 
 df = pd.read_csv("https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv")
-df.ww.init(name='retail', make_index=True, index='order_product_id')
+df.ww.init(name='retail')
 df.ww.set_types(logical_types={
     'quantity': 'Integer',
     'customer_name': 'PersonFullName',
@@ -69,7 +69,6 @@ df.ww
 ```
                    Physical Type     Logical Type Semantic Tag(s)
 Column
-order_product_id           int64          Integer       ['index']
 order_id                category      Categorical    ['category']
 product_id              category      Categorical    ['category']
 description               string  NaturalLanguage              []

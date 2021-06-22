@@ -62,7 +62,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def test_check_index_errors(sample_df):
-    error_message = 'Specified index column `foo` not found in dataframe. To create a new index column, set make_index to True.'
+    error_message = 'Specified index column `foo` not found in dataframe'
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_index(dataframe=sample_df, index='foo')
 
@@ -71,14 +71,6 @@ def test_check_index_errors(sample_df):
         error_message = 'Index column must be unique'
         with pytest.raises(LookupError, match=error_message):
             _check_index(sample_df, index='age')
-
-    error_message = 'When setting make_index to True, the name specified for index cannot match an existing column name'
-    with pytest.raises(IndexError, match=error_message):
-        _check_index(sample_df, index='id', make_index=True)
-
-    error_message = 'When setting make_index to True, the name for the new index must be specified in the index parameter'
-    with pytest.raises(IndexError, match=error_message):
-        _check_index(sample_df, index=None, make_index=True)
 
 
 def test_check_logical_types_errors(sample_df):
@@ -351,11 +343,11 @@ def test_accessor_with_schema_parameter_warning(sample_df):
 
     head_df = schema_df.head(2)
 
-    warning = "A schema was provided and the following parameters were ignored: index, make_index, " \
+    warning = "A schema was provided and the following parameters were ignored: index, " \
               "time_index, logical_types, already_sorted, use_standard_tags, semantic_tags"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
         head_df.ww.init(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
-                        make_index=True, already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
+                        already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
                         use_standard_tags={'id': True, 'age': False}, schema=schema)
 
     assert head_df.ww.name == 'test_schema'
@@ -465,19 +457,6 @@ def test_accessor_equality(sample_df):
         assert schema_df.ww != loc_df
     else:
         assert schema_df.ww == loc_df
-
-
-def test_accessor_equality_make_index(sample_df_pandas):
-    made_index_df = sample_df_pandas.copy()
-    made_index_df.insert(0, 'new_index', range(len(made_index_df)))
-    made_index_df.ww.init(index='new_index', make_index=False)
-
-    schema_df = sample_df_pandas.copy()
-    schema_df.ww.init(index='new_index', make_index=True)
-
-    pd.testing.assert_frame_equal(schema_df, made_index_df)
-
-    assert made_index_df.ww != schema_df.ww
 
 
 def test_accessor_shallow_equality(sample_df):
@@ -970,36 +949,6 @@ def test_invalid_dtype_casting():
         df.ww.init(logical_types=ltypes)
 
 
-def test_make_index(sample_df):
-    if ks and isinstance(sample_df, ks.DataFrame):
-        error_msg = "Cannot make index on a Koalas DataFrame."
-        with pytest.raises(TypeError, match=error_msg):
-            sample_df.ww.init(index='new_index', make_index=True)
-    else:
-        schema_df = sample_df.copy()
-        schema_df.ww.init(index='new_index', make_index=True)
-
-        assert schema_df.ww.make_index is True
-
-        assert schema_df.ww.index == 'new_index'
-        assert 'new_index' in schema_df.ww.columns
-        assert 'new_index' in schema_df.ww.columns
-        assert to_pandas(schema_df)['new_index'].unique
-        assert to_pandas(schema_df['new_index']).is_monotonic
-        assert 'index' in schema_df.ww.columns['new_index'].semantic_tags
-
-        copied_df = schema_df.ww.copy()
-        assert copied_df.ww.make_index is True
-
-        own_index_df = sample_df.copy()
-        own_index_df.ww.init(index='id')
-
-        assert own_index_df.ww.make_index is False
-
-        copied_df = own_index_df.ww.copy()
-        assert copied_df.ww.make_index is False
-
-
 def test_underlying_index_set_no_index_on_init(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
         pytest.xfail('Setting underlying index is not supported with Dask input')
@@ -1047,13 +996,6 @@ def test_underlying_index_set(sample_df):
     schema_df.ww.set_index(None)
     assert schema_df.ww.index is None
     assert (schema_df.index == schema_df['full_name']).all()
-
-    # Sets underlying index for made index
-    schema_df = sample_df.copy()
-    schema_df.ww.init(index='made_index', make_index=True)
-    assert 'made_index' in schema_df
-    assert (schema_df.index == [0, 1, 2, 3]).all()
-    assert schema_df.index.name is None
 
 
 def test_underlying_index_reset(sample_df):
