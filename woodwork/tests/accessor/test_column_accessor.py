@@ -755,3 +755,13 @@ def test_validation_methods_called_init_with_schema(mock_validate_schema, sample
     assert mock_validate_schema.called
     assert validated.ww == not_validated.ww
     pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+
+
+def test_to_frame_maintains_schema(sample_series):
+    sample_series.ww.init(semantic_tags={'test_tag'},
+                          description='custom description',
+                          metadata={'custom key': 'custom value'})
+    sample_frame = sample_series.ww.to_frame()
+
+    assert sample_frame.ww.schema is not None
+    assert sample_frame.ww.columns['sample_series'] == sample_series.ww.schema
