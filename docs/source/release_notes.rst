@@ -9,6 +9,7 @@ Future Release
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
     * Fixes
+        * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
     * Changes
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
