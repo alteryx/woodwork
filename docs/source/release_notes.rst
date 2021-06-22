@@ -18,6 +18,7 @@ Future Release
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
         * Disable pdf format with documentation build (:pr:`1002`)
+        * Silence deprecation warnings in documentation build (:pr:`1008`)
     * Testing Changes
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
