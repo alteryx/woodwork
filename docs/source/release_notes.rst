@@ -25,6 +25,7 @@ v0.4.2 Jun 23, 2021
     * Changes
         * Remove ``make_index`` parameter from ``DataFrame.ww.init`` (:pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
+        * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
         * Disable pdf format with documentation build (:pr:`1002`)
