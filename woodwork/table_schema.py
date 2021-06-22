@@ -1,5 +1,5 @@
-import collections
 import copy
+from collections.abc import Hashable
 
 import pandas as pd
 
@@ -459,7 +459,7 @@ class TableSchema(object):
                 raise TypeError(f"Specified LogicalType selector {maybe_ltype} is not registered in Woodwork's type system.")
 
             # Hashability as a proxy for whether a selector is possibly a semantic tag or column name
-            if not isinstance(selector, collections.Hashable):
+            if not isinstance(selector, Hashable):
                 raise TypeError(f"Invalid selector used in include: {selector} must be a "
                                 "string, uninstantiated and registered LogicalType, or valid column name")
             # Determine if the selector is a semantic tag
