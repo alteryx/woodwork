@@ -17,10 +17,10 @@ from woodwork.accessor_utils import (
 )
 
 # Call functions registered by other libraries when woodwork is imported
-for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'):
+for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'): # pragma: no cover
     try:
         method = entry_point.load()
         if callable(method):
             method('woodwork')
-    except Exception:  # pragma: no cover
+    except Exception:  
         pass
