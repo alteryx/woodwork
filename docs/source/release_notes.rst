@@ -9,6 +9,7 @@ Future Release
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
         * Add option to read and write orc files (:pr:`997`)
+        * Retain schema when calling ``series.ww.to_frame()`` (:pr:`1004`)
     * Fixes
         * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
     * Changes
