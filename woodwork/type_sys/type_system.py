@@ -78,13 +78,6 @@ DEFAULT_RELATIONSHIPS = [
     (Integer, Age),
     (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer),
-    (NaturalLanguage, Address),
-    (NaturalLanguage, PersonFullName),
-    (Unknown, EmailAddress),
-    (Unknown, Filepath),
-    (Unknown, IPAddress),
-    (Unknown, PhoneNumber),
-    (Unknown, URL),
 ]
 
 DEFAULT_TYPE = Unknown
@@ -269,17 +262,12 @@ class TypeSystem(object):
             series = series.head(100000).to_pandas()
 
         def get_inference_matches(types_to_check, series, type_matches=[]):
-            # Since NaturalLanguage isn't inferred by default, make sure to check
-            # any children of NaturalLanguage, otherwise they never get evaluated
-            if NaturalLanguage in types_to_check:
-                check_next = self._get_children(NaturalLanguage)
-            else:
-                check_next = []
+            check_next = []
             for logical_type in types_to_check:
                 inference_func = self.inference_functions.get(logical_type)
                 if inference_func and inference_func(series):
                     type_matches.append(logical_type)
-                    check_next.extend(self._get_children(logical_type))
+                check_next.extend(self._get_children(logical_type))
             if len(check_next) > 0:
                 get_inference_matches(check_next, series, type_matches)
             return type_matches
