@@ -1,3 +1,3 @@
 import warnings
 
-warnings.filterwarnings("ignore", type=DeprecationWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
