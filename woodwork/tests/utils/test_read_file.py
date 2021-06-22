@@ -5,6 +5,7 @@ import pytest
 from mock import patch
 
 import woodwork as ww
+from woodwork.serialize import save_orc_file
 
 
 def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
@@ -65,19 +66,27 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
         ("sample.arrow", ("to_feather", {}), {"content_type": 'application/arrow', "index": "id"}, False),
         ("sample.parquet", ("to_parquet", {}), {}, False),
         ("sample.parquet", ("to_parquet", {}), {"content_type": 'parquet', "index": "id", "use_nullable_dtypes": True}, False),
-        ("sample.parquet", ("to_parquet", {}), {"content_type": 'application/parquet', "index": "id", "use_nullable_dtypes": True}, False)
+        ("sample.parquet", ("to_parquet", {}), {"content_type": 'application/parquet', "index": "id", "use_nullable_dtypes": True}, False),
+        ("sample.orc", (save_orc_file, {}), {}, True),
+        ("sample.orc", (save_orc_file, {}), {"content_type": 'orc', "index": "id"}, True),
+        ("sample.orc", (save_orc_file, {}), {"content_type": 'application/orc', "index": "id"}, True),
     ]
 )
 def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_nullable_fix):
     filepath = os.path.join(tmpdir, filepath)
-    getattr(sample_df_pandas, exportfn[0])(filepath, **exportfn[1])
+    func, func_kwargs = exportfn
+    if isinstance(func, str):
+        getattr(sample_df_pandas, func)(filepath, **func_kwargs)
+    else:
+        # Call save_orc_file to save orc data since pandas does not have a to_orc method
+        func(sample_df_pandas, filepath, **func_kwargs)
     df = ww.read_file(filepath=filepath, **kwargs)
     assert isinstance(df.ww.schema, ww.table_schema.TableSchema)
 
     schema_df = sample_df_pandas.copy()
     if pandas_nullable_fix:
-        # pandas does not read data into nullable types currently, so the types
-        # in df_from_csv will be different than the types inferred from sample_df_pandas
+        # pandas does not read data into nullable types currently from csv or orc,
+        # so the types in df will be different than the types inferred from sample_df_pandas
         # which uses the nullable types
         schema_df = schema_df.astype({'age': 'float64', 'is_registered': 'object'})
     schema_df.ww.init(index=kwargs.get('index'),
