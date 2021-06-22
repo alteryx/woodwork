@@ -12,6 +12,7 @@ Future Release
         * Retain schema when calling ``series.ww.to_frame()`` (:pr:`1004`)
     * Fixes
         * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
+        * Try collections.abc to avoid deprecation warning (:pr:`1010`)
     * Changes
         * Remove ``make_index`` parameter from ``DataFrame.ww.init`` :pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
