@@ -3,9 +3,13 @@ import warnings
 import weakref
 
 import pandas as pd
-from woodwork import logical_types
 
-from woodwork.accessor_utils import _is_series, init_series, _is_dataframe, is_schema_valid
+from woodwork.accessor_utils import (
+    _is_dataframe,
+    _is_series,
+    init_series,
+    is_schema_valid
+)
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
