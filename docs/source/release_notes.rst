@@ -10,6 +10,7 @@ Future Release
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
         * Retain schema when calling ``series.ww.to_frame()`` (:pr:`1004`)
     * Fixes
+        * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
     * Changes
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
