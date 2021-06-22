@@ -10,15 +10,18 @@ Future Release
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
         * Add option to read and write orc files (:pr:`997`)
     * Fixes
+        * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
     * Changes
+        * Remove ``make_index`` parameter from ``DataFrame.ww.init`` :pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
+        * Disable pdf format with documentation build (:pr:`1002`)
     * Testing Changes
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`frances-h`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
@@ -31,6 +34,7 @@ Breaking Changes
         * total units to complete
         * the progress unit of measurement
         * time elapsed since start of calculation
+    * ``DataFrame.ww.init`` no longer accepts the make_index parameter
 
 
 v0.4.1 Jun 9, 2021
