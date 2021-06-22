@@ -10,9 +10,9 @@ from woodwork.type_sys.utils import _get_ltype_class
 from woodwork.utils import _convert_input_to_set
 
 try:
-    collectionsAbc = collections.abc
-except AttributeError:
-    collectionsAbc = collections
+    collectionsAbc = collections.abc 
+except AttributeError: # pragma: no cover
+    collectionsAbc = collections # pragma: no cover
 
 
 class TableSchema(object):
