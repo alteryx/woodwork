@@ -4,7 +4,12 @@ import weakref
 
 import pandas as pd
 
-from woodwork.accessor_utils import _is_series, init_series
+from woodwork.accessor_utils import (
+    _is_dataframe,
+    _is_series,
+    init_series,
+    is_schema_valid
+)
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
@@ -13,6 +18,7 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
+from woodwork.table_schema import TableSchema
 from woodwork.utils import (
     _get_column_logical_type,
     _is_valid_latlong_series,
@@ -246,6 +252,18 @@ class WoodworkColumnAccessor:
                                                                                           invalid_schema_message,
                                                                                           'Series')
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
+                elif _is_dataframe(result):
+                    # Initialize Woodwork if a valid table schema can be created from the original column schema
+                    col_schema = self.schema
+                    table_schema = TableSchema(column_names=[self.name],
+                                               logical_types={self.name: col_schema.logical_type},
+                                               semantic_tags={self.name: col_schema.semantic_tags},
+                                               column_metadata={self.name: col_schema.metadata},
+                                               use_standard_tags={self.name: col_schema.use_standard_tags},
+                                               column_descriptions={self.name: col_schema.description},
+                                               validate=False)
+                    if is_schema_valid(result, table_schema):
+                        result.ww.init(schema=table_schema)
                 # Always return the results of the Series operation whether or not Woodwork is initialized
                 return result
             return wrapper

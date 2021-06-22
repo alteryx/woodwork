@@ -1,5 +1,5 @@
-dask==2021.6.1
-numpy==1.20.3
+dask==2021.6.2
+numpy==1.21.0
 pandas==1.2.4
 pyarrow==4.0.1
 scikit-learn==0.24.2
