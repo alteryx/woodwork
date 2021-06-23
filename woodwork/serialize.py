@@ -18,7 +18,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 SCHEMA_VERSION = '11.0.0'
-FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather']
+FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
 
 
 def typing_info_to_dict(dataframe):
