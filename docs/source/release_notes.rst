@@ -2,9 +2,18 @@
 
 Release Notes
 -------------
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
-Future Release
-==============
+.. Thanks to the following people for contributing to this release:
+
+v0.4.2 Jun 23, 2021
+===================
     * Enhancements
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
@@ -25,7 +34,7 @@ Future Release
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
