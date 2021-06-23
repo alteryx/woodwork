@@ -2,9 +2,18 @@
 
 Release Notes
 -------------
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
-Future Release
-==============
+.. Thanks to the following people for contributing to this release:
+
+v0.4.2 Jun 23, 2021
+===================
     * Enhancements
         * Pass additional progress information in callback functions (:pr:`979`)
         * Add the ability to generate optional extra stats with ``DataFrame.ww.describe_dict`` (:pr:`988`)
@@ -14,7 +23,7 @@ Future Release
         * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
         * Try collections.abc to avoid deprecation warning (:pr:`1010`)
     * Changes
-        * Remove ``make_index`` parameter from ``DataFrame.ww.init`` :pr:`1000`)
+        * Remove ``make_index`` parameter from ``DataFrame.ww.init`` (:pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
@@ -25,7 +34,7 @@ Future Release
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`tuethan1999`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
