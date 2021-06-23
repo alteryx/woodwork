@@ -243,7 +243,7 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
                     valid_dtype = self._schema.logical_type._get_valid_dtype(type(result))
-                    if str(result.dtype) == valid_dtype:
+                    if str(result.dtype) == valid_dtype or not valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
                     else:
                         invalid_schema_message = 'dtype mismatch between original dtype, ' \
@@ -274,7 +274,7 @@ class WoodworkColumnAccessor:
         """Validates that a logical type is consistent with the series dtype. Performs additional type
         specific validation, as required."""
         valid_dtype = logical_type._get_valid_dtype(type(self._series))
-        if valid_dtype != str(self._series.dtype):
+        if valid_dtype and valid_dtype != str(self._series.dtype):
             raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                              f"incompatible with {logical_type} dtype. Try converting series "
                              f"dtype to '{valid_dtype}' before initializing or use the "

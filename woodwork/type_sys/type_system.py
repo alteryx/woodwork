@@ -1,3 +1,4 @@
+from copy import Error
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,
@@ -267,7 +268,9 @@ class TypeSystem(object):
                 inference_func = self.inference_functions.get(logical_type)
                 if inference_func and inference_func(series):
                     type_matches.append(logical_type)
-                check_next.extend(self._get_children(logical_type))
+                    check_next.extend(self._get_children(logical_type))
+                elif not inference_func:
+                    check_next.extend(self._get_children(logical_type))
             if len(check_next) > 0:
                 get_inference_matches(check_next, series, type_matches)
             return type_matches

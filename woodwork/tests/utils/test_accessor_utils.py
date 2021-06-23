@@ -126,7 +126,7 @@ def test_get_invalid_schema_message(sample_df):
 
 def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'age': 'Categorical'})
+    schema_df.ww.init(logical_types={'age': 'Categorical', 'full_name': 'PersonFullName'})
     schema = schema_df.ww.schema
 
     incorrect_int_dtype_df = schema_df.ww.astype({'id': 'Int64'})
@@ -142,7 +142,7 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
         incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
         incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
         assert (get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
-                'dtype mismatch for column full_name between DataFrame dtype, object, and Unknown dtype, string')
+                'dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string')
         assert (get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
                 'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
 
