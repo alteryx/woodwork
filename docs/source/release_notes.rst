@@ -23,7 +23,7 @@ v0.4.2 Jun 23, 2021
         * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
         * Try collections.abc to avoid deprecation warning (:pr:`1010`)
     * Changes
-        * Remove ``make_index`` parameter from ``DataFrame.ww.init`` :pr:`1000`)
+        * Remove ``make_index`` parameter from ``DataFrame.ww.init`` (:pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
