@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import Boolean, Datetime, Integer
+from woodwork.logical_types import Boolean, Datetime, Integer, Unknown
 from woodwork.utils import import_or_none
 
 
@@ -548,9 +548,9 @@ def sample_column_names():
 @pytest.fixture()
 def sample_inferred_logical_types():
     return {'id': Integer,
-            'full_name': NaturalLanguage,
-            'email': NaturalLanguage,
-            'phone_number': NaturalLanguage,
+            'full_name': Unknown,
+            'email': Unknown,
+            'phone_number': Unknown,
             'age': Integer,
             'signup_date': Datetime,
             'is_registered': Boolean}
