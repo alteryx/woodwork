@@ -26,6 +26,7 @@ from woodwork.type_sys.type_system import DEFAULT_INFERENCE_FUNCTIONS
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
     _is_numeric_series,
+    col_is_datetime,
     list_logical_types,
     list_semantic_tags
 )
@@ -412,3 +413,37 @@ def test_parse_logical_type_errors():
     error = "Invalid logical type specified for 'col_name'"
     with pytest.raises(TypeError, match=error):
         _parse_logical_type(int, 'col_name')
+
+
+def test_col_is_datetime():
+    inputs = [
+        pd.to_datetime(pd.Series(['2020-01-01', '2021-02-02', '2022-03-03'])),
+        pd.to_datetime(pd.Series([pd.NA, '2021-02-02', '2022-03-03'])),
+        pd.Series([1, 2, 3]),
+        pd.Series([pd.NA, 2, 3]),
+        pd.Series([1.0, 2.0, 3.0]),
+        pd.Series([pd.NA, 2.0, 3.0]),
+        pd.Series(['2020-01-01', '2021-02-02', '2022-03-03']),
+        pd.Series([pd.NA, '2021-02-02', '2022-03-03']),
+        pd.Series(['a', 'b', 'c']),
+        pd.Series([pd.NA, 'b', 'c']),
+        pd.Series([pd.NA, pd.NA, pd.NA]),
+    ]
+
+    expected_values = [
+        True,
+        True,
+        False,
+        False,
+        False,
+        False,
+        True,
+        True,
+        False,
+        False,
+        False,
+    ]
+
+    for input, expected in list(zip(inputs, expected_values)):
+        actual = col_is_datetime(input)
+        assert actual is expected
