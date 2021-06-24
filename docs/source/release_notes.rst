@@ -10,12 +10,17 @@ Future Release
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
+        * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type (:pr:`992`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
+Breaking Changes
+++++++++++++++++
+    * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
+      The global config ``natural_language_threshold`` has been renamed to ``categorical_threshold``.
 
 v0.4.2 Jun 23, 2021
 ===================
@@ -30,7 +35,6 @@ v0.4.2 Jun 23, 2021
     * Changes
         * Remove ``make_index`` parameter from ``DataFrame.ww.init`` (:pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
-        * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. (:pr:`992`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
         * Disable pdf format with documentation build (:pr:`1002`)
@@ -53,8 +57,6 @@ Breaking Changes
         * total units to complete
         * the progress unit of measurement
         * time elapsed since start of calculation
-    * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
-      The global config ``natural_language_threshold`` has been renamed to ``categorical_threshold``.
     * ``DataFrame.ww.init`` no longer accepts the make_index parameter
 
 
