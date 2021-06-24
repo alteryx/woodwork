@@ -11,7 +11,8 @@ from woodwork.logical_types import (
     Double,
     Integer,
     NaturalLanguage,
-    Ordinal
+    Ordinal,
+    Unknown
 )
 from woodwork.table_schema import (
     TableSchema,
@@ -239,16 +240,16 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
 
 def test_schema_init_with_logical_type_classes(sample_column_names, sample_inferred_logical_types):
     logical_types = {
-        'full_name': NaturalLanguage,
+        'full_name': Unknown,
         'age': Double
     }
     schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **logical_types},
                          name='schema')
 
     full_logical_types = {'id': Integer(),
-                          'full_name': NaturalLanguage(),
-                          'email': NaturalLanguage(),
-                          'phone_number': NaturalLanguage(),
+                          'full_name': Unknown(),
+                          'email': Unknown(),
+                          'phone_number': Unknown(),
                           'age': Double(),
                           'signup_date': Datetime(),
                           'is_registered': Boolean()}
