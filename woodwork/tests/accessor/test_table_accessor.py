@@ -643,7 +643,7 @@ def test_str_dtype_inference_on_init():
     assert df['str_NA'].dtype == 'category'
     assert df['str_NA_specified'].dtype == 'category'
     assert df['long_str_NA_specified'].dtype == 'string'
-    assert df['long_str_NA'].dtype == 'object'
+    assert df['long_str_NA'].dtype == 'string'
 
 
 def test_float_dtype_inference_on_init():
@@ -1826,7 +1826,7 @@ def test_set_types_errors(sample_df):
     if isinstance(sample_df, pd.DataFrame):
         # Dask does not error on invalid type conversion until compute
         # Koalas does conversion and fills values with NaN
-        error = 'Error converting datatype for email from type object ' \
+        error = 'Error converting datatype for email from type string ' \
             'to type float64. Please confirm the underlying data is consistent with ' \
             'logical type Double.'
         with pytest.raises(TypeConversionError, match=error):

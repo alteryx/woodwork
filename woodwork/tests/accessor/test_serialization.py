@@ -69,7 +69,6 @@ def test_to_dictionary(sample_df):
     int_val = 'int64'
     string_val = 'string'
     bool_val = 'boolean'
-    object_val = 'object'
 
     expected = {'schema_version': serialize.SCHEMA_VERSION,
                 'name': 'test_data',
@@ -87,7 +86,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 1,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Unknown'},
-                                        'physical_type': {'type': object_val},
+                                        'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -95,7 +94,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 2,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Unknown'},
-                                        'physical_type': {'type': object_val},
+                                        'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata':{}},
@@ -103,7 +102,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 3,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {}, 'type': 'Unknown'},
-                                        'physical_type': {'type': object_val},
+                                        'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
                                         'metadata': {}},

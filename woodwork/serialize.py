@@ -17,7 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '11.0.0'
+SCHEMA_VERSION = '10.1.0'
 FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
 
 
