@@ -30,16 +30,15 @@ def init_series(series, logical_type=None, semantic_tags=None,
     Returns:
         Series: A series with Woodwork typing information initialized
     """
-    if _is_series(series):
-        logical_type = _get_column_logical_type(series, logical_type, series.name)
-        new_series = logical_type.transform(series)
-        new_series.ww.init(logical_type=logical_type,
-                           semantic_tags=semantic_tags,
-                           use_standard_tags=use_standard_tags,
-                           description=description,
-                           metadata=metadata)
-    else:
+    if not _is_series(series):
         raise TypeError(f'Input must be of series type. The current input is of type {type(series)}')
+    logical_type = _get_column_logical_type(series, logical_type, series.name)
+    new_series = logical_type.transform(series)
+    new_series.ww.init(logical_type=logical_type,
+                       semantic_tags=semantic_tags,
+                       use_standard_tags=use_standard_tags,
+                       description=description,
+                       metadata=metadata)
     return new_series
 
 

@@ -38,18 +38,11 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
 
 
 def test_init_series_with_invalid_type(sample_df):
-    error_message = f'Input must be of series type. The current input is of type {type(sample_df)}'
-    with pytest.raises(TypeError, match=error_message):
-        init_series(sample_df)
-    error_message = f'Input must be of series type. The current input is of type {type(1)}'
-    with pytest.raises(TypeError, match=error_message):
-        init_series(1)
-    error_message = f'Input must be of series type. The current input is of type {type("string")}'
-    with pytest.raises(TypeError, match=error_message):
-        init_series("string")
-    error_message = f'Input must be of series type. The current input is of type {type(None)}'
-    with pytest.raises(TypeError, match=error_message):
-        init_series(None)
+    inputs = [sample_df, 1, "string", None]
+    for input_ in inputs:
+        error_message = f'Input must be of series type. The current input is of type {type(input_)}'
+        with pytest.raises(TypeError, match=error_message):
+            init_series(input_)
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
