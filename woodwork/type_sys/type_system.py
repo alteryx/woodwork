@@ -78,14 +78,7 @@ DEFAULT_RELATIONSHIPS = [
     (Categorical, SubRegionCode),
     (Integer, Age),
     (IntegerNullable, AgeNullable),
-    (IntegerNullable, Integer),
-    (NaturalLanguage, Address),
-    (NaturalLanguage, PersonFullName),
-    (Unknown, EmailAddress),
-    (Unknown, Filepath),
-    (Unknown, IPAddress),
-    (Unknown, PhoneNumber),
-    (Unknown, URL),
+    (IntegerNullable, Integer)
 ]
 
 DEFAULT_TYPE = Unknown
