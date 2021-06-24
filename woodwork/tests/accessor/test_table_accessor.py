@@ -935,18 +935,6 @@ def test_invalid_dtype_casting():
     with pytest.raises(TypeConversionError, match=err_msg):
         df.ww.init(logical_types=ltypes)
 
-    # pandas >=1.2.0 converts to an object dtype when converting a series with missing
-    # values with `.astype('bool')` but does not error. Woodwork should not allow this to succeed.
-    series = pd.Series(['a', 'b', None], name=column_name, dtype='category')
-    ltypes = {
-        column_name: Boolean,
-    }
-    err_msg = 'Error converting datatype for test_series from type category to type ' \
-        'bool. Please confirm the underlying data is consistent with logical type Boolean.'
-    df = pd.DataFrame(series)
-    with pytest.raises(TypeConversionError, match=err_msg):
-        df.ww.init(logical_types=ltypes)
-
 
 def test_underlying_index_set_no_index_on_init(sample_df):
     if dd and isinstance(sample_df, dd.DataFrame):
