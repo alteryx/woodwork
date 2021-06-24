@@ -14,9 +14,9 @@ from woodwork.logical_types import (
     Double,
     EmailAddress,
     Integer,
-    Unknown,
     PersonFullName,
-    PhoneNumber
+    PhoneNumber,
+    Unknown
 )
 from woodwork.table_schema import TableSchema
 
