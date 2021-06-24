@@ -11,7 +11,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`simha104`
 
 v0.4.2 Jun 23, 2021
 ===================
@@ -35,7 +36,7 @@ v0.4.2 Jun 23, 2021
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`, :user: 'simha104'
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
