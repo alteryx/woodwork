@@ -2,8 +2,8 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
