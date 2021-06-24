@@ -179,12 +179,15 @@ class Datetime(LogicalType):
             try:
                 if dd and isinstance(series, dd.Series):
                     name = series.name
-                    series = dd.to_datetime(series, format=self.datetime_format)
+                    series = dd.to_datetime(series, format=self.datetime_format, infer_datetime_format=True)
                     series.name = name
                 elif ks and isinstance(series, ks.Series):
-                    series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
+                    series = ks.Series(ks.to_datetime(series.to_numpy(),
+                                                      format=self.datetime_format,
+                                                      infer_datetime_format=True),
+                                       name=series.name)
                 else:
-                    series = pd.to_datetime(series, format=self.datetime_format)
+                    series = pd.to_datetime(series, format=self.datetime_format, infer_datetime_format=True)
             except (TypeError, ValueError):
                 raise TypeConversionError(series, new_dtype, type(self))
         return super().transform(series)
