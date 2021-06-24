@@ -2,15 +2,18 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
 
 v0.4.2 Jun 23, 2021
 ===================
