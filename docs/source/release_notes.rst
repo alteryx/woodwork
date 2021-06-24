@@ -8,11 +8,12 @@ Future Release
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
     * Changes
+        * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`simha104`
+    :user:`simha104`, :user:`tamargrey`
 
 v0.4.2 Jun 23, 2021
 ===================
