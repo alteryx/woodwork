@@ -8,7 +8,6 @@ from woodwork.logical_types import (
     CountryCode,
     Double,
     Integer,
-    NaturalLanguage,
     Unknown
 )
 from woodwork.type_sys.inference_functions import (
