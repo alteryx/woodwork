@@ -28,7 +28,7 @@ v0.4.2 Jun 23, 2021
     * Changes
         * Remove ``make_index`` parameter from ``DataFrame.ww.init`` (:pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
-        * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. :pr:`988`)
+        * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. (:pr:`992`)
     * Documentation Changes
         * Add instructions for installing the update checker (:pr:`993`)
         * Disable pdf format with documentation build (:pr:`1002`)
