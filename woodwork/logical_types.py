@@ -357,9 +357,7 @@ class Unknown(LogicalType):
              "xnmvz@@Dcmeods-0"]
 
     """
-    primary_dtype = None
-    def transform(self, series):
-        return series
+    primary_dtype = 'string'
 
 
 class Ordinal(LogicalType):
