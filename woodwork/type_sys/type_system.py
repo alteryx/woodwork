@@ -1,4 +1,3 @@
-from copy import Error
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,

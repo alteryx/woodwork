@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import Boolean, Datetime, Integer, NaturalLanguage
+from woodwork.logical_types import Boolean, Datetime, Integer
 from woodwork.utils import import_or_none
 
 
