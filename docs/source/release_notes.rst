@@ -22,6 +22,7 @@ v0.4.2 Jun 23, 2021
     * Fixes
         * Raise type conversion error in ``Datetime`` logical type (:pr:`1001`)
         * Try collections.abc to avoid deprecation warning (:pr:`1010`)
+        * Add input validation to ww.init_series (:pr: '1017')
     * Changes
         * Remove ``make_index`` parameter from ``DataFrame.ww.init`` (:pr:`1000`)
         * Remove version restriction for dask requirements (:pr:`998`)
@@ -34,7 +35,7 @@ v0.4.2 Jun 23, 2021
         * Add env setting to update checker (:pr:`978`, :pr:`994`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`, :user: 'simha104'
 
 Breaking Changes
 ++++++++++++++++
