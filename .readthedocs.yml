@@ -11,12 +11,11 @@ sphinx:
   fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
-formats:
-  - pdf
+formats: []
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: 3.7
+  version: 3.8
   install:
     - method: pip
       path: .
