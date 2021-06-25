@@ -37,6 +37,14 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
     assert series.ww.semantic_tags == set()
 
 
+def test_init_series_with_invalid_type(sample_df):
+    inputs = [sample_df, 1, "string", None]
+    for input_ in inputs:
+        error_message = f'Input must be of series type. The current input is of type {type(input_)}'
+        with pytest.raises(TypeError, match=error_message):
+            init_series(input_)
+
+
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
     if ks and isinstance(sample_series, ks.Series):
         sample_series = sample_series.astype('str')
