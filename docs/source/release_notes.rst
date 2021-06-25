@@ -10,6 +10,7 @@ Future Release
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
+        * Add handling of numpy inputs to woodwork (:pr:`1017`)
     * Documentation Changes
     * Testing Changes
 
