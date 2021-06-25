@@ -14,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`simha104`, :user:`tamargrey`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 
 v0.4.2 Jun 23, 2021
