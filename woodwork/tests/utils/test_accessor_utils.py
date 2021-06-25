@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -43,6 +44,19 @@ def test_init_series_with_invalid_type(sample_df):
         error_message = f'Input must be of series type. The current input is of type {type(input_)}'
         with pytest.raises(TypeError, match=error_message):
             init_series(input_)
+
+
+def test_init_series_with_np_array(sample_series_pandas):
+    inputs = [np.array([['a', 'b'], ['b', 'c']]), np.array(['a', 'b', 'c', 'a'])]
+    for input_ in inputs:
+        if input_.ndim == 1:
+            series = init_series(input_)
+            series2 = init_series(sample_series_pandas)  # Sample series panda contains ['a','b','c','a']
+            assert series.equals(series2)
+        else:
+            error_message = f'np.ndarray input must be 1 dimensional. Current np.ndarray is {input_.ndim} dimensional'
+            with pytest.raises(ValueError, match=error_message):
+                init_series(input_)
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
