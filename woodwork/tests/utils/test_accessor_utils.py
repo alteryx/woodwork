@@ -49,7 +49,9 @@ def test_init_series_with_invalid_type(sample_df):
 def test_init_series_with_np_array(sample_series_pandas):
     series = init_series(np.array(['a', 'b', 'c', 'a']))
     series2 = init_series(sample_series_pandas)  # Sample series panda contains ['a','b','c','a']
-    assert series.equals(series2) and series.ww.logical_type == series2.ww.logical_type and series.ww.semantic_tags == series2.ww.semantic_tags
+    assert series.equals(series2)
+    assert series.ww.logical_type == series2.ww.logical_type
+    assert series.ww.semantic_tags == series2.ww.semantic_tags
 
 
 def test_init_series_with_multidimensional_np_array():
