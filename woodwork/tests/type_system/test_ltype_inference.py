@@ -134,7 +134,7 @@ def test_unknown_inference(strings):
             assert isinstance(inferred_type, Unknown)
 
 
-def test_unknwon_inference_with_threshhold(long_strings):
+def test_unknown_inference_with_threshhold(long_strings):
     dtypes = ['object', 'string']
     if ks and isinstance(long_strings[0], ks.Series):
         dtypes = get_koalas_dtypes(dtypes)
