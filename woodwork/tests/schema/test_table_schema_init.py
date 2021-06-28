@@ -240,14 +240,14 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
 
 def test_schema_init_with_logical_type_classes(sample_column_names, sample_inferred_logical_types):
     logical_types = {
-        'full_name': Unknown,
+        'full_name': NaturalLanguage,
         'age': Double
     }
     schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **logical_types},
                          name='schema')
 
     full_logical_types = {'id': Integer(),
-                          'full_name': Unknown(),
+                          'full_name': NaturalLanguage(),
                           'email': Unknown(),
                           'phone_number': Unknown(),
                           'age': Double(),
