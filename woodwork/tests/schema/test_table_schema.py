@@ -159,9 +159,9 @@ def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logi
     assert schema != no_standard_tags_schema
 
     # Different standard tags values - no logical types that have standard tags
-    nl_ltypes = {col_name: Unknown for col_name in sample_column_names}
-    schema.set_types(logical_types=nl_ltypes)
-    no_standard_tags_schema.set_types(logical_types=nl_ltypes)
+    unknown_types = {col_name: Unknown for col_name in sample_column_names}
+    schema.set_types(logical_types=unknown_types)
+    no_standard_tags_schema.set_types(logical_types=unknown_types)
 
     assert schema.use_standard_tags != no_standard_tags_schema.use_standard_tags
     assert schema != no_standard_tags_schema
