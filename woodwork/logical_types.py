@@ -345,7 +345,7 @@ class NaturalLanguage(LogicalType):
 
 
 class Unknown(LogicalType):
-    """Represents Logical Types that cannot be inferred as a specific Logical Type
+    """Represents Logical Types that cannot be inferred as a specific Logical Type. It is assumed to contain string data.
 
     Examples:
         .. code-block:: python
