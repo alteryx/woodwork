@@ -47,16 +47,16 @@ def test_init_series_with_invalid_type(sample_df):
 
 
 def test_init_series_with_np_array(sample_series_pandas):
-    inputs = [np.array([['a', 'b'], ['b', 'c']]), np.array(['a', 'b', 'c', 'a'])]
-    for input_ in inputs:
-        if input_.ndim == 1:
-            series = init_series(input_)
-            series2 = init_series(sample_series_pandas)  # Sample series panda contains ['a','b','c','a']
-            assert series.equals(series2)
-        else:
-            error_message = f'np.ndarray input must be 1 dimensional. Current np.ndarray is {input_.ndim} dimensional'
-            with pytest.raises(ValueError, match=error_message):
-                init_series(input_)
+    series = init_series(np.array(['a', 'b', 'c', 'a']))
+    series2 = init_series(sample_series_pandas)  # Sample series panda contains ['a','b','c','a']
+    assert series.equals(series2) and series.ww.logical_type == series2.ww.logical_type and series.ww.semantic_tags == series2.ww.semantic_tags
+
+
+def test_init_series_with_multidimensional_np_array():
+    input_ = np.array([['a', 'b'], ['a', 'b']])
+    error_message = f'np.ndarray input must be 1 dimensional. Current np.ndarray is {input_.ndim} dimensional'
+    with pytest.raises(ValueError, match=error_message):
+        init_series(input_)
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
