@@ -44,7 +44,8 @@ from woodwork.utils import (
     camel_to_snake,
     get_valid_mi_types,
     import_or_none,
-    import_or_raise
+    import_or_raise,
+    _infer_datetime_format
 )
 
 dd = import_or_none('dask.dataframe')
@@ -447,3 +448,9 @@ def test_col_is_datetime():
     for input, expected in list(zip(inputs, expected_values)):
         actual = col_is_datetime(input)
         assert actual is expected
+
+
+def test_infer_datetime_format(datetimes):
+    for series in datetimes:
+        fmt = _infer_datetime_format(series)
+        assert fmt == '%m/%d/%Y'
