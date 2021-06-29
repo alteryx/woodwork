@@ -13,7 +13,8 @@ from woodwork.logical_types import (
     NaturalLanguage,
     Ordinal,
     PersonFullName,
-    SubRegionCode
+    SubRegionCode,
+    Unknown
 )
 from woodwork.type_sys.inference_functions import (
     categorical_func,
@@ -107,12 +108,12 @@ def test_type_system_default_type_remove_error(default_inference_functions, defa
 
 def test_type_system_registered_types(type_sys):
     assert isinstance(type_sys.registered_types, list)
-    assert set(type_sys.registered_types) == {Double, Integer, Categorical, CountryCode, NaturalLanguage}
+    assert set(type_sys.registered_types) == {Double, Integer, Categorical, CountryCode, Unknown}
 
 
 def test_type_system_root_types(type_sys):
     assert isinstance(type_sys.root_types, list)
-    assert set(type_sys.root_types) == {Double, Categorical, NaturalLanguage}
+    assert set(type_sys.root_types) == {Double, Categorical, Unknown}
 
 
 def test_add_type_without_parent():
@@ -274,13 +275,13 @@ def test_inference_multiple_matches_different_depths(default_relationships):
 
 def test_reset_defaults(type_sys, default_inference_functions, default_relationships):
     type_sys.update_inference_function('Integer', None)
-    type_sys.update_relationship(CountryCode, parent=NaturalLanguage)
+    type_sys.update_relationship(CountryCode, parent=Unknown)
     type_sys.default_type = Categorical
     type_sys.reset_defaults()
 
     assert type_sys.inference_functions == default_inference_functions
     assert type_sys.relationships == default_relationships
-    assert type_sys.default_type == NaturalLanguage
+    assert type_sys.default_type == Unknown
 
 
 def test_get_logical_types():

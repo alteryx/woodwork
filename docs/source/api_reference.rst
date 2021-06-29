@@ -151,6 +151,7 @@ Logical Types
     PostalCode
     SubRegionCode
     Timedelta
+    Unknown
     URL
 
 TypeSystem

@@ -11,7 +11,8 @@ from woodwork.logical_types import (
     Double,
     Integer,
     NaturalLanguage,
-    Ordinal
+    Ordinal,
+    Unknown
 )
 from woodwork.table_schema import (
     TableSchema,
@@ -247,8 +248,8 @@ def test_schema_init_with_logical_type_classes(sample_column_names, sample_infer
 
     full_logical_types = {'id': Integer(),
                           'full_name': NaturalLanguage(),
-                          'email': NaturalLanguage(),
-                          'phone_number': NaturalLanguage(),
+                          'email': Unknown(),
+                          'phone_number': Unknown(),
                           'age': Double(),
                           'signup_date': Datetime(),
                           'is_registered': Boolean()}
