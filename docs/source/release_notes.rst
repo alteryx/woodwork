@@ -2,11 +2,11 @@
 
 Release Notes
 -------------
-
 Future Release
 ==============
     * Enhancements
     * Fixes
+        * Add input validation to ww.init_series (:pr:`1015`)
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
@@ -15,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+        :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
