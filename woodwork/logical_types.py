@@ -2,7 +2,12 @@ import pandas as pd
 
 from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
-from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none, _infer_datetime_format
+from woodwork.utils import (
+    _infer_datetime_format,
+    _reformat_to_latlong,
+    camel_to_snake,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')

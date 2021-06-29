@@ -33,6 +33,7 @@ from woodwork.type_sys.utils import (
 from woodwork.utils import (
     _convert_input_to_set,
     _get_column_logical_type,
+    _infer_datetime_format,
     _is_null_latlong,
     _is_s3,
     _is_url,
@@ -44,8 +45,7 @@ from woodwork.utils import (
     camel_to_snake,
     get_valid_mi_types,
     import_or_none,
-    import_or_raise,
-    _infer_datetime_format
+    import_or_raise
 )
 
 dd = import_or_none('dask.dataframe')
