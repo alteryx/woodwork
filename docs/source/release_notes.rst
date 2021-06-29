@@ -11,7 +11,7 @@ Future Release
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
         * Add support for numpy array inputs to Woodwork (:pr:`1023`)
-        * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork
+        * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
     * Documentation Changes
     * Testing Changes
 
