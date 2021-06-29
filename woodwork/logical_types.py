@@ -173,7 +173,7 @@ class Datetime(LogicalType):
         self.datetime_format = datetime_format
 
     def transform(self, series):
-        """Converts the series data to a formatted datetime."""
+        """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         self.datetime_format = self.datetime_format or _infer_datetime_format(series)
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
