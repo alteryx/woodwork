@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from woodwork.utils import _get_column_logical_type, import_or_none
@@ -30,8 +31,14 @@ def init_series(series, logical_type=None, semantic_tags=None,
     Returns:
         Series: A series with Woodwork typing information initialized
     """
+    if not _is_series(series):
+        if isinstance(series, np.ndarray) and series.ndim == 1:
+            series = pd.Series(series, dtype=series.dtype)
+        elif isinstance(series, np.ndarray) and series.ndim != 1:
+            raise ValueError(f'np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional')
+        else:
+            raise TypeError(f'Input must be of series type. The current input is of type {type(series)}')
     logical_type = _get_column_logical_type(series, logical_type, series.name)
-
     new_series = logical_type.transform(series)
     new_series.ww.init(logical_type=logical_type,
                        semantic_tags=semantic_tags,

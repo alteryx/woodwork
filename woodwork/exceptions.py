@@ -34,7 +34,11 @@ class TypingInfoMismatchWarning(UserWarning):
 
 
 class TypeConversionError(Exception):
-    pass
+    def __init__(self, series, new_dtype, logical_type):
+        message = f'Error converting datatype for {series.name} from type {str(series.dtype)} '
+        message += f'to type {new_dtype}. Please confirm the underlying data is consistent with '
+        message += f'logical type {logical_type}.'
+        super().__init__(message)
 
 
 class ParametersIgnoredWarning(UserWarning):

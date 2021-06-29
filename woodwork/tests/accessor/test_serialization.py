@@ -330,6 +330,35 @@ def test_to_feather_with_latlong(latlong_df, tmpdir):
     assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
+def test_to_orc(sample_df, tmpdir):
+    sample_df.ww.init(index='id')
+    if dd and isinstance(sample_df, dd.DataFrame):
+        msg = 'DataFrame type not compatible with orc serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            sample_df.ww.to_disk(str(tmpdir), format='orc')
+    else:
+        sample_df.ww.to_disk(str(tmpdir), format='orc')
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        pd.testing.assert_frame_equal(to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+                                      to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+        assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+def test_to_orc_with_latlong(latlong_df, tmpdir):
+    latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
+    if dd and isinstance(latlong_df, dd.DataFrame):
+        msg = 'DataFrame type not compatible with orc serialization. Please serialize to another format.'
+        with pytest.raises(ValueError, match=msg):
+            latlong_df.ww.to_disk(str(tmpdir), format='orc')
+    else:
+        latlong_df.ww.to_disk(str(tmpdir), format='orc')
+        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+
+        pd.testing.assert_frame_equal(to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
+                                      to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True))
+        assert latlong_df.ww.schema == deserialized_df.ww.schema
+
+
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
     ltypes = {
         'cat_int': Categorical,

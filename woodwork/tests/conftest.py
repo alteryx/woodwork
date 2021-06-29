@@ -81,7 +81,7 @@ def sample_unsorted_df_pandas():
 
 @pytest.fixture()
 def sample_unsorted_df_dask(sample_unsorted_df_pandas):
-    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    dd = pytest.importorskip("dask.dataframe", reason='Dask not installed, skipping')
     return dd.from_pandas(sample_unsorted_df_pandas, npartitions=2)
 
 

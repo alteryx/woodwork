@@ -47,17 +47,10 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             # Update the underlying series
-            error_msg = f'Error converting datatype for {series.name} from type {str(series.dtype)} ' \
-                f'to type {new_dtype}. Please confirm the underlying data is consistent with ' \
-                f'logical type {type(self)}.'
             try:
                 series = series.astype(new_dtype)
-                if str(series.dtype) != new_dtype:
-                    # Catch conditions when Panads does not error but did not
-                    # convert to the specified dtype (example: 'category' -> 'bool')
-                    raise TypeConversionError(error_msg)
             except (TypeError, ValueError):
-                raise TypeConversionError(error_msg)
+                raise TypeConversionError(series, new_dtype, type(self))
         return series
 
 
@@ -183,14 +176,20 @@ class Datetime(LogicalType):
         """Converts the series data to a formatted datetime."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
-            if dd and isinstance(series, dd.Series):
-                name = series.name
-                series = dd.to_datetime(series, format=self.datetime_format)
-                series.name = name
-            elif ks and isinstance(series, ks.Series):
-                series = ks.Series(ks.to_datetime(series.to_numpy(), format=self.datetime_format), name=series.name)
-            else:
-                series = pd.to_datetime(series, format=self.datetime_format)
+            try:
+                if dd and isinstance(series, dd.Series):
+                    name = series.name
+                    series = dd.to_datetime(series, format=self.datetime_format, infer_datetime_format=True)
+                    series.name = name
+                elif ks and isinstance(series, ks.Series):
+                    series = ks.Series(ks.to_datetime(series.to_numpy(),
+                                                      format=self.datetime_format,
+                                                      infer_datetime_format=True),
+                                       name=series.name)
+                else:
+                    series = pd.to_datetime(series, format=self.datetime_format, infer_datetime_format=True)
+            except (TypeError, ValueError):
+                raise TypeConversionError(series, new_dtype, type(self))
         return super().transform(series)
 
 
