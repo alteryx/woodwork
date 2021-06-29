@@ -2,7 +2,7 @@ import pandas as pd
 
 from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
-from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none
+from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none, _infer_datetime_format
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -174,6 +174,7 @@ class Datetime(LogicalType):
 
     def transform(self, series):
         """Converts the series data to a formatted datetime."""
+        self.datetime_format = self.datetime_format or _infer_datetime_format(series)
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             try:
