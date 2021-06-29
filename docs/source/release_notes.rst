@@ -10,11 +10,12 @@ Future Release
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
+        * Adds datetime format inference in transform if a format is not set (:pr:`1025`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 
 v0.4.2 Jun 23, 2021
