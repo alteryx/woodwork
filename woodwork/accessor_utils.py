@@ -9,11 +9,11 @@ ks = import_or_none('databricks.koalas')
 
 def init_series(series, logical_type=None, semantic_tags=None,
                 use_standard_tags=True, description=None, metadata=None):
-    """Initializes Woodwork typing information for a Series, returning a new Series. The dtype
+    """Initializes Woodwork typing information for a series, numpy.ndarray or pd.api.extensions.ExtensionArray, returning a new Series. The dtype
     of the returned series will be converted to match the dtype associated with the LogicalType.
 
     Args:
-        series (pd.Series, dd.Series, or ks.Series): The original series from which to create
+        series (pd.Series, dd.Series, ks.Series, numpy.ndarray or pd.api.extensions.ExtensionArray): The original series from which to create
             the Woodwork initialized series.
         logical_type (LogicalType or str, optional): The logical type that should be assigned
             to the series. If no value is provided, the LogicalType for the series will
