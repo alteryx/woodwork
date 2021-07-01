@@ -14,9 +14,9 @@ from woodwork.logical_types import (
     Double,
     EmailAddress,
     Integer,
-    NaturalLanguage,
     PersonFullName,
-    PhoneNumber
+    PhoneNumber,
+    Unknown
 )
 from woodwork.table_schema import TableSchema
 
@@ -61,9 +61,9 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     assert len(returned_types.index) == len(sample_column_names)
     correct_logical_types = {
         'id': Integer(),
-        'full_name': NaturalLanguage(),
-        'email': NaturalLanguage(),
-        'phone_number': NaturalLanguage(),
+        'full_name': Unknown(),
+        'email': Unknown(),
+        'phone_number': Unknown(),
         'age': Integer(),
         'signup_date': Datetime(),
         'is_registered': Boolean(),
@@ -159,9 +159,9 @@ def test_schema_equality_standard_tags(sample_column_names, sample_inferred_logi
     assert schema != no_standard_tags_schema
 
     # Different standard tags values - no logical types that have standard tags
-    nl_ltypes = {col_name: NaturalLanguage for col_name in sample_column_names}
-    schema.set_types(logical_types=nl_ltypes)
-    no_standard_tags_schema.set_types(logical_types=nl_ltypes)
+    unknown_types = {col_name: Unknown for col_name in sample_column_names}
+    schema.set_types(logical_types=unknown_types)
+    no_standard_tags_schema.set_types(logical_types=unknown_types)
 
     assert schema.use_standard_tags != no_standard_tags_schema.use_standard_tags
     assert schema != no_standard_tags_schema
@@ -234,8 +234,8 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
     filtered = schema._filter_cols(include='email', col_names=True)
     assert filtered == ['email']
 
-    filtered_log_type_string = schema._filter_cols(include='NaturalLanguage')
-    filtered_log_type = schema._filter_cols(include=NaturalLanguage)
+    filtered_log_type_string = schema._filter_cols(include='Unknown')
+    filtered_log_type = schema._filter_cols(include=Unknown)
     expected = {'full_name', 'email', 'phone_number'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
@@ -243,7 +243,7 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
     filtered_semantic_tag = schema._filter_cols(include='numeric')
     assert filtered_semantic_tag == ['age']
 
-    filtered_multiple_overlap = schema._filter_cols(include=['NaturalLanguage', 'email'], col_names=True)
+    filtered_multiple_overlap = schema._filter_cols(include=['Unknown', 'email'], col_names=True)
     expected = ['full_name', 'phone_number', 'email']
     for col in filtered_multiple_overlap:
         assert col in expected
@@ -262,8 +262,8 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
     filtered = schema._filter_cols(exclude='email', col_names=True)
     assert 'email' not in filtered
 
-    filtered_log_type_string = schema._filter_cols(exclude='NaturalLanguage')
-    filtered_log_type = schema._filter_cols(exclude=NaturalLanguage)
+    filtered_log_type_string = schema._filter_cols(exclude='Unknown')
+    filtered_log_type = schema._filter_cols(exclude=Unknown)
     expected = {'id', 'age', 'signup_date', 'is_registered'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
@@ -271,7 +271,7 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
     filtered_semantic_tag = schema._filter_cols(exclude='numeric')
     assert 'age' not in filtered_semantic_tag
 
-    filtered_multiple_overlap = schema._filter_cols(exclude=['NaturalLanguage', 'email'], col_names=True)
+    filtered_multiple_overlap = schema._filter_cols(exclude=['Unknown', 'email'], col_names=True)
     expected = ['id', 'age', 'signup_date', 'is_registered']
     for col in filtered_multiple_overlap:
         assert col in expected
@@ -354,7 +354,7 @@ def test_filter_schema_overlap_name_and_type(sample_column_names, sample_inferre
 def test_filter_schema_non_string_cols():
     schema = TableSchema(
         column_names=[0, 1, 2, 3],
-        logical_types={0: Integer, 1: Categorical, 2: NaturalLanguage, 3: Double},
+        logical_types={0: Integer, 1: Categorical, 2: Unknown, 3: Double},
         use_standard_tags=True
     )
 
@@ -445,7 +445,7 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
 
     # An empty set should reset the tags
     schema.set_types(semantic_tags={'full_name': set()}, retain_index_tags=False)
-    assert isinstance(schema.logical_types['full_name'], NaturalLanguage)
+    assert isinstance(schema.logical_types['full_name'], Unknown)
     assert schema.semantic_tags['full_name'] == set()
 
     schema.set_types(semantic_tags={'age': set()})

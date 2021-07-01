@@ -23,7 +23,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_10.0.0.tar"
+TEST_FILE = "test_serialization_woodwork_table_schema_{}.tar".format(serialize.SCHEMA_VERSION)
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -70,7 +70,7 @@ def test_to_dictionary(sample_df):
     string_val = 'string'
     bool_val = 'boolean'
 
-    expected = {'schema_version': '10.0.0',
+    expected = {'schema_version': serialize.SCHEMA_VERSION,
                 'name': 'test_data',
                 'index': 'id',
                 'time_index': None,
@@ -85,7 +85,7 @@ def test_to_dictionary(sample_df):
                                        {'name': 'full_name',
                                         'ordinal': 1,
                                         'use_standard_tags': True,
-                                        'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
+                                        'logical_type': {'parameters': {}, 'type': 'Unknown'},
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
@@ -93,7 +93,7 @@ def test_to_dictionary(sample_df):
                                        {'name': 'email',
                                         'ordinal': 2,
                                         'use_standard_tags': True,
-                                        'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
+                                        'logical_type': {'parameters': {}, 'type': 'Unknown'},
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
@@ -101,7 +101,7 @@ def test_to_dictionary(sample_df):
                                        {'name': 'phone_number',
                                         'ordinal': 3,
                                         'use_standard_tags': True,
-                                        'logical_type': {'parameters': {}, 'type': 'NaturalLanguage'},
+                                        'logical_type': {'parameters': {}, 'type': 'Unknown'},
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
@@ -565,7 +565,6 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 def test_deserialize_url_csv(sample_df_pandas):
     sample_df_pandas.ww.init(index='id')
     deserialized_df = deserialize.read_woodwork_table(URL)
-
     pd.testing.assert_frame_equal(to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index), to_pandas(deserialized_df, index=deserialized_df.ww.index))
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
