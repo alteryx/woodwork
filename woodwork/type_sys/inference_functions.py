@@ -5,7 +5,7 @@ from woodwork.type_sys.utils import col_is_datetime
 
 
 def categorical_func(series):
-    natural_language_threshold = ww.config.get_option('natural_language_threshold')
+    categorical_threshold = ww.config.get_option('categorical_threshold')
     numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
 
     if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
@@ -14,7 +14,7 @@ def categorical_func(series):
         # catch cases where object dtype cannot be interpreted as a string
         try:
             avg_length = sample.str.len().mean()
-            if avg_length > natural_language_threshold:
+            if avg_length > categorical_threshold:
                 return False
         except AttributeError:
             pass

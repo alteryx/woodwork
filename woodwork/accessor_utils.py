@@ -9,12 +9,13 @@ ks = import_or_none('databricks.koalas')
 
 def init_series(series, logical_type=None, semantic_tags=None,
                 use_standard_tags=True, description=None, metadata=None):
-    """Initializes Woodwork typing information for a Series, returning a new Series. The dtype
-    of the returned series will be converted to match the dtype associated with the LogicalType.
+    """Initializes Woodwork typing information for a series, numpy.ndarray or pd.api.extensions.
+    ExtensionArray, returning a new Series. The dtype of the returned series will be converted
+    to match the dtype associated with the LogicalType.
 
     Args:
-        series (pd.Series, dd.Series, or ks.Series): The original series from which to create
-            the Woodwork initialized series.
+        series (pd.Series, dd.Series, ks.Series, numpy.ndarray or pd.api.extensions.ExtensionArray):
+            The original series from which to create the Woodwork initialized series.
         logical_type (LogicalType or str, optional): The logical type that should be assigned
             to the series. If no value is provided, the LogicalType for the series will
             be inferred.
@@ -32,8 +33,8 @@ def init_series(series, logical_type=None, semantic_tags=None,
         Series: A series with Woodwork typing information initialized
     """
     if not _is_series(series):
-        if isinstance(series, np.ndarray) and series.ndim == 1:
-            series = pd.Series(series, dtype=series.dtype)
+        if isinstance(series, (np.ndarray, pd.api.extensions.ExtensionArray)) and series.ndim == 1:
+            series = pd.Series(series)
         elif isinstance(series, np.ndarray) and series.ndim != 1:
             raise ValueError(f'np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional')
         else:

@@ -38,6 +38,22 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
     assert series.ww.semantic_tags == set()
 
 
+def test_init_series_with_pd_extension_array():
+    extension_categories = pd.Categorical([1, 2, 3])
+    series = init_series(extension_categories)
+    pd_reference_series = init_series(pd.Series([1, 2, 3], dtype='category'))
+    assert series.equals(pd_reference_series)
+    assert series.ww.logical_type == pd_reference_series.ww.logical_type
+    assert series.ww.semantic_tags == pd_reference_series.ww.semantic_tags
+
+    extension_ints = pd.array(np.array([1, 2, 3, 4], dtype="int64"))
+    series = init_series(extension_ints)
+    pd_reference_series = init_series(pd.Series([1, 2, 3, 4], dtype='Int64'))
+    assert series.equals(pd_reference_series)
+    assert series.ww.logical_type == pd_reference_series.ww.logical_type
+    assert series.ww.semantic_tags == pd_reference_series.ww.semantic_tags
+
+
 def test_init_series_with_invalid_type(sample_df):
     inputs = [sample_df, 1, "string", None]
     for input_ in inputs:
@@ -150,7 +166,7 @@ def test_get_invalid_schema_message(sample_df):
 
 def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'age': 'Categorical'})
+    schema_df.ww.init(logical_types={'age': 'Categorical', 'full_name': 'PersonFullName'})
     schema = schema_df.ww.schema
 
     incorrect_int_dtype_df = schema_df.ww.astype({'id': 'Int64'})
@@ -166,7 +182,7 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
         incorrect_str_dtype_df = schema_df.ww.astype({'full_name': 'object'})  # wont work for koalas
         incorrect_categorical_dtype_df = schema_df.ww.astype({'age': 'string'})  # wont work for koalas
         assert (get_invalid_schema_message(incorrect_str_dtype_df, schema) ==
-                'dtype mismatch for column full_name between DataFrame dtype, object, and NaturalLanguage dtype, string')
+                'dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string')
         assert (get_invalid_schema_message(incorrect_categorical_dtype_df, schema) ==
                 'dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category')
 
