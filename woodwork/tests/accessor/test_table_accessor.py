@@ -11,6 +11,7 @@ from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNotPresentError,
     ParametersIgnoredWarning,
+    SetItemIndexWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError
@@ -2117,19 +2118,26 @@ def test_setitem_invalid_input(sample_df):
         df.ww['signup_date'] = df.signup_date
 
 
-def test_setitem_indexed_column(sample_df_pandas, sample_series_pandas):
-    sample_df_pandas.ww.init()
-    assert sample_df_pandas.ww.index is None
+def test_setitem_indexed_column(sample_df):
+    sample_df_with_index = sample_df
+    sample_df_with_index.ww.init()
+    sample_df.ww.init()
+    sample_df_with_index.ww.set_index('id')
+    inputs = [sample_df, sample_df_with_index]
 
-    sample_series_pandas.ww.init(semantic_tags='index')
+    # Testing two cases: The dataframe has no index, The dataframe already had an index that was removed
+    for input_ in inputs:
+        col = input_.ww.pop('id')
+        if 'index' not in col.ww.semantic_tags:
+            col.ww.init(semantic_tags='index')
 
-    warning = "Cannot allow adding column with index tags. Tag removed"
+        warning = "Cannot allow adding column with index tags. Tag removed"
 
-    with pytest.warns(UserWarning, match=warning):
-        sample_df_pandas.ww['new_col'] = sample_series_pandas
+        with pytest.warns(SetItemIndexWarning, match=warning):
+            input_.ww['id'] = col
 
-    assert sample_df_pandas.ww.index != 'new_col'
-    assert ww.is_schema_valid(sample_df_pandas, sample_df_pandas.ww.schema)
+        assert sample_df.ww.index is None
+        assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
 
 
 def test_setitem_different_name(sample_df):

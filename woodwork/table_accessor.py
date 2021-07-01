@@ -13,6 +13,7 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     ParametersIgnoredWarning,
+    SetItemIndexWarning,
     TypingInfoMismatchWarning,
     WoodworkNotInitError
 )
@@ -194,7 +195,7 @@ class WoodworkTableAccessor:
             raise ValueError('New column must be of Series type')
 
         if column.ww.schema is not None and 'index' in column.ww.semantic_tags:
-            warnings.warn("Cannot allow adding column with index tags. Tag removed", UserWarning)
+            warnings.warn("Cannot allow adding column with index tags. Tag removed", SetItemIndexWarning)
             column.ww.remove_semantic_tags('index')
 
         # Don't allow reassigning of index or time index with setitem
