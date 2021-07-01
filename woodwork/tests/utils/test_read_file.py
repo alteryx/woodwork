@@ -5,6 +5,7 @@ import pytest
 from mock import patch
 
 import woodwork as ww
+from woodwork.logical_types import Datetime
 from woodwork.serialize import save_orc_file
 
 
@@ -42,12 +43,15 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
 @pytest.mark.parametrize(
     "filepath, exportfn, kwargs, pandas_nullable_fix",
     [
-        ("sample.csv", ("to_csv", {"index": False}), {}, True),
-        ("sample.csv", ("to_csv", {"index": False}), {"content_type": "csv"}, True),
+        ("sample.csv", ("to_csv", {"index": False}), {"logical_types": {
+            'signup_date': Datetime()}}, True),
+        ("sample.csv", ("to_csv", {"index": False}), {"content_type": "csv", "logical_types": {
+            'signup_date': Datetime()}}, True),
         ("sample.csv", ("to_csv", {"index": False}), {
             "index": 'id',
             "time_index": 'signup_date',
             "logical_types": {
+                'signup_date': Datetime(),
                 'full_name': 'NaturalLanguage',
                 'phone_number': 'PhoneNumber',
                 'is_registered': 'BooleanNullable',
@@ -57,7 +61,8 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
                 'is_registered': ['tag3', 'tag4']
             }
         }, False),
-        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean'}}, False),
+        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean'}, "logical_types": {
+            'signup_date': Datetime()}}, False),
         ("sample.feather", ("to_feather", {}), {}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'feather', "index": "id"}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'application/feather', "index": "id"}, False),
