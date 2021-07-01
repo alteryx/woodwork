@@ -109,7 +109,7 @@ def test_datetime_transform(datetimes):
         assert str(series.dtype) == 'object'
         transform = datetime.transform(series)
         assert str(transform.dtype) == 'datetime64[ns]'
-        assert datetime.datetime_format != None
+        assert datetime.datetime_format is not None
 
 
 def test_datetime_conversion_error(sample_series):
