@@ -354,6 +354,20 @@ class NaturalLanguage(LogicalType):
     primary_dtype = 'string'
 
 
+class Unknown(LogicalType):
+    """Represents Logical Types that cannot be inferred as a specific Logical Type. It is assumed to contain string data.
+
+    Examples:
+        .. code-block:: python
+
+            ["ax23n9ck23l",
+             "1,28&*_%*&&xejc",
+             "xnmvz@@Dcmeods-0"]
+
+    """
+    primary_dtype = 'string'
+
+
 class Ordinal(LogicalType):
     """Represents Logical Types that contain ordered discrete values.
     Has 'category' as a standard tag.

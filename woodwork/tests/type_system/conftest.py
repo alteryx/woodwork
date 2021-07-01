@@ -8,7 +8,7 @@ from woodwork.logical_types import (
     CountryCode,
     Double,
     Integer,
-    NaturalLanguage
+    Unknown
 )
 from woodwork.type_sys.inference_functions import (
     categorical_func,
@@ -169,7 +169,7 @@ def timedeltas(request):
     return request.getfixturevalue(request.param)
 
 
-# NaturalLanguage Inference Fixtures
+# Unknown Inference Fixtures
 @pytest.fixture
 def pandas_strings():
     return [
@@ -192,10 +192,10 @@ def strings(request):
     return request.getfixturevalue(request.param)
 
 
-# NaturalLanguage Inference with Threshold
+# Categorical Inference with Threshold
 @pytest.fixture
 def pandas_long_strings():
-    natural_language_series = pd.Series([
+    unknown_series = pd.Series([
         '01234567890123456789',
         '01234567890123456789',
         '01234567890123456789',
@@ -205,7 +205,7 @@ def pandas_long_strings():
         '0123456789012345678',
         '0123456789012345678',
         '0123456789012345678'])
-    return [natural_language_series, category_series]
+    return [unknown_series, category_series]
 
 
 @pytest.fixture
@@ -250,7 +250,7 @@ def default_inference_functions():
         Integer: integer_func,
         Categorical: categorical_func,
         CountryCode: None,
-        NaturalLanguage: None,
+        Unknown: None,
     }
 
 
@@ -263,4 +263,4 @@ def default_relationships():
 def type_sys(default_inference_functions, default_relationships):
     return TypeSystem(inference_functions=default_inference_functions,
                       relationships=default_relationships,
-                      default_type=NaturalLanguage)
+                      default_type=Unknown)
