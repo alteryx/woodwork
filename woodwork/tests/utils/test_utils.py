@@ -454,3 +454,7 @@ def test_infer_datetime_format(datetimes):
     for series in datetimes:
         fmt = _infer_datetime_format(series)
         assert fmt == '%m/%d/%Y'
+
+    dt1 = pd.Series(['3/11/2000 9:00', '3/11/2000 10:00', '3/11/2000 11:00', '3/11/2000 12:00'])
+    fmt = _infer_datetime_format(dt1)
+    assert fmt == '%m/%d/%Y %H:%M'
