@@ -7,6 +7,7 @@ Future Release
     * Enhancements
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
+        * Raises warning and removes tags when user adds a column with index tags to DataFrame (:pr:`1035`)
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
