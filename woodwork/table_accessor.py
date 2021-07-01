@@ -193,6 +193,10 @@ class WoodworkTableAccessor:
         if not isinstance(column, series):
             raise ValueError('New column must be of Series type')
 
+        if column.ww.schema is not None and 'index' in column.ww.semantic_tags:
+            warnings.warn("Cannot allow adding column with index tags. Tag removed", UserWarning)
+            column.ww.remove_semantic_tags('index')
+
         # Don't allow reassigning of index or time index with setitem
         if self.index == col_name:
             raise KeyError('Cannot reassign index. Change column name and then use df.ww.set_index to reassign index.')

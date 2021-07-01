@@ -2116,6 +2116,21 @@ def test_setitem_invalid_input(sample_df):
         df.ww['signup_date'] = df.signup_date
 
 
+def test_setitem_indexed_column(sample_df, sample_series_pandas):
+    sample_df.ww.init()
+    assert sample_df.ww.index is None
+
+    sample_series_pandas.ww.init(semantic_tags='index')
+
+    warning = "Cannot allow adding column with index tags. Tag removed"
+
+    with pytest.warns(UserWarning, match=warning):
+        sample_df.ww['new_col'] = sample_series_pandas
+
+    assert sample_df.ww.index != 'new_col'
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+
+
 def test_setitem_different_name(sample_df):
     df = sample_df.copy()
     df.ww.init()
