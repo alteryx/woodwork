@@ -5,12 +5,12 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        *Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
-        * Adds datetime format inference in transform if a format is not set (:pr:`1025`)
         * Add support for numpy inputs to Woodwork (:pr:`1023`)
     * Documentation Changes
     * Testing Changes
