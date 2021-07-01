@@ -5,7 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        *Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
+        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
     * Changes
