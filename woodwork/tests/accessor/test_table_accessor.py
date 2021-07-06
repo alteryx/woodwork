@@ -2118,26 +2118,34 @@ def test_setitem_invalid_input(sample_df):
         df.ww['signup_date'] = df.signup_date
 
 
-def test_setitem_indexed_column(sample_df):
-    sample_df_with_index = sample_df
-    sample_df_with_index.ww.init()
+def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
     sample_df.ww.init()
-    sample_df_with_index.ww.set_index('id')
-    inputs = [sample_df, sample_df_with_index]
 
-    # Testing two cases: The dataframe has no index, The dataframe already had an index that was removed
-    for input_ in inputs:
-        col = input_.ww.pop('id')
-        if 'index' not in col.ww.semantic_tags:
-            col.ww.init(semantic_tags='index')
+    col = sample_df.ww.pop('id')
+    col.ww.init(semantic_tags='index')
 
-        warning = "Cannot allow adding column with index tags. Tag removed"
+    warning = "Cannot allow adding column with index tags. Tag removed"
 
-        with pytest.warns(IndexTagRemovedWarning, match=warning):
-            input_.ww['id'] = col
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
 
-        assert sample_df.ww.index is None
-        assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+
+
+def test_setitem_indexed_column_on_unindexed_dataframe(sample_df):
+    sample_df.ww.init()
+    sample_df.ww.set_index('id')
+
+    col = sample_df.ww.pop('id')
+
+    warning = "Cannot allow adding column with index tags. Tag removed"
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
 
 
 def test_setitem_different_name(sample_df):
