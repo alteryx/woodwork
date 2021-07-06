@@ -14,7 +14,8 @@ from woodwork.exceptions import (
     SetItemIndexWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
-    WoodworkNotInitError
+    WoodworkNotInitError,
+    SetItemIndexWarning
 )
 from woodwork.logical_types import (
     URL,
@@ -2123,7 +2124,7 @@ def test_setitem_indexed_column(sample_df):
     sample_df_with_index.ww.init()
     sample_df.ww.init()
     sample_df_with_index.ww.set_index('id')
-    inputs = [sample_df, sample_df_with_index]
+    inputs = [sample_df, sample_df_with_index] 
 
     # Testing two cases: The dataframe has no index, The dataframe already had an index that was removed
     for input_ in inputs:
