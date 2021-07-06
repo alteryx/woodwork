@@ -6,6 +6,7 @@ import woodwork as ww
 from woodwork.utils import import_or_none
 
 ks = import_or_none('databricks.koalas')
+dd = import_or_none('dask.dataframe')
 
 
 def col_is_datetime(col, datetime_format=None):
@@ -39,6 +40,8 @@ def _is_numeric_series(series, logical_type):
     for the purposes of determining if it can be a time_index."""
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
+    if dd and isinstance(series, dd.Series):
+        series = series.get_partition(0).compute()
 
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:

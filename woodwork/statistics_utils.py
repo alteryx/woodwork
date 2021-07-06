@@ -201,7 +201,7 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
             data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
         # Convert Datetimes to total seconds - an integer - and bin
         if column.is_datetime:
-            data[col_name] = pd.qcut(data[col_name].astype('int64'), num_bins, duplicates="drop")
+            data[col_name] = pd.qcut(data[col_name].view('int64'), num_bins, duplicates="drop")
         # convert categories to integers
         new_col = data[col_name]
         if str(new_col.dtype) != 'category':
