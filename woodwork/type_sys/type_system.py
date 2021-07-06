@@ -33,7 +33,8 @@ from woodwork.logical_types import (
     PhoneNumber,
     PostalCode,
     SubRegionCode,
-    Timedelta
+    Timedelta,
+    Unknown
 )
 from woodwork.utils import import_or_none
 
@@ -63,7 +64,8 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     PostalCode: None,
     SubRegionCode: None,
     Timedelta: timedelta_func,
-    URL: None
+    URL: None,
+    Unknown: None
 }
 
 # (ParentType, ChildType)
@@ -75,21 +77,14 @@ DEFAULT_RELATIONSHIPS = [
     (Categorical, SubRegionCode),
     (Integer, Age),
     (IntegerNullable, AgeNullable),
-    (IntegerNullable, Integer),
-    (NaturalLanguage, Address),
-    (NaturalLanguage, EmailAddress),
-    (NaturalLanguage, Filepath),
-    (NaturalLanguage, PersonFullName),
-    (NaturalLanguage, IPAddress),
-    (NaturalLanguage, PhoneNumber),
-    (NaturalLanguage, URL),
+    (IntegerNullable, Integer)
 ]
 
-DEFAULT_TYPE = NaturalLanguage
+DEFAULT_TYPE = Unknown
 
 
 class TypeSystem(object):
-    def __init__(self, inference_functions=None, relationships=None, default_type=NaturalLanguage):
+    def __init__(self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
 
@@ -102,7 +97,7 @@ class TypeSystem(object):
                 second element should be the child LogicalType. If not specified, will default to an empty list
                 indicating all types should be considered root types with no children.
             default_type (LogicalType, optional): The default LogicalType to use if no inference matches are
-                found. If not specified, will default to the built-in NaturalLanguage LogicalType.
+                found. If not specified, will default to the built-in Unknown LogicalType.
         """
         self.default_type = default_type
         if inference_functions:
@@ -269,14 +264,13 @@ class TypeSystem(object):
         def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check
             # any children of NaturalLanguage, otherwise they never get evaluated
-            if NaturalLanguage in types_to_check:
-                check_next = self._get_children(NaturalLanguage)
-            else:
-                check_next = []
+            check_next = []
             for logical_type in types_to_check:
                 inference_func = self.inference_functions.get(logical_type)
                 if inference_func and inference_func(series):
                     type_matches.append(logical_type)
+                    check_next.extend(self._get_children(logical_type))
+                elif not inference_func:
                     check_next.extend(self._get_children(logical_type))
             if len(check_next) > 0:
                 get_inference_matches(check_next, series, type_matches)
@@ -285,7 +279,7 @@ class TypeSystem(object):
         type_matches = get_inference_matches(self.root_types, series)
 
         if len(type_matches) == 0:
-            # If no matches, set type to default type (NaturalLanguage)
+            # If no matches, set type to default type (Unknown)
             logical_type = self.default_type
         elif len(type_matches) == 1:
             # If we match only one type, return it
