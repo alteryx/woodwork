@@ -5,15 +5,15 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add support for numpy array inputs to Woodwork (:pr:`1023`)
+        * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
-        * Add support for numpy array inputs to Woodwork (:pr:`1023`)
-        * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
         * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type (:pr:`992`)
-        * Add support for numpy inputs to Woodwork (:pr:`1023`)
+        * Add pandas 1.3.0 compatibility (:pr:`987`)
     * Documentation Changes
     * Testing Changes
 

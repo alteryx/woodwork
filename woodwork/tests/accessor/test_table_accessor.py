@@ -886,7 +886,7 @@ def test_sets_datetime64_dtype_on_init():
         pd.Series(['2020-01-01', None, '2020-01-03'], name=column_name),
         pd.Series(['2020-01-01', np.nan, '2020-01-03'], name=column_name),
         pd.Series(['2020-01-01', pd.NA, '2020-01-03'], name=column_name),
-        pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name),
+        pd.Series(['2020-01-01', pd.NaT, '2020-01-03'], name=column_name, dtype='object'),
     ]
 
     logical_type = Datetime
@@ -1271,7 +1271,7 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
 
 
 def test_dataframe_methods_on_accessor_returning_series(sample_df):
-    schema_df = sample_df.copy()
+    schema_df = sample_df[['id', 'age', 'is_registered']]
     schema_df.ww.init(name='test_schema')
 
     dtypes = schema_df.ww.dtypes
