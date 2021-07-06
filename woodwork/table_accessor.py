@@ -8,7 +8,8 @@ import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
     _is_dataframe,
     get_invalid_schema_message,
-    init_series
+    init_series,
+    is_schema_valid
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
@@ -159,6 +160,8 @@ class WoodworkTableAccessor:
         # If the method is present on DataFrame, uses that method.
         if self._schema is None:
             _raise_init_error()
+        if not is_schema_valid(self._dataframe, self._schema):
+            raise TypeError("Column assigned to datframe outside of Woodwork")
         if hasattr(self._schema, attr):
             return self._make_schema_call(attr)
         if hasattr(self._dataframe, attr):
