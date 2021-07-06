@@ -26,7 +26,7 @@ class OutdatedSchemaWarning(UserWarning):
                 % (saved_version_str))
 
 
-class SetItemIndexWarning(UserWarning):
+class IndexTagRemovedWarning(UserWarning):
     pass
 
 

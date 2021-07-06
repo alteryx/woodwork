@@ -10,8 +10,8 @@ import woodwork as ww
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    IndexTagRemovedWarning,
     ParametersIgnoredWarning,
-    SetItemIndexWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError
@@ -2133,7 +2133,7 @@ def test_setitem_indexed_column(sample_df):
 
         warning = "Cannot allow adding column with index tags. Tag removed"
 
-        with pytest.warns(SetItemIndexWarning, match=warning):
+        with pytest.warns(IndexTagRemovedWarning, match=warning):
             input_.ww['id'] = col
 
         assert sample_df.ww.index is None
