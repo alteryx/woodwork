@@ -38,6 +38,22 @@ def test_init_series_valid_conversion_specified_ltype(sample_series):
     assert series.ww.semantic_tags == set()
 
 
+def test_init_series_with_pd_extension_array():
+    extension_categories = pd.Categorical([1, 2, 3])
+    series = init_series(extension_categories)
+    pd_reference_series = init_series(pd.Series([1, 2, 3], dtype='category'))
+    assert series.equals(pd_reference_series)
+    assert series.ww.logical_type == pd_reference_series.ww.logical_type
+    assert series.ww.semantic_tags == pd_reference_series.ww.semantic_tags
+
+    extension_ints = pd.array(np.array([1, 2, 3, 4], dtype="int64"))
+    series = init_series(extension_ints)
+    pd_reference_series = init_series(pd.Series([1, 2, 3, 4], dtype='Int64'))
+    assert series.equals(pd_reference_series)
+    assert series.ww.logical_type == pd_reference_series.ww.logical_type
+    assert series.ww.semantic_tags == pd_reference_series.ww.semantic_tags
+
+
 def test_init_series_with_invalid_type(sample_df):
     inputs = [sample_df, 1, "string", None]
     for input_ in inputs:
