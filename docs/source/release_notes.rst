@@ -2,8 +2,18 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+    ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.5.0 Jul 7, 2021
+==================
     * Enhancements
         * Add support for numpy array inputs to Woodwork (:pr:`1023`)
         * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
@@ -14,11 +24,9 @@ Future Release
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
         * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type (:pr:`992`)
         * Add pandas 1.3.0 compatibility (:pr:`987`)
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
