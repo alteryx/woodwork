@@ -2131,10 +2131,7 @@ def test_setitem_indexed_column_on_unindexed_dataframe(sample_df):
 
     assert sample_df.ww.index is None
     assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
-    expected_tags = {}
-    if hasattr(sample_df.ww.logical_types['id'], 'standard_tags'):
-        expected_tags = sample_df.ww.logical_types['id'].standard_tags
-    assert sample_df.ww['id'].ww.semantic_tags == expected_tags
+    assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
 
 
 def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
@@ -2150,17 +2147,15 @@ def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
 
     assert sample_df.ww.index is None
     assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
-    expected_tags = {}
-    if hasattr(sample_df.ww.logical_types['id'], 'standard_tags'):
-        expected_tags = sample_df.ww.logical_types['id'].standard_tags
-    assert sample_df.ww['id'].ww.semantic_tags == expected_tags
+    assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
 
+    sample_df.ww.init(logical_types={'email': 'Categorical'})
     sample_df.ww.set_index('id')
     col = sample_df.ww.pop('email')
     col.ww.init(semantic_tags='index')
     sample_df.ww['email'] = col
     assert sample_df.ww.index == 'id'
-    assert 'index' not in sample_df.ww['email'].ww.semantic_tags
+    assert sample_df.ww['email'].ww.semantic_tags == {'category'}
 
 
 def test_setitem_different_name(sample_df):

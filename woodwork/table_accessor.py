@@ -198,8 +198,7 @@ class WoodworkTableAccessor:
             warnings.warn("Cannot allow adding column with index tags. Tag removed", IndexTagRemovedWarning)
             column.ww.remove_semantic_tags('index')
             logical_type = column.ww.logical_type
-            if hasattr(logical_type, 'standard_tags'):
-                column.ww.add_semantic_tags(logical_type.standard_tags)
+            column.ww.add_semantic_tags(logical_type.standard_tags)
 
         # Don't allow reassigning of index or time index with setitem
         if self.index == col_name:
