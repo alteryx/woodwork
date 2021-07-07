@@ -12,8 +12,8 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v0.5.0 July 7, 2021
-===================
+v0.5.0 Jul 7, 2021
+==================
     * Enhancements
         * Add support for numpy array inputs to Woodwork (:pr:`1023`)
         * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
