@@ -2144,6 +2144,16 @@ def test_setitem_different_name(sample_df):
     assert 'wrong2' not in df.columns
 
 
+def test_getattr_with_non_woodwork_col(sample_df):
+    sample_df.ww.init()
+    new = pd.Series([True, False, True], dtype='boolean')
+    sample_df['new'] = new
+
+    error = "Column assigned to datframe outside of Woodwork"
+    with pytest.raises(TypeError, match=error):
+        sample_df.ww
+
+
 def test_setitem_new_column(sample_df):
     df = sample_df.copy()
     df.ww.init(use_standard_tags=False)
