@@ -2151,7 +2151,7 @@ def test_getattr_with_non_woodwork_col(sample_df):
 
     error = "Column assigned to datframe outside of Woodwork"
     with pytest.raises(TypeError, match=error):
-        sample_df.ww
+        sample_df.ww.columns
 
 
 def test_setitem_new_column(sample_df):
