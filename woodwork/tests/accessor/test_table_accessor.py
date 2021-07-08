@@ -2135,6 +2135,7 @@ def test_setitem_indexed_column_on_unindexed_dataframe(sample_df):
 
 
 def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
+    sample_df_copy = sample_df
     sample_df.ww.init()
     sample_df.ww.set_index('id')
 
@@ -2149,13 +2150,13 @@ def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
     assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
     assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
 
-    sample_df.ww.init(logical_types={'email': 'Categorical'})
-    sample_df.ww.set_index('id')
-    col = sample_df.ww.pop('email')
+    sample_df_copy.ww.init(logical_types={'email': 'Categorical'})
+    sample_df_copy.ww.set_index('id')
+    col = sample_df_copy.ww.pop('email')
     col.ww.init(semantic_tags='index')
     sample_df.ww['email'] = col
-    assert sample_df.ww.index == 'id'
-    assert sample_df.ww['email'].ww.semantic_tags == {'category'}
+    assert sample_df_copy.ww.index == 'id'
+    assert sample_df_copy.ww['email'].ww.semantic_tags == {'category'}
 
 
 def test_setitem_different_name(sample_df):
