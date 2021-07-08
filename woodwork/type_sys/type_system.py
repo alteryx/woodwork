@@ -261,6 +261,10 @@ class TypeSystem(object):
         if ks and isinstance(series, ks.Series):
             series = series.head(100000).to_pandas()
 
+        # Special case: if the entire column is Null or NaN, use the Unknown logical type
+        if all(series.isnull()):
+            return Unknown()
+
         def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check
             # any children of NaturalLanguage, otherwise they never get evaluated
