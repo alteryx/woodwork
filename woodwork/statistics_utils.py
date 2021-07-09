@@ -147,54 +147,52 @@ def _get_describe_dict(dataframe, include=None, callback=None,
     return results
 
 
-def _get_box_plot_info(series, iqr=None, quantiles=None):
+def _get_box_plot_info_for_column(series, quantiles=None):
     """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
 
     Args:
-        series (Series): Data for which the box plot and outlier information will be gathered
-        iqr (int, optional): Interquartile range for the Series passed in. Assumes that if iqr is passed in, then quantiles
-            will be passed as well. If no iqr is present, the interquartile range will be calculated for the data.
-        quantiles (list[int]): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as 
-            [min, Q1, median, Q3, max]. 
+        series (Series): Data for which the box plot and outlier information will be gathered. 
+            Will be used to calculate quantiles if none are provided.
+        quantiles (dict[float -> int], optional): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as 
+            [min, Q1, median, Q3, max]. They keys of the dictionary should be the quantile floating point value.
 
     Returns:
         dict[str -> int,list[int]]: a dictionary containing information for the Series on its low outlier bound,
             high outlier bound, quantiles, outliers, and the indices of the outlier values.
     """
+    # --> what's the point in passing iqr in?? it's just a calculation of all the rest of the info that needs to get passed anyway no matter what
+    if quantiles is None:
+        quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
-    if iqr is not None:
-        # assume if iqr is present, the rest of the info is as well
-        low_bound, high_bound = _calculate_iqr_bounds(iqr)
-    else:
-        # if iqr is not present, assume we need to calculate everything else
-        quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0])
-        low_bound, high_bound = _calculate_iqr_bounds(quantiles)
-        quantiles = quantiles.to_list()
-
-    outliers_dict = _get_outliers(series, low_bound, high_bound)
+    low_bound, high_bound = _calculate_iqr_bounds(quantiles)
+    outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
 
     return {'low_bound': low_bound,
             'high_bound': high_bound,
-            'quantiles': quantiles,
+            'quantiles': quantiles.to_list(),
             **outliers_dict}
 
 
-def _calculate_iqr(quantiles=None):
-    pass
+# --> consider adding multiplier
+def _calculate_iqr_bounds(series=None, quantiles=None):
+    if series is not None:
+        quantiles = series.quantile([0.25, 0.75]).to_dict()
+    q1 = quantiles[0.25]
+    q3 = quantiles[0.75]
 
-
-def _calculate_iqr_bounds(median, quantiles=None, iqr=None):
-    if iqr is None:
-        iqr = _calculate_iqr(quantiles)
+    iqr = q3 - q1
 
     # perform iqr calc
-    low_bound = None
-    high_bound = None
+    low_bound = q1 - (iqr * 1.5)
+    high_bound = q3 + (iqr * 1.5)
 
     return low_bound, high_bound
 
 
-def _get_outliers(series, low_bound, high__bound):
+def _get_outliers_for_column(series, low_bound=None, high_bound=None):
+    if low_bound is None and high_bound is None:
+        low_bound, high_bound = _calculate_iqr_bounds(series)
+
     pass
 
 
