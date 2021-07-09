@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`
 
 v0.5.0 Jul 7, 2021
 ==================

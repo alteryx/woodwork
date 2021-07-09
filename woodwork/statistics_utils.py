@@ -260,11 +260,6 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     if nrows is not None and nrows < data.shape[0]:
         data = data.sample(nrows)
 
-    # remove fully null columns
-    not_null_cols = data.columns[data.notnull().any()]
-    if set(not_null_cols) != set(valid_columns):
-        data = data.loc[:, not_null_cols]
-
     # Setup for progress callback and make initial call
     # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n)/2 for main calculation loop
     n = len(data.columns)
