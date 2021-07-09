@@ -195,7 +195,7 @@ class WoodworkTableAccessor:
             raise ValueError('New column must be of Series type')
 
         if column.ww.schema is not None and 'index' in column.ww.semantic_tags:
-            warnings.warn("Cannot allow adding column with index tags. Tag removed", IndexTagRemovedWarning)
+            warnings.warn(f'Cannot add {"index"} tag on {col_name} directly to the DataFrame. The {"index"} tag has been removed from {col_name}. To set this column as a Woodwork index, please use df.ww.set_index', IndexTagRemovedWarning)
             column.ww.set_semantic_tags(column.ww.semantic_tags - {'index'})
 
         # Don't allow reassigning of index or time index with setitem
