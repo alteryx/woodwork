@@ -6,6 +6,7 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
+    EmailAddress,
     Integer,
     IntegerNullable,
     LogicalType,
@@ -79,6 +80,17 @@ def test_datetime_inference(datetimes):
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Datetime)
+
+
+def test_email_inference(emails):
+    dtypes = ['object', 'string']
+    if ks and isinstance(emails[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
+
+    for series in emails:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, EmailAddress)
 
 
 def test_categorical_inference(categories):

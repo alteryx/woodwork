@@ -74,5 +74,9 @@ def timedelta_func(series):
     return False
 
 
+def email_address_func(series):
+    return False
+
+
 def _is_numeric_categorical(series, threshold):
     return threshold != -1 and series.nunique() < threshold

@@ -124,6 +124,30 @@ def datetimes(request):
     return request.getfixturevalue(request.param)
 
 
+# Email Inference Fixtures
+@pytest.fixture
+def pandas_emails():
+    return [
+        pd.Series(['fl@alteryx.com', 'good@email.com', 'boaty@mcboatface.com', 'foo@bar.com']),
+        pd.Series(['fl@alteryx.com', 'good@email.com', 'not_an_email', np.nan]),
+    ]
+
+
+@pytest.fixture
+def dask_emails(pandas_emails):
+    return [pd_to_dask(series) for series in pandas_emails]
+
+
+@pytest.fixture
+def koalas_emails(pandas_emails):
+    return [pd_to_koalas(series) for series in pandas_emails]
+
+
+@pytest.fixture(params=['pandas_emails', 'dask_emails', 'koalas_emails'])
+def emails(request):
+    return request.getfixturevalue(request.param)
+
+
 # Categorical Inference Fixtures
 @pytest.fixture
 def pandas_categories():
