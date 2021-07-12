@@ -133,6 +133,11 @@ def test_unknown_inference(strings):
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Unknown)
 
+            # verify transform works and column is still null
+            transform = inferred_type.transform(series.astype(dtype))
+            assert transform.isnull().all()
+            assert str(transform.dtype) == 'string'
+
 
 def test_unknown_inference_all_null(nulls):
     dtypes = ['object', 'string', 'category', 'datetime64[ns]']
