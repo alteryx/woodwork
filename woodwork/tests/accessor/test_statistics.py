@@ -1002,7 +1002,7 @@ def test_box_plot_dict(outliers_df):
 
     box_plots_dict = outliers_df.ww.box_plots_dict()
 
-    assert set(box_plots_dict.keys()) == {'has_outliers', 'no_outliers'}
+    assert set(box_plots_dict.keys()) == {'has_outliers', 'no_outliers', 'has_outliers_with_nans'}
 
 
 def test_box_plot_dict_partial_input(outliers_df):
@@ -1021,7 +1021,7 @@ def test_outliers_dict(outliers_df):
 
     outliers_dict = outliers_df.ww.outliers_dict()
 
-    assert set(outliers_dict.keys()) == {'has_outliers', 'no_outliers'}
+    assert set(outliers_dict.keys()) == {'has_outliers', 'no_outliers', 'has_outliers_with_nans'}
 
 
 def test_outliers_dict_partial_input(outliers_df):

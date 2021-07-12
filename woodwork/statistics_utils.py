@@ -366,6 +366,8 @@ def _get_box_plots_dict(dataframe, quantiles_dict=None):
         # if all three are not present, we calculate them all
 
         box_plot_info = _get_box_plot_info_for_column(dataframe[col_name], quantiles=quantiles)
+        if box_plot_info is None:
+            continue
         box_plots[col_name] = box_plot_info
 
     return box_plots
@@ -392,6 +394,8 @@ def _get_outliers_dict(dataframe, bounds_dict=None):
         if bounds is not None:
             low_bound, high_bound = bounds
         outliers_list = _get_outliers_for_column(dataframe[col_name], low_bound, high_bound)
+        if outliers_list is None:
+            continue
         outliers_dict[col_name] = outliers_list
 
     return outliers_dict
@@ -419,6 +423,7 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
     low_bound, high_bound = _calculate_iqr_bounds(series, quantiles)
+
     min = quantiles.get(0.0)
     max = quantiles.get(1.0)
     if min is not None and max is not None and low_bound <= min and high_bound >= max:
@@ -430,6 +435,8 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         }
     else:
         outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
+        if outliers_dict is None:
+            return
 
     return {'low_bound': low_bound,
             'high_bound': high_bound,
@@ -461,6 +468,10 @@ def _get_outliers_for_column(series, low_bound=None, high_bound=None):
         series = series.compute()
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
+
+    series = series.dropna()
+    if series.shape[0] == 0:
+        return
 
     if low_bound is None or high_bound is None:
         low_bound, high_bound = _calculate_iqr_bounds(series)
