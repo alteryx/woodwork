@@ -1,5 +1,3 @@
-import pandas as pd
-
 import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
@@ -94,13 +92,15 @@ def test_email_inference(emails):
             assert isinstance(inferred_type, EmailAddress)
 
 
-def test_email_inference_failure():
-    series = pd.Series(['fl@alteryx.com', 'b☃d@email.com', 'not_an_email', None])
-
+def test_email_inference_failure(bad_emails):
     dtypes = ['object', 'string']
-    for dtype in dtypes:
-        inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-        assert not isinstance(inferred_type, EmailAddress)
+    if ks and isinstance(bad_emails[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
+
+    for series in bad_emails:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert not isinstance(inferred_type, EmailAddress)
 
 
 def test_categorical_inference(categories):

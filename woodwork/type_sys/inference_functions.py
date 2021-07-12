@@ -88,7 +88,6 @@ def timedelta_func(series):
 
 def email_address_func(series: pd.Series) -> bool:
     regex = ww.config.get_option('email_inference_regex')
-    threshold_ratio = ww.config.get_option('email_inference_threshold_ratio')
 
     # Includes a check for object dtypes
     if not pdtypes.is_string_dtype(series.dtype):
@@ -103,11 +102,9 @@ def email_address_func(series: pd.Series) -> bool:
         # inferred dtype is not compatible with the string API `match` method
         # (TypeError)
         return False
-
     matches = sample_match_method(pat=regex)
-    ratio = matches.sum() / matches.count()
 
-    return ratio > threshold_ratio
+    return matches.sum() == matches.count()
 
 
 def _is_numeric_categorical(series, threshold):
