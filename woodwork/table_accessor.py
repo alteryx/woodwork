@@ -20,9 +20,11 @@ from woodwork.exceptions import (
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime
 from woodwork.statistics_utils import (
+    _get_box_plot_info_for_column,
     _get_describe_dict,
     _get_mutual_information_dict,
-    _get_value_counts
+    _get_value_counts,
+    _get_outliers_for_column,
 )
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
@@ -893,6 +895,53 @@ class WoodworkTableAccessor:
         if self._schema is None:
             _raise_init_error()
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
+
+    def box_plots_dict(self, quantiles_dict=None):
+        """get box plots - uses defined quantiles to 
+        """
+        box_plots = {}
+        if quantiles_dict:
+            # assume all columns are numeric and have at least the min necessary calculations
+            include = quantiles_dict.keys()
+        else:
+            include = list(self._dataframe.columns)
+            quantiles_dict = {}
+
+        for col_name in include:
+            if not self.columns[col_name].is_numeric:
+                continue
+            quantiles = quantiles_dict.get(col_name)
+            # --> maybe assert median, q1, and q3 are all present
+            # These three stats are necessary for box plot; min and max are more optional
+            # if all three are not present, we calculate them all
+
+            box_plot_info = _get_box_plot_info_for_column(self._dataframe[col_name], quantiles=quantiles)
+            box_plots[col_name] = box_plot_info
+
+        return box_plots
+
+    def outliers_dict(self, bounds_dict=None):
+        """Gets values beyond a certain low and high bound. If both bounds are not provided, uses IQR and median approach
+        """
+        outliers_dict = {}
+        if bounds_dict:
+            # assume all columns are numeric and have at least the min necessary calculations
+            include = bounds_dict.keys()
+        else:
+            include = list(self._dataframe.columns)
+            bounds_dict = {}
+
+        for col_name in include:
+            if not self.columns[col_name].is_numeric:
+                continue
+
+            bounds = bounds_dict.get(col_name)
+            low_bound = None
+            high_bound = None
+            if bounds is not None:
+                low_bound, high_bound = bounds
+            outliers_list = _get_outliers_for_column(self._dataframe[col_name], low_bound, high_bound)
+            outliers_dict[col_name] = outliers_list
 
 
 def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags):

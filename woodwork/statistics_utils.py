@@ -190,7 +190,7 @@ def _calculate_iqr_bounds(series=None, quantiles=None):
 
 
 def _get_outliers_for_column(series, low_bound=None, high_bound=None):
-    if low_bound is None and high_bound is None:
+    if low_bound is None or high_bound is None:
         low_bound, high_bound = _calculate_iqr_bounds(series)
 
     pass
