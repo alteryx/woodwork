@@ -37,7 +37,10 @@ from woodwork.statistics_utils import (
     _get_recent_value_counts,
     _get_top_values_categorical,
     _make_categorical_for_mutual_info,
-    _replace_nans_for_mutual_info
+    _replace_nans_for_mutual_info,
+    _calculate_iqr_bounds,
+    _get_outliers_for_column,
+    _get_box_plot_info_for_column,
 )
 from woodwork.tests.testing_utils import mi_between_cols, to_pandas
 from woodwork.utils import import_or_none
@@ -830,3 +833,59 @@ def test_get_numeric_value_counts_in_range(input_series, expected):
     column = input_series
     top_values = _get_numeric_value_counts_in_range(column, range(4))
     assert top_values == expected
+
+
+def test_calculate_iqr_bounds_with_quantiles(outliers_df):
+    expected_low = 8.125
+    expected_high = 83.125
+
+    q1, q3 = np.percentile(outliers_df['has_outliers'], [25, 75])
+    # --> maybe add extra, unused quantiles???
+    quantiles = {0.25: q1, 0.75: q3}
+
+    low, high = _calculate_iqr_bounds(outliers_df['has_outliers'], quantiles=quantiles)
+
+    assert expected_low == low
+    assert expected_high == high
+
+    low, high = _calculate_iqr_bounds(outliers_df['no_outliers'], quantiles=quantiles)
+
+    assert expected_low == low
+    assert expected_high == high
+
+
+def test_calculate_iqr_bounds_without_quantiles(outliers_df):
+    expected_low = 8.125
+    expected_high = 83.125
+
+    outliers_df.ww.init()
+    low, high = _calculate_iqr_bounds(outliers_df['has_outliers'])
+
+    assert expected_low == low
+    assert expected_high == high
+
+    low, high = _calculate_iqr_bounds(outliers_df['no_outliers'])
+
+    assert expected_low == low
+    assert expected_high == high
+
+
+def test_iqr_bounds_with_nans():
+    pass
+
+
+def test_get_outliers_for_column_no_bounds():
+    # confirm matches iqr
+    pass
+
+
+def test_get_outliers_for_column_with_bounds():
+    # pass own randowm bounds
+    pass
+
+
+def test_box_plot_info_for_column():
+    # test with and without quantiles
+    # test without 0.25 and 0.75
+    # confirm entries to results dict
+    pass

@@ -160,7 +160,6 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         dict[str -> int,list[int]]: a dictionary containing information for the Series on its low outlier bound,
             high outlier bound, quantiles, outliers, and the indices of the outlier values.
     """
-    # --> what's the point in passing iqr in?? it's just a calculation of all the rest of the info that needs to get passed anyway no matter what
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
@@ -182,7 +181,6 @@ def _calculate_iqr_bounds(series=None, quantiles=None):
 
     iqr = q3 - q1
 
-    # perform iqr calc
     low_bound = q1 - (iqr * 1.5)
     high_bound = q3 + (iqr * 1.5)
 

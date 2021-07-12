@@ -608,3 +608,19 @@ def koalas_datetimes(pandas_datetimes):
 @pytest.fixture(params=['pandas_datetimes', 'dask_datetimes', 'koalas_datetimes'])
 def datetimes(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def outliers_df_pandas():
+    return pd.DataFrame({
+        'has_outliers': [93, 42, 37, -16, 49, 42, 36, 57, 60, 23],
+        'no_outliers': [60, 42, 37, 23, 49, 42, 36, 57, 60, 23],
+        # --> det when to handle nans
+        # 'no_outliers_with_nans': [None, 42, 37, None, 49, 42, 36, 57, 60, 23],
+        # 'nans': [None] * 10, #may need to make dtype=float to work
+    })
+
+
+@ pytest.fixture(params=['outliers_df_pandas'])
+def outliers_df(request):
+    return request.getfixturevalue(request.param)
