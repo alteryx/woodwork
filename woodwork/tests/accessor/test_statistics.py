@@ -1007,16 +1007,23 @@ def test_box_plot_dict(outliers_df):
 
 def test_box_plot_dict_partial_input(outliers_df):
     # --> technically not returning all info necessary for box plot - test this better
-    quantiles_dict = {'has_outliers': {0.25: 36.25, 0.75: 55.0}}
+    column_quantiles = {'has_outliers': {0.25: 36.25, 0.75: 55.0}}
     outliers_df.ww.init()
 
-    box_plots_dict = outliers_df.ww.box_plots_dict(quantiles_dict=quantiles_dict)
+    box_plots_dict = outliers_df.ww.box_plots_dict(column_quantiles=column_quantiles)
 
     assert set(box_plots_dict.keys()) == {'has_outliers'}
 
 
+def test_box_plot_dict_with_empty_column_bounds(outliers_df):
+    outliers_df.ww.init()
+
+    box_plots_dict = outliers_df.ww.box_plots_dict(column_quantiles={})
+
+    assert set(box_plots_dict.keys()) == set()
+
+
 def test_outliers_dict(outliers_df):
-    # confirm that non numeric columns don't get included
     outliers_df.ww.init()
 
     outliers_dict = outliers_df.ww.outliers_dict()
@@ -1027,7 +1034,15 @@ def test_outliers_dict(outliers_df):
 def test_outliers_dict_partial_input(outliers_df):
     outliers_df.ww.init()
 
-    bounds_dict = {'has_outliers': (8.125, 83.125)}
-    outliers_dict = outliers_df.ww.outliers_dict(bounds_dict=bounds_dict)
+    column_bounds = {'has_outliers': (8.125, 83.125)}
+    outliers_dict = outliers_df.ww.outliers_dict(column_bounds=column_bounds)
 
     assert set(outliers_dict.keys()) == {'has_outliers'}
+
+
+def test_outliers_dict_with_empty_column_bounds(outliers_df):
+    outliers_df.ww.init()
+
+    outliers_dict = outliers_df.ww.outliers_dict(column_bounds={})
+
+    assert set(outliers_dict.keys()) == set()

@@ -344,61 +344,65 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     return val_counts
 
 
-def _get_box_plots_dict(dataframe, quantiles_dict=None):
+def _get_box_plots_dict(dataframe, column_quantiles=None):
     """get box plots - uses defined quantiles to 
     """
-    box_plots = {}
-    if quantiles_dict:
+    box_plots_for_dataframe = {}
+    if column_quantiles is not None:
         # assume all columns are numeric and have at least the min necessary calculations
-        include = quantiles_dict.keys()
+        include = column_quantiles.keys()
     else:
         include = list(dataframe.columns)
-        quantiles_dict = {}
+        column_quantiles = {}
 
     # --> do we want to allow include as an input keyword?
     # --> do we want to only do columns in the dict??
     for col_name in include:
         if not dataframe.ww.columns[col_name].is_numeric:
             continue
-        quantiles = quantiles_dict.get(col_name)
+        quantiles = column_quantiles.get(col_name)
         # --> maybe assert s q1, and q3 are all present
         # These three stats are necessary for box plot; min and max are more optional
         # if all three are not present, we calculate them all
 
         box_plot_info = _get_box_plot_info_for_column(dataframe[col_name], quantiles=quantiles)
+
         if box_plot_info is None:
             continue
-        box_plots[col_name] = box_plot_info
+        box_plots_for_dataframe[col_name] = box_plot_info
 
-    return box_plots
+    return box_plots_for_dataframe
 
 
-def _get_outliers_dict(dataframe, bounds_dict=None):
+def _get_outliers_dict(dataframe, column_bounds=None):
     """Gets values beyond a certain low and high bound. If both bounds are not provided, uses IQR approach
+    # --> add to guide in docs?
     """
-    outliers_dict = {}
-    if bounds_dict:
+    outliers_for_dataframe = {}
+    if column_bounds is not None:
         # assume all columns are numeric and have at least the min necessary calculations
-        include = bounds_dict.keys()
+        include = column_bounds.keys()
     else:
         include = list(dataframe.ww.columns)
-        bounds_dict = {}
+        column_bounds = {}
 
     for col_name in include:
         if not dataframe.ww.columns[col_name].is_numeric:
             continue
 
-        bounds = bounds_dict.get(col_name)
+        bounds = column_bounds.get(col_name)
         low_bound = None
         high_bound = None
         if bounds is not None:
             low_bound, high_bound = bounds
+
         outliers_list = _get_outliers_for_column(dataframe[col_name], low_bound, high_bound)
+
         if outliers_list is None:
             continue
-        outliers_dict[col_name] = outliers_list
+        outliers_for_dataframe[col_name] = outliers_list
 
-    return outliers_dict
+    return outliers_for_dataframe
 
 
 def _get_box_plot_info_for_column(series, quantiles=None):

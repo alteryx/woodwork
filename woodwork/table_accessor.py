@@ -896,16 +896,16 @@ class WoodworkTableAccessor:
             _raise_init_error()
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
-    def box_plots_dict(self, quantiles_dict=None):
+    def box_plots_dict(self, column_quantiles=None):
         """get box plots - uses defined quantiles to 
         # --> add docstrings!!!!
         """
-        return _get_box_plots_dict(self._dataframe, quantiles_dict)
+        return _get_box_plots_dict(self._dataframe, column_quantiles)
 
-    def outliers_dict(self, bounds_dict=None):
+    def outliers_dict(self, column_bounds=None):
         """Gets values beyond a certain low and high bound. If both bounds are not provided, uses IQR and median approach
         """
-        return _get_outliers_dict(self._dataframe, bounds_dict)
+        return _get_outliers_dict(self._dataframe, column_bounds)
 
 
 def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags):
