@@ -615,6 +615,7 @@ def outliers_df_pandas():
     return pd.DataFrame({
         'has_outliers': [93, 42, 37, -16, 49, 42, 36, 57, 60, 23],
         'no_outliers': [60, 42, 37, 23, 49, 42, 36, 57, 60, 23],
+        'non_numeric': ['a'] * 10
         # non numeric col
         # --> det when to handle nans
         # 'no_outliers_with_nans': [None, 42, 37, None, 49, 42, 36, 57, 60, 23],
