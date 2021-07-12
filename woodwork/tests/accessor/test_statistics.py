@@ -4,6 +4,7 @@ from inspect import isclass
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 from woodwork.logical_types import (
     URL,
@@ -924,27 +925,78 @@ def test_get_outliers_for_column_with_bounds(outliers_df):
     assert outliers_dict['high_indices'] == []
 
 
-def test_get_outliers_for_column_with_nans():
+def test_get_outliers_for_column_with_nans(outliers_df):
     # need to make sure that the indices match up with the original data that does have the nans
     # and that the values match up to the indices
     pass
 
 
-def test_box_plot_info_for_column():
+def test_box_plot_info_for_column(outliers_df):
     # test with and without quantiles
     # test without 0.25 and 0.75
     # confirm entries to results dict
-    pass
+    box_plot_info = _get_box_plot_info_for_column(outliers_df['has_outliers'])
+    assert set(box_plot_info.keys()) == {'low_bound',
+                                         'high_bound',
+                                         'quantiles',
+                                         'low_values',
+                                         'high_values',
+                                         'low_indices',
+                                         'high_indices'}
+    assert box_plot_info['low_bound'] == 8.125
+    assert box_plot_info['high_bound'] == 83.125
+    assert len(box_plot_info['quantiles']) == 5
+    assert len(box_plot_info['high_values']) == 1
+    assert len(box_plot_info['low_values']) == 1
+
+    box_plot_info = _get_box_plot_info_for_column(outliers_df['has_outliers'],
+                                                  quantiles={0.25: 36.25, 0.75: 55.0})
+    assert set(box_plot_info.keys()) == {'low_bound',
+                                         'high_bound',
+                                         'quantiles',
+                                         'low_values',
+                                         'high_values',
+                                         'low_indices',
+                                         'high_indices'}
+    assert box_plot_info['low_bound'] == 8.125
+    assert box_plot_info['high_bound'] == 83.125
+    assert len(box_plot_info['quantiles']) == 2
+    assert len(box_plot_info['high_values']) == 1
+    assert len(box_plot_info['low_values']) == 1
 
 
-def test_box_plot_info_no_outliers():
-    # confirm that the outliers fn isn't called at all
-    pass
+@patch("woodwork.statistics_utils._get_outliers_for_column")
+def test_box_plot_info_no_outliers(mock_get_outliers, outliers_df):
+    assert not mock_get_outliers.called
+
+    box_plot_info = _get_box_plot_info_for_column(outliers_df['no_outliers'])
+    assert set(box_plot_info.keys()) == {'low_bound',
+                                         'high_bound',
+                                         'quantiles',
+                                         'low_values',
+                                         'high_values',
+                                         'low_indices',
+                                         'high_indices'}
+    assert box_plot_info['low_bound'] == 8.125
+    assert box_plot_info['high_bound'] == 83.125
+    assert len(box_plot_info['quantiles']) == 5
+    assert len(box_plot_info['high_values']) == 0
+    assert len(box_plot_info['low_values']) == 0
+
+    assert not mock_get_outliers.called
+
+    # if both min and max are not present in the quantiles, we have to filter outliers
+    _get_box_plot_info_for_column(outliers_df['no_outliers'],
+                                  quantiles={0.25: 36.25, 0.75: 55.0})
+
+    assert mock_get_outliers.called
 
 
 def test_outliers_dict():
+    # confirm that non numeric columns don't get included
     pass
 
 
 def test_box_plot_dict():
+    # confirm that non numeric columns don't get included
     pass

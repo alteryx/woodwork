@@ -163,13 +163,22 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
-    low_bound, high_bound = _calculate_iqr_bounds(quantiles)
-    # --> do check if min and max are inside low and high, then just return empty lists - no need for check
-    outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
+    low_bound, high_bound = _calculate_iqr_bounds(series, quantiles)
+    min = quantiles.get(0.0)
+    max = quantiles.get(1.0)
+    if min is not None and max is not None and low_bound <= min and high_bound >= max:
+        outliers_dict = {
+            "low_values": [],
+            "high_values": [],
+            "low_indices": [],
+            "high_indices": []
+        }
+    else:
+        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
 
     return {'low_bound': low_bound,
             'high_bound': high_bound,
-            'quantiles': quantiles.to_list(),
+            'quantiles': quantiles,
             **outliers_dict}
 
 

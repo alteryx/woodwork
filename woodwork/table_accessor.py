@@ -943,6 +943,8 @@ class WoodworkTableAccessor:
             outliers_list = _get_outliers_for_column(self._dataframe[col_name], low_bound, high_bound)
             outliers_dict[col_name] = outliers_list
 
+        return outliers_dict
+
 
 def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags):
     _check_unique_column_names(dataframe)
