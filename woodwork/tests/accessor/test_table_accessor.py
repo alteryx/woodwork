@@ -1311,8 +1311,7 @@ def test_dataframe_methods_on_accessor_to_pandas(sample_df):
         pd_df = sample_df.ww.compute()
     elif ks and isinstance(sample_df, ks.DataFrame):
         pd_df = sample_df.ww.to_pandas()
-
-    breakpoint()
+        pd_df.ww.init(name='woodwork', index='id')
     assert isinstance(pd_df, pd.DataFrame)
     assert pd_df.ww.index == 'id'
     assert pd_df.ww.name == 'woodwork'
