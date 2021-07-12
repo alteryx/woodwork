@@ -840,8 +840,13 @@ def test_calculate_iqr_bounds_with_quantiles(outliers_df):
     expected_low = 8.125
     expected_high = 83.125
 
-    q1, q3 = np.percentile(outliers_df['has_outliers'], [25, 75])
-    # --> maybe add extra, unused quantiles???
+    series = outliers_df['has_outliers']
+    if dd and isinstance(series, dd.Series):
+        series = series.compute()
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+
+    q1, q3 = np.percentile(series, [25, 75])
     quantiles = {0.25: q1, 0.75: q3, 0.0: 100000}
 
     low, high = _calculate_iqr_bounds(outliers_df['has_outliers'], quantiles=quantiles)

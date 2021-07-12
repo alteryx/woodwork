@@ -410,6 +410,11 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         dict[str -> int,list[int]]: a dictionary containing information for the Series on its low outlier bound,
             high outlier bound, quantiles, outliers, and the indices of the outlier values.
     """
+    if dd and isinstance(series, dd.Series):
+        series = series.compute()
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
@@ -435,6 +440,10 @@ def _get_box_plot_info_for_column(series, quantiles=None):
 # --> consider adding multiplier
 def _calculate_iqr_bounds(series=None, quantiles=None):
     if series is not None:
+        if dd and isinstance(series, dd.Series):
+            series = series.compute()
+        if ks and isinstance(series, ks.Series):
+            series = series.to_pandas()
         quantiles = series.quantile([0.25, 0.75]).to_dict()
     q1 = quantiles[0.25]
     q3 = quantiles[0.75]
@@ -448,6 +457,11 @@ def _calculate_iqr_bounds(series=None, quantiles=None):
 
 
 def _get_outliers_for_column(series, low_bound=None, high_bound=None):
+    if dd and isinstance(series, dd.Series):
+        series = series.compute()
+    if ks and isinstance(series, ks.Series):
+        series = series.to_pandas()
+
     if low_bound is None or high_bound is None:
         low_bound, high_bound = _calculate_iqr_bounds(series)
 
