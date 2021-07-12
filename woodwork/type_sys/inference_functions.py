@@ -1,7 +1,20 @@
+import pandas as pd
 import pandas.api.types as pdtypes
 
 import woodwork as ww
 from woodwork.type_sys.utils import col_is_datetime
+
+
+INFERENCE_SAMPLE_SIZE = 10000
+
+
+def get_inference_sample(series: pd.Series) -> pd.Series:
+    f"""
+    Return a sample of ``series`` for use during type inference.  If the length
+    of ``series`` is less than ``{INFERENCE_SAMPLE_SIZE}``, use the series
+    length as the sample size.
+    """
+    return series.sample(n=min(INFERENCE_SAMPLE_SIZE, len(series)))
 
 
 def categorical_func(series):
@@ -10,7 +23,7 @@ def categorical_func(series):
 
     if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
         # heuristics to predict this some other than categorical
-        sample = series.sample(min(10000, len(series)))
+        sample = get_inference_sample(series)
         # catch cases where object dtype cannot be interpreted as a string
         try:
             avg_length = sample.str.len().mean()
