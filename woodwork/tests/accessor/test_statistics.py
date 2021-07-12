@@ -841,7 +841,7 @@ def test_calculate_iqr_bounds_with_quantiles(outliers_df):
 
     q1, q3 = np.percentile(outliers_df['has_outliers'], [25, 75])
     # --> maybe add extra, unused quantiles???
-    quantiles = {0.25: q1, 0.75: q3}
+    quantiles = {0.25: q1, 0.75: q3, 0.0: 100000}
 
     low, high = _calculate_iqr_bounds(outliers_df['has_outliers'], quantiles=quantiles)
 
@@ -874,13 +874,59 @@ def test_iqr_bounds_with_nans():
     pass
 
 
-def test_get_outliers_for_column_no_bounds():
+def test_get_outliers_for_column_no_bounds(outliers_df):
     # confirm matches iqr
-    pass
+    # test only passing one bound
+    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'])
+
+    assert outliers_dict['low_values'] == [-16]
+    assert outliers_dict['high_values'] == [93]
+    assert outliers_dict['low_indices'] == [3]
+    assert outliers_dict['high_indices'] == [0]
+
+    # only passing one bound will still calculate both of them, so results won't match bound passed in
+    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'], low_bound=45)
+
+    assert outliers_dict['low_values'] == [-16]
+    assert outliers_dict['high_values'] == [93]
+    assert outliers_dict['low_indices'] == [3]
+    assert outliers_dict['high_indices'] == [0]
+
+    outliers_dict = _get_outliers_for_column(outliers_df['no_outliers'])
+
+    assert outliers_dict['low_values'] == []
+    assert outliers_dict['high_values'] == []
+    assert outliers_dict['low_indices'] == []
+    assert outliers_dict['high_indices'] == []
 
 
-def test_get_outliers_for_column_with_bounds():
-    # pass own randowm bounds
+def test_get_outliers_for_column_with_bounds(outliers_df):
+    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'], low_bound=45, high_bound=56)
+
+    assert outliers_dict['low_values'] == [42, 37, -16, 42, 36, 23]
+    assert outliers_dict['high_values'] == [93, 57, 60]
+    assert outliers_dict['low_indices'] == [1, 2, 3, 5, 6, 9]
+    assert outliers_dict['high_indices'] == [0, 7, 8]
+
+    # test when high and low are values that outliers are exclusive of bounds
+    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'], low_bound=42, high_bound=57)
+
+    assert outliers_dict['low_values'] == [37, -16, 36, 23]
+    assert outliers_dict['high_values'] == [93, 60]
+    assert outliers_dict['low_indices'] == [2, 3, 6, 9]
+    assert outliers_dict['high_indices'] == [0, 8]
+
+    outliers_dict = _get_outliers_for_column(outliers_df['no_outliers'], low_bound=0, high_bound=100)
+
+    assert outliers_dict['low_values'] == []
+    assert outliers_dict['high_values'] == []
+    assert outliers_dict['low_indices'] == []
+    assert outliers_dict['high_indices'] == []
+
+
+def test_get_outliers_for_column_with_nans():
+    # need to make sure that the indices match up with the original data that does have the nans
+    # and that the values match up to the indices
     pass
 
 
@@ -888,4 +934,17 @@ def test_box_plot_info_for_column():
     # test with and without quantiles
     # test without 0.25 and 0.75
     # confirm entries to results dict
+    pass
+
+
+def test_box_plot_info_no_outliers():
+    # confirm that the outliers fn isn't called at all
+    pass
+
+
+def test_outliers_dict():
+    pass
+
+
+def test_box_plot_dict():
     pass
