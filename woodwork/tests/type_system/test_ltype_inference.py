@@ -142,11 +142,8 @@ def test_unknown_inference_all_null(nulls):
     for series in nulls:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            inferred_type.transform(series)
             assert isinstance(inferred_type, Unknown)
-
-            # verify transform works
-            transform = inferred_type.transform(series.astype(dtype))
-            assert str(transform.dtype) == 'string'
 
 
 def test_unknown_inference_with_threshhold(long_strings):
