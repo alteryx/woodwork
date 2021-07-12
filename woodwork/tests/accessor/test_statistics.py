@@ -877,6 +877,7 @@ def test_calculate_iqr_bounds_without_quantiles(outliers_df):
 
 
 def test_iqr_bounds_with_nans():
+    # --> make sure that the presence of nans or not doesnt impact the bounds
     pass
 
 
@@ -931,7 +932,7 @@ def test_get_outliers_for_column_with_bounds(outliers_df):
 
 
 def test_get_outliers_for_column_with_nans(outliers_df):
-    # need to make sure that the indices match up with the original data that does have the nans
+    # --> need to make sure that the indices match up with the original data that does have the nans
     # and that the values match up to the indices
     pass
 

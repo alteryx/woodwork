@@ -127,7 +127,6 @@ def _get_describe_dict(dataframe, include=None, callback=None,
         values["semantic_tags"] = semantic_tags
 
         # Calculate extra detailed stats, if requested
-        # --> should iqr bounds be under the extra stats??
         if extra_stats:
             if column.is_numeric:
                 values["histogram"] = _get_histogram_values(series, bins=bins)

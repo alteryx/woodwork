@@ -616,7 +616,6 @@ def outliers_df_pandas():
         'has_outliers': [93, 42, 37, -16, 49, 42, 36, 57, 60, 23],
         'no_outliers': [60, 42, 37, 23, 49, 42, 36, 57, 60, 23.0],
         'non_numeric': ['a'] * 10,
-        # --> det when to handle nans
         'has_outliers_with_nans': [93, 42, 37, None, 49, 42, 36, 57, 60, 23],
         'nans': pd.Series([None] * 10, dtype='float64'),
     })
@@ -636,5 +635,4 @@ def outliers_df_koalas(outliers_df_pandas):
 
 @ pytest.fixture(params=['outliers_df_pandas', 'outliers_df_dask', 'outliers_df_koalas'])
 def outliers_df(request):
-    # --> add dask and koalas
     return request.getfixturevalue(request.param)
