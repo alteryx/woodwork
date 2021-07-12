@@ -147,72 +147,6 @@ def _get_describe_dict(dataframe, include=None, callback=None,
     return results
 
 
-def _get_box_plot_info_for_column(series, quantiles=None):
-    """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
-
-    Args:
-        series (Series): Data for which the box plot and outlier information will be gathered. 
-            Will be used to calculate quantiles if none are provided.
-        quantiles (dict[float -> int], optional): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as 
-            [min, Q1, median, Q3, max]. They keys of the dictionary should be the quantile floating point value.
-
-    Returns:
-        dict[str -> int,list[int]]: a dictionary containing information for the Series on its low outlier bound,
-            high outlier bound, quantiles, outliers, and the indices of the outlier values.
-    """
-    if quantiles is None:
-        quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
-
-    low_bound, high_bound = _calculate_iqr_bounds(series, quantiles)
-    min = quantiles.get(0.0)
-    max = quantiles.get(1.0)
-    if min is not None and max is not None and low_bound <= min and high_bound >= max:
-        outliers_dict = {
-            "low_values": [],
-            "high_values": [],
-            "low_indices": [],
-            "high_indices": []
-        }
-    else:
-        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
-
-    return {'low_bound': low_bound,
-            'high_bound': high_bound,
-            'quantiles': quantiles,
-            **outliers_dict}
-
-
-# --> consider adding multiplier
-def _calculate_iqr_bounds(series=None, quantiles=None):
-    if series is not None:
-        quantiles = series.quantile([0.25, 0.75]).to_dict()
-    q1 = quantiles[0.25]
-    q3 = quantiles[0.75]
-
-    iqr = q3 - q1
-
-    low_bound = q1 - (iqr * 1.5)
-    high_bound = q3 + (iqr * 1.5)
-
-    return low_bound, high_bound
-
-
-def _get_outliers_for_column(series, low_bound=None, high_bound=None):
-    if low_bound is None or high_bound is None:
-        low_bound, high_bound = _calculate_iqr_bounds(series)
-
-    low_series = series[series < low_bound]
-    high_series = series[series > high_bound]
-
-    # --> consider sorting the series' above by value???? - not necessary if input is sorted
-    return {
-        "low_values": low_series.tolist(),
-        "high_values": high_series.tolist(),
-        "low_indices": low_series.index.tolist(),
-        "high_indices": high_series.index.tolist()
-    }
-
-
 def _get_mode(series):
     """Get the mode value for a series"""
     mode_values = series.mode()
@@ -408,6 +342,72 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
         values = list(df.to_dict(orient="index").values())
         val_counts[col] = values
     return val_counts
+
+
+def _get_box_plot_info_for_column(series, quantiles=None):
+    """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
+
+    Args:
+        series (Series): Data for which the box plot and outlier information will be gathered. 
+            Will be used to calculate quantiles if none are provided.
+        quantiles (dict[float -> int], optional): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as 
+            [min, Q1, median, Q3, max]. They keys of the dictionary should be the quantile floating point value.
+
+    Returns:
+        dict[str -> int,list[int]]: a dictionary containing information for the Series on its low outlier bound,
+            high outlier bound, quantiles, outliers, and the indices of the outlier values.
+    """
+    if quantiles is None:
+        quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
+
+    low_bound, high_bound = _calculate_iqr_bounds(series, quantiles)
+    min = quantiles.get(0.0)
+    max = quantiles.get(1.0)
+    if min is not None and max is not None and low_bound <= min and high_bound >= max:
+        outliers_dict = {
+            "low_values": [],
+            "high_values": [],
+            "low_indices": [],
+            "high_indices": []
+        }
+    else:
+        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
+
+    return {'low_bound': low_bound,
+            'high_bound': high_bound,
+            'quantiles': quantiles,
+            **outliers_dict}
+
+
+# --> consider adding multiplier
+def _calculate_iqr_bounds(series=None, quantiles=None):
+    if series is not None:
+        quantiles = series.quantile([0.25, 0.75]).to_dict()
+    q1 = quantiles[0.25]
+    q3 = quantiles[0.75]
+
+    iqr = q3 - q1
+
+    low_bound = q1 - (iqr * 1.5)
+    high_bound = q3 + (iqr * 1.5)
+
+    return low_bound, high_bound
+
+
+def _get_outliers_for_column(series, low_bound=None, high_bound=None):
+    if low_bound is None or high_bound is None:
+        low_bound, high_bound = _calculate_iqr_bounds(series)
+
+    low_series = series[series < low_bound]
+    high_series = series[series > high_bound]
+
+    # --> consider sorting the series' above by value???? - not necessary if input is sorted
+    return {
+        "low_values": low_series.tolist(),
+        "high_values": high_series.tolist(),
+        "low_indices": low_series.index.tolist(),
+        "high_indices": high_series.index.tolist()
+    }
 
 
 def _get_numeric_value_counts_in_range(series, _range):
