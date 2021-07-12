@@ -95,8 +95,16 @@ def email_address_func(series: pd.Series) -> bool:
         return False
 
     sample = get_inference_sample(series)
+    try:
+        sample_match_method = sample.str.match
+    except (AttributeError, TypeError):
+        # This can happen either when the inferred dtype for a series is not
+        # compatible with the pandas string API (AttributeError) *or* when the
+        # inferred dtype is not compatible with the string API `match` method
+        # (TypeError)
+        return False
 
-    matches = sample.str.match(pat=regex)
+    matches = sample_match_method(pat=regex)
     ratio = matches.sum() / matches.count()
 
     return ratio > threshold_ratio
