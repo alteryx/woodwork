@@ -26,6 +26,10 @@ class OutdatedSchemaWarning(UserWarning):
                 % (saved_version_str))
 
 
+class IndexTagRemovedWarning(UserWarning):
+    pass
+
+
 class TypingInfoMismatchWarning(UserWarning):
     def get_warning_message(self, attr, invalid_reason, object_type):
         return (f'Operation performed by {attr} has invalidated the Woodwork typing information:\n '

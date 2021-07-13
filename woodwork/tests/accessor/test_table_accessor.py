@@ -10,6 +10,7 @@ import woodwork as ww
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
@@ -2115,6 +2116,67 @@ def test_setitem_invalid_input(sample_df):
     error_msg = 'Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.'
     with pytest.raises(KeyError, match=error_msg):
         df.ww['signup_date'] = df.signup_date
+
+
+def test_setitem_indexed_column_on_unindexed_dataframe(sample_df):
+    sample_df.ww.init()
+
+    col = sample_df.ww.pop('id')
+    col.ww.add_semantic_tags(semantic_tags='index')
+
+    warning = 'Cannot add "index" tag on id directly to the DataFrame. The "index" tag has been removed from id. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
+
+
+def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
+    sample_df.ww.init()
+    sample_df.ww.set_index('id')
+
+    col = sample_df.ww.pop('id')
+
+    warning = 'Cannot add "index" tag on id directly to the DataFrame. The "index" tag has been removed from id. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
+
+    sample_df.ww.init(logical_types={'email': 'Categorical'})
+    sample_df.ww.set_index('id')
+
+    col = sample_df.ww.pop('email')
+    col.ww.add_semantic_tags(semantic_tags='index')
+
+    warning = 'Cannot add "index" tag on email directly to the DataFrame. The "index" tag has been removed from email. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['email'] = col
+    assert sample_df.ww.index == 'id'
+    assert sample_df.ww.semantic_tags['email'] == {'category'}
+
+
+def test_setitem_indexed_column_on_unindexed_dataframe_no_standard_tags(sample_df):
+    sample_df.ww.init()
+
+    col = sample_df.ww.pop('id')
+    col.ww.init(semantic_tags='index', use_standard_tags=False)
+
+    warning = 'Cannot add "index" tag on id directly to the DataFrame. The "index" tag has been removed from id. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww['id'].ww.semantic_tags == set()
 
 
 def test_setitem_different_name(sample_df):

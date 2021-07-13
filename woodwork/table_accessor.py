@@ -12,6 +12,7 @@ from woodwork.accessor_utils import (
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning,
     WoodworkNotInitError
@@ -192,6 +193,10 @@ class WoodworkTableAccessor:
         series = tuple(pkg.Series for pkg in (pd, dd, ks) if pkg)
         if not isinstance(column, series):
             raise ValueError('New column must be of Series type')
+
+        if column.ww.schema is not None and 'index' in column.ww.semantic_tags:
+            warnings.warn(f'Cannot add "index" tag on {col_name} directly to the DataFrame. The "index" tag has been removed from {col_name}. To set this column as a Woodwork index, please use df.ww.set_index', IndexTagRemovedWarning)
+            column.ww.set_semantic_tags(column.ww.semantic_tags - {'index'})
 
         # Don't allow reassigning of index or time index with setitem
         if self.index == col_name:
