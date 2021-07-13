@@ -2,15 +2,20 @@
 
 Release Notes
 -------------
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
+        * Add support for automatically inferring the ``EmailAddress`` logical
+          type (:pr:`1047`)
     * Fixes
     * Changes
+        * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
     * Documentation Changes
+        * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`
 
 v0.5.0 Jul 7, 2021
 ==================
@@ -20,6 +25,7 @@ v0.5.0 Jul 7, 2021
         * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
+        * Raises warning and removes tags when user adds a column with index tags to DataFrame (:pr:`1035`)
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)
