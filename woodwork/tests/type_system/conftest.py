@@ -152,8 +152,10 @@ def emails(request):
 @pytest.fixture
 def bad_pandas_emails():
     return [
-        pd.Series(['fl@alteryx.com', 'no_an_email', 'good@email.com', 'foo@bar.com']),
+        pd.Series(['fl@alteryx.com', 'not_an_email', 'good@email.com', 'foo@bar.com']),
         pd.Series(['fl@alteryx.com', 'b☃d@email.com', 'good@email.com', np.nan]),
+        pd.Series(['fl@alteryx.com', '@email.com', 'good@email.com', 'foo@bar.com']),
+        pd.Series(['fl@alteryx.com', 'bad@email', 'good@email.com', np.nan]),
     ]
 
 
