@@ -1732,6 +1732,23 @@ def test_select_return_schema(sample_df):
     assert len(empty_schema.columns) == 0
 
 
+@pytest.mark.parametrize(
+    "ww_type, pandas_type",
+    [(["Integer", "IntegerNullable"], "int"),
+     (["Double"], "float"),
+     (["Datetime"], "datetime"),
+     (["Unknown", "EmailAddress"], "string"),
+     (["Categorical"], "category"),
+     (["BooleanNullable"], "boolean")]
+)
+def test_select_retains_column_order(ww_type, pandas_type, sample_df):
+    sample_df.ww.init()
+
+    ww_schema_column_order = [x for x in sample_df.ww.select(ww_type, return_schema=True).columns.keys()]
+    pandas_column_order = [x for x in sample_df.select_dtypes(include=pandas_type).columns]
+    assert ww_schema_column_order == pandas_column_order
+
+
 def test_select_include_and_exclude_error(sample_df):
     sample_df.ww.init()
     err_msg = "Cannot specify values for both 'include' and 'exclude' in a single call."
