@@ -189,8 +189,7 @@ class Datetime(LogicalType):
                     series.name = name
                 elif ks and isinstance(series, ks.Series):
                     series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                      format=self.datetime_format,
-                                                      infer_datetime_format=True),
+                                                      format=self.datetime_format),
                                        name=series.name)
                 else:
                     series = pd.to_datetime(series, format=self.datetime_format)
