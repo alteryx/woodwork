@@ -104,8 +104,8 @@ def bools(request):
 @pytest.fixture
 def pandas_datetimes():
     return [
-        pd.Series(['3/11/2000', '3/12/2000', '3/13/2000', '3/14/2000']),
-        pd.Series(['3/11/2000', np.nan, '3/13/2000', '3/14/2000']),
+        pd.Series(['2000-3-11', '2000-3-12', '2000-03-13', '2000-03-14']),
+        pd.Series(['2000-3-11', np.nan, '2000-03-13', '2000-03-14']),
     ]
 
 
@@ -240,6 +240,32 @@ def dask_pdnas(pandas_pdnas):
 
 @pytest.fixture(params=['pandas_pdnas', 'dask_pdnas'])
 def pdnas(request):
+    return request.getfixturevalue(request.param)
+
+
+# Null Inference Fixtures
+@pytest.fixture
+def pandas_nulls():
+    return [
+        pd.Series([pd.NA, pd.NA, pd.NA, pd.NA]),
+        pd.Series([np.nan, np.nan, np.nan, np.nan]),
+        pd.Series([None, None, None, None]),
+        pd.Series([None, np.nan, pd.NA, None])
+    ]
+
+
+@pytest.fixture
+def dask_nulls(pandas_nulls):
+    return [pd_to_dask(series) for series in pandas_nulls]
+
+
+@pytest.fixture
+def koalas_nulls(pandas_nulls):
+    return [pd_to_koalas(series) for series in pandas_nulls]
+
+
+@pytest.fixture(params=['pandas_nulls', 'dask_nulls', 'koalas_nulls'])
+def nulls(request):
     return request.getfixturevalue(request.param)
 
 
