@@ -4,6 +4,7 @@ from .inference_functions import (
     categorical_func,
     datetime_func,
     double_func,
+    email_address_func,
     integer_func,
     integer_nullable_func,
     timedelta_func
@@ -51,7 +52,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     CountryCode: None,
     Datetime: datetime_func,
     Double: double_func,
-    EmailAddress: None,
+    EmailAddress: email_address_func,
     Filepath: None,
     PersonFullName: None,
     Integer: integer_func,

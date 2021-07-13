@@ -1717,7 +1717,7 @@ def test_select_return_schema(sample_df):
     # Multiple column matches
     df_schema = sample_df.ww.select(include='Unknown', return_schema=True)
     assert isinstance(df_schema, TableSchema)
-    assert len(df_schema.columns) == 3
+    assert len(df_schema.columns) == 2
     assert df_schema == sample_df.ww.select(include='Unknown').ww.schema
 
     # Single column match
@@ -2354,7 +2354,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
 
-    select_df = schema_df.ww.select([Unknown, Integer, IntegerNullable, BooleanNullable, Datetime])
+    select_df = schema_df.ww.select([Unknown, EmailAddress, Integer, IntegerNullable, BooleanNullable, Datetime])
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
 
@@ -2419,7 +2419,7 @@ def test_accessor_types(sample_df):
     correct_physical_types = {
         'id': Integer.primary_dtype,
         'full_name': Unknown.primary_dtype,
-        'email': Unknown.primary_dtype,
+        'email': EmailAddress.primary_dtype,
         'phone_number': Unknown.primary_dtype,
         'age': IntegerNullable.primary_dtype,
         'signup_date': Datetime.primary_dtype,
@@ -2432,7 +2432,7 @@ def test_accessor_types(sample_df):
     correct_logical_types = {
         'id': Integer(),
         'full_name': Unknown(),
-        'email': Unknown(),
+        'email': EmailAddress(),
         'phone_number': Unknown(),
         'age': IntegerNullable(),
         'signup_date': Datetime(),

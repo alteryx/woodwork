@@ -124,6 +124,56 @@ def datetimes(request):
     return request.getfixturevalue(request.param)
 
 
+# Email Inference Fixtures
+@pytest.fixture
+def pandas_emails():
+    return [
+        pd.Series(['fl@alteryx.com', 'good@email.com', 'boaty@mcboatface.com', 'foo@bar.com']),
+        pd.Series(['fl@alteryx.com', 'good@email.com', 'boaty@mcboatface.com', np.nan]),
+    ]
+
+
+@pytest.fixture
+def dask_emails(pandas_emails):
+    return [pd_to_dask(series) for series in pandas_emails]
+
+
+@pytest.fixture
+def koalas_emails(pandas_emails):
+    return [pd_to_koalas(series) for series in pandas_emails]
+
+
+@pytest.fixture(params=['pandas_emails', 'dask_emails', 'koalas_emails'])
+def emails(request):
+    return request.getfixturevalue(request.param)
+
+
+# Email Inference Fixtures
+@pytest.fixture
+def bad_pandas_emails():
+    return [
+        pd.Series(['fl@alteryx.com', 'not_an_email', 'good@email.com', 'foo@bar.com']),
+        pd.Series(['fl@alteryx.com', 'b☃d@email.com', 'good@email.com', np.nan]),
+        pd.Series(['fl@alteryx.com', '@email.com', 'good@email.com', 'foo@bar.com']),
+        pd.Series(['fl@alteryx.com', 'bad@email', 'good@email.com', np.nan]),
+    ]
+
+
+@pytest.fixture
+def bad_dask_emails(bad_pandas_emails):
+    return [pd_to_dask(series) for series in bad_pandas_emails]
+
+
+@pytest.fixture
+def bad_koalas_emails(bad_pandas_emails):
+    return [pd_to_koalas(series) for series in bad_pandas_emails]
+
+
+@pytest.fixture(params=['bad_pandas_emails', 'bad_dask_emails', 'bad_koalas_emails'])
+def bad_emails(request):
+    return request.getfixturevalue(request.param)
+
+
 # Categorical Inference Fixtures
 @pytest.fixture
 def pandas_categories():
