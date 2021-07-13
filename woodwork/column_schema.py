@@ -26,7 +26,8 @@ class ColumnSchema(object):
             use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
                     on the specified logical type if a logical type is defined for the column. Defaults to False.
             description (str, optional): User description of the column.
-            metadata (dict[str -> json serializable], optional): Extra metadata provided by the user.
+            metadata (dict[str -> json serializable], optional): Extra metadata provided by the user. The dictionary must contain
+                data types that are JSON serializable such as string, integers, and floats. DataFrame and Series types are not supported.
             validate (bool, optional): Whether to perform parameter validation. Defaults to True.
         """
         metadata = metadata or {}

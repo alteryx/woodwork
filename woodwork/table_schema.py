@@ -41,7 +41,8 @@ class TableSchema(object):
                 used as the value.
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
-            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the TableSchema.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the TableSchema. The dictionary must contain
+                data types that are JSON serializable such as string, integers, and floats. DataFrame and Series types are not supported.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
