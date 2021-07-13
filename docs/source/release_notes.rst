@@ -9,10 +9,11 @@ Future Release
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
     * Documentation Changes
+        * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`jeff-hernandez`
 
 v0.5.0 Jul 7, 2021
 ==================
