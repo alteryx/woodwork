@@ -10,7 +10,7 @@ Future Release
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
-        * ``TableAccessor.select`` method will now maintain dataframe column ordering (:pr:`1052`)
+        * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
