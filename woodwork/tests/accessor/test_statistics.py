@@ -1,5 +1,7 @@
 from datetime import datetime
 from inspect import isclass
+from woodwork import logical_types
+from woodwork.accessor_utils import init_series
 
 import numpy as np
 import pandas as pd
@@ -956,10 +958,28 @@ def test_get_outliers_for_column_with_nans(outliers_df):
     pass
 
 
-def test_with_non_numeric_col():
-    #  --> test with setting different logical types
-    # test for box plot and outliers
-    pass
+def test_outliers_on_non_numeric_col(outliers_df):
+    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
+
+    outliers = non_numeric_series.ww.outliers_dict()
+    assert outliers is None
+
+    wrong_dtype_series = init_series(outliers_df['has_outliers'], logical_type='Categorical')
+
+    outliers = wrong_dtype_series.ww.outliers_dict()
+    assert outliers is None
+
+
+def test_box_plot_on_non_numeric_col(outliers_df):
+    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
+
+    box_plot = non_numeric_series.ww.box_plot_dict()
+    assert box_plot is None
+
+    wrong_dtype_series = init_series(outliers_df['has_outliers'], logical_type='Categorical')
+
+    box_plot = wrong_dtype_series.ww.box_plot_dict()
+    assert box_plot is None
 
 
 def test_fully_null_col():
