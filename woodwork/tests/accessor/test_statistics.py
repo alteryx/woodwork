@@ -601,11 +601,12 @@ def test_describe_with_include(sample_df):
     assert len(semantic_tags_df.columns) == 2
 
     logical_types_df = sample_df.ww.describe([Datetime, BooleanNullable])
-    assert 'signup_date', 'is_registered' in logical_types_df.columns
-    assert len(logical_types_df.columns) == 2
+    for c in ['signup_date', 'is_registered', 'datetime_with_NaT']:
+        assert c  in logical_types_df.columns
+    assert len(logical_types_df.columns) == 3
 
     multi_params_df = sample_df.ww.describe(['age', 'tag1', Datetime])
-    expected = ['full_name', 'age', 'signup_date']
+    expected = ['full_name', 'age', 'signup_date', 'datetime_with_NaT']
     for col_name in expected:
         assert col_name in multi_params_df.columns
     multi_params_df['full_name'].equals(col_name_df['full_name'])

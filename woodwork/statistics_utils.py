@@ -171,9 +171,9 @@ def _replace_nans_for_mutual_info(schema, data):
 
         if column.is_numeric or column.is_datetime:
             mean = series.mean()
-            if isinstance(mean, float) and not type(column.logical_type) == Double:
+            if isinstance(mean, float) and not mean.is_integer() and not type(column.logical_type) == Double:
                 data[column_name] = series.astype('float')
-            data[column_name] = series.fillna(mean)
+            data[column_name] = data[column_name].fillna(mean)
         elif column.is_categorical or column.is_boolean:
             mode = _get_mode(series)
             data[column_name] = series.fillna(mode)
