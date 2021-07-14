@@ -882,9 +882,10 @@ def test_iqr_bounds_with_nans():
 
 
 def test_get_outliers_for_column_no_bounds(outliers_df):
-    # confirm matches iqr
-    # test only passing one bound
-    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'])
+    has_outliers_series = outliers_df['has_outliers']
+    has_outliers_series.ww.init()
+
+    outliers_dict = has_outliers_series.ww.outliers_dict()
 
     assert outliers_dict['low_values'] == [-16]
     assert outliers_dict['high_values'] == [93]
@@ -892,14 +893,17 @@ def test_get_outliers_for_column_no_bounds(outliers_df):
     assert outliers_dict['high_indices'] == [0]
 
     # only passing one bound will still calculate both of them, so results won't match bound passed in
-    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'], low_bound=45)
+    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=45)
 
     assert outliers_dict['low_values'] == [-16]
     assert outliers_dict['high_values'] == [93]
     assert outliers_dict['low_indices'] == [3]
     assert outliers_dict['high_indices'] == [0]
 
-    outliers_dict = _get_outliers_for_column(outliers_df['no_outliers'])
+    no_outliers_series = outliers_df['no_outliers']
+    no_outliers_series.ww.init()
+
+    outliers_dict = no_outliers_series.ww.outliers_dict()
 
     assert outliers_dict['low_values'] == []
     assert outliers_dict['high_values'] == []
@@ -908,22 +912,36 @@ def test_get_outliers_for_column_no_bounds(outliers_df):
 
 
 def test_get_outliers_for_column_with_bounds(outliers_df):
-    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'], low_bound=45, high_bound=56)
+    has_outliers_series = outliers_df['has_outliers']
+    has_outliers_series.ww.init()
+
+    # these are the bounds that we would calculate with IQR
+    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=8.125, high_bound=83.125)
+
+    assert outliers_dict['low_values'] == [-16]
+    assert outliers_dict['high_values'] == [93]
+    assert outliers_dict['low_indices'] == [3]
+    assert outliers_dict['high_indices'] == [0]
+
+    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=45, high_bound=56)
 
     assert outliers_dict['low_values'] == [42, 37, -16, 42, 36, 23]
     assert outliers_dict['high_values'] == [93, 57, 60]
     assert outliers_dict['low_indices'] == [1, 2, 3, 5, 6, 9]
     assert outliers_dict['high_indices'] == [0, 7, 8]
 
-    # test when high and low are values that outliers are exclusive of bounds
-    outliers_dict = _get_outliers_for_column(outliers_df['has_outliers'], low_bound=42, high_bound=57)
+    # confirm that the bounds provided are inclusive
+    # there are data points that are equal to these bounds. They are not outliers.
+    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=42, high_bound=57)
 
     assert outliers_dict['low_values'] == [37, -16, 36, 23]
     assert outliers_dict['high_values'] == [93, 60]
     assert outliers_dict['low_indices'] == [2, 3, 6, 9]
     assert outliers_dict['high_indices'] == [0, 8]
 
-    outliers_dict = _get_outliers_for_column(outliers_df['no_outliers'], low_bound=0, high_bound=100)
+    no_outliers_series = outliers_df['no_outliers']
+    no_outliers_series.ww.init()
+    outliers_dict = no_outliers_series.ww.outliers_dict(low_bound=0, high_bound=100)
 
     assert outliers_dict['low_values'] == []
     assert outliers_dict['high_values'] == []
@@ -934,19 +952,27 @@ def test_get_outliers_for_column_with_bounds(outliers_df):
 def test_get_outliers_for_column_with_nans(outliers_df):
     # --> need to make sure that the indices match up with the original data that does have the nans
     # and that the values match up to the indices
+    # --> also need to test for box plots
     pass
 
 
 def test_with_non_numeric_col():
-    # --> only if duing on a column by column basis
+    #  --> test with setting different logical types
+    # test for box plot and outliers
+    pass
+
+
+def test_fully_null_col():
+    # --> confirm that both outliers and box plot won't calculate
     pass
 
 
 def test_box_plot_info_for_column(outliers_df):
-    # test with and without quantiles
-    # test without 0.25 and 0.75
-    # confirm entries to results dict
-    box_plot_info = _get_box_plot_info_for_column(outliers_df['has_outliers'])
+    has_outliers_series = outliers_df['has_outliers']
+    has_outliers_series.ww.init()
+
+    box_plot_info = has_outliers_series.ww.box_plot_dict()
+
     assert set(box_plot_info.keys()) == {'low_bound',
                                          'high_bound',
                                          'quantiles',
@@ -960,8 +986,8 @@ def test_box_plot_info_for_column(outliers_df):
     assert len(box_plot_info['high_values']) == 1
     assert len(box_plot_info['low_values']) == 1
 
-    box_plot_info = _get_box_plot_info_for_column(outliers_df['has_outliers'],
-                                                  quantiles={0.25: 36.25, 0.75: 55.0})
+    box_plot_info = has_outliers_series.ww.box_plot_dict(quantiles={0.25: 36.25, 0.75: 55.0})
+
     assert set(box_plot_info.keys()) == {'low_bound',
                                          'high_bound',
                                          'quantiles',
@@ -980,7 +1006,12 @@ def test_box_plot_info_for_column(outliers_df):
 def test_box_plot_info_no_outliers(mock_get_outliers, outliers_df):
     assert not mock_get_outliers.called
 
-    box_plot_info = _get_box_plot_info_for_column(outliers_df['no_outliers'])
+    no_outliers_series = outliers_df['no_outliers']
+    no_outliers_series.ww.init()
+
+    # all the quantiles will be calculated, so we can use min and max to see if there are outliers
+    box_plot_info = no_outliers_series.ww.box_plot_dict()
+
     assert set(box_plot_info.keys()) == {'low_bound',
                                          'high_bound',
                                          'quantiles',
@@ -997,7 +1028,11 @@ def test_box_plot_info_no_outliers(mock_get_outliers, outliers_df):
     assert not mock_get_outliers.called
 
     # if both min and max are not present in the quantiles, we have to filter outliers
-    _get_box_plot_info_for_column(outliers_df['no_outliers'],
-                                  quantiles={0.25: 36.25, 0.75: 55.0})
+    no_outliers_series.ww.box_plot_dict(quantiles={0.25: 36.25, 0.75: 55.0})
 
     assert mock_get_outliers.called
+
+
+def test_box_plot_partial_input():
+    # --> doesn't have the minimun things necessary to calculate
+    pass
