@@ -1389,7 +1389,7 @@ def test_select_ltypes_strings(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'BooleanNullable', 'datetime'])
-    assert len(df_multiple_ltypes.columns) == 8
+    assert len(df_multiple_ltypes.columns) == 7
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
 
@@ -1402,7 +1402,7 @@ def test_select_ltypes_objects(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, BooleanNullable, Datetime])
-    assert len(df_multiple_ltypes.columns) == 8
+    assert len(df_multiple_ltypes.columns) == 7
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
 
@@ -1415,7 +1415,7 @@ def test_select_ltypes_mixed(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_mixed_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', Double])
-    assert len(df_mixed_ltypes.columns) == 5
+    assert len(df_mixed_ltypes.columns) == 4
     assert 'phone_number' not in df_mixed_ltypes.columns
 
 
@@ -1424,10 +1424,11 @@ def test_select_ltypes_mixed_exclude(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_mixed_ltypes = schema_df.ww.select(exclude=['PersonFullName', 'email_address', Double])
-    assert len(df_mixed_ltypes.columns) == 9
+    assert len(df_mixed_ltypes.columns) == 10
     assert 'full_name' not in df_mixed_ltypes.columns
     assert 'email_address' not in df_mixed_ltypes.columns
-    assert 'age' not in df_mixed_ltypes.columns
+    assert 'double' not in df_mixed_ltypes.columns
+    assert 'double_with_nan' not in df_mixed_ltypes.columns
 
 
 def test_select_ltypes_table(sample_df, sample_correct_logical_types):
