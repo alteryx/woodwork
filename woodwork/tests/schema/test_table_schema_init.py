@@ -92,7 +92,7 @@ def test_check_logical_types_errors(sample_column_names):
         'phone_number': None,
         'age': None,
     }
-    error_message = re.escape("logical_types is missing columns that are present in TableSchema: ['is_registered', 'signup_date']")
+    error_message = re.escape("logical_types is missing columns that are present in TableSchema: ['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan', 'integer', 'is_registered', 'nullable_integer', 'signup_date']")
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
@@ -238,22 +238,11 @@ def test_schema_with_numeric_time_index(sample_column_names, sample_inferred_log
     assert date_col.semantic_tags == {'time_index', 'numeric'}
 
 
-def test_schema_init_with_logical_type_classes(sample_column_names, sample_inferred_logical_types):
-    logical_types = {
-        'full_name': NaturalLanguage,
-        'age': Double
-    }
-    schema = TableSchema(sample_column_names, logical_types={**sample_inferred_logical_types, **logical_types},
+def test_schema_init_with_logical_type_classes(sample_column_names, sample_correct_logical_types):
+    schema = TableSchema(sample_column_names, logical_types=sample_correct_logical_types,
                          name='schema')
-
-    full_logical_types = {'id': Integer(),
-                          'full_name': NaturalLanguage(),
-                          'email': Unknown(),
-                          'phone_number': Unknown(),
-                          'age': Double(),
-                          'signup_date': Datetime(),
-                          'is_registered': Boolean()}
-    assert schema.logical_types == full_logical_types
+    instantiated_ltypes = {name: ltype() for name, ltype in sample_correct_logical_types.items()}
+    assert schema.logical_types == instantiated_ltypes
 
 
 def test_raises_error_setting_index_tag_directly(sample_column_names, sample_inferred_logical_types):
@@ -437,13 +426,7 @@ def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logica
                                  use_standard_tags={col_name: False for col_name in sample_column_names})
     assert default_schema.use_standard_tags == {col_name: False for col_name in sample_column_names}
 
-    use_standard_tags = {'id': True,
-                         'full_name': False,
-                         'email': True,
-                         'phone_number': True,
-                         'age': False,
-                         'signup_date': True,
-                         'is_registered': False}
+    use_standard_tags = {'id': True, 'full_name': False, 'email': True, 'phone_number': True, 'age': False, 'signup_date': True, 'is_registered': False, 'double': False, 'double_with_nan': False, 'integer': False, 'nullable_integer': False, 'boolean': False, 'categorical': False, 'datetime_with_NaT': False}
     full_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                                    use_standard_tags=use_standard_tags)
     assert full_dict_schema.use_standard_tags == use_standard_tags

@@ -14,6 +14,7 @@ from woodwork.logical_types import (
     Double,
     EmailAddress,
     Integer,
+    IntegerNullable,
     PersonFullName,
     PhoneNumber,
     Unknown
@@ -59,30 +60,13 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
     assert 'Semantic Tag(s)' in returned_types.columns
     assert returned_types.shape[1] == 2
     assert len(returned_types.index) == len(sample_column_names)
-    correct_logical_types = {
-        'id': Integer(),
-        'full_name': Unknown(),
-        'email': Unknown(),
-        'phone_number': Unknown(),
-        'age': Integer(),
-        'signup_date': Datetime(),
-        'is_registered': Boolean(),
-        'formatted_date': ymd_format
-    }
+    correct_logical_types = {name: ltype() for name, ltype in sample_inferred_logical_types.items()}
+    correct_logical_types['formatted_date'] = ymd_format
     correct_logical_types = pd.Series(list(correct_logical_types.values()),
                                       index=list(correct_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
 
-    correct_semantic_tags = {
-        'id': "['numeric']",
-        'full_name': "[]",
-        'email': "[]",
-        'phone_number': "[]",
-        'age': "['numeric']",
-        'signup_date': "[]",
-        'is_registered': "[]",
-        'formatted_date': "[]",
-    }
+    correct_semantic_tags = {'id': "['numeric']", 'full_name': '[]', 'email': '[]', 'phone_number': '[]', 'age': "['numeric']", 'signup_date': '[]', 'is_registered': '[]', 'double': "['numeric']", 'double_with_nan': "['numeric']", 'integer': "['numeric']", 'nullable_integer': "['numeric']", 'boolean': '[]', 'categorical': "['category']", 'datetime_with_NaT': '[]', 'formatted_date': '[]'}
     correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
                                       index=list(correct_semantic_tags.keys()))
     assert correct_semantic_tags.equals(returned_types['Semantic Tag(s)'])
@@ -229,7 +213,8 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
                          use_standard_tags=True)
 
     filtered = schema._filter_cols(include=Datetime)
-    assert filtered == ['signup_date']
+    expected = {'signup_date', 'datetime_with_NaT'}
+    assert set(filtered) == expected
 
     filtered = schema._filter_cols(include='email', col_names=True)
     assert filtered == ['email']
@@ -239,9 +224,9 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
     expected = {'full_name', 'email', 'phone_number'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
-
+    expected = {'integer', 'double', 'double_with_nan', 'age', 'nullable_integer'}
     filtered_semantic_tag = schema._filter_cols(include='numeric')
-    assert filtered_semantic_tag == ['age']
+    assert set(filtered_semantic_tag) == expected
 
     filtered_multiple_overlap = schema._filter_cols(include=['Unknown', 'email'], col_names=True)
     expected = ['full_name', 'phone_number', 'email']
@@ -264,7 +249,7 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
 
     filtered_log_type_string = schema._filter_cols(exclude='Unknown')
     filtered_log_type = schema._filter_cols(exclude=Unknown)
-    expected = {'id', 'age', 'signup_date', 'is_registered'}
+    expected = {'boolean', 'double', 'datetime_with_NaT', 'categorical', 'double_with_nan', 'signup_date', 'age', 'integer', 'nullable_integer', 'is_registered', 'id'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
 
@@ -272,9 +257,8 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
     assert 'age' not in filtered_semantic_tag
 
     filtered_multiple_overlap = schema._filter_cols(exclude=['Unknown', 'email'], col_names=True)
-    expected = ['id', 'age', 'signup_date', 'is_registered']
-    for col in filtered_multiple_overlap:
-        assert col in expected
+    expected = {'is_registered', 'double', 'nullable_integer', 'double_with_nan', 'categorical', 'datetime_with_NaT', 'age', 'integer', 'signup_date', 'boolean', 'id'}
+    assert set(filtered_multiple_overlap) == expected
 
 
 def test_filter_schema_cols_no_matches(sample_column_names, sample_inferred_logical_types):
@@ -449,7 +433,7 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
     assert schema.semantic_tags['full_name'] == set()
 
     schema.set_types(semantic_tags={'age': set()})
-    assert isinstance(schema.logical_types['age'], Integer)
+    assert isinstance(schema.logical_types['age'], IntegerNullable)
     assert schema.semantic_tags['age'] == {'numeric'}
 
 

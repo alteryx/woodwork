@@ -569,10 +569,11 @@ def sample_inferred_logical_types():
 
 @pytest.fixture()
 def sample_correct_logical_types():
-    return {'full_name': PersonFullName,
+    return {'id': Integer,
+            'full_name': PersonFullName,
             'email': EmailAddress,
             'phone_number': PhoneNumber,
-            'age': Double,
+            'age': IntegerNullable,
             'signup_date': Datetime,
             'is_registered': BooleanNullable,
             'double': Double, 
