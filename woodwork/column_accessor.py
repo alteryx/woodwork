@@ -362,7 +362,25 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     def outliers_dict(self, low_bound=None, high_bound=None):
-        """Gets values beyond a certain low and high bound. If both bounds are not provided, uses IQR and median approach
+        """Gets the values of a series that lay above and below specified bounds.
+
+        Args:
+            series (Series): Data for which the outliers should be determined.
+            low_bound (float, optional): The number below which outliers lay. Is inclusive.
+            high_bound (float, optional): The number above which outliers lay. Is inclusive.
+
+        Note: 
+            If neither or only one of low_bound or high_bound is passed in, the bounds will be calculated
+            using the IQR method. 
+
+        Returns:
+            dict[str -> float,list[number]]: a dictionary containing outlier values and their corresponding indexes.
+                The following elements will be found in the dictionary:
+
+                - low_values (list[float, int]): the values of the lower outliers
+                - high_values (list[float, int]): the values of the upper outliers
+                - low_indices (list[int]): the corresponding index values for each of the lower outliers
+                - high_indices (list[int]): the corresponding index values for each of the upper outliers
         """
         if self._schema is None:
             _raise_init_error()
@@ -371,8 +389,27 @@ class WoodworkColumnAccessor:
             return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
 
     def box_plot_dict(self, quantiles=None):
-        """get box plots - uses defined quantiles to
-        # --> add docstrings!!!!
+        """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
+
+        Args:
+            series (Series): Data for which the box plot and outlier information will be gathered.
+                Will be used to calculate quantiles if none are provided.
+            quantiles (dict[float -> float], optional): The quantiles for the data. Will be used for outlier
+                detection and will be returned in the box plot dictionary. If missing quantiles that are necessary
+                for outlier detection (Q1 and Q3), the quantiles will be calculated.
+                The keys of the dictionary should be the quantile floating point value.
+
+        Returns:
+            dict[str -> float,list[number]]: a dictionary containing box plot information for the Series.
+                The following elements will be found in the dictionary:
+
+                - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
+                - high_bound (float): the high bound above which outliers lay - to be used as a whisker
+                - quantiles (list[float]): the quantiles used to determine the bounds
+                - low_values (list[float, int]): the values of the lower outliers
+                - high_values (list[float, int]): the values of the upper outliers
+                - low_indices (list[int]): the corresponding index values for each of the lower outliers
+                - high_indices (list[int]): the corresponding index values for each of the upper outliers
         """
         if self._schema is None:
             _raise_init_error()

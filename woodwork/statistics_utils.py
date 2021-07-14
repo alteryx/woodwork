@@ -347,6 +347,17 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
 
 
 def _calculate_iqr_bounds(series=None, quantiles=None):
+    """Calculates bounds for outlier detection using the 1.5*IQR method.
+
+    Args:
+        series (pd.Series, optional): Data used to calculate first and third quartiles used to calcualte
+            the interquartile range. If present, quartiles will be calculated even if passed in.
+        quantiles (dict[float->float], optional): Quantiles that can be used to calculate the interquartile
+            range. The keys of the dictionary should be the quantile floating point value.
+
+    Returns:
+        (float, float): a tuple containing the low bound and the high bound calculated from the IQR
+    """
     if series is not None:
         quantiles = series.quantile([0.25, 0.75]).to_dict()
     q1 = quantiles[0.25]
@@ -366,12 +377,22 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     Args:
         series (Series): Data for which the box plot and outlier information will be gathered.
             Will be used to calculate quantiles if none are provided.
-        quantiles (dict[float -> int], optional): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as
-            [min, Q1, median, Q3, max]. They keys of the dictionary should be the quantile floating point value.
+        quantiles (dict[float -> float], optional): The quantiles for the data. Will be used for outlier
+            detection and will be returned in the box plot dictionary. If missing quantiles that are necessary
+            for outlier detection (Q1 and Q3), the quantiles will be calculated.
+            The keys of the dictionary should be the quantile floating point value.
 
     Returns:
-        dict[str -> int,list[int]]: a dictionary containing information for the Series on its low outlier bound,
-            high outlier bound, quantiles, outliers, and the indices of the outlier values.
+        dict[str -> float,list[number]]: a dictionary containing box plot information for the Series.
+            The following elements will be found in the dictionary:
+
+            - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
+            - high_bound (float): the high bound above which outliers lay - to be used as a whisker
+            - quantiles (list[float]): the quantiles used to determine the bounds
+            - low_values (list[float, int]): the values of the lower outliers
+            - high_values (list[float, int]): the values of the upper outliers
+            - low_indices (list[int]): the corresponding index values for each of the lower outliers
+            - high_indices (list[int]): the corresponding index values for each of the upper outliers
     """
     if dd and isinstance(series, dd.Series):
         series = series.compute()
@@ -413,6 +434,26 @@ def _get_box_plot_info_for_column(series, quantiles=None):
 
 
 def _get_outliers_for_column(series, low_bound=None, high_bound=None, convert_series=True):
+    """Gets the upper and lower outliers for a series of data.
+
+    Args:
+        series (Series): Data for which the outliers should be determined.
+        low_bound (float, optional): The number below which outliers lay. Is inclusive.
+        high_bound (float, optional): The number above which outliers lay. Is inclusive.
+
+    Note: 
+        If neither or only one of low_bound or high_bound is passed in, the bounds will be calculated
+        using the IQR method. 
+
+    Returns:
+        dict[str -> float,list[number]]: a dictionary containing outlier values and their corresponding indexes.
+            The following elements will be found in the dictionary:
+
+            - low_values (list[float, int]): the values of the lower outliers
+            - high_values (list[float, int]): the values of the upper outliers
+            - low_indices (list[int]): the corresponding index values for each of the lower outliers
+            - high_indices (list[int]): the corresponding index values for each of the upper outliers
+    """
     if convert_series:
         if dd and isinstance(series, dd.Series):
             series = series.compute()
