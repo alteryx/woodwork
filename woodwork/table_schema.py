@@ -483,7 +483,7 @@ class TableSchema(object):
                 cols_to_return.append(col_name)
                 cols_seen.add(col_name)
 
-        return list(cols_to_return)
+        return cols_to_return
 
     def _get_subset_schema(self, subset_cols):
         """Creates a new TableSchema with specified columns, retaining typing information.
