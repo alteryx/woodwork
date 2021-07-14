@@ -470,17 +470,20 @@ class TableSchema(object):
             if col_names and selector in self.columns:
                 col_name_matches.add(selector)
 
-        cols_to_return = set()
+        cols_to_return = []
+        cols_seen = set()
         for col_name, col in self.columns.items():
             is_match = (type(col.logical_type) in ltypes_used or
                         col.semantic_tags.intersection(tags_used) or
                         col_name in col_name_matches)
-            if include is not None and is_match:
-                cols_to_return.add(col_name)
-            elif exclude is not None and not is_match:
-                cols_to_return.add(col_name)
+            if include is not None and is_match and col_name not in cols_seen:
+                cols_to_return.append(col_name)
+                cols_seen.add(col_name)
+            elif exclude is not None and not is_match and col_name not in cols_seen:
+                cols_to_return.append(col_name)
+                cols_seen.add(col_name)
 
-        return list(cols_to_return)
+        return cols_to_return
 
     def _get_subset_schema(self, subset_cols):
         """Creates a new TableSchema with specified columns, retaining typing information.
