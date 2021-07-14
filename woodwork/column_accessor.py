@@ -18,13 +18,16 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
+from woodwork.statistics_utils import (
+    _get_box_plot_info_for_column,
+    _get_outliers_for_column
+)
 from woodwork.table_schema import TableSchema
 from woodwork.utils import (
     _get_column_logical_type,
     _is_valid_latlong_series,
     import_or_none
 )
-from woodwork.statistics_utils import _get_box_plot_info_for_column, _get_outliers_for_column
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -368,7 +371,7 @@ class WoodworkColumnAccessor:
             return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
 
     def box_plot_dict(self, quantiles=None):
-        """get box plots - uses defined quantiles to 
+        """get box plots - uses defined quantiles to
         # --> add docstrings!!!!
         """
         if self._schema is None:

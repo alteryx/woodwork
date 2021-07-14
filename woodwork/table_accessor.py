@@ -22,7 +22,7 @@ from woodwork.logical_types import Datetime
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
-    _get_value_counts,
+    _get_value_counts
 )
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime

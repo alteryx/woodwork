@@ -1,13 +1,12 @@
 from datetime import datetime
 from inspect import isclass
-from woodwork import logical_types
-from woodwork.accessor_utils import init_series
 
 import numpy as np
 import pandas as pd
 import pytest
 from mock import patch
 
+from woodwork.accessor_utils import init_series
 from woodwork.logical_types import (
     URL,
     Age,
@@ -33,6 +32,7 @@ from woodwork.logical_types import (
     Timedelta
 )
 from woodwork.statistics_utils import (
+    _calculate_iqr_bounds,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -40,10 +40,7 @@ from woodwork.statistics_utils import (
     _get_recent_value_counts,
     _get_top_values_categorical,
     _make_categorical_for_mutual_info,
-    _replace_nans_for_mutual_info,
-    _calculate_iqr_bounds,
-    _get_outliers_for_column,
-    _get_box_plot_info_for_column,
+    _replace_nans_for_mutual_info
 )
 from woodwork.tests.testing_utils import mi_between_cols, to_pandas
 from woodwork.utils import import_or_none
@@ -838,49 +835,39 @@ def test_get_numeric_value_counts_in_range(input_series, expected):
     assert top_values == expected
 
 
-def test_calculate_iqr_bounds_with_quantiles(outliers_df):
+def test_calculate_iqr_bounds_with_quantiles(outliers_df_pandas):
     expected_low = 8.125
     expected_high = 83.125
 
-    series = outliers_df['has_outliers']
-    if dd and isinstance(series, dd.Series):
-        series = series.compute()
-    if ks and isinstance(series, ks.Series):
-        series = series.to_pandas()
+    series = outliers_df_pandas['has_outliers']
 
     q1, q3 = np.percentile(series, [25, 75])
     quantiles = {0.25: q1, 0.75: q3, 0.0: 100000}
 
-    low, high = _calculate_iqr_bounds(outliers_df['has_outliers'], quantiles=quantiles)
+    low, high = _calculate_iqr_bounds(outliers_df_pandas['has_outliers'], quantiles=quantiles)
 
     assert expected_low == low
     assert expected_high == high
 
-    low, high = _calculate_iqr_bounds(outliers_df['no_outliers'], quantiles=quantiles)
+    low, high = _calculate_iqr_bounds(outliers_df_pandas['no_outliers'], quantiles=quantiles)
 
     assert expected_low == low
     assert expected_high == high
 
 
-def test_calculate_iqr_bounds_without_quantiles(outliers_df):
+def test_calculate_iqr_bounds_without_quantiles(outliers_df_pandas):
     expected_low = 8.125
     expected_high = 83.125
 
-    outliers_df.ww.init()
-    low, high = _calculate_iqr_bounds(outliers_df['has_outliers'])
+    low, high = _calculate_iqr_bounds(outliers_df_pandas['has_outliers'])
 
     assert expected_low == low
     assert expected_high == high
 
-    low, high = _calculate_iqr_bounds(outliers_df['no_outliers'])
+    low, high = _calculate_iqr_bounds(outliers_df_pandas['no_outliers'])
 
     assert expected_low == low
     assert expected_high == high
-
-
-def test_iqr_bounds_with_nans():
-    # --> make sure that the presence of nans or not doesnt impact the bounds
-    pass
 
 
 def test_get_outliers_for_column_no_bounds(outliers_df):
@@ -952,10 +939,21 @@ def test_get_outliers_for_column_with_bounds(outliers_df):
 
 
 def test_get_outliers_for_column_with_nans(outliers_df):
-    # --> need to make sure that the indices match up with the original data that does have the nans
-    # and that the values match up to the indices
-    # --> also need to test for box plots
-    pass
+    contains_nans_series = outliers_df['has_outliers_with_nans']
+    contains_nans_series.ww.init()
+
+    outliers_dict = contains_nans_series.ww.outliers_dict()
+    box_plot_dict = contains_nans_series.ww.box_plot_dict()
+
+    assert outliers_dict['low_values'] == [-16]
+    assert outliers_dict['high_values'] == [93]
+    assert outliers_dict['low_indices'] == [3]
+    assert outliers_dict['high_indices'] == [5]
+
+    assert box_plot_dict['low_values'] == [-16]
+    assert box_plot_dict['high_values'] == [93]
+    assert box_plot_dict['low_indices'] == [3]
+    assert box_plot_dict['high_indices'] == [5]
 
 
 def test_outliers_on_non_numeric_col(outliers_df):
@@ -1070,6 +1068,27 @@ def test_box_plot_info_no_outliers(mock_get_outliers, outliers_df):
     assert mock_get_outliers.called
 
 
-def test_box_plot_partial_input():
-    # --> doesn't have the minimun things necessary to calculate
-    pass
+def test_box_plot_partial_input(outliers_df):
+    series = outliers_df['has_outliers']
+    series.ww.init()
+
+    full_quantiles = {0.0: -16, 0.25: 36.25, 0.5: 42, 0.75: 55.0, 1.0: 93}
+    box_plot_full_quantiles = series.ww.box_plot_dict(quantiles=full_quantiles)
+    results_full_quantiles = box_plot_full_quantiles.pop('quantiles')
+
+    partial_quantiles = {0.25: 36.25}
+    box_plot_partial_quantiles = series.ww.box_plot_dict(quantiles=partial_quantiles)
+    results_partial_quantiles = box_plot_partial_quantiles.pop('quantiles')
+
+    empty_quantiles = {}
+    box_plot_empty_quantiles = series.ww.box_plot_dict(quantiles=empty_quantiles)
+    results_empty_quantiles = box_plot_empty_quantiles.pop('quantiles')
+
+    # the quantiles passed in will be returned, even if quantiles is partial or empty
+    assert full_quantiles == results_full_quantiles
+    assert partial_quantiles == results_partial_quantiles
+    assert empty_quantiles == results_empty_quantiles
+
+    # any quantiles needed will be calulated, so the rest of the results are the same
+    assert box_plot_empty_quantiles == box_plot_full_quantiles
+    assert box_plot_partial_quantiles == box_plot_full_quantiles

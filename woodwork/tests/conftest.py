@@ -616,7 +616,7 @@ def outliers_df_pandas():
         'has_outliers': [93, 42, 37, -16, 49, 42, 36, 57, 60, 23],
         'no_outliers': [60, 42, 37, 23, 49, 42, 36, 57, 60, 23.0],
         'non_numeric': ['a'] * 10,
-        'has_outliers_with_nans': [93, 42, 37, None, 49, 42, 36, 57, 60, 23],
+        'has_outliers_with_nans': [None, 42, 37, -16, 49, 93, 36, 57, 60, 23],
         'nans': pd.Series([None] * 10, dtype='float64'),
     })
 

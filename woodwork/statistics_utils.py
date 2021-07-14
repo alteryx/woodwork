@@ -348,10 +348,6 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
 
 def _calculate_iqr_bounds(series=None, quantiles=None):
     if series is not None:
-        if dd and isinstance(series, dd.Series):
-            series = series.compute()
-        if ks and isinstance(series, ks.Series):
-            series = series.to_pandas()
         quantiles = series.quantile([0.25, 0.75]).to_dict()
     q1 = quantiles[0.25]
     q3 = quantiles[0.75]
@@ -368,9 +364,9 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
 
     Args:
-        series (Series): Data for which the box plot and outlier information will be gathered. 
+        series (Series): Data for which the box plot and outlier information will be gathered.
             Will be used to calculate quantiles if none are provided.
-        quantiles (dict[float -> int], optional): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as 
+        quantiles (dict[float -> int], optional): assumes five quantiles - [0.0, 0.25, 0.5, 0.75, 1.0] also understood as
             [min, Q1, median, Q3, max]. They keys of the dictionary should be the quantile floating point value.
 
     Returns:
@@ -389,7 +385,11 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
-    low_bound, high_bound = _calculate_iqr_bounds(series, quantiles)
+    if 0.25 in quantiles and 0.75 in quantiles:
+        low_bound, high_bound = _calculate_iqr_bounds(quantiles=quantiles)
+    else:
+        # if first and third quantile are not present, we have to calulate from the data
+        low_bound, high_bound = _calculate_iqr_bounds(series=series)
 
     min = quantiles.get(0.0)
     max = quantiles.get(1.0)
