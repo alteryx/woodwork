@@ -382,6 +382,10 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
 
+    series = series.dropna()
+    if series.shape[0] == 0:
+        return
+
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
 
@@ -397,7 +401,8 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             "high_indices": []
         }
     else:
-        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound)
+        # We've already removed nans and converted to pandas
+        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound, convert_series=False)
         if outliers_dict is None:
             return
 
@@ -407,15 +412,16 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             **outliers_dict}
 
 
-def _get_outliers_for_column(series, low_bound=None, high_bound=None):
-    if dd and isinstance(series, dd.Series):
-        series = series.compute()
-    if ks and isinstance(series, ks.Series):
-        series = series.to_pandas()
+def _get_outliers_for_column(series, low_bound=None, high_bound=None, convert_series=True):
+    if convert_series:
+        if dd and isinstance(series, dd.Series):
+            series = series.compute()
+        if ks and isinstance(series, ks.Series):
+            series = series.to_pandas()
 
-    series = series.dropna()
-    if series.shape[0] == 0:
-        return
+        series = series.dropna()
+        if series.shape[0] == 0:
+            return
 
     if low_bound is None or high_bound is None:
         low_bound, high_bound = _calculate_iqr_bounds(series)

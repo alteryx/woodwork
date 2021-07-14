@@ -982,9 +982,26 @@ def test_box_plot_on_non_numeric_col(outliers_df):
     assert box_plot is None
 
 
-def test_fully_null_col():
-    # --> confirm that both outliers and box plot won't calculate
-    pass
+def test_outliers_with_fully_null_col(outliers_df):
+    fully_null_double_series = init_series(outliers_df['nans'], logical_type='Double')
+    assert fully_null_double_series.ww.outliers_dict() is None
+
+    fully_null_int_series = init_series(outliers_df['nans'], logical_type='IntegerNullable')
+    assert fully_null_int_series.ww.outliers_dict() is None
+
+    fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
+    assert fully_null_categorical_series.ww.outliers_dict() is None
+
+
+def test_box_plot_with_fully_null_col(outliers_df):
+    fully_null_double_series = init_series(outliers_df['nans'], logical_type='Double')
+    assert fully_null_double_series.ww.box_plot_dict() is None
+
+    fully_null_int_series = init_series(outliers_df['nans'], logical_type='IntegerNullable')
+    assert fully_null_int_series.ww.box_plot_dict() is None
+
+    fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
+    assert fully_null_categorical_series.ww.box_plot_dict() is None
 
 
 def test_box_plot_info_for_column(outliers_df):
