@@ -50,12 +50,14 @@ WoodworkColumnAccessor
 
     WoodworkColumnAccessor
     WoodworkColumnAccessor.add_semantic_tags
+    WoodworkColumnAccessor.box_plot_dict
     WoodworkColumnAccessor.description
     WoodworkColumnAccessor.iloc
     WoodworkColumnAccessor.init
     WoodworkColumnAccessor.loc
     WoodworkColumnAccessor.logical_type
     WoodworkColumnAccessor.metadata
+    WoodworkColumnAccessor.outliers_dict
     WoodworkColumnAccessor.remove_semantic_tags
     WoodworkColumnAccessor.reset_semantic_tags
     WoodworkColumnAccessor.semantic_tags
