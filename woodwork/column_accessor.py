@@ -359,10 +359,15 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     def outliers_dict(self, low_bound=None, high_bound=None):
+        """Gets values beyond a certain low and high bound. If both bounds are not provided, uses IQR and median approach
+        """
         if self._schema.is_numeric:
             return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
 
     def box_plot_dict(self, quantiles=None):
+        """get box plots - uses defined quantiles to 
+        # --> add docstrings!!!!
+        """
         if self._schema.is_numeric:
             return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
 
