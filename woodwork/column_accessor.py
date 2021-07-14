@@ -369,9 +369,9 @@ class WoodworkColumnAccessor:
             low_bound (float, optional): The number below which outliers lay. Is inclusive.
             high_bound (float, optional): The number above which outliers lay. Is inclusive.
 
-        Note: 
+        Note:
             If neither or only one of low_bound or high_bound is passed in, the bounds will be calculated
-            using the IQR method. 
+            using the IQR method.
 
         Returns:
             dict[str -> float,list[number]]: a dictionary containing outlier values and their corresponding indexes.
