@@ -421,8 +421,6 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     else:
         # We've already removed nans and converted to pandas
         outliers_dict = _get_outliers_for_column(series, low_bound, high_bound, convert_series=False)
-        if outliers_dict is None:
-            return
 
     return {'low_bound': low_bound,
             'high_bound': high_bound,
