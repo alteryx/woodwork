@@ -937,6 +937,11 @@ def test_get_outliers_for_column_with_nans(outliers_df):
     pass
 
 
+def test_with_non_numeric_col():
+    # --> only if duing on a column by column basis
+    pass
+
+
 def test_box_plot_info_for_column(outliers_df):
     # test with and without quantiles
     # test without 0.25 and 0.75

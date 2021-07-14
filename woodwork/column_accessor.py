@@ -24,6 +24,7 @@ from woodwork.utils import (
     _is_valid_latlong_series,
     import_or_none
 )
+from woodwork.statistics_utils import _get_box_plot_info_for_column, _get_outliers_for_column
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -356,6 +357,14 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         self._schema._set_semantic_tags(semantic_tags)
+
+    def outliers_dict(self, low_bound=None, high_bound=None):
+        if self._schema.is_numeric:
+            return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
+
+    def box_plot_dict(self, quantiles=None):
+        if self._schema.is_numeric:
+            return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
 
 
 def _validate_schema(schema, series):

@@ -403,6 +403,26 @@ def _get_outliers_dict(dataframe, column_bounds=None):
 
     return outliers_for_dataframe
 
+# --> consider adding multiplier
+
+
+def _calculate_iqr_bounds(series=None, quantiles=None):
+    if series is not None:
+        if dd and isinstance(series, dd.Series):
+            series = series.compute()
+        if ks and isinstance(series, ks.Series):
+            series = series.to_pandas()
+        quantiles = series.quantile([0.25, 0.75]).to_dict()
+    q1 = quantiles[0.25]
+    q3 = quantiles[0.75]
+
+    iqr = q3 - q1
+
+    low_bound = q1 - (iqr * 1.5)
+    high_bound = q3 + (iqr * 1.5)
+
+    return low_bound, high_bound
+
 
 def _get_box_plot_info_for_column(series, quantiles=None):
     """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
@@ -445,25 +465,6 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             'high_bound': high_bound,
             'quantiles': quantiles,
             **outliers_dict}
-
-
-# --> consider adding multiplier
-def _calculate_iqr_bounds(series=None, quantiles=None):
-    if series is not None:
-        if dd and isinstance(series, dd.Series):
-            series = series.compute()
-        if ks and isinstance(series, ks.Series):
-            series = series.to_pandas()
-        quantiles = series.quantile([0.25, 0.75]).to_dict()
-    q1 = quantiles[0.25]
-    q3 = quantiles[0.75]
-
-    iqr = q3 - q1
-
-    low_bound = q1 - (iqr * 1.5)
-    high_bound = q3 + (iqr * 1.5)
-
-    return low_bound, high_bound
 
 
 def _get_outliers_for_column(series, low_bound=None, high_bound=None):
