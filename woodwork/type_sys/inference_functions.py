@@ -18,7 +18,6 @@ def get_inference_sample(series: pd.Series) -> pd.Series:
 
 def categorical_func(series):
     categorical_threshold = ww.config.get_option('categorical_threshold')
-    numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
 
     if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
         # heuristics to predict this some other than categorical
@@ -34,9 +33,14 @@ def categorical_func(series):
 
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
-    if ((pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype)) and
-            _is_categorical(series, numeric_categorical_threshold)):
-        return True
+
+    if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
+        numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
+        if numeric_categorical_threshold != -1:
+            return _is_categorical(series, numeric_categorical_threshold)
+        else:
+            return False
+
     return False
 
 
@@ -47,18 +51,24 @@ def integer_func(series):
 
 
 def integer_nullable_func(series):
-    numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
-    if (pdtypes.is_integer_dtype(series.dtype) and
-            not _is_categorical(series, numeric_categorical_threshold)):
-        return True
+    if pdtypes.is_integer_dtype(series.dtype):
+        threshold = ww.config.get_option('numeric_categorical_threshold')
+        if threshold != -1:
+            return not _is_categorical(series, threshold)
+        else:
+            return True
+
     return False
 
 
 def double_func(series):
-    numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
-    if (pdtypes.is_float_dtype(series.dtype) and
-            not _is_categorical(series, numeric_categorical_threshold)):
-        return True
+    if pdtypes.is_float_dtype(series.dtype):
+        threshold = ww.config.get_option('numeric_categorical_threshold')
+        if threshold != -1:
+            return not _is_categorical(series, threshold)
+        else:
+            return True
+
     return False
 
 
@@ -108,4 +118,4 @@ def email_address_func(series: pd.Series) -> bool:
 
 
 def _is_categorical(series, threshold):
-    return threshold != -1 and series.nunique() < threshold
+    return series.nunique() < threshold
