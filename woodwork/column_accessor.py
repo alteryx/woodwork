@@ -386,8 +386,10 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
 
-        if self._schema.is_numeric:
-            return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
+        if not self._schema.is_numeric:
+            raise TypeError('Cannot calculate outliers for non-numeric column')
+
+        return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
 
     def box_plot_dict(self, quantiles=None):
         """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
@@ -416,8 +418,10 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
 
-        if self._schema.is_numeric:
-            return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
+        if not self._schema.is_numeric:
+            raise TypeError('Cannot calculate box plot statistics for non-numeric column')
+
+        return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
 
 
 def _validate_schema(schema, series):

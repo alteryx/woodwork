@@ -882,6 +882,7 @@ def test_get_outliers_for_column_no_bounds(outliers_df):
     assert outliers_dict['high_indices'] == [0]
 
     # only passing one bound will still calculate both of them, so results won't match bound passed in
+    # --> should raise error
     outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=45)
 
     assert outliers_dict['low_values'] == [-16]
@@ -957,27 +958,27 @@ def test_get_outliers_for_column_with_nans(outliers_df):
 
 
 def test_outliers_on_non_numeric_col(outliers_df):
-    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
+    error = "Cannot calculate outliers for non-numeric column"
 
-    outliers = non_numeric_series.ww.outliers_dict()
-    assert outliers is None
+    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
+    with pytest.raises(TypeError, match=error):
+        non_numeric_series.ww.outliers_dict()
 
     wrong_dtype_series = init_series(outliers_df['has_outliers'], logical_type='Categorical')
-
-    outliers = wrong_dtype_series.ww.outliers_dict()
-    assert outliers is None
+    with pytest.raises(TypeError, match=error):
+        wrong_dtype_series.ww.outliers_dict()
 
 
 def test_box_plot_on_non_numeric_col(outliers_df):
-    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
+    error = "Cannot calculate box plot statistics for non-numeric column"
 
-    box_plot = non_numeric_series.ww.box_plot_dict()
-    assert box_plot is None
+    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
+    with pytest.raises(TypeError, match=error):
+        non_numeric_series.ww.box_plot_dict()
 
     wrong_dtype_series = init_series(outliers_df['has_outliers'], logical_type='Categorical')
-
-    box_plot = wrong_dtype_series.ww.box_plot_dict()
-    assert box_plot is None
+    with pytest.raises(TypeError, match=error):
+        wrong_dtype_series.ww.box_plot_dict()
 
 
 def test_outliers_with_fully_null_col(outliers_df):
@@ -1000,6 +1001,15 @@ def test_box_plot_with_fully_null_col(outliers_df):
 
     fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
     assert fully_null_categorical_series.ww.box_plot_dict() is None
+
+
+def test_outliers_with_empty_col():
+    # --> add tests
+    pass
+
+
+def test_box_plot_with_empty_col():
+    pass
 
 
 def test_box_plot_info_for_column(outliers_df):
