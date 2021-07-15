@@ -348,7 +348,8 @@ def _calculate_iqr_bounds(series=None, quantiles=None):
 
     Args:
         series (pd.Series, optional): Data used to calculate first and third quartiles used to calcualte
-            the interquartile range. If present, quartiles will be calculated even if passed in.
+            the interquartile range. If present, any values passed in for quantiles will be ignored. Instead,
+            the first and third quartiles will be calculated from this series.
         quantiles (dict[float->float], optional): Quantiles that can be used to calculate the interquartile
             range. The keys of the dictionary should be the quantile floating point value.
 
@@ -421,7 +422,7 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         }
     else:
         # We've already removed nans and converted to pandas
-        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound, convert_series=False)
+        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound, transform_series=False)
 
     return {'low_bound': low_bound,
             'high_bound': high_bound,
@@ -429,14 +430,14 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             **outliers_dict}
 
 
-def _get_outliers_for_column(series, low_bound=None, high_bound=None, convert_series=True):
+def _get_outliers_for_column(series, low_bound=None, high_bound=None, transform_series=True):
     """Gets the values of a series that lay above and below specified bounds.
 
     Args:
         series (Series): Data for which the outliers should be determined.
         low_bound (float, optional): The number below which outliers lay. Is inclusive.
         high_bound (float, optional): The number above which outliers lay. Is inclusive.
-        convert_series (bool, optional): If True, will remove null values and
+        transform_series (bool, optional): If True, will remove null values and
             convert the Series to pandas if necessary. Defaults to True.
 
     Note:
@@ -453,7 +454,7 @@ def _get_outliers_for_column(series, low_bound=None, high_bound=None, convert_se
             - low_indices (list[int]): the corresponding index values for each of the lower outliers
             - high_indices (list[int]): the corresponding index values for each of the upper outliers
     """
-    if convert_series:
+    if transform_series:
         if dd and isinstance(series, dd.Series):
             series = series.compute()
         if ks and isinstance(series, ks.Series):
