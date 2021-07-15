@@ -1361,18 +1361,6 @@ def test_get_subset_df_with_schema(sample_df):
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
-def test_get_subset_df_use_dataframe_order(sample_df):
-    df = sample_df
-    columns = list(df.columns)
-    df.ww.init()
-
-    reverse = list(reversed(columns))
-    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=True)
-    assert list(actual.columns) == columns
-    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=False)
-    assert list(actual.columns) == reverse
-
-
 def test_select_ltypes_no_match_and_all(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types={'full_name': PersonFullName,
@@ -1734,6 +1722,23 @@ def test_select_return_schema(sample_df):
     empty_schema = sample_df.ww.select(include='Double', return_schema=True)
     assert isinstance(empty_schema, TableSchema)
     assert len(empty_schema.columns) == 0
+
+
+@pytest.mark.parametrize(
+    "ww_type, pandas_type",
+    [(["Integer", "IntegerNullable"], "int"),
+     (["Double"], "float"),
+     (["Datetime"], "datetime"),
+     (["Unknown", "EmailAddress"], "string"),
+     (["Categorical"], "category"),
+     (["BooleanNullable"], "boolean")]
+)
+def test_select_retains_column_order(ww_type, pandas_type, sample_df):
+    sample_df.ww.init()
+
+    ww_schema_column_order = [x for x in sample_df.ww.select(ww_type, return_schema=True).columns.keys()]
+    pandas_column_order = [x for x in sample_df.select_dtypes(include=pandas_type).columns]
+    assert ww_schema_column_order == pandas_column_order
 
 
 def test_select_include_and_exclude_error(sample_df):
