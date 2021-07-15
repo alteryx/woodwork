@@ -11,12 +11,13 @@ Future Release
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
         * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`628`)
+        * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`simha104`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`thehomebrewnerd`, :user:`simha104`
 
 v0.5.0 Jul 7, 2021
 ==================
