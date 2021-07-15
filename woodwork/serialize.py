@@ -207,5 +207,9 @@ def _create_archive(tmpdir):
 
 def save_orc_file(dataframe, filepath):
     from pyarrow import Table, orc
-    pa_table = Table.from_pandas(dataframe, preserve_index=False)
+    df = dataframe.copy()
+    for c in df:
+        if df[c].dtype.name == 'category':
+            df[c] = df[c].astype('string')
+    pa_table = Table.from_pandas(df, preserve_index=False)
     orc.write_table(pa_table, filepath)

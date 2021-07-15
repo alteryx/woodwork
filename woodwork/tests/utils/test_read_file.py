@@ -51,13 +51,14 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
                 'full_name': 'NaturalLanguage',
                 'phone_number': 'PhoneNumber',
                 'is_registered': 'BooleanNullable',
-                'age': 'IntegerNullable'},
+                'age': 'IntegerNullable',
+                'nullable_integer': 'IntegerNullable'},
             "semantic_tags": {
                 'age': ['tag1', 'tag2'],
                 'is_registered': ['tag3', 'tag4']
             }
         }, False),
-        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean'}}, False),
+        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean', 'nullable_integer': 'Int64'}}, False),
         ("sample.feather", ("to_feather", {}), {}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'feather', "index": "id"}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'application/feather', "index": "id"}, False),
@@ -88,7 +89,7 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         # pandas does not read data into nullable types currently from csv or orc,
         # so the types in df will be different than the types inferred from sample_df_pandas
         # which uses the nullable types
-        schema_df = schema_df.astype({'age': 'float64', 'is_registered': 'object'})
+        schema_df = schema_df.astype({'age': 'float64', 'nullable_integer': 'float64', 'is_registered': 'object'})
     schema_df.ww.init(index=kwargs.get('index'),
                       time_index=kwargs.get('time_index'),
                       logical_types=kwargs.get('logical_types'),
@@ -98,5 +99,6 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
     if "nrows" in kwargs:
         assert len(df) == kwargs["nrows"]
         schema_df = schema_df.head(kwargs["nrows"])
+        schema_df['categorical'] = schema_df['categorical'].cat.remove_unused_categories()
 
     pd.testing.assert_frame_equal(df, schema_df)
