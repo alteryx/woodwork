@@ -27,6 +27,7 @@ def init_series(series, logical_type=None, semantic_tags=None,
         use_standard_tags (bool, optional): If True, will add standard semantic tags to the series
             based on the inferred or specified logical type of the series. Defaults to True.
         description (str, optional): Optional text describing the contents of the series.
+        origin (str, optional): Optional text specifying origin of the column (i.e. "base" or "engineered").
         metadata (dict[str -> json serializable], optional): Metadata associated with the series.
 
     Returns:
