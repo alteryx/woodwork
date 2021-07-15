@@ -982,33 +982,118 @@ def test_box_plot_on_non_numeric_col(outliers_df):
 
 
 def test_outliers_with_fully_null_col(outliers_df):
+    empty_outliers_dict = {
+        "low_values": [],
+        "high_values": [],
+        "low_indices": [],
+        "high_indices": []
+    }
     fully_null_double_series = init_series(outliers_df['nans'], logical_type='Double')
-    assert fully_null_double_series.ww.outliers_dict() is None
+    assert fully_null_double_series.ww.outliers_dict() == empty_outliers_dict
+
+    assert fully_null_double_series.ww.outliers_dict(low_bound=0, high_bound=5) == empty_outliers_dict
 
     fully_null_int_series = init_series(outliers_df['nans'], logical_type='IntegerNullable')
-    assert fully_null_int_series.ww.outliers_dict() is None
+    assert fully_null_int_series.ww.outliers_dict() == empty_outliers_dict
 
     fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
-    assert fully_null_categorical_series.ww.outliers_dict() is None
+    error = "Cannot calculate outliers for non-numeric column"
+    with pytest.raises(TypeError, match=error):
+        fully_null_categorical_series.ww.outliers_dict()
 
 
 def test_box_plot_with_fully_null_col(outliers_df):
     fully_null_double_series = init_series(outliers_df['nans'], logical_type='Double')
-    assert fully_null_double_series.ww.box_plot_dict() is None
+    box_plot_dict = fully_null_double_series.ww.box_plot_dict()
+
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert box_plot_dict['quantiles'] == {}
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
+
+    box_plot_dict = fully_null_double_series.ww.box_plot_dict(quantiles={0.25: 1, 0.75: 10})
+
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert box_plot_dict['quantiles'] == {}
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
 
     fully_null_int_series = init_series(outliers_df['nans'], logical_type='IntegerNullable')
-    assert fully_null_int_series.ww.box_plot_dict() is None
+    box_plot_dict = fully_null_int_series.ww.box_plot_dict()
+
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert box_plot_dict['quantiles'] == {}
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
 
     fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
-    assert fully_null_categorical_series.ww.box_plot_dict() is None
+    error = "Cannot calculate box plot statistics for non-numeric column"
+    with pytest.raises(TypeError, match=error):
+        fully_null_categorical_series.ww.box_plot_dict()
 
 
-def test_outliers_with_empty_col():
-    # --> add tests
-    pass
+def test_outliers_with_empty_col(outliers_df):
+    empty_outliers_dict = {
+        "low_values": [],
+        "high_values": [],
+        "low_indices": [],
+        "high_indices": []
+    }
+    series = outliers_df['nans'].dropna()
+
+    fully_null_double_series = init_series(series, logical_type='Double')
+    assert fully_null_double_series.ww.outliers_dict() == empty_outliers_dict
+
+    assert fully_null_double_series.ww.outliers_dict(low_bound=0, high_bound=5) == empty_outliers_dict
+
+    fully_null_int_series = init_series(series, logical_type='IntegerNullable')
+    assert fully_null_int_series.ww.outliers_dict() == empty_outliers_dict
+
+    fully_null_categorical_series = init_series(series, logical_type='Categorical')
+    error = "Cannot calculate outliers for non-numeric column"
+    with pytest.raises(TypeError, match=error):
+        fully_null_categorical_series.ww.outliers_dict()
 
 
-def test_box_plot_with_empty_col():
+def test_box_plot_with_empty_col(outliers_df):
+    series = outliers_df['nans'].dropna()
+
+    fully_null_double_series = init_series(series, logical_type='Double')
+    box_plot_dict = fully_null_double_series.ww.box_plot_dict()
+
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert box_plot_dict['quantiles'] == {}
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
+
+    box_plot_dict = fully_null_double_series.ww.box_plot_dict(quantiles={0.25: 1, 0.75: 10})
+
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert box_plot_dict['quantiles'] == {}
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
+
+    fully_null_int_series = init_series(series, logical_type='IntegerNullable')
+    box_plot_dict = fully_null_int_series.ww.box_plot_dict()
+
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert box_plot_dict['quantiles'] == {}
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
+
+    fully_null_categorical_series = init_series(series, logical_type='Categorical')
+    error = "Cannot calculate box plot statistics for non-numeric column"
+    with pytest.raises(TypeError, match=error):
+        fully_null_categorical_series.ww.box_plot_dict()
+
+
+def test_low_bound_greater_than_high_bound():
     pass
 
 

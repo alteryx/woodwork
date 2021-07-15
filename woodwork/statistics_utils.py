@@ -366,6 +366,8 @@ def _calculate_iqr_bounds(series=None, quantiles=None):
     low_bound = q1 - (iqr * 1.5)
     high_bound = q3 + (iqr * 1.5)
 
+    # --> consider standardizing nulls to np.nan
+
     return low_bound, high_bound
 
 
@@ -399,8 +401,18 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         series = series.to_pandas()
 
     series = series.dropna()
+
+    # An empty or fully null Series should have no outliers, bounds, or quantiles
     if series.shape[0] == 0:
-        return
+        return {
+            'low_bound': np.nan,
+            'high_bound': np.nan,
+            'quantiles': {},
+            "low_values": [],
+            "high_values": [],
+            "low_indices": [],
+            "high_indices": []
+        }
 
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
@@ -409,6 +421,7 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         low_bound, high_bound = _calculate_iqr_bounds(quantiles=quantiles)
     else:
         # if first and third quantile are not present, we have to calulate from the data
+        # --> raise error if quantiles provided but not q1 and q3
         low_bound, high_bound = _calculate_iqr_bounds(series=series)
 
     min = quantiles.get(0.0)
@@ -461,11 +474,19 @@ def _get_outliers_for_column(series, low_bound=None, high_bound=None, transform_
             series = series.to_pandas()
 
         series = series.dropna()
-        if series.shape[0] == 0:
-            return
+
+    # An empty or fully null Series has no outliers
+    if series.shape[0] == 0:
+        return {
+            "low_values": [],
+            "high_values": [],
+            "low_indices": [],
+            "high_indices": []
+        }
 
     if low_bound is None or high_bound is None:
         low_bound, high_bound = _calculate_iqr_bounds(series)
+    # --> change above to only if both are none, and then below, if either is none, raise error
 
     low_series = series[series < low_bound]
     high_series = series[series > high_bound]
