@@ -7,6 +7,7 @@ Future Release
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
           type (:pr:`1047`)
+        * Add feature origin attribute to schema (:pr:`1056`)
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)

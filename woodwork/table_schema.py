@@ -52,7 +52,7 @@ class TableSchema(object):
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
                 Unspecified columns will use the default value. Defaults to False.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
-            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is 
+            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
             validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
