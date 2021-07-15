@@ -2330,7 +2330,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
     if ks and isinstance(sample_df, ks.DataFrame):
         correct_physical_types['categorical'] = 'string'
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
-                                       index=list(correct_physical_types.keys())) 
+                                       index=list(correct_physical_types.keys()))
 
     assert correct_physical_types.equals(returned_types['Physical Type'])
     correct_logical_types = pd.Series([ltype() for ltype in sample_inferred_logical_types.values()],
