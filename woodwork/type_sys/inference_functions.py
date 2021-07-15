@@ -35,7 +35,7 @@ def categorical_func(series):
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
     if ((pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype)) and
-            _is_numeric_categorical(series, numeric_categorical_threshold)):
+            _is_categorical(series, numeric_categorical_threshold)):
         return True
     return False
 
@@ -49,7 +49,7 @@ def integer_func(series):
 def integer_nullable_func(series):
     numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
     if (pdtypes.is_integer_dtype(series.dtype) and
-            not _is_numeric_categorical(series, numeric_categorical_threshold)):
+            not _is_categorical(series, numeric_categorical_threshold)):
         return True
     return False
 
@@ -57,7 +57,7 @@ def integer_nullable_func(series):
 def double_func(series):
     numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
     if (pdtypes.is_float_dtype(series.dtype) and
-            not _is_numeric_categorical(series, numeric_categorical_threshold)):
+            not _is_categorical(series, numeric_categorical_threshold)):
         return True
     return False
 
@@ -107,5 +107,5 @@ def email_address_func(series: pd.Series) -> bool:
     return matches.sum() == matches.count()
 
 
-def _is_numeric_categorical(series, threshold):
+def _is_categorical(series, threshold):
     return threshold != -1 and series.nunique() < threshold
