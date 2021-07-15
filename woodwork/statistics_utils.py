@@ -5,12 +5,6 @@ import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
-# from woodwork.accessor_utils import (
-#     _is_dask_dataframe,
-#     _is_dask_series,
-#     _is_koalas_dataframe,
-#     _is_koalas_series
-# )
 from woodwork.logical_types import (
     Datetime,
     Double,

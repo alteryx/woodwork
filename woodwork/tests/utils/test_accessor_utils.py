@@ -235,17 +235,29 @@ def test_is_schema_valid_false(sample_df):
     assert not is_schema_valid(missing_col_df, schema)
 
 
-def test_is_dask_dataframe(sample_df_dask):
-    assert _is_dask_dataframe(sample_df_dask)
+def test_is_dask_dataframe(sample_df):
+    if dd and isinstance(sample_df, dd.DataFrame):
+        assert _is_dask_dataframe(sample_df)
+    else:
+        assert not _is_dask_dataframe(sample_df)
 
 
-def test_is_dask_series(sample_series_dask):
-    assert _is_dask_series(sample_series_dask)
+def test_is_dask_series(sample_series):
+    if dd and isinstance(sample_series, dd.Series):
+        assert _is_dask_series(sample_series)
+    else:
+        assert not _is_dask_series(sample_series)
 
 
-def test_is_koalas_dataframe(sample_df_koalas):
-    assert _is_koalas_dataframe(sample_df_koalas)
+def test_is_koalas_dataframe(sample_df):
+    if ks and isinstance(sample_df, ks.DataFrame):
+        assert _is_koalas_dataframe(sample_df)
+    else:
+        assert not _is_koalas_dataframe(sample_df)
 
 
-def test_is_koalas_series(sample_series_koalas):
-    assert _is_koalas_series(sample_series_koalas)
+def test_is_koalas_series(sample_series):
+    if ks and isinstance(sample_series, ks.Series):
+        assert _is_koalas_series(sample_series)
+    else:
+        assert not _is_koalas_series(sample_series)
