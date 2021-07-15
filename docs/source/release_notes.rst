@@ -10,7 +10,7 @@ Future Release
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
-        * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`628`)
+        * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
