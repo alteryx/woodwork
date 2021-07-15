@@ -4,7 +4,6 @@ from inspect import isclass
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
 from woodwork.accessor_utils import init_series
 from woodwork.logical_types import (
@@ -870,103 +869,16 @@ def test_calculate_iqr_bounds_without_quantiles(outliers_df_pandas):
     assert expected_high == high
 
 
-def test_get_outliers_for_column_no_bounds(outliers_df):
-    has_outliers_series = outliers_df['has_outliers']
-    has_outliers_series.ww.init()
-
-    outliers_dict = has_outliers_series.ww.outliers_dict()
-
-    assert outliers_dict['low_values'] == [-16]
-    assert outliers_dict['high_values'] == [93]
-    assert outliers_dict['low_indices'] == [3]
-    assert outliers_dict['high_indices'] == [0]
-
-    # only passing one bound will still calculate both of them, so results won't match bound passed in
-    # --> should raise error
-    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=45)
-
-    assert outliers_dict['low_values'] == [-16]
-    assert outliers_dict['high_values'] == [93]
-    assert outliers_dict['low_indices'] == [3]
-    assert outliers_dict['high_indices'] == [0]
-
-    no_outliers_series = outliers_df['no_outliers']
-    no_outliers_series.ww.init()
-
-    outliers_dict = no_outliers_series.ww.outliers_dict()
-
-    assert outliers_dict['low_values'] == []
-    assert outliers_dict['high_values'] == []
-    assert outliers_dict['low_indices'] == []
-    assert outliers_dict['high_indices'] == []
-
-
-def test_get_outliers_for_column_with_bounds(outliers_df):
-    has_outliers_series = outliers_df['has_outliers']
-    has_outliers_series.ww.init()
-
-    # these are the bounds that we would calculate with IQR
-    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=8.125, high_bound=83.125)
-
-    assert outliers_dict['low_values'] == [-16]
-    assert outliers_dict['high_values'] == [93]
-    assert outliers_dict['low_indices'] == [3]
-    assert outliers_dict['high_indices'] == [0]
-
-    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=45, high_bound=56)
-
-    assert outliers_dict['low_values'] == [42, 37, -16, 42, 36, 23]
-    assert outliers_dict['high_values'] == [93, 57, 60]
-    assert outliers_dict['low_indices'] == [1, 2, 3, 5, 6, 9]
-    assert outliers_dict['high_indices'] == [0, 7, 8]
-
-    # confirm that the bounds provided are inclusive
-    # there are data points that are equal to these bounds. They are not outliers.
-    outliers_dict = has_outliers_series.ww.outliers_dict(low_bound=42, high_bound=57)
-
-    assert outliers_dict['low_values'] == [37, -16, 36, 23]
-    assert outliers_dict['high_values'] == [93, 60]
-    assert outliers_dict['low_indices'] == [2, 3, 6, 9]
-    assert outliers_dict['high_indices'] == [0, 8]
-
-    no_outliers_series = outliers_df['no_outliers']
-    no_outliers_series.ww.init()
-    outliers_dict = no_outliers_series.ww.outliers_dict(low_bound=0, high_bound=100)
-
-    assert outliers_dict['low_values'] == []
-    assert outliers_dict['high_values'] == []
-    assert outliers_dict['low_indices'] == []
-    assert outliers_dict['high_indices'] == []
-
-
 def test_get_outliers_for_column_with_nans(outliers_df):
     contains_nans_series = outliers_df['has_outliers_with_nans']
     contains_nans_series.ww.init()
 
-    outliers_dict = contains_nans_series.ww.outliers_dict()
     box_plot_dict = contains_nans_series.ww.box_plot_dict()
-
-    assert outliers_dict['low_values'] == [-16]
-    assert outliers_dict['high_values'] == [93]
-    assert outliers_dict['low_indices'] == [3]
-    assert outliers_dict['high_indices'] == [5]
 
     assert box_plot_dict['low_values'] == [-16]
     assert box_plot_dict['high_values'] == [93]
     assert box_plot_dict['low_indices'] == [3]
     assert box_plot_dict['high_indices'] == [5]
-
-
-def test_outliers_on_non_numeric_col(outliers_df):
-    error = "Cannot calculate outliers for non-numeric column"
-
-    non_numeric_series = init_series(outliers_df['non_numeric'], logical_type='Categorical')
-    with pytest.raises(TypeError, match=error):
-        non_numeric_series.ww.outliers_dict()
-
-    wrong_dtype_series = init_series(outliers_df['has_outliers'], logical_type='Categorical')
-    with pytest.raises(TypeError, match=error):
-        wrong_dtype_series.ww.outliers_dict()
 
 
 def test_box_plot_on_non_numeric_col(outliers_df):
@@ -979,27 +891,6 @@ def test_box_plot_on_non_numeric_col(outliers_df):
     wrong_dtype_series = init_series(outliers_df['has_outliers'], logical_type='Categorical')
     with pytest.raises(TypeError, match=error):
         wrong_dtype_series.ww.box_plot_dict()
-
-
-def test_outliers_with_fully_null_col(outliers_df):
-    empty_outliers_dict = {
-        "low_values": [],
-        "high_values": [],
-        "low_indices": [],
-        "high_indices": []
-    }
-    fully_null_double_series = init_series(outliers_df['nans'], logical_type='Double')
-    assert fully_null_double_series.ww.outliers_dict() == empty_outliers_dict
-
-    assert fully_null_double_series.ww.outliers_dict(low_bound=0, high_bound=5) == empty_outliers_dict
-
-    fully_null_int_series = init_series(outliers_df['nans'], logical_type='IntegerNullable')
-    assert fully_null_int_series.ww.outliers_dict() == empty_outliers_dict
-
-    fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
-    error = "Cannot calculate outliers for non-numeric column"
-    with pytest.raises(TypeError, match=error):
-        fully_null_categorical_series.ww.outliers_dict()
 
 
 def test_box_plot_with_fully_null_col(outliers_df):
@@ -1033,29 +924,6 @@ def test_box_plot_with_fully_null_col(outliers_df):
     error = "Cannot calculate box plot statistics for non-numeric column"
     with pytest.raises(TypeError, match=error):
         fully_null_categorical_series.ww.box_plot_dict()
-
-
-def test_outliers_with_empty_col(outliers_df):
-    empty_outliers_dict = {
-        "low_values": [],
-        "high_values": [],
-        "low_indices": [],
-        "high_indices": []
-    }
-    series = outliers_df['nans'].dropna()
-
-    fully_null_double_series = init_series(series, logical_type='Double')
-    assert fully_null_double_series.ww.outliers_dict() == empty_outliers_dict
-
-    assert fully_null_double_series.ww.outliers_dict(low_bound=0, high_bound=5) == empty_outliers_dict
-
-    fully_null_int_series = init_series(series, logical_type='IntegerNullable')
-    assert fully_null_int_series.ww.outliers_dict() == empty_outliers_dict
-
-    fully_null_categorical_series = init_series(series, logical_type='Categorical')
-    error = "Cannot calculate outliers for non-numeric column"
-    with pytest.raises(TypeError, match=error):
-        fully_null_categorical_series.ww.outliers_dict()
 
 
 def test_box_plot_with_empty_col(outliers_df):
@@ -1130,37 +998,6 @@ def test_box_plot_info_for_column(outliers_df):
     assert len(box_plot_info['quantiles']) == 2
     assert len(box_plot_info['high_values']) == 1
     assert len(box_plot_info['low_values']) == 1
-
-
-@patch("woodwork.statistics_utils._get_outliers_for_column")
-def test_box_plot_info_no_outliers(mock_get_outliers, outliers_df):
-    assert not mock_get_outliers.called
-
-    no_outliers_series = outliers_df['no_outliers']
-    no_outliers_series.ww.init()
-
-    # all the quantiles will be calculated, so we can use min and max to see if there are outliers
-    box_plot_info = no_outliers_series.ww.box_plot_dict()
-
-    assert set(box_plot_info.keys()) == {'low_bound',
-                                         'high_bound',
-                                         'quantiles',
-                                         'low_values',
-                                         'high_values',
-                                         'low_indices',
-                                         'high_indices'}
-    assert box_plot_info['low_bound'] == 8.125
-    assert box_plot_info['high_bound'] == 83.125
-    assert len(box_plot_info['quantiles']) == 5
-    assert len(box_plot_info['high_values']) == 0
-    assert len(box_plot_info['low_values']) == 0
-
-    assert not mock_get_outliers.called
-
-    # if both min and max are not present in the quantiles, we have to filter outliers
-    no_outliers_series.ww.box_plot_dict(quantiles={0.25: 36.25, 0.75: 55.0})
-
-    assert mock_get_outliers.called
 
 
 def test_box_plot_partial_input(outliers_df):

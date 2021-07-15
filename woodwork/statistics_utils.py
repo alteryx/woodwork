@@ -343,34 +343,6 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     return val_counts
 
 
-def _calculate_iqr_bounds(series=None, quantiles=None):
-    """Calculates bounds for outlier detection using the 1.5*IQR method.
-
-    Args:
-        series (pd.Series, optional): Data used to calculate first and third quartiles used to calcualte
-            the interquartile range. If present, any values passed in for quantiles will be ignored. Instead,
-            the first and third quartiles will be calculated from this series.
-        quantiles (dict[float->float], optional): Quantiles that can be used to calculate the interquartile
-            range. The keys of the dictionary should be the quantile floating point value.
-
-    Returns:
-        (float, float): a tuple containing the low bound and the high bound calculated from the IQR
-    """
-    if series is not None:
-        quantiles = series.quantile([0.25, 0.75]).to_dict()
-    q1 = quantiles[0.25]
-    q3 = quantiles[0.75]
-
-    iqr = q3 - q1
-
-    low_bound = q1 - (iqr * 1.5)
-    high_bound = q3 + (iqr * 1.5)
-
-    # --> consider standardizing nulls to np.nan
-
-    return low_bound, high_bound
-
-
 def _get_box_plot_info_for_column(series, quantiles=None):
     """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
 
@@ -435,7 +407,15 @@ def _get_box_plot_info_for_column(series, quantiles=None):
         }
     else:
         # We've already removed nans and converted to pandas
-        outliers_dict = _get_outliers_for_column(series, low_bound, high_bound, transform_series=False)
+        low_series = series[series < low_bound]
+        high_series = series[series > high_bound]
+
+        outliers_dict = {
+            "low_values": low_series.tolist(),
+            "high_values": high_series.tolist(),
+            "low_indices": low_series.index.tolist(),
+            "high_indices": high_series.index.tolist()
+        }
 
     return {'low_bound': low_bound,
             'high_bound': high_bound,
@@ -443,60 +423,32 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             **outliers_dict}
 
 
-def _get_outliers_for_column(series, low_bound=None, high_bound=None, transform_series=True):
-    """Gets the values of a series that lay above and below specified bounds.
+def _calculate_iqr_bounds(series=None, quantiles=None):
+    """Calculates bounds for outlier detection using the 1.5*IQR method.
 
     Args:
-        series (Series): Data for which the outliers should be determined.
-        low_bound (float, optional): The number below which outliers lay. Is inclusive.
-        high_bound (float, optional): The number above which outliers lay. Is inclusive.
-        transform_series (bool, optional): If True, will remove null values and
-            convert the Series to pandas if necessary. Defaults to True.
-
-    Note:
-        If neither or only one of low_bound or high_bound is passed in, the bounds will be calculated
-        using the IQR method.
+        series (pd.Series, optional): Data used to calculate first and third quartiles used to calcualte
+            the interquartile range. If present, any values passed in for quantiles will be ignored. Instead,
+            the first and third quartiles will be calculated from this series.
+        quantiles (dict[float->float], optional): Quantiles that can be used to calculate the interquartile
+            range. The keys of the dictionary should be the quantile floating point value.
 
     Returns:
-        (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
-            is fully null. Otherwise, returns a dictionary containing outlier values and their corresponding indexes.
-            The following elements will be found in the dictionary:
-
-            - low_values (list[float, int]): the values of the lower outliers
-            - high_values (list[float, int]): the values of the upper outliers
-            - low_indices (list[int]): the corresponding index values for each of the lower outliers
-            - high_indices (list[int]): the corresponding index values for each of the upper outliers
+        (float, float): a tuple containing the low bound and the high bound calculated from the IQR
     """
-    if transform_series:
-        if dd and isinstance(series, dd.Series):
-            series = series.compute()
-        if ks and isinstance(series, ks.Series):
-            series = series.to_pandas()
+    if series is not None:
+        quantiles = series.quantile([0.25, 0.75]).to_dict()
+    q1 = quantiles[0.25]
+    q3 = quantiles[0.75]
 
-        series = series.dropna()
+    iqr = q3 - q1
 
-    # An empty or fully null Series has no outliers
-    if series.shape[0] == 0:
-        return {
-            "low_values": [],
-            "high_values": [],
-            "low_indices": [],
-            "high_indices": []
-        }
+    low_bound = q1 - (iqr * 1.5)
+    high_bound = q3 + (iqr * 1.5)
 
-    if low_bound is None or high_bound is None:
-        low_bound, high_bound = _calculate_iqr_bounds(series)
-    # --> change above to only if both are none, and then below, if either is none, raise error
+    # --> consider standardizing nulls to np.nan
 
-    low_series = series[series < low_bound]
-    high_series = series[series > high_bound]
-
-    return {
-        "low_values": low_series.tolist(),
-        "high_values": high_series.tolist(),
-        "low_indices": low_series.index.tolist(),
-        "high_indices": high_series.index.tolist()
-    }
+    return low_bound, high_bound
 
 
 def _get_numeric_value_counts_in_range(series, _range):

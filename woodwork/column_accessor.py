@@ -18,10 +18,7 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
-from woodwork.statistics_utils import (
-    _get_box_plot_info_for_column,
-    _get_outliers_for_column
-)
+from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
 from woodwork.utils import (
     _get_column_logical_type,
@@ -360,36 +357,6 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         self._schema._set_semantic_tags(semantic_tags)
-
-    def outliers_dict(self, low_bound=None, high_bound=None):
-        """Gets the values of a series that lay above and below specified bounds.
-
-        Args:
-            series (Series): Data for which the outliers should be determined.
-            low_bound (float, optional): The number below which outliers lay. Is inclusive.
-            high_bound (float, optional): The number above which outliers lay. Is inclusive.
-
-        Note:
-            If neither or only one of low_bound or high_bound is passed in, the bounds will be calculated
-            using the IQR method.
-
-        Returns:
-            (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
-                is fully null. Otherwise, returns a dictionary containing the outlier values and their
-                corresponding indexes. The following elements will be found in the dictionary:
-
-                - low_values (list[float, int]): the values of the lower outliers
-                - high_values (list[float, int]): the values of the upper outliers
-                - low_indices (list[int]): the corresponding index values for each of the lower outliers
-                - high_indices (list[int]): the corresponding index values for each of the upper outliers
-        """
-        if self._schema is None:
-            _raise_init_error()
-
-        if not self._schema.is_numeric:
-            raise TypeError('Cannot calculate outliers for non-numeric column')
-
-        return _get_outliers_for_column(self._series, low_bound=low_bound, high_bound=high_bound)
 
     def box_plot_dict(self, quantiles=None):
         """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
