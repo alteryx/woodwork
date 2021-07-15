@@ -374,8 +374,9 @@ class WoodworkColumnAccessor:
             using the IQR method.
 
         Returns:
-            dict[str -> float,list[number]]: a dictionary containing outlier values and their corresponding indexes.
-                The following elements will be found in the dictionary:
+            (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
+                is fully null. Otherwise, returns a dictionary containing the outlier values and their
+                corresponding indexes. The following elements will be found in the dictionary:
 
                 - low_values (list[float, int]): the values of the lower outliers
                 - high_values (list[float, int]): the values of the upper outliers
@@ -400,7 +401,8 @@ class WoodworkColumnAccessor:
                 The keys of the dictionary should be the quantile floating point value.
 
         Returns:
-            dict[str -> float,list[number]]: a dictionary containing box plot information for the Series.
+            (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
+                is fully null. Otherwise, returns a dictionary containing box plot information for the Series.
                 The following elements will be found in the dictionary:
 
                 - low_bound (float): the lower bound below which outliers lay - to be used as a whisker

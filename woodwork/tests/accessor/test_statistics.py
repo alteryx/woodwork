@@ -844,12 +844,12 @@ def test_calculate_iqr_bounds_with_quantiles(outliers_df_pandas):
     q1, q3 = np.percentile(series, [25, 75])
     quantiles = {0.25: q1, 0.75: q3, 0.0: 100000}
 
-    low, high = _calculate_iqr_bounds(outliers_df_pandas['has_outliers'], quantiles=quantiles)
+    low, high = _calculate_iqr_bounds(quantiles=quantiles)
 
     assert expected_low == low
     assert expected_high == high
 
-    low, high = _calculate_iqr_bounds(outliers_df_pandas['no_outliers'], quantiles=quantiles)
+    low, high = _calculate_iqr_bounds(quantiles=quantiles)
 
     assert expected_low == low
     assert expected_high == high

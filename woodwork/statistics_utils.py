@@ -380,7 +380,8 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             The keys of the dictionary should be the quantile floating point value.
 
     Returns:
-        dict[str -> float,list[number]]: a dictionary containing box plot information for the Series.
+        (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
+            is fully null. Otherwise, returns a dictionary containing box plot information for the Series.
             The following elements will be found in the dictionary:
 
             - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
@@ -435,13 +436,16 @@ def _get_outliers_for_column(series, low_bound=None, high_bound=None, convert_se
         series (Series): Data for which the outliers should be determined.
         low_bound (float, optional): The number below which outliers lay. Is inclusive.
         high_bound (float, optional): The number above which outliers lay. Is inclusive.
+        convert_series (bool, optional): If True, will remove null values and
+            convert the Series to pandas if necessary. Defaults to True.
 
     Note:
         If neither or only one of low_bound or high_bound is passed in, the bounds will be calculated
         using the IQR method.
 
     Returns:
-        dict[str -> float,list[number]]: a dictionary containing outlier values and their corresponding indexes.
+        (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
+            is fully null. Otherwise, returns a dictionary containing outlier values and their corresponding indexes.
             The following elements will be found in the dictionary:
 
             - low_values (list[float, int]): the values of the lower outliers
