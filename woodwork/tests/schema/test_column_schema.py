@@ -8,7 +8,8 @@ from woodwork.column_schema import (
     ColumnSchema,
     _validate_description,
     _validate_logical_type,
-    _validate_metadata
+    _validate_metadata,
+    _validate_origin
 )
 from woodwork.exceptions import (
     DuplicateTagsWarning,
@@ -45,6 +46,12 @@ def test_validate_description_errors():
         _validate_description(int)
 
 
+def test_validate_origin_errors():
+    match = re.escape("Column origin must be a string")
+    with pytest.raises(TypeError, match=match):
+        _validate_origin(int)
+
+
 def test_validate_metadata_errors():
     match = re.escape("Column metadata must be a dictionary")
     with pytest.raises(TypeError, match=match):
@@ -53,25 +60,31 @@ def test_validate_metadata_errors():
 
 @patch("woodwork.column_schema._validate_metadata")
 @patch("woodwork.column_schema._validate_description")
+@patch("woodwork.column_schema._validate_origin")
 @patch("woodwork.column_schema._validate_logical_type")
-def test_validation_methods_called(mock_validate_logical_type, mock_validate_description, mock_validate_metadata,
-                                   sample_column_names, sample_inferred_logical_types):
+def test_validation_methods_called(mock_validate_logical_type, mock_validate_description, mock_validate_origin,
+                                   mock_validate_metadata, sample_column_names, sample_inferred_logical_types):
     assert not mock_validate_logical_type.called
     assert not mock_validate_description.called
+    assert not mock_validate_origin.called
     assert not mock_validate_metadata.called
 
     not_validated_column = ColumnSchema(logical_type=Integer,
-                                        description='this is a description', metadata={'user': 'person1'},
+                                        description='this is a description',
+                                        origin='base', metadata={'user': 'person1'},
                                         validate=False)
     assert not mock_validate_logical_type.called
     assert not mock_validate_description.called
+    assert not mock_validate_origin.called
     assert not mock_validate_metadata.called
 
     validated_column = ColumnSchema(logical_type=Integer,
-                                    description='this is a description', metadata={'user': 'person1'},
+                                    description='this is a description',
+                                    origin='base', metadata={'user': 'person1'},
                                     validate=True)
     assert mock_validate_logical_type.called
     assert mock_validate_description.called
+    assert mock_validate_origin.called
     assert mock_validate_metadata.called
 
     assert validated_column == not_validated_column
@@ -84,6 +97,7 @@ def test_column_schema():
     assert column.semantic_tags == {'test_tag'}
 
     assert column.description is None
+    assert column.origin is None
     assert column.metadata == {}
 
 
@@ -94,9 +108,11 @@ def test_column_schema_standard_tags():
 
 
 def test_column_schema_params():
-    column = ColumnSchema(logical_type=Integer, description='this is a column!', metadata={'created_by': 'user1'})
+    column = ColumnSchema(logical_type=Integer, description='this is a column!', origin='base',
+                          metadata={'created_by': 'user1'})
 
     assert column.description == 'this is a column!'
+    assert column.origin == 'base'
     assert column.metadata == {'created_by': 'user1'}
 
 
@@ -104,6 +120,7 @@ def test_column_schema_null_params():
     empty_col = ColumnSchema()
     assert empty_col.logical_type is None
     assert empty_col.description is None
+    assert empty_col.origin is None
     assert empty_col.semantic_tags == set()
     assert empty_col.metadata == {}
 
@@ -355,11 +372,13 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag():
 def test_schema_equality():
     col = ColumnSchema(logical_type=Categorical)
     diff_description_col = ColumnSchema(logical_type=Categorical, description='description')
+    diff_origin_col = ColumnSchema(logical_type=Categorical, origin='base')
     diff_metadata_col = ColumnSchema(logical_type=Categorical, metadata={'interesting_values': ['a', 'b']})
     use_standard_tags_col = ColumnSchema(logical_type=Categorical, use_standard_tags=True)
     diff_tags_col = ColumnSchema(logical_type=Categorical, semantic_tags={'new_tag'})
 
     assert col != diff_description_col
+    assert col != diff_origin_col
     assert col != diff_metadata_col
     assert col != use_standard_tags_col
     assert col != diff_tags_col

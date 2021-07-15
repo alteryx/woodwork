@@ -35,8 +35,8 @@ class WoodworkColumnAccessor:
         self._schema = None
 
     def init(self, logical_type=None, semantic_tags=None,
-             use_standard_tags=True, description=None, metadata=None,
-             schema=None, validate=True):
+             use_standard_tags=True, description=None, origin=None,
+             metadata=None, schema=None, validate=True):
         """Initializes Woodwork typing information for a Series.
 
         Args:
@@ -52,6 +52,7 @@ class WoodworkColumnAccessor:
             use_standard_tags (bool, optional): If True, will add standard semantic tags to the series
                 based on the inferred or specified logical type of the series. Defaults to True.
             description (str, optional): Optional text describing the contents of the series.
+            origin (str, optional): Optional text specifying origin of the column (i.e. "base" or "engineered").
             metadata (dict[str -> json serializable], optional): Metadata associated with the series.
             schema (Woodwork.ColumnSchema, optional): Typing information to use for the Series instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
@@ -73,6 +74,8 @@ class WoodworkColumnAccessor:
                 extra_params.append('semantic_tags')
             if description is not None:
                 extra_params.append('description')
+            if origin is not None:
+                extra_params.append('origin')
             if metadata is not None:
                 extra_params.append('metadata')
             if not use_standard_tags:
@@ -91,6 +94,7 @@ class WoodworkColumnAccessor:
                                         semantic_tags=semantic_tags,
                                         use_standard_tags=use_standard_tags,
                                         description=description,
+                                        origin=origin,
                                         metadata=metadata,
                                         validate=validate)
 
@@ -114,6 +118,19 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
         self._schema.description = description
+
+    @property
+    def origin(self):
+        """The origin of the series"""
+        if self._schema is None:
+            _raise_init_error()
+        return self._schema.origin
+
+    @origin.setter
+    def origin(self, origin):
+        if self._schema is None:
+            _raise_init_error()
+        self._schema.origin = origin
 
     @property
     def iloc(self):
@@ -261,6 +278,7 @@ class WoodworkColumnAccessor:
                                                column_metadata={self.name: col_schema.metadata},
                                                use_standard_tags={self.name: col_schema.use_standard_tags},
                                                column_descriptions={self.name: col_schema.description},
+                                               column_origins={self.name: col_schema.origin},
                                                validate=False)
                     if is_schema_valid(result, table_schema):
                         result.ww.init(schema=table_schema)
@@ -343,6 +361,7 @@ class WoodworkColumnAccessor:
                            semantic_tags=None,
                            use_standard_tags=self._schema.use_standard_tags,
                            description=self.description,
+                           origin=self.origin,
                            metadata=copy.deepcopy(self.metadata))
 
     def set_semantic_tags(self, semantic_tags):
