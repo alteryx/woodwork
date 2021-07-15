@@ -1,4 +1,5 @@
 import woodwork as ww
+from woodwork.accessor_utils import _is_koalas_series
 from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
@@ -37,7 +38,7 @@ def get_koalas_dtypes(dtypes):
 
 def test_integer_inference(integers):
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    if ks and isinstance(integers[0], ks.Series):
+    if _is_koalas_series(integers[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in integers:
@@ -48,7 +49,7 @@ def test_integer_inference(integers):
 
 def test_double_inference(doubles):
     dtypes = ['float', 'float32', 'float64', 'float_']
-    if ks and isinstance(doubles[0], ks.Series):
+    if _is_koalas_series(doubles[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in doubles:
@@ -72,7 +73,7 @@ def test_boolean_inference(bools):
 
 def test_datetime_inference(datetimes):
     dtypes = ['object', 'string', 'datetime64[ns]']
-    if ks and isinstance(datetimes[0], ks.Series):
+    if _is_koalas_series(datetimes[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in datetimes:
@@ -83,7 +84,7 @@ def test_datetime_inference(datetimes):
 
 def test_email_inference(emails):
     dtypes = ['object', 'string']
-    if ks and isinstance(emails[0], ks.Series):
+    if _is_koalas_series(emails[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in emails:
@@ -94,7 +95,7 @@ def test_email_inference(emails):
 
 def test_email_inference_failure(bad_emails):
     dtypes = ['object', 'string']
-    if ks and isinstance(bad_emails[0], ks.Series):
+    if _is_koalas_series(bad_emails[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in bad_emails:
@@ -105,7 +106,7 @@ def test_email_inference_failure(bad_emails):
 
 def test_categorical_inference(categories):
     dtypes = ['object', 'string', 'category']
-    if ks and isinstance(categories[0], ks.Series):
+    if _is_koalas_series(categories[0]):
         dtypes = get_koalas_dtypes(dtypes)
     for series in categories:
         for dtype in dtypes:
@@ -116,7 +117,7 @@ def test_categorical_inference(categories):
 def test_categorical_integers_inference(integers):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    if ks and isinstance(integers[0], ks.Series):
+    if _is_koalas_series(integers[0]):
         dtypes = get_koalas_dtypes(dtypes)
     for series in integers:
         for dtype in dtypes:
@@ -128,7 +129,7 @@ def test_categorical_integers_inference(integers):
 def test_categorical_double_inference(doubles):
     ww.config.set_option('numeric_categorical_threshold', 10)
     dtypes = ['float', 'float32', 'float64', 'float_']
-    if ks and isinstance(doubles[0], ks.Series):
+    if _is_koalas_series(doubles[0]):
         dtypes = get_koalas_dtypes(dtypes)
     for series in doubles:
         for dtype in dtypes:
@@ -147,7 +148,7 @@ def test_timedelta_inference(timedeltas):
 
 def test_unknown_inference(strings):
     dtypes = ['object', 'string']
-    if ks and isinstance(strings[0], ks.Series):
+    if _is_koalas_series(strings[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in strings:
@@ -158,7 +159,7 @@ def test_unknown_inference(strings):
 
 def test_unknown_inference_all_null(nulls):
     dtypes = ['object', 'string', 'category', 'datetime64[ns]']
-    if ks and isinstance(nulls[0], ks.Series):
+    if _is_koalas_series(nulls[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in nulls:
@@ -170,7 +171,7 @@ def test_unknown_inference_all_null(nulls):
 
 def test_unknown_inference_with_threshhold(long_strings):
     dtypes = ['object', 'string']
-    if ks and isinstance(long_strings[0], ks.Series):
+    if _is_koalas_series(long_strings[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     ww.config.set_option('categorical_threshold', 19)
@@ -204,7 +205,7 @@ def test_updated_ltype_inference(integers, type_sys):
     type_sys.add_type(Integer, inference_function=inference_fn)
 
     dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    if ks and isinstance(integers[0], ks.Series):
+    if _is_koalas_series(integers[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
     for series in integers:

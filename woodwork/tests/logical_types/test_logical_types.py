@@ -3,6 +3,7 @@ import re
 import pandas as pd
 import pytest
 
+from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import (
     Boolean,
@@ -60,7 +61,7 @@ def test_ordinal_init_with_order():
 
 def test_get_valid_dtype(sample_series):
     valid_dtype = Categorical._get_valid_dtype(type(sample_series))
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         assert valid_dtype == 'string'
     else:
         assert valid_dtype == 'category'
@@ -112,7 +113,7 @@ def test_datetime_transform(datetimes):
 
 
 def test_datetime_conversion_error(sample_series):
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         pytest.xfail('Dask does not show error until compute is made.')
 
     dtype = str(sample_series.dtype)

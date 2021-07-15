@@ -5,7 +5,12 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from woodwork.accessor_utils import _is_dataframe, init_series
+from woodwork.accessor_utils import (
+    _is_dask_series,
+    _is_dataframe,
+    _is_koalas_series,
+    init_series
+)
 from woodwork.column_accessor import WoodworkColumnAccessor
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
@@ -77,7 +82,7 @@ def test_accessor_init_with_schema_errors(sample_series):
     with pytest.raises(TypeError, match=error):
         head_series.ww.init(schema=int)
 
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         ltype_dtype = 'string'
         new_dtype = '<U0'
     else:
@@ -127,7 +132,7 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         series_dtype = '<U0'
     else:
         series_dtype = 'object'
@@ -247,7 +252,7 @@ def test_description_error_on_update(sample_series):
 def test_accessor_repr(sample_series):
     sample_series.ww.init(use_standard_tags=False)
     # Koalas doesn't support categorical
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         dtype = 'string'
     else:
         dtype = 'category'
@@ -331,7 +336,7 @@ def test_set_logical_type_valid_dtype_change(sample_series):
 
     new_series = sample_series.ww.set_logical_type('NaturalLanguage')
 
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         # Koalas uses string dtype for Categorical
         original_dtype = 'string'
     else:
@@ -345,9 +350,9 @@ def test_set_logical_type_valid_dtype_change(sample_series):
 
 
 def test_set_logical_type_invalid_dtype_change(sample_series):
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         pytest.xfail('Dask type conversion with astype does not fail until compute is called')
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         pytest.xfail('Koalas allows this conversion, filling values it cannot convert with NaN '
                      'and converting dtype to float.')
     sample_series.ww.init(logical_type='Categorical')
@@ -398,7 +403,7 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
 
 
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         pytest.xfail('Running replace on Koalas series changes series dtype to object, invalidating schema')
     sample_series.ww.init()
 
@@ -425,7 +430,7 @@ def test_series_methods_on_accessor_dtype_mismatch(sample_df):
 
 def test_series_methods_on_accessor_inplace(sample_series):
     # TODO: Try to find a supported inplace method for Dask, if one exists
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         pytest.xfail('Dask does not support pop.')
     comparison_series = sample_series.copy()
 
@@ -441,7 +446,7 @@ def test_series_methods_on_accessor_inplace(sample_series):
 def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
     sample_series.ww.init()
 
-    if ks and isinstance(sample_series, ks.Series):
+    if _is_koalas_series(sample_series):
         # Koalas uses `string` for Categorical, so must try a different conversion
         original_type = 'string'
         new_type = 'Int64'
@@ -463,7 +468,7 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     sample_series.ww.init()
     col_shape = sample_series.ww.shape
     series_shape = sample_series.shape
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         col_shape = (col_shape[0].compute(),)
         series_shape = (series_shape[0].compute())
     assert col_shape == (4,)
@@ -472,7 +477,7 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     assert sample_series.name == sample_series.ww.name
     series_nunique = sample_series.nunique()
     ww_nunique = sample_series.ww.nunique()
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         series_nunique = series_nunique.compute()
         ww_nunique = ww_nunique.compute()
     assert series_nunique == ww_nunique
@@ -577,9 +582,9 @@ def test_latlong_init_error_with_invalid_series(latlongs):
 
 def test_latlong_formatting_with_init_series(latlongs):
     expected_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
-    if dd and isinstance(latlongs[0], dd.Series):
+    if _is_dask_series(latlongs[0]):
         expected_series = dd.from_pandas(expected_series, npartitions=2)
-    elif ks and isinstance(latlongs[0], ks.Series):
+    elif _is_koalas_series(latlongs[0]):
         expected_series = ks.Series([[1.0, 2.0], [3.0, 4.0]])
 
     expected_series.ww.init(logical_type=LatLong)

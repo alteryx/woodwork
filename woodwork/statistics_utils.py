@@ -4,6 +4,13 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
+from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+# from woodwork.accessor_utils import (
+#     _is_dask_dataframe,
+#     _is_dask_series,
+#     _is_koalas_dataframe,
+#     _is_koalas_series
+# )
 from woodwork.logical_types import (
     Datetime,
     Double,
@@ -68,9 +75,9 @@ def _get_describe_dict(dataframe, include=None, callback=None,
 
     results = {}
 
-    if dd and isinstance(dataframe, dd.DataFrame):
+    if _is_dask_dataframe(dataframe):
         df = dataframe.compute()
-    elif ks and isinstance(dataframe, ks.DataFrame):
+    elif _is_koalas_dataframe(dataframe):
         df = dataframe.to_pandas()
 
         # Any LatLong columns will be using lists, which we must convert
@@ -117,7 +124,7 @@ def _get_describe_dict(dataframe, include=None, callback=None,
 
         mode = _get_mode(series)
         # The format of the mode should match its format in the DataFrame
-        if ks and isinstance(dataframe, ks.DataFrame) and series.name in latlong_columns:
+        if _is_koalas_dataframe(dataframe) and series.name in latlong_columns:
             mode = list(mode)
 
         values["nan_count"] = series.isna().sum()
@@ -251,9 +258,9 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         valid_columns.remove(dataframe.ww.index)
 
     data = dataframe.loc[:, valid_columns]
-    if dd and isinstance(data, dd.DataFrame):
+    if _is_dask_dataframe(data):
         data = data.compute()
-    if ks and isinstance(dataframe, ks.DataFrame):
+    if _is_koalas_dataframe(dataframe):
         data = data.to_pandas()
 
     # cut off data if necessary
@@ -322,9 +329,9 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     valid_cols = [col for col, column in dataframe.ww.columns.items() if column.is_categorical]
     data = dataframe[valid_cols]
     is_ks = False
-    if dd and isinstance(data, dd.DataFrame):
+    if _is_dask_dataframe(data):
         data = data.compute()
-    if ks and isinstance(data, ks.DataFrame):
+    if _is_koalas_dataframe(data):
         data = data.to_pandas()
         is_ks = True
 

@@ -7,6 +7,7 @@ import tempfile
 import pandas as pd
 
 import woodwork as ww
+from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import (
     _get_ltype_class,
@@ -32,7 +33,7 @@ def typing_info_to_dict(dataframe):
     Returns:
         dict: Dictionary containing Woodwork typing information
     """
-    if dd and isinstance(dataframe, dd.DataFrame):
+    if _is_dask_dataframe(dataframe):
         # Need to determine the category info for Dask it can be saved below
         category_cols = [colname for colname, col in dataframe.ww._schema.columns.items() if col.is_categorical]
         dataframe = dataframe.ww.categorize(columns=category_cols)
@@ -61,9 +62,9 @@ def typing_info_to_dict(dataframe):
         for col_name, col in dataframe.ww.columns.items()
     ]
 
-    if dd and isinstance(dataframe, dd.DataFrame):
+    if _is_dask_dataframe(dataframe):
         table_type = 'dask'
-    elif ks and isinstance(dataframe, ks.DataFrame):
+    elif _is_koalas_dataframe(dataframe):
         table_type = 'koalas'
     else:
         table_type = 'pandas'
@@ -147,7 +148,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
 
     ww_name = dataframe.ww.name or 'data'
 
-    if dd and isinstance(dataframe, dd.DataFrame) and format == 'csv':
+    if _is_dask_dataframe(dataframe) and format == 'csv':
         basename = "{}-*.{}".format(ww_name, format)
     else:
         basename = '.'.join([ww_name, format])
@@ -159,7 +160,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
         csv_kwargs = kwargs.copy()
         if 'engine' in csv_kwargs.keys():
             del csv_kwargs['engine']
-        if ks and isinstance(dataframe, ks.DataFrame):
+        if _is_koalas_dataframe(dataframe):
             dataframe = dataframe.ww.copy()
             columns = list(dataframe.select_dtypes('object').columns)
             dataframe[columns] = dataframe[columns].astype(str)
@@ -182,7 +183,7 @@ def write_dataframe(dataframe, path, format='csv', **kwargs):
             dataframe.to_parquet(file, **kwargs)
         elif format == 'orc':
             # Serialization to orc relies on pyarrow.Table.from_pandas which doesn't work with Dask
-            if dd and isinstance(dataframe, dd.DataFrame):
+            if _is_dask_dataframe(dataframe):
                 msg = 'DataFrame type not compatible with orc serialization. Please serialize to another format.'
                 raise ValueError(msg)
             save_orc_file(dataframe, file)

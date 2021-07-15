@@ -52,9 +52,9 @@ def init_series(series, logical_type=None, semantic_tags=None,
 def _is_series(data):
     if isinstance(data, pd.Series):
         return True
-    elif dd and isinstance(data, dd.Series):
+    elif _is_dask_series(data):
         return True
-    elif ks and isinstance(data, ks.Series):
+    elif _is_koalas_series(data):
         return True
     return False
 
@@ -62,9 +62,9 @@ def _is_series(data):
 def _is_dataframe(data):
     if isinstance(data, pd.DataFrame):
         return True
-    elif dd and isinstance(data, dd.DataFrame):
+    elif _is_dask_dataframe(data):
         return True
-    elif ks and isinstance(data, ks.DataFrame):
+    elif _is_koalas_dataframe(data):
         return True
     return False
 
@@ -121,3 +121,27 @@ def is_schema_valid(dataframe, schema):
     if invalid_schema_message:
         return False
     return True
+
+
+def _is_dask_series(data):
+    if dd and isinstance(data, dd.Series):
+        return True
+    return False
+
+
+def _is_dask_dataframe(data):
+    if dd and isinstance(data, dd.DataFrame):
+        return True
+    return False
+
+
+def _is_koalas_dataframe(data):
+    if ks and isinstance(data, ks.DataFrame):
+        return True
+    return False
+
+
+def _is_koalas_series(data):
+    if ks and isinstance(data, ks.Series):
+        return True
+    return False

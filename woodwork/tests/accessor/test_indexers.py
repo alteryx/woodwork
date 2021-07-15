@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from woodwork.accessor_utils import _is_dask_dataframe, _is_dask_series
 from woodwork.exceptions import WoodworkNotInitError
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import (
@@ -26,7 +27,7 @@ def test_iLocIndexer_class_error(sample_df_dask, sample_series_dask):
 
 
 def test_iLocIndexer_class(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     sample_df.ww.init()
     ind = _iLocIndexer(sample_df)
@@ -41,7 +42,7 @@ def test_locIndexer_class(sample_df):
     pd.testing.assert_frame_equal(to_pandas(ind.data), to_pandas(sample_df))
     pd.testing.assert_frame_equal(to_pandas(ind[1:2]), to_pandas(sample_df.loc[1:2]))
     single_val = ind[0, 'id']
-    if dd and isinstance(single_val, dd.Series):
+    if _is_dask_series(single_val):
         # Dask returns a series - convert to pandas to check the value
         single_val = single_val.compute()
         assert len(single_val) == 1
@@ -70,7 +71,7 @@ def test_error_before_column_init(sample_series):
 
 
 def test_iloc_column(sample_series):
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         pytest.xfail('iloc is not supported with Dask inputs')
     series = sample_series.copy()
     logical_type = Categorical
@@ -101,7 +102,7 @@ def test_iloc_column(sample_series):
 
 
 def test_iloc_column_does_not_propagate_changes_to_data(sample_series):
-    if dd and isinstance(sample_series, dd.Series):
+    if _is_dask_series(sample_series):
         pytest.xfail('iloc is not supported with Dask inputs')
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
@@ -137,7 +138,7 @@ def test_loc_column(sample_series):
 
     single_val = series.ww.loc[0]
 
-    if dd and isinstance(series, dd.Series):
+    if _is_dask_series(series):
         # Dask returns a series - convert to pandas to check the value
         single_val = single_val.compute()
         assert len(single_val) == 1
@@ -153,7 +154,7 @@ def test_loc_column(sample_series):
 
 
 def test_iloc_indices_column(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     sample_df.ww.init(index='id', time_index='signup_date')
     sliced_index = sample_df.ww.iloc[:, 0]
@@ -182,7 +183,7 @@ def test_indexer_uses_standard_tags(sample_df):
 
 
 def test_iloc_with_properties(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     semantic_tags = {
         'full_name': 'tag1',
@@ -215,7 +216,7 @@ def test_iloc_with_properties(sample_df):
 
 
 def test_iloc_dimensionality(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     semantic_tags = {
         'full_name': 'tag1',
@@ -243,7 +244,7 @@ def test_iloc_dimensionality(sample_df):
 
 
 def test_iloc_indices(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     df_with_index = sample_df.copy()
     df_with_index.ww.init(index='id')
@@ -257,7 +258,7 @@ def test_iloc_indices(sample_df):
 
 
 def test_iloc_table_does_not_propagate_changes_to_data(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('iloc is not supported with Dask inputs')
     sample_df.ww.init()
     sliced = sample_df.ww.iloc[1:3, 1:3]

@@ -401,9 +401,9 @@ def concat_columns(objs, validate_schema=True):
     ks = import_or_none('databricks.koalas')
 
     lib = pd
-    if ks and isinstance(obj, (ks.Series, ks.DataFrame)):
+    if ww.accessor_utils._is_koalas_dataframe(obj) or ww.accessor_utils._is_koalas_series(obj):
         lib = ks
-    elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
+    elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(obj):
         lib = dd
 
     combined_df = lib.concat(objs, axis=1, join='outer')

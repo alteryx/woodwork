@@ -10,6 +10,7 @@ from .inference_functions import (
     timedelta_func
 )
 
+from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.logical_types import (
     URL,
     Address,
@@ -257,9 +258,9 @@ class TypeSystem(object):
         """
 
         # Bring Dask or Koalas data into memory for inference
-        if dd and isinstance(series, dd.Series):
+        if _is_dask_series(series):
             series = series.get_partition(0).compute()
-        if ks and isinstance(series, ks.Series):
+        if _is_koalas_series(series):
             series = series.head(100000).to_pandas()
 
         # Special case: if the entire column is Null or NaN, use the Unknown logical type
