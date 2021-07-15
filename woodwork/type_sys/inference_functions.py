@@ -36,7 +36,7 @@ def categorical_func(series):
 
     if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
         numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
-        if numeric_categorical_threshold != -1:
+        if numeric_categorical_threshold is not None:
             return _is_categorical(series, numeric_categorical_threshold)
         else:
             return False
@@ -53,7 +53,7 @@ def integer_func(series):
 def integer_nullable_func(series):
     if pdtypes.is_integer_dtype(series.dtype):
         threshold = ww.config.get_option('numeric_categorical_threshold')
-        if threshold != -1:
+        if threshold is not None:
             return not _is_categorical(series, threshold)
         else:
             return True
@@ -64,7 +64,7 @@ def integer_nullable_func(series):
 def double_func(series):
     if pdtypes.is_float_dtype(series.dtype):
         threshold = ww.config.get_option('numeric_categorical_threshold')
-        if threshold != -1:
+        if threshold is not None:
             return not _is_categorical(series, threshold)
         else:
             return True
