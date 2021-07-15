@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from inspect import isclass
 
@@ -31,7 +32,6 @@ from woodwork.logical_types import (
     Timedelta
 )
 from woodwork.statistics_utils import (
-    _calculate_iqr_bounds,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -41,7 +41,11 @@ from woodwork.statistics_utils import (
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info
 )
-from woodwork.tests.testing_utils import mi_between_cols, to_pandas
+from woodwork.tests.testing_utils import (
+    check_empty_box_plot_dict,
+    mi_between_cols,
+    to_pandas
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -834,39 +838,58 @@ def test_get_numeric_value_counts_in_range(input_series, expected):
     assert top_values == expected
 
 
-def test_calculate_iqr_bounds_with_quantiles(outliers_df_pandas):
-    expected_low = 8.125
-    expected_high = 83.125
+def test_box_plot_outliers(outliers_df):
+    outliers_series = outliers_df['has_outliers']
+    outliers_series.ww.init()
 
-    series = outliers_df_pandas['has_outliers']
+    no_outliers_series = outliers_df['no_outliers']
+    no_outliers_series.ww.init()
 
-    q1, q3 = np.percentile(series, [25, 75])
-    quantiles = {0.25: q1, 0.75: q3, 0.0: 100000}
+    has_outliers_dict = outliers_series.ww.box_plot_dict()
+    assert has_outliers_dict['low_bound'] == 8.125
+    assert has_outliers_dict['high_bound'] == 83.125
+    assert has_outliers_dict['quantiles'] == {0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0}
+    assert has_outliers_dict['low_values'] == [-16]
+    assert has_outliers_dict['high_values'] == [93]
+    assert has_outliers_dict['low_indices'] == [3]
+    assert has_outliers_dict['high_indices'] == [0]
 
-    low, high = _calculate_iqr_bounds(quantiles=quantiles)
+    no_outliers_dict = no_outliers_series.ww.box_plot_dict()
 
-    assert expected_low == low
-    assert expected_high == high
+    assert no_outliers_dict['low_bound'] == 8.125
+    assert no_outliers_dict['high_bound'] == 83.125
+    assert no_outliers_dict['quantiles'] == {0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0}
+    assert no_outliers_dict['low_values'] == []
+    assert no_outliers_dict['high_values'] == []
+    assert no_outliers_dict['low_indices'] == []
+    assert no_outliers_dict['high_indices'] == []
 
-    low, high = _calculate_iqr_bounds(quantiles=quantiles)
 
-    assert expected_low == low
-    assert expected_high == high
+def test_box_plot_outliers_with_quantiles(outliers_df):
+    outliers_series = outliers_df['has_outliers']
+    outliers_series.ww.init()
 
+    no_outliers_series = outliers_df['no_outliers']
+    no_outliers_series.ww.init()
 
-def test_calculate_iqr_bounds_without_quantiles(outliers_df_pandas):
-    expected_low = 8.125
-    expected_high = 83.125
+    has_outliers_dict = outliers_series.ww.box_plot_dict(quantiles={0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0})
+    assert has_outliers_dict['low_bound'] == 8.125
+    assert has_outliers_dict['high_bound'] == 83.125
+    assert has_outliers_dict['quantiles'] == {0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0}
+    assert has_outliers_dict['low_values'] == [-16]
+    assert has_outliers_dict['high_values'] == [93]
+    assert has_outliers_dict['low_indices'] == [3]
+    assert has_outliers_dict['high_indices'] == [0]
 
-    low, high = _calculate_iqr_bounds(outliers_df_pandas['has_outliers'])
+    no_outliers_dict = no_outliers_series.ww.box_plot_dict(quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0})
 
-    assert expected_low == low
-    assert expected_high == high
-
-    low, high = _calculate_iqr_bounds(outliers_df_pandas['no_outliers'])
-
-    assert expected_low == low
-    assert expected_high == high
+    assert no_outliers_dict['low_bound'] == 8.125
+    assert no_outliers_dict['high_bound'] == 83.125
+    assert no_outliers_dict['quantiles'] == {0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0}
+    assert no_outliers_dict['low_values'] == []
+    assert no_outliers_dict['high_values'] == []
+    assert no_outliers_dict['low_indices'] == []
+    assert no_outliers_dict['high_indices'] == []
 
 
 def test_get_outliers_for_column_with_nans(outliers_df):
@@ -875,6 +898,9 @@ def test_get_outliers_for_column_with_nans(outliers_df):
 
     box_plot_dict = contains_nans_series.ww.box_plot_dict()
 
+    assert box_plot_dict['low_bound'] == 4.5
+    assert box_plot_dict['high_bound'] == 88.5
+    assert box_plot_dict['quantiles'] == {0.0: -16.0, 0.25: 36.0, 0.5: 42.0, 0.75: 57.0, 1.0: 93.0}
     assert box_plot_dict['low_values'] == [-16]
     assert box_plot_dict['high_values'] == [93]
     assert box_plot_dict['low_indices'] == [3]
@@ -895,30 +921,16 @@ def test_box_plot_on_non_numeric_col(outliers_df):
 
 def test_box_plot_with_fully_null_col(outliers_df):
     fully_null_double_series = init_series(outliers_df['nans'], logical_type='Double')
-    box_plot_dict = fully_null_double_series.ww.box_plot_dict()
 
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert box_plot_dict['quantiles'] == {}
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    box_plot_dict = fully_null_double_series.ww.box_plot_dict()
+    check_empty_box_plot_dict(box_plot_dict)
 
     box_plot_dict = fully_null_double_series.ww.box_plot_dict(quantiles={0.25: 1, 0.75: 10})
-
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert box_plot_dict['quantiles'] == {}
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_int_series = init_series(outliers_df['nans'], logical_type='IntegerNullable')
     box_plot_dict = fully_null_int_series.ww.box_plot_dict()
-
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert box_plot_dict['quantiles'] == {}
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_categorical_series = init_series(outliers_df['nans'], logical_type='Categorical')
     error = "Cannot calculate box plot statistics for non-numeric column"
@@ -930,30 +942,16 @@ def test_box_plot_with_empty_col(outliers_df):
     series = outliers_df['nans'].dropna()
 
     fully_null_double_series = init_series(series, logical_type='Double')
-    box_plot_dict = fully_null_double_series.ww.box_plot_dict()
 
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert box_plot_dict['quantiles'] == {}
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    box_plot_dict = fully_null_double_series.ww.box_plot_dict()
+    check_empty_box_plot_dict(box_plot_dict)
 
     box_plot_dict = fully_null_double_series.ww.box_plot_dict(quantiles={0.25: 1, 0.75: 10})
-
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert box_plot_dict['quantiles'] == {}
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_int_series = init_series(series, logical_type='IntegerNullable')
     box_plot_dict = fully_null_int_series.ww.box_plot_dict()
-
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert box_plot_dict['quantiles'] == {}
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_categorical_series = init_series(series, logical_type='Categorical')
     error = "Cannot calculate box plot statistics for non-numeric column"
@@ -961,11 +959,7 @@ def test_box_plot_with_empty_col(outliers_df):
         fully_null_categorical_series.ww.box_plot_dict()
 
 
-def test_low_bound_greater_than_high_bound():
-    pass
-
-
-def test_box_plot_info_for_column(outliers_df):
+def test_box_plot_different_quantiles(outliers_df):
     has_outliers_series = outliers_df['has_outliers']
     has_outliers_series.ww.init()
 
@@ -999,28 +993,34 @@ def test_box_plot_info_for_column(outliers_df):
     assert len(box_plot_info['high_values']) == 1
     assert len(box_plot_info['low_values']) == 1
 
+    partial_quantiles = {0.0: -16, 0.25: 36.25, 0.75: 55.0, 1.0: 93}
+    box_plot_info = has_outliers_series.ww.box_plot_dict(quantiles=partial_quantiles)
 
-def test_box_plot_partial_input(outliers_df):
+    assert set(box_plot_info.keys()) == {'low_bound',
+                                         'high_bound',
+                                         'quantiles',
+                                         'low_values',
+                                         'high_values',
+                                         'low_indices',
+                                         'high_indices'}
+    assert box_plot_info['low_bound'] == 8.125
+    assert box_plot_info['high_bound'] == 83.125
+    assert len(box_plot_info['quantiles']) == 4
+    assert len(box_plot_info['high_values']) == 1
+    assert len(box_plot_info['low_values']) == 1
+
+
+def test_box_plot_partial_quantiles_error(outliers_df):
     series = outliers_df['has_outliers']
     series.ww.init()
 
-    full_quantiles = {0.0: -16, 0.25: 36.25, 0.5: 42, 0.75: 55.0, 1.0: 93}
-    box_plot_full_quantiles = series.ww.box_plot_dict(quantiles=full_quantiles)
-    results_full_quantiles = box_plot_full_quantiles.pop('quantiles')
+    error = re.escape("Input quantiles do not contain the minimum necessary quantiles for outlier calculation: "
+                      "0.25 (the first quartile) and 0.75 (the third quartile).")
 
     partial_quantiles = {0.25: 36.25}
-    box_plot_partial_quantiles = series.ww.box_plot_dict(quantiles=partial_quantiles)
-    results_partial_quantiles = box_plot_partial_quantiles.pop('quantiles')
+    with pytest.raises(ValueError, match=error):
+        series.ww.box_plot_dict(quantiles=partial_quantiles)
 
     empty_quantiles = {}
-    box_plot_empty_quantiles = series.ww.box_plot_dict(quantiles=empty_quantiles)
-    results_empty_quantiles = box_plot_empty_quantiles.pop('quantiles')
-
-    # the quantiles passed in will be returned, even if quantiles is partial or empty
-    assert full_quantiles == results_full_quantiles
-    assert partial_quantiles == results_partial_quantiles
-    assert empty_quantiles == results_empty_quantiles
-
-    # any quantiles needed will be calulated, so the rest of the results are the same
-    assert box_plot_empty_quantiles == box_plot_full_quantiles
-    assert box_plot_partial_quantiles == box_plot_full_quantiles
+    with pytest.raises(ValueError, match=error):
+        series.ww.box_plot_dict(quantiles=empty_quantiles)

@@ -385,9 +385,6 @@ class WoodworkColumnAccessor:
         if self._schema is None:
             _raise_init_error()
 
-        if not self._schema.is_numeric:
-            raise TypeError('Cannot calculate box plot statistics for non-numeric column')
-
         return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
 
 

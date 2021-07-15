@@ -367,35 +367,45 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             - low_indices (list[int]): the corresponding index values for each of the lower outliers
             - high_indices (list[int]): the corresponding index values for each of the upper outliers
     """
+    if not series.ww._schema.is_numeric:
+        raise TypeError('Cannot calculate box plot statistics for non-numeric column')
+
     if dd and isinstance(series, dd.Series):
         series = series.compute()
     if ks and isinstance(series, ks.Series):
         series = series.to_pandas()
 
+    # remove null values from the data
     series = series.dropna()
 
-    # An empty or fully null Series should have no outliers, bounds, or quantiles
+    # An empty or fully null Series has no outliers, bounds, or quantiles
     if series.shape[0] == 0:
         return {
             'low_bound': np.nan,
             'high_bound': np.nan,
-            'quantiles': {},
+            'quantiles': {0.0: np.nan, 0.25: np.nan, 0.5: np.nan, 0.75: np.nan, 1.0: np.nan},
             "low_values": [],
             "high_values": [],
             "low_indices": [],
             "high_indices": []
         }
 
+    # calculate the outlier bounds using IQR
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
+    elif 0.25 not in quantiles or 0.75 not in quantiles:
+        raise ValueError("Input quantiles do not contain the minimum necessary quantiles for outlier calculation: "
+                         "0.25 (the first quartile) and 0.75 (the third quartile).")
 
-    if 0.25 in quantiles and 0.75 in quantiles:
-        low_bound, high_bound = _calculate_iqr_bounds(quantiles=quantiles)
-    else:
-        # if first and third quantile are not present, we have to calulate from the data
-        # --> raise error if quantiles provided but not q1 and q3
-        low_bound, high_bound = _calculate_iqr_bounds(series=series)
+    q1 = quantiles[0.25]
+    q3 = quantiles[0.75]
 
+    iqr = q3 - q1
+
+    low_bound = q1 - (iqr * 1.5)
+    high_bound = q3 + (iqr * 1.5)
+
+    # identify outliers in the series
     min = quantiles.get(0.0)
     max = quantiles.get(1.0)
     if min is not None and max is not None and low_bound <= min and high_bound >= max:
@@ -406,7 +416,6 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             "high_indices": []
         }
     else:
-        # We've already removed nans and converted to pandas
         low_series = series[series < low_bound]
         high_series = series[series > high_bound]
 
@@ -421,34 +430,6 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             'high_bound': high_bound,
             'quantiles': quantiles,
             **outliers_dict}
-
-
-def _calculate_iqr_bounds(series=None, quantiles=None):
-    """Calculates bounds for outlier detection using the 1.5*IQR method.
-
-    Args:
-        series (pd.Series, optional): Data used to calculate first and third quartiles used to calcualte
-            the interquartile range. If present, any values passed in for quantiles will be ignored. Instead,
-            the first and third quartiles will be calculated from this series.
-        quantiles (dict[float->float], optional): Quantiles that can be used to calculate the interquartile
-            range. The keys of the dictionary should be the quantile floating point value.
-
-    Returns:
-        (float, float): a tuple containing the low bound and the high bound calculated from the IQR
-    """
-    if series is not None:
-        quantiles = series.quantile([0.25, 0.75]).to_dict()
-    q1 = quantiles[0.25]
-    q3 = quantiles[0.75]
-
-    iqr = q3 - q1
-
-    low_bound = q1 - (iqr * 1.5)
-    high_bound = q3 + (iqr * 1.5)
-
-    # --> consider standardizing nulls to np.nan
-
-    return low_bound, high_bound
 
 
 def _get_numeric_value_counts_in_range(series, _range):
