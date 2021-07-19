@@ -249,7 +249,7 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
 
     filtered_log_type_string = schema._filter_cols(exclude='Unknown')
     filtered_log_type = schema._filter_cols(exclude=Unknown)
-    expected = {'boolean', 'double', 'datetime_with_NaT', 'categorical', 'double_with_nan', 'signup_date', 'age', 'integer', 'nullable_integer', 'is_registered', 'id'}
+    expected = {'boolean', 'double', 'datetime_with_NaT', 'email', 'categorical', 'double_with_nan', 'signup_date', 'age', 'integer', 'nullable_integer', 'is_registered', 'id'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
 

@@ -108,7 +108,7 @@ def test_to_dictionary(sample_df):
                                         {'name': 'email',
                                         'ordinal': 2, 
                                         'use_standard_tags': True, 
-                                        'logical_type': {'parameters': {}, 'type': 'Unknown'}, 
+                                        'logical_type': {'parameters': {}, 'type': 'EmailAddress'}, 
                                         'physical_type': {'type': string_val}, 
                                         'semantic_tags': [], 
                                         'description': None, 
