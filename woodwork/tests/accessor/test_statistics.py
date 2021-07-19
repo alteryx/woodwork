@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_koalas_dataframe
-from woodwork.accessor_utils import init_series
+from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
     URL,
     Age,
