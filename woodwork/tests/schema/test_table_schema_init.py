@@ -5,14 +5,12 @@ from mock import patch
 
 from woodwork.exceptions import ColumnNotPresentError
 from woodwork.logical_types import (
-    Boolean,
     Categorical,
     Datetime,
     Double,
     Integer,
     NaturalLanguage,
     Ordinal,
-    Unknown
 )
 from woodwork.table_schema import (
     TableSchema,

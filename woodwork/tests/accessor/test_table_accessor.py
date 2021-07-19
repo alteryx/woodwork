@@ -7,7 +7,6 @@ import pytest
 from mock import patch
 
 import woodwork as ww
-from woodwork import logical_types
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNotPresentError,

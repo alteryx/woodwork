@@ -8,7 +8,6 @@ from mock import patch
 from woodwork import type_system
 from woodwork.exceptions import ColumnNotPresentError, DuplicateTagsWarning
 from woodwork.logical_types import (
-    Boolean,
     Categorical,
     Datetime,
     Double,

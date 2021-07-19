@@ -1,9 +1,20 @@
 import numpy as np
 import pandas as pd
-from pandas._libs.tslibs import NaT
 import pytest
 
-from woodwork.logical_types import Boolean, BooleanNullable, Categorical, Datetime, Double, Integer, IntegerNullable, Unknown, PersonFullName, EmailAddress, PhoneNumber
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Datetime,
+    Double,
+    EmailAddress,
+    Integer,
+    IntegerNullable,
+    PersonFullName,
+    PhoneNumber,
+    Unknown
+)
 from woodwork.utils import import_or_none
 
 
@@ -47,14 +58,13 @@ def sample_df_pandas():
         'age': pd.Series([pd.NA, 33, 33, 57], dtype='Int64'),
         'signup_date': [pd.to_datetime('2020-09-01')] * 4,
         'is_registered': pd.Series([pd.NA, False, True, True], dtype='boolean'),
-        'double': [0, 1, 0.0001, -5.4321], 
+        'double': [0, 1, 0.0001, -5.4321],
         'double_with_nan': [np.nan, -123.45, 0.0001, 1],
         'integer': [-1, 4, 9, 25],
         'nullable_integer': pd.Series([pd.NA, -36, 49, 64], dtype='Int64'),
         'boolean': [True, False, False, True],
         'categorical': pd.Series(["a", "b", "c", "a"], dtype="category"),
         'datetime_with_NaT': [pd.to_datetime('2020-09-01')] * 3 + [pd.NaT],
-        #'timestamp': []
     })
 
 
@@ -557,7 +567,7 @@ def sample_inferred_logical_types():
             'age': IntegerNullable,
             'signup_date': Datetime,
             'is_registered': BooleanNullable,
-            'double': Double, 
+            'double': Double,
             'double_with_nan': Double,
             'integer': Integer,
             'nullable_integer': IntegerNullable,
@@ -576,7 +586,7 @@ def sample_correct_logical_types():
             'age': IntegerNullable,
             'signup_date': Datetime,
             'is_registered': BooleanNullable,
-            'double': Double, 
+            'double': Double,
             'double_with_nan': Double,
             'integer': Integer,
             'nullable_integer': IntegerNullable,

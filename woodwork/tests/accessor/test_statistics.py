@@ -602,7 +602,7 @@ def test_describe_with_include(sample_df):
 
     logical_types_df = sample_df.ww.describe([Datetime, BooleanNullable])
     for c in ['signup_date', 'is_registered', 'datetime_with_NaT']:
-        assert c  in logical_types_df.columns
+        assert c in logical_types_df.columns
     assert len(logical_types_df.columns) == 3
 
     multi_params_df = sample_df.ww.describe(['age', 'tag1', Datetime])
