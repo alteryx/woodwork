@@ -363,10 +363,9 @@ class WoodworkColumnAccessor:
         using the IQR method.
 
     Args:
-        series (Series): Data for which the box plot and outlier information will be gathered.
-            Will be used to calculate quantiles if none are provided.
         quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
-            where the key indicates the quantile, and the value is the quantile's value for the data.
+            where the key indicates the quantile, and the value is the quantile's value for the data. If
+            no qantiles are provided, they will be computed from the data.
 
     Note:
         The minimum quantiles necessary for outlier detection using the IQR method are the
