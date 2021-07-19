@@ -96,6 +96,7 @@ def read_file(filepath=None,
               semantic_tags=None,
               logical_types=None,
               use_standard_tags=True,
+              column_origins=None,
               validate=True,
               **kwargs):
     """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
@@ -124,6 +125,8 @@ def read_file(filepath=None,
             for any columns not present in the dictionary.
         use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
             on the inferred or specified logical type for the column. Defaults to True.
+        column_origins (str or dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+                used as the origin for all columns. A dictionary can be used to set origins for individual columns.
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -158,6 +161,7 @@ def read_file(filepath=None,
                       semantic_tags=semantic_tags,
                       logical_types=logical_types,
                       use_standard_tags=use_standard_tags,
+                      column_origins=column_origins,
                       validate=validate)
     return dataframe
 
