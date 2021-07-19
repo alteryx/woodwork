@@ -10,7 +10,7 @@ from woodwork.logical_types import (
     Double,
     Integer,
     NaturalLanguage,
-    Ordinal,
+    Ordinal
 )
 from woodwork.table_schema import (
     TableSchema,
