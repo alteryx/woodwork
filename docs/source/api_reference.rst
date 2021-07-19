@@ -57,7 +57,6 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.loc
     WoodworkColumnAccessor.logical_type
     WoodworkColumnAccessor.metadata
-    WoodworkColumnAccessor.outliers_dict
     WoodworkColumnAccessor.remove_semantic_tags
     WoodworkColumnAccessor.reset_semantic_tags
     WoodworkColumnAccessor.semantic_tags

@@ -1010,7 +1010,7 @@ def test_box_plot_different_quantiles(outliers_df):
     assert len(box_plot_info['low_values']) == 1
 
 
-def test_box_plot_partial_quantiles_error(outliers_df):
+def test_box_plot_quantiles_errors(outliers_df):
     series = outliers_df['has_outliers']
     series.ww.init()
 
@@ -1024,3 +1024,7 @@ def test_box_plot_partial_quantiles_error(outliers_df):
     empty_quantiles = {}
     with pytest.raises(ValueError, match=error):
         series.ww.box_plot_dict(quantiles=empty_quantiles)
+
+    error = "quantiles must be a dictionary."
+    with pytest.raises(TypeError, match=error):
+        series.ww.box_plot_dict(quantiles=1)

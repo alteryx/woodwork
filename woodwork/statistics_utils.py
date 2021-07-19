@@ -344,24 +344,30 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
 
 
 def _get_box_plot_info_for_column(series, quantiles=None):
-    """Gets the information necessary to create a box and whisker plot with outliers using the IQR method.
+    """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
+        using the IQR method.
 
     Args:
         series (Series): Data for which the box plot and outlier information will be gathered.
             Will be used to calculate quantiles if none are provided.
-        quantiles (dict[float -> float], optional): The quantiles for the data. Will be used for outlier
-            detection and will be returned in the box plot dictionary. If missing quantiles that are necessary
-            for outlier detection (Q1 and Q3), the quantiles will be calculated.
-            The keys of the dictionary should be the quantile floating point value.
+        quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
+            where the key indicates the quantile, and the value is the quantile's value for the data.
+
+    Note:
+        The minimum quantiles necessary for outlier detection using the IQR method are the
+        first quartile (0.25) and third quartile (0.75). If these keys are missing from the quantiles dictionary,
+        the following quantiles will be calculated: {0.0, 0.25, 0.5, 0.75, 1.0}, which correspond to
+        {min, first quantile, median, third quantile, max}.
 
     Returns:
-        (None, dict[str -> float,list[number]]): Returns None if the column is not numeric in nature or
-            is fully null. Otherwise, returns a dictionary containing box plot information for the Series.
+        (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
             The following elements will be found in the dictionary:
 
             - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
             - high_bound (float): the high bound above which outliers lay - to be used as a whisker
-            - quantiles (list[float]): the quantiles used to determine the bounds
+            - quantiles (list[float]): the quantiles used to determine the bounds.
+                If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
+                quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
             - low_values (list[float, int]): the values of the lower outliers
             - high_values (list[float, int]): the values of the upper outliers
             - low_indices (list[int]): the corresponding index values for each of the lower outliers
@@ -369,6 +375,9 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     """
     if not series.ww._schema.is_numeric:
         raise TypeError('Cannot calculate box plot statistics for non-numeric column')
+
+    if quantiles and not isinstance(quantiles, dict):
+        raise TypeError('quantiles must be a dictionary.')
 
     if dd and isinstance(series, dd.Series):
         series = series.compute()
