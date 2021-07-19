@@ -50,6 +50,7 @@ WoodworkColumnAccessor
 
     WoodworkColumnAccessor
     WoodworkColumnAccessor.add_semantic_tags
+    WoodworkColumnAccessor.box_plot_dict
     WoodworkColumnAccessor.description
     WoodworkColumnAccessor.iloc
     WoodworkColumnAccessor.init

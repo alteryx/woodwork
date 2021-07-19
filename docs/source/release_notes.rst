@@ -7,6 +7,8 @@ Future Release
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
           type (:pr:`1047`)
+        * Add ability to calculate outliers and the statistical info required for box and whisker plots
+          to ``WoodworkColumnAccessor`` (:pr:`1048`)
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
@@ -17,7 +19,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`thehomebrewnerd`, :user:`simha104`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`simha104`
 
 v0.5.0 Jul 7, 2021
 ==================
