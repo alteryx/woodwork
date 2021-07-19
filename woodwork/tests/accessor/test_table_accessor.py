@@ -1358,18 +1358,6 @@ def test_get_subset_df_with_schema(sample_df):
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
-def test_get_subset_df_use_dataframe_order(sample_df):
-    df = sample_df
-    columns = list(df.columns)
-    df.ww.init()
-
-    reverse = list(reversed(columns))
-    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=True)
-    assert list(actual.columns) == columns
-    actual = df.ww._get_subset_df_with_schema(reverse, use_dataframe_order=False)
-    assert list(actual.columns) == reverse
-
-
 def test_select_ltypes_no_match_and_all(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
     schema_df.ww.init(logical_types=sample_correct_logical_types)
@@ -1708,9 +1696,11 @@ def test_select_return_schema(sample_df):
      (["Datetime"], "datetime"),
      (["Unknown", "EmailAddress"], "string"),
      (["Categorical"], "category"),
-     (["BooleanNullable"], "boolean")]
+     (["Boolean", "BooleanNullable"], "boolean")]
 )
 def test_select_retains_column_order(ww_type, pandas_type, sample_df):
+    if ks and isinstance(sample_df, ks.DataFrame) and (pandas_type == "category" or pandas_type == "string"):
+        pytest.skip("Koalas stores categories as strings")
     sample_df.ww.init()
 
     ww_schema_column_order = [x for x in sample_df.ww.select(ww_type, return_schema=True).columns.keys()]
