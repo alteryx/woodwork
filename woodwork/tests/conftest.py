@@ -552,7 +552,7 @@ def sample_column_names(sample_df_pandas):
 def sample_inferred_logical_types():
     return {'id': Integer,
             'full_name': Unknown,
-            'email': Unknown,
+            'email': EmailAddress,
             'phone_number': Unknown,
             'age': IntegerNullable,
             'signup_date': Datetime,

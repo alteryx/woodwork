@@ -221,7 +221,7 @@ def test_filter_schema_cols_include(sample_column_names, sample_inferred_logical
 
     filtered_log_type_string = schema._filter_cols(include='Unknown')
     filtered_log_type = schema._filter_cols(include=Unknown)
-    expected = {'full_name', 'email', 'phone_number'}
+    expected = {'full_name', 'phone_number'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
     expected = {'integer', 'double', 'double_with_nan', 'age', 'nullable_integer'}
