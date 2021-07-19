@@ -42,6 +42,29 @@ def test_reset_option(config):
     assert config.get_option('option1') == 'value1'
 
 
+def test_with_options(config):
+    old_value_1 = config.get_option("option1")
+    old_value_2 = config.get_option("option2")
+
+    with_value_1 = "some_other_value_1"
+    with_value_2 = "some_other_value_2"
+
+    with config.with_options(option1=with_value_1, option2=with_value_2):
+        assert config.get_option("option1") == with_value_1
+        assert config.get_option("option2") == with_value_2
+
+    assert config.get_option("option1") == old_value_1
+    assert config.get_option("option2") == old_value_2
+
+    # Make sure that config gets reset when exceptions occur
+    try:
+        with config.with_options(option1="lkjasdlfkjasdf"):
+            raise RuntimeError("something went wrong!")
+    except RuntimeError:
+        pass
+    assert config.get_option("option1") == old_value_1
+
+
 def test_invalid_option_warnings(config):
     error_msg = 'Invalid option specified: invalid_option'
 
