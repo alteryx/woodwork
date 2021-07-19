@@ -14,9 +14,10 @@ Future Release
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
+        * Updates the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`thehomebrewnerd`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 v0.5.0 Jul 7, 2021
 ==================
