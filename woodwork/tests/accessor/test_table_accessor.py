@@ -11,6 +11,7 @@ from woodwork import logical_types
 from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
@@ -1685,7 +1686,7 @@ def test_select_return_schema(sample_df):
     # Multiple column matches
     df_schema = sample_df.ww.select(include='Unknown', return_schema=True)
     assert isinstance(df_schema, TableSchema)
-    assert len(df_schema.columns) == 3
+    assert len(df_schema.columns) == 2
     assert df_schema == sample_df.ww.select(include='Unknown').ww.schema
 
     # Single column match
@@ -1698,6 +1699,23 @@ def test_select_return_schema(sample_df):
     empty_schema = sample_df.ww.select(include='IPAddress', return_schema=True)
     assert isinstance(empty_schema, TableSchema)
     assert len(empty_schema.columns) == 0
+
+
+@pytest.mark.parametrize(
+    "ww_type, pandas_type",
+    [(["Integer", "IntegerNullable"], "int"),
+     (["Double"], "float"),
+     (["Datetime"], "datetime"),
+     (["Unknown", "EmailAddress"], "string"),
+     (["Categorical"], "category"),
+     (["BooleanNullable"], "boolean")]
+)
+def test_select_retains_column_order(ww_type, pandas_type, sample_df):
+    sample_df.ww.init()
+
+    ww_schema_column_order = [x for x in sample_df.ww.select(ww_type, return_schema=True).columns.keys()]
+    pandas_column_order = [x for x in sample_df.select_dtypes(include=pandas_type).columns]
+    assert ww_schema_column_order == pandas_column_order
 
 
 def test_select_include_and_exclude_error(sample_df):
@@ -2086,6 +2104,67 @@ def test_setitem_invalid_input(sample_df):
         df.ww['signup_date'] = df.signup_date
 
 
+def test_setitem_indexed_column_on_unindexed_dataframe(sample_df):
+    sample_df.ww.init()
+
+    col = sample_df.ww.pop('id')
+    col.ww.add_semantic_tags(semantic_tags='index')
+
+    warning = 'Cannot add "index" tag on id directly to the DataFrame. The "index" tag has been removed from id. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
+
+
+def test_setitem_indexed_column_on_indexed_dataframe(sample_df):
+    sample_df.ww.init()
+    sample_df.ww.set_index('id')
+
+    col = sample_df.ww.pop('id')
+
+    warning = 'Cannot add "index" tag on id directly to the DataFrame. The "index" tag has been removed from id. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww['id'].ww.semantic_tags == {'numeric'}
+
+    sample_df.ww.init(logical_types={'email': 'Categorical'})
+    sample_df.ww.set_index('id')
+
+    col = sample_df.ww.pop('email')
+    col.ww.add_semantic_tags(semantic_tags='index')
+
+    warning = 'Cannot add "index" tag on email directly to the DataFrame. The "index" tag has been removed from email. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['email'] = col
+    assert sample_df.ww.index == 'id'
+    assert sample_df.ww.semantic_tags['email'] == {'category'}
+
+
+def test_setitem_indexed_column_on_unindexed_dataframe_no_standard_tags(sample_df):
+    sample_df.ww.init()
+
+    col = sample_df.ww.pop('id')
+    col.ww.init(semantic_tags='index', use_standard_tags=False)
+
+    warning = 'Cannot add "index" tag on id directly to the DataFrame. The "index" tag has been removed from id. To set this column as a Woodwork index, please use df.ww.set_index'
+
+    with pytest.warns(IndexTagRemovedWarning, match=warning):
+        sample_df.ww['id'] = col
+
+    assert sample_df.ww.index is None
+    assert ww.is_schema_valid(sample_df, sample_df.ww.schema)
+    assert sample_df.ww['id'].ww.semantic_tags == set()
+
+
 def test_setitem_different_name(sample_df):
     df = sample_df.copy()
     df.ww.init()
@@ -2260,7 +2339,7 @@ def test_maintain_column_order_on_type_changes(sample_df):
 def test_maintain_column_order_of_dataframe(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
-    select_df = schema_df.ww.select([Unknown, Integer, IntegerNullable, Boolean, BooleanNullable, Datetime, Double, Categorical])
+    select_df = schema_df.ww.select([Unknown, EmailAddress, Integer, IntegerNullable, Boolean, BooleanNullable, Datetime, Double, Categorical])
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
 

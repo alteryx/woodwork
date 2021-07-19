@@ -1,4 +1,3 @@
-
 import woodwork as ww
 from woodwork.logical_types import (
     Boolean,
@@ -6,6 +5,7 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
+    EmailAddress,
     Integer,
     IntegerNullable,
     LogicalType,
@@ -81,6 +81,28 @@ def test_datetime_inference(datetimes):
             assert isinstance(inferred_type, Datetime)
 
 
+def test_email_inference(emails):
+    dtypes = ['object', 'string']
+    if ks and isinstance(emails[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
+
+    for series in emails:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, EmailAddress)
+
+
+def test_email_inference_failure(bad_emails):
+    dtypes = ['object', 'string']
+    if ks and isinstance(bad_emails[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
+
+    for series in bad_emails:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert not isinstance(inferred_type, EmailAddress)
+
+
 def test_categorical_inference(categories):
     dtypes = ['object', 'string', 'category']
     if ks and isinstance(categories[0], ks.Series):
@@ -131,6 +153,18 @@ def test_unknown_inference(strings):
     for series in strings:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, Unknown)
+
+
+def test_unknown_inference_all_null(nulls):
+    dtypes = ['object', 'string', 'category', 'datetime64[ns]']
+    if ks and isinstance(nulls[0], ks.Series):
+        dtypes = get_koalas_dtypes(dtypes)
+
+    for series in nulls:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            inferred_type.transform(series)
             assert isinstance(inferred_type, Unknown)
 
 

@@ -41,7 +41,8 @@ class TableSchema(object):
                 used as the value.
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
-            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the TableSchema.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for the TableSchema. The dictionary must contain
+                data types that are JSON serializable such as string, integers, and floats. DataFrame and Series types are not supported.
             column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
             use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
@@ -469,17 +470,20 @@ class TableSchema(object):
             if col_names and selector in self.columns:
                 col_name_matches.add(selector)
 
-        cols_to_return = set()
+        cols_to_return = []
+        cols_seen = set()
         for col_name, col in self.columns.items():
             is_match = (type(col.logical_type) in ltypes_used or
                         col.semantic_tags.intersection(tags_used) or
                         col_name in col_name_matches)
-            if include is not None and is_match:
-                cols_to_return.add(col_name)
-            elif exclude is not None and not is_match:
-                cols_to_return.add(col_name)
+            if include is not None and is_match and col_name not in cols_seen:
+                cols_to_return.append(col_name)
+                cols_seen.add(col_name)
+            elif exclude is not None and not is_match and col_name not in cols_seen:
+                cols_to_return.append(col_name)
+                cols_seen.add(col_name)
 
-        return list(cols_to_return)
+        return cols_to_return
 
     def _get_subset_schema(self, subset_cols):
         """Creates a new TableSchema with specified columns, retaining typing information.

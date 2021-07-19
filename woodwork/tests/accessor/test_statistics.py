@@ -118,7 +118,7 @@ def test_accessor_make_categorical_for_mutual_info():
 
 
 def test_mutual_info_same(df_same_mi):
-    df_same_mi.ww.init()
+    df_same_mi.ww.init(logical_types={'nans': Categorical()})
 
     mi = df_same_mi.ww.mutual_information()
 
