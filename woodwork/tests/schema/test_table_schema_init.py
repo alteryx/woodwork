@@ -421,6 +421,14 @@ def test_schema_col_origins_errors(sample_column_names, sample_inferred_logical_
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         TableSchema(sample_column_names, sample_inferred_logical_types, column_origins=origins)
 
+    origins = {
+        1: 'bad key',
+        'signup_date': 'base'
+    }
+    err_msg = 'column_origins keys must be strings'
+    with pytest.raises(TypeError, match=err_msg):
+        TableSchema(sample_column_names, sample_inferred_logical_types, column_origins=origins)
+
 
 def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_logical_types):
     column_metadata = {
