@@ -98,7 +98,7 @@ def sample_series(request):
 
 @pytest.fixture()
 def sample_series_pandas():
-    return pd.Series(['a', 'b', 'c', 'a'], name='sample_series').astype('category')
+    return pd.Series(['a', 'b', 'c'] + 10 * ['a', 'a', 'a'], name='sample_series').astype('category')
 
 
 @pytest.fixture()
@@ -295,13 +295,15 @@ def df_same_mi(request):
 
 @pytest.fixture()
 def df_mi_pandas():
-    return pd.DataFrame({
+    df = pd.DataFrame({
         'ints': pd.Series([1, 2, 1]),
         'bools': pd.Series([True, False, True]),
         'strs2': pd.Series(['bye', 'hi', 'bye']),
         'strs': pd.Series(['hi', 'hi', 'hi']),
         'dates': pd.Series(['2020-01-01', '2020-01-01', '1997-01-04'])
     })
+    df = df.loc[df.index.repeat(4)].reset_index(drop=True)
+    return df
 
 
 @pytest.fixture()
@@ -323,12 +325,14 @@ def df_mi(request):
 
 @pytest.fixture()
 def df_mi_unique_pandas():
-    return pd.DataFrame({
+    df = pd.DataFrame({
         'unique': pd.Series(['hi', 'bye', 'hello', 'goodbye']),
         'unique_with_one_nan': pd.Series(['hi', 'bye', None, 'goodbye']),
         'unique_with_nans': pd.Series([1, None, None, 2]),
         'ints': pd.Series([1, 2, 1, 2]),
     })
+    df = df.loc[df.index.repeat(5)].reset_index(drop=True)
+    return df
 
 
 @pytest.fixture()
