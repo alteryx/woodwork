@@ -7,6 +7,7 @@ Future Release
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
           type (:pr:`1047`)
+        * Add feature origin attribute to schema (:pr:`1056`)
         * Add ability to calculate outliers and the statistical info required for box and whisker plots
           to ``WoodworkColumnAccessor`` (:pr:`1048`)
         * Add ability to change config settings in a with block with

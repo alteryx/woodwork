@@ -21,6 +21,7 @@ class TableSchema(object):
                  column_metadata=None,
                  use_standard_tags=False,
                  column_descriptions=None,
+                 column_origins=None,
                  validate=True):
         """Create TableSchema
 
@@ -51,6 +52,8 @@ class TableSchema(object):
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
                 Unspecified columns will use the default value. Defaults to False.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+                used as the origin for all columns. A dictionary can be used to set origins for individual columns.
             validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -58,7 +61,8 @@ class TableSchema(object):
         if validate:
             # Check that inputs are valid
             _validate_params(column_names, name, index, time_index, logical_types, table_metadata,
-                             column_metadata, semantic_tags, column_descriptions, use_standard_tags)
+                             column_metadata, semantic_tags, column_descriptions, column_origins,
+                             use_standard_tags)
 
         self._name = name
         self._metadata = table_metadata or {}
@@ -75,6 +79,7 @@ class TableSchema(object):
                                             semantic_tags,
                                             use_standard_tags,
                                             column_descriptions,
+                                            column_origins,
                                             column_metadata,
                                             validate)
         if index is not None:
@@ -298,6 +303,7 @@ class TableSchema(object):
                         semantic_tags,
                         use_standard_tags,
                         column_descriptions,
+                        column_origins,
                         column_metadata,
                         validate):
         """Create a dictionary with column names as keys and new column dictionaries holding
@@ -309,12 +315,14 @@ class TableSchema(object):
             if validate:
                 _validate_not_setting_index_tags(semantic_tags_for_col, name)
             description = (column_descriptions or {}).get(name)
+            origin = column_origins if isinstance(column_origins, str) else (column_origins or {}).get(name)
             metadata_for_col = (column_metadata or {}).get(name)
 
             columns[name] = ColumnSchema(logical_type=logical_types.get(name),
                                          semantic_tags=semantic_tags_for_col,
                                          use_standard_tags=use_standard_tags.get(name),
                                          description=description,
+                                         origin=origin,
                                          metadata=metadata_for_col,
                                          validate=validate)
         return columns
@@ -496,6 +504,7 @@ class TableSchema(object):
         new_logical_types = {}
         new_semantic_tags = {}
         new_column_descriptions = {}
+        new_column_origins = {}
         new_column_metadata = {}
         for col_name in subset_cols:
             col = col = self.columns[col_name]
@@ -503,6 +512,7 @@ class TableSchema(object):
             new_logical_types[col_name] = col.logical_type
             new_semantic_tags[col_name] = col.semantic_tags
             new_column_descriptions[col_name] = col.description
+            new_column_origins[col_name] = col.origin
             new_column_metadata[col_name] = col.metadata
 
         new_index = self.index if self.index in subset_cols else None
@@ -522,12 +532,13 @@ class TableSchema(object):
                            table_metadata=copy.deepcopy(self.metadata),
                            column_metadata=copy.deepcopy(new_column_metadata),
                            column_descriptions=new_column_descriptions,
+                           column_origins=new_column_origins,
                            validate=False)
 
 
 def _validate_params(column_names, name, index, time_index, logical_types,
                      table_metadata, column_metadata, semantic_tags, column_descriptions,
-                     use_standard_tags):
+                     column_origins, use_standard_tags):
     """Check that values supplied during TableSchema initialization are valid"""
     _check_column_names(column_names)
     _check_use_standard_tags(column_names, use_standard_tags)
@@ -547,6 +558,8 @@ def _validate_params(column_names, name, index, time_index, logical_types,
         _check_semantic_tags(column_names, semantic_tags)
     if column_descriptions:
         _check_column_descriptions(column_names, column_descriptions)
+    if column_origins:
+        _check_column_origins(column_names, column_origins)
 
 
 def _check_name(name):
@@ -619,6 +632,17 @@ def _check_column_descriptions(column_names, column_descriptions):
     if cols_not_found:
         raise ColumnNotPresentError('column_descriptions contains columns that are not present in '
                                     f'TableSchema: {sorted(list(cols_not_found))}')
+
+
+def _check_column_origins(column_names, column_origins):
+    if not isinstance(column_origins, (dict, str)):
+        raise TypeError('column_origins must be a dictionary or a string')
+
+    if isinstance(column_origins, dict):
+        cols_not_found = set(column_origins.keys()).difference(set(column_names))
+        if cols_not_found:
+            raise ColumnNotPresentError('column_origins contains columns that are not present in '
+                                        f'TableSchema: {sorted(list(cols_not_found))}')
 
 
 def _check_table_metadata(table_metadata):
