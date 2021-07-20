@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 import woodwork as ww
-from woodwork.type_sys.utils import col_is_datetime
+from woodwork.type_sys.utils import _is_categorical, col_is_datetime
 
 INFERENCE_SAMPLE_SIZE = 10000
 
@@ -17,22 +17,14 @@ def get_inference_sample(series: pd.Series) -> pd.Series:
 
 
 def categorical_func(series):
-    categorical_threshold = ww.config.get_option('categorical_threshold')
-
-    if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
-        # heuristics to predict this some other than categorical
-        sample = get_inference_sample(series)
-        # catch cases where object dtype cannot be interpreted as a string
-        try:
-            avg_length = sample.str.len().mean()
-            if avg_length > categorical_threshold:
-                return False
-        except AttributeError:
-            pass
-        return True
-
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
+
+    if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
+        sample = get_inference_sample(series)
+        categorical_threshold = ww.config.get_option('categorical_threshold')
+
+        return _is_categorical(sample, categorical_threshold)
 
     if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
         numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
@@ -115,7 +107,3 @@ def email_address_func(series: pd.Series) -> bool:
     matches = sample_match_method(pat=regex)
 
     return matches.sum() == matches.count()
-
-
-def _is_categorical(series, threshold):
-    return series.nunique() < threshold

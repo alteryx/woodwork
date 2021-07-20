@@ -141,3 +141,32 @@ def _get_specified_ltype_params(ltype):
         # Do not reveal parameters for an uninstantiated LogicalType
         return {}
     return ltype.__dict__
+
+
+def _is_categorical(series: pd.Series, threshold: float) -> bool:
+    """
+    Return ``True`` if the given series is "likely" to be categorical.
+    Otherwise, return ``False``.  We say that a series is "likely" to be
+    categorical if the percentage of unique values relative to total non-NA
+    values is below a certain threshold.  In other words, if all values in the
+    series are accounted for by a sufficiently small collection of unique
+    values, then the series is categorical.
+    """
+    try:
+        nunique = series.nunique()
+    except TypeError as e:
+        # It doesn't seem like there's a more elegant way to do this.  Pandas
+        # doesn't provide an API that would give you any indication ahead of
+        # time if a series with object dtype has any unhashable elements.
+        if "unhashable type" in e.args[0]:
+            return False
+        else:
+            raise  # pragma: no cover
+    count = series.count()
+
+    if nunique == 0 or count == 0:
+        return False
+
+    pct_unique = nunique / count
+
+    return pct_unique <= threshold
