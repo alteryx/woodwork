@@ -181,7 +181,7 @@ class Datetime(LogicalType):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
-            sample_length = len(series.index)//10 or len(series.index)
+            sample_length = len(series.index) // 10 or len(series.index)
             self.datetime_format = self.datetime_format or _infer_datetime_format(series, n=sample_length)
             try:
                 if dd and isinstance(series, dd.Series):
