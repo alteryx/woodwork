@@ -9,6 +9,8 @@ Future Release
           type (:pr:`1047`)
         * Add ability to calculate outliers and the statistical info required for box and whisker plots
           to ``WoodworkColumnAccessor`` (:pr:`1048`)
+        * Add ability to change config settings in a with block with
+          ``ww.config.with_options`` (:pr:`1062`)
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)

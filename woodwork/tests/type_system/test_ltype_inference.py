@@ -115,27 +115,25 @@ def test_categorical_inference(categories):
 
 
 def test_categorical_integers_inference(integers):
-    ww.config.set_option('numeric_categorical_threshold', 10)
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-    if _is_koalas_series(integers[0]):
-        dtypes = get_koalas_dtypes(dtypes)
-    for series in integers:
-        for dtype in dtypes:
-            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert isinstance(inferred_type, Categorical)
-    ww.config.reset_option('numeric_categorical_threshold')
+    with ww.config.with_options(numeric_categorical_threshold=10):
+        dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+        if ks and isinstance(integers[0], ks.Series):
+            dtypes = get_koalas_dtypes(dtypes)
+        for series in integers:
+            for dtype in dtypes:
+                inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+                assert isinstance(inferred_type, Categorical)
 
 
 def test_categorical_double_inference(doubles):
-    ww.config.set_option('numeric_categorical_threshold', 10)
-    dtypes = ['float', 'float32', 'float64', 'float_']
-    if _is_koalas_series(doubles[0]):
-        dtypes = get_koalas_dtypes(dtypes)
-    for series in doubles:
-        for dtype in dtypes:
-            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert isinstance(inferred_type, Categorical)
-    ww.config.reset_option('numeric_categorical_threshold')
+    with ww.config.with_options(numeric_categorical_threshold=10):
+        dtypes = ['float', 'float32', 'float64', 'float_']
+        if ks and isinstance(doubles[0], ks.Series):
+            dtypes = get_koalas_dtypes(dtypes)
+        for series in doubles:
+            for dtype in dtypes:
+                inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+                assert isinstance(inferred_type, Categorical)
 
 
 def test_timedelta_inference(timedeltas):
@@ -174,13 +172,12 @@ def test_unknown_inference_with_threshhold(long_strings):
     if _is_koalas_series(long_strings[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
-    ww.config.set_option('categorical_threshold', 19)
-    for dtype in dtypes:
-        inferred_type = ww.type_system.infer_logical_type(long_strings[0].astype(dtype))
-        assert isinstance(inferred_type, Unknown)
-        inferred_type = ww.type_system.infer_logical_type(long_strings[1].astype(dtype))
-        assert isinstance(inferred_type, Categorical)
-    ww.config.reset_option('categorical_threshold')
+    with ww.config.with_options(categorical_threshold=19):
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(long_strings[0].astype(dtype))
+            assert isinstance(inferred_type, Unknown)
+            inferred_type = ww.type_system.infer_logical_type(long_strings[1].astype(dtype))
+            assert isinstance(inferred_type, Categorical)
 
 
 def test_pdna_inference(pdnas):
