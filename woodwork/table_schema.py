@@ -639,8 +639,6 @@ def _check_column_origins(column_names, column_origins):
         raise TypeError('column_origins must be a dictionary or a string')
 
     if isinstance(column_origins, dict):
-        if any(not isinstance(key, str) for key in column_origins.keys()):
-            raise TypeError('column_origins keys must be strings')
         cols_not_found = set(column_origins.keys()).difference(set(column_names))
         if cols_not_found:
             raise ColumnNotPresentError('column_origins contains columns that are not present in '
