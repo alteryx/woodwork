@@ -648,3 +648,31 @@ def koalas_datetimes(pandas_datetimes):
 @pytest.fixture(params=['pandas_datetimes', 'dask_datetimes', 'koalas_datetimes'])
 def datetimes(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def outliers_df_pandas():
+    return pd.DataFrame({
+        'has_outliers': [93, 42, 37, -16, 49, 42, 36, 57, 60, 23],
+        'no_outliers': [60, 42, 37, 23, 49, 42, 36, 57, 60, 23.0],
+        'non_numeric': ['a'] * 10,
+        'has_outliers_with_nans': [None, 42, 37, -16, 49, 93, 36, 57, 60, 23],
+        'nans': pd.Series([None] * 10, dtype='float64'),
+    })
+
+
+@pytest.fixture()
+def outliers_df_dask(outliers_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason='Dask not installed, skipping')
+    return dd.from_pandas(outliers_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def outliers_df_koalas(outliers_df_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(outliers_df_pandas)
+
+
+@pytest.fixture(params=['outliers_df_pandas', 'outliers_df_dask', 'outliers_df_koalas'])
+def outliers_df(request):
+    return request.getfixturevalue(request.param)

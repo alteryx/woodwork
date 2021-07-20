@@ -7,6 +7,10 @@ Future Release
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
           type (:pr:`1047`)
+        * Add ability to calculate outliers and the statistical info required for box and whisker plots
+          to ``WoodworkColumnAccessor`` (:pr:`1048`)
+        * Add ability to change config settings in a with block with
+          ``ww.config.with_options`` (:pr:`1062`)
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
@@ -17,7 +21,8 @@ Future Release
         * Updates the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+
 
 v0.5.0 Jul 7, 2021
 ==================

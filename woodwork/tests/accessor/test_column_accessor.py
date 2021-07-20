@@ -166,7 +166,8 @@ def test_error_accessing_methods_before_init(sample_series):
         'remove_semantic_tags': [{'new_tag'}],
         'reset_semantic_tags': None,
         'set_logical_type': ['Integer'],
-        'set_semantic_tags': [{'new_tag'}]
+        'set_semantic_tags': [{'new_tag'}],
+        'box_plot_dict': [None],
     }
     error = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     for method in public_methods:

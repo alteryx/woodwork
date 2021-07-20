@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from woodwork.utils import import_or_none
@@ -60,3 +61,12 @@ def is_property(class_to_check, name):
     if hasattr(class_to_check, name) and isinstance(getattr(class_to_check, name), property):
         return True
     return False
+
+
+def check_empty_box_plot_dict(box_plot_dict):
+    assert np.isnan(box_plot_dict['low_bound'])
+    assert np.isnan(box_plot_dict['high_bound'])
+    assert len(box_plot_dict['quantiles']) == 5
+    assert all([np.isnan(elt) for elt in box_plot_dict['quantiles'].values()])
+    assert len(box_plot_dict['low_values']) == 0
+    assert len(box_plot_dict['high_values']) == 0
