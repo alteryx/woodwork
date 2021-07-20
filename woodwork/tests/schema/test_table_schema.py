@@ -388,6 +388,7 @@ def test_get_subset_schema_all_params(sample_column_names, sample_inferred_logic
         'column_metadata': {'phone_number': {'format': 'xxx-xxx-xxxx'}},
         'use_standard_tags': False,
         'column_descriptions': {'age': 'this is a description'},
+        'column_origins': 'base',
         'validate': True
     }
 
@@ -944,11 +945,13 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
 
     table_metadata = {'table_info': 'this is text'}
     id_description = 'the id of the row'
+    id_origin = 'base'
     schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                          index='id',
                          time_index='signup_date',
                          table_metadata=table_metadata,
-                         column_descriptions={'id': id_description})
+                         column_descriptions={'id': id_description},
+                         column_origins={'id': id_origin})
     original_schema = schema._get_subset_schema(list(schema.columns.keys()))
 
     renamed_schema = schema.rename({'age': 'birthday'})
@@ -962,6 +965,7 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
     # confirm that metadata and descriptions are there
     assert renamed_schema.metadata == table_metadata
     assert schema.columns['id'].description == id_description
+    assert schema.columns['id'].origin == id_origin
 
     old_col = schema.columns['age']
     new_col = renamed_schema.columns['birthday']
