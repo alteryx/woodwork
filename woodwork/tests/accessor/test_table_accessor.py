@@ -1969,10 +1969,12 @@ def test_accessor_drop_errors(sample_df):
 def test_accessor_rename(sample_df):
     table_metadata = {'table_info': 'this is text'}
     id_description = 'the id of the row'
+    id_origin = 'base'
     sample_df.ww.init(index='id',
                       time_index='signup_date',
                       table_metadata=table_metadata,
                       column_descriptions={'id': id_description},
+                      column_origins={'id': id_origin},
                       semantic_tags={'age': 'test_tag'},
                       logical_types={'age': Double})
     original_df = sample_df.ww.copy()
@@ -1992,6 +1994,7 @@ def test_accessor_rename(sample_df):
     # confirm that metadata and descriptions are there
     assert new_df.ww.metadata == table_metadata
     assert new_df.ww.columns['id'].description == id_description
+    assert new_df.ww.columns['id'].origin == id_origin
 
     old_col = sample_df.ww.columns['age']
     new_col = new_df.ww.columns['birthday']
@@ -2014,10 +2017,12 @@ def test_accessor_rename(sample_df):
 def test_accessor_rename_inplace(sample_df):
     table_metadata = {'table_info': 'this is text'}
     id_description = 'the id of the row'
+    id_origin = 'base'
     sample_df.ww.init(index='id',
                       time_index='signup_date',
                       table_metadata=table_metadata,
                       column_descriptions={'id': id_description},
+                      column_origins={'id': id_origin},
                       semantic_tags={'age': 'test_tag'},
                       logical_types={'age': Double})
     original_df = sample_df.ww.copy()
@@ -2043,6 +2048,7 @@ def test_accessor_rename_inplace(sample_df):
         # confirm that metadata and descriptions are there
         assert inplace_df.ww.metadata == table_metadata
         assert inplace_df.ww.columns['id'].description == id_description
+        assert inplace_df.ww.columns['id'].origin == id_origin
 
         old_col = sample_df.ww.columns['age']
         new_col = inplace_df.ww.columns['birthday']
