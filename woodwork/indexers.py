@@ -6,10 +6,6 @@ from woodwork.accessor_utils import (
     _is_dataframe,
     _is_series
 )
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 
 class _iLocIndexer:

@@ -235,11 +235,9 @@ def _to_latlong_float(val):
 def _is_valid_latlong_series(series):
     """Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False"""
-    dd = import_or_none('dask.dataframe')
-    ks = import_or_none('databricks.koalas')
-    if dd and isinstance(series, dd.Series):
+    if ww.accessor_utils._is_dask_series(series):
         series = series = series.get_partition(0).compute()
-    if ks and isinstance(series, ks.Series):
+    if ww.accessor_utils._is_koalas_series(series):
         series = series.to_pandas()
         bracket_type = list
     else:

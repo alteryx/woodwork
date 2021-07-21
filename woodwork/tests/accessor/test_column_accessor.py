@@ -531,7 +531,7 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
     series = sample_series.copy()
@@ -548,7 +548,7 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
 
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])

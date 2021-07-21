@@ -6,10 +6,7 @@ import woodwork as ww
 from woodwork.accessor_utils import _is_koalas_dataframe
 from woodwork.logical_types import Categorical, Double, Integer
 from woodwork.tests.testing_utils import to_pandas
-from woodwork.utils import concat_columns, import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+from woodwork.utils import concat_columns
 
 
 def test_concat_cols_ww_dfs(sample_df):

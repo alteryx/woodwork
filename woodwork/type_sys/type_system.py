@@ -38,10 +38,6 @@ from woodwork.logical_types import (
     Timedelta,
     Unknown
 )
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 DEFAULT_INFERENCE_FUNCTIONS = {
     Address: None,

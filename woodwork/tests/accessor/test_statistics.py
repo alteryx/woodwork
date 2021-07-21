@@ -46,10 +46,6 @@ from woodwork.tests.testing_utils import (
     mi_between_cols,
     to_pandas
 )
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 
 def test_get_mode():
@@ -436,7 +432,7 @@ def test_describe_accessor_method(describe_df):
         assert expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
 
     # Test timedelta columns - Skip for Koalas
-    if not (ks and isinstance(describe_df, ks.DataFrame)):
+    if not _is_koalas_dataframe(describe_df):
         timedelta_data = describe_df['timedelta_col']
         for ltype in timedelta_ltypes:
             expected_vals = pd.Series({

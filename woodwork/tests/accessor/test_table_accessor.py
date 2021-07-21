@@ -9,7 +9,9 @@ from mock import patch
 import woodwork as ww
 from woodwork.accessor_utils import (
     _is_dask_dataframe,
+    _is_dask_series,
     _is_koalas_dataframe,
+    _is_koalas_series,
     init_series
 )
 from woodwork.exceptions import (
@@ -1118,7 +1120,7 @@ def test_accessor_already_sorted(sample_unsorted_df):
 
 
 def test_ordinal_with_order(sample_series):
-    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
@@ -1139,7 +1141,7 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
 
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])

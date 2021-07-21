@@ -117,7 +117,7 @@ def test_categorical_inference(categories):
 def test_categorical_integers_inference(integers):
     with ww.config.with_options(numeric_categorical_threshold=10):
         dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
-        if ks and isinstance(integers[0], ks.Series):
+        if _is_koalas_series(integers[0]):
             dtypes = get_koalas_dtypes(dtypes)
         for series in integers:
             for dtype in dtypes:
@@ -128,7 +128,7 @@ def test_categorical_integers_inference(integers):
 def test_categorical_double_inference(doubles):
     with ww.config.with_options(numeric_categorical_threshold=10):
         dtypes = ['float', 'float32', 'float64', 'float_']
-        if ks and isinstance(doubles[0], ks.Series):
+        if _is_koalas_series(doubles[0]):
             dtypes = get_koalas_dtypes(dtypes)
         for series in doubles:
             for dtype in dtypes:

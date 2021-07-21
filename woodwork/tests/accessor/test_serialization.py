@@ -16,10 +16,6 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import Categorical, Ordinal
 from woodwork.tests.testing_utils import to_pandas
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"

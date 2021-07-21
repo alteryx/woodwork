@@ -12,10 +12,6 @@ from woodwork.logical_types import (
     LatLong,
     Ordinal
 )
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 
 def test_logical_eq():

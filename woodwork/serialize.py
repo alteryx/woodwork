@@ -13,10 +13,7 @@ from woodwork.type_sys.utils import (
     _get_ltype_class,
     _get_specified_ltype_params
 )
-from woodwork.utils import _is_s3, _is_url, import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+from woodwork.utils import _is_s3, _is_url
 
 SCHEMA_VERSION = '10.0.2'
 FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
