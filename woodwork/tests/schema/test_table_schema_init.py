@@ -17,6 +17,7 @@ from woodwork.table_schema import (
     _check_column_descriptions,
     _check_column_metadata,
     _check_column_names,
+    _check_column_origins,
     _check_index,
     _check_logical_types,
     _check_semantic_tags,
@@ -39,6 +40,7 @@ def test_validate_params_errors(sample_column_names):
                          column_metadata=None,
                          semantic_tags=None,
                          column_descriptions=None,
+                         column_origins=None,
                          use_standard_tags=False)
 
 
@@ -163,6 +165,19 @@ def test_check_column_description_errors(sample_column_names):
     err_msg = re.escape("column_descriptions contains columns that are not present in TableSchema: ['invalid_col']")
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         _check_column_descriptions(sample_column_names, column_descriptions=column_descriptions)
+
+
+def test_check_column_origin_errors(sample_column_names):
+    error_message = 'column_origins must be a dictionary or a string'
+    with pytest.raises(TypeError, match=error_message):
+        _check_column_origins(sample_column_names, column_origins=123)
+
+    column_origins = {
+        'invalid_col': 'base'
+    }
+    err_msg = re.escape("column_origins contains columns that are not present in TableSchema: ['invalid_col']")
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
+        _check_column_origins(sample_column_names, column_origins=column_origins)
 
 
 def test_check_use_standard_tags_errors(sample_column_names):
@@ -364,6 +379,41 @@ def test_schema_col_descriptions_errors(sample_column_names, sample_inferred_log
     err_msg = re.escape("column_descriptions contains columns that are not present in TableSchema: ['invalid_col']")
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         TableSchema(sample_column_names, sample_inferred_logical_types, column_descriptions=descriptions)
+
+
+def test_schema_init_with_col_origins(sample_column_names, sample_inferred_logical_types):
+    origins = {
+        'age': 'base',
+        'signup_date': 'engineered'
+    }
+    schema = TableSchema(sample_column_names, sample_inferred_logical_types, column_origins=origins)
+    for name, column in schema.columns.items():
+        assert column.origin == origins.get(name)
+
+    schema_single_origin = TableSchema(sample_column_names, sample_inferred_logical_types, column_origins='base')
+    for name, column in schema_single_origin.columns.items():
+        assert column.origin == 'base'
+
+
+def test_schema_col_origins_errors(sample_column_names, sample_inferred_logical_types):
+    err_msg = 'column_origins must be a dictionary or a string'
+    with pytest.raises(TypeError, match=err_msg):
+        TableSchema(sample_column_names, sample_inferred_logical_types, column_origins=34)
+
+    origins = {
+        'invalid_col': 'not a valid column',
+        'signup_date': 'base'
+    }
+    err_msg = re.escape("column_origins contains columns that are not present in TableSchema: ['invalid_col']")
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
+        TableSchema(sample_column_names, sample_inferred_logical_types, column_origins=origins)
+
+    origins = {
+        'signup_date': 1
+    }
+    err_msg = "Column origin must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        TableSchema(sample_column_names, sample_inferred_logical_types, column_origins=origins)
 
 
 def test_schema_init_with_column_metadata(sample_column_names, sample_inferred_logical_types):

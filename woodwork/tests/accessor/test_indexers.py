@@ -76,10 +76,12 @@ def test_iloc_column(sample_series):
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
     description = 'custom column description'
+    origin = 'base'
     metadata = {'meta_key': 'custom metadata'}
     series.ww.init(logical_type=logical_type,
                    semantic_tags=semantic_tags,
                    description=description,
+                   origin=origin,
                    metadata=metadata)
 
     sliced = series.ww.iloc[2:]
@@ -87,6 +89,7 @@ def test_iloc_column(sample_series):
     assert isinstance(sliced.ww.logical_type, logical_type)
     assert sliced.ww.semantic_tags == {'category', 'tag1', 'tag2'}
     assert sliced.ww.description == description
+    assert sliced.ww.origin == origin
     assert sliced.ww.metadata == metadata
     pd.testing.assert_series_equal(to_pandas(sliced), to_pandas(series.iloc[2:]))
 
@@ -106,10 +109,12 @@ def test_iloc_column_does_not_propagate_changes_to_data(sample_series):
     logical_type = Categorical
     semantic_tags = ['tag1', 'tag2']
     description = 'custom column description'
+    origin = 'base'
     metadata = {'meta_key': 'custom metadata'}
     sample_series.ww.init(logical_type=logical_type,
                           semantic_tags=semantic_tags,
                           description=description,
+                          origin=origin,
                           metadata=metadata,
                           use_standard_tags=False)
 

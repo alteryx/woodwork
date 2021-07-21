@@ -17,7 +17,7 @@ from woodwork.utils import _is_s3, _is_url, import_or_none
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-SCHEMA_VERSION = '10.0.3'
+SCHEMA_VERSION = '11.1.0'
 FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
 
 
@@ -56,6 +56,7 @@ def typing_info_to_dict(dataframe):
          'physical_type': _get_physical_type_dict(dataframe[col_name]),
          'semantic_tags': sorted(list(col.semantic_tags)),
          'description': col.description,
+         'origin': col.origin,
          'metadata': col.metadata,
          }
         for col_name, col in dataframe.ww.columns.items()

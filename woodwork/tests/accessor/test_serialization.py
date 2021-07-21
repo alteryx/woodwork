@@ -96,6 +96,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': int_val},
                                         'semantic_tags': ['index', 'tag1'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{'is_sorted': True}},
                                        {'name': 'full_name',
                                         'ordinal': 1,
@@ -104,6 +105,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{}},
                                        {'name': 'email',
                                         'ordinal': 2,
@@ -112,6 +114,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{}},
                                        {'name': 'phone_number',
                                         'ordinal': 3,
@@ -120,6 +123,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': 'base',
                                         'metadata': {}},
                                        {'name': 'age',
                                         'ordinal': 4,
@@ -128,6 +132,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': age_cat_type_dict,
                                         'semantic_tags': ['category'],
                                         'description': 'age of the user',
+                                        'origin': 'base',
                                         'metadata':{'interesting_values': [33, 57]}},
                                        {'name': 'signup_date',
                                         'ordinal': 5,
@@ -137,6 +142,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': 'datetime64[ns]'},
                                         'semantic_tags': [],
                                         'description': 'original signup date',
+                                        'origin': 'engineered',
                                         'metadata':{}},
                                        {'name': 'is_registered',
                                         'ordinal': 6,
@@ -145,6 +151,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': bool_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'double',
                                         'ordinal': 7,
@@ -153,6 +160,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': double_val},
                                         'semantic_tags': ['numeric'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'double_with_nan',
                                         'ordinal': 8,
@@ -161,6 +169,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': double_val},
                                         'semantic_tags': ['numeric'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'integer',
                                         'ordinal': 9,
@@ -169,6 +178,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': int_val},
                                         'semantic_tags': ['numeric'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'nullable_integer',
                                         'ordinal': 10,
@@ -177,6 +187,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': nullable_int_val},
                                         'semantic_tags': ['numeric'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'boolean',
                                         'ordinal': 11,
@@ -185,6 +196,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': 'bool'},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'categorical',
                                         'ordinal': 12,
@@ -193,6 +205,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': cat_type_dict,
                                         'semantic_tags': ['category'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata': {}},
                                        {'name': 'datetime_with_NaT',
                                         'ordinal': 13,
@@ -201,11 +214,11 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': 'datetime64[ns]'},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{}}],
                 'loading_info': {'table_type': table_type},
                 'table_metadata': {'date_created': '11/16/20'}
                 }
-
     sample_df.ww.init(
         name='test_data',
         index='id',
@@ -214,12 +227,14 @@ def test_to_dictionary(sample_df):
         table_metadata={'date_created': '11/16/20'},
         column_descriptions={'signup_date': 'original signup date',
                              'age': 'age of the user'},
+        column_origins={'phone_number': 'base',
+                        'age': 'base',
+                        'signup_date': 'engineered'},
         column_metadata={'id': {'is_sorted': True},
                          'age': {'interesting_values': [33, 57]}}
     )
 
     description = sample_df.ww.to_dictionary()
-
     assert description == expected
 
 
@@ -250,6 +265,9 @@ def test_to_csv(sample_df, tmpdir):
         logical_types={'age': Ordinal(order=[25, 33, 57])},
         column_descriptions={'signup_date': 'original signup date',
                              'age': 'age of the user'},
+        column_origins={'phone_number': 'base',
+                        'age': 'base',
+                        'signup_date': 'engineered'},
         column_metadata={'id': {'is_sorted': True},
                          'age': {'interesting_values': [33, 57]}})
     sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
