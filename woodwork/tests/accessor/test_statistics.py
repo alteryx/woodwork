@@ -457,8 +457,8 @@ def test_describe_accessor_method(describe_df):
     # Test numeric columns with nullable ltypes
     numeric_data = describe_df[['numeric_col']]
     for ltype in nullable_numeric_ltypes:
-        expected_vals = pd.Series({
-            'physical_type': 'float64', # fix when 
+        expected_vals = pd.Series({  # fix when https://github.com/pandas-dev/pandas/issues/42626 gets resolved
+            'physical_type': 'float64',
             'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7.0,
@@ -482,7 +482,7 @@ def test_describe_accessor_method(describe_df):
     # Test numeric with non-nullable ltypes
     numeric_data = describe_df[['numeric_col']].fillna(0)
     for ltype in non_nullable_numeric_ltypes:
-        expected_vals = pd.Series({
+        expected_vals = pd.Series({  # fix when https://github.com/pandas-dev/pandas/issues/42626 gets resolved
             'physical_type': 'float64',
             'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
