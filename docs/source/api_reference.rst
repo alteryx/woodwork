@@ -52,6 +52,7 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.add_semantic_tags
     WoodworkColumnAccessor.box_plot_dict
     WoodworkColumnAccessor.description
+    WoodworkColumnAccessor.origin
     WoodworkColumnAccessor.iloc
     WoodworkColumnAccessor.init
     WoodworkColumnAccessor.loc
@@ -97,6 +98,7 @@ ColumnSchema
 
     ColumnSchema
     ColumnSchema.description
+    ColumnSchema.origin
     ColumnSchema.is_boolean
     ColumnSchema.is_categorical
     ColumnSchema.is_datetime

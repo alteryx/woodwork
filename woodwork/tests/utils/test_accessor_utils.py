@@ -105,11 +105,13 @@ def test_init_series_all_parameters(sample_series):
 
     metadata = {'meta_key': 'meta_value'}
     description = 'custom description'
+    origin = 'base'
     series = init_series(sample_series,
                          logical_type='categorical',
                          semantic_tags=['custom_tag'],
                          metadata=metadata,
                          description=description,
+                         origin=origin,
                          use_standard_tags=False)
     assert series is not sample_series
     correct_dtype = Categorical._get_valid_dtype(type(sample_series))
@@ -118,6 +120,7 @@ def test_init_series_all_parameters(sample_series):
     assert series.ww.semantic_tags == {'custom_tag'}
     assert series.ww.metadata == metadata
     assert series.ww.description == description
+    assert series.ww.origin == origin
 
 
 def test_init_series_error_on_invalid_conversion(sample_series):

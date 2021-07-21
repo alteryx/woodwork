@@ -50,7 +50,9 @@ def test_accessor_init(sample_series):
 
 
 def test_accessor_init_with_schema(sample_series):
-    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    sample_series.ww.init(semantic_tags={'test_tag'},
+                          description='this is a column',
+                          origin='base')
     schema = sample_series.ww.schema
 
     head_series = sample_series.head(2)
@@ -59,6 +61,7 @@ def test_accessor_init_with_schema(sample_series):
 
     assert head_series.ww._schema is schema
     assert head_series.ww.description == 'this is a column'
+    assert head_series.ww.origin == 'base'
     assert head_series.ww.semantic_tags == {'test_tag', 'category'}
 
     iloc_series = sample_series.loc[[2, 3]]
@@ -67,12 +70,15 @@ def test_accessor_init_with_schema(sample_series):
 
     assert iloc_series.ww._schema is schema
     assert iloc_series.ww.description == 'this is a column'
+    assert iloc_series.ww.origin == 'base'
     assert iloc_series.ww.semantic_tags == {'test_tag', 'category'}
     assert isinstance(iloc_series.ww.logical_type, Categorical)
 
 
 def test_accessor_init_with_schema_errors(sample_series):
-    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    sample_series.ww.init(semantic_tags={'test_tag'},
+                          description='this is a column',
+                          origin='base')
     schema = sample_series.ww.schema
 
     head_series = sample_series.head(2)
@@ -96,21 +102,22 @@ def test_accessor_init_with_schema_errors(sample_series):
 
 
 def test_accessor_with_schema_parameter_warning(sample_series):
-    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column')
+    sample_series.ww.init(semantic_tags={'test_tag'}, description='this is a column', origin='base')
     schema = sample_series.ww.schema
 
     head_series = sample_series.head(2)
 
     warning = "A schema was provided and the following parameters were ignored: " \
-              "logical_type, semantic_tags, description, metadata, use_standard_tags"
+              "logical_type, semantic_tags, description, origin, metadata, use_standard_tags"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
         head_series.ww.init(logical_type=Integer, semantic_tags={'ignored_test_tag'},
-                            description='an ignored description', metadata={'user_id': 'user1'},
-                            use_standard_tags=False, schema=schema)
+                            description='an ignored description', origin='ignored origin',
+                            metadata={'user_id': 'user1'}, use_standard_tags=False, schema=schema)
 
     assert head_series.ww.semantic_tags == {'category', 'test_tag'}
     assert isinstance(head_series.ww.logical_type, Categorical)
     assert head_series.ww.description == 'this is a column'
+    assert head_series.ww.origin == 'base'
     assert head_series.ww.metadata == {}
 
 
@@ -248,6 +255,35 @@ def test_description_error_on_update(sample_series):
     err_msg = "Column description must be a string"
     with pytest.raises(TypeError, match=err_msg):
         sample_series.ww.description = 123
+
+
+def test_accessor_origin(sample_series):
+    column_origin = "base"
+    sample_series.ww.init(origin=column_origin)
+    assert sample_series.ww.origin == column_origin
+
+    new_origin = "engineered"
+    sample_series.ww.origin = new_origin
+    assert sample_series.ww.origin == new_origin
+
+
+def test_origin_setter_error_before_init(sample_series):
+    err_msg = "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    with pytest.raises(WoodworkNotInitError, match=err_msg):
+        sample_series.ww.origin = "base"
+
+
+def test_origin_error_on_init(sample_series):
+    err_msg = "Column origin must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.init(origin=123)
+
+
+def test_origin_error_on_update(sample_series):
+    sample_series.ww.init()
+    err_msg = "Column origin must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.origin = 123
 
 
 def test_accessor_repr(sample_series):
@@ -766,6 +802,7 @@ def test_validation_methods_called_init_with_schema(mock_validate_schema, sample
 def test_series_methods_returning_frame(sample_series):
     sample_series.ww.init(semantic_tags={'test_tag'},
                           description='custom description',
+                          origin='base',
                           metadata={'custom key': 'custom value'})
     sample_frame = sample_series.ww.to_frame()
 

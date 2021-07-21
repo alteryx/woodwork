@@ -16,6 +16,7 @@ class ColumnSchema(object):
                  semantic_tags=None,
                  use_standard_tags=False,
                  description=None,
+                 origin=None,
                  metadata=None,
                  validate=True):
         """Create ColumnSchema
@@ -26,6 +27,7 @@ class ColumnSchema(object):
             use_standard_tags (boolean, optional): If True, will add standard semantic tags to the column based
                     on the specified logical type if a logical type is defined for the column. Defaults to False.
             description (str, optional): User description of the column.
+            origin (str, optional): Origin of the column (i.e. "base" or "engineered").
             metadata (dict[str -> json serializable], optional): Extra metadata provided by the user. The dictionary must contain
                 data types that are JSON serializable such as string, integers, and floats. DataFrame and Series types are not supported.
             validate (bool, optional): Whether to perform parameter validation. Defaults to True.
@@ -39,9 +41,11 @@ class ColumnSchema(object):
             if logical_type is not None:
                 _validate_logical_type(logical_type)
             _validate_description(description)
+            _validate_origin(origin)
             _validate_metadata(metadata)
         self._metadata = metadata
         self._description = description
+        self._origin = origin
         self.logical_type = logical_type
 
         self.use_standard_tags = use_standard_tags
@@ -57,6 +61,8 @@ class ColumnSchema(object):
         if self.semantic_tags != other.semantic_tags:
             return False
         if self.description != other.description:
+            return False
+        if self.origin != other.origin:
             return False
         if deep and self.metadata != other.metadata:
             return False
@@ -92,6 +98,16 @@ class ColumnSchema(object):
     def description(self, description):
         _validate_description(description)
         self._description = description
+
+    @property
+    def origin(self):
+        """Origin of the column"""
+        return self._origin
+
+    @origin.setter
+    def origin(self, origin):
+        _validate_origin(origin)
+        self._origin = origin
 
     @property
     def metadata(self):
@@ -190,6 +206,11 @@ def _validate_logical_type(logical_type):
 def _validate_description(column_description):
     if column_description is not None and not isinstance(column_description, str):
         raise TypeError("Column description must be a string")
+
+
+def _validate_origin(origin):
+    if origin is not None and not isinstance(origin, str):
+        raise TypeError("Column origin must be a string")
 
 
 def _validate_metadata(column_metadata):
