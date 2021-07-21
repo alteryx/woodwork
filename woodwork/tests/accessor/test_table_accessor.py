@@ -7,7 +7,13 @@ import pytest
 from mock import patch
 
 import woodwork as ww
-from woodwork.accessor_utils import init_series
+from woodwork.accessor_utils import (
+    _is_dask_dataframe,
+    _is_dask_series,
+    _is_koalas_dataframe,
+    _is_koalas_series,
+    init_series
+)
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
@@ -97,10 +103,10 @@ def test_check_time_index_errors(sample_df):
 
 
 def test_check_unique_column_names_errors(sample_df):
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         pytest.skip("Koalas enforces unique column names")
     duplicate_cols_df = sample_df.copy()
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         duplicate_cols_df = dd.concat([duplicate_cols_df, duplicate_cols_df['age']], axis=1)
     else:
         duplicate_cols_df.insert(0, 'age', [18, 21, 65, 43], allow_duplicates=True)
@@ -232,7 +238,7 @@ def test_accessor_physical_types_property(sample_df):
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
     for k, v in sample_df.ww.physical_types.items():
         logical_type = sample_df.ww.columns[k].logical_type
-        if ks and isinstance(sample_df, ks.DataFrame) and logical_type.backup_dtype is not None:
+        if _is_koalas_dataframe(sample_df) and logical_type.backup_dtype is not None:
             assert v == logical_type.backup_dtype
         else:
             assert v == logical_type.primary_dtype
@@ -776,7 +782,7 @@ def test_sets_object_dtype_on_init(latlong_df):
         assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
-        if ks and isinstance(latlong_df, ks.DataFrame):
+        if _is_koalas_dataframe(latlong_df):
             expected_val = [3, 4]
         assert df_pandas.iloc[-1] == expected_val
 
@@ -939,9 +945,9 @@ def test_invalid_dtype_casting():
 
 
 def test_underlying_index_set_no_index_on_init(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Dask input')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
     input_index = pd.Int64Index([99, 88, 77, 66])
@@ -960,9 +966,9 @@ def test_underlying_index_set_no_index_on_init(sample_df):
 
 
 def test_underlying_index_set(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Dask input')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
     # Sets underlying index at init
@@ -988,9 +994,9 @@ def test_underlying_index_set(sample_df):
 
 
 def test_underlying_index_reset(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Dask input')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
     specified_index = pd.Index
@@ -1022,9 +1028,9 @@ def test_underlying_index_reset(sample_df):
 
 
 def test_underlying_index_unchanged_after_updates(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Dask input')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         pytest.xfail('Setting underlying index is not supported with Koalas input')
 
     sample_df.ww.init(index='full_name')
@@ -1081,9 +1087,9 @@ def test_underlying_index_unchanged_after_updates(sample_df):
 
 
 def test_accessor_already_sorted(sample_unsorted_df):
-    if dd and isinstance(sample_unsorted_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_unsorted_df):
         pytest.xfail('Sorting dataframe is not supported with Dask input')
-    if ks and isinstance(sample_unsorted_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_unsorted_df):
         pytest.xfail('Sorting dataframe is not supported with Koalas input')
 
     schema_df = sample_unsorted_df.copy()
@@ -1114,7 +1120,7 @@ def test_accessor_already_sorted(sample_unsorted_df):
 
 
 def test_ordinal_with_order(sample_series):
-    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not compatible')
 
     ordinal_with_order = Ordinal(order=['a', 'b', 'c'])
@@ -1135,7 +1141,7 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if (ks and isinstance(sample_series, ks.Series)) or (dd and isinstance(sample_series, dd.Series)):
+    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail('Fails with Dask and Koalas - ordinal data validation not supported')
 
     ordinal_incomplete_order = Ordinal(order=['a', 'b'])
@@ -1163,7 +1169,7 @@ def test_ordinal_with_nan_values():
 
 
 def test_accessor_with_falsy_column_names(falsy_names_df):
-    if dd and isinstance(falsy_names_df, dd.DataFrame):
+    if _is_dask_dataframe(falsy_names_df):
         pytest.xfail('Dask DataFrames cannot handle integer column names')
 
     schema_df = falsy_names_df.copy()
@@ -1250,7 +1256,7 @@ def test_dataframe_methods_on_accessor_new_schema_object(sample_df):
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):
     # TODO: Try to find a supported inplace method for Dask, if one exists
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pytest.xfail('Dask does not support sort_values or rename inplace.')
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema')
@@ -1291,12 +1297,12 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     shape = schema_df.ww.shape
 
     assert schema_df.ww.name == 'test_schema'
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         shape = (shape[0].compute(), shape[1])
     assert shape == to_pandas(schema_df).shape
     assert schema_df.ww.name == 'test_schema'
 
-    if dd and not isinstance(sample_df, dd.DataFrame):
+    if not _is_dask_dataframe(sample_df):
         # keys() not supported with Dask
         pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
 
@@ -1307,9 +1313,9 @@ def test_dataframe_methods_on_accessor_to_pandas(sample_df):
 
     sample_df.ww.init(name='woodwork', index='id')
 
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         pd_df = sample_df.ww.compute()
-    elif ks and isinstance(sample_df, ks.DataFrame):
+    elif _is_koalas_dataframe(sample_df):
         pd_df = sample_df.ww.to_pandas()
 
     assert isinstance(pd_df, pd.DataFrame)
@@ -1919,11 +1925,11 @@ def test_accessor_drop_inplace(sample_df):
     inplace_df = sample_df.copy()
     inplace_df.ww.init()
 
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         error = 'Drop inplace not supported for Dask'
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.drop(['is_registered'], inplace=True)
-    elif ks and isinstance(sample_df, ks.DataFrame):
+    elif _is_koalas_dataframe(sample_df):
         error = 'Drop inplace not supported for Koalas'
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.drop(['is_registered'], inplace=True)
@@ -2028,11 +2034,11 @@ def test_accessor_rename_inplace(sample_df):
     original_df = sample_df.ww.copy()
     inplace_df = sample_df.ww.copy()
 
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         error = 'Rename inplace not supported for Dask'
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
-    elif ks and isinstance(sample_df, ks.DataFrame):
+    elif _is_koalas_dataframe(sample_df):
         error = 'Rename inplace not supported for Koalas'
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.rename({'age': 'birthday'}, inplace=True)
@@ -2195,7 +2201,7 @@ def test_setitem_different_name(sample_df):
     df.ww.init()
 
     new_series = pd.Series([1, 2, 3, 4], name='wrong', dtype='float')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series = ks.Series(new_series)
 
     # Assign series with name `wrong` to existing column with name `id`
@@ -2206,7 +2212,7 @@ def test_setitem_different_name(sample_df):
     assert 'wrong' not in df.columns
 
     new_series2 = pd.Series([1, 2, 3, 4], name='wrong2', dtype='float')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series2 = ks.Series(new_series2)
 
     # Assign series with name `wrong2` to new column with name `new_col`
@@ -2222,7 +2228,7 @@ def test_setitem_new_column(sample_df):
     df.ww.init(use_standard_tags=False)
 
     new_series = pd.Series([1, 2, 3, 4])
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series = ks.Series(new_series)
     dtype = 'int64'
 
@@ -2236,7 +2242,7 @@ def test_setitem_new_column(sample_df):
     assert df.ww['test_col2'].dtype == dtype
 
     new_series = pd.Series([1, 2, 3], dtype='float')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series = ks.Series(new_series)
 
     new_series = init_series(
@@ -2259,7 +2265,7 @@ def test_setitem_new_column(sample_df):
     df.ww.init(use_standard_tags=True)
 
     new_series = pd.Series(['new', 'column', 'inserted'], name='test_col')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         dtype = 'string'
         new_series = ks.Series(new_series)
     else:
@@ -2286,7 +2292,7 @@ def test_setitem_overwrite_column(sample_df):
     # Change to column no change in types
     original_col = df.ww['age']
     new_series = pd.Series([1, 2, 3, None], dtype='Int64')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series = ks.Series(new_series)
 
     dtype = 'Int64'
@@ -2303,7 +2309,7 @@ def test_setitem_overwrite_column(sample_df):
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = df['full_name']
     new_series = pd.Series([0, 1, 2], dtype='float')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series = ks.Series(new_series)
 
     new_series = init_series(
@@ -2327,7 +2333,7 @@ def test_setitem_overwrite_column(sample_df):
 
     original_col = df['full_name']
     new_series = pd.Series([0, 1, 2], dtype='float')
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         new_series = ks.Series(new_series)
 
     new_series = init_series(
@@ -2386,7 +2392,7 @@ def test_maintain_column_order_of_input(sample_df):
 
     reversed_cols = list(schema_df.columns[::-1])
 
-    if dd and not isinstance(sample_df, dd.DataFrame):
+    if not _is_dask_dataframe(sample_df):
         iloc_df = schema_df.ww.iloc[:, list(range(len(schema_df.columns)))[::-1]]
         assert all(reversed_cols == iloc_df.columns)
         assert all(reversed_cols == iloc_df.ww.types.index)
@@ -2526,7 +2532,7 @@ def test_validation_methods_called(mock_validate_accessor_params, sample_df):
 
 
 def test_maintains_set_logical_type(sample_df):
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         pytest.xfail("Koalas changed dtype on fillna which invalidates schema")
     sample_df.ww.init(logical_types={'age': 'IntegerNullable'})
     assert isinstance(sample_df.ww.logical_types['age'], IntegerNullable)

@@ -239,11 +239,9 @@ def _to_latlong_float(val):
 def _is_valid_latlong_series(series):
     """Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False"""
-    dd = import_or_none('dask.dataframe')
-    ks = import_or_none('databricks.koalas')
-    if dd and isinstance(series, dd.Series):
+    if ww.accessor_utils._is_dask_series(series):
         series = series = series.get_partition(0).compute()
-    if ks and isinstance(series, ks.Series):
+    if ww.accessor_utils._is_koalas_series(series):
         series = series.to_pandas()
         bracket_type = list
     else:
@@ -407,9 +405,9 @@ def concat_columns(objs, validate_schema=True):
     ks = import_or_none('databricks.koalas')
 
     lib = pd
-    if ks and isinstance(obj, (ks.Series, ks.DataFrame)):
+    if ww.accessor_utils._is_koalas_dataframe(obj) or ww.accessor_utils._is_koalas_series(obj):
         lib = ks
-    elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
+    elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(obj):
         lib = dd
 
     combined_df = lib.concat(objs, axis=1, join='outer')
