@@ -1,5 +1,6 @@
 import pandas as pd
 
+from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
@@ -184,11 +185,11 @@ class Datetime(LogicalType):
             sample_length = len(series.index) // 10 or len(series.index)
             self.datetime_format = self.datetime_format or _infer_datetime_format(series, n=sample_length)
             try:
-                if dd and isinstance(series, dd.Series):
+                if _is_dask_series(series):
                     name = series.name
                     series = dd.to_datetime(series, format=self.datetime_format)
                     series.name = name
-                elif ks and isinstance(series, ks.Series):
+                elif _is_koalas_series(series):
                     series = ks.Series(ks.to_datetime(series.to_numpy(),
                                                       format=self.datetime_format),
                                        name=series.name)
@@ -322,12 +323,12 @@ class LatLong(LogicalType):
 
     def transform(self, series):
         """Formats a series to be a tuple (or list for Koalas) of two floats."""
-        if dd and isinstance(series, dd.Series):
+        if _is_dask_series(series):
             name = series.name
             meta = (series, tuple([float, float]))
             series = series.apply(_reformat_to_latlong, meta=meta)
             series.name = name
-        elif ks and isinstance(series, ks.Series):
+        elif _is_koalas_series(series):
             formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
             series = ks.from_pandas(formatted_series)
         else:

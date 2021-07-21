@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import init_series
+from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
     URL,
     Age,
@@ -46,10 +46,6 @@ from woodwork.tests.testing_utils import (
     mi_between_cols,
     to_pandas
 )
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 
 def test_get_mode():
@@ -319,7 +315,7 @@ def test_describe_accessor_method(describe_df):
 
     # Test categorical columns
     category_data = describe_df[['category_col']]
-    if ks and isinstance(category_data, ks.DataFrame):
+    if _is_koalas_dataframe(category_data):
         expected_dtype = 'string'
     else:
         expected_dtype = 'category'
@@ -436,7 +432,7 @@ def test_describe_accessor_method(describe_df):
         assert expected_vals.equals(stats_df['formatted_datetime_col'].dropna())
 
     # Test timedelta columns - Skip for Koalas
-    if not (ks and isinstance(describe_df, ks.DataFrame)):
+    if not _is_koalas_dataframe(describe_df):
         timedelta_data = describe_df['timedelta_col']
         for ltype in timedelta_ltypes:
             expected_vals = pd.Series({
@@ -528,7 +524,7 @@ def test_describe_accessor_method(describe_df):
     latlong_data = describe_df[['latlong_col']]
     expected_dtype = 'object'
     for ltype in latlong_ltypes:
-        mode = [0, 0] if ks and isinstance(describe_df, ks.DataFrame) else (0, 0)
+        mode = [0, 0] if _is_koalas_dataframe(describe_df) else (0, 0)
         expected_vals = pd.Series({
             'physical_type': expected_dtype,
             'logical_type': ltype(),
@@ -657,7 +653,7 @@ def test_describe_callback(describe_df):
 
     assert mock_callback.unit == 'calculations'
     # Koalas df does not have timedelta column
-    if ks and isinstance(describe_df, ks.DataFrame):
+    if _is_koalas_dataframe(describe_df):
         ncalls = 9
     else:
         ncalls = 10
@@ -734,7 +730,7 @@ def test_value_counts(categorical_df):
     expected_cat1 = [{'value': 200, 'count': 4}, {'value': 100, 'count': 3}, {'value': 1, 'count': 2}, {'value': 3, 'count': 1}]
     # Koalas converts numeric categories to strings, so we need to update the expected values for this
     # Koalas will result in `None` instead of `np.nan` in categorical columns
-    if ks and isinstance(categorical_df, ks.DataFrame):
+    if _is_koalas_dataframe(categorical_df):
         updated_results = []
         for items in expected_cat1:
             updated_results.append({k: (str(v) if k == 'value' else v) for k, v in items.items()})
