@@ -102,7 +102,8 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
                       column_origins=kwargs.get('column_origins'))
 
     if func == "to_csv":
-        df.ww.logical_types['signup_date'].datetime_format = None  # read_csv reads datetimes as strings and infers datetime during transform
+        for c in ['signup_date', 'datetime_with_NaT']:
+            df.ww.logical_types[c].datetime_format = None  # read_csv reads datetimes as strings and infers datetime during transform
 
     assert df.ww.schema == schema_df.ww.schema
 
