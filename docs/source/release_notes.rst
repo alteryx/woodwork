@@ -1,9 +1,20 @@
 .. _release_notes:
 
+
+.. Future Release
+==================
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
 Release Notes
 -------------
-Future Release
-==============
+v0.5.1 Jul 21, 2021
+===================
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
           type (:pr:`1047`)
@@ -12,17 +23,15 @@ Future Release
           to ``WoodworkColumnAccessor`` (:pr:`1048`)
         * Add ability to change config settings in a with block with
           ``ww.config.with_options`` (:pr:`1062`)
-    * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
         * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
         * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`simha104`
+    :user:`davesque`, :user:`frances-h`, :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.5.0 Jul 7, 2021
 ==================
