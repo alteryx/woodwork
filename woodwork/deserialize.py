@@ -63,7 +63,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     column_origins = {}
     column_metadata = {}
     use_standard_tags = {}
-    category_dtypes = {}
+    column_dtypes = {}
     for col in table_typing_info['column_typing_info']:
         col_name = col['name']
 
@@ -84,7 +84,8 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
         column_metadata[col_name] = col['metadata']
         use_standard_tags[col_name] = col['use_standard_tags']
 
-        if col['physical_type']['type'] == 'category':
+        col_type = col['physical_type']['type']
+        if col_type == 'category':
             # Make sure categories are recreated properly
             cat_values = col['physical_type']['cat_values']
             cat_dtype = col['physical_type']['cat_dtype']
@@ -92,7 +93,10 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
                 cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
             else:
                 cat_object = pd.CategoricalDtype(pd.Series(cat_values))
-            category_dtypes[col_name] = cat_object
+            col_type = cat_object
+        elif table_type == 'koalas' and col_type == 'object':
+            col_type = 'string'
+        column_dtypes[col_name] = col_type
 
     if table_type == 'dask':
         DASK_ERR_MSG = (
@@ -121,7 +125,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     if load_format == 'csv':
         dataframe = lib.read_csv(
             file,
-            dtype=category_dtypes,
+            dtype=column_dtypes,
             **kwargs
         )
     elif load_format == 'pickle':

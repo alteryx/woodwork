@@ -26,6 +26,7 @@ Future Release
 v0.5.0 Jul 7, 2021
 ==================
     * Enhancements
+        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
         * Add support for numpy array inputs to Woodwork (:pr:`1023`)
         * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
     * Fixes

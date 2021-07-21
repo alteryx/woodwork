@@ -2,7 +2,12 @@ import pandas as pd
 
 from woodwork.exceptions import TypeConversionError
 from woodwork.type_sys.utils import _get_specified_ltype_params
-from woodwork.utils import _reformat_to_latlong, camel_to_snake, import_or_none
+from woodwork.utils import (
+    _infer_datetime_format,
+    _reformat_to_latlong,
+    camel_to_snake,
+    import_or_none
+)
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
@@ -173,21 +178,22 @@ class Datetime(LogicalType):
         self.datetime_format = datetime_format
 
     def transform(self, series):
-        """Converts the series data to a formatted datetime."""
+        """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
+            sample_length = len(series.index) // 10 or len(series.index)
+            self.datetime_format = self.datetime_format or _infer_datetime_format(series, n=sample_length)
             try:
                 if dd and isinstance(series, dd.Series):
                     name = series.name
-                    series = dd.to_datetime(series, format=self.datetime_format, infer_datetime_format=True)
+                    series = dd.to_datetime(series, format=self.datetime_format)
                     series.name = name
                 elif ks and isinstance(series, ks.Series):
                     series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                      format=self.datetime_format,
-                                                      infer_datetime_format=True),
+                                                      format=self.datetime_format),
                                        name=series.name)
                 else:
-                    series = pd.to_datetime(series, format=self.datetime_format, infer_datetime_format=True)
+                    series = pd.to_datetime(series, format=self.datetime_format)
             except (TypeError, ValueError):
                 raise TypeConversionError(series, new_dtype, type(self))
         return super().transform(series)
