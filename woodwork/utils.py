@@ -449,3 +449,18 @@ def _update_progress(start_time, current_time, progress_increment,
         callback_function(progress_increment, new_progress, total, unit, elapsed_time)
 
         return new_progress
+
+
+def _infer_datetime_format(dates, n=100):
+    """Helper function to infer the datetime format of the first n non-null rows of a series
+    Args:
+        dates (Series): Series of string or datetime string to guess the format of
+        n (int): the maximum number of nonnull rows to sample from the series
+    """
+    try:
+        first_n = dates.dropna().head(n)
+        fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
+        mode_fmt = fmts.mode().loc[0]  # select first most common format
+    except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
+        mode_fmt = None
+    return mode_fmt
