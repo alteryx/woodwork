@@ -7,22 +7,27 @@ Future Release
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
           type (:pr:`1047`)
+        * Add feature origin attribute to schema (:pr:`1056`)
         * Add ability to calculate outliers and the statistical info required for box and whisker plots
           to ``WoodworkColumnAccessor`` (:pr:`1048`)
+        * Add ability to change config settings in a with block with
+          ``ww.config.with_options`` (:pr:`1062`)
     * Fixes
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
+        * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
         * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`simha104`
 
 v0.5.0 Jul 7, 2021
 ==================
     * Enhancements
+        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
         * Add support for numpy array inputs to Woodwork (:pr:`1023`)
         * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
     * Fixes

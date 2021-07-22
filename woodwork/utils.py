@@ -96,6 +96,7 @@ def read_file(filepath=None,
               semantic_tags=None,
               logical_types=None,
               use_standard_tags=True,
+              column_origins=None,
               validate=True,
               **kwargs):
     """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
@@ -124,6 +125,8 @@ def read_file(filepath=None,
             for any columns not present in the dictionary.
         use_standard_tags (bool, optional): If True, will add standard semantic tags to columns based
             on the inferred or specified logical type for the column. Defaults to True.
+        column_origins (str or dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+                used as the origin for all columns. A dictionary can be used to set origins for individual columns.
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -158,6 +161,7 @@ def read_file(filepath=None,
                       semantic_tags=semantic_tags,
                       logical_types=logical_types,
                       use_standard_tags=use_standard_tags,
+                      column_origins=column_origins,
                       validate=validate)
     return dataframe
 
@@ -235,11 +239,9 @@ def _to_latlong_float(val):
 def _is_valid_latlong_series(series):
     """Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False"""
-    dd = import_or_none('dask.dataframe')
-    ks = import_or_none('databricks.koalas')
-    if dd and isinstance(series, dd.Series):
+    if ww.accessor_utils._is_dask_series(series):
         series = series = series.get_partition(0).compute()
-    if ks and isinstance(series, ks.Series):
+    if ww.accessor_utils._is_koalas_series(series):
         series = series.to_pandas()
         bracket_type = list
     else:
@@ -339,6 +341,7 @@ def concat_columns(objs, validate_schema=True):
     logical_types = {}
     semantic_tags = {}
     col_descriptions = {}
+    col_origins = {}
     col_metadata = {}
     table_metadata = {}
     use_standard_tags = {}
@@ -391,6 +394,7 @@ def concat_columns(objs, validate_schema=True):
             semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
             col_metadata[name] = col_schema.metadata
             col_descriptions[name] = col_schema.description
+            col_origins[name] = col_schema.origin
             use_standard_tags[name] = col_schema.use_standard_tags
 
             col_names_seen.add(name)
@@ -401,9 +405,9 @@ def concat_columns(objs, validate_schema=True):
     ks = import_or_none('databricks.koalas')
 
     lib = pd
-    if ks and isinstance(obj, (ks.Series, ks.DataFrame)):
+    if ww.accessor_utils._is_koalas_dataframe(obj) or ww.accessor_utils._is_koalas_series(obj):
         lib = ks
-    elif dd and isinstance(obj, (dd.Series, dd.DataFrame)):
+    elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(obj):
         lib = dd
 
     combined_df = lib.concat(objs, axis=1, join='outer')
@@ -418,6 +422,7 @@ def concat_columns(objs, validate_schema=True):
                         table_metadata=table_metadata or None,
                         column_metadata=col_metadata,
                         column_descriptions=col_descriptions,
+                        column_origins=col_origins,
                         use_standard_tags=use_standard_tags,
                         validate=validate_schema)
     return combined_df
@@ -442,3 +447,18 @@ def _update_progress(start_time, current_time, progress_increment,
         callback_function(progress_increment, new_progress, total, unit, elapsed_time)
 
         return new_progress
+
+
+def _infer_datetime_format(dates, n=100):
+    """Helper function to infer the datetime format of the first n non-null rows of a series
+    Args:
+        dates (Series): Series of string or datetime string to guess the format of
+        n (int): the maximum number of nonnull rows to sample from the series
+    """
+    try:
+        first_n = dates.dropna().head(n)
+        fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
+        mode_fmt = fmts.mode().loc[0]  # select first most common format
+    except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
+        mode_fmt = None
+    return mode_fmt

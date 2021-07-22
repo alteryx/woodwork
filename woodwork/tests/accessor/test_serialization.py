@@ -8,6 +8,7 @@ from mock import patch
 
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
+from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
@@ -15,10 +16,6 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import Categorical, Ordinal
 from woodwork.tests.testing_utils import to_pandas
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -46,14 +43,14 @@ def test_error_before_table_init(sample_df, tmpdir):
 
 
 def test_to_dictionary(sample_df):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         table_type = 'dask'
         cat_type_dict = {
             'type': 'category',
             'cat_values': [33, 57],
             'cat_dtype': 'int64'
         }
-    elif ks and isinstance(sample_df, ks.DataFrame):
+    elif _is_koalas_dataframe(sample_df):
         table_type = 'koalas'
         cat_type_dict = {
             'type': 'string'
@@ -81,6 +78,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': int_val},
                                         'semantic_tags': ['index', 'tag1'],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{'is_sorted': True}},
                                        {'name': 'full_name',
                                         'ordinal': 1,
@@ -89,6 +87,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{}},
                                        {'name': 'email',
                                         'ordinal': 2,
@@ -97,6 +96,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{}},
                                        {'name': 'phone_number',
                                         'ordinal': 3,
@@ -105,6 +105,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': string_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': 'base',
                                         'metadata': {}},
                                        {'name': 'age',
                                         'ordinal': 4,
@@ -113,6 +114,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': cat_type_dict,
                                         'semantic_tags': ['category'],
                                         'description': 'age of the user',
+                                        'origin': 'base',
                                         'metadata':{'interesting_values': [33, 57]}},
                                        {'name': 'signup_date',
                                         'ordinal': 5,
@@ -122,6 +124,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': 'datetime64[ns]'},
                                         'semantic_tags': [],
                                         'description': 'original signup date',
+                                        'origin': 'engineered',
                                         'metadata':{}},
                                        {'name': 'is_registered',
                                         'ordinal': 6,
@@ -130,6 +133,7 @@ def test_to_dictionary(sample_df):
                                         'physical_type': {'type': bool_val},
                                         'semantic_tags': [],
                                         'description': None,
+                                        'origin': None,
                                         'metadata':{}}],
                 'loading_info': {'table_type': table_type},
                 'table_metadata': {'date_created': '11/16/20'}
@@ -143,6 +147,9 @@ def test_to_dictionary(sample_df):
         table_metadata={'date_created': '11/16/20'},
         column_descriptions={'signup_date': 'original signup date',
                              'age': 'age of the user'},
+        column_origins={'phone_number': 'base',
+                        'age': 'base',
+                        'signup_date': 'engineered'},
         column_metadata={'id': {'is_sorted': True},
                          'age': {'interesting_values': [33, 57]}}
     )
@@ -169,7 +176,7 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
 
 def test_to_csv(sample_df, tmpdir):
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         # Dask errors with pd.NA in some partitions, but not others
         sample_df['age'] = sample_df['age'].fillna(25)
     sample_df.ww.init(
@@ -179,6 +186,9 @@ def test_to_csv(sample_df, tmpdir):
         logical_types={'age': Ordinal(order=[25, 33, 57])},
         column_descriptions={'signup_date': 'original signup date',
                              'age': 'age of the user'},
+        column_origins={'phone_number': 'base',
+                        'age': 'base',
+                        'signup_date': 'engineered'},
         column_metadata={'id': {'is_sorted': True},
                          'age': {'interesting_values': [33, 57]}})
     sample_df.ww.to_disk(str(tmpdir), format='csv', encoding='utf-8', engine='python')
@@ -332,7 +342,7 @@ def test_to_feather_with_latlong(latlong_df, tmpdir):
 
 def test_to_orc(sample_df, tmpdir):
     sample_df.ww.init(index='id')
-    if dd and isinstance(sample_df, dd.DataFrame):
+    if _is_dask_dataframe(sample_df):
         msg = 'DataFrame type not compatible with orc serialization. Please serialize to another format.'
         with pytest.raises(ValueError, match=msg):
             sample_df.ww.to_disk(str(tmpdir), format='orc')
@@ -346,7 +356,7 @@ def test_to_orc(sample_df, tmpdir):
 
 def test_to_orc_with_latlong(latlong_df, tmpdir):
     latlong_df.ww.init(logical_types={col: 'LatLong' for col in latlong_df.columns})
-    if dd and isinstance(latlong_df, dd.DataFrame):
+    if _is_dask_dataframe(latlong_df):
         msg = 'DataFrame type not compatible with orc serialization. Please serialize to another format.'
         with pytest.raises(ValueError, match=msg):
             latlong_df.ww.to_disk(str(tmpdir), format='orc')

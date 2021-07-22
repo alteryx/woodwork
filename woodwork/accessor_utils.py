@@ -8,7 +8,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def init_series(series, logical_type=None, semantic_tags=None,
-                use_standard_tags=True, description=None, metadata=None):
+                use_standard_tags=True, description=None, origin=None, metadata=None):
     """Initializes Woodwork typing information for a series, numpy.ndarray or pd.api.extensions.
     ExtensionArray, returning a new Series. The dtype of the returned series will be converted
     to match the dtype associated with the LogicalType.
@@ -27,6 +27,7 @@ def init_series(series, logical_type=None, semantic_tags=None,
         use_standard_tags (bool, optional): If True, will add standard semantic tags to the series
             based on the inferred or specified logical type of the series. Defaults to True.
         description (str, optional): Optional text describing the contents of the series.
+        origin (str, optional): Optional text specifying origin of the column (i.e. "base" or "engineered").
         metadata (dict[str -> json serializable], optional): Metadata associated with the series.
 
     Returns:
@@ -45,6 +46,7 @@ def init_series(series, logical_type=None, semantic_tags=None,
                        semantic_tags=semantic_tags,
                        use_standard_tags=use_standard_tags,
                        description=description,
+                       origin=origin,
                        metadata=metadata)
     return new_series
 
@@ -52,9 +54,9 @@ def init_series(series, logical_type=None, semantic_tags=None,
 def _is_series(data):
     if isinstance(data, pd.Series):
         return True
-    elif dd and isinstance(data, dd.Series):
+    elif _is_dask_series(data):
         return True
-    elif ks and isinstance(data, ks.Series):
+    elif _is_koalas_series(data):
         return True
     return False
 
@@ -62,9 +64,9 @@ def _is_series(data):
 def _is_dataframe(data):
     if isinstance(data, pd.DataFrame):
         return True
-    elif dd and isinstance(data, dd.DataFrame):
+    elif _is_dask_dataframe(data):
         return True
-    elif ks and isinstance(data, ks.DataFrame):
+    elif _is_koalas_dataframe(data):
         return True
     return False
 
@@ -121,3 +123,27 @@ def is_schema_valid(dataframe, schema):
     if invalid_schema_message:
         return False
     return True
+
+
+def _is_dask_series(data):
+    if dd and isinstance(data, dd.Series):
+        return True
+    return False
+
+
+def _is_dask_dataframe(data):
+    if dd and isinstance(data, dd.DataFrame):
+        return True
+    return False
+
+
+def _is_koalas_dataframe(data):
+    if ks and isinstance(data, ks.DataFrame):
+        return True
+    return False
+
+
+def _is_koalas_series(data):
+    if ks and isinstance(data, ks.Series):
+        return True
+    return False

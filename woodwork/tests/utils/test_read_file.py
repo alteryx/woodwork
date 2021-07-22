@@ -55,7 +55,26 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
             "semantic_tags": {
                 'age': ['tag1', 'tag2'],
                 'is_registered': ['tag3', 'tag4']
+            },
+            'column_origins': {
+                'full_name': 'csv',
+                'phone_number': 'base',
+                'is_registered': 'engineered'
             }
+        }, False),
+        ("sample.csv", ("to_csv", {"index": False}), {
+            "index": 'id',
+            "time_index": 'signup_date',
+            "logical_types": {
+                'full_name': 'NaturalLanguage',
+                'phone_number': 'PhoneNumber',
+                'is_registered': 'BooleanNullable',
+                'age': 'IntegerNullable'},
+            "semantic_tags": {
+                'age': ['tag1', 'tag2'],
+                'is_registered': ['tag3', 'tag4']
+            },
+            'column_origins': 'csv'
         }, False),
         ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean'}}, False),
         ("sample.feather", ("to_feather", {}), {}, False),
@@ -92,7 +111,12 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
     schema_df.ww.init(index=kwargs.get('index'),
                       time_index=kwargs.get('time_index'),
                       logical_types=kwargs.get('logical_types'),
-                      semantic_tags=kwargs.get('semantic_tags'))
+                      semantic_tags=kwargs.get('semantic_tags'),
+                      column_origins=kwargs.get('column_origins'))
+
+    if func == "to_csv":
+        df.ww.logical_types['signup_date'].datetime_format = None  # read_csv reads datetimes as strings and infers datetime during transform
+
     assert df.ww.schema == schema_df.ww.schema
 
     if "nrows" in kwargs:

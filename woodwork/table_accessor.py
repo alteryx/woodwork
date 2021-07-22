@@ -6,7 +6,9 @@ import pandas as pd
 
 import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
+    _is_dask_dataframe,
     _is_dataframe,
+    _is_koalas_dataframe,
     get_invalid_schema_message,
     init_series
 )
@@ -80,6 +82,8 @@ class WoodworkTableAccessor:
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
                 Unspecified columns will use the default value. Defaults to True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+                used as the origin for all columns. A dictionary can be used to set origins for individual columns.
             schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                 Any other arguments provided will be ignored. Note that any changes made to the schema object after
                 initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
@@ -538,7 +542,7 @@ class WoodworkTableAccessor:
             _raise_init_error()
         if format == 'csv':
             default_csv_kwargs = {'sep': ',', 'encoding': 'utf-8', 'engine': 'python', 'index': False}
-            if ks and isinstance(self._dataframe, ks.DataFrame):
+            if _is_koalas_dataframe(self._dataframe):
                 default_csv_kwargs['multiline'] = True
                 default_csv_kwargs['ignoreLeadingWhitespace'] = False
                 default_csv_kwargs['ignoreTrailingWhitespace'] = False
@@ -558,7 +562,7 @@ class WoodworkTableAccessor:
                                        **kwargs)
 
     def _sort_columns(self, already_sorted):
-        if dd and isinstance(self._dataframe, dd.DataFrame) or (ks and isinstance(self._dataframe, ks.DataFrame)):
+        if _is_dask_dataframe(self._dataframe) or _is_koalas_dataframe(self._dataframe):
             already_sorted = True  # Skip sorting for Dask and Koalas input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
@@ -627,9 +631,9 @@ class WoodworkTableAccessor:
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order."""
         if inplace:
-            if dd and isinstance(self._dataframe, dd.DataFrame):
+            if _is_dask_dataframe(self._dataframe):
                 raise ValueError('Drop inplace not supported for Dask')
-            if ks and isinstance(self._dataframe, ks.DataFrame):
+            if _is_koalas_dataframe(self._dataframe):
                 raise ValueError('Drop inplace not supported for Koalas')
 
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
@@ -709,9 +713,9 @@ class WoodworkTableAccessor:
 
         new_schema = self._schema.rename(columns)
         if inplace:
-            if dd and isinstance(self._dataframe, dd.DataFrame):
+            if _is_dask_dataframe(self._dataframe):
                 raise ValueError('Rename inplace not supported for Dask')
-            if ks and isinstance(self._dataframe, ks.DataFrame):
+            if _is_koalas_dataframe(self._dataframe):
                 raise ValueError('Rename inplace not supported for Koalas')
             self._dataframe.rename(columns=columns, inplace=True)
             self.init(schema=new_schema)
