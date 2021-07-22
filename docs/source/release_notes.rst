@@ -12,7 +12,7 @@
 
 Release Notes
 -------------
-v0.5.1 Jul 21, 2021
+v0.5.1 Jul 22, 2021
 ===================
     * Enhancements
         * Add support for automatically inferring the ``EmailAddress`` logical
