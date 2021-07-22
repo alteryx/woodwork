@@ -35,6 +35,10 @@ v0.5.1 Jul 22, 2021
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`frances-h`, :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
+Breaking Changes
+++++++++++++++++
+    * The criteria for categorical type inference have changed (:pr:`1065`)
+
 v0.5.0 Jul 7, 2021
 ==================
     * Enhancements
