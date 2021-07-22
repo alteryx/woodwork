@@ -207,10 +207,11 @@ def _create_archive(tmpdir):
 
 
 def save_orc_file(dataframe, filepath):
-    from pyarrow import Table, orc
-    df = dataframe.copy()
-    for c in df:
-        if df[c].dtype.name == 'category':
-            df[c] = df[c].astype('string')
-    pa_table = Table.from_pandas(df, preserve_index=False)
-    orc.write_table(pa_table, filepath)
+    from pyarrow import Table, orc, Schema, DictionaryType, field, string
+    schema = Schema.from_pandas(dataframe)
+    for i, f in enumerate(schema):
+        if isinstance(f.type, DictionaryType):
+            new_field = field(f.name, string(), f.nullable, f.metadata)
+            schema = schema.set(i, new_field)
+    table = Table.from_pandas(dataframe, schema=schema)
+    orc.write_table(table, filepath)
