@@ -25,7 +25,7 @@ from woodwork.logical_types import (
 from woodwork.type_sys.type_system import DEFAULT_INFERENCE_FUNCTIONS
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
-    _is_categorical,
+    _is_categorical_series,
     _is_numeric_series,
     col_is_datetime,
     list_logical_types,
@@ -460,20 +460,20 @@ def test_infer_datetime_format(datetimes):
 
 def test_is_categorical() -> None:
     # not categorical because unhashable type (list)
-    assert not _is_categorical(pd.Series([[1]]), 0)
-    assert not _is_categorical(pd.Series([None, [1]]), 0)
+    assert not _is_categorical_series(pd.Series([[1]]), 0)
+    assert not _is_categorical_series(pd.Series([None, [1]]), 0)
 
     # not categorical because empty series
-    assert not _is_categorical(pd.Series([]), 0)
-    assert not _is_categorical(pd.Series([None]), 0)
-    assert not _is_categorical(pd.Series([None, None]), 0)
+    assert not _is_categorical_series(pd.Series([]), 0)
+    assert not _is_categorical_series(pd.Series([None]), 0)
+    assert not _is_categorical_series(pd.Series([None, None]), 0)
 
     # not categorical because too many unique values
-    assert not _is_categorical(pd.Series([1, 2]), 0.5)
-    assert not _is_categorical(pd.Series([1, 2, 3, 1]), 0.5)
-    assert not _is_categorical(pd.Series([1, 2, 3, 4]), 0.75)
+    assert not _is_categorical_series(pd.Series([1, 2]), 0.5)
+    assert not _is_categorical_series(pd.Series([1, 2, 3, 1]), 0.5)
+    assert not _is_categorical_series(pd.Series([1, 2, 3, 4]), 0.75)
 
     # categorical
-    assert _is_categorical(pd.Series([1, 1]), 0.5)
-    assert _is_categorical(pd.Series([1, 2, 1, 1]), 0.5)
-    assert _is_categorical(pd.Series([1, 2, 3, 1]), 0.75)
+    assert _is_categorical_series(pd.Series([1, 1]), 0.5)
+    assert _is_categorical_series(pd.Series([1, 2, 1, 1]), 0.5)
+    assert _is_categorical_series(pd.Series([1, 2, 3, 1]), 0.75)

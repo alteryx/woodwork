@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 import woodwork as ww
-from woodwork.type_sys.utils import _is_categorical, col_is_datetime
+from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
 INFERENCE_SAMPLE_SIZE = 10000
 
@@ -24,12 +24,12 @@ def categorical_func(series):
         sample = get_inference_sample(series)
         categorical_threshold = ww.config.get_option('categorical_threshold')
 
-        return _is_categorical(sample, categorical_threshold)
+        return _is_categorical_series(sample, categorical_threshold)
 
     if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
         numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
         if numeric_categorical_threshold is not None:
-            return _is_categorical(series, numeric_categorical_threshold)
+            return _is_categorical_series(series, numeric_categorical_threshold)
         else:
             return False
 
@@ -46,7 +46,7 @@ def integer_nullable_func(series):
     if pdtypes.is_integer_dtype(series.dtype):
         threshold = ww.config.get_option('numeric_categorical_threshold')
         if threshold is not None:
-            return not _is_categorical(series, threshold)
+            return not _is_categorical_series(series, threshold)
         else:
             return True
 
@@ -57,7 +57,7 @@ def double_func(series):
     if pdtypes.is_float_dtype(series.dtype):
         threshold = ww.config.get_option('numeric_categorical_threshold')
         if threshold is not None:
-            return not _is_categorical(series, threshold)
+            return not _is_categorical_series(series, threshold)
         else:
             return True
 

@@ -143,7 +143,7 @@ def _get_specified_ltype_params(ltype):
     return ltype.__dict__
 
 
-def _is_categorical(series: pd.Series, threshold: float) -> bool:
+def _is_categorical_series(series: pd.Series, threshold: float) -> bool:
     """
     Return ``True`` if the given series is "likely" to be categorical.
     Otherwise, return ``False``.  We say that a series is "likely" to be
