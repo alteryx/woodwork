@@ -504,10 +504,7 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'numeric_col'}
         assert stats_df.index.tolist() == expected_index
-        try:
-            assert expected_vals.equals(stats_df['numeric_col'].dropna())
-        except:
-            breakpoint()
+        assert expected_vals.equals(stats_df['numeric_col'].dropna())
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
