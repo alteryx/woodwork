@@ -162,11 +162,8 @@ def _is_categorical_series(series: pd.Series, threshold: float) -> bool:
             return False
         else:
             raise  # pragma: no cover
-    count = series.count()
-
-    if nunique == 0 or count == 0:
+    if nunique == 0:
         return False
 
-    pct_unique = nunique / count
-
+    pct_unique = nunique / series.count()
     return pct_unique <= threshold
