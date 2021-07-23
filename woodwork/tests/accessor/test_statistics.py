@@ -454,20 +454,23 @@ def test_describe_accessor_method(describe_df):
     numeric_data = describe_df[['numeric_col']]
     for ltype in nullable_numeric_ltypes:
         expected_vals = pd.Series({  # fix when https://github.com/pandas-dev/pandas/issues/42626 gets resolved
-            'physical_type': 'float64',
+            'physical_type': 'Int64',
             'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7.0,
             'nunique': 6.0,
-            'nan_count': 1.0,
+            'nan_count': 1,
             'mean': 20.857142857142858,
-            'mode': 10.0,
+            'mode': 10,
             'std': 18.27957486220227,
             'min': 1.0,
             'first_quartile': 10.0,
             'second_quartile': 17.0,
             'third_quartile': 26.0,
             'max': 56.0}, name='numeric_col')
+        if ltype == Double:
+            expected_vals['physical_type'] = 'float64'
+            expected_vals['mode'] = 10.0
         numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = numeric_data.ww.describe()
         assert isinstance(stats_df, pd.DataFrame)
@@ -479,26 +482,32 @@ def test_describe_accessor_method(describe_df):
     numeric_data = describe_df[['numeric_col']].fillna(0)
     for ltype in non_nullable_numeric_ltypes:
         expected_vals = pd.Series({  # fix when https://github.com/pandas-dev/pandas/issues/42626 gets resolved
-            'physical_type': 'float64',
+            'physical_type': 'Int64',
             'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 8.0,
             'nunique': 7.0,
             'nan_count': 0,
             'mean': 18.25,
-            'mode': 10.0,
+            'mode': 10,
             'std': 18.460382289804137,
             'min': 0,
             'first_quartile': 7.75,
             'second_quartile': 13.5,
             'third_quartile': 23,
             'max': 56}, name='numeric_col')
+        if ltype == Double:
+            expected_vals['physical_type'] = 'float64'
+            expected_vals['mode'] = 10.0
         numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = numeric_data.ww.describe()
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {'numeric_col'}
         assert stats_df.index.tolist() == expected_index
-        assert expected_vals.equals(stats_df['numeric_col'].dropna())
+        try:
+            assert expected_vals.equals(stats_df['numeric_col'].dropna())
+        except:
+            breakpoint()
 
     # Test natural language columns
     natural_language_data = describe_df[['natural_language_col']]
