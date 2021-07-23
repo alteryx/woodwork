@@ -205,7 +205,7 @@ def _create_archive(tmpdir):
 
 
 def save_orc_file(dataframe, filepath):
-    from pyarrow import Table, orc, Schema, DictionaryType, field, string
+    from pyarrow import DictionaryType, Schema, Table, field, orc, string
     schema = Schema.from_pandas(dataframe, preserve_index=False)
     for i, f in enumerate(schema):
         if isinstance(f.type, DictionaryType):
