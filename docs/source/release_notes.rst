@@ -1,27 +1,26 @@
 .. _release_notes:
 
-.. Future Release
-  ===============
+Future Release
+==============
   * Enhancements
   * Fixes
   * Changes
   * Documentation Changes
   * Testing Changes
+        * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 Release Notes
 -------------
 v0.5.1 Jul 22, 2021
 ===================
     * Enhancements
-        * Add support for automatically inferring the ``EmailAddress`` logical
-          type (:pr:`1047`)
+        * Add support for automatically inferring the ``EmailAddress`` logical type (:pr:`1047`)
         * Add feature origin attribute to schema (:pr:`1056`)
-        * Add ability to calculate outliers and the statistical info required for box and whisker plots
-          to ``WoodworkColumnAccessor`` (:pr:`1048`)
-        * Add ability to change config settings in a with block with
-          ``ww.config.with_options`` (:pr:`1062`)
+        * Add ability to calculate outliers and the statistical info required for box and whisker plots to ``WoodworkColumnAccessor`` (:pr:`1048`)
+        * Add ability to change config settings in a with block with ``ww.config.with_options`` (:pr:`1062`)
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
         * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
