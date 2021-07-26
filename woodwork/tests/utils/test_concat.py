@@ -64,7 +64,18 @@ def test_concat_cols_combo_dfs(sample_df):
 
 
 def test_concat_cols_with_series(sample_df):
-    df = sample_df[['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered', 'double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean']]
+    df = sample_df[['id',
+                    'full_name',
+                    'email',
+                    'phone_number',
+                    'age',
+                    'signup_date',
+                    'is_registered',
+                    'double',
+                    'double_with_nan',
+                    'integer',
+                    'nullable_integer',
+                    'boolean']]
     s1 = sample_df['categorical']
     sample_df.ww.init()
     s2 = sample_df['datetime_with_NaT']
@@ -311,7 +322,16 @@ def test_concat_cols_row_order(sample_df):
 
     df1 = sample_df.ww.loc[:, ['id', 'full_name']]
     df2 = sample_df.ww.loc[[2, 3, 0, 1], ['email', 'phone_number']]
-    df3 = sample_df.ww.loc[[3, 1, 0, 2], ['age', 'signup_date', 'is_registered', 'double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
+    df3 = sample_df.ww.loc[[3, 1, 0, 2], ['age',
+                                          'signup_date',
+                                          'is_registered',
+                                          'double',
+                                          'double_with_nan',
+                                          'integer',
+                                          'nullable_integer',
+                                          'boolean',
+                                          'categorical',
+                                          'datetime_with_NaT']]
 
     combined_df = concat_columns([df1, df2, df3])
 

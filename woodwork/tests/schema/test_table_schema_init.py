@@ -92,7 +92,9 @@ def test_check_logical_types_errors(sample_column_names):
         'phone_number': None,
         'age': None,
     }
-    error_message = re.escape("logical_types is missing columns that are present in TableSchema: ['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan', 'integer', 'is_registered', 'nullable_integer', 'signup_date']")
+    error_message = re.escape("logical_types is missing columns that are present in TableSchema: \
+                             ['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan',\
+                              'integer', 'is_registered', 'nullable_integer', 'signup_date']")
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
@@ -474,7 +476,20 @@ def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logica
                                  use_standard_tags={col_name: False for col_name in sample_column_names})
     assert default_schema.use_standard_tags == {col_name: False for col_name in sample_column_names}
 
-    use_standard_tags = {'id': True, 'full_name': False, 'email': True, 'phone_number': True, 'age': False, 'signup_date': True, 'is_registered': False, 'double': False, 'double_with_nan': False, 'integer': False, 'nullable_integer': False, 'boolean': False, 'categorical': False, 'datetime_with_NaT': False}
+    use_standard_tags = {'id': True,
+                         'full_name': False,
+                         'email': True,
+                         'phone_number': True,
+                         'age': False,
+                         'signup_date': True,
+                         'is_registered': False,
+                         'double': False,
+                         'double_with_nan': False,
+                         'integer': False,
+                         'nullable_integer': False,
+                         'boolean': False,
+                         'categorical': False,
+                         'datetime_with_NaT': False}
     full_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                                    use_standard_tags=use_standard_tags)
     assert full_dict_schema.use_standard_tags == use_standard_tags
