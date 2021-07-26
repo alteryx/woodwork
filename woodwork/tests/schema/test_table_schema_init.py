@@ -92,9 +92,9 @@ def test_check_logical_types_errors(sample_column_names):
         'phone_number': None,
         'age': None,
     }
-    error_message = re.escape("logical_types is missing columns that are present in TableSchema: \
-                             ['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan',\
-                              'integer', 'is_registered', 'nullable_integer', 'signup_date']")
+    error_message = re.escape("logical_types is missing columns that are present in TableSchema: "
+                              "['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan', "
+                              "'integer', 'is_registered', 'nullable_integer', 'signup_date']")
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
