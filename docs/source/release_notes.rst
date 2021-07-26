@@ -1,5 +1,8 @@
 .. _release_notes:
 
+Release Notes
+-------------
+
 Future Release
 ==============
   * Enhancements
@@ -12,8 +15,6 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
 
-Release Notes
--------------
 v0.5.1 Jul 22, 2021
 ===================
     * Enhancements
