@@ -499,6 +499,8 @@ def test_describe_accessor_method(describe_df):
         if ltype == Double:
             expected_vals['physical_type'] = 'float64'
             expected_vals['mode'] = 10.0
+            expected_vals['third_quartile'] = 23.0
+            expected_vals['max'] = 56.0
         numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = numeric_data.ww.describe()
         assert isinstance(stats_df, pd.DataFrame)
