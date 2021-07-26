@@ -114,6 +114,19 @@ def test_categorical_inference(categories):
             assert isinstance(inferred_type, Categorical)
 
 
+def test_categorical_inference_based_on_dtype(categories_dtype):
+    """
+    This test specifically targets the case in which a series can be inferred
+    to be categorical strictly from its pandas dtype, but would otherwise be
+    inferred as some other type.
+    """
+    inferred_type = ww.type_system.infer_logical_type(categories_dtype["cat"])
+    assert isinstance(inferred_type, Categorical)
+
+    inferred_type = ww.type_system.infer_logical_type(categories_dtype["non_cat"])
+    assert not isinstance(inferred_type, Categorical)
+
+
 def test_categorical_integers_inference(integers):
     with ww.config.with_options(numeric_categorical_threshold=0.5):
         dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']

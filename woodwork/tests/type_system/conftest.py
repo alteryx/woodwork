@@ -200,6 +200,26 @@ def categories(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture
+def pandas_categories_dtype():
+    return pd.DataFrame({
+        "cat": pd.Series(["a", "b", "c", "d"], dtype="category"),
+        "non_cat": pd.Series(["a", "b", "c", "d"], dtype="string"),
+    })
+
+
+@pytest.fixture
+def dask_categories_dtype(pandas_categories_dtype):
+    return pd_to_dask(pandas_categories_dtype)
+
+
+@pytest.fixture(params=['pandas_categories_dtype', 'dask_categories_dtype'])
+def categories_dtype(request):
+    # Koalas doesn't support the "category" dtype.  We just leave it out for
+    # now.
+    return request.getfixturevalue(request.param)
+
+
 # Timedelta Inference Fixtures
 @pytest.fixture
 def pandas_timedeltas():
