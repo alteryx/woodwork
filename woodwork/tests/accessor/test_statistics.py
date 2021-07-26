@@ -454,7 +454,7 @@ def test_describe_accessor_method(describe_df):
     numeric_data = describe_df[['numeric_col']]
     for ltype in nullable_numeric_ltypes:
         expected_vals = pd.Series({  # fix when https://github.com/pandas-dev/pandas/issues/42626 gets resolved
-            'physical_type': 'Int64',
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 7.0,
@@ -468,9 +468,6 @@ def test_describe_accessor_method(describe_df):
             'second_quartile': 17.0,
             'third_quartile': 26.0,
             'max': 56.0}, name='numeric_col')
-        if ltype == Double:
-            expected_vals['physical_type'] = 'float64'
-            expected_vals['mode'] = 10.0
         numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = numeric_data.ww.describe()
         assert isinstance(stats_df, pd.DataFrame)
@@ -482,7 +479,7 @@ def test_describe_accessor_method(describe_df):
     numeric_data = describe_df[['numeric_col']].fillna(0)
     for ltype in non_nullable_numeric_ltypes:
         expected_vals = pd.Series({  # fix when https://github.com/pandas-dev/pandas/issues/42626 gets resolved
-            'physical_type': 'Int64',
+            'physical_type': ltype.primary_dtype,
             'logical_type': ltype(),
             'semantic_tags': {'numeric', 'custom_tag'},
             'count': 8.0,
@@ -496,9 +493,6 @@ def test_describe_accessor_method(describe_df):
             'second_quartile': 13.5,
             'third_quartile': 23.0,
             'max': 56.0}, name='numeric_col')
-        if ltype == Double:
-            expected_vals['physical_type'] = 'float64'
-            expected_vals['mode'] = 10.0
         numeric_data.ww.init(logical_types={'numeric_col': ltype}, semantic_tags={'numeric_col': 'custom_tag'})
         stats_df = numeric_data.ww.describe()
         assert isinstance(stats_df, pd.DataFrame)
