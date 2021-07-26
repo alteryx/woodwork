@@ -617,8 +617,8 @@ def test_describe_with_include(sample_df):
 
 def test_pandas_nullable_integer_quantile_fix():
     """Should fail when https://github.com/pandas-dev/pandas/issues/42626 gets fixed"""
-    if pd.__version__ != '1.3.0':  # pragma: no cover
-        pytest.skip('Bug only exists on pandas version 1.3.0')
+    if pd.__version__ not in ['1.3.0', '1.3.1']:  # pragma: no cover
+        pytest.skip('Bug only exists on pandas version 1.3.0 and 1.3.1')
     series = pd.Series([1, 2, 3], dtype='Int64')
     error_message = "cannot safely cast non-equivalent object to int64"
     with pytest.raises(TypeError, match=error_message):
