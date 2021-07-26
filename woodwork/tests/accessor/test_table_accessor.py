@@ -1704,7 +1704,7 @@ def test_select_return_schema(sample_df):
      (["Boolean", "BooleanNullable"], "boolean")]
 )
 def test_select_retains_column_order(ww_type, pandas_type, sample_df):
-    if ks and isinstance(sample_df, ks.DataFrame) and (pandas_type == "category" or pandas_type == "string"):
+    if _is_koalas_dataframe(sample_df) and pandas_type in ["category", "string"]:
         pytest.skip("Koalas stores categories as strings")
     sample_df.ww.init()
 
@@ -2407,7 +2407,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
     assert len(returned_types.index) == len(sample_df.columns)
 
     correct_physical_types = {name: ltype.primary_dtype for name, ltype in sample_inferred_logical_types.items()}
-    if ks and isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe(sample_df):
         correct_physical_types['categorical'] = 'string'
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
                                        index=list(correct_physical_types.keys()))
