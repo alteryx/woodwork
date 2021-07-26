@@ -6,7 +6,6 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -20,6 +19,7 @@ Future Release
 v0.5.1 Jul 22, 2021
 ===================
     * Enhancements
+        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
         * Add support for automatically inferring the ``EmailAddress`` logical type (:pr:`1047`)
         * Add feature origin attribute to schema (:pr:`1056`)
         * Add ability to calculate outliers and the statistical info required for box and whisker plots to ``WoodworkColumnAccessor`` (:pr:`1048`)
