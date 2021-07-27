@@ -476,7 +476,7 @@ def test_series_methods_on_accessor_inplace(sample_series):
 
     val = sample_series.ww.pop(0)
     assert sample_series.ww._schema == comparison_series.ww._schema
-    assert len(sample_series) == 3
+    assert len(sample_series) == len(comparison_series) - 1
     assert val == 'a'
 
 
@@ -508,7 +508,7 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     if _is_dask_series(sample_series):
         col_shape = (col_shape[0].compute(),)
         series_shape = (series_shape[0].compute())
-    assert col_shape == (4,)
+    assert col_shape == (len(sample_series),)
     assert col_shape == series_shape
 
     assert sample_series.name == sample_series.ww.name

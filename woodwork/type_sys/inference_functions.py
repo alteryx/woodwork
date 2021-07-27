@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 import woodwork as ww
-from woodwork.type_sys.utils import col_is_datetime
+from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
 INFERENCE_SAMPLE_SIZE = 10000
 
@@ -17,26 +17,22 @@ def get_inference_sample(series: pd.Series) -> pd.Series:
 
 
 def categorical_func(series):
-    categorical_threshold = ww.config.get_option('categorical_threshold')
-    numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
-
-    if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
-        # heuristics to predict this some other than categorical
-        sample = get_inference_sample(series)
-        # catch cases where object dtype cannot be interpreted as a string
-        try:
-            avg_length = sample.str.len().mean()
-            if avg_length > categorical_threshold:
-                return False
-        except AttributeError:
-            pass
-        return True
-
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
-    if ((pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype)) and
-            _is_numeric_categorical(series, numeric_categorical_threshold)):
-        return True
+
+    if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
+        sample = get_inference_sample(series)
+        categorical_threshold = ww.config.get_option('categorical_threshold')
+
+        return _is_categorical_series(sample, categorical_threshold)
+
+    if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
+        numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
+        if numeric_categorical_threshold is not None:
+            return _is_categorical_series(series, numeric_categorical_threshold)
+        else:
+            return False
+
     return False
 
 
@@ -47,18 +43,24 @@ def integer_func(series):
 
 
 def integer_nullable_func(series):
-    numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
-    if (pdtypes.is_integer_dtype(series.dtype) and
-            not _is_numeric_categorical(series, numeric_categorical_threshold)):
-        return True
+    if pdtypes.is_integer_dtype(series.dtype):
+        threshold = ww.config.get_option('numeric_categorical_threshold')
+        if threshold is not None:
+            return not _is_categorical_series(series, threshold)
+        else:
+            return True
+
     return False
 
 
 def double_func(series):
-    numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
-    if (pdtypes.is_float_dtype(series.dtype) and
-            not _is_numeric_categorical(series, numeric_categorical_threshold)):
-        return True
+    if pdtypes.is_float_dtype(series.dtype):
+        threshold = ww.config.get_option('numeric_categorical_threshold')
+        if threshold is not None:
+            return not _is_categorical_series(series, threshold)
+        else:
+            return True
+
     return False
 
 
@@ -105,7 +107,3 @@ def email_address_func(series: pd.Series) -> bool:
     matches = sample_match_method(pat=regex)
 
     return matches.sum() == matches.count()
-
-
-def _is_numeric_categorical(series, threshold):
-    return threshold != -1 and series.nunique() < threshold

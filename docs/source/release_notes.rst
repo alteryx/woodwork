@@ -2,37 +2,69 @@
 
 Release Notes
 -------------
+
 Future Release
 ==============
+  * Enhancements
+  * Fixes
+  * Changes
+  * Documentation Changes
+  * Testing Changes
+        * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+
+v0.5.1 Jul 22, 2021
+===================
     * Enhancements
-        * Add support for automatically inferring the ``EmailAddress`` logical
-          type (:pr:`1047`)
+        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
+        * Add support for automatically inferring the ``EmailAddress`` logical type (:pr:`1047`)
         * Add feature origin attribute to schema (:pr:`1056`)
-        * Add ability to calculate outliers and the statistical info required for box and whisker plots
-          to ``WoodworkColumnAccessor`` (:pr:`1048`)
-        * Add ability to change config settings in a with block with
-          ``ww.config.with_options`` (:pr:`1062`)
+        * Add ability to calculate outliers and the statistical info required for box and whisker plots to ``WoodworkColumnAccessor`` (:pr:`1048`)
+        * Add ability to change config settings in a with block with ``ww.config.with_options`` (:pr:`1062`)
     * Fixes
+        * Raises warning and removes tags when user adds a column with index tags to DataFrame (:pr:`1035`)
     * Changes
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
         * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
         * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
+        * The criteria for categorical type inference have changed (:pr:`1065`)
+        * The meaning of both the ``categorical_threshold`` and
+          ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`jeff-hernandez`, :user:`davesque`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`simha104`
+    :user:`davesque`, :user:`frances-h`, :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+    * :pr:`1065`: The criteria for categorical type inference have changed.
+      Relatedly, the meaning of both the ``categorical_threshold`` and
+      ``numeric_categorical_threshold`` settings have changed.  Now, a
+      categorical match is signaled when a series either has the "categorical"
+      pandas dtype *or* if the ratio of unique value count (nan excluded) and
+      total value count (nan also excluded) is below or equal to some fraction.
+      The value used for this fraction is set by the ``categorical_threshold``
+      setting which now has a default value of ``0.2``.  If a fraction is set
+      for the ``numeric_categorical_threshold`` setting, then series with
+      either a float or integer dtype may be inferred as categorical by
+      applying the same logic described above with the
+      ``numeric_categorical_threshold`` fraction.  Otherwise, the
+      ``numeric_categorical_threshold`` setting defaults to ``None`` which
+      indicates that series with a numerical type should not be inferred as
+      categorical.  Users who have overridden either the
+      ``categorical_threshold`` or ``numeric_categorical_threshold`` settings
+      will need to adjust their settings accordingly.
 
 v0.5.0 Jul 7, 2021
 ==================
     * Enhancements
-        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
         * Add support for numpy array inputs to Woodwork (:pr:`1023`)
         * Add support for pandas.api.extensions.ExtensionArray inputs to Woodwork (:pr:`1026`)
     * Fixes
         * Add input validation to ww.init_series (:pr:`1015`)
-        * Raises warning and removes tags when user adds a column with index tags to DataFrame (:pr:`1035`)
     * Changes
         * Remove lines in ``LogicalType.transform`` that raise error if dtype conflicts (:pr:`1012`)
         * Add ``infer_datetime_format`` param to speed up ``to_datetime`` calls (:pr:`1016`)

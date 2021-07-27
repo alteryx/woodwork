@@ -18,7 +18,7 @@ def test_register_custom_logical_type(type_sys):
     assert CustomLogicalType in type_sys.registered_types
     assert (Categorical, CustomLogicalType) in type_sys.relationships
     assert type_sys.inference_functions[CustomLogicalType] is custom_func
-    assert isinstance(type_sys.infer_logical_type(pd.Series(['a', 'b', 'a'])), CustomLogicalType)
+    assert isinstance(type_sys.infer_logical_type(pd.Series(['a', 'b'] + 10 * ['a'])), CustomLogicalType)
 
 
 def test_custom_type_with_accessor(sample_df):
