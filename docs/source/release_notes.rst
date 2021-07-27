@@ -30,11 +30,34 @@ v0.5.1 Jul 22, 2021
         * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
         * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
         * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
+        * The criteria for categorical type inference have changed (:pr:`1065`)
+        * The meaning of both the ``categorical_threshold`` and
+          ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
     * Documentation Changes
         * Add supported types to metadata docstring (:pr:`1049`)
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`frances-h`, :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+    * :pr:`1065`: The criteria for categorical type inference have changed.
+      Relatedly, the meaning of both the ``categorical_threshold`` and
+      ``numeric_categorical_threshold`` settings have changed.  Now, a
+      categorical match is signaled when a series either has the "categorical"
+      pandas dtype *or* if the ratio of unique value count (nan excluded) and
+      total value count (nan also excluded) is below or equal to some fraction.
+      The value used for this fraction is set by the ``categorical_threshold``
+      setting which now has a default value of ``0.2``.  If a fraction is set
+      for the ``numeric_categorical_threshold`` setting, then series with
+      either a float or integer dtype may be inferred as categorical by
+      applying the same logic described above with the
+      ``numeric_categorical_threshold`` fraction.  Otherwise, the
+      ``numeric_categorical_threshold`` setting defaults to ``None`` which
+      indicates that series with a numerical type should not be inferred as
+      categorical.  Users who have overridden either the
+      ``categorical_threshold`` or ``numeric_categorical_threshold`` settings
+      will need to adjust their settings accordingly.
 
 v0.5.0 Jul 7, 2021
 ==================

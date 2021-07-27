@@ -32,8 +32,8 @@ def pd_to_koalas(series):
 @pytest.fixture
 def pandas_integers():
     return [
-        pd.Series([-1, 2, 1, 7]),
-        pd.Series([-1, 0, 5, 3]),
+        pd.Series(4 * [-1, 2, 1, 7]),
+        pd.Series(4 * [-1, 0, 5, 3]),
     ]
 
 
@@ -56,8 +56,8 @@ def integers(request):
 @pytest.fixture
 def pandas_doubles():
     return [
-        pd.Series([-1, 2.5, 1, 7]),
-        pd.Series([1.5, np.nan, 1, 3])
+        pd.Series(4 * [-1, 2.5, 1, 7]),
+        pd.Series(4 * [1.5, np.nan, 1, 3])
     ]
 
 
@@ -178,10 +178,10 @@ def bad_emails(request):
 @pytest.fixture
 def pandas_categories():
     return [
-        pd.Series(['a', 'b', 'a', 'b']),
-        pd.Series(['1', '2', '1', '2']),
-        pd.Series(['a', np.nan, 'b', 'b']),
-        pd.Series([1, 2, 1, 2])
+        pd.Series(10 * ['a', 'b', 'a', 'b']),
+        pd.Series(10 * ['1', '2', '1', '2']),
+        pd.Series(10 * ['a', np.nan, 'b', 'b']),
+        pd.Series(10 * [1, 2, 1, 2])
     ]
 
 
@@ -197,6 +197,26 @@ def koalas_categories(pandas_categories):
 
 @pytest.fixture(params=['pandas_categories', 'dask_categories', 'koalas_categories'])
 def categories(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pandas_categories_dtype():
+    return pd.DataFrame({
+        "cat": pd.Series(["a", "b", "c", "d"], dtype="category"),
+        "non_cat": pd.Series(["a", "b", "c", "d"], dtype="string"),
+    })
+
+
+@pytest.fixture
+def dask_categories_dtype(pandas_categories_dtype):
+    return pd_to_dask(pandas_categories_dtype)
+
+
+@pytest.fixture(params=['pandas_categories_dtype', 'dask_categories_dtype'])
+def categories_dtype(request):
+    # Koalas doesn't support the "category" dtype.  We just leave it out for
+    # now.
     return request.getfixturevalue(request.param)
 
 
@@ -239,37 +259,6 @@ def koalas_strings(pandas_strings):
 
 @pytest.fixture(params=['pandas_strings', 'dask_strings', 'koalas_strings'])
 def strings(request):
-    return request.getfixturevalue(request.param)
-
-
-# Categorical Inference with Threshold
-@pytest.fixture
-def pandas_long_strings():
-    unknown_series = pd.Series([
-        '01234567890123456789',
-        '01234567890123456789',
-        '01234567890123456789',
-        '01234567890123456789'])
-    category_series = pd.Series([
-        '0123456789012345678',
-        '0123456789012345678',
-        '0123456789012345678',
-        '0123456789012345678'])
-    return [unknown_series, category_series]
-
-
-@pytest.fixture
-def dask_long_strings(pandas_long_strings):
-    return [pd_to_dask(series) for series in pandas_long_strings]
-
-
-@pytest.fixture
-def koalas_long_strings(pandas_long_strings):
-    return [pd_to_koalas(series) for series in pandas_long_strings]
-
-
-@pytest.fixture(params=['pandas_long_strings', 'dask_long_strings', 'koalas_long_strings'])
-def long_strings(request):
     return request.getfixturevalue(request.param)
 
 

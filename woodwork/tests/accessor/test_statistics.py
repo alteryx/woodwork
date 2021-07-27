@@ -80,7 +80,8 @@ def test_accessor_replace_nans_for_mutual_info():
         'str_no_nan': pd.Series(['test', 'test2', 'test2', 'test']),
         'dates': pd.Series(['2020-01-01', None, '2020-01-02', '2020-01-03'])
     })
-    df_nans.ww.init()
+    df_nans.ww.init(logical_types={"bools": "Categorical", "str":
+                                   "Categorical", "str_no_nan": "Categorical"})
     formatted_df = _replace_nans_for_mutual_info(df_nans.ww.schema, df_nans.copy())
 
     assert isinstance(formatted_df, pd.DataFrame)
