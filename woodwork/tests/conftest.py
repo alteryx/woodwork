@@ -63,7 +63,7 @@ def sample_df_pandas():
         'integer': [-1, 4, 9, 25],
         'nullable_integer': pd.Series([pd.NA, -36, 49, 64], dtype='Int64'),
         'boolean': [True, False, False, True],
-        'categorical': pd.Series(["a", "b", "c", "a"], dtype="category"),
+        'categorical': pd.Series(["a", "b", "a", "a"], dtype="category"),
         'datetime_with_NaT': [pd.to_datetime('2020-09-01')] * 3 + [pd.NaT],
     })
 

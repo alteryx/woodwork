@@ -63,7 +63,7 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
                 'is_registered': 'engineered'
             }
         }, False),
-        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean', 'nullable_integer': 'Int64'}}, False),
+        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 3, "dtype": {'age': 'Int64', 'is_registered': 'boolean', 'nullable_integer': 'Int64'}}, False),
         ("sample.feather", ("to_feather", {}), {}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'feather', "index": "id"}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'application/feather', "index": "id"}, False),
@@ -79,6 +79,7 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
     ]
 )
 def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_nullable_fix):
+    ww.config.set_option('categorical_threshold', 0.7)
     filepath = os.path.join(tmpdir, filepath)
     func, func_kwargs = exportfn
     if isinstance(func, str):
@@ -105,7 +106,10 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         for c in ['signup_date', 'datetime_with_NaT']:
             df.ww.logical_types[c].datetime_format = None  # read_csv reads datetimes as strings and infers datetime during transform
 
-    assert df.ww.schema == schema_df.ww.schema
+    try:
+        assert df.ww.schema == schema_df.ww.schema
+    except:
+        breakpoint()
 
     if "nrows" in kwargs:
         assert len(df) == kwargs["nrows"]
