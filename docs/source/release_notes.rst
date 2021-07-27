@@ -12,6 +12,7 @@ Future Release
     * Testing Changes
         * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`)
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`tuethan1999`
 
