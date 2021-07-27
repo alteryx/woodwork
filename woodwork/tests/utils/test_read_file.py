@@ -63,7 +63,7 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
                 'is_registered': 'engineered'
             }
         }, False),
-        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 3, "dtype": {'age': 'Int64', 'is_registered': 'boolean', 'nullable_integer': 'Int64'}}, False),
+        ("sample.csv", ("to_csv", {"index": False}), {"nrows": 2, "dtype": {'age': 'Int64', 'is_registered': 'boolean', 'nullable_integer': 'Int64'}}, False),
         ("sample.feather", ("to_feather", {}), {}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'feather', "index": "id"}, False),
         ("sample.feather", ("to_feather", {}), {"content_type": 'application/feather', "index": "id"}, False),
@@ -79,7 +79,6 @@ def test_read_file_validation_control(mock_validate_accessor_params, sample_df_p
     ]
 )
 def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_nullable_fix):
-    ww.config.set_option('categorical_threshold', 0.7)
     filepath = os.path.join(tmpdir, filepath)
     func, func_kwargs = exportfn
     if isinstance(func, str):
@@ -96,6 +95,10 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         # so the types in df will be different than the types inferred from sample_df_pandas
         # which uses the nullable types
         schema_df = schema_df.astype({'age': 'float64', 'nullable_integer': 'float64', 'is_registered': 'object'})
+
+    if func in ["to_csv", save_orc_file]: # categorical column not inferred as categorical
+        schema_df['categorical'] = schema_df['categorical'].astype('string')
+
     schema_df.ww.init(index=kwargs.get('index'),
                       time_index=kwargs.get('time_index'),
                       logical_types=kwargs.get('logical_types'),
@@ -106,14 +109,10 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         for c in ['signup_date', 'datetime_with_NaT']:
             df.ww.logical_types[c].datetime_format = None  # read_csv reads datetimes as strings and infers datetime during transform
 
-    try:
-        assert df.ww.schema == schema_df.ww.schema
-    except:
-        breakpoint()
+    assert df.ww.schema == schema_df.ww.schema
 
     if "nrows" in kwargs:
         assert len(df) == kwargs["nrows"]
         schema_df = schema_df.head(kwargs["nrows"])
-        schema_df['categorical'] = schema_df['categorical'].cat.remove_unused_categories()
 
     pd.testing.assert_frame_equal(df, schema_df)
