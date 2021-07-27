@@ -1,8 +1,8 @@
 import contextlib
 
 CONFIG_DEFAULTS = {
-    'categorical_threshold': 10,
-    'numeric_categorical_threshold': -1,
+    'categorical_threshold': 0.2,
+    'numeric_categorical_threshold': None,
     'email_inference_regex': r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
 }
 

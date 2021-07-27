@@ -612,6 +612,7 @@ def test_int_dtype_inference_on_init():
         'ints_nan': pd.Series([1, np.nan]),
         'ints_NA': pd.Series([1, pd.NA]),
         'ints_NA_specified': pd.Series([1, pd.NA], dtype='Int64')})
+    df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
 
     assert df['ints_no_nans'].dtype == 'int64'
@@ -626,6 +627,7 @@ def test_bool_dtype_inference_on_init():
         'bool_nan': pd.Series([True, np.nan]),
         'bool_NA': pd.Series([True, pd.NA]),
         'bool_NA_specified': pd.Series([True, pd.NA], dtype="boolean")})
+    df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
 
     assert df['bools_no_nans'].dtype == 'bool'
@@ -640,17 +642,14 @@ def test_str_dtype_inference_on_init():
         'str_nan': pd.Series(['a', np.nan]),
         'str_NA': pd.Series(['a', pd.NA]),
         'str_NA_specified': pd.Series([1, pd.NA], dtype="string"),
-        'long_str_NA_specified': pd.Series(['this is a very long sentence inferred as a string', pd.NA], dtype="string"),
-        'long_str_NA': pd.Series(['this is a very long sentence inferred as a string', pd.NA])
     })
+    df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
 
     assert df['str_no_nans'].dtype == 'category'
     assert df['str_nan'].dtype == 'category'
     assert df['str_NA'].dtype == 'category'
     assert df['str_NA_specified'].dtype == 'category'
-    assert df['long_str_NA_specified'].dtype == 'string'
-    assert df['long_str_NA'].dtype == 'string'
 
 
 def test_float_dtype_inference_on_init():
@@ -659,6 +658,7 @@ def test_float_dtype_inference_on_init():
         'floats_nan': pd.Series([1.1, np.nan]),
         'floats_NA': pd.Series([1.1, pd.NA]),
         'floats_nan_specified': pd.Series([1.1, np.nan], dtype='float')})
+    df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
 
     assert df['floats_no_nans'].dtype == 'float64'
@@ -712,6 +712,7 @@ def test_datetime_inference_with_format_param():
     df = pd.DataFrame({
         'mdy_special': pd.Series(['3&11&2000', '3&12&2000', '3&13&2000'], dtype='string'),
     })
+    df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
     assert df['mdy_special'].dtype == 'category'
 
@@ -2271,7 +2272,7 @@ def test_setitem_new_column(sample_df):
     else:
         dtype = 'category'
 
-    new_series = init_series(new_series)
+    new_series = init_series(new_series, logical_type="Categorical")
     df.ww['test_col'] = new_series
     assert 'test_col' in df.ww.columns
     assert isinstance(df.ww['test_col'].ww.logical_type, Categorical)
