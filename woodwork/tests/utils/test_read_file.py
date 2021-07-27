@@ -96,7 +96,7 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         # which uses the nullable types
         schema_df = schema_df.astype({'age': 'float64', 'nullable_integer': 'float64', 'is_registered': 'object'})
 
-    if func in ["to_csv", save_orc_file]: # categorical column not inferred as categorical
+    if func in ["to_csv", save_orc_file]:  # categorical column not inferred as categorical
         schema_df['categorical'] = schema_df['categorical'].astype('string')
 
     schema_df.ww.init(index=kwargs.get('index'),
