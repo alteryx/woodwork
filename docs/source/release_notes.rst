@@ -9,11 +9,12 @@ Future Release
   * Fixes
   * Changes
   * Documentation Changes
+        * Add guide for saving and loading Woodwork DataFrames (:pr:`1066`)
   * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`jeff-hernandez`
 
 v0.5.1 Jul 22, 2021
 ===================
