@@ -11,6 +11,7 @@ Future Release
         * The criteria for categorical type inference have changed (:pr:`1065`)
         * The meaning of both the ``categorical_threshold`` and
           ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
+        * Make sampling for type inference more consistent (:pr:`1083`)
     * Documentation Changes
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
