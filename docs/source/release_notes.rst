@@ -12,6 +12,7 @@ Future Release
         * The meaning of both the ``categorical_threshold`` and
           ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
   * Documentation Changes
+        * Fix some release notes that ended up under the wrong release (:pr:`1082`)
   * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
 
