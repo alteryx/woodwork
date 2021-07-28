@@ -266,7 +266,7 @@ class TypeSystem(object):
             elif _is_koalas_series(series):
                 series = series.head(100000).to_pandas()
             else:
-                raise ValueError(f"Unexpected arg type `{type(series)}`")
+                raise ValueError(f"Unexpected arg type `{type(series)}`")  # pragma: no cover
 
             # For dask or koalas collections, unknown type special case comes
             # *after* head calls to avoid evaluating a potentially large
