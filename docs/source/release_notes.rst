@@ -10,7 +10,7 @@ Future Release
   * Changes
   * Documentation Changes
   * Testing Changes
-        * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`)
+        * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
