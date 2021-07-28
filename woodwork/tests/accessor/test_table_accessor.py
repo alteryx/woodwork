@@ -2461,14 +2461,15 @@ def test_accessor_repr_empty(empty_df):
 
 
 def test_numeric_column_names(sample_df):
-    numeric_columns = {col_name: i for col_name, i in zip(sample_df.columns, range(0, len(sample_df.columns)))}
+    original_df = sample_df.drop('categorical', axis=1)
+    numeric_columns = {col_name: i for col_name, i in zip(original_df.columns, range(0, len(original_df.columns)))}
 
-    sample_df.ww.init()
-    numeric_via_woodwork = sample_df.ww.rename(numeric_columns)
+    original_df.ww.init()
+    numeric_via_woodwork = original_df.ww.rename(numeric_columns)
 
-    assert numeric_via_woodwork.ww[0].ww._schema == sample_df.ww['id'].ww._schema
+    assert numeric_via_woodwork.ww[0].ww._schema == original_df.ww['id'].ww._schema
 
-    numeric_cols_df = sample_df.rename(columns=numeric_columns)
+    numeric_cols_df = original_df.rename(columns=numeric_columns)
     numeric_cols_df.ww.init()
 
     assert numeric_cols_df.ww == numeric_via_woodwork.ww

@@ -64,24 +64,14 @@ def test_concat_cols_combo_dfs(sample_df):
 
 
 def test_concat_cols_with_series(sample_df):
-    df = sample_df[['id',
-                    'full_name',
-                    'email',
-                    'phone_number',
-                    'age',
-                    'signup_date',
-                    'is_registered',
-                    'double',
-                    'double_with_nan',
-                    'integer',
-                    'nullable_integer',
-                    'boolean']]
-    s1 = sample_df['categorical']
-    sample_df.ww.init()
-    s2 = sample_df['datetime_with_NaT']
+    expected_df = sample_df[['id', 'full_name', 'signup_date', 'is_registered']]
+    df = expected_df[['id', 'full_name']]
+    s1 = expected_df['signup_date']
+    expected_df.ww.init()
+    s2 = expected_df['is_registered']
 
     combined_df = concat_columns([df, s1, s2])
-    assert combined_df.ww == sample_df.ww
+    assert combined_df.ww == expected_df.ww
 
     df.ww.init()
     s1.ww.init()
