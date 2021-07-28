@@ -16,7 +16,7 @@ Future Release
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`davesque`, :user:`gsheni`
 
 Breaking Changes
 ++++++++++++++++
