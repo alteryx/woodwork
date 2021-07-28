@@ -4,27 +4,15 @@ import pandas.api.types as pdtypes
 import woodwork as ww
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
-INFERENCE_SAMPLE_SIZE = 10000
 
-
-def get_inference_sample(series: pd.Series) -> pd.Series:
-    f"""
-    Return a sample of ``series`` for use during type inference.  If the length
-    of ``series`` is less than ``{INFERENCE_SAMPLE_SIZE}``, use the series
-    length as the sample size.
-    """
-    return series.sample(n=min(INFERENCE_SAMPLE_SIZE, len(series)))
-
-
-def categorical_func(series):
+def categorical_func(series: pd.Series) -> bool:
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
 
     if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
-        sample = get_inference_sample(series)
         categorical_threshold = ww.config.get_option('categorical_threshold')
 
-        return _is_categorical_series(sample, categorical_threshold)
+        return _is_categorical_series(series, categorical_threshold)
 
     if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
         numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
@@ -95,15 +83,14 @@ def email_address_func(series: pd.Series) -> bool:
     if not pdtypes.is_string_dtype(series.dtype):
         return False
 
-    sample = get_inference_sample(series)
     try:
-        sample_match_method = sample.str.match
+        series_match_method = series.str.match
     except (AttributeError, TypeError):
         # This can happen either when the inferred dtype for a series is not
         # compatible with the pandas string API (AttributeError) *or* when the
         # inferred dtype is not compatible with the string API `match` method
         # (TypeError)
         return False
-    matches = sample_match_method(pat=regex)
+    matches = series_match_method(pat=regex)
 
     return matches.sum() == matches.count()

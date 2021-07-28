@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,
@@ -252,16 +254,25 @@ class TypeSystem(object):
         Args:
             series (pandas.Series): The series for which to infer the LogicalType.
         """
+        if isinstance(series, pd.Series):
+            # Special case for series with no valid values
+            if series.count() == 0:
+                return Unknown()
 
-        # Bring Dask or Koalas data into memory for inference
-        if _is_dask_series(series):
-            series = series.get_partition(0).compute()
-        if _is_koalas_series(series):
-            series = series.head(100000).to_pandas()
+            series = series.head(100000)
+        else:
+            if _is_dask_series(series):
+                series = series.head(100000)
+            elif _is_koalas_series(series):
+                series = series.head(100000).to_pandas()
+            else:
+                raise ValueError(f"Unexpected arg type `{type(series)}`")
 
-        # Special case: if the entire column is Null or NaN, use the Unknown logical type
-        if all(series.isnull()):
-            return Unknown()
+            # For dask or koalas collections, unknown type special case comes
+            # *after* head calls to avoid evaluating a potentially large
+            # dataset
+            if series.count() == 0:
+                return Unknown()
 
         def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check
