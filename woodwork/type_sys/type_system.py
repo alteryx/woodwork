@@ -268,7 +268,7 @@ class TypeSystem(object):
             elif _is_koalas_series(series):
                 series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
             else:
-                raise ValueError(f"Unexpected arg type `{type(series)}`")  # pragma: no cover
+                raise ValueError(f"Unsupported series type `{type(series)}`")  # pragma: no cover
 
             # For dask or koalas collections, unknown type special case comes
             # *after* head calls to avoid evaluating a potentially large

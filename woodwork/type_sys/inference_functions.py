@@ -5,7 +5,7 @@ import woodwork as ww
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
 
-def categorical_func(series: pd.Series) -> bool:
+def categorical_func(series):
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
 
