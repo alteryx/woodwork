@@ -82,6 +82,8 @@ DEFAULT_RELATIONSHIPS = [
 
 DEFAULT_TYPE = Unknown
 
+INFERENCE_SAMPLE_SIZE = 100000
+
 
 class TypeSystem(object):
     def __init__(self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE):
@@ -259,12 +261,12 @@ class TypeSystem(object):
             if series.count() == 0:
                 return Unknown()
 
-            series = series.head(100000)
+            series = series.head(INFERENCE_SAMPLE_SIZE)
         else:
             if _is_dask_series(series):
-                series = series.head(100000)
+                series = series.head(INFERENCE_SAMPLE_SIZE)
             elif _is_koalas_series(series):
-                series = series.head(100000).to_pandas()
+                series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
             else:
                 raise ValueError(f"Unexpected arg type `{type(series)}`")  # pragma: no cover
 
