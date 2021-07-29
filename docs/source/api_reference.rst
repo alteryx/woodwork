@@ -138,6 +138,7 @@ Logical Types
     Age
     AgeNullable
     Boolean
+    BooleanNullable
     Categorical
     CountryCode
     Datetime
@@ -145,6 +146,7 @@ Logical Types
     EmailAddress
     Filepath
     Integer
+    IntegerNullable
     IPAddress
     LatLong
     NaturalLanguage
