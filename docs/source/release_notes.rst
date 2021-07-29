@@ -14,11 +14,12 @@ Future Release
   * Documentation Changes
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
+        * Add guide for saving and loading Woodwork DataFrames (:pr:`1066`)
   * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`tuethan1999`
+    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
