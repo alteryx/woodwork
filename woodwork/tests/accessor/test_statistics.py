@@ -464,7 +464,7 @@ def test_describe_accessor_method(describe_df):
             'mean': 20.857142857142858,
             'mode': 10,
             'std': 18.27957486220227,
-            'min': 1.0,
+            'min': 1,
             'first_quartile': 10,
             'second_quartile': 17,
             'third_quartile': 26,
@@ -604,9 +604,7 @@ def test_describe_with_include(sample_df):
     assert len(semantic_tags_df.columns) == 2
 
     logical_types_df = sample_df.ww.describe([Datetime, BooleanNullable])
-    for c in ['signup_date', 'is_registered', 'datetime_with_NaT']:
-        assert c in logical_types_df.columns
-    assert len(logical_types_df.columns) == 3
+    assert set(logical_types_df.columns) == {'signup_date', 'is_registered', 'datetime_with_NaT'}
 
     multi_params_df = sample_df.ww.describe(['age', 'tag1', Datetime])
     expected = ['full_name', 'age', 'signup_date', 'datetime_with_NaT']
