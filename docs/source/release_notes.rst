@@ -8,36 +8,17 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * The criteria for categorical type inference have changed (:pr:`1065`)
+        * The meaning of both the ``categorical_threshold`` and
+          ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
     * Documentation Changes
+        * Fix some release notes that ended up under the wrong release (:pr:`1082`)
     * Testing Changes
         * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`tuethan1999`
-
-v0.5.1 Jul 22, 2021
-===================
-    * Enhancements
-        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
-        * Add support for automatically inferring the ``EmailAddress`` logical type (:pr:`1047`)
-        * Add feature origin attribute to schema (:pr:`1056`)
-        * Add ability to calculate outliers and the statistical info required for box and whisker plots to ``WoodworkColumnAccessor`` (:pr:`1048`)
-        * Add ability to change config settings in a with block with ``ww.config.with_options`` (:pr:`1062`)
-    * Fixes
-        * Raises warning and removes tags when user adds a column with index tags to DataFrame (:pr:`1035`)
-    * Changes
-        * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
-        * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
-        * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
-        * The criteria for categorical type inference have changed (:pr:`1065`)
-        * The meaning of both the ``categorical_threshold`` and
-          ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
-    * Documentation Changes
-        * Add supported types to metadata docstring (:pr:`1049`)
-
-    Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`frances-h`, :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`davesque`, :user:`gsheni`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
@@ -58,6 +39,26 @@ Breaking Changes
       categorical.  Users who have overridden either the
       ``categorical_threshold`` or ``numeric_categorical_threshold`` settings
       will need to adjust their settings accordingly.
+
+v0.5.1 Jul 22, 2021
+===================
+    * Enhancements
+        * Store inferred datetime format on Datetime logical type instance (:pr:`1025`)
+        * Add support for automatically inferring the ``EmailAddress`` logical type (:pr:`1047`)
+        * Add feature origin attribute to schema (:pr:`1056`)
+        * Add ability to calculate outliers and the statistical info required for box and whisker plots to ``WoodworkColumnAccessor`` (:pr:`1048`)
+        * Add ability to change config settings in a with block with ``ww.config.with_options`` (:pr:`1062`)
+    * Fixes
+        * Raises warning and removes tags when user adds a column with index tags to DataFrame (:pr:`1035`)
+    * Changes
+        * Entirely null columns are now inferred as the Unknown logical type (:pr:`1043`)
+        * Add helper functions that check for whether an object is a koalas/dask series or dataframe (:pr:`1055`)
+        * ``TableAccessor.select`` method will now maintain dataframe column ordering in TableSchema columns (:pr:`1052`)
+    * Documentation Changes
+        * Add supported types to metadata docstring (:pr:`1049`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`davesque`, :user:`frances-h`, :user:`jeff-hernandez`, :user:`simha104`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.5.0 Jul 7, 2021
 ==================
