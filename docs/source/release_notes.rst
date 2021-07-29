@@ -8,38 +8,13 @@ Future Release
   * Enhancements
   * Fixes
   * Changes
-        * The criteria for categorical type inference have changed (:pr:`1065`)
-        * The meaning of both the ``categorical_threshold`` and
-          ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
   * Documentation Changes
-        * Fix some release notes that ended up under the wrong release (:pr:`1082`)
-        * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
         * Add guide for saving and loading Woodwork DataFrames (:pr:`1066`)
   * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tuethan1999`
-
-Breaking Changes
-++++++++++++++++
-    * :pr:`1065`: The criteria for categorical type inference have changed.
-      Relatedly, the meaning of both the ``categorical_threshold`` and
-      ``numeric_categorical_threshold`` settings have changed.  Now, a
-      categorical match is signaled when a series either has the "categorical"
-      pandas dtype *or* if the ratio of unique value count (nan excluded) and
-      total value count (nan also excluded) is below or equal to some fraction.
-      The value used for this fraction is set by the ``categorical_threshold``
-      setting which now has a default value of ``0.2``.  If a fraction is set
-      for the ``numeric_categorical_threshold`` setting, then series with
-      either a float or integer dtype may be inferred as categorical by
-      applying the same logic described above with the
-      ``numeric_categorical_threshold`` fraction.  Otherwise, the
-      ``numeric_categorical_threshold`` setting defaults to ``None`` which
-      indicates that series with a numerical type should not be inferred as
-      categorical.  Users who have overridden either the
-      ``categorical_threshold`` or ``numeric_categorical_threshold`` settings
-      will need to adjust their settings accordingly.
+    :user:`gsheni`, :user:`jeff-hernandez`
 
 v0.5.1 Jul 22, 2021
 ===================
