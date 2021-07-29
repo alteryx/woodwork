@@ -5,18 +5,19 @@ Release Notes
 
 Future Release
 ==============
-  * Enhancements
-  * Fixes
-  * Changes
+    * Enhancements
+    * Fixes
+    * Changes
         * The criteria for categorical type inference have changed (:pr:`1065`)
         * The meaning of both the ``categorical_threshold`` and
           ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
-  * Documentation Changes
+    * Documentation Changes
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
         * Add guide for saving and loading Woodwork DataFrames (:pr:`1066`)
-  * Testing Changes
+    * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
+        * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tuethan1999`

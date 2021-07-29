@@ -604,15 +604,24 @@ def test_describe_with_include(sample_df):
     assert len(semantic_tags_df.columns) == 2
 
     logical_types_df = sample_df.ww.describe([Datetime, BooleanNullable])
-    assert 'signup_date', 'is_registered' in logical_types_df.columns
-    assert len(logical_types_df.columns) == 2
+    assert set(logical_types_df.columns) == {'signup_date', 'is_registered', 'datetime_with_NaT'}
 
     multi_params_df = sample_df.ww.describe(['age', 'tag1', Datetime])
-    expected = ['full_name', 'age', 'signup_date']
+    expected = ['full_name', 'age', 'signup_date', 'datetime_with_NaT']
     for col_name in expected:
         assert col_name in multi_params_df.columns
     multi_params_df['full_name'].equals(col_name_df['full_name'])
     multi_params_df['full_name'].equals(sample_df.ww.describe()['full_name'])
+
+
+def test_pandas_nullable_integer_quantile_fix():
+    """Should fail when https://github.com/pandas-dev/pandas/issues/42626 gets fixed"""
+    if pd.__version__ not in ['1.3.0', '1.3.1']:  # pragma: no cover
+        pytest.skip('Bug only exists on pandas version 1.3.0 and 1.3.1')
+    series = pd.Series([1, 2, 3], dtype='Int64')
+    error_message = "cannot safely cast non-equivalent object to int64"
+    with pytest.raises(TypeError, match=error_message):
+        series.quantile([.75])
 
 
 def test_describe_with_no_match(sample_df):

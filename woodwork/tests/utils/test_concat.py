@@ -12,8 +12,8 @@ from woodwork.utils import concat_columns
 def test_concat_cols_ww_dfs(sample_df):
     sample_df.ww.init(logical_types={'full_name': 'Categorical'}, semantic_tags={'age': 'test_tag'},
                       table_metadata={'created_by': 'user0'})
-    df1 = sample_df.ww[['id', 'full_name', 'email']]
-    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df1 = sample_df.ww[['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered']]
+    df2 = sample_df.ww[['double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
     df2.ww.metadata = None
 
     combined_df = concat_columns([df1, df2])
@@ -27,8 +27,8 @@ def test_concat_cols_ww_dfs(sample_df):
 
 
 def test_concat_cols_uninit_dfs(sample_df):
-    df1 = sample_df[['id', 'full_name', 'email']]
-    df2 = sample_df[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df1 = sample_df[['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered']]
+    df2 = sample_df[['double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
     sample_df.ww.init()
 
     combined_df = concat_columns([df1, df2])
@@ -48,9 +48,10 @@ def test_concat_cols_uninit_dfs(sample_df):
 
 
 def test_concat_cols_combo_dfs(sample_df):
-    df1 = sample_df[['id', 'full_name', 'email']]
+    df1 = sample_df[['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered']]
+
     sample_df.ww.init()
-    df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
+    df2 = sample_df.ww[['double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
 
     combined_df = concat_columns([df1, df2])
     assert df1.ww.schema is None
@@ -63,13 +64,14 @@ def test_concat_cols_combo_dfs(sample_df):
 
 
 def test_concat_cols_with_series(sample_df):
-    df = sample_df[['id', 'full_name', 'email', 'phone_number', 'age']]
-    s1 = sample_df['signup_date']
-    sample_df.ww.init()
-    s2 = sample_df['is_registered']
+    expected_df = sample_df[['id', 'full_name', 'signup_date', 'is_registered']]
+    df = expected_df[['id', 'full_name']]
+    s1 = expected_df['signup_date']
+    expected_df.ww.init()
+    s2 = expected_df['is_registered']
 
     combined_df = concat_columns([df, s1, s2])
-    assert combined_df.ww == sample_df.ww
+    assert combined_df.ww == expected_df.ww
 
     df.ww.init()
     s1.ww.init()
@@ -79,10 +81,10 @@ def test_concat_cols_with_series(sample_df):
 
 
 def test_concat_cols_with_conflicting_ww_indexes(sample_df):
-    df1 = sample_df[['id', 'phone_number', 'email']]
+    df1 = sample_df[['id', 'full_name', 'email', 'phone_number', 'age', 'signup_date', 'is_registered']]
     df1.ww.init(index='id')
-    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
-    df2.ww.init(index='full_name')
+    df2 = sample_df[['double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
+    df2.ww.init(index='double')
 
     error = ('Cannot set the Woodwork index of multiple input objects. '
              'Please remove the index columns from all but one table.')
@@ -90,9 +92,9 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
     with pytest.raises(IndexError, match=error):
         concat_columns([df1, df2])
 
-    df1 = sample_df[['id', 'phone_number', 'email']]
+    df1 = sample_df[['id', 'full_name', 'email', 'phone_number', 'age', 'is_registered']]
     df1.ww.init(time_index='id')
-    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+    df2 = sample_df[['signup_date', 'double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
     df2.ww.init(time_index='signup_date')
 
     error = ('Cannot set the Woodwork time index of multiple input objects. '
@@ -102,9 +104,9 @@ def test_concat_cols_with_conflicting_ww_indexes(sample_df):
 
 
 def test_concat_cols_with_ww_indexes(sample_df):
-    df1 = sample_df[['id', 'phone_number', 'email']]
+    df1 = sample_df[['id', 'full_name', 'email', 'phone_number', 'age', 'is_registered']]
     df1.ww.init(index='id')
-    df2 = sample_df[['full_name', 'age', 'signup_date', 'is_registered']]
+    df2 = sample_df[['signup_date', 'double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
     df2.ww.init(time_index='signup_date')
 
     combined_df = concat_columns([df1, df2])
@@ -113,9 +115,9 @@ def test_concat_cols_with_ww_indexes(sample_df):
 
 
 def test_concat_cols_with_duplicate_ww_indexes(sample_df):
-    df1 = sample_df[['id', 'phone_number', 'signup_date', 'email']]
+    df1 = sample_df[['id', 'signup_date', 'full_name', 'email', 'phone_number', 'age', 'is_registered']]
     df1.ww.init(index='id', time_index='signup_date')
-    df2 = sample_df[['full_name', 'age', 'id', 'signup_date', 'is_registered']]
+    df2 = sample_df[['id', 'signup_date', 'double', 'double_with_nan', 'integer', 'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']]
     df2.ww.init(index='id', time_index='signup_date')
 
     error = ('Cannot set the Woodwork index of multiple input objects. '
@@ -310,7 +312,16 @@ def test_concat_cols_row_order(sample_df):
 
     df1 = sample_df.ww.loc[:, ['id', 'full_name']]
     df2 = sample_df.ww.loc[[2, 3, 0, 1], ['email', 'phone_number']]
-    df3 = sample_df.ww.loc[[3, 1, 0, 2], ['age', 'signup_date', 'is_registered']]
+    df3 = sample_df.ww.loc[[3, 1, 0, 2], ['age',
+                                          'signup_date',
+                                          'is_registered',
+                                          'double',
+                                          'double_with_nan',
+                                          'integer',
+                                          'nullable_integer',
+                                          'boolean',
+                                          'categorical',
+                                          'datetime_with_NaT']]
 
     combined_df = concat_columns([df1, df2, df3])
 

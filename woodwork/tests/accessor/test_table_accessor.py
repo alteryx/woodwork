@@ -338,7 +338,7 @@ def test_init_accessor_with_schema_errors(sample_df):
         iloc_df.ww.init(schema=int)
 
     error = ("Woodwork typing information is not valid for this DataFrame: "
-             "The following columns in the typing information were missing from the DataFrame: {'is_registered'}")
+             "The following columns in the typing information were missing from the DataFrame: {'datetime_with_NaT'}")
     with pytest.raises(ValueError, match=error):
         iloc_df.ww.init(schema=schema)
 
@@ -1318,7 +1318,7 @@ def test_dataframe_methods_on_accessor_to_pandas(sample_df):
         pd_df = sample_df.ww.compute()
     elif _is_koalas_dataframe(sample_df):
         pd_df = sample_df.ww.to_pandas()
-
+        pytest.skip('Bug #1071: Woodwork not initialized after to_pandas call with Koalas categorical column')
     assert isinstance(pd_df, pd.DataFrame)
     assert pd_df.ww.index == 'id'
     assert pd_df.ww.name == 'woodwork'
@@ -1364,14 +1364,9 @@ def test_get_subset_df_with_schema(sample_df):
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
 
-def test_select_ltypes_no_match_and_all(sample_df):
+def test_select_ltypes_no_match_and_all(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': PersonFullName,
-                                     'email': EmailAddress,
-                                     'phone_number': PhoneNumber,
-                                     'age': Double,
-                                     'signup_date': Datetime,
-                                     })
+    schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     assert len(schema_df.ww.select(PostalCode).columns) == 0
     assert len(schema_df.ww.select(['PostalCode', PhoneNumber]).columns) == 1
@@ -1384,17 +1379,12 @@ def test_select_ltypes_no_match_and_all(sample_df):
     assert df_all_types.ww.schema == schema_df.ww.schema
 
 
-def test_select_ltypes_strings(sample_df):
+def test_select_ltypes_strings(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': PersonFullName,
-                                     'email': EmailAddress,
-                                     'phone_number': PhoneNumber,
-                                     'age': Double,
-                                     'signup_date': Datetime,
-                                     })
+    schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_multiple_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', 'double', 'BooleanNullable', 'datetime'])
-    assert len(df_multiple_ltypes.columns) == 5
+    assert len(df_multiple_ltypes.columns) == 7
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
 
@@ -1402,17 +1392,12 @@ def test_select_ltypes_strings(sample_df):
     assert set(df_single_ltype.columns) == {'full_name'}
 
 
-def test_select_ltypes_objects(sample_df):
+def test_select_ltypes_objects(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': PersonFullName,
-                                     'email': EmailAddress,
-                                     'phone_number': PhoneNumber,
-                                     'age': Double,
-                                     'signup_date': Datetime,
-                                     })
+    schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_multiple_ltypes = schema_df.ww.select([PersonFullName, EmailAddress, Double, BooleanNullable, Datetime])
-    assert len(df_multiple_ltypes.columns) == 5
+    assert len(df_multiple_ltypes.columns) == 7
     assert 'phone_number' not in df_multiple_ltypes.columns
     assert 'id' not in df_multiple_ltypes.columns
 
@@ -1420,47 +1405,33 @@ def test_select_ltypes_objects(sample_df):
     assert len(df_single_ltype.columns) == 1
 
 
-def test_select_ltypes_mixed(sample_df):
+def test_select_ltypes_mixed(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': PersonFullName,
-                                     'email': EmailAddress,
-                                     'phone_number': PhoneNumber,
-                                     'age': Double,
-                                     'signup_date': Datetime,
-                                     })
+    schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_mixed_ltypes = schema_df.ww.select(['PersonFullName', 'email_address', Double])
-    assert len(df_mixed_ltypes.columns) == 3
+    assert len(df_mixed_ltypes.columns) == 4
     assert 'phone_number' not in df_mixed_ltypes.columns
 
 
-def test_select_ltypes_mixed_exclude(sample_df):
+def test_select_ltypes_mixed_exclude(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
-    schema_df.ww.init(logical_types={'full_name': PersonFullName,
-                                     'email': EmailAddress,
-                                     'phone_number': PhoneNumber,
-                                     'age': Double,
-                                     'signup_date': Datetime,
-                                     })
+    schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_mixed_ltypes = schema_df.ww.select(exclude=['PersonFullName', 'email_address', Double])
-    assert len(df_mixed_ltypes.columns) == 4
+    assert len(df_mixed_ltypes.columns) == 10
     assert 'full_name' not in df_mixed_ltypes.columns
     assert 'email_address' not in df_mixed_ltypes.columns
-    assert 'age' not in df_mixed_ltypes.columns
+    assert 'double' not in df_mixed_ltypes.columns
+    assert 'double_with_nan' not in df_mixed_ltypes.columns
 
 
-def test_select_ltypes_table(sample_df):
+def test_select_ltypes_table(sample_df, sample_correct_logical_types):
     schema_df = sample_df.copy()
     schema_df.ww.init(name='testing',
                       index='id',
                       time_index='signup_date',
-                      logical_types={'full_name': PersonFullName,
-                                     'email': EmailAddress,
-                                     'phone_number': PhoneNumber,
-                                     'age': Double,
-                                     'signup_date': Datetime,
-                                     },
+                      logical_types=sample_correct_logical_types,
                       semantic_tags={'full_name': ['new_tag', 'tag2'],
                                      'age': 'numeric',
                                      })
@@ -1489,7 +1460,7 @@ def test_select_semantic_tags(sample_df):
                       time_index='signup_date')
 
     df_one_match = schema_df.ww.select('numeric')
-    assert len(df_one_match.columns) == 2
+    assert len(df_one_match.columns) == 6
     assert 'age' in df_one_match.columns
     assert 'id' in df_one_match.columns
 
@@ -1500,20 +1471,20 @@ def test_select_semantic_tags(sample_df):
     assert 'email' in df_multiple_matches.columns
 
     df_multiple_tags = schema_df.ww.select(['numeric', 'time_index'])
-    assert len(df_multiple_tags.columns) == 3
+    assert len(df_multiple_tags.columns) == 7
     assert 'id' in df_multiple_tags.columns
     assert 'age' in df_multiple_tags.columns
     assert 'signup_date' in df_multiple_tags.columns
 
     df_overlapping_tags = schema_df.ww.select(['numeric', 'tag2'])
-    assert len(df_overlapping_tags.columns) == 4
+    assert len(df_overlapping_tags.columns) == 8
     assert 'id' in df_overlapping_tags.columns
     assert 'age' in df_overlapping_tags.columns
     assert 'phone_number' in df_overlapping_tags.columns
     assert 'email' in df_overlapping_tags.columns
 
     df_common_tags = schema_df.ww.select(['category', 'numeric'])
-    assert len(df_common_tags.columns) == 3
+    assert len(df_common_tags.columns) == 8
     assert 'id' in df_common_tags.columns
     assert 'is_registered' in df_common_tags.columns
     assert 'age' in df_common_tags.columns
@@ -1530,31 +1501,31 @@ def test_select_semantic_tags_exclude(sample_df):
                       time_index='signup_date')
 
     df_one_match = schema_df.ww.select(exclude='numeric')
-    assert len(df_one_match.columns) == 5
+    assert len(df_one_match.columns) == 8
     assert 'age' not in df_one_match.columns
     assert 'id' not in df_one_match.columns
 
     df_multiple_matches = schema_df.ww.select(exclude='tag2')
-    assert len(df_multiple_matches.columns) == 4
+    assert len(df_multiple_matches.columns) == 11
     assert 'age' not in df_multiple_matches.columns
     assert 'phone_number' not in df_multiple_matches.columns
     assert 'email' not in df_multiple_matches.columns
 
     df_multiple_tags = schema_df.ww.select(exclude=['numeric', 'time_index'])
-    assert len(df_multiple_tags.columns) == 4
+    assert len(df_multiple_tags.columns) == 7
     assert 'id' not in df_multiple_tags.columns
     assert 'age' not in df_multiple_tags.columns
     assert 'signup_date' not in df_multiple_tags.columns
 
     df_overlapping_tags = schema_df.ww.select(exclude=['numeric', 'tag2'])
-    assert len(df_overlapping_tags.columns) == 3
+    assert len(df_overlapping_tags.columns) == 6
     assert 'id' not in df_overlapping_tags.columns
     assert 'age' not in df_overlapping_tags.columns
     assert 'phone_number' not in df_overlapping_tags.columns
     assert 'email' not in df_overlapping_tags.columns
 
     df_common_tags = schema_df.ww.select(exclude=['category', 'numeric'])
-    assert len(df_common_tags.columns) == 4
+    assert len(df_common_tags.columns) == 6
     assert 'id' not in df_common_tags.columns
     assert 'is_registered' not in df_common_tags.columns
     assert 'age' not in df_common_tags.columns
@@ -1582,7 +1553,7 @@ def test_select_single_inputs(sample_df):
     assert 'full_name' in df_ltype_string.columns
 
     df_ltype_obj = schema_df.ww.select(IntegerNullable)
-    assert len(df_ltype_obj.columns) == 1
+    assert len(df_ltype_obj.columns) == 2
     assert 'age' in df_ltype_obj.columns
 
     df_tag_string = schema_df.ww.select('index')
@@ -1590,7 +1561,7 @@ def test_select_single_inputs(sample_df):
     assert 'id' in df_tag_string.columns
 
     df_tag_instantiated = schema_df.ww.select('Datetime')
-    assert len(df_tag_instantiated.columns) == 1
+    assert len(df_tag_instantiated.columns) == 2
     assert 'signup_date' in df_tag_instantiated.columns
 
 
@@ -1612,7 +1583,6 @@ def test_select_list_inputs(sample_df):
                           'email': 'tag2',
                           'is_registered': 'category'
                       })
-
     df_just_strings = schema_df.ww.select(['PersonFullName', 'index', 'tag2', 'boolean_nullable'])
     assert len(df_just_strings.columns) == 4
     assert 'id' in df_just_strings.columns
@@ -1621,13 +1591,13 @@ def test_select_list_inputs(sample_df):
     assert 'is_registered' in df_just_strings.columns
 
     df_mixed_selectors = schema_df.ww.select([PersonFullName, 'index', 'time_index', Integer])
-    assert len(df_mixed_selectors.columns) == 3
+    assert len(df_mixed_selectors.columns) == 4
     assert 'id' in df_mixed_selectors.columns
     assert 'full_name' in df_mixed_selectors.columns
     assert 'signup_date' in df_mixed_selectors.columns
 
     df_common_tags = schema_df.ww.select(['category', 'numeric', BooleanNullable, Datetime])
-    assert len(df_common_tags.columns) == 3
+    assert len(df_common_tags.columns) == 9
     assert 'is_registered' in df_common_tags.columns
     assert 'age' in df_common_tags.columns
     assert 'signup_date' in df_common_tags.columns
@@ -1651,12 +1621,11 @@ def test_select_semantic_tags_no_match(sample_df):
                       })
 
     assert len(schema_df.ww.select(['doesnt_exist']).columns) == 0
-
     df_multiple_unused = schema_df.ww.select(['doesnt_exist', 'boolean_nullable', 'category', PhoneNumber])
-    assert len(df_multiple_unused.columns) == 2
+    assert len(df_multiple_unused.columns) == 3
 
     df_unused_ltype = schema_df.ww.select(['date_of_birth', 'doesnt_exist', PostalCode, Integer])
-    assert len(df_unused_ltype.columns) == 2
+    assert len(df_unused_ltype.columns) == 3
 
 
 def test_select_repetitive(sample_df):
@@ -1708,7 +1677,6 @@ def test_select_instantiated_ltype():
 
 def test_select_return_schema(sample_df):
     sample_df.ww.init()
-
     # Multiple column matches
     df_schema = sample_df.ww.select(include='Unknown', return_schema=True)
     assert isinstance(df_schema, TableSchema)
@@ -1722,7 +1690,7 @@ def test_select_return_schema(sample_df):
     assert single_schema == sample_df.ww.select(include='BooleanNullable').ww.schema
 
     # No matches
-    empty_schema = sample_df.ww.select(include='Double', return_schema=True)
+    empty_schema = sample_df.ww.select(include='IPAddress', return_schema=True)
     assert isinstance(empty_schema, TableSchema)
     assert len(empty_schema.columns) == 0
 
@@ -1734,9 +1702,11 @@ def test_select_return_schema(sample_df):
      (["Datetime"], "datetime"),
      (["Unknown", "EmailAddress"], "string"),
      (["Categorical"], "category"),
-     (["BooleanNullable"], "boolean")]
+     (["Boolean", "BooleanNullable"], "boolean")]
 )
 def test_select_retains_column_order(ww_type, pandas_type, sample_df):
+    if _is_koalas_dataframe(sample_df) and pandas_type in ["category", "string"]:
+        pytest.skip("Koalas stores categories as strings")
     sample_df.ww.init()
 
     ww_schema_column_order = [x for x in sample_df.ww.select(ww_type, return_schema=True).columns.keys()]
@@ -2371,18 +2341,21 @@ def test_maintain_column_order_on_type_changes(sample_df):
 def test_maintain_column_order_of_dataframe(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init()
-
-    select_df = schema_df.ww.select([Unknown, EmailAddress, Integer, IntegerNullable, BooleanNullable, Datetime])
+    select_df = schema_df.ww.select([Unknown, EmailAddress, Integer, IntegerNullable, Boolean, BooleanNullable, Datetime, Double, Categorical])
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
 
     renamed_df = schema_df.ww.rename({'email': 'renamed_1', 'id': 'renamed_2'})
-    renamed_cols = ['renamed_2', 'full_name', 'renamed_1', 'phone_number', 'age', 'signup_date', 'is_registered']
+    renamed_cols = ['renamed_2', 'full_name', 'renamed_1', 'phone_number', 'age',
+                    'signup_date', 'is_registered', 'double', 'double_with_nan', 'integer',
+                    'nullable_integer', 'boolean', 'categorical', 'datetime_with_NaT']
     assert all(renamed_cols == renamed_df.columns)
     assert all(renamed_cols == renamed_df.ww.types.index)
 
     dropped_df = schema_df.ww.drop(['email', 'id', 'is_registered', 'age'])
-    cols_left_over = ['full_name', 'phone_number', 'signup_date']
+    cols_left_over = ['full_name', 'phone_number', 'signup_date', 'double', 'double_with_nan',
+                      'integer', 'nullable_integer', 'boolean', 'categorical',
+                      'datetime_with_NaT']
     assert all(cols_left_over == dropped_df.columns)
     assert all(cols_left_over == dropped_df.ww.types.index)
 
@@ -2425,7 +2398,7 @@ def test_maintain_column_order_disordered_schema(sample_df):
     assert all(sample_df.ww.types.index == column_order)
 
 
-def test_accessor_types(sample_df):
+def test_accessor_types(sample_df, sample_inferred_logical_types):
     sample_df.ww.init()
 
     returned_types = sample_df.ww.types
@@ -2434,32 +2407,16 @@ def test_accessor_types(sample_df):
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
 
-    correct_physical_types = {
-        'id': Integer.primary_dtype,
-        'full_name': Unknown.primary_dtype,
-        'email': EmailAddress.primary_dtype,
-        'phone_number': Unknown.primary_dtype,
-        'age': IntegerNullable.primary_dtype,
-        'signup_date': Datetime.primary_dtype,
-        'is_registered': BooleanNullable.primary_dtype,
-    }
+    correct_physical_types = {name: ltype.primary_dtype for name, ltype in sample_inferred_logical_types.items()}
+    if _is_koalas_dataframe(sample_df):
+        correct_physical_types['categorical'] = 'string'
     correct_physical_types = pd.Series(list(correct_physical_types.values()),
                                        index=list(correct_physical_types.keys()))
+
     assert correct_physical_types.equals(returned_types['Physical Type'])
-
-    correct_logical_types = {
-        'id': Integer(),
-        'full_name': Unknown(),
-        'email': EmailAddress(),
-        'phone_number': Unknown(),
-        'age': IntegerNullable(),
-        'signup_date': Datetime(),
-        'is_registered': BooleanNullable(),
-    }
-    correct_logical_types = pd.Series(list(correct_logical_types.values()),
-                                      index=list(correct_logical_types.keys()))
+    correct_logical_types = pd.Series([ltype() for ltype in sample_inferred_logical_types.values()],
+                                      index=list(sample_inferred_logical_types.keys()))
     assert correct_logical_types.equals(returned_types['Logical Type'])
-
     correct_semantic_tags = {
         'id': "['numeric']",
         'full_name': "[]",
@@ -2468,6 +2425,13 @@ def test_accessor_types(sample_df):
         'age': "['numeric']",
         'signup_date': "[]",
         'is_registered': "[]",
+        'double': "['numeric']",
+        'double_with_nan': "['numeric']",
+        'integer': "['numeric']",
+        'nullable_integer': "['numeric']",
+        'boolean': "[]",
+        'categorical': "['category']",
+        'datetime_with_NaT': "[]",
     }
     correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
                                       index=list(correct_semantic_tags.keys()))
@@ -2497,14 +2461,15 @@ def test_accessor_repr_empty(empty_df):
 
 
 def test_numeric_column_names(sample_df):
-    numeric_columns = {col_name: i for col_name, i in zip(sample_df.columns, range(0, len(sample_df.columns)))}
+    original_df = sample_df.drop('categorical', axis=1)
+    numeric_columns = {col_name: i for col_name, i in zip(original_df.columns, range(0, len(original_df.columns)))}
 
-    sample_df.ww.init()
-    numeric_via_woodwork = sample_df.ww.rename(numeric_columns)
+    original_df.ww.init()
+    numeric_via_woodwork = original_df.ww.rename(numeric_columns)
 
-    assert numeric_via_woodwork.ww[0].ww._schema == sample_df.ww['id'].ww._schema
+    assert numeric_via_woodwork.ww[0].ww._schema == original_df.ww['id'].ww._schema
 
-    numeric_cols_df = sample_df.rename(columns=numeric_columns)
+    numeric_cols_df = original_df.rename(columns=numeric_columns)
     numeric_cols_df.ww.init()
 
     assert numeric_cols_df.ww == numeric_via_woodwork.ww

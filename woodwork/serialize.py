@@ -15,7 +15,7 @@ from woodwork.type_sys.utils import (
 )
 from woodwork.utils import _is_s3, _is_url
 
-SCHEMA_VERSION = '11.0.0'
+SCHEMA_VERSION = '11.1.0'
 FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
 
 
@@ -206,5 +206,9 @@ def _create_archive(tmpdir):
 
 def save_orc_file(dataframe, filepath):
     from pyarrow import Table, orc
-    pa_table = Table.from_pandas(dataframe, preserve_index=False)
+    df = dataframe.copy()
+    for c in df:
+        if df[c].dtype.name == 'category':
+            df[c] = df[c].astype('string')
+    pa_table = Table.from_pandas(df, preserve_index=False)
     orc.write_table(pa_table, filepath)

@@ -2,7 +2,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import Boolean, Datetime, Integer, Unknown
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Categorical,
+    Datetime,
+    Double,
+    EmailAddress,
+    Integer,
+    IntegerNullable,
+    PersonFullName,
+    PhoneNumber,
+    Unknown
+)
 from woodwork.utils import import_or_none
 
 
@@ -46,6 +58,13 @@ def sample_df_pandas():
         'age': pd.Series([pd.NA, 33, 33, 57], dtype='Int64'),
         'signup_date': [pd.to_datetime('2020-09-01')] * 4,
         'is_registered': pd.Series([pd.NA, False, True, True], dtype='boolean'),
+        'double': [0, 1, 0.0001, -5.4321],
+        'double_with_nan': [np.nan, -123.45, 0.0001, 1],
+        'integer': [-1, 4, 9, 25],
+        'nullable_integer': pd.Series([pd.NA, -36, 49, 64], dtype='Int64'),
+        'boolean': [True, False, False, True],
+        'categorical': pd.Series(["a", "b", "c", "a"], dtype="category"),
+        'datetime_with_NaT': [pd.to_datetime('2020-09-01')] * 3 + [pd.NaT],
     })
 
 
@@ -539,25 +558,46 @@ def falsy_names_df(request):
 
 
 @pytest.fixture()
-def sample_column_names():
-    return ['id',
-            'full_name',
-            'email',
-            'phone_number',
-            'age',
-            'signup_date',
-            'is_registered']
+def sample_column_names(sample_df_pandas):
+    return sample_df_pandas.columns.to_list()
 
 
 @pytest.fixture()
 def sample_inferred_logical_types():
     return {'id': Integer,
             'full_name': Unknown,
-            'email': Unknown,
+            'email': EmailAddress,
             'phone_number': Unknown,
-            'age': Integer,
+            'age': IntegerNullable,
             'signup_date': Datetime,
-            'is_registered': Boolean}
+            'is_registered': BooleanNullable,
+            'double': Double,
+            'double_with_nan': Double,
+            'integer': Integer,
+            'nullable_integer': IntegerNullable,
+            'boolean': Boolean,
+            'categorical': Categorical,
+            'datetime_with_NaT': Datetime,
+            }
+
+
+@pytest.fixture()
+def sample_correct_logical_types():
+    return {'id': Integer,
+            'full_name': PersonFullName,
+            'email': EmailAddress,
+            'phone_number': PhoneNumber,
+            'age': IntegerNullable,
+            'signup_date': Datetime,
+            'is_registered': BooleanNullable,
+            'double': Double,
+            'double_with_nan': Double,
+            'integer': Integer,
+            'nullable_integer': IntegerNullable,
+            'boolean': Boolean,
+            'categorical': Categorical,
+            'datetime_with_NaT': Datetime,
+            }
 
 
 @pytest.fixture()

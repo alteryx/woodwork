@@ -45,27 +45,42 @@ def test_error_before_table_init(sample_df, tmpdir):
 def test_to_dictionary(sample_df):
     if _is_dask_dataframe(sample_df):
         table_type = 'dask'
-        cat_type_dict = {
+        age_cat_type_dict = {
             'type': 'category',
             'cat_values': [33, 57],
             'cat_dtype': 'int64'
         }
+        cat_type_dict = {
+            'type': 'category',
+            'cat_values': ['a', 'b', 'c'],
+            'cat_dtype': 'object'
+        }
     elif _is_koalas_dataframe(sample_df):
         table_type = 'koalas'
+        age_cat_type_dict = {
+            'type': 'string'
+        }
         cat_type_dict = {
             'type': 'string'
         }
     else:
         table_type = 'pandas'
-        cat_type_dict = {
+        age_cat_type_dict = {
             'type': 'category',
             'cat_values': [33, 57],
             'cat_dtype': 'object'
         }
+        cat_type_dict = {
+            'type': 'category',
+            'cat_values': ['a', 'b', 'c'],
+            'cat_dtype': 'object'
+        }
 
     int_val = 'int64'
+    nullable_int_val = 'Int64'
     string_val = 'string'
     bool_val = 'boolean'
+    double_val = 'float64'
 
     expected = {'schema_version': serialize.SCHEMA_VERSION,
                 'name': 'test_data',
@@ -111,7 +126,7 @@ def test_to_dictionary(sample_df):
                                         'ordinal': 4,
                                         'use_standard_tags': True,
                                         'logical_type': {'parameters': {'order': [25, 33, 57]}, 'type': 'Ordinal'},
-                                        'physical_type': cat_type_dict,
+                                        'physical_type': age_cat_type_dict,
                                         'semantic_tags': ['category'],
                                         'description': 'age of the user',
                                         'origin': 'base',
@@ -134,11 +149,73 @@ def test_to_dictionary(sample_df):
                                         'semantic_tags': [],
                                         'description': None,
                                         'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'double',
+                                        'ordinal': 7,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {}, 'type': 'Double'},
+                                        'physical_type': {'type': double_val},
+                                        'semantic_tags': ['numeric'],
+                                        'description': None,
+                                        'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'double_with_nan',
+                                        'ordinal': 8,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {}, 'type': 'Double'},
+                                        'physical_type': {'type': double_val},
+                                        'semantic_tags': ['numeric'],
+                                        'description': None,
+                                        'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'integer',
+                                        'ordinal': 9,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {}, 'type': 'Integer'},
+                                        'physical_type': {'type': int_val},
+                                        'semantic_tags': ['numeric'],
+                                        'description': None,
+                                        'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'nullable_integer',
+                                        'ordinal': 10,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {}, 'type': 'IntegerNullable'},
+                                        'physical_type': {'type': nullable_int_val},
+                                        'semantic_tags': ['numeric'],
+                                        'description': None,
+                                        'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'boolean',
+                                        'ordinal': 11,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {}, 'type': 'Boolean'},
+                                        'physical_type': {'type': 'bool'},
+                                        'semantic_tags': [],
+                                        'description': None,
+                                        'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'categorical',
+                                        'ordinal': 12,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {}, 'type': 'Categorical'},
+                                        'physical_type': cat_type_dict,
+                                        'semantic_tags': ['category'],
+                                        'description': None,
+                                        'origin': None,
+                                        'metadata': {}},
+                                       {'name': 'datetime_with_NaT',
+                                        'ordinal': 13,
+                                        'use_standard_tags': True,
+                                        'logical_type': {'parameters': {'datetime_format': None}, 'type': 'Datetime'},
+                                        'physical_type': {'type': 'datetime64[ns]'},
+                                        'semantic_tags': [],
+                                        'description': None,
+                                        'origin': None,
                                         'metadata':{}}],
                 'loading_info': {'table_type': table_type},
                 'table_metadata': {'date_created': '11/16/20'}
                 }
-
     sample_df.ww.init(
         name='test_data',
         index='id',
@@ -155,7 +232,6 @@ def test_to_dictionary(sample_df):
     )
 
     description = sample_df.ww.to_dictionary()
-
     assert description == expected
 
 

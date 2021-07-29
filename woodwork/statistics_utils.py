@@ -111,7 +111,8 @@ def _get_describe_dict(dataframe, include=None, callback=None,
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
+            float_series = series.astype('float64')  # workaround for https://github.com/pandas-dev/pandas/issues/42626
+            quant_values = float_series.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[1]
             values["third_quartile"] = quant_values[2]
@@ -172,9 +173,9 @@ def _replace_nans_for_mutual_info(schema, data):
 
         if column.is_numeric or column.is_datetime:
             mean = series.mean()
-            if isinstance(mean, float) and not type(column.logical_type) == Double:
+            if isinstance(mean, float) and not mean.is_integer() and not type(column.logical_type) == Double:
                 data[column_name] = series.astype('float')
-            data[column_name] = series.fillna(mean)
+            data[column_name] = data[column_name].fillna(mean)
         elif column.is_categorical or column.is_boolean:
             mode = _get_mode(series)
             data[column_name] = series.fillna(mode)
