@@ -462,21 +462,21 @@ def test_infer_datetime_format(datetimes):
 
 
 def test_infer_datetime_format_all_null():
-    missing_lists = [
-        [None, None, None],
-        [np.nan, np.nan, np.nan],
-        [pd.NA, pd.NA, pd.NA],
-        [],
+    missing_data = [
+        pd.Series([None, None, None]),
+        pd.Series([np.nan, np.nan, np.nan]),
+        pd.Series([pd.NA, pd.NA, pd.NA]),
+        pd.Series([]),
     ]
 
-    for items in missing_lists:
-        pd_series = pd.Series(items)
-        dd_series = dd.from_pandas(pd_series, npartitions=2)
-        ks_series = ks.from_pandas(pd_series)
-
+    for pd_series in missing_data:
         assert _infer_datetime_format(pd_series) is None
-        assert _infer_datetime_format(dd_series) is None
-        assert _infer_datetime_format(ks_series) is None
+        if dd:
+            dd_series = dd.from_pandas(pd_series, npartitions=2)
+            assert _infer_datetime_format(dd_series) is None
+        if ks:
+            ks_series = ks.from_pandas(pd_series)
+            assert _infer_datetime_format(ks_series) is None
 
 
 def test_is_categorical() -> None:
