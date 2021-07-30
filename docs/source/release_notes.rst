@@ -17,12 +17,13 @@ Future Release
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
         * Add guide for saving and loading Woodwork DataFrames (:pr:`1066`)
+        * Add in-depth guide on logical types and semantic tags (:pr:`1086`)
     * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
         * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
