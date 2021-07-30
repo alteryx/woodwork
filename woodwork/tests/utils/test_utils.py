@@ -49,6 +49,9 @@ from woodwork.utils import (
     import_or_raise
 )
 
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
+
 
 def test_camel_to_snake():
     test_items = {
@@ -456,6 +459,24 @@ def test_infer_datetime_format(datetimes):
     dt1 = pd.Series(['3/11/2000 9:00', '3/11/2000 10:00', '3/11/2000 11:00', '3/11/2000 12:00'])
     fmt = _infer_datetime_format(dt1)
     assert fmt == '%m/%d/%Y %H:%M'
+
+
+def test_infer_datetime_format_all_null():
+    missing_lists = [
+        [None, None, None],
+        [np.nan, np.nan, np.nan],
+        [pd.NA, pd.NA, pd.NA],
+        [],
+    ]
+
+    for items in missing_lists:
+        pd_series = pd.Series(items)
+        dd_series = dd.from_pandas(pd_series, npartitions=2)
+        ks_series = ks.from_pandas(pd_series)
+
+        assert _infer_datetime_format(pd_series) is None
+        assert _infer_datetime_format(dd_series) is None
+        assert _infer_datetime_format(ks_series) is None
 
 
 def test_is_categorical() -> None:

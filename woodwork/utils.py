@@ -458,7 +458,7 @@ def _infer_datetime_format(dates, n=100):
     first_n = dates.dropna().head(n)
     if len(first_n) == 0:
         return None
-    try:
+    try:    
         fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):

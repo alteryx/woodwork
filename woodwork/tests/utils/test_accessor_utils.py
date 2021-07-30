@@ -15,10 +15,6 @@ from woodwork.accessor_utils import (
 )
 from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import Categorical, Datetime, NaturalLanguage
-from woodwork.utils import import_or_none
-
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
 
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):
@@ -138,31 +134,6 @@ def test_init_series_error_on_invalid_conversion(sample_series):
         "Please confirm the underlying data is consistent with logical type IntegerNullable."
     with pytest.raises(TypeConversionError, match=error_message):
         init_series(sample_series, logical_type='integer_nullable')
-
-
-def test_init_series_datetime_all_null():
-    missing_lists = [
-        [None, None, None],
-        [np.nan, np.nan, np.nan],
-        [pd.NA, pd.NA, pd.NA]
-    ]
-
-    for items in missing_lists:
-        pd_series = pd.Series(items)
-        dd_series = dd.from_pandas(pd_series, npartitions=2)
-        ks_series = ks.from_pandas(pd_series)
-
-        new_pd_series = init_series(pd_series, logical_type='Datetime')
-        assert isinstance(new_pd_series.ww.logical_type, Datetime)
-        assert new_pd_series.ww.logical_type.datetime_format is None
-
-        new_dd_series = init_series(dd_series, logical_type='Datetime')
-        assert isinstance(new_dd_series.ww.logical_type, Datetime)
-        assert new_dd_series.ww.logical_type.datetime_format is None
-
-        new_ks_series = init_series(ks_series, logical_type='Datetime')
-        assert isinstance(new_ks_series.ww.logical_type, Datetime)
-        assert new_ks_series.ww.logical_type.datetime_format is None
 
 
 def test_is_series(sample_df):
