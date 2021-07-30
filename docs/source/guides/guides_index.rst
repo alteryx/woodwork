@@ -12,3 +12,4 @@ The guides below provide more detail on the functionality of Woodwork.
    using_woodwork_with_dask_and_koalas
    custom_types_and_type_inference
    saving_and_loading_dataframes
+   logical_types_and_semantic_tags
