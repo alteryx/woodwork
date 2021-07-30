@@ -11,6 +11,7 @@ Future Release
         * The criteria for categorical type inference have changed (:pr:`1065`)
         * The meaning of both the ``categorical_threshold`` and
           ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
+        * Make sampling for type inference more consistent (:pr:`1083`)
     * Documentation Changes
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
@@ -41,6 +42,18 @@ Breaking Changes
       categorical.  Users who have overridden either the
       ``categorical_threshold`` or ``numeric_categorical_threshold`` settings
       will need to adjust their settings accordingly.
+    * :pr:`1083`: The process of sampling series for logical type inference was
+      updated to be more consistent.  Before, initial sampling for inference
+      differed depending on collection type (pandas, dask, or koalas).  Also,
+      further randomized subsampling was performed in some cases during
+      categorical inference and in every case during email inference regardless
+      of collection type.  Overall, the way sampling was done was inconsistent
+      and unpredictable.  Now, the first 100,000 records of a column are
+      sampled for logical type inference regardless of collection type although
+      only records from the first partition of a dask dataset will be used.
+      Subsampling performed by the inference functions of individual types has
+      been removed.  The effect of these changes is that inferred types may now
+      be different although in many cases they will be more correct.
 
 v0.5.1 Jul 22, 2021
 ===================
