@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix bug in ``_infer_datetime_format`` with all ``np.nan`` input (:pr:`1089`)
     * Changes
         * The criteria for categorical type inference have changed (:pr:`1065`)
         * The meaning of both the ``categorical_threshold`` and
@@ -21,7 +22,7 @@ Future Release
         * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tuethan1999`
+    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
