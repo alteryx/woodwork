@@ -2538,3 +2538,12 @@ def test_ltype_conversions_nullable_types():
         "Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_msg):
         df.ww.set_types({'int_null': 'Integer'})
+
+
+def test_init_with_partial_schema(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init()
+    partial_schema = sample_df.ww[['id', 'full_name']].ww.schema
+
+    test_df.ww.init_with_partial_schema(partial_schema)
+    assert isinstance(test_df.ww.schema, TableSchema)
