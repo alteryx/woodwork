@@ -40,6 +40,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def _check_df_schema(func):
+    '''Decorator for WoodworkTableAccessor that checks schema initialization'''
     def wrapper(self, *args, **kwargs):
         if self.schema is None:
             msg = ("Woodwork not initialized for this DataFrame. Initialize by "

@@ -31,6 +31,7 @@ ks = import_or_none('databricks.koalas')
 
 
 def _check_series_schema(func):
+    '''Decorator for WoodworkColumnAccessor that checks schema initialization'''
     def wrapper(self, *args, **kwargs):
         if self.schema is None:
             msg = ("Woodwork not initialized for this Series. Initialize by "
