@@ -149,6 +149,72 @@ class WoodworkTableAccessor:
             if self._schema.time_index is not None:
                 self._sort_columns(already_sorted)
 
+    def init_with_partial_schema(self,
+                            partial_schema,
+                            already_sorted=False,
+                            logical_types=None,
+                            name=None,
+                            index=None,
+                            time_index=None,
+                            semantic_tags=None,
+                            table_metadata=None,
+                            column_metadata=None,
+                            use_standard_tags=False,
+                            column_descriptions=None,
+                            column_origins=None,
+                            validate=True,
+                            **kwargs):
+        def left_join(left: dict, right: dict):
+            left = left or {}
+            right = right or {}
+            combined_dict = {}
+            for key in right:
+                combined_dict[key] = right[key]
+            for key in left:
+                combined_dict[key] = left[key]
+            return combined_dict
+
+        existing_logical_types = {}
+        existing_col_descriptions = {}
+        existing_col_metadata = {}
+        existing_use_standard_tags = {}
+        existing_semantic_tags = {}
+        existing_col_origins = {}
+
+
+        for name, col_schema in partial_schema.columns.items():
+            existing_logical_types[name] = col_schema.logical_type
+            existing_semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
+            existing_col_descriptions[name] = col_schema.description
+            existing_col_origins[name] = col_schema.origin
+            existing_col_metadata[name] = col_schema.metadata
+            existing_use_standard_tags[name] = col_schema.use_standard_tags
+
+        logical_types = _infer_missing_logical_types(self._dataframe, logical_types, existing_logical_types)
+        column_descriptions = left_join(column_descriptions or {}, existing_col_descriptions)
+        column_metadata = left_join(column_metadata or {}, existing_col_metadata)
+        use_standard_tags = left_join(use_standard_tags or {}, existing_use_standard_tags)
+        semantic_tags = left_join(semantic_tags or {}, existing_semantic_tags)
+        column_origins = left_join(column_origins or {}, existing_col_origins)
+
+        
+        self._schema = TableSchema(column_names=list(self._dataframe.columns),
+                                logical_types=logical_types,
+                                name=name or partial_schema.name,
+                                index=index or partial_schema.index,
+                                time_index=time_index or partial_schema.time_index,
+                                semantic_tags=semantic_tags,
+                                table_metadata=table_metadata or partial_schema.metadata,
+                                column_metadata=column_metadata,
+                                use_standard_tags=use_standard_tags,
+                                column_descriptions=column_descriptions,
+                                column_origins=column_origins,
+                                validate=validate,
+                                **kwargs)
+        self._set_underlying_index()
+        if self._schema.time_index is not None:
+            self._sort_columns(already_sorted)
+
     def __eq__(self, other, deep=True):
         if not self._schema.__eq__(other.ww._schema, deep=deep):
             return False
@@ -969,6 +1035,19 @@ def _check_use_standard_tags(use_standard_tags):
 def _raise_init_error():
     raise WoodworkNotInitError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
 
+def _infer_missing_logical_types(df, force_logical_types=None, existing_logical_types=None):
+    """Performs type inference and updates underlying data"""
+    force_logical_types = force_logical_types or {}
+    existing_logical_types = existing_logical_types or {}
+    parsed_logical_types = {}
+    for name in df.columns:
+        series = df[name]
+        logical_type = force_logical_types.get(name) or existing_logical_types.get(name)
+        parsed_logical_types[name] = _get_column_logical_type(series, logical_type, name)
+        updated_series = parsed_logical_types[name].transform(series)
+        if updated_series is not series:
+            df[name] = updated_series
+    return parsed_logical_types
 
 @pd.api.extensions.register_dataframe_accessor('ww')
 class PandasTableAccessor(WoodworkTableAccessor):
