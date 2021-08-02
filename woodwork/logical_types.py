@@ -145,13 +145,13 @@ class Categorical(LogicalType):
 
 
 class CountryCode(LogicalType):
-    """Represents Logical Types that contain categorical information specifically
-    used to represent countries. Has 'category' as a standard tag.
+    """Represents Logical Types that use the ISO-3166 standard country code to represent countries.
+    ISO 3166-1 (countries) are supported. These codes should be in the Alpha-2 format.
 
     Examples:
         .. code-block:: python
 
-            ["AUS", "USA", "UKR"]
+            ["AU", "US", "UA"]
             ["GB", "NZ", "DE"]
     """
     primary_dtype = 'category'
@@ -425,8 +425,9 @@ class PhoneNumber(LogicalType):
 
 
 class SubRegionCode(LogicalType):
-    """Represents Logical Types that contain codes representing a portion of
-    a larger geographic region. Has 'category' as a standard tag.
+    """Represents Logical Types that use the ISO-3166 standard sub-region code to
+    represent a portion of a larger geographic region. ISO 3166-2 (sub-regions)
+    codes are supported. These codes should be in the Alpha-2 format.
 
     Examples:
         .. code-block:: python
