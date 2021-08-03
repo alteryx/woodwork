@@ -152,23 +152,25 @@ def _is_koalas_series(data):
     return False
 
 
-def _check_schema_init(method):
-    '''Decorator for Woodwork ColumnAccessor and WoodworkTableAccessor that
-       checks schema initialization
-    '''
+def _check_column_schema(method):
+    '''Decorator for WoodworkColumnAccessor that checks schema initialization'''
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if self._schema is None:
-            from woodwork.column_accessor import WoodworkColumnAccessor
-            from woodwork.table_accessor import WoodworkTableAccessor
-            if isinstance(self, WoodworkTableAccessor):
-                data_structure = "DataFrame"
-            elif isinstance(self, WoodworkColumnAccessor):
-                data_structure = "Series"
-            else:
-                raise TypeError("decorator was applied to a non-accessor method")
-            msg = (f"Woodwork not initialized for this {data_structure}. "
-                   f"Initialize by calling {data_structure}.ww.init")
+            msg = ("Woodwork not initialized for this Series. Initialize by "
+                   "calling Series.ww.init")
+            raise WoodworkNotInitError(msg)
+        return method(self, *args, **kwargs)
+    return wrapper
+
+
+def _check_table_schema(method):
+    '''Decorator for WoodworkTableAccessor that checks schema initialization'''
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if self._schema is None:
+            msg = ("Woodwork not initialized for this DataFrame. Initialize by "
+                   "calling DataFrame.ww.init")
             raise WoodworkNotInitError(msg)
         return method(self, *args, **kwargs)
     return wrapper
