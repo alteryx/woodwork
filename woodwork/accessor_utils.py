@@ -1,6 +1,9 @@
+from functools import wraps
+
 import numpy as np
 import pandas as pd
 
+from woodwork.exceptions import WoodworkNotInitError
 from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -147,3 +150,27 @@ def _is_koalas_series(data):
     if ks and isinstance(data, ks.Series):
         return True
     return False
+
+
+def _check_column_schema(method):
+    '''Decorator for WoodworkColumnAccessor that checks schema initialization'''
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if self._schema is None:
+            msg = ("Woodwork not initialized for this Series. Initialize by "
+                   "calling Series.ww.init")
+            raise WoodworkNotInitError(msg)
+        return method(self, *args, **kwargs)
+    return wrapper
+
+
+def _check_table_schema(method):
+    '''Decorator for WoodworkTableAccessor that checks schema initialization'''
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if self._schema is None:
+            msg = ("Woodwork not initialized for this DataFrame. Initialize by "
+                   "calling DataFrame.ww.init")
+            raise WoodworkNotInitError(msg)
+        return method(self, *args, **kwargs)
+    return wrapper

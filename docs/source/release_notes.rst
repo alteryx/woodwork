@@ -13,6 +13,7 @@ Future Release
         * The meaning of both the ``categorical_threshold`` and
           ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
         * Make sampling for type inference more consistent (:pr:`1083`)
+        * Accessor logic checking if Woodwork has been initialized moved to decorator (:pr:`1093`)
     * Documentation Changes
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
@@ -23,7 +24,7 @@ Future Release
         * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++
