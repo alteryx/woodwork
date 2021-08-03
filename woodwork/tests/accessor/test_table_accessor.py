@@ -1,5 +1,6 @@
 import re
 from inspect import isclass
+from woodwork.tests.testing_utils.table_utils import assert_schema_equal
 
 import numpy as np
 import pandas as pd
@@ -2540,10 +2541,37 @@ def test_ltype_conversions_nullable_types():
         df.ww.set_types({'int_null': 'Integer'})
 
 
-def test_init_with_partial_schema(sample_df):
+def test_init_with_partial_schema_infer_types(sample_df):
     test_df = sample_df.copy()
     sample_df.ww.init()
     partial_schema = sample_df.ww[['id', 'full_name']].ww.schema
 
+    assert test_df.ww.schema is None
     test_df.ww.init_with_partial_schema(partial_schema)
     assert isinstance(test_df.ww.schema, TableSchema)
+    assert_schema_equal(test_df.ww.schema, sample_df.ww.schema)
+
+
+def test_init_with_partial_schema_full_schema(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init()
+
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(sample_df.ww.schema)
+    assert isinstance(test_df.ww.schema, TableSchema)
+    assert_schema_equal(test_df.ww.schema, sample_df.ww.schema)
+
+
+def test_init_with_partial_schema_override_schema(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init()
+    partial_schema = sample_df.ww[['integer', 'categorical']].ww.schema
+
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(partial_schema,
+                                        logical_types={'categorical': 'Unknown'},
+                                        use_standard_tags={'id': False})
+    assert sample_df.ww.logical_types['categorical'] == partial_schema.logical_types['categorical']
+    assert test_df.ww.logical_types['categorical'] != partial_schema.logical_types['categorical']
+    assert test_df.ww.logical_types['integer'] == partial_schema.logical_types['integer']
+    assert not test_df.ww.semantic_tags['id']

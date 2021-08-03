@@ -159,7 +159,7 @@ class WoodworkTableAccessor:
                             semantic_tags=None,
                             table_metadata=None,
                             column_metadata=None,
-                            use_standard_tags=False,
+                            use_standard_tags=True,
                             column_descriptions=None,
                             column_origins=None,
                             validate=True,
@@ -173,6 +173,12 @@ class WoodworkTableAccessor:
             for key in left:
                 combined_dict[key] = left[key]
             return combined_dict
+        def normalize_standard_tags(use_standard_tags, column_names):
+            if isinstance(use_standard_tags, bool):
+                use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
+            else:
+                use_standard_tags = {**{col_name: True for col_name in column_names}, **use_standard_tags}
+            return use_standard_tags
 
         existing_logical_types = {}
         existing_col_descriptions = {}
@@ -182,23 +188,24 @@ class WoodworkTableAccessor:
         existing_col_origins = {}
 
 
-        for name, col_schema in partial_schema.columns.items():
-            existing_logical_types[name] = col_schema.logical_type
-            existing_semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
-            existing_col_descriptions[name] = col_schema.description
-            existing_col_origins[name] = col_schema.origin
-            existing_col_metadata[name] = col_schema.metadata
-            existing_use_standard_tags[name] = col_schema.use_standard_tags
+        for col_name, col_schema in partial_schema.columns.items():
+            existing_logical_types[col_name] = col_schema.logical_type
+            existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'}
+            existing_col_descriptions[col_name] = col_schema.description
+            existing_col_origins[col_name] = col_schema.origin
+            existing_col_metadata[col_name] = col_schema.metadata
+            existing_use_standard_tags[col_name] = col_schema.use_standard_tags
 
+        column_names = list(self._dataframe.columns)
         logical_types = _infer_missing_logical_types(self._dataframe, logical_types, existing_logical_types)
         column_descriptions = left_join(column_descriptions or {}, existing_col_descriptions)
         column_metadata = left_join(column_metadata or {}, existing_col_metadata)
-        use_standard_tags = left_join(use_standard_tags or {}, existing_use_standard_tags)
+        use_standard_tags = normalize_standard_tags(use_standard_tags, column_names)
+        use_standard_tags = left_join(use_standard_tags, existing_use_standard_tags)
         semantic_tags = left_join(semantic_tags or {}, existing_semantic_tags)
         column_origins = left_join(column_origins or {}, existing_col_origins)
 
-        
-        self._schema = TableSchema(column_names=list(self._dataframe.columns),
+        self._schema = TableSchema(column_names=column_names,
                                 logical_types=logical_types,
                                 name=name or partial_schema.name,
                                 index=index or partial_schema.index,
