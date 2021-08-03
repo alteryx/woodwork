@@ -1,6 +1,5 @@
 import re
 from inspect import isclass
-from woodwork.tests.testing_utils.table_utils import assert_schema_equal
 
 import numpy as np
 import pandas as pd
@@ -63,6 +62,7 @@ from woodwork.tests.testing_utils import (
     to_pandas,
     validate_subset_schema
 )
+from woodwork.tests.testing_utils.table_utils import assert_schema_equal
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')

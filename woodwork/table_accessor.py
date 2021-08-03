@@ -150,20 +150,20 @@ class WoodworkTableAccessor:
                 self._sort_columns(already_sorted)
 
     def init_with_partial_schema(self,
-                            partial_schema,
-                            already_sorted=False,
-                            logical_types=None,
-                            name=None,
-                            index=None,
-                            time_index=None,
-                            semantic_tags=None,
-                            table_metadata=None,
-                            column_metadata=None,
-                            use_standard_tags=True,
-                            column_descriptions=None,
-                            column_origins=None,
-                            validate=True,
-                            **kwargs):
+                                 partial_schema,
+                                 already_sorted=False,
+                                 logical_types=None,
+                                 name=None,
+                                 index=None,
+                                 time_index=None,
+                                 semantic_tags=None,
+                                 table_metadata=None,
+                                 column_metadata=None,
+                                 use_standard_tags=True,
+                                 column_descriptions=None,
+                                 column_origins=None,
+                                 validate=True,
+                                 **kwargs):
         def left_join(left: dict, right: dict):
             left = left or {}
             right = right or {}
@@ -173,6 +173,7 @@ class WoodworkTableAccessor:
             for key in left:
                 combined_dict[key] = left[key]
             return combined_dict
+
         def normalize_standard_tags(use_standard_tags, column_names):
             if isinstance(use_standard_tags, bool):
                 use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
@@ -186,7 +187,6 @@ class WoodworkTableAccessor:
         existing_use_standard_tags = {}
         existing_semantic_tags = {}
         existing_col_origins = {}
-
 
         for col_name, col_schema in partial_schema.columns.items():
             existing_logical_types[col_name] = col_schema.logical_type
@@ -206,18 +206,18 @@ class WoodworkTableAccessor:
         column_origins = left_join(column_origins or {}, existing_col_origins)
 
         self._schema = TableSchema(column_names=column_names,
-                                logical_types=logical_types,
-                                name=name or partial_schema.name,
-                                index=index or partial_schema.index,
-                                time_index=time_index or partial_schema.time_index,
-                                semantic_tags=semantic_tags,
-                                table_metadata=table_metadata or partial_schema.metadata,
-                                column_metadata=column_metadata,
-                                use_standard_tags=use_standard_tags,
-                                column_descriptions=column_descriptions,
-                                column_origins=column_origins,
-                                validate=validate,
-                                **kwargs)
+                                   logical_types=logical_types,
+                                   name=name or partial_schema.name,
+                                   index=index or partial_schema.index,
+                                   time_index=time_index or partial_schema.time_index,
+                                   semantic_tags=semantic_tags,
+                                   table_metadata=table_metadata or partial_schema.metadata,
+                                   column_metadata=column_metadata,
+                                   use_standard_tags=use_standard_tags,
+                                   column_descriptions=column_descriptions,
+                                   column_origins=column_origins,
+                                   validate=validate,
+                                   **kwargs)
         self._set_underlying_index()
         if self._schema.time_index is not None:
             self._sort_columns(already_sorted)
@@ -1042,6 +1042,7 @@ def _check_use_standard_tags(use_standard_tags):
 def _raise_init_error():
     raise WoodworkNotInitError("Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init")
 
+
 def _infer_missing_logical_types(df, force_logical_types=None, existing_logical_types=None):
     """Performs type inference and updates underlying data"""
     force_logical_types = force_logical_types or {}
@@ -1055,6 +1056,7 @@ def _infer_missing_logical_types(df, force_logical_types=None, existing_logical_
         if updated_series is not series:
             df[name] = updated_series
     return parsed_logical_types
+
 
 @pd.api.extensions.register_dataframe_accessor('ww')
 class PandasTableAccessor(WoodworkTableAccessor):
