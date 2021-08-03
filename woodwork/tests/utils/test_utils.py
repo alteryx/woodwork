@@ -160,9 +160,12 @@ def test_list_semantic_tags():
 
     assert set(df.columns) == {'name', 'is_standard_tag', 'valid_logical_types'}
 
-    for name, log_type_list in df[['name', 'valid_logical_types']].values:
-        if name not in ['index', 'time_index', 'date_of_birth']:
-            for log_type in log_type_list:
+    for name, valid_ltypes in df[['name', 'valid_logical_types']].values:
+        if name in ['passthrough', 'ignore']:
+            assert valid_ltypes == 'Any LogicalType'
+        elif name not in ['index', 'time_index', 'date_of_birth']:
+            assert isinstance(valid_ltypes, list)
+            for log_type in valid_ltypes:
                 assert name in log_type.standard_tags
 
 
