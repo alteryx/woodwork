@@ -108,29 +108,29 @@ class WoodworkColumnAccessor:
         return copy.deepcopy(self._schema)
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def description(self):
         """The description of the series"""
         return self._schema.description
 
     @description.setter
-    @_check_schema_init("Series")
+    @_check_schema_init
     def description(self, description):
         self._schema.description = description
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def origin(self):
         """The origin of the series"""
         return self._schema.origin
 
     @origin.setter
-    @_check_schema_init("Series")
+    @_check_schema_init
     def origin(self, origin):
         self._schema.origin = origin
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def iloc(self):
         """
         Integer-location based indexing for selection by position.
@@ -153,7 +153,7 @@ class WoodworkColumnAccessor:
         return _iLocIndexer(self._series)
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def loc(self):
         """
         Access a group of rows by label(s) or a boolean array.
@@ -181,30 +181,30 @@ class WoodworkColumnAccessor:
         return _locIndexer(self._series)
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def logical_type(self):
         """The logical type of the series"""
         return self._schema.logical_type
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def metadata(self):
         """The metadata of the series"""
         return self._schema.metadata
 
     @metadata.setter
-    @_check_schema_init("Series")
+    @_check_schema_init
     def metadata(self, metadata):
         self._schema.metadata = metadata
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
         return self._schema.semantic_tags
 
     @property
-    @_check_schema_init("Series")
+    @_check_schema_init
     def use_standard_tags(self):
         return self._schema.use_standard_tags
 
@@ -217,7 +217,7 @@ class WoodworkColumnAccessor:
             return self._series.equals(other._series)
         return True
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def __getattr__(self, attr):
         # Called if method is not present on the Accessor
         # If the method is present on Series, uses that method.
@@ -226,7 +226,7 @@ class WoodworkColumnAccessor:
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def __repr__(self):
         msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
@@ -294,7 +294,7 @@ class WoodworkColumnAccessor:
                                  "LatLong data. Try reformatting before initializing or use the "
                                  "woodwork.init_series function to initialize.")
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def add_semantic_tags(self, semantic_tags):
         """Add the specified semantic tags to the set of tags.
 
@@ -304,7 +304,7 @@ class WoodworkColumnAccessor:
         self._schema._add_semantic_tags(semantic_tags,
                                         self._series.name)
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from the current tags.
 
@@ -314,7 +314,7 @@ class WoodworkColumnAccessor:
         self._schema._remove_semantic_tags(semantic_tags,
                                            self._series.name)
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
         will be either an empty set or a set of the standard tags based on the
@@ -325,7 +325,7 @@ class WoodworkColumnAccessor:
         """
         self._schema._reset_semantic_tags()
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,
         and returning a new series with Woodwork initialied.
@@ -348,7 +348,7 @@ class WoodworkColumnAccessor:
                            origin=self.origin,
                            metadata=copy.deepcopy(self.metadata))
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set
         to True for the series, any standard tags associated with the LogicalType of the
@@ -359,7 +359,7 @@ class WoodworkColumnAccessor:
         """
         self._schema._set_semantic_tags(semantic_tags)
 
-    @_check_schema_init("Series")
+    @_check_schema_init
     def box_plot_dict(self, quantiles=None):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
