@@ -3,9 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
-    * Enhancements
+.. Future Release
+  ===============
+  * Enhancements
+  * Fixes
+  * Changes
+  * Documentation Changes
+  * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.6.0 Aug 4, 2021
+==================
     * Fixes
         * Fix bug in ``_infer_datetime_format`` with all ``np.nan`` input (:pr:`1089`)
     * Changes
