@@ -44,16 +44,38 @@ class WoodworkTableAccessor:
         self._dataframe_weakref = weakref.ref(dataframe)
         self._schema = None
 
-    def init(self,
-             index=None,
-             time_index=None,
-             logical_types=None,
-             already_sorted=False,
-             schema=None,
-             validate=True,
-             use_standard_tags=True,
-             **kwargs):
-        """Initializes Woodwork typing information for a DataFrame.
+    def init(self, **kwargs):
+        """Initializes Woodwork typing information for a DataFrame with only keyword arguments.
+        logical type inference is performed on columns with unspecified logical types"""
+        self.init_with_partial_schema(schema=None, **kwargs)
+   
+    def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
+        """Initializes Woodwork typing information for a DataFrame with a complete schema"""
+        if validate:
+            _check_schema(self._dataframe, schema)
+            _check_unique_column_names(self._dataframe)
+        self._schema = schema
+
+    def init_with_partial_schema(self,
+                                 schema,
+                                 already_sorted=False,
+                                 logical_types=None,
+                                 name=None,
+                                 index=None,
+                                 time_index=None,
+                                 semantic_tags=None,
+                                 table_metadata=None,
+                                 column_metadata=None,
+                                 use_standard_tags=True,
+                                 column_descriptions=None,
+                                 column_origins=None,
+                                 validate=True,
+                                 **kwargs):
+        """Initializes Woodwork typing information for a DataFrame with a partial schema.
+        type inference order:
+        1. kwarg specified types
+        2. partial schema types
+        3. inferred types
 
         Args:
             index (str, optional): Name of the index column.
@@ -92,78 +114,6 @@ class WoodworkTableAccessor:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
-        if validate:
-            _validate_accessor_params(self._dataframe, index, time_index, logical_types, schema, use_standard_tags)
-        if schema is not None:
-            self._schema = schema
-            extra_params = []
-            if index is not None:
-                extra_params.append('index')
-            if time_index is not None:
-                extra_params.append('time_index')
-            if logical_types is not None:
-                extra_params.append('logical_types')
-            if already_sorted:
-                extra_params.append('already_sorted')
-            if not use_standard_tags or isinstance(use_standard_tags, dict):
-                extra_params.append('use_standard_tags')
-            for key in kwargs:
-                extra_params.append(key)
-            if extra_params:
-                warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
-
-        else:
-            # Perform type inference and update underlying data
-            parsed_logical_types = {}
-            for name in self._dataframe.columns:
-                series = self._dataframe[name]
-
-                logical_type = None
-                if logical_types:
-                    logical_type = logical_types.get(name)
-
-                logical_type = _get_column_logical_type(series, logical_type, name)
-                parsed_logical_types[name] = logical_type
-
-                updated_series = logical_type.transform(series)
-                if updated_series is not series:
-                    self._dataframe[name] = updated_series
-
-            column_names = list(self._dataframe.columns)
-
-            # TableSchema uses a different default for use_standard_tags so we need to define it here
-            if isinstance(use_standard_tags, bool):
-                use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
-            else:
-                use_standard_tags = {**{col_name: True for col_name in column_names}, **use_standard_tags}
-
-            self._schema = TableSchema(column_names=column_names,
-                                       logical_types=parsed_logical_types,
-                                       index=index,
-                                       time_index=time_index,
-                                       validate=validate,
-                                       use_standard_tags=use_standard_tags,
-                                       **kwargs)
-
-            self._set_underlying_index()
-            if self._schema.time_index is not None:
-                self._sort_columns(already_sorted)
-
-    def init_with_partial_schema(self,
-                                 partial_schema,
-                                 already_sorted=False,
-                                 logical_types=None,
-                                 name=None,
-                                 index=None,
-                                 time_index=None,
-                                 semantic_tags=None,
-                                 table_metadata=None,
-                                 column_metadata=None,
-                                 use_standard_tags=True,
-                                 column_descriptions=None,
-                                 column_origins=None,
-                                 validate=True,
-                                 **kwargs):
         def left_join(left: dict, right: dict):
             left = left or {}
             right = right or {}
@@ -181,21 +131,30 @@ class WoodworkTableAccessor:
                 use_standard_tags = {**{col_name: True for col_name in column_names}, **use_standard_tags}
             return use_standard_tags
 
+        if validate:
+            _validate_accessor_params(self._dataframe, index, time_index, logical_types, schema, use_standard_tags)
+
         existing_logical_types = {}
         existing_col_descriptions = {}
         existing_col_metadata = {}
         existing_use_standard_tags = {}
         existing_semantic_tags = {}
         existing_col_origins = {}
+        
+        if schema:  # pull schema parameters
+            name = name or schema.name
+            index = index or schema.index
+            time_index = time_index or schema.time_index
+            table_metadata = table_metadata or schema.metadata
+            for col_name, col_schema in schema.columns.items():
+                existing_logical_types[col_name] = col_schema.logical_type
+                existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'}
+                existing_col_descriptions[col_name] = col_schema.description
+                existing_col_origins[col_name] = col_schema.origin
+                existing_col_metadata[col_name] = col_schema.metadata
+                existing_use_standard_tags[col_name] = col_schema.use_standard_tags
 
-        for col_name, col_schema in partial_schema.columns.items():
-            existing_logical_types[col_name] = col_schema.logical_type
-            existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'}
-            existing_col_descriptions[col_name] = col_schema.description
-            existing_col_origins[col_name] = col_schema.origin
-            existing_col_metadata[col_name] = col_schema.metadata
-            existing_use_standard_tags[col_name] = col_schema.use_standard_tags
-
+        # overwrite schema parameters with specified kwargs
         column_names = list(self._dataframe.columns)
         logical_types = _infer_missing_logical_types(self._dataframe, logical_types, existing_logical_types)
         column_descriptions = left_join(column_descriptions or {}, existing_col_descriptions)
@@ -207,11 +166,11 @@ class WoodworkTableAccessor:
 
         self._schema = TableSchema(column_names=column_names,
                                    logical_types=logical_types,
-                                   name=name or partial_schema.name,
-                                   index=index or partial_schema.index,
-                                   time_index=time_index or partial_schema.time_index,
+                                   name=name,
+                                   index=index,
+                                   time_index=time_index,
                                    semantic_tags=semantic_tags,
-                                   table_metadata=table_metadata or partial_schema.metadata,
+                                   table_metadata=table_metadata    ,
                                    column_metadata=column_metadata,
                                    use_standard_tags=use_standard_tags,
                                    column_descriptions=column_descriptions,
@@ -718,7 +677,7 @@ class WoodworkTableAccessor:
             self.init(schema=new_schema, validate=False)
             return
         new_df = self._dataframe[cols_to_include]
-        new_df.ww.init(schema=new_schema, validate=False)
+        new_df.ww.init_with_partial_schema(schema=new_schema, validate=False)
 
         return new_df
 
