@@ -38,15 +38,18 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-
+from typing import Optional, Union
+from woodwork.logical_types import LogicalType
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe_weakref = weakref.ref(dataframe)
         self._schema = None
 
-    def init(self, **kwargs):
+    def init(self, schema=None, **kwargs):
         """Initializes Woodwork typing information for a DataFrame with only keyword arguments.
         logical type inference is performed on columns with unspecified logical types"""
+        if schema is not None:
+            raise ValueError("call init_with_partial_schema or init_with_full_schema to pass a schema")
         self.init_with_partial_schema(schema=None, **kwargs)
    
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
@@ -57,19 +60,19 @@ class WoodworkTableAccessor:
         self._schema = schema
 
     def init_with_partial_schema(self,
-                                 schema,
-                                 already_sorted=False,
-                                 logical_types=None,
-                                 name=None,
-                                 index=None,
-                                 time_index=None,
-                                 semantic_tags=None,
-                                 table_metadata=None,
-                                 column_metadata=None,
-                                 use_standard_tags=True,
-                                 column_descriptions=None,
-                                 column_origins=None,
-                                 validate=True,
+                                 schema: Optional[TableSchema]=None,
+                                 index: Optional[str]=None,
+                                 time_index: Optional[str]=None,
+                                 logical_types: Optional[dict[str, LogicalType]]=None,
+                                 already_sorted: Optional[bool]=False,
+                                 name: Optional[str]=None,
+                                 semantic_tags: Optional[dict[str, Union[str, list[str], set[str]]]]=None,
+                                 table_metadata: Optional[dict]=None,
+                                 column_metadata: Optional[dict[str, dict]]=None,
+                                 use_standard_tags: Union[bool, dict[str, bool]]=True,
+                                 column_descriptions: Optional[dict[str, str]]=None,
+                                 column_origins: Optional[dict[str, str]]=None,
+                                 validate: Optional[bool]=True,
                                  **kwargs):
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
         type inference order:
@@ -78,6 +81,10 @@ class WoodworkTableAccessor:
         3. inferred types
 
         Args:
+            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
+                Any other arguments provided will be ignored. Note that any changes made to the schema object after
+                initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
+                the same schema object should not be shared between DataFrames.
             index (str, optional): Name of the index column.
             time_index (str, optional): Name of the time index column.
             logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
@@ -106,10 +113,6 @@ class WoodworkTableAccessor:
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
-            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
-                Any other arguments provided will be ignored. Note that any changes made to the schema object after
-                initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
-                the same schema object should not be shared between DataFrames.
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -124,7 +127,7 @@ class WoodworkTableAccessor:
                 combined_dict[key] = left[key]
             return combined_dict
 
-        def normalize_standard_tags(use_standard_tags, column_names):
+        def normalize_standard_tags(use_standard_tags: Union[bool, dict[str, bool]], column_names: list[str]):
             if isinstance(use_standard_tags, bool):
                 use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
             else:
@@ -159,8 +162,14 @@ class WoodworkTableAccessor:
         logical_types = _infer_missing_logical_types(self._dataframe, logical_types, existing_logical_types)
         column_descriptions = left_join(column_descriptions or {}, existing_col_descriptions)
         column_metadata = left_join(column_metadata or {}, existing_col_metadata)
-        use_standard_tags = normalize_standard_tags(use_standard_tags, column_names)
-        use_standard_tags = left_join(use_standard_tags, existing_use_standard_tags)
+
+        breakpoint()
+        # prioritize columns in schema if use_standard_tags is True
+        if use_standard_tags is True:
+            use_standard_tags = normalize_standard_tags(use_standard_tags, column_names)
+            use_standard_tags = left_join(existing_use_standard_tags, use_standard_tags)
+        else:
+            use_standard_tags = left_join(use_standard_tags, existing_use_standard_tags)
         semantic_tags = left_join(semantic_tags or {}, existing_semantic_tags)
         column_origins = left_join(column_origins or {}, existing_col_origins)
 
@@ -642,7 +651,7 @@ class WoodworkTableAccessor:
                                       TypingInfoMismatchWarning)
                     else:
                         copied_schema = self.schema
-                        result.ww.init(schema=copied_schema, validate=False)
+                        result.ww.init_with_full_schema(schema=copied_schema, validate=False)
                 else:
                     # Confirm that the schema is still valid on original DataFrame
                     # Important for inplace operations
@@ -674,7 +683,7 @@ class WoodworkTableAccessor:
         if inplace:
             cols_to_drop = [col_name for col_name in self._dataframe.columns if col_name not in cols_to_include]
             self._dataframe.drop(cols_to_drop, axis='columns', inplace=True)
-            self.init(schema=new_schema, validate=False)
+            self.init_with_full_schema(schema=new_schema, validate=False)
             return
         new_df = self._dataframe[cols_to_include]
         new_df.ww.init_with_partial_schema(schema=new_schema, validate=False)
@@ -750,11 +759,11 @@ class WoodworkTableAccessor:
             if _is_koalas_dataframe(self._dataframe):
                 raise ValueError('Rename inplace not supported for Koalas')
             self._dataframe.rename(columns=columns, inplace=True)
-            self.init(schema=new_schema)
+            self.init_with_full_schema(schema=new_schema)
             return
         new_df = self._dataframe.rename(columns=columns)
 
-        new_df.ww.init(schema=new_schema)
+        new_df.ww.init_with_full_schema(schema=new_schema)
         return new_df
 
     def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False, callback=None):
@@ -935,22 +944,20 @@ def _validate_accessor_params(dataframe, index, time_index, logical_types, schem
     _check_unique_column_names(dataframe)
     _check_use_standard_tags(use_standard_tags)
     if schema is not None:
-        _check_schema(dataframe, schema)
-    else:
-        # We ignore these parameters if a schema is passed
-        if index is not None:
-            _check_index(dataframe, index)
-        if logical_types:
-            _check_logical_types(dataframe.columns, logical_types)
-        if time_index is not None:
-            datetime_format = None
-            logical_type = None
-            if logical_types is not None and time_index in logical_types:
-                logical_type = logical_types[time_index]
-                if type(logical_types[time_index]) == Datetime:
-                    datetime_format = logical_types[time_index].datetime_format
+        _check_partial_schema(dataframe, schema)
+    if index is not None:
+        _check_index(dataframe, index)
+    if logical_types:
+        _check_logical_types(dataframe.columns, logical_types)
+    if time_index is not None:
+        datetime_format = None
+        logical_type = None
+        if logical_types is not None and time_index in logical_types:
+            logical_type = logical_types[time_index]
+            if type(logical_types[time_index]) == Datetime:
+                datetime_format = logical_types[time_index].datetime_format
 
-            _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
+        _check_time_index(dataframe, time_index, datetime_format=datetime_format, logical_type=logical_type)
 
 
 def _check_unique_column_names(dataframe):
@@ -992,6 +999,15 @@ def _check_schema(dataframe, schema):
     if invalid_schema_message:
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
 
+def _check_partial_schema(dataframe, schema):
+    if not isinstance(schema, TableSchema):
+        raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
+    dataframe_cols = set(dataframe.columns)
+    schema_cols = set(schema.columns.keys())
+    schema_cols_not_in_df = schema_cols - dataframe_cols
+    if schema_cols_not_in_df:
+        raise ValueError(f'The following columns in the typing information were missing from the DataFrame: '\
+            f'{schema_cols_not_in_df}')
 
 def _check_use_standard_tags(use_standard_tags):
     if not isinstance(use_standard_tags, (bool, dict)):

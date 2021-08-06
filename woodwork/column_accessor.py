@@ -282,7 +282,7 @@ class WoodworkColumnAccessor:
                                                column_origins={self.name: col_schema.origin},
                                                validate=False)
                     if is_schema_valid(result, table_schema):
-                        result.ww.init(schema=table_schema)
+                        result.ww.init_with_full_schema(schema=table_schema)
                 # Always return the results of the Series operation whether or not Woodwork is initialized
                 return result
             return wrapper

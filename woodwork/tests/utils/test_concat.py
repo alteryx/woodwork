@@ -168,7 +168,6 @@ def test_concat_cols_different_use_standard_tags(sample_df):
 
     df1 = sample_df.ww[['id', 'full_name', 'email']]
     df2 = sample_df.ww[['phone_number', 'age', 'signup_date', 'is_registered']]
-
     combined_df = concat_columns([df1, df2])
 
     assert combined_df.ww.semantic_tags['id'] == {'numeric'}
