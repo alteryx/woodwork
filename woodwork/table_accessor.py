@@ -17,7 +17,8 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
-    TypingInfoMismatchWarning
+    TypingInfoMismatchWarning,
+    UseInitWithSchemaWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
@@ -48,8 +49,11 @@ class WoodworkTableAccessor:
         """Initializes Woodwork typing information for a DataFrame with only keyword arguments.
         logical type inference is performed on columns with unspecified logical types"""
         if schema is not None:
-            raise ValueError("call init_with_partial_schema or init_with_full_schema to pass a schema")
-        self.init_with_partial_schema(schema=None, **kwargs)
+            warnings.warn("Use init_with_full_schema when passing in a full schema and init_with_partial_schema when passing in a partial schema",
+                          UseInitWithSchemaWarning)
+            self.init_with_full_schema(schema, **kwargs)
+        else:
+            self.init_with_partial_schema(schema=None, **kwargs)
 
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema"""
@@ -62,7 +66,7 @@ class WoodworkTableAccessor:
                                  schema: Optional[TableSchema] = None,
                                  index: Optional[str] = None,
                                  time_index: Optional[str] = None,
-                                 logical_types: Optional[dict[str, LogicalType]] = None,
+                                 logical_types: Optional[dict[str, Union[str, LogicalType]]] = None,
                                  already_sorted: Optional[bool] = False,
                                  name: Optional[str] = None,
                                  semantic_tags: Optional[dict[str, Union[str, list[str], set[str]]]] = None,
@@ -74,7 +78,7 @@ class WoodworkTableAccessor:
                                  validate: Optional[bool] = True,
                                  **kwargs):
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
-        type inference order:
+        Type inference priority:
         1. kwarg specified types
         2. partial schema types
         3. inferred types
@@ -116,15 +120,6 @@ class WoodworkTableAccessor:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
-        def left_join(left: dict, right: dict):
-            left = left or {}
-            right = right or {}
-            combined_dict = {}
-            for key in right:
-                combined_dict[key] = right[key]
-            for key in left:
-                combined_dict[key] = left[key]
-            return combined_dict
 
         def normalize_standard_tags(use_standard_tags: Union[bool, dict[str, bool]], column_names: list[str]):
             if isinstance(use_standard_tags, bool):
@@ -159,17 +154,17 @@ class WoodworkTableAccessor:
         # overwrite schema parameters with specified kwargs
         column_names = list(self._dataframe.columns)
         logical_types = _infer_missing_logical_types(self._dataframe, logical_types, existing_logical_types)
-        column_descriptions = left_join(column_descriptions or {}, existing_col_descriptions)
-        column_metadata = left_join(column_metadata or {}, existing_col_metadata)
+        column_descriptions = {**existing_col_descriptions, **(column_descriptions or {})}
+        column_metadata = {**existing_col_metadata, **(column_metadata or {})}
 
         # prioritize columns in schema if use_standard_tags is True
         normalized_tags = normalize_standard_tags(use_standard_tags, column_names)
         if use_standard_tags is True:
-            use_standard_tags = left_join(existing_use_standard_tags, normalized_tags)
+            use_standard_tags = {**normalized_tags, **existing_use_standard_tags}
         else:
-            use_standard_tags = left_join(normalized_tags, existing_use_standard_tags)
-        semantic_tags = left_join(semantic_tags or {}, existing_semantic_tags)
-        column_origins = left_join(column_origins or {}, existing_col_origins)
+            use_standard_tags = {**existing_use_standard_tags, **normalized_tags}
+        semantic_tags = {**existing_semantic_tags, **(semantic_tags or {})}
+        column_origins = {**existing_col_origins, **(column_origins or {})}
 
         self._schema = TableSchema(column_names=column_names,
                                    logical_types=logical_types,
@@ -659,7 +654,7 @@ class WoodworkTableAccessor:
             self.init_with_full_schema(schema=new_schema, validate=False)
             return
         new_df = self._dataframe[cols_to_include]
-        new_df.ww.init_with_partial_schema(schema=new_schema, validate=False)
+        new_df.ww.init_with_full_schema(schema=new_schema, validate=False)
 
         return new_df
 

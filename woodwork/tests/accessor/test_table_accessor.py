@@ -19,6 +19,7 @@ from woodwork.exceptions import (
     IndexTagRemovedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
+    UseInitWithSchemaWarning,
     WoodworkNotInitError
 )
 from woodwork.logical_types import (
@@ -313,6 +314,20 @@ def test_accessor_init_errors_methods(sample_df):
                 func(*method_args)
             else:
                 func()
+
+
+def test_accessor_with_schema_parameter_warning(sample_df):
+    schema_df = sample_df.copy()
+    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
+    schema = schema_df.ww.schema
+
+    head_df = schema_df.head(2)
+    warning = "Use init_with_full_schema when passing in a full schema and init_with_partial_schema when passing in a partial schema"
+    with pytest.warns(UseInitWithSchemaWarning, match=warning):
+        head_df.ww.init(schema=schema)
+
+    assert head_df.ww.name == 'test_schema'
+    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
 
 
 def test_accessor_init_errors_properties(sample_df):
@@ -2556,3 +2571,15 @@ def test_init_with_partial_schema_override_schema(sample_df):
     assert test_df.ww.logical_types['categorical'] != schema.logical_types['categorical']
     assert test_df.ww.logical_types['integer'] == schema.logical_types['integer']
     assert not test_df.ww.semantic_tags['id']
+
+
+def test_init_with_partial_schema_metadata_deep_copy(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init(table_metadata={'test': '123'})
+    schema = sample_df.ww[['id', 'full_name']].ww.schema
+    assert schema.metadata
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(schema)
+    assert test_df.ww.schema.metadata
+    test_df.ww._schema.metadata = {'test2': '456'}
+    assert schema.metadata != test_df.ww.schema.metadata
