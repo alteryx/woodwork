@@ -49,6 +49,9 @@ from woodwork.utils import (
     import_or_raise
 )
 
+dd = import_or_none('dask.dataframe')
+ks = import_or_none('databricks.koalas')
+
 
 def test_camel_to_snake():
     test_items = {
@@ -157,9 +160,12 @@ def test_list_semantic_tags():
 
     assert set(df.columns) == {'name', 'is_standard_tag', 'valid_logical_types'}
 
-    for name, log_type_list in df[['name', 'valid_logical_types']].values:
-        if name not in ['index', 'time_index', 'date_of_birth']:
-            for log_type in log_type_list:
+    for name, valid_ltypes in df[['name', 'valid_logical_types']].values:
+        if name in ['passthrough', 'ignore', 'index']:
+            assert valid_ltypes == 'Any LogicalType'
+        elif name not in ['time_index', 'date_of_birth']:
+            assert isinstance(valid_ltypes, list)
+            for log_type in valid_ltypes:
                 assert name in log_type.standard_tags
 
 
@@ -456,6 +462,24 @@ def test_infer_datetime_format(datetimes):
     dt1 = pd.Series(['3/11/2000 9:00', '3/11/2000 10:00', '3/11/2000 11:00', '3/11/2000 12:00'])
     fmt = _infer_datetime_format(dt1)
     assert fmt == '%m/%d/%Y %H:%M'
+
+
+def test_infer_datetime_format_all_null():
+    missing_data = [
+        pd.Series([None, None, None]),
+        pd.Series([np.nan, np.nan, np.nan]),
+        pd.Series([pd.NA, pd.NA, pd.NA]),
+        pd.Series([]),
+    ]
+
+    for pd_series in missing_data:
+        assert _infer_datetime_format(pd_series) is None
+        if dd:
+            dd_series = dd.from_pandas(pd_series, npartitions=2)
+            assert _infer_datetime_format(dd_series) is None
+        if ks:
+            ks_series = ks.from_pandas(pd_series)
+            assert _infer_datetime_format(ks_series) is None
 
 
 def test_is_categorical() -> None:

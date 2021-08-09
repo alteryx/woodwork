@@ -4,24 +4,38 @@ Release Notes
 -------------
 
 Future Release
-==============
+===============
     * Enhancements
+        * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
+
+v0.6.0 Aug 4, 2021
+==================
+    * Fixes
+        * Fix bug in ``_infer_datetime_format`` with all ``np.nan`` input (:pr:`1089`)
     * Changes
         * The criteria for categorical type inference have changed (:pr:`1065`)
         * The meaning of both the ``categorical_threshold`` and
           ``numeric_categorical_threshold`` settings have changed (:pr:`1065`)
         * Make sampling for type inference more consistent (:pr:`1083`)
+        * Accessor logic checking if Woodwork has been initialized moved to decorator (:pr:`1093`)
     * Documentation Changes
         * Fix some release notes that ended up under the wrong release (:pr:`1082`)
         * Add BooleanNullable and IntegerNullable types to the docs (:pr:`1085`)
         * Add guide for saving and loading Woodwork DataFrames (:pr:`1066`)
+        * Add in-depth guide on logical types and semantic tags (:pr:`1086`)
     * Testing Changes
         * Add additional reviewers to minimum and latest dependency checkers (:pr:`1070`, :pr:`1073`, :pr:`1077`)
         * Update the sample_df fixture to have more logical_type coverage (:pr:`1058`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`tuethan1999`
+    :user:`davesque`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 Breaking Changes
 ++++++++++++++++

@@ -5,6 +5,7 @@ import weakref
 import pandas as pd
 
 from woodwork.accessor_utils import (
+    _check_column_schema,
     _is_dataframe,
     _is_series,
     init_series,
@@ -13,8 +14,7 @@ from woodwork.accessor_utils import (
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
-    TypingInfoMismatchWarning,
-    WoodworkNotInitError
+    TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import LatLong, Ordinal
@@ -108,32 +108,29 @@ class WoodworkColumnAccessor:
         return copy.deepcopy(self._schema)
 
     @property
+    @_check_column_schema
     def description(self):
         """The description of the series"""
-        if self._schema is None:
-            _raise_init_error()
         return self._schema.description
 
     @description.setter
+    @_check_column_schema
     def description(self, description):
-        if self._schema is None:
-            _raise_init_error()
         self._schema.description = description
 
     @property
+    @_check_column_schema
     def origin(self):
         """The origin of the series"""
-        if self._schema is None:
-            _raise_init_error()
         return self._schema.origin
 
     @origin.setter
+    @_check_column_schema
     def origin(self, origin):
-        if self._schema is None:
-            _raise_init_error()
         self._schema.origin = origin
 
     @property
+    @_check_column_schema
     def iloc(self):
         """
         Integer-location based indexing for selection by position.
@@ -153,11 +150,10 @@ class WoodworkColumnAccessor:
             This is useful in method chains, when you don't have a reference to the
             calling object, but would like to base your selection on some value.
         """
-        if self._schema is None:
-            _raise_init_error()
         return _iLocIndexer(self._series)
 
     @property
+    @_check_column_schema
     def loc(self):
         """
         Access a group of rows by label(s) or a boolean array.
@@ -182,41 +178,34 @@ class WoodworkColumnAccessor:
             A ``callable`` function with one argument (the calling Series or
             DataFrame) and that returns valid output for indexing (one of the above)
         """
-        if self._schema is None:
-            _raise_init_error()
         return _locIndexer(self._series)
 
     @property
+    @_check_column_schema
     def logical_type(self):
         """The logical type of the series"""
-        if self._schema is None:
-            _raise_init_error()
         return self._schema.logical_type
 
     @property
+    @_check_column_schema
     def metadata(self):
         """The metadata of the series"""
-        if self._schema is None:
-            _raise_init_error()
         return self._schema.metadata
 
     @metadata.setter
+    @_check_column_schema
     def metadata(self, metadata):
-        if self._schema is None:
-            _raise_init_error()
         self._schema.metadata = metadata
 
     @property
+    @_check_column_schema
     def semantic_tags(self):
         """The semantic tags assigned to the series"""
-        if self._schema is None:
-            _raise_init_error()
         return self._schema.semantic_tags
 
     @property
+    @_check_column_schema
     def use_standard_tags(self):
-        if self._schema is None:
-            _raise_init_error()
         return self._schema.use_standard_tags
 
     def __eq__(self, other, deep=True):
@@ -228,19 +217,17 @@ class WoodworkColumnAccessor:
             return self._series.equals(other._series)
         return True
 
+    @_check_column_schema
     def __getattr__(self, attr):
-        # If the method is present on the Accessor, uses that method.
+        # Called if method is not present on the Accessor
         # If the method is present on Series, uses that method.
-        if self._schema is None:
-            _raise_init_error()
         if hasattr(self._series, attr):
             return self._make_series_call(attr)
         else:
             raise AttributeError(f"Woodwork has no attribute '{attr}'")
 
+    @_check_column_schema
     def __repr__(self):
-        if self._schema is None:
-            _raise_init_error()
         msg = u"<Series: {} ".format(self._series.name)
         msg += u"(Physical Type = {}) ".format(self._series.dtype)
         msg += u"(Logical Type = {}) ".format(self.logical_type)
@@ -307,28 +294,27 @@ class WoodworkColumnAccessor:
                                  "LatLong data. Try reformatting before initializing or use the "
                                  "woodwork.init_series function to initialize.")
 
+    @_check_column_schema
     def add_semantic_tags(self, semantic_tags):
         """Add the specified semantic tags to the set of tags.
 
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add
         """
-        if self._schema is None:
-            _raise_init_error()
         self._schema._add_semantic_tags(semantic_tags,
                                         self._series.name)
 
+    @_check_column_schema
     def remove_semantic_tags(self, semantic_tags):
         """Removes specified semantic tags from the current tags.
 
         Args:
             semantic_tags (str/list/set): Semantic tag(s) to remove.
         """
-        if self._schema is None:
-            _raise_init_error()
         self._schema._remove_semantic_tags(semantic_tags,
                                            self._series.name)
 
+    @_check_column_schema
     def reset_semantic_tags(self):
         """Reset the semantic tags to the default values. The default values
         will be either an empty set or a set of the standard tags based on the
@@ -337,10 +323,9 @@ class WoodworkColumnAccessor:
         Args:
             None
         """
-        if self._schema is None:
-            _raise_init_error()
         self._schema._reset_semantic_tags()
 
+    @_check_column_schema
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,
         and returning a new series with Woodwork initialied.
@@ -351,8 +336,6 @@ class WoodworkColumnAccessor:
         Returns:
             Series: A new series with the updated logical type.
         """
-        if self._schema is None:
-            _raise_init_error()
         # Create a new series without a schema to prevent new series from sharing a common
         # schema with current series
         new_series = self._series.copy()
@@ -365,6 +348,7 @@ class WoodworkColumnAccessor:
                            origin=self.origin,
                            metadata=copy.deepcopy(self.metadata))
 
+    @_check_column_schema
     def set_semantic_tags(self, semantic_tags):
         """Replace current semantic tags with new values. If `use_standard_tags` is set
         to True for the series, any standard tags associated with the LogicalType of the
@@ -373,42 +357,38 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to set
         """
-        if self._schema is None:
-            _raise_init_error()
         self._schema._set_semantic_tags(semantic_tags)
 
+    @_check_column_schema
     def box_plot_dict(self, quantiles=None):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
-    Args:
-        quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
-            where the key indicates the quantile, and the value is the quantile's value for the data. If
-            no qantiles are provided, they will be computed from the data.
+        Args:
+            quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
+                where the key indicates the quantile, and the value is the quantile's value for the data. If
+                no qantiles are provided, they will be computed from the data.
 
-    Note:
-        The minimum quantiles necessary for outlier detection using the IQR method are the
-        first quartile (0.25) and third quartile (0.75). If these keys are missing from the quantiles dictionary,
-        the following quantiles will be calculated: {0.0, 0.25, 0.5, 0.75, 1.0}, which correspond to
-        {min, first quantile, median, third quantile, max}.
+        Note:
+            The minimum quantiles necessary for outlier detection using the IQR method are the
+            first quartile (0.25) and third quartile (0.75). If these keys are missing from the quantiles dictionary,
+            the following quantiles will be calculated: {0.0, 0.25, 0.5, 0.75, 1.0}, which correspond to
+            {min, first quantile, median, third quantile, max}.
 
-    Returns:
-        (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
-            The following elements will be found in the dictionary:
+        Returns:
+            (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
+                The following elements will be found in the dictionary:
 
-            - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
-            - high_bound (float): the high bound above which outliers lay - to be used as a whisker
-            - quantiles (list[float]): the quantiles used to determine the bounds.
-                If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
-                quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
-            - low_values (list[float, int]): the values of the lower outliers
-            - high_values (list[float, int]): the values of the upper outliers
-            - low_indices (list[int]): the corresponding index values for each of the lower outliers
-            - high_indices (list[int]): the corresponding index values for each of the upper outliers
+                - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
+                - high_bound (float): the high bound above which outliers lay - to be used as a whisker
+                - quantiles (list[float]): the quantiles used to determine the bounds.
+                    If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
+                    quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
+                - low_values (list[float, int]): the values of the lower outliers
+                - high_values (list[float, int]): the values of the upper outliers
+                - low_indices (list[int]): the corresponding index values for each of the lower outliers
+                - high_indices (list[int]): the corresponding index values for each of the upper outliers
         """
-        if self._schema is None:
-            _raise_init_error()
-
         return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
 
 
@@ -419,10 +399,6 @@ def _validate_schema(schema, series):
     valid_dtype = schema.logical_type._get_valid_dtype(type(series))
     if str(series.dtype) != valid_dtype:
         raise ValueError(f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}")
-
-
-def _raise_init_error():
-    raise WoodworkNotInitError("Woodwork not initialized for this Series. Initialize by calling Series.ww.init")
 
 
 @pd.api.extensions.register_series_accessor('ww')
