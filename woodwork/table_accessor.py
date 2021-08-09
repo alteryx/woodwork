@@ -163,13 +163,12 @@ class WoodworkTableAccessor:
         column_descriptions = left_join(column_descriptions or {}, existing_col_descriptions)
         column_metadata = left_join(column_metadata or {}, existing_col_metadata)
 
-        breakpoint()
         # prioritize columns in schema if use_standard_tags is True
+        normalized_tags = normalize_standard_tags(use_standard_tags, column_names)
         if use_standard_tags is True:
-            use_standard_tags = normalize_standard_tags(use_standard_tags, column_names)
-            use_standard_tags = left_join(existing_use_standard_tags, use_standard_tags)
+            use_standard_tags = left_join(existing_use_standard_tags, normalized_tags)
         else:
-            use_standard_tags = left_join(use_standard_tags, existing_use_standard_tags)
+            use_standard_tags = left_join(normalized_tags, existing_use_standard_tags)
         semantic_tags = left_join(semantic_tags or {}, existing_semantic_tags)
         column_origins = left_join(column_origins or {}, existing_col_origins)
 
@@ -179,7 +178,7 @@ class WoodworkTableAccessor:
                                    index=index,
                                    time_index=time_index,
                                    semantic_tags=semantic_tags,
-                                   table_metadata=table_metadata    ,
+                                   table_metadata=table_metadata,
                                    column_metadata=column_metadata,
                                    use_standard_tags=use_standard_tags,
                                    column_descriptions=column_descriptions,
