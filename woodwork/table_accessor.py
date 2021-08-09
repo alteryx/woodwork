@@ -1,6 +1,7 @@
 import copy
 import warnings
 import weakref
+from typing import Optional, Union
 
 import pandas as pd
 
@@ -16,11 +17,10 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
-    ParametersIgnoredWarning,
     TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
-from woodwork.logical_types import Datetime
+from woodwork.logical_types import Datetime, LogicalType
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
@@ -38,8 +38,7 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-from typing import Optional, Union
-from woodwork.logical_types import LogicalType
+
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
         self._dataframe_weakref = weakref.ref(dataframe)
@@ -51,7 +50,7 @@ class WoodworkTableAccessor:
         if schema is not None:
             raise ValueError("call init_with_partial_schema or init_with_full_schema to pass a schema")
         self.init_with_partial_schema(schema=None, **kwargs)
-   
+
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema"""
         if validate:
@@ -60,19 +59,19 @@ class WoodworkTableAccessor:
         self._schema = schema
 
     def init_with_partial_schema(self,
-                                 schema: Optional[TableSchema]=None,
-                                 index: Optional[str]=None,
-                                 time_index: Optional[str]=None,
-                                 logical_types: Optional[dict[str, LogicalType]]=None,
-                                 already_sorted: Optional[bool]=False,
-                                 name: Optional[str]=None,
-                                 semantic_tags: Optional[dict[str, Union[str, list[str], set[str]]]]=None,
-                                 table_metadata: Optional[dict]=None,
-                                 column_metadata: Optional[dict[str, dict]]=None,
-                                 use_standard_tags: Union[bool, dict[str, bool]]=True,
-                                 column_descriptions: Optional[dict[str, str]]=None,
-                                 column_origins: Optional[dict[str, str]]=None,
-                                 validate: Optional[bool]=True,
+                                 schema: Optional[TableSchema] = None,
+                                 index: Optional[str] = None,
+                                 time_index: Optional[str] = None,
+                                 logical_types: Optional[dict[str, LogicalType]] = None,
+                                 already_sorted: Optional[bool] = False,
+                                 name: Optional[str] = None,
+                                 semantic_tags: Optional[dict[str, Union[str, list[str], set[str]]]] = None,
+                                 table_metadata: Optional[dict] = None,
+                                 column_metadata: Optional[dict[str, dict]] = None,
+                                 use_standard_tags: Union[bool, dict[str, bool]] = True,
+                                 column_descriptions: Optional[dict[str, str]] = None,
+                                 column_origins: Optional[dict[str, str]] = None,
+                                 validate: Optional[bool] = True,
                                  **kwargs):
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
         type inference order:
@@ -143,7 +142,7 @@ class WoodworkTableAccessor:
         existing_use_standard_tags = {}
         existing_semantic_tags = {}
         existing_col_origins = {}
-        
+
         if schema:  # pull schema parameters
             name = name or schema.name
             index = index or schema.index
@@ -967,6 +966,7 @@ def _check_schema(dataframe, schema):
     if invalid_schema_message:
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
 
+
 def _check_partial_schema(dataframe, schema):
     if not isinstance(schema, TableSchema):
         raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
@@ -974,12 +974,14 @@ def _check_partial_schema(dataframe, schema):
     schema_cols = set(schema.columns.keys())
     schema_cols_not_in_df = schema_cols - dataframe_cols
     if schema_cols_not_in_df:
-        raise ValueError(f'The following columns in the typing information were missing from the DataFrame: '\
-            f'{schema_cols_not_in_df}')
+        raise ValueError(f'The following columns in the typing information were missing from the DataFrame: '
+                         f'{schema_cols_not_in_df}')
+
 
 def _check_use_standard_tags(use_standard_tags):
     if not isinstance(use_standard_tags, (bool, dict)):
         raise TypeError('use_standard_tags must be a dictionary or a boolean')
+
 
 def _infer_missing_logical_types(df, force_logical_types=None, existing_logical_types=None):
     """Performs type inference and updates underlying data"""
@@ -994,6 +996,7 @@ def _infer_missing_logical_types(df, force_logical_types=None, existing_logical_
         if updated_series is not series:
             df[name] = updated_series
     return parsed_logical_types
+
 
 @pd.api.extensions.register_dataframe_accessor('ww')
 class PandasTableAccessor(WoodworkTableAccessor):

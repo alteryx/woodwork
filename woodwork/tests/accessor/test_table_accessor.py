@@ -17,7 +17,6 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
-    ParametersIgnoredWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError
