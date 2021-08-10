@@ -45,10 +45,6 @@ class TypeConversionError(Exception):
         super().__init__(message)
 
 
-class UseInitWithSchemaWarning(UserWarning):
-    pass
-
-
 class ParametersIgnoredWarning(UserWarning):
     pass
 

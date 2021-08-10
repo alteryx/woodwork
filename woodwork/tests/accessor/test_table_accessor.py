@@ -19,7 +19,6 @@ from woodwork.exceptions import (
     IndexTagRemovedWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
-    UseInitWithSchemaWarning,
     WoodworkNotInitError
 )
 from woodwork.logical_types import (
@@ -314,20 +313,6 @@ def test_accessor_init_errors_methods(sample_df):
                 func(*method_args)
             else:
                 func()
-
-
-def test_accessor_with_schema_parameter_warning(sample_df):
-    schema_df = sample_df.copy()
-    schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
-    schema = schema_df.ww.schema
-
-    head_df = schema_df.head(2)
-    warning = "Use init_with_full_schema when passing in a full schema and init_with_partial_schema when passing in a partial schema"
-    with pytest.warns(UseInitWithSchemaWarning, match=warning):
-        head_df.ww.init(schema=schema)
-
-    assert head_df.ww.name == 'test_schema'
-    assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
 
 
 def test_accessor_init_errors_properties(sample_df):
@@ -2583,3 +2568,30 @@ def test_init_with_partial_schema_metadata_deep_copy(sample_df):
     assert test_df.ww.schema.metadata
     test_df.ww._schema.metadata = {'test2': '456'}
     assert schema.metadata != test_df.ww.schema.metadata
+
+
+def test_init_detect_partial_schema(sample_df):
+    test_df = sample_df.copy()
+    test_df2 = sample_df.copy()
+    sample_df.ww.init()
+    full_schema = sample_df.ww.schema
+    partial_schema = sample_df.ww[['id', 'full_name']].ww.schema
+
+    class Mocker():
+        def __init__(self):
+            self.init_full_schema_calls = 0
+            self.init_partial_schema_calls = 0
+
+        def mock_init_full_schema(self, *args, **kwargs):
+            self.init_full_schema_calls += 1
+
+        def mock_init_partial_schema(self, *args, **kwargs):
+            self.init_partial_schema_calls += 1
+    mock_calls = Mocker()
+    test_df.ww.init_with_full_schema = mock_calls.mock_init_full_schema
+    test_df.ww.init(full_schema)
+    assert mock_calls.init_full_schema_calls == 1
+
+    test_df2.ww.init_with_partial_schema = mock_calls.mock_init_partial_schema
+    test_df2.ww.init(partial_schema)
+    assert mock_calls.init_partial_schema_calls == 1

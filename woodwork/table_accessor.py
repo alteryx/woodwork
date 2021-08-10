@@ -17,8 +17,7 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
-    TypingInfoMismatchWarning,
-    UseInitWithSchemaWarning
+    TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
@@ -46,14 +45,11 @@ class WoodworkTableAccessor:
         self._schema = None
 
     def init(self, schema=None, **kwargs):
-        """Initializes Woodwork typing information for a DataFrame with only keyword arguments.
-        logical type inference is performed on columns with unspecified logical types"""
-        if schema is not None:
-            warnings.warn("Use init_with_full_schema when passing in a full schema and init_with_partial_schema when passing in a partial schema",
-                          UseInitWithSchemaWarning)
+        """Initializes Woodwork typing information for a DataFrame. Logical type inference is performed on columns with unspecified logical types"""
+        if schema is not None and set(schema.columns) == set(self._dataframe.columns):
             self.init_with_full_schema(schema, **kwargs)
         else:
-            self.init_with_partial_schema(schema=None, **kwargs)
+            self.init_with_partial_schema(schema, **kwargs)
 
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema"""
