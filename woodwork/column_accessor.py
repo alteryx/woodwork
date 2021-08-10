@@ -258,7 +258,7 @@ class WoodworkColumnAccessor:
                                                                                           'Series')
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
                 elif _is_dataframe(result):
-                    # Initialize Woodwork if a valid table schema can be created from the original column schema
+                    # Initialize Woodwork with a partial schema
                     col_schema = self.schema
                     table_schema = TableSchema(column_names=[self.name],
                                                logical_types={self.name: col_schema.logical_type},
@@ -268,8 +268,7 @@ class WoodworkColumnAccessor:
                                                column_descriptions={self.name: col_schema.description},
                                                column_origins={self.name: col_schema.origin},
                                                validate=False)
-                    if is_schema_valid(result, table_schema):
-                        result.ww.init_with_full_schema(schema=table_schema)
+                    result.ww.init_with_partial_schema(schema=table_schema)
                 # Always return the results of the Series operation whether or not Woodwork is initialized
                 return result
             return wrapper
