@@ -47,7 +47,7 @@ def test_to_dictionary(sample_df):
         table_type = 'dask'
         age_cat_type_dict = {
             'type': 'category',
-            'cat_values': [33, 57],
+            'cat_values': [25, 33, 57],
             'cat_dtype': 'int64'
         }
         cat_type_dict = {
@@ -67,8 +67,8 @@ def test_to_dictionary(sample_df):
         table_type = 'pandas'
         age_cat_type_dict = {
             'type': 'category',
-            'cat_values': [33, 57],
-            'cat_dtype': 'object'
+            'cat_values': [25, 33, 57],
+            'cat_dtype': 'int64'
         }
         cat_type_dict = {
             'type': 'category',
