@@ -7,13 +7,14 @@ Future Release
 ===============
     * Enhancements
         * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
+        * Apply ordering specified by the ``Ordinal`` logical type to underlying series (:pr:`1097`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`davesque`, :user:`tamargrey`
 
 v0.6.0 Aug 4, 2021
 ==================
