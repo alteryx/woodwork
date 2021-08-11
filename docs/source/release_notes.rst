@@ -7,13 +7,14 @@ Future Release
 ===============
     * Enhancements
         * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
+        * Add initialize with partial table schema  (:pr:`1100`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`tamargrey`, :user:`tuethan1999`
 
 v0.6.0 Aug 4, 2021
 ==================
