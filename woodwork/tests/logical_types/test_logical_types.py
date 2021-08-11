@@ -86,7 +86,7 @@ def test_ordinal_transform_koalas(ordinal_transform_series_koalas) -> None:
 
     ser_ = typ.transform(ordinal_transform_series_koalas)
 
-    assert ser_.dtype == 'string[python]'
+    assert ser_.dtype == pd.StringDtype()
 
 
 def test_get_valid_dtype(sample_series):
