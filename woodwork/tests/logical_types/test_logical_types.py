@@ -57,7 +57,7 @@ def test_ordinal_init_with_order():
 
 def test_ordinal_transform_validates(ordinal_transform_series_pandas) -> None:
     typ = Ordinal(order=None)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=r"order values defined"):
         typ.transform(ordinal_transform_series_pandas)
 
 
@@ -73,7 +73,6 @@ def test_ordinal_transform_pandas(ordinal_transform_series_pandas) -> None:
 def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
     order = [2, 1, 3]
     typ = Ordinal(order=order)
-
     ser_ = typ.transform(ordinal_transform_series_dask).compute()
 
     assert ser_.dtype == 'category'
@@ -83,7 +82,6 @@ def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
 def test_ordinal_transform_koalas(ordinal_transform_series_koalas) -> None:
     order = [2, 1, 3]
     typ = Ordinal(order=order)
-
     ser_ = typ.transform(ordinal_transform_series_koalas)
 
     assert ser_.dtype == pd.StringDtype()
