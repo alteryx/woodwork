@@ -118,7 +118,7 @@ class WoodworkTableAccessor:
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
 
-        def normalize_standard_tags(use_standard_tags: Union[bool, dict[str, bool]], column_names: list[str]):
+        def normalize_standard_tags(use_standard_tags: Union[bool, Dict[str, bool]], column_names: List[str]):
             if isinstance(use_standard_tags, bool):
                 use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
             else:
