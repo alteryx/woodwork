@@ -973,7 +973,7 @@ def _check_partial_schema(dataframe, schema: TableSchema) -> None:
     schema_cols = set(schema.columns.keys())
     schema_cols_not_in_df = schema_cols - dataframe_cols
     if schema_cols_not_in_df:
-        raise ValueError(f'The following columns in the typing information were missing from the DataFrame: '
+        raise ColumnNotPresentError(f'The following columns in the typing information were missing from the DataFrame: '
                          f'{schema_cols_not_in_df}')
 
 
