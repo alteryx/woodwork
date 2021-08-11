@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Optional, Union
+from typing import Hashable, Optional, Union, Dict, List, Set
 
 import pandas as pd
 
@@ -38,6 +38,7 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
+ColumnName = Hashable
 
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
@@ -62,17 +63,17 @@ class WoodworkTableAccessor:
                                  schema: Optional[TableSchema] = None,
                                  index: Optional[str] = None,
                                  time_index: Optional[str] = None,
-                                 logical_types: Optional[dict[str, Union[str, LogicalType]]] = None,
+                                 logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
                                  already_sorted: Optional[bool] = False,
                                  name: Optional[str] = None,
-                                 semantic_tags: Optional[dict[str, Union[str, list[str], set[str]]]] = None,
-                                 table_metadata: Optional[dict] = None,
-                                 column_metadata: Optional[dict[str, dict]] = None,
-                                 use_standard_tags: Union[bool, dict[str, bool]] = True,
-                                 column_descriptions: Optional[dict[str, str]] = None,
-                                 column_origins: Optional[dict[str, str]] = None,
+                                 semantic_tags: Optional[Dict[ColumnName, Union[str, List[str], Set[str]]]] = None,
+                                 table_metadata: Optional[Dict] = None,
+                                 column_metadata: Optional[Dict[ColumnName, Dict]] = None,
+                                 use_standard_tags: Union[bool, Dict[ColumnName, bool]] = True,
+                                 column_descriptions: Optional[Dict[ColumnName, str]] = None,
+                                 column_origins: Optional[Dict[ColumnName, str]] = None,
                                  validate: Optional[bool] = True,
-                                 **kwargs):
+                                 **kwargs) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
         Type inference priority:
         1. kwarg specified types
@@ -898,7 +899,7 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
 
-def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags):
+def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags) -> None:
     _check_unique_column_names(dataframe)
     _check_use_standard_tags(use_standard_tags)
     if schema is not None:
@@ -958,7 +959,7 @@ def _check_schema(dataframe, schema):
         raise ValueError(f'Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}')
 
 
-def _check_partial_schema(dataframe, schema):
+def _check_partial_schema(dataframe, schema: TableSchema) -> None:
     if not isinstance(schema, TableSchema):
         raise TypeError('Provided schema must be a Woodwork.TableSchema object.')
     dataframe_cols = set(dataframe.columns)
@@ -974,18 +975,20 @@ def _check_use_standard_tags(use_standard_tags):
         raise TypeError('use_standard_tags must be a dictionary or a boolean')
 
 
-def _infer_missing_logical_types(df, force_logical_types=None, existing_logical_types=None):
+def _infer_missing_logical_types(dataframe, 
+                                 force_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
+                                 existing_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None):
     """Performs type inference and updates underlying data"""
     force_logical_types = force_logical_types or {}
     existing_logical_types = existing_logical_types or {}
     parsed_logical_types = {}
-    for name in df.columns:
-        series = df[name]
+    for name in dataframe.columns:
+        series = dataframe[name]
         logical_type = force_logical_types.get(name) or existing_logical_types.get(name)
         parsed_logical_types[name] = _get_column_logical_type(series, logical_type, name)
         updated_series = parsed_logical_types[name].transform(series)
         if updated_series is not series:
-            df[name] = updated_series
+            dataframe[name] = updated_series
     return parsed_logical_types
 
 
