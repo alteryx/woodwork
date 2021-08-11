@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas.api.types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.exceptions import TypeConversionError
@@ -407,7 +408,12 @@ class Ordinal(LogicalType):
     def transform(self, series):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
         self._validate_data(series)
-        return super().transform(series)
+
+        typed_ser = super().transform(series)
+        if pdtypes.is_categorical_dtype(typed_ser.dtype):
+            typed_ser = typed_ser.cat.set_categories(self.order, ordered=True)
+
+        return typed_ser
 
 
 class PhoneNumber(LogicalType):

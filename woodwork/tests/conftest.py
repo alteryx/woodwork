@@ -155,6 +155,23 @@ def sample_datetime_series_koalas(sample_datetime_series_pandas):
 
 
 @pytest.fixture()
+def ordinal_transform_series_pandas():
+    return pd.Series([1, 2, 3], dtype='int64')
+
+
+@pytest.fixture()
+def ordinal_transform_series_dask(ordinal_transform_series_pandas):
+    dd = pytest.importorskip('dask.dataframe', reason='Dask not installed, skipping')
+    return dd.from_pandas(ordinal_transform_series_pandas, npartitions=1)
+
+
+@pytest.fixture()
+def ordinal_transform_series_koalas(ordinal_transform_series_pandas):
+    ks = pytest.importorskip('databricks.koalas', reason='Koalas not installed, skipping')
+    return ks.from_pandas(ordinal_transform_series_pandas)
+
+
+@pytest.fixture()
 def time_index_df_pandas():
     return pd.DataFrame({
         'id': [0, 1, 2, 3],
