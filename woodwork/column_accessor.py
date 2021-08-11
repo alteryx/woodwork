@@ -8,8 +8,7 @@ from woodwork.accessor_utils import (
     _check_column_schema,
     _is_dataframe,
     _is_series,
-    init_series,
-    is_schema_valid
+    init_series
 )
 from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (

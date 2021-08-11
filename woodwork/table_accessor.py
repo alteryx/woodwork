@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Hashable, Optional, Union, Dict, List, Set
+from typing import Dict, Hashable, List, Optional, Set, Union
 
 import pandas as pd
 
@@ -39,6 +39,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 ColumnName = Hashable
+
 
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
@@ -981,7 +982,7 @@ def _check_use_standard_tags(use_standard_tags):
         raise TypeError('use_standard_tags must be a dictionary or a boolean')
 
 
-def _infer_missing_logical_types(dataframe, 
+def _infer_missing_logical_types(dataframe,
                                  force_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
                                  existing_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None):
     """Performs type inference and updates underlying data"""
