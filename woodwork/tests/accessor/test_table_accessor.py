@@ -2566,7 +2566,7 @@ def test_init_with_partial_schema_metadata_deep_copy(sample_df):
     assert test_df.ww.schema is None
     test_df.ww.init_with_partial_schema(schema)
     assert test_df.ww.schema.metadata
-    test_df.ww._schema.metadata = {'test2': '456'}
+    test_df.ww._schema.metadata['test2'] = '345'
     assert schema.metadata != test_df.ww.schema.metadata
 
 
