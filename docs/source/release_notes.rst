@@ -8,13 +8,14 @@ Future Release
     * Enhancements
         * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
         * Add initialize with partial table schema  (:pr:`1100`)
+        * Apply ordering specified by the ``Ordinal`` logical type to underlying series (:pr:`1097`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`tuethan1999`
+    :user:`davesque`, :user:`tamargrey`, :user:`tuethan1999`
 
 v0.6.0 Aug 4, 2021
 ==================
