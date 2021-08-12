@@ -974,7 +974,7 @@ def _check_partial_schema(dataframe, schema: TableSchema) -> None:
     schema_cols_not_in_df = schema_cols - dataframe_cols
     if schema_cols_not_in_df:
         raise ColumnNotPresentError(f'The following columns in the typing information were missing from the DataFrame: '
-                         f'{schema_cols_not_in_df}')
+                                    f'{schema_cols_not_in_df}')
 
 
 def _check_use_standard_tags(use_standard_tags):

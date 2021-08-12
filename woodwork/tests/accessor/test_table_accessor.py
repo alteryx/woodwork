@@ -50,10 +50,10 @@ from woodwork.table_accessor import (
     WoodworkTableAccessor,
     _check_index,
     _check_logical_types,
+    _check_partial_schema,
     _check_time_index,
     _check_unique_column_names,
-    _check_use_standard_tags,
-    _check_partial_schema
+    _check_use_standard_tags
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
@@ -2603,7 +2603,7 @@ def test_check_partial_schema(sample_df):
     error_message = 'Provided schema must be a Woodwork.TableSchema object.'
     with pytest.raises(TypeError, match=error_message):
         _check_partial_schema(sample_df, 'not a schema')
-    
+
     drop_column = 'full_name'
     missing_column_df = sample_df.drop(drop_column, axis=1)
     error_message = 'The following columns in the typing information were missing from the DataFrame: {\'full_name\'}\''
