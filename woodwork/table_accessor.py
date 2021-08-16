@@ -54,15 +54,14 @@ class WoodworkTableAccessor:
             self.init_with_partial_schema(schema, **kwargs)
 
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
-        """Initializes Woodwork typing information for a DataFrame with a complete schema
-            Args:
-                schema (Woodwork.TableSchema): Typing information to use for the DataFrame instead of performing inference.
-                    Note that any changes made to the schema object after initialization will propagate to the DataFrame.
-                    Similarly, to avoid unintended typing information changes, the same schema object should not be shared
-                    between DataFrames.
-                validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
-                    Should be set to False only when parameters and data are known to be valid.
-                    Any errors resulting from skipping validation with invalid inputs may not be easily understood.
+        """Initializes Woodwork typing information for a DataFrame with a complete schema.
+
+        Args:
+            schema (Woodwork.TableSchema): Typing information to use for the DataFrame instead of performing inference. Note that any changes made to the
+                schema object after initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes, the same schema
+                object should not be shared between DataFrames.
+            validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning: Should be set to False only when
+                parameters and data are known to be valid. Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
             _check_schema(self._dataframe, schema)
