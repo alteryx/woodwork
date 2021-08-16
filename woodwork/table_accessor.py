@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Dict, Hashable, List, Optional, Set, Union
+from typing import Dict, Hashable, Iterable, List, Optional, Set, Union
 
 import pandas as pd
 
@@ -56,9 +56,10 @@ class WoodworkTableAccessor:
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema
             Args:
-                schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
-                    Note that any changes made to the schema object after initialization will propagate to the DataFrame. Similarly, to avoid unintended typing information changes,
-                    the same schema object should not be shared between DataFrames.
+                schema (Woodwork.TableSchema): Typing information to use for the DataFrame instead of performing inference.
+                    Note that any changes made to the schema object after initialization will propagate to the DataFrame.
+                    Similarly, to avoid unintended typing information changes, the same schema object should not be shared
+                    between DataFrames.
                 validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                     Should be set to False only when parameters and data are known to be valid.
                     Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -124,14 +125,6 @@ class WoodworkTableAccessor:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
-
-        def normalize_standard_tags(use_standard_tags: Union[bool, Dict[str, bool]], column_names: List[str]):
-            if isinstance(use_standard_tags, bool):
-                use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
-            else:
-                use_standard_tags = {**{col_name: True for col_name in column_names}, **use_standard_tags}
-            return use_standard_tags
-
         if validate:
             _validate_accessor_params(self._dataframe, index, time_index, logical_types, schema, use_standard_tags)
 
@@ -149,24 +142,19 @@ class WoodworkTableAccessor:
             table_metadata = table_metadata or schema.metadata
             for col_name, col_schema in schema.columns.items():
                 existing_logical_types[col_name] = col_schema.logical_type
-                existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'}
+                existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'} - col_schema.logical_type.standard_tags
                 existing_col_descriptions[col_name] = col_schema.description
                 existing_col_origins[col_name] = col_schema.origin
                 existing_col_metadata[col_name] = col_schema.metadata
                 existing_use_standard_tags[col_name] = col_schema.use_standard_tags
 
         # overwrite schema parameters with specified kwargs
-        column_names = list(self._dataframe.columns)
         logical_types = _infer_missing_logical_types(self._dataframe, logical_types, existing_logical_types)
         column_descriptions = {**existing_col_descriptions, **(column_descriptions or {})}
         column_metadata = {**existing_col_metadata, **(column_metadata or {})}
-
-        # prioritize columns in schema if use_standard_tags is True
-        normalized_tags = normalize_standard_tags(use_standard_tags, column_names)
-        if use_standard_tags is True:
-            use_standard_tags = {**normalized_tags, **existing_use_standard_tags}
-        else:
-            use_standard_tags = {**existing_use_standard_tags, **normalized_tags}
+        column_names = list(self._dataframe.columns)
+        normalized_tags = _normalize_standard_tags(use_standard_tags, column_names)
+        use_standard_tags = {**existing_use_standard_tags, **normalized_tags}
         semantic_tags = {**existing_semantic_tags, **(semantic_tags or {})}
         column_origins = {**existing_col_origins, **(column_origins or {})}
 
@@ -732,7 +720,7 @@ class WoodworkTableAccessor:
             return
         new_df = self._dataframe.rename(columns=columns)
 
-        new_df.ww.init_with_full_schema(schema=new_schema)
+        new_df.ww.init_with_full_schema(schema=new_schema, validate=False)
         return new_df
 
     @_check_table_schema
@@ -997,6 +985,15 @@ def _infer_missing_logical_types(dataframe,
         if updated_series is not series:
             dataframe[name] = updated_series
     return parsed_logical_types
+
+
+def _normalize_standard_tags(use_standard_tags: Union[bool, Dict[ColumnName, bool]], column_names: Iterable[ColumnName], default_use_standard_tag = True):
+    """Forces standard tags to be of type Dict[ColumnName, bool] and sets the default value for unspecified columns."""
+    if isinstance(use_standard_tags, bool):
+        use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
+    else:
+        use_standard_tags = {**{col_name: default_use_standard_tag for col_name in column_names}, **use_standard_tags}
+    return use_standard_tags
 
 
 @pd.api.extensions.register_dataframe_accessor('ww')

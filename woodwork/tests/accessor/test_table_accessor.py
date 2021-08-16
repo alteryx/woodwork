@@ -2551,11 +2551,14 @@ def test_init_with_partial_schema_override_schema(sample_df):
 
     assert test_df.ww.schema is None
     test_df.ww.init_with_partial_schema(schema,
-                                        logical_types={'categorical': 'Unknown'},
+                                        logical_types={'integer': 'categorical'},
                                         use_standard_tags={'id': False})
-    assert sample_df.ww.logical_types['categorical'] == schema.logical_types['categorical']
-    assert test_df.ww.logical_types['categorical'] != schema.logical_types['categorical']
-    assert test_df.ww.logical_types['integer'] == schema.logical_types['integer']
+
+    assert sample_df.ww.logical_types['integer'] == schema.logical_types['integer']
+    assert test_df.ww.logical_types['integer'] != schema.logical_types['integer']
+    assert test_df.ww.semantic_tags['integer'] == set({'category'})
+    assert test_df.ww.logical_types['categorical'] == schema.logical_types['categorical']
+
     assert not test_df.ww.semantic_tags['id']
 
 
