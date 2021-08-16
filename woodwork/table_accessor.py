@@ -17,7 +17,8 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
-    TypingInfoMismatchWarning
+    TypingInfoMismatchWarning,
+    ParametersIgnoredWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
@@ -53,7 +54,7 @@ class WoodworkTableAccessor:
         else:
             self.init_with_partial_schema(schema, **kwargs)
 
-    def init_with_full_schema(self, schema: TableSchema, validate: bool = True) -> None:
+    def init_with_full_schema(self, schema: TableSchema, validate: bool = True, **kwargs) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema.
 
         Args:
@@ -67,6 +68,10 @@ class WoodworkTableAccessor:
             _check_schema(self._dataframe, schema)
             _check_unique_column_names(self._dataframe)
         self._schema = schema
+
+        extra_params = [key for key in kwargs]
+        if extra_params:
+            warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
     def init_with_partial_schema(self,
                                  schema: Optional[TableSchema] = None,
