@@ -17,6 +17,8 @@ WoodworkTableAccessor
     WoodworkTableAccessor.iloc
     WoodworkTableAccessor.index
     WoodworkTableAccessor.init
+    WoodworkTableAccessor.init_with_full_schema
+    WoodworkTableAccessor.init_with_partial_schema
     WoodworkTableAccessor.loc
     WoodworkTableAccessor.logical_types
     WoodworkTableAccessor.metadata
