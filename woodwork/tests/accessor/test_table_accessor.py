@@ -17,10 +17,10 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
+    ParametersIgnoredWarning,
     TypeConversionError,
     TypingInfoMismatchWarning,
-    WoodworkNotInitError,
-    ParametersIgnoredWarning
+    WoodworkNotInitError
 )
 from woodwork.logical_types import (
     URL,
@@ -54,7 +54,8 @@ from woodwork.table_accessor import (
     _check_partial_schema,
     _check_time_index,
     _check_unique_column_names,
-    _check_use_standard_tags
+    _check_use_standard_tags,
+    _infer_missing_logical_types
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
@@ -2594,8 +2595,9 @@ def test_init_with_partial_schema_metadata_deep_copy(sample_df):
 
 
 def test_init_detect_partial_schema(sample_df):
-    test_df = sample_df.copy()
-    test_df2 = sample_df.copy()
+    test_df_full_schema = sample_df.copy()
+    test_df_partial_schema = sample_df.copy()
+    test_df_no_schema = sample_df.copy()
     sample_df.ww.init()
     full_schema = sample_df.ww.schema
     partial_schema = sample_df.ww[['id', 'full_name']].ww.schema
@@ -2611,13 +2613,17 @@ def test_init_detect_partial_schema(sample_df):
         def mock_init_partial_schema(self, *args, **kwargs):
             self.init_partial_schema_calls += 1
     mock_calls = Mocker()
-    test_df.ww.init_with_full_schema = mock_calls.mock_init_full_schema
-    test_df.ww.init(full_schema)
+    test_df_full_schema.ww.init_with_full_schema = mock_calls.mock_init_full_schema
+    test_df_full_schema.ww.init(full_schema)
     assert mock_calls.init_full_schema_calls == 1
 
-    test_df2.ww.init_with_partial_schema = mock_calls.mock_init_partial_schema
-    test_df2.ww.init(partial_schema)
+    test_df_partial_schema.ww.init_with_partial_schema = mock_calls.mock_init_partial_schema
+    test_df_partial_schema.ww.init(partial_schema)
     assert mock_calls.init_partial_schema_calls == 1
+
+    test_df_no_schema.ww.init_with_partial_schema = mock_calls.mock_init_partial_schema
+    test_df_no_schema.ww.init()
+    assert mock_calls.init_partial_schema_calls == 2
 
 
 def test_check_partial_schema(sample_df):
@@ -2631,3 +2637,13 @@ def test_check_partial_schema(sample_df):
     error_message = 'The following columns in the typing information were missing from the DataFrame: {\'full_name\'}\''
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_partial_schema(missing_column_df, sample_df.ww.schema)
+
+
+def test_infer_missing_logical_types_force_infer(sample_df):
+    sample_df.ww.init()
+    existing_logical_types = sample_df.ww.schema.logical_types
+    sample_df['age'] = sample_df['age'].astype('double')
+    force_logical_types = {'age': None}
+    assert existing_logical_types['age'] is not None
+    parsed_logical_types = _infer_missing_logical_types(sample_df, force_logical_types, existing_logical_types)
+    assert parsed_logical_types['age'] == Double()

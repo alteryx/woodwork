@@ -17,8 +17,8 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
-    TypingInfoMismatchWarning,
-    ParametersIgnoredWarning
+    ParametersIgnoredWarning,
+    TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
@@ -983,7 +983,7 @@ def _infer_missing_logical_types(dataframe,
     parsed_logical_types = {}
     for name in dataframe.columns:
         series = dataframe[name]
-        logical_type = force_logical_types.get(name) or existing_logical_types.get(name)
+        logical_type = force_logical_types.get(name) if name in force_logical_types else existing_logical_types.get(name)
         parsed_logical_types[name] = _get_column_logical_type(series, logical_type, name)
         updated_series = parsed_logical_types[name].transform(series)
         if updated_series is not series:
@@ -991,7 +991,7 @@ def _infer_missing_logical_types(dataframe,
     return parsed_logical_types
 
 
-def _normalize_standard_tags(use_standard_tags: Union[bool, Dict[ColumnName, bool]], column_names: Iterable[ColumnName], default_use_standard_tag = True):
+def _normalize_standard_tags(use_standard_tags: Union[bool, Dict[ColumnName, bool]], column_names: Iterable[ColumnName], default_use_standard_tag=True):
     """Forces standard tags to be of type Dict[ColumnName, bool] and sets the default value for unspecified columns."""
     if isinstance(use_standard_tags, bool):
         use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
