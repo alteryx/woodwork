@@ -23,8 +23,14 @@ Breaking Changes
     schema that contains all of the columns of the dataframe it describes
     whereas a partial schema only contains a subset. Before, only a full
     schema was permitted by the `init` method so passing a partial schema
-    would error. Now, passing a partial schema to the `init` method is calls
-    the `init_with_partial_schema` method instead of throwing an error.
+    would error. Additionally, any parameters like `logical_types` would be
+    ignored if passing in a schema. The behavior remains the same for a full
+    full schema but now differs for a partial schema. Now, passing a partial
+    schema to the `init` method calls the `init_with_partial_schema` method
+    instead of throwing an error. Information from keyword arguments will
+    override information from the partial schema. For example, if column `a`
+    is type int in the partial schema, it's possible to reinfer it's logical
+    type by passing `{'a': None}` or force a type by passing in `{'a': Double}`.
 
 v0.6.0 Aug 4, 2021
 ==================
