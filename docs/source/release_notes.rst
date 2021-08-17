@@ -16,7 +16,11 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`tamargrey`, :user:`tuethan1999`
-
+    
+    Breaking Changes
+    ++++++++++++++++
+        * Calling `init` with a partial schema now calls 
+          `init_with_partial_schema` instead throwing an error.
 v0.6.0 Aug 4, 2021
 ==================
     * Fixes
