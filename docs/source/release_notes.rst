@@ -19,8 +19,12 @@ Future Release
     
 Breaking Changes
 ++++++++++++++++
-    * Calling `init` with a partial schema now calls `init_with_partial_schema`
-      instead throwing an error.
+    * :pr:`1100`: The behavior for `init` has changed. A full schema is a
+    schema that contains all of the columns of the dataframe it describes
+    whereas a partial schema only contains a subset. Before, only a full
+    schema was permitted by the `init` method so passing a partial schema
+    would error. Now, passing a partial schema to the `init` method is calls
+    the `init_with_partial_schema` method instead of throwing an error.
 
 v0.6.0 Aug 4, 2021
 ==================
