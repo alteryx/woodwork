@@ -29,8 +29,9 @@ Breaking Changes
     schema to the `init` method calls the `init_with_partial_schema` method
     instead of throwing an error. Information from keyword arguments will
     override information from the partial schema. For example, if column `a`
-    is type int in the partial schema, it's possible to reinfer it's logical
-    type by passing `{'a': None}` or force a type by passing in `{'a': Double}`.
+    is type int in the partial schema, it's possible to use the `logical_type`
+    argument to  reinfer it's logical type by passing `{'a': None}` or force
+    a type by passing in `{'a': Double}`.
 
 v0.6.0 Aug 4, 2021
 ==================
