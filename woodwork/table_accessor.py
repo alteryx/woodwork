@@ -40,6 +40,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 ColumnName = Hashable
+UseStandardTagsDict = Dict[ColumnName, bool]
 
 
 class WoodworkTableAccessor:
@@ -74,33 +75,34 @@ class WoodworkTableAccessor:
             warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
     def init_with_partial_schema(self,
-                                 schema: Optional[TableSchema] = None,
+                                 partial_schema: Optional[TableSchema] = None,
                                  index: Optional[str] = None,
                                  time_index: Optional[str] = None,
-                                 logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
+                                 logical_types: Optional[Dict[ColumnName, Union[str, LogicalType, None]]] = None,
                                  already_sorted: Optional[bool] = False,
                                  name: Optional[str] = None,
                                  semantic_tags: Optional[Dict[ColumnName, Union[str, List[str], Set[str]]]] = None,
                                  table_metadata: Optional[Dict] = None,
                                  column_metadata: Optional[Dict[ColumnName, Dict]] = None,
-                                 use_standard_tags: Union[bool, Dict[ColumnName, bool]] = True,
+                                 use_standard_tags: Optional[Union[bool, UseStandardTagsDict]] = None,
                                  column_descriptions: Optional[Dict[ColumnName, str]] = None,
                                  column_origins: Optional[Dict[ColumnName, str]] = None,
                                  validate: Optional[bool] = True,
                                  **kwargs) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
-        Type inference priority:
-        1. kwarg specified types
-        2. partial schema types
-        3. inferred types
+        Logical type priority:
+        1. Types specified in ``logical_types``
+        2. Types specified in ``partial_schema``
+        3. Types inferred by ``ww.type_system.infer_logical_type``
 
         Args:
-            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
+            partial_schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                  Specified arguments will override the schema's typing information.
             index (str, optional): Name of the index column.
             time_index (str, optional): Name of the time index column.
-            logical_types (dict[str -> LogicalType]): Dictionary mapping column names in
-                the DataFrame to the LogicalType for the column.
+            logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
+                the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
+                force a logical to be inferred.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
@@ -121,7 +123,7 @@ class WoodworkTableAccessor:
                 added to columns based on the specified logical type for the column.
                 If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
-                Unspecified columns will use the default value. Defaults to True.
+                Unspecified columns will use the default value of True.
             column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
             column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
@@ -130,7 +132,7 @@ class WoodworkTableAccessor:
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
-            _validate_accessor_params(self._dataframe, index, time_index, logical_types, schema, use_standard_tags)
+            _validate_accessor_params(self._dataframe, index, time_index, logical_types, partial_schema, use_standard_tags)
 
         existing_logical_types = {}
         existing_col_descriptions = {}
@@ -139,12 +141,12 @@ class WoodworkTableAccessor:
         existing_semantic_tags = {}
         existing_col_origins = {}
 
-        if schema:  # pull schema parameters
-            name = name or schema.name
-            index = index or schema.index
-            time_index = time_index or schema.time_index
-            table_metadata = table_metadata or schema.metadata
-            for col_name, col_schema in schema.columns.items():
+        if partial_schema:  # pull schema parameters
+            name = name or partial_schema.name
+            index = index or partial_schema.index
+            time_index = time_index or partial_schema.time_index
+            table_metadata = table_metadata or partial_schema.metadata
+            for col_name, col_schema in partial_schema.columns.items():
                 existing_logical_types[col_name] = col_schema.logical_type
                 existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'} - col_schema.logical_type.standard_tags
                 existing_col_descriptions[col_name] = col_schema.description
@@ -157,8 +159,7 @@ class WoodworkTableAccessor:
         column_descriptions = {**existing_col_descriptions, **(column_descriptions or {})}
         column_metadata = {**existing_col_metadata, **(column_metadata or {})}
         column_names = list(self._dataframe.columns)
-        normalized_tags = _normalize_standard_tags(use_standard_tags, column_names)
-        use_standard_tags = {**existing_use_standard_tags, **normalized_tags}
+        use_standard_tags = _merge_use_standard_tags(existing_use_standard_tags, use_standard_tags, column_names)
         semantic_tags = {**existing_semantic_tags, **(semantic_tags or {})}
         column_origins = {**existing_col_origins, **(column_origins or {})}
 
@@ -900,7 +901,8 @@ class WoodworkTableAccessor:
 
 def _validate_accessor_params(dataframe, index, time_index, logical_types, schema, use_standard_tags) -> None:
     _check_unique_column_names(dataframe)
-    _check_use_standard_tags(use_standard_tags)
+    if use_standard_tags is not None:
+        _check_use_standard_tags(use_standard_tags)
     if schema is not None:
         _check_partial_schema(dataframe, schema)
     if index is not None:
@@ -991,12 +993,21 @@ def _infer_missing_logical_types(dataframe,
     return parsed_logical_types
 
 
-def _normalize_standard_tags(use_standard_tags: Union[bool, Dict[ColumnName, bool]], column_names: Iterable[ColumnName], default_use_standard_tag=True):
-    """Forces standard tags to be of type Dict[ColumnName, bool] and sets the default value for unspecified columns."""
+def _merge_use_standard_tags(existing_use_standard_tags: UseStandardTagsDict,
+                               use_standard_tags: Optional[Union[bool, UseStandardTagsDict]],
+                               column_names: Iterable[ColumnName], default_use_standard_tag=True) -> UseStandardTagsDict:
+    """Combines existing and kwarg use_standard_tags and returns a UseStandardTagsDict with all column names
+       Priority when merging:
+       1. use_standard tags
+       2. existing_use_standard_tags
+       3. default_use_standard_tag
+    """
     if isinstance(use_standard_tags, bool):
         use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
     else:
-        use_standard_tags = {**{col_name: default_use_standard_tag for col_name in column_names}, **use_standard_tags}
+        use_standard_tags = {**{col_name: default_use_standard_tag for col_name in column_names},
+                             **existing_use_standard_tags,
+                             **(use_standard_tags or {})}
     return use_standard_tags
 
 

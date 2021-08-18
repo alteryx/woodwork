@@ -19,19 +19,24 @@ Future Release
     
 Breaking Changes
 ++++++++++++++++
-    * :pr:`1100`: The behavior for `init` has changed. A full schema is a
+    * :pr:``1100``: The behavior for ``init`` has changed. A full schema is a
       schema that contains all of the columns of the dataframe it describes
-      whereas a partial schema only contains a subset. Before, only a full
-      schema was permitted by the `init` method so passing a partial schema
-      would error. Additionally, any parameters like `logical_types` would be
-      ignored if passing in a schema. The behavior remains the same for a full
-      full schema but now differs for a partial schema. Now, passing a partial
-      schema to the `init` method calls the `init_with_partial_schema` method
-      instead of throwing an error. Information from keyword arguments will
-      override information from the partial schema. For example, if column `a`
-      is type int in the partial schema, it's possible to use the `logical_type`
-      argument to  reinfer it's logical type by passing `{'a': None}` or force
-      a type by passing in `{'a': Double}`.
+      whereas a partial schema only contains a subset. A full schema will also
+      require that the schema is valid without having to make any changes to 
+      the DataFrame. Before, only a full schema was permitted by the ``init`` 
+      method so passing a partial schema would error. Additionally, any
+      parameters like ``logical_types`` would be ignored if passing in a schema.
+      The behavior remains the same for a full schema but now differs for a
+      partial schema. Now, passing a partial schema to the ``init`` method
+      calls the ``init_with_partial_schema`` method instead of throwing an
+      error. Information from keyword arguments will override information
+      from the partial schema. For example, if column ``a`` is type int in 
+      the partial schema, it's possible to use the ``logical_type`` argument
+      to  reinfer it's logical type by passing ``{'a': None}`` or force a
+      type by passing in ``{'a': Double}``. These changes mean that Woodwork
+      init is less restrictive. If no type inference takes place and no
+      changes or rquired of the DataFrame at initialization,
+      ``init_with_full_schema`` should be used instead of ``init``.
 
 v0.6.0 Aug 4, 2021
 ==================

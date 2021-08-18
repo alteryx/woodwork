@@ -2582,6 +2582,32 @@ def test_init_with_partial_schema_override_schema(sample_df):
     assert not test_df.ww.semantic_tags['id']
 
 
+def test_init_with_partial_schema_all_existing_use_standard_tags_remain(sample_df):
+    expected_use_standard_tags = {col: False for col in sample_df.columns}
+    sample_df.ww.init(use_standard_tags=expected_use_standard_tags)
+    test_df = sample_df.copy()
+    test_df.ww.init_with_partial_schema(sample_df.ww.schema)
+    assert test_df.ww.schema.use_standard_tags == expected_use_standard_tags
+
+
+def test_init_with_partial_schema_some_existing_use_standard_tags(sample_df):
+    sample_df.ww.init(use_standard_tags={'integer': False})
+    test_df = sample_df.copy()
+    test_df.ww.init_with_partial_schema(sample_df.ww[['integer']].ww.schema, use_standard_tags={'full_name': False})
+    assert test_df.ww.schema.use_standard_tags['integer'] == False
+    assert test_df.ww.schema.use_standard_tags['full_name'] == False
+    assert test_df.ww.schema.use_standard_tags['categorical'] == True
+
+
+def test_init_with_partial_schema_use_standard_tags_boolean_override(sample_df):
+    sample_df.ww.init()
+    test_df = sample_df.copy()
+    assert sample_df.ww.schema.use_standard_tags['integer'] == True
+    test_df.ww.init_with_partial_schema(sample_df.ww.schema, use_standard_tags=False)
+    expected_use_standard_tags = {col: False for col in sample_df.columns}
+    assert test_df.ww.schema.use_standard_tags == expected_use_standard_tags
+
+
 def test_init_with_partial_schema_metadata_deep_copy(sample_df):
     test_df = sample_df.copy()
     sample_df.ww.init(table_metadata={'test': '123'})

@@ -267,7 +267,7 @@ class WoodworkColumnAccessor:
                                                column_descriptions={self.name: col_schema.description},
                                                column_origins={self.name: col_schema.origin},
                                                validate=False)
-                    result.ww.init_with_partial_schema(schema=table_schema)
+                    result.ww.init_with_partial_schema(table_schema)
                 # Always return the results of the Series operation whether or not Woodwork is initialized
                 return result
             return wrapper
