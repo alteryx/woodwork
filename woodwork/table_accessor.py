@@ -1032,8 +1032,8 @@ def _infer_missing_logical_types(dataframe,
 
 
 def _merge_use_standard_tags(existing_use_standard_tags: UseStandardTagsDict,
-                               use_standard_tags: Optional[Union[bool, UseStandardTagsDict]],
-                               column_names: Iterable[ColumnName], default_use_standard_tag=True) -> UseStandardTagsDict:
+                             use_standard_tags: Optional[Union[bool, UseStandardTagsDict]],
+                             column_names: Iterable[ColumnName], default_use_standard_tag=True) -> UseStandardTagsDict:
     """Combines existing and kwarg use_standard_tags and returns a UseStandardTagsDict with all column names
        Priority when merging:
        1. use_standard tags
