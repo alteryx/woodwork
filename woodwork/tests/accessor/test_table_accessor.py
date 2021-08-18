@@ -356,9 +356,9 @@ def test_accessor_with_schema_parameter_warning(sample_df):
     warning = "A schema was provided and the following parameters were ignored: index, " \
               "time_index, logical_types, already_sorted, semantic_tags, use_standard_tags"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
-        head_df.ww.init(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
-                        already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
-                        use_standard_tags={'id': True, 'age': False}, schema=schema)
+        head_df.ww.init_with_full_schema(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
+                                         already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
+                                         use_standard_tags={'id': True, 'age': False}, schema=schema)
 
     assert head_df.ww.name == 'test_schema'
     assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
@@ -2618,38 +2618,6 @@ def test_init_with_partial_schema_metadata_deep_copy(sample_df):
     assert test_df.ww.schema.metadata
     test_df.ww._schema.metadata['test2'] = '345'
     assert schema.metadata != test_df.ww.schema.metadata
-
-
-def test_init_detect_partial_schema(sample_df):
-    test_df_full_schema = sample_df.copy()
-    test_df_partial_schema = sample_df.copy()
-    test_df_no_schema = sample_df.copy()
-    sample_df.ww.init()
-    full_schema = sample_df.ww.schema
-    partial_schema = sample_df.ww[['id', 'full_name']].ww.schema
-
-    class Mocker():
-        def __init__(self):
-            self.init_full_schema_calls = 0
-            self.init_partial_schema_calls = 0
-
-        def mock_init_full_schema(self, *args, **kwargs):
-            self.init_full_schema_calls += 1
-
-        def mock_init_partial_schema(self, *args, **kwargs):
-            self.init_partial_schema_calls += 1
-    mock_calls = Mocker()
-    test_df_full_schema.ww.init_with_full_schema = mock_calls.mock_init_full_schema
-    test_df_full_schema.ww.init(full_schema)
-    assert mock_calls.init_full_schema_calls == 1
-
-    test_df_partial_schema.ww.init_with_partial_schema = mock_calls.mock_init_partial_schema
-    test_df_partial_schema.ww.init(partial_schema)
-    assert mock_calls.init_partial_schema_calls == 1
-
-    test_df_no_schema.ww.init_with_partial_schema = mock_calls.mock_init_partial_schema
-    test_df_no_schema.ww.init()
-    assert mock_calls.init_partial_schema_calls == 2
 
 
 def test_check_partial_schema(sample_df):

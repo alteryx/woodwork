@@ -48,12 +48,50 @@ class WoodworkTableAccessor:
         self._dataframe_weakref = weakref.ref(dataframe)
         self._schema = None
 
-    def init(self, schema=None, **kwargs):
-        """Initializes Woodwork typing information for a DataFrame. Logical type inference is performed on columns with unspecified logical types"""
-        if schema is not None and set(schema.columns) == set(self._dataframe.columns):
-            self.init_with_full_schema(schema, **kwargs)
-        else:
-            self.init_with_partial_schema(schema, **kwargs)
+    def init(self, **kwargs):
+        """Initializes Woodwork typing information for a DataFrame.
+        Logical type priority:
+        1. Types specified in ``logical_types``
+        2. Types specified in ``partial_schema``
+        3. Types inferred by ``ww.type_system.infer_logical_type``
+
+        Args:
+            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
+                 Specified arguments will override the schema's typing information.
+            index (str, optional): Name of the index column.
+            time_index (str, optional): Name of the time index column.
+            logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
+                the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
+                force a logical to be inferred.
+            already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
+                index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
+                only). Defaults to False.
+            name (str, optional): Name used to identify the DataFrame.
+            semantic_tags (dict, optional): Dictionary mapping column names in Woodwork to the
+                semantic tags for the column. The keys in the dictionary should be strings
+                that correspond to column names. There are two options for
+                specifying the dictionary values:
+                (str): If only one semantic tag is being set, a single string can be used as a value.
+                (list[str] or set[str]): If multiple tags are being set, a list or set of strings can be
+                used as the value.
+                Semantic tags will be set to an empty set for any column not included in the
+                dictionary.
+            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
+            column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
+                to that column's metadata dictionary.
+            use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
+                added to columns based on the specified logical type for the column.
+                If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
+                A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
+                Unspecified columns will use the default value of True.
+            column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+                used as the origin for all columns. A dictionary can be used to set origins for individual columns.
+            validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
+                Should be set to False only when parameters and data are known to be valid.
+                Any errors resulting from skipping validation with invalid inputs may not be easily understood.
+        """
+        self.init_with_partial_schema(**kwargs)
 
     def init_with_full_schema(self, schema: TableSchema, validate: bool = True, **kwargs) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema.
@@ -75,7 +113,7 @@ class WoodworkTableAccessor:
             warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
     def init_with_partial_schema(self,
-                                 partial_schema: Optional[TableSchema] = None,
+                                 schema: Optional[TableSchema] = None,
                                  index: Optional[str] = None,
                                  time_index: Optional[str] = None,
                                  logical_types: Optional[Dict[ColumnName, Union[str, LogicalType, None]]] = None,
@@ -96,7 +134,7 @@ class WoodworkTableAccessor:
         3. Types inferred by ``ww.type_system.infer_logical_type``
 
         Args:
-            partial_schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
+            schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                  Specified arguments will override the schema's typing information.
             index (str, optional): Name of the index column.
             time_index (str, optional): Name of the time index column.
@@ -132,7 +170,7 @@ class WoodworkTableAccessor:
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
         """
         if validate:
-            _validate_accessor_params(self._dataframe, index, time_index, logical_types, partial_schema, use_standard_tags)
+            _validate_accessor_params(self._dataframe, index, time_index, logical_types, schema, use_standard_tags)
 
         existing_logical_types = {}
         existing_col_descriptions = {}
@@ -141,12 +179,12 @@ class WoodworkTableAccessor:
         existing_semantic_tags = {}
         existing_col_origins = {}
 
-        if partial_schema:  # pull schema parameters
-            name = name or partial_schema.name
-            index = index or partial_schema.index
-            time_index = time_index or partial_schema.time_index
-            table_metadata = table_metadata or partial_schema.metadata
-            for col_name, col_schema in partial_schema.columns.items():
+        if schema:  # pull schema parameters
+            name = name or schema.name
+            index = index or schema.index
+            time_index = time_index or schema.time_index
+            table_metadata = table_metadata or schema.metadata
+            for col_name, col_schema in schema.columns.items():
                 existing_logical_types[col_name] = col_schema.logical_type
                 existing_semantic_tags[col_name] = col_schema.semantic_tags - {'time_index'} - {'index'} - col_schema.logical_type.standard_tags
                 existing_col_descriptions[col_name] = col_schema.description
