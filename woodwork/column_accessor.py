@@ -1,6 +1,7 @@
 import copy
 import warnings
 import weakref
+from woodwork.typing import ColumnName
 
 import pandas as pd
 
@@ -258,15 +259,15 @@ class WoodworkColumnAccessor:
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
                 elif _is_dataframe(result):
                     # Initialize Woodwork with a partial schema
-                    result.columns = [self.name]
                     col_schema = self.schema
-                    table_schema = TableSchema(column_names=[self.name],
-                                               logical_types={self.name: col_schema.logical_type},
-                                               semantic_tags={self.name: col_schema.semantic_tags},
-                                               column_metadata={self.name: col_schema.metadata},
-                                               use_standard_tags={self.name: col_schema.use_standard_tags},
-                                               column_descriptions={self.name: col_schema.description},
-                                               column_origins={self.name: col_schema.origin},
+                    col_name = self.name or result.columns.to_list()[0]
+                    table_schema = TableSchema(column_names=[col_name],
+                                               logical_types={col_name: col_schema.logical_type},
+                                               semantic_tags={col_name: col_schema.semantic_tags},
+                                               column_metadata={col_name: col_schema.metadata},
+                                               use_standard_tags={col_name: col_schema.use_standard_tags},
+                                               column_descriptions={col_name: col_schema.description},
+                                               column_origins={col_name: col_schema.origin},
                                                validate=False)
                     result.ww.init_with_partial_schema(table_schema)
                 # Always return the results of the Series operation whether or not Woodwork is initialized

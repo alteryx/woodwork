@@ -1,7 +1,9 @@
+from __future__  import annotations
+
 import copy
 import warnings
 import weakref
-from typing import Dict, Hashable, Iterable, List, Optional, Set, Union
+from typing import Hashable, Iterable, Dict, List, Set, Union, TYPE_CHECKING
 
 import pandas as pd
 
@@ -39,9 +41,8 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-ColumnName = Hashable
-UseStandardTagsDict = Dict[ColumnName, bool]
-
+if TYPE_CHECKING:
+    from woodwork.typing import ColumnName, UseStandardTagsDict, AnyDataFrame
 
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
@@ -60,7 +61,7 @@ class WoodworkTableAccessor:
                  Specified arguments will override the schema's typing information.
             index (str, optional): Name of the index column.
             time_index (str, optional): Name of the time index column.
-            logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
+            logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
@@ -76,16 +77,16 @@ class WoodworkTableAccessor:
                 used as the value.
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
-            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
-            column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
+            table_metadata (Dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
+            column_metadata (Dict[str -> Dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
-            use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
+            use_standard_tags (bool, Dict[str -> bool], optional): Determines whether standard semantic tags will be
                 added to columns based on the specified logical type for the column.
                 If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
                 Unspecified columns will use the default value of True.
-            column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
-            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+            column_descriptions (Dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            column_origins (str, Dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
@@ -113,19 +114,19 @@ class WoodworkTableAccessor:
             warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
 
     def init_with_partial_schema(self,
-                                 schema: Optional[TableSchema] = None,
-                                 index: Optional[str] = None,
-                                 time_index: Optional[str] = None,
-                                 logical_types: Optional[Dict[ColumnName, Union[str, LogicalType, None]]] = None,
-                                 already_sorted: Optional[bool] = False,
-                                 name: Optional[str] = None,
-                                 semantic_tags: Optional[Dict[ColumnName, Union[str, List[str], Set[str]]]] = None,
-                                 table_metadata: Optional[Dict] = None,
-                                 column_metadata: Optional[Dict[ColumnName, Dict]] = None,
-                                 use_standard_tags: Optional[Union[bool, UseStandardTagsDict]] = None,
-                                 column_descriptions: Optional[Dict[ColumnName, str]] = None,
-                                 column_origins: Optional[Dict[ColumnName, str]] = None,
-                                 validate: Optional[bool] = True,
+                                 schema: TableSchema = None,
+                                 index: str = None,
+                                 time_index: str = None,
+                                 logical_types: Dict[ColumnName, Union[str, LogicalType, None]] = None,
+                                 already_sorted: bool = False,
+                                 name: str = None,
+                                 semantic_tags: Dict[ColumnName, Union[str, List[str], Set[str]]] = None,
+                                 table_metadata: dict = None,
+                                 column_metadata: Dict[ColumnName, dict] = None,
+                                 use_standard_tags: Union[bool, UseStandardTagsDict] = None,
+                                 column_descriptions: Dict[ColumnName, str] = None,
+                                 column_origins: Union[str,  Dict[ColumnName, str]] = None,
+                                 validate: bool = True,
                                  **kwargs) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
         Logical type priority:
@@ -138,7 +139,7 @@ class WoodworkTableAccessor:
                  Specified arguments will override the schema's typing information.
             index (str, optional): Name of the index column.
             time_index (str, optional): Name of the time index column.
-            logical_types (dict[str -> LogicalType], optional): Dictionary mapping column names in
+            logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
@@ -154,16 +155,16 @@ class WoodworkTableAccessor:
                 used as the value.
                 Semantic tags will be set to an empty set for any column not included in the
                 dictionary.
-            table_metadata (dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
-            column_metadata (dict[str -> dict[str -> json serializable]], optional): Dictionary mapping column names
+            table_metadata (Dict[str -> json serializable], optional): Dictionary containing extra metadata for Woodwork.
+            column_metadata (Dict[str -> Dict[str -> json serializable]], optional): Dictionary mapping column names
                 to that column's metadata dictionary.
-            use_standard_tags (bool, dict[str -> bool], optional): Determines whether standard semantic tags will be
+            use_standard_tags (bool, Dict[str -> bool], optional): Determines whether standard semantic tags will be
                 added to columns based on the specified logical type for the column.
                 If a single boolean is supplied, will apply the same use_standard_tags value to all columns.
                 A dictionary can be used to specify ``use_standard_tags`` values for individual columns.
                 Unspecified columns will use the default value of True.
-            column_descriptions (dict[str -> str], optional): Dictionary mapping column names to column descriptions.
-            column_origins (str, dict[str -> str], optional): Origin of each column. If a string is supplied, it is
+            column_descriptions (Dict[str -> str], optional): Dictionary mapping column names to column descriptions.
+            column_origins (str, Dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
@@ -463,9 +464,9 @@ class WoodworkTableAccessor:
         updating the Woodwork typing information for the DataFrame.
 
         Args:
-            logical_types (dict[str -> str], optional): A dictionary defining the new logical types for the
+            logical_types (Dict[str -> str], optional): A dictionary defining the new logical types for the
                 specified columns.
-            semantic_tags (dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
+            semantic_tags (Dict[str -> str/list/set], optional): A dictionary defining the new semantic_tags for the
                 specified columns.
             retain_index_tags (bool, optional): If True, will retain any index or time_index
                 semantic tags set on the column. If False, will replace all semantic tags any time a column's
@@ -524,7 +525,7 @@ class WoodworkTableAccessor:
         Will retain any previously set values.
 
         Args:
-            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+            semantic_tags (Dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataFrame to the tags that should be added to the column's semantic tags
         """
         self._schema.add_semantic_tags(semantic_tags)
@@ -536,7 +537,7 @@ class WoodworkTableAccessor:
         tags will set the Woodwork index or time index to None for the DataFrame.
 
         Args:
-            semantic_tags (dict[str -> str/list/set]): A dictionary mapping the columns
+            semantic_tags (Dict[str -> str/list/set]): A dictionary mapping the columns
                 in the DataFrame to the tags that should be removed from the column's semantic tags
         """
         self._schema.remove_semantic_tags(semantic_tags)
@@ -745,7 +746,7 @@ class WoodworkTableAccessor:
         """Renames columns in a DataFrame, maintaining Woodwork typing information.
 
         Args:
-            columns (dict[str -> str]): A dictionary mapping current column names to new column names.
+            columns (Dict[str -> str]): A dictionary mapping current column names to new column names.
             inplace (bool): If False, return a copy. Otherwise, do operation inplace and return None.
 
         Returns:
@@ -864,7 +865,7 @@ class WoodworkTableAccessor:
                 datetime columns. Defaults to 10. Will be ignored unless extra_stats=True.
 
         Returns:
-            dict[str -> dict]: A dictionary with a key for each column in the data or for each column
+            Dict[str -> dict]: A dictionary with a key for each column in the data or for each column
             matching the logical types, semantic tags or column names specified in ``include``, paired
             with a value containing a dictionary containing relevant statistics for that column.
         """
@@ -1014,9 +1015,9 @@ def _check_use_standard_tags(use_standard_tags):
         raise TypeError('use_standard_tags must be a dictionary or a boolean')
 
 
-def _infer_missing_logical_types(dataframe,
-                                 force_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
-                                 existing_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None):
+def _infer_missing_logical_types(dataframe: AnyDataFrame,
+                                 force_logical_types: Dict[ColumnName, Union[str, LogicalType]] = None,
+                                 existing_logical_types: Dict[ColumnName, Union[str, LogicalType]] = None):
     """Performs type inference and updates underlying data"""
     force_logical_types = force_logical_types or {}
     existing_logical_types = existing_logical_types or {}
@@ -1031,21 +1032,26 @@ def _infer_missing_logical_types(dataframe,
     return parsed_logical_types
 
 
-def _merge_use_standard_tags(existing_use_standard_tags: UseStandardTagsDict,
-                             use_standard_tags: Optional[Union[bool, UseStandardTagsDict]],
-                             column_names: Iterable[ColumnName], default_use_standard_tag=True) -> UseStandardTagsDict:
+def _merge_use_standard_tags(existing_use_standard_tags: UseStandardTagsDict = None,
+                             use_standard_tags: Union[bool, UseStandardTagsDict] = None,
+                             column_names: Iterable[ColumnName] = None,
+                             default_use_standard_tag: bool = True) -> UseStandardTagsDict:
     """Combines existing and kwarg use_standard_tags and returns a UseStandardTagsDict with all column names
        Priority when merging:
        1. use_standard tags
        2. existing_use_standard_tags
        3. default_use_standard_tag
     """
+    existing_use_standard_tags = existing_use_standard_tags or {}
+    use_standard_tags = use_standard_tags or {}
+    column_names = column_names or []
+
     if isinstance(use_standard_tags, bool):
         use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
     else:
         use_standard_tags = {**{col_name: default_use_standard_tag for col_name in column_names},
                              **existing_use_standard_tags,
-                             **(use_standard_tags or {})}
+                             **use_standard_tags}
     return use_standard_tags
 
 
