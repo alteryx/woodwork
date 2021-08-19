@@ -813,3 +813,9 @@ def test_series_methods_returning_frame(sample_series):
     reset_index_frame = sample_series.ww.reset_index(drop=False)
     assert _is_dataframe(reset_index_frame)
     assert reset_index_frame.ww.schema is not None
+
+
+def test_to_frame_no_name():
+    y = init_series(pd.Series([1, 2 , 3], dtype=int))
+    y.ww.to_frame()
+

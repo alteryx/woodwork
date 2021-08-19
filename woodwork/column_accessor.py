@@ -258,6 +258,7 @@ class WoodworkColumnAccessor:
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
                 elif _is_dataframe(result):
                     # Initialize Woodwork with a partial schema
+                    result.columns = [self.name]
                     col_schema = self.schema
                     table_schema = TableSchema(column_names=[self.name],
                                                logical_types={self.name: col_schema.logical_type},
