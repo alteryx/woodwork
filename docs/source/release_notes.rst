@@ -29,10 +29,10 @@ Breaking Changes
       Now, passing a partial schema to the ``init`` method calls the 
       ``init_with_partial_schema`` method instead of throwing an error. 
       Information from keyword arguments will override information from the
-      partial schema. For example, if column ``a`` is type int in the partial
-      schema, it's possible to use the ``logical_type`` argument to reinfer it's
-      logical type by passing ``{'a': None}`` or force a type by passing in
-      ``{'a': Double}``. These changes mean that Woodwork init is less
+      partial schema. For example, if column ``a`` has the Integer Logical Type
+      in the partial schema, it's possible to use the ``logical_type`` argument
+      to reinfer it's logical type by passing ``{'a': None}`` or force a type by
+      passing in ``{'a': Double}``. These changes mean that Woodwork init is less
       restrictive. If no type inference takes place and no changes are required
       of the DataFrame at initialization, ``init_with_full_schema`` should be
       used instead of ``init``. ``init_with_full_schema`` maintains the same
