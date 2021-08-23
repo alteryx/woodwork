@@ -134,6 +134,10 @@ class WoodworkTableAccessor:
         2. Types specified in ``partial_schema``
         3. Types inferred by ``ww.type_system.infer_logical_type``
 
+        Other Info priority:
+        1. Parameter passed in
+        2. Value specified in ``partial_schema``
+        
         Args:
             schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                  Specified arguments will override the schema's typing information.
