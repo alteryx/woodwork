@@ -1,9 +1,9 @@
-from __future__  import annotations
+from __future__ import annotations
 
 import copy
 import warnings
 import weakref
-from typing import Hashable, Iterable, Dict, List, Set, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Union
 
 import pandas as pd
 
@@ -42,7 +42,8 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 if TYPE_CHECKING:
-    from woodwork.typing import ColumnName, UseStandardTagsDict, AnyDataFrame
+    from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
+
 
 class WoodworkTableAccessor:
     def __init__(self, dataframe):
@@ -125,7 +126,7 @@ class WoodworkTableAccessor:
                                  column_metadata: Dict[ColumnName, dict] = None,
                                  use_standard_tags: Union[bool, UseStandardTagsDict] = None,
                                  column_descriptions: Dict[ColumnName, str] = None,
-                                 column_origins: Union[str,  Dict[ColumnName, str]] = None,
+                                 column_origins: Union[str, Dict[ColumnName, str]] = None,
                                  validate: bool = True,
                                  **kwargs) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
@@ -137,7 +138,7 @@ class WoodworkTableAccessor:
         Other Info priority:
         1. Parameter passed in
         2. Value specified in ``partial_schema``
-        
+
         Args:
             schema (Woodwork.TableSchema, optional): Typing information to use for the DataFrame instead of performing inference.
                  Specified arguments will override the schema's typing information.

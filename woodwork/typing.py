@@ -1,8 +1,8 @@
-from typing import Hashable, Dict, Union
+from typing import Dict, Hashable, Union
+
 import pandas as pd
-from woodwork.utils import (
-    import_or_none
-)
+
+from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')

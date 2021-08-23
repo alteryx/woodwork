@@ -821,9 +821,9 @@ def test_series_methods_returning_frame_no_name(sample_series):
                           origin='base',
                           metadata={'custom key': 'custom value'})
     sample_series.name = None
-    assert sample_series.name == None
+    assert sample_series.name is None
     sample_series.ww.name = None
-    assert sample_series.ww.name == None
+    assert sample_series.ww.name is None
     sample_frame = sample_series.ww.to_frame()
 
     assert _is_dataframe(sample_frame)

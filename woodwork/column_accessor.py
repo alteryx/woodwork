@@ -1,7 +1,6 @@
 import copy
 import warnings
 import weakref
-from woodwork.typing import ColumnName
 
 import pandas as pd
 
