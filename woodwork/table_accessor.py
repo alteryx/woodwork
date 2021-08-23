@@ -1047,16 +1047,13 @@ def _merge_use_standard_tags(existing_use_standard_tags: UseStandardTagsDict = N
        2. existing_use_standard_tags
        3. default_use_standard_tag
     """
-    existing_use_standard_tags = existing_use_standard_tags or {}
-    use_standard_tags = use_standard_tags or {}
     column_names = column_names or []
-
     if isinstance(use_standard_tags, bool):
         use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
     else:
         use_standard_tags = {**{col_name: default_use_standard_tag for col_name in column_names},
-                             **existing_use_standard_tags,
-                             **use_standard_tags}
+                             **(existing_use_standard_tags or {}),
+                             **(use_standard_tags or {})}
     return use_standard_tags
 
 
