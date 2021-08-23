@@ -42,7 +42,7 @@ dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
 if TYPE_CHECKING:
-    from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
+    from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict # pragma: no cover
 
 
 class WoodworkTableAccessor:
