@@ -812,4 +812,24 @@ def test_series_methods_returning_frame(sample_series):
 
     reset_index_frame = sample_series.ww.reset_index(drop=False)
     assert _is_dataframe(reset_index_frame)
-    assert reset_index_frame.ww.schema is None
+    assert reset_index_frame.ww.schema is not None
+
+
+def test_series_methods_returning_frame_no_name(sample_series):
+    sample_series.ww.init(semantic_tags={'test_tag'},
+                          description='custom description',
+                          origin='base',
+                          metadata={'custom key': 'custom value'})
+    sample_series.name = None
+    assert sample_series.name is None
+    sample_series.ww.name = None
+    assert sample_series.ww.name is None
+    sample_frame = sample_series.ww.to_frame()
+
+    assert _is_dataframe(sample_frame)
+    assert sample_frame.ww.schema is not None
+    assert sample_frame.ww.columns[0] == sample_series.ww.schema
+
+    reset_index_frame = sample_series.ww.reset_index(drop=False)
+    assert _is_dataframe(reset_index_frame)
+    assert reset_index_frame.ww.schema is not None

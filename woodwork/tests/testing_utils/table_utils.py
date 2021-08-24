@@ -70,3 +70,14 @@ def check_empty_box_plot_dict(box_plot_dict):
     assert all([np.isnan(elt) for elt in box_plot_dict['quantiles'].values()])
     assert len(box_plot_dict['low_values']) == 0
     assert len(box_plot_dict['high_values']) == 0
+
+
+def assert_schema_equal(left_schema, right_schema, deep=True):
+    assert left_schema.name == right_schema.name
+    assert left_schema.index == right_schema.index
+    assert left_schema.time_index == right_schema.time_index
+    assert set(left_schema.columns.keys()) == set(right_schema.columns.keys())
+    for col_name in left_schema.columns:
+        assert left_schema.columns[col_name].__eq__(right_schema.columns[col_name], deep=deep)
+    if deep:
+        assert left_schema.metadata == right_schema.metadata

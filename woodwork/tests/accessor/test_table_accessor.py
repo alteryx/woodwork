@@ -51,9 +51,11 @@ from woodwork.table_accessor import (
     WoodworkTableAccessor,
     _check_index,
     _check_logical_types,
+    _check_partial_schema,
     _check_time_index,
     _check_unique_column_names,
-    _check_use_standard_tags
+    _check_use_standard_tags,
+    _infer_missing_logical_types
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
@@ -62,6 +64,7 @@ from woodwork.tests.testing_utils import (
     to_pandas,
     validate_subset_schema
 )
+from woodwork.tests.testing_utils.table_utils import assert_schema_equal
 from woodwork.utils import import_or_none
 
 dd = import_or_none('dask.dataframe')
@@ -255,14 +258,14 @@ def test_accessor_separation_of_params(sample_df):
     assert schema_df.ww.name == 'test_name'
 
 
-def test_init_accessor_with_schema(sample_df):
+def test_init_with_full_schema(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(name='test_schema', semantic_tags={'id': 'test_tag'}, index='id')
     schema = schema_df.ww._schema
 
     head_df = schema_df.head(2)
     assert head_df.ww.schema is None
-    head_df.ww.init(schema=schema)
+    head_df.ww.init_with_full_schema(schema=schema)
 
     assert head_df.ww._schema is schema
     assert head_df.ww.name == 'test_schema'
@@ -270,7 +273,7 @@ def test_init_accessor_with_schema(sample_df):
 
     iloc_df = schema_df.loc[[2, 3]]
     assert iloc_df.ww.schema is None
-    iloc_df.ww.init(schema=schema)
+    iloc_df.ww.init_with_full_schema(schema=schema)
 
     assert iloc_df.ww._schema is schema
     assert iloc_df.ww.name == 'test_schema'
@@ -280,7 +283,7 @@ def test_init_accessor_with_schema(sample_df):
 
 
 def test_accessor_init_errors_methods(sample_df):
-    methods_to_exclude = ['init']
+    methods_to_exclude = ['init', 'init_with_full_schema', 'init_with_partial_schema']
     public_methods = [method for method in dir(sample_df.ww) if is_public_method(WoodworkTableAccessor, method)]
     public_methods = [method for method in public_methods if method not in methods_to_exclude]
     method_args_dict = {
@@ -335,12 +338,12 @@ def test_init_accessor_with_schema_errors(sample_df):
 
     error = 'Provided schema must be a Woodwork.TableSchema object.'
     with pytest.raises(TypeError, match=error):
-        iloc_df.ww.init(schema=int)
+        iloc_df.ww.init_with_full_schema(schema=int)
 
     error = ("Woodwork typing information is not valid for this DataFrame: "
              "The following columns in the typing information were missing from the DataFrame: {'datetime_with_NaT'}")
     with pytest.raises(ValueError, match=error):
-        iloc_df.ww.init(schema=schema)
+        iloc_df.ww.init_with_full_schema(schema=schema)
 
 
 def test_accessor_with_schema_parameter_warning(sample_df):
@@ -351,11 +354,11 @@ def test_accessor_with_schema_parameter_warning(sample_df):
     head_df = schema_df.head(2)
 
     warning = "A schema was provided and the following parameters were ignored: index, " \
-              "time_index, logical_types, already_sorted, use_standard_tags, semantic_tags"
+              "time_index, logical_types, already_sorted, semantic_tags, use_standard_tags"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
-        head_df.ww.init(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
-                        already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
-                        use_standard_tags={'id': True, 'age': False}, schema=schema)
+        head_df.ww.init_with_full_schema(index='ignored_id', time_index="ignored_time_index", logical_types={'ignored': 'ltypes'},
+                                         already_sorted=True, semantic_tags={'ignored_id': 'ignored_test_tag'},
+                                         use_standard_tags={'id': True, 'age': False}, schema=schema)
 
     assert head_df.ww.name == 'test_schema'
     assert head_df.ww.semantic_tags['id'] == {'index', 'test_tag'}
@@ -2393,7 +2396,7 @@ def test_maintain_column_order_disordered_schema(sample_df):
     assert all(scramble_df.columns == column_order)
     assert all(scramble_df.ww.types.index == column_order)
 
-    sample_df.ww.init(schema=scramble_df.ww.schema)
+    sample_df.ww.init_with_full_schema(schema=scramble_df.ww.schema)
     assert all(sample_df.columns == column_order)
     assert all(sample_df.ww.types.index == column_order)
 
@@ -2538,3 +2541,103 @@ def test_ltype_conversions_nullable_types():
         "Please confirm the underlying data is consistent with logical type Integer."
     with pytest.raises(TypeConversionError, match=error_msg):
         df.ww.set_types({'int_null': 'Integer'})
+
+
+def test_init_with_partial_schema_infer_types(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init()
+    schema = sample_df.ww[['id', 'full_name']].ww.schema
+
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(schema)
+    assert isinstance(test_df.ww.schema, TableSchema)
+    assert_schema_equal(test_df.ww.schema, sample_df.ww.schema)
+
+
+def test_init_with_partial_schema_full_schema(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init()
+
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(sample_df.ww.schema)
+    assert isinstance(test_df.ww.schema, TableSchema)
+    assert_schema_equal(test_df.ww.schema, sample_df.ww.schema)
+
+
+def test_init_with_partial_schema_override_schema(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init()
+    schema = sample_df.ww[['integer', 'categorical']].ww.schema
+
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(schema,
+                                        logical_types={'integer': 'categorical'},
+                                        use_standard_tags={'id': False})
+
+    assert sample_df.ww.logical_types['integer'] == schema.logical_types['integer']
+    assert test_df.ww.logical_types['integer'] != schema.logical_types['integer']
+    assert test_df.ww.semantic_tags['integer'] == set({'category'})
+    assert test_df.ww.logical_types['categorical'] == schema.logical_types['categorical']
+
+    assert not test_df.ww.semantic_tags['id']
+
+
+def test_init_with_partial_schema_all_existing_use_standard_tags_remain(sample_df):
+    expected_use_standard_tags = {col: False for col in sample_df.columns}
+    sample_df.ww.init(use_standard_tags=expected_use_standard_tags)
+    test_df = sample_df.copy()
+    test_df.ww.init_with_partial_schema(sample_df.ww.schema)
+    assert test_df.ww.schema.use_standard_tags == expected_use_standard_tags
+
+
+def test_init_with_partial_schema_some_existing_use_standard_tags(sample_df):
+    sample_df.ww.init(use_standard_tags={'integer': False})
+    test_df = sample_df.copy()
+    test_df.ww.init_with_partial_schema(sample_df.ww[['integer']].ww.schema, use_standard_tags={'full_name': False})
+    assert not test_df.ww.schema.use_standard_tags['integer']
+    assert not test_df.ww.schema.use_standard_tags['full_name']
+    assert test_df.ww.schema.use_standard_tags['categorical']
+
+
+def test_init_with_partial_schema_use_standard_tags_boolean_override(sample_df):
+    sample_df.ww.init()
+    test_df = sample_df.copy()
+    assert sample_df.ww.schema.use_standard_tags['integer']
+    test_df.ww.init_with_partial_schema(sample_df.ww.schema, use_standard_tags=False)
+    expected_use_standard_tags = {col: False for col in sample_df.columns}
+    assert test_df.ww.schema.use_standard_tags == expected_use_standard_tags
+
+
+def test_init_with_partial_schema_metadata_deep_copy(sample_df):
+    test_df = sample_df.copy()
+    sample_df.ww.init(table_metadata={'test': '123'})
+    schema = sample_df.ww[['id', 'full_name']].ww.schema
+    assert schema.metadata
+    assert test_df.ww.schema is None
+    test_df.ww.init_with_partial_schema(schema)
+    assert test_df.ww.schema.metadata
+    test_df.ww._schema.metadata['test2'] = '345'
+    assert schema.metadata != test_df.ww.schema.metadata
+
+
+def test_check_partial_schema(sample_df):
+    sample_df.ww.init()
+    error_message = 'Provided schema must be a Woodwork.TableSchema object.'
+    with pytest.raises(TypeError, match=error_message):
+        _check_partial_schema(sample_df, 'not a schema')
+
+    drop_column = 'full_name'
+    missing_column_df = sample_df.drop(drop_column, axis=1)
+    error_message = 'The following columns in the typing information were missing from the DataFrame: {\'full_name\'}\''
+    with pytest.raises(ColumnNotPresentError, match=error_message):
+        _check_partial_schema(missing_column_df, sample_df.ww.schema)
+
+
+def test_infer_missing_logical_types_force_infer(sample_df):
+    sample_df.ww.init()
+    existing_logical_types = sample_df.ww.schema.logical_types
+    sample_df['age'] = sample_df['age'].astype('double')
+    force_logical_types = {'age': None}
+    assert existing_logical_types['age'] is not None
+    parsed_logical_types = _infer_missing_logical_types(sample_df, force_logical_types, existing_logical_types)
+    assert parsed_logical_types['age'] == Double()

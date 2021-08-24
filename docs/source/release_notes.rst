@@ -7,6 +7,7 @@ Future Release
 ===============
     * Enhancements
         * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
+        * Add initialize with partial table schema  (:pr:`1100`)
         * Apply ordering specified by the ``Ordinal`` logical type to underlying series (:pr:`1097`)
     * Fixes
     * Changes
@@ -14,7 +15,28 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`tamargrey`
+    :user:`davesque`, :user:`tamargrey`, :user:`tuethan1999`
+    
+Breaking Changes
+++++++++++++++++
+    * :pr:``1100``: The behavior for ``init`` has changed. A full schema is a
+      schema that contains all of the columns of the dataframe it describes
+      whereas a partial schema only contains a subset. A full schema will also
+      require that the schema is valid without having to make any changes to 
+      the DataFrame. Before, only a full schema was permitted by the ``init`` 
+      method so passing a partial schema would error. Additionally, any
+      parameters like ``logical_types`` would be ignored if passing in a schema.
+      Now, passing a partial schema to the ``init`` method calls the 
+      ``init_with_partial_schema`` method instead of throwing an error. 
+      Information from keyword arguments will override information from the
+      partial schema. For example, if column ``a`` has the Integer Logical Type
+      in the partial schema, it's possible to use the ``logical_type`` argument
+      to reinfer it's logical type by passing ``{'a': None}`` or force a type by
+      passing in ``{'a': Double}``. These changes mean that Woodwork init is less
+      restrictive. If no type inference takes place and no changes are required
+      of the DataFrame at initialization, ``init_with_full_schema`` should be
+      used instead of ``init``. ``init_with_full_schema`` maintains the same
+      functionality as when a schema was passed to the old ``init``.
 
 v0.6.0 Aug 4, 2021
 ==================

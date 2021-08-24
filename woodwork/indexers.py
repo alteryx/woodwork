@@ -52,6 +52,6 @@ def _process_selection(selection, original_data):
         # Selecting a new DataFrame from an existing DataFrame
         schema = original_data.ww.schema
         new_schema = schema._get_subset_schema(list(selection.columns))
-        selection.ww.init(schema=new_schema, validate=False)
+        selection.ww.init_with_full_schema(schema=new_schema, validate=False)
     # Selecting a single value or return selection from above
     return selection
