@@ -1,9 +1,7 @@
-from __future__ import annotations
-
 import copy
 import warnings
 import weakref
-from typing import TYPE_CHECKING, Dict, Iterable, List, Set, Union
+from typing import Dict, Iterable, List, Set, Union
 
 import pandas as pd
 
@@ -41,12 +39,11 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-if TYPE_CHECKING:
-    from woodwork.typing import (  # pragma: no cover
-        AnyDataFrame,
-        ColumnName,
-        UseStandardTagsDict
-    )
+from woodwork.typing import (
+    AnyDataFrame,
+    ColumnName,
+    UseStandardTagsDict
+)
 
 
 class WoodworkTableAccessor:
