@@ -39,11 +39,7 @@ from woodwork.utils import (
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
 
-from woodwork.typing import (
-    AnyDataFrame,
-    ColumnName,
-    UseStandardTagsDict
-)
+from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
 
 
 class WoodworkTableAccessor:
