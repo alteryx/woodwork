@@ -29,6 +29,7 @@ from woodwork.statistics_utils import (
 )
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
+from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
 from woodwork.utils import (
     _get_column_logical_type,
     _parse_logical_type,
@@ -38,8 +39,6 @@ from woodwork.utils import (
 
 dd = import_or_none('dask.dataframe')
 ks = import_or_none('databricks.koalas')
-
-from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
 
 
 class WoodworkTableAccessor:
