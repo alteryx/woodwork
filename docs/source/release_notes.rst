@@ -9,6 +9,7 @@ Future Release
         * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
         * Add initialize with partial table schema  (:pr:`1100`)
         * Apply ordering specified by the ``Ordinal`` logical type to underlying series (:pr:`1097`)
+        * Add ``AgeFractional`` logical type (:pr:`1112`)
     * Fixes
     * Changes
     * Documentation Changes
