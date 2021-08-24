@@ -10,6 +10,7 @@ from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
     URL,
     Age,
+    AgeFractional,
     AgeNullable,
     Boolean,
     BooleanNullable,
@@ -291,7 +292,7 @@ def test_describe_accessor_method(describe_df):
     datetime_ltypes = [Datetime]
     formatted_datetime_ltypes = [Datetime(datetime_format='%Y~%m~%d')]
     timedelta_ltypes = [Timedelta]
-    nullable_numeric_ltypes = [Double, IntegerNullable, AgeNullable]
+    nullable_numeric_ltypes = [Double, IntegerNullable, AgeNullable, AgeFractional]
     non_nullable_numeric_ltypes = [Integer, Age]
     natural_language_ltypes = [EmailAddress, Filepath, PersonFullName, IPAddress,
                                PhoneNumber, URL]

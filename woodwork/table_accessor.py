@@ -779,7 +779,7 @@ class WoodworkTableAccessor:
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
-        follows:  Age, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
+        follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
         Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
 
         Args:
@@ -811,7 +811,7 @@ class WoodworkTableAccessor:
     def mutual_information(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
-        follows:  Age, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
+        follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
         Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
 
         Args:

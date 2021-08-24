@@ -26,6 +26,7 @@ from woodwork.logical_types import (
     URL,
     Address,
     Age,
+    AgeFractional,
     AgeNullable,
     Boolean,
     BooleanNullable,
@@ -878,16 +879,17 @@ def test_sets_float64_dtype_on_init():
         pd.Series([1.1, np.nan, 3], name=column_name),
     ]
 
-    logical_type = Double
+    logical_types = [Double, AgeFractional]
     for series in series_list:
         series = series.astype('object')
-        ltypes = {
-            column_name: logical_type,
-        }
-        df = pd.DataFrame(series)
-        df.ww.init(logical_types=ltypes)
-        assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
-        assert df[column_name].dtype == logical_type.primary_dtype
+        for logical_type in logical_types:
+            ltypes = {
+                column_name: logical_type,
+            }
+            df = pd.DataFrame(series)
+            df.ww.init(logical_types=ltypes)
+            assert isinstance(df.ww.columns[column_name].logical_type, logical_type)
+            assert df[column_name].dtype == logical_type.primary_dtype
 
 
 def test_sets_datetime64_dtype_on_init():
