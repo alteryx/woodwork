@@ -17,6 +17,7 @@ from woodwork.logical_types import (
     URL,
     Address,
     Age,
+    AgeFractional,
     AgeNullable,
     Boolean,
     BooleanNullable,
@@ -44,6 +45,7 @@ from woodwork.logical_types import (
 DEFAULT_INFERENCE_FUNCTIONS = {
     Address: None,
     Age: None,
+    AgeFractional: None,
     AgeNullable: None,
     Boolean: boolean_func,
     BooleanNullable: boolean_nullable_func,
@@ -75,6 +77,7 @@ DEFAULT_RELATIONSHIPS = [
     (Categorical, Ordinal),
     (Categorical, PostalCode),
     (Categorical, SubRegionCode),
+    (Double, AgeFractional),
     (Integer, Age),
     (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer)

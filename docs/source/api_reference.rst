@@ -138,6 +138,7 @@ Logical Types
 
     Address
     Age
+    AgeFractional
     AgeNullable
     Boolean
     BooleanNullable

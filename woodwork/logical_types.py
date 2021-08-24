@@ -74,7 +74,8 @@ class Address(LogicalType):
 
 
 class Age(LogicalType):
-    """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag.
+    """Represents Logical Types that contain whole numbers indicating a person's age.
+    Has 'numeric' as a standard tag.
 
     Examples:
         .. code-block:: python
@@ -86,8 +87,23 @@ class Age(LogicalType):
     standard_tags = {'numeric'}
 
 
+class AgeFractional(LogicalType):
+    """Represents Logical Types that contain non-negative floating point numbers indicating a person's age.
+    Has 'numeric' as a standard tag. May also contain null values.
+
+    Examples:
+        .. code-block:: python
+
+            [0.34, 24.34, 45.0]
+            [30.5, 62.82, np.nan]
+    """
+    primary_dtype = 'float64'
+    standard_tags = {'numeric'}
+
+
 class AgeNullable(LogicalType):
-    """Represents Logical Types that contain non-negative numbers indicating a person's age. Has 'numeric' as a standard tag. May also contain null values.
+    """Represents Logical Types that contain whole numbers indicating a person's age.
+    Has 'numeric' as a standard tag. May also contain null values.
 
     Examples:
         .. code-block:: python
