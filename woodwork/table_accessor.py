@@ -189,7 +189,12 @@ class WoodworkTableAccessor:
 
         if schema:  # pull schema parameters
             name = name or schema.name
+
             index = index or schema.index
+            # validate that the schema's index, if being used is still valid
+            if validate and schema.index == index:
+                _check_index(self._dataframe, index)
+
             time_index = time_index or schema.time_index
             table_metadata = table_metadata or schema.metadata
             for col_name, col_schema in schema.columns.items():

@@ -2643,3 +2643,16 @@ def test_infer_missing_logical_types_force_infer(sample_df):
     assert existing_logical_types['age'] is not None
     parsed_logical_types = _infer_missing_logical_types(sample_df, force_logical_types, existing_logical_types)
     assert parsed_logical_types['age'] == Double()
+
+
+def test_validate_unique_index_with_partial_schema():
+    # --> only for pandas dfs
+    df = pd.DataFrame({'id': [0, 1, 2], 'col': [4, 5, 6]})
+
+    bad_index_df = df.copy()
+    bad_index_df['id'] = pd.Series([1, 1, 1])
+
+    df.ww.init(index='id')
+
+    with pytest.raises(IndexError, match='Index column must be unique'):
+        bad_index_df.ww.init(schema=df.ww._schema)
