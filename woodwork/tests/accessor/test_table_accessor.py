@@ -2655,3 +2655,16 @@ def test_validate_unique_index_with_partial_schema():
 
     with pytest.raises(IndexError, match='Index column must be unique'):
         bad_index_df.ww.init(schema=df.ww._schema)
+
+
+def test_falsy_columns_in_partial_schema(falsy_names_df):
+    if _is_dask_dataframe(falsy_names_df):
+        pytest.xfail('Dask DataFrames cannot handle integer column names')
+    new_df = falsy_names_df.copy()
+
+    falsy_names_df.ww.init(name='df_name')
+
+    new_df.ww.init(schema=falsy_names_df.ww._schema, index=0, time_index='', name=0)
+    assert new_df.ww.index == 0
+    assert new_df.ww.time_index == ''
+    assert new_df.ww.name == 0

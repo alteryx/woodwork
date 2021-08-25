@@ -188,14 +188,9 @@ class WoodworkTableAccessor:
         existing_col_origins = {}
 
         if schema:  # pull schema parameters
-            name = name or schema.name
-
-            index = index or schema.index
-            # validate that the schema's index, if being used is still valid
-            if validate and schema.index == index:
-                _check_index(self._dataframe, index)
-
-            time_index = time_index or schema.time_index
+            name = name if name is not None else schema.name
+            index = index if index is not None else schema.index
+            time_index = time_index if time_index is not None else schema.time_index
             table_metadata = table_metadata or schema.metadata
             for col_name, col_schema in schema.columns.items():
                 existing_logical_types[col_name] = col_schema.logical_type
@@ -956,6 +951,9 @@ def _validate_accessor_params(dataframe, index, time_index, logical_types, schem
         _check_use_standard_tags(use_standard_tags)
     if schema is not None:
         _check_partial_schema(dataframe, schema)
+        if index is None:
+            # if no index was passed in as a parameter we need to validate the existing index
+            index = schema.index
     if index is not None:
         _check_index(dataframe, index)
     if logical_types:
