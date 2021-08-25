@@ -2646,7 +2646,6 @@ def test_infer_missing_logical_types_force_infer(sample_df):
 
 
 def test_validate_unique_index_with_partial_schema():
-    # --> only for pandas dfs
     df = pd.DataFrame({'id': [0, 1, 2], 'col': [4, 5, 6]})
 
     bad_index_df = df.copy()
