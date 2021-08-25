@@ -3,20 +3,26 @@
 Release Notes
 -------------
 
-Future Release
-===============
+.. Future Release
+  ===============
+  * Enhancements
+  * Fixes
+  * Changes
+  * Documentation Changes
+  * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.7.0 Aug 25, 2021
+===================
     * Enhancements
         * Add ``'passthrough'`` and ``'ignore'`` to tags in ``list_semantic_tags`` (:pr:`1094`)
         * Add initialize with partial table schema  (:pr:`1100`)
         * Apply ordering specified by the ``Ordinal`` logical type to underlying series (:pr:`1097`)
         * Add ``AgeFractional`` logical type (:pr:`1112`)
-    * Fixes
-    * Changes
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`tamargrey`, :user:`tuethan1999`
+    :user:`davesque`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`tuethan1999`
     
 Breaking Changes
 ++++++++++++++++
