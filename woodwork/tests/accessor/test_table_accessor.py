@@ -2643,3 +2643,28 @@ def test_infer_missing_logical_types_force_infer(sample_df):
     assert existing_logical_types['age'] is not None
     parsed_logical_types = _infer_missing_logical_types(sample_df, force_logical_types, existing_logical_types)
     assert parsed_logical_types['age'] == Double()
+
+
+def test_validate_unique_index_with_partial_schema():
+    df = pd.DataFrame({'id': [0, 1, 2], 'col': [4, 5, 6]})
+
+    bad_index_df = df.copy()
+    bad_index_df['id'] = pd.Series([1, 1, 1])
+
+    df.ww.init(index='id')
+
+    with pytest.raises(IndexError, match='Index column must be unique'):
+        bad_index_df.ww.init(schema=df.ww._schema)
+
+
+def test_falsy_columns_in_partial_schema(falsy_names_df):
+    if _is_dask_dataframe(falsy_names_df):
+        pytest.xfail('Dask DataFrames cannot handle integer column names')
+    new_df = falsy_names_df.copy()
+
+    falsy_names_df.ww.init(name='df_name')
+
+    new_df.ww.init(schema=falsy_names_df.ww._schema, index=0, time_index='', name=0)
+    assert new_df.ww.index == 0
+    assert new_df.ww.time_index == ''
+    assert new_df.ww.name == 0
