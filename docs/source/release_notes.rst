@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Validate schema's index if being used in partial schema init (:pr:`1115`)
+        * Allow falsy index, time index, and name values to be set along with partial schema at init (:pr:`1115`)
     * Changes
     * Documentation Changes
     * Testing Changes
