@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ===============
-  * Enhancements
-  * Fixes
-  * Changes
-  * Documentation Changes
-  * Testing Changes
+Future Release
+===============
+    * Enhancements
+    * Fixes
+        * Validate schema's index if being used in partial schema init (:pr:`1115`)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
 
 v0.7.0 Aug 25, 2021
 ===================
