@@ -2,16 +2,21 @@
 
 Release Notes
 -------------
-
-Future Release
-===============
+.. Future Release
+  ===============
     * Enhancements
     * Fixes
-        * Validate schema's index if being used in partial schema init (:pr:`1115`)
-        * Allow falsy index, time index, and name values to be set along with partial schema at init (:pr:`1115`)
     * Changes
     * Documentation Changes
     * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.7.1 Aug 25, 2021
+===================
+    * Fixes
+        * Validate schema's index if being used in partial schema init (:pr:`1115`)
+        * Allow falsy index, time index, and name values to be set along with partial schema at init (:pr:`1115`)
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`
