@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -76,41 +78,29 @@ def timedelta_func(series):
     return False
 
 
-def email_address_func(series: pd.Series) -> bool:
-    regex = ww.config.get_option('email_inference_regex')
+class InferWithRegex:
+    def __init__(self, get_regex: Callable[[], str]):
+        self.get_regex = get_regex
 
-    # Includes a check for object dtypes
-    if not pdtypes.is_string_dtype(series.dtype):
-        return False
+    def __call__(self, series: pd.Series) -> bool:
+        regex = self.get_regex()
 
-    try:
-        series_match_method = series.str.match
-    except (AttributeError, TypeError):
-        # This can happen either when the inferred dtype for a series is not
-        # compatible with the pandas string API (AttributeError) *or* when the
-        # inferred dtype is not compatible with the string API `match` method
-        # (TypeError)
-        return False
-    matches = series_match_method(pat=regex)
+        # Includes a check for object dtypes
+        if not pdtypes.is_string_dtype(series.dtype):
+            return False
 
-    return matches.sum() == matches.count()
+        try:
+            series_match_method = series.str.match
+        except (AttributeError, TypeError):
+            # This can happen either when the inferred dtype for a series is not
+            # compatible with the pandas string API (AttributeError) *or* when the
+            # inferred dtype is not compatible with the string API `match` method
+            # (TypeError)
+            return False
+        matches = series_match_method(pat=regex)
+
+        return matches.sum() == matches.count()
 
 
-def url_func(series: pd.Series) -> bool:
-    regex = ww.config.get_option('url_inference_regex')
-
-    # Includes a check for object dtypes
-    if not pdtypes.is_string_dtype(series.dtype):
-        return False
-
-    try:
-        series_match_method = series.str.match
-    except (AttributeError, TypeError):
-        # This can happen either when the inferred dtype for a series is not
-        # compatible with the pandas string API (AttributeError) *or* when the
-        # inferred dtype is not compatible with the string API `match` method
-        # (TypeError)
-        return False
-    matches = series_match_method(pat=regex)
-
-    return matches.sum() == matches.count()
+email_address_func = InferWithRegex(lambda: ww.config.get_option('email_inference_regex'))
+url_func = InferWithRegex(lambda: ww.config.get_option('url_inference_regex'))
