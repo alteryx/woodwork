@@ -55,7 +55,7 @@ def sample_df_pandas():
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown', 'Ms. Paige Turner'],
         'email': ['john.smith@example.com', np.nan, 'team@featuretools.com', 'junk@example.com'],
         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555', '555-555-5555'],
-        'age': pd.Series([pd.NA, 33, 33, 57], dtype='Int64'),
+        'age': pd.Series([pd.NA, 33, 53, 57], dtype='Int64'),
         'signup_date': [pd.to_datetime('2020-09-01')] * 4,
         'is_registered': pd.Series([pd.NA, False, True, True], dtype='boolean'),
         'double': [0, 1, 0.0001, -5.4321],
