@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 
 from woodwork.logical_types import (
+    URL,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -65,6 +66,7 @@ def sample_df_pandas():
         'boolean': [True, False, False, True],
         'categorical': pd.Series(["a", "b", "c", "a"], dtype="category"),
         'datetime_with_NaT': [pd.to_datetime('2020-09-01')] * 3 + [pd.NaT],
+        'url': ['https://github.com/alteryx/woodwork', 'https://twitter.com/AlteryxOSS', np.nan, 'http://google.com'],
     })
 
 
@@ -595,6 +597,7 @@ def sample_inferred_logical_types():
             'boolean': Boolean,
             'categorical': Categorical,
             'datetime_with_NaT': Datetime,
+            'url': URL,
             }
 
 
@@ -614,6 +617,7 @@ def sample_correct_logical_types():
             'boolean': Boolean,
             'categorical': Categorical,
             'datetime_with_NaT': Datetime,
+            'url': URL,
             }
 
 

@@ -94,3 +94,23 @@ def email_address_func(series: pd.Series) -> bool:
     matches = series_match_method(pat=regex)
 
     return matches.sum() == matches.count()
+
+
+def url_func(series: pd.Series) -> bool:
+    regex = ww.config.get_option('url_inference_regex')
+
+    # Includes a check for object dtypes
+    if not pdtypes.is_string_dtype(series.dtype):
+        return False
+
+    try:
+        series_match_method = series.str.match
+    except (AttributeError, TypeError):
+        # This can happen either when the inferred dtype for a series is not
+        # compatible with the pandas string API (AttributeError) *or* when the
+        # inferred dtype is not compatible with the string API `match` method
+        # (TypeError)
+        return False
+    matches = series_match_method(pat=regex)
+
+    return matches.sum() == matches.count()

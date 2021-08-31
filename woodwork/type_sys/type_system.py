@@ -9,7 +9,8 @@ from .inference_functions import (
     email_address_func,
     integer_func,
     integer_nullable_func,
-    timedelta_func
+    timedelta_func,
+    url_func
 )
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
@@ -66,7 +67,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     PostalCode: None,
     SubRegionCode: None,
     Timedelta: timedelta_func,
-    URL: None,
+    URL: url_func,
     Unknown: None
 }
 
