@@ -2,8 +2,8 @@
 
 Release Notes
 -------------
-.. Future Release
-  ===============
+Future Release
+===============
     * Enhancements
         * Add support for automatically inferring the ``URL`` logical type (:pr:`1122`)
     * Fixes
@@ -11,8 +11,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-    :user:`ajaypallekonda`,
+    Thanks to the following people for contributing to this release:
+    :user:`ajaypallekonda`
 
 v0.7.1 Aug 25, 2021
 ===================
