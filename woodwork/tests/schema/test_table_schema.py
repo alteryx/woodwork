@@ -80,6 +80,7 @@ def test_schema_types(sample_column_names, sample_inferred_logical_types):
                              'categorical': "['category']",
                              'datetime_with_NaT': '[]',
                              'url': '[]',
+                             'ip_address': '[]',
                              'formatted_date': '[]'}
     correct_semantic_tags = pd.Series(list(correct_semantic_tags.values()),
                                       index=list(correct_semantic_tags.keys()))
@@ -275,7 +276,8 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
                 'nullable_integer',
                 'is_registered',
                 'id',
-                'url'}
+                'url',
+                'ip_address'}
     assert filtered_log_type == filtered_log_type_string
     assert set(filtered_log_type) == expected
 
@@ -293,7 +295,8 @@ def test_filter_schema_cols_exclude(sample_column_names, sample_inferred_logical
                 'signup_date',
                 'boolean',
                 'id',
-                'url'}
+                'url',
+                'ip_address'}
     assert set(filtered_multiple_overlap) == expected
 
 

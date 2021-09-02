@@ -12,6 +12,7 @@ from woodwork.logical_types import (
     EmailAddress,
     Integer,
     IntegerNullable,
+    IPAddress,
     PersonFullName,
     PhoneNumber,
     Unknown
@@ -67,6 +68,7 @@ def sample_df_pandas():
         'categorical': pd.Series(["a", "b", "c", "a"], dtype="category"),
         'datetime_with_NaT': [pd.to_datetime('2020-09-01')] * 3 + [pd.NaT],
         'url': ['https://github.com/alteryx/woodwork', 'https://twitter.com/AlteryxOSS', np.nan, 'http://google.com'],
+        'ip_address': ['172.16.254.1', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', '1762:0:0:0:0:B03:1:AF18', np.nan],
     })
 
 
@@ -598,6 +600,7 @@ def sample_inferred_logical_types():
             'categorical': Categorical,
             'datetime_with_NaT': Datetime,
             'url': URL,
+            'ip_address': IPAddress,
             }
 
 
@@ -618,6 +621,7 @@ def sample_correct_logical_types():
             'categorical': Categorical,
             'datetime_with_NaT': Datetime,
             'url': URL,
+            'ip_address': IPAddress,
             }
 
 

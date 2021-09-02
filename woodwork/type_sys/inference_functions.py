@@ -1,5 +1,3 @@
-from typing import Callable
-
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -79,11 +77,13 @@ def timedelta_func(series):
 
 
 class InferWithRegex:
-    def __init__(self, get_regex: Callable[[], str]):
+    def __init__(self, get_regex):
         self.get_regex = get_regex
 
     def __call__(self, series: pd.Series) -> bool:
-        regex = self.get_regex()
+        regex_list = []
+        for regex in self.get_regex:
+            regex_list.append(ww.config.get_option(regex))
 
         # Includes a check for object dtypes
         if not pdtypes.is_string_dtype(series.dtype):
@@ -97,10 +97,11 @@ class InferWithRegex:
             # inferred dtype is not compatible with the string API `match` method
             # (TypeError)
             return False
-        matches = series_match_method(pat=regex)
+        matches = series_match_method(pat='(' + '|'.join(regex_list) + ')')
 
         return matches.sum() == matches.count()
 
 
-email_address_func = InferWithRegex(lambda: ww.config.get_option('email_inference_regex'))
-url_func = InferWithRegex(lambda: ww.config.get_option('url_inference_regex'))
+email_address_func = InferWithRegex(['email_inference_regex'])
+url_func = InferWithRegex(['url_inference_regex'])
+ip_address_func = InferWithRegex(['ipv4_inference_regex', 'ipv6_inference_regex'])

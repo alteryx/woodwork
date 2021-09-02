@@ -15,7 +15,7 @@ from woodwork.type_sys.utils import (
 )
 from woodwork.utils import _is_s3, _is_url
 
-SCHEMA_VERSION = '11.2.0'
+SCHEMA_VERSION = '11.3.0'
 FORMATS = ['csv', 'pickle', 'parquet', 'arrow', 'feather', 'orc']
 
 
