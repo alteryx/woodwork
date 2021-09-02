@@ -5,7 +5,8 @@ Release Notes
 Future Release
 ===============
     * Enhancements
-        * Add support for automatically inferring the ``URL`` and ``IPAddress`` logical types (:pr:`1122`, :pr:`14`)
+        * Add support for automatically inferring the ``URL`` logical type (:pr:`1122`)
+        * Add support for automatically inferring the ``IPAddress`` logical type (:pr:`14`)
     * Fixes
     * Changes
     * Documentation Changes
