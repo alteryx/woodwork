@@ -1,4 +1,5 @@
 from typing import Callable
+
 import pandas as pd
 import pandas.api.types as pdtypes
 
