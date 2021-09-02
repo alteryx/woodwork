@@ -9,6 +9,7 @@ from .inference_functions import (
     email_address_func,
     integer_func,
     integer_nullable_func,
+    ip_address_func,
     timedelta_func,
     url_func
 )
@@ -59,7 +60,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     PersonFullName: None,
     Integer: integer_func,
     IntegerNullable: integer_nullable_func,
-    IPAddress: None,
+    IPAddress: ip_address_func,
     LatLong: None,
     NaturalLanguage: None,
     Ordinal: None,

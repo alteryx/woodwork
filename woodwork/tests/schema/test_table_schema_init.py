@@ -94,7 +94,7 @@ def test_check_logical_types_errors(sample_column_names):
     }
     error_message = re.escape("logical_types is missing columns that are present in TableSchema: "
                               "['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan', "
-                              "'integer', 'is_registered', 'nullable_integer', 'signup_date', 'url']")
+                              "'integer', 'ip_address', 'is_registered', 'nullable_integer', 'signup_date', 'url']")
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
 
@@ -490,7 +490,8 @@ def test_use_standard_tags_from_dict(sample_column_names, sample_inferred_logica
                          'boolean': False,
                          'categorical': False,
                          'datetime_with_NaT': False,
-                         'url': False}
+                         'url': False,
+                         'ip_address': False}
     full_dict_schema = TableSchema(sample_column_names, sample_inferred_logical_types,
                                    use_standard_tags=use_standard_tags)
     assert full_dict_schema.use_standard_tags == use_standard_tags
