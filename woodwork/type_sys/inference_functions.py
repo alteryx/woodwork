@@ -1,3 +1,4 @@
+from typing import Callable
 import pandas as pd
 import pandas.api.types as pdtypes
 
@@ -77,7 +78,7 @@ def timedelta_func(series):
 
 
 class InferWithRegex:
-    def __init__(self, get_regex):
+    def __init__(self, get_regex: Callable[[], str]):
         self.get_regex = get_regex
 
     def __call__(self, series: pd.Series) -> bool:
