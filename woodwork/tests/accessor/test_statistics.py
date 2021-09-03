@@ -253,6 +253,7 @@ def test_get_valid_mi_columns(df_mi):
 
     assert (valid_columns == valid_mi_columns).all()
 
+
 def test_get_valid_mi_columns_with_index(sample_df):
     sample_df.ww.init(index='id')
     mi = sample_df.ww.get_valid_mi_columns()
@@ -261,6 +262,7 @@ def test_get_valid_mi_columns_with_index(sample_df):
 
     mi = sample_df.ww.get_valid_mi_columns(include_index=True)
     assert 'id' in mi
+
 
 def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
