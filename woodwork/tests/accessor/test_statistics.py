@@ -245,6 +245,15 @@ def test_mutual_info_callback(df_mi):
     assert mock_callback.total_elapsed_time > 0
 
 
+def test_get_valid_mi_columns(df_mi):
+    df_mi.ww.init()
+    valid_columns = df_mi.ww.get_valid_mi_columns()
+    mi = df_mi.ww.mutual_information()
+    valid_mi_columns = (mi.column_1.append(mi.column_2)).unique()
+
+    assert (valid_columns == valid_mi_columns).all()
+
+
 def test_get_describe_dict(describe_df):
     describe_df.ww.init(index='index_col')
 

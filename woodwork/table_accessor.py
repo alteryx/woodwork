@@ -25,6 +25,7 @@ from woodwork.logical_types import Datetime, LogicalType
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
+    _get_valid_mi_columns,
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
@@ -780,7 +781,7 @@ class WoodworkTableAccessor:
         Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
-        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
+        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -812,7 +813,7 @@ class WoodworkTableAccessor:
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Logical Types that support mutual information are as
         follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
-        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
+        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -840,6 +841,17 @@ class WoodworkTableAccessor:
         """
         mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
+
+    def get_valid_mi_columns(self):
+        """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual 
+        information. Logical Types that support mutual information are as follows:  Age, AgeFractional, 
+        AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, 
+        IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
+
+        Returns:
+            list: A list of column names that have valid Logical Types that support mutual information.
+        """
+        return _get_valid_mi_columns(self._dataframe)
 
     @_check_table_schema
     def describe_dict(self, include=None, callback=None, extra_stats=False, bins=10, top_x=10, recent_x=10):

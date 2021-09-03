@@ -294,6 +294,7 @@ def test_accessor_init_errors_methods(sample_df):
         'describe': None,
         'describe_dict': None,
         'drop': ['id'],
+        'get_valid_mi_columns': None,
         'mutual_information': None,
         'mutual_information_dict': None,
         'remove_semantic_tags': [{'id': 'new_tag'}],
