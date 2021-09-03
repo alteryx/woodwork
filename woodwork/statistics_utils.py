@@ -300,10 +300,17 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     return mutual_info
 
 
-def _get_valid_mi_columns(dataframe):
+def _get_valid_mi_columns(dataframe, include_index=False):
     """Returns a list of column names a list of columns from the DataFrame with valid 
         Logical Types that support mutual information. 
 
+    Args:
+        dataframe (pd.DataFrame): Data containing Woodwork typing information
+            from which to calculate mutual information.
+        include_index (bool): If True, the column specified as the index will be
+            included as long as its LogicalType is valid for mutual information calculations.
+            If False, the index column will not have mutual information calculated for it.
+            Defaults to False.
 
     Returns:
         list: A list of column names that have valid Logical Types that support 
@@ -311,7 +318,7 @@ def _get_valid_mi_columns(dataframe):
     """
     valid_types = get_valid_mi_types()
     valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) in valid_types]
-    if dataframe.ww.index is not None:
+    if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
 
     return valid_columns
