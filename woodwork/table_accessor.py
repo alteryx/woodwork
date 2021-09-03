@@ -843,9 +843,9 @@ class WoodworkTableAccessor:
         return pd.DataFrame(mutual_info)
 
     def get_valid_mi_columns(self, include_index=False):
-        """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual 
-        information. Logical Types that support mutual information are as follows:  Age, AgeFractional, 
-        AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, 
+        """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
+        information. Logical Types that support mutual information are as follows:  Age, AgeFractional,
+        AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer,
         IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
 
         Args:
