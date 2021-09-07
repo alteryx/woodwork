@@ -256,9 +256,8 @@ def test_get_valid_mi_columns(df_mi):
 
 def test_get_valid_mi_columns_with_index(sample_df):
     sample_df.ww.init(index='id')
-    mi = sample_df.ww.get_valid_mi_columns()
-
-    assert not ('id' in mi)
+    mi = sample_df.ww.get_valid_mi_columns(include_index=False)
+    assert 'id' not in mi
 
     mi = sample_df.ww.get_valid_mi_columns(include_index=True)
     assert 'id' in mi

@@ -779,9 +779,8 @@ class WoodworkTableAccessor:
     def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Logical Types that support mutual information are as
-        follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
-        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
+        support mutual information. Use get_valid_mi_types to see which Logical Types support 
+        mutual information.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -811,9 +810,8 @@ class WoodworkTableAccessor:
 
     def mutual_information(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Logical Types that support mutual information are as
-        follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
-        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
+        support mutual information. Use get_valid_mi_types to see which Logical Types support 
+        mutual information.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -844,9 +842,7 @@ class WoodworkTableAccessor:
 
     def get_valid_mi_columns(self, include_index=False):
         """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
-        information. Logical Types that support mutual information are as follows:  Age, AgeFractional,
-        AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer,
-        IntegerNullable, Ordinal, PostalCode, and SubRegionCode.
+        information. Use get_valid_mi_types to see which Logical Types support mutual information.
 
         Args:
             include_index (bool): If True, the column specified as the index will be
