@@ -779,7 +779,7 @@ class WoodworkTableAccessor:
     def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Use get_valid_mi_types to see which Logical Types support 
+        support mutual information. Use get_valid_mi_types to see which Logical Types support
         mutual information.
 
         Args:
@@ -810,7 +810,7 @@ class WoodworkTableAccessor:
 
     def mutual_information(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Use get_valid_mi_types to see which Logical Types support 
+        support mutual information. Use get_valid_mi_types to see which Logical Types support
         mutual information.
 
         Args:
