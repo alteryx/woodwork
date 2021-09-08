@@ -835,27 +835,31 @@ def test_series_methods_returning_frame_no_name(sample_series):
     assert reset_index_frame.ww.schema is not None
 
 
-def test_nullable_attribute(sample_df):
-    expected = {
-        'id': False,
-        'full_name': True,
-        'email': True,
-        'phone_number': True,
-        'age': True,
-        'signup_date': True,
-        'is_registered': True,
-        'double': True,
-        'double_with_nan': True,
-        'integer': False,
-        'nullable_integer': True,
-        'boolean': False,
-        'categorical': True,
-        'datetime_with_NaT': True,
-        'url': True,
-        'ip_address': True
-    }
+EXPECTED_COLUMN_NULLABILITIES = {
+    'id': False,
+    'full_name': True,
+    'email': True,
+    'phone_number': True,
+    'age': True,
+    'signup_date': True,
+    'is_registered': True,
+    'double': True,
+    'double_with_nan': True,
+    'integer': False,
+    'nullable_integer': True,
+    'boolean': False,
+    'categorical': True,
+    'datetime_with_NaT': True,
+    'url': True,
+    'ip_address': True
+}
 
+
+def test_nullable_attribute(sample_df):
     sample_df.ww.init()
+
     for key in sample_df.ww.columns:
         actual = sample_df.ww[key].ww.nullable
-        assert actual == expected[key]
+        expected = EXPECTED_COLUMN_NULLABILITIES[key]
+
+        assert actual is expected
