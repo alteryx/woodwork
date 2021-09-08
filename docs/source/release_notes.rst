@@ -16,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`ajaypallekonda`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`ajaypallekonda`, :user:`davesque`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 v0.7.1 Aug 25, 2021
 ===================
