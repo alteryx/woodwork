@@ -783,9 +783,7 @@ class WoodworkTableAccessor:
         mutual information:
             >>> from woodwork.utils import get_valid_mi_types
             >>> get_valid_mi_types()
-            [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable,
-            Categorical, CountryCode,Datetime, Double, Integer, IntegerNullable,
-            Ordinal, PostalCode, SubRegionCode]
+            [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -819,9 +817,7 @@ class WoodworkTableAccessor:
         mutual information:
             >>> from woodwork.utils import get_valid_mi_types
             >>> get_valid_mi_types()
-            [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable,
-            Categorical, CountryCode,Datetime, Double, Integer, IntegerNullable,
-            Ordinal, PostalCode, SubRegionCode]
+            [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -855,9 +851,7 @@ class WoodworkTableAccessor:
         information. Use get_valid_mi_types to see which Logical Types support mutual information:
             >>> from woodwork.utils import get_valid_mi_types
             >>> get_valid_mi_types()
-            [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable,
-            Categorical, CountryCode,Datetime, Double, Integer, IntegerNullable,
-            Ordinal, PostalCode, SubRegionCode]
+            [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             include_index (bool): If True, the column specified as the index will be
