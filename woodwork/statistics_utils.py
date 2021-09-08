@@ -316,7 +316,7 @@ def _get_valid_mi_columns(dataframe, include_index=False):
         list: A list of column names that have valid Logical Types that support
         mutual information.
     """
-    valid_types = get_valid_mi_types()
+    valid_types = tuple(get_valid_mi_types())
     valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) in valid_types]
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
