@@ -855,11 +855,11 @@ EXPECTED_COLUMN_NULLABILITIES = {
 }
 
 
-def test_nullable_attribute(sample_df):
-    sample_df.ww.init()
+def test_nullable_attribute(sample_df_pandas):
+    sample_df_pandas.ww.init()
 
-    for key in sample_df.ww.columns:
-        actual = sample_df.ww[key].ww.nullable
+    for key in sample_df_pandas.ww.columns:
+        actual = sample_df_pandas.ww[key].ww.nullable
         expected = EXPECTED_COLUMN_NULLABILITIES[key]
 
         assert actual is expected
