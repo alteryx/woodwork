@@ -16,7 +16,7 @@ from woodwork.exceptions import (
     TypingInfoMismatchWarning
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
-from woodwork.logical_types import LatLong, Ordinal
+from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
 from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
 from woodwork.utils import (
@@ -105,6 +105,13 @@ class WoodworkColumnAccessor:
     @property
     def schema(self):
         return copy.deepcopy(self._schema)
+
+    @property
+    @_check_column_schema
+    def nullable(self):
+        """Whether the column schema contains a nullable logical type."""
+        dtype = self._schema.logical_type._get_valid_dtype(type(self._series))
+        return dtype in _NULLABLE_PHYSICAL_TYPES
 
     @property
     @_check_column_schema
