@@ -7,6 +7,7 @@ Future Release
     * Enhancements
         * Add support for automatically inferring the ``URL`` and ``IPAddress`` logical types (:pr:`1122`, :pr:`1124`)
         * Add ``get_valid_mi_columns`` method to list columns that have valid logical types for mutual information calculation (:pr:`1129`)
+        * Add attribute to check if column has a nullable logical type (:pr:`1127`)
     * Fixes
     * Changes
         * Update ``get_invalid_schema_message`` to improve performance (:pr:`1132`)
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`ajaypallekonda`, :user:`thehomebrewnerd`
+    :user:`ajaypallekonda`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 v0.7.1 Aug 25, 2021
 ===================
