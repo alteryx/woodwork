@@ -25,6 +25,7 @@ from woodwork.logical_types import Datetime, LogicalType
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
+    _get_valid_mi_columns,
     _get_value_counts
 )
 from woodwork.table_schema import TableSchema
@@ -778,9 +779,11 @@ class WoodworkTableAccessor:
     def mutual_information_dict(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Logical Types that support mutual information are as
-        follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
-        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
+        support mutual information. Use get_valid_mi_types to see which Logical Types support
+        mutual information:
+        >>> from woodwork.utils import get_valid_mi_types
+        >>> get_valid_mi_types()
+        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -810,9 +813,11 @@ class WoodworkTableAccessor:
 
     def mutual_information(self, num_bins=10, nrows=None, include_index=False, callback=None):
         """Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Logical Types that support mutual information are as
-        follows:  Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double,
-        Integer, IntegerNullable, Ordinal, PostalCode, and SubRegionCode
+        support mutual information. Use get_valid_mi_types to see which Logical Types support
+        mutual information:
+        >>> from woodwork.utils import get_valid_mi_types
+        >>> get_valid_mi_types()
+        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -840,6 +845,24 @@ class WoodworkTableAccessor:
         """
         mutual_info = self.mutual_information_dict(num_bins, nrows, include_index, callback)
         return pd.DataFrame(mutual_info)
+
+    def get_valid_mi_columns(self, include_index=False):
+        """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
+        information. Use get_valid_mi_types to see which Logical Types support mutual information:
+        >>> from woodwork.utils import get_valid_mi_types
+        >>> get_valid_mi_types()
+        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
+
+        Args:
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for mutual information calculations.
+                If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
+
+        Returns:
+            list: A list of column names that have valid Logical Types that support mutual information.
+        """
+        return _get_valid_mi_columns(self._dataframe, include_index)
 
     @_check_table_schema
     def describe_dict(self, include=None, callback=None, extra_stats=False, bins=10, top_x=10, recent_x=10):
