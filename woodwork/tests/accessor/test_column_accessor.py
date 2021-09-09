@@ -833,3 +833,33 @@ def test_series_methods_returning_frame_no_name(sample_series):
     reset_index_frame = sample_series.ww.reset_index(drop=False)
     assert _is_dataframe(reset_index_frame)
     assert reset_index_frame.ww.schema is not None
+
+
+EXPECTED_COLUMN_NULLABILITIES = {
+    'id': False,
+    'full_name': True,
+    'email': True,
+    'phone_number': True,
+    'age': True,
+    'signup_date': True,
+    'is_registered': True,
+    'double': True,
+    'double_with_nan': True,
+    'integer': False,
+    'nullable_integer': True,
+    'boolean': False,
+    'categorical': True,
+    'datetime_with_NaT': True,
+    'url': True,
+    'ip_address': True
+}
+
+
+def test_nullable_attribute(sample_df_pandas):
+    sample_df_pandas.ww.init()
+
+    for key in sample_df_pandas.ww.columns:
+        actual = sample_df_pandas.ww[key].ww.nullable
+        expected = EXPECTED_COLUMN_NULLABILITIES[key]
+
+        assert actual is expected

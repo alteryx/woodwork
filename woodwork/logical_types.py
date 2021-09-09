@@ -503,3 +503,23 @@ class PostalCode(LogicalType):
     primary_dtype = 'category'
     backup_dtype = 'string'
     standard_tags = {'category'}
+
+
+_NULLABLE_PHYSICAL_TYPES = {
+    'boolean',
+    'category',
+    'datetime64[ns]',
+    'Int8',
+    'Int16',
+    'Int32',
+    'Int64',
+    'Float32',
+    'Float64',
+    'float16',
+    'float32',
+    'float64',
+    'float128',
+    'object',
+    'string',
+    'timedelta64[ns]',
+}
