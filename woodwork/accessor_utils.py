@@ -97,12 +97,13 @@ def get_invalid_schema_message(dataframe, schema):
     if schema_cols_not_in_df:
         return f'The following columns in the typing information were missing from the DataFrame: '\
             f'{schema_cols_not_in_df}'
+    logical_types = schema.logical_types
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
-        valid_dtype = schema.logical_types[name]._get_valid_dtype(type(dataframe[name]))
+        valid_dtype = logical_types[name]._get_valid_dtype(type(dataframe[name]))
         if str(df_dtype) != valid_dtype:
             return f'dtype mismatch for column {name} between DataFrame dtype, '\
-                f'{df_dtype}, and {schema.logical_types[name]} dtype, {valid_dtype}'
+                f'{df_dtype}, and {logical_types[name]} dtype, {valid_dtype}'
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
         # Index validation not performed for Dask/Koalas
         if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(pd.Series(dataframe[schema.index].values)):

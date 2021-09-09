@@ -9,12 +9,13 @@ Future Release
         * Add ``get_valid_mi_columns`` method to list columns that have valid logical types for mutual information calculation (:pr:`1129`)
     * Fixes
     * Changes
+        * Update ``get_invalid_schema_message`` to improve performance (:pr:`1132`)
     * Documentation Changes
         * Fix typo in the "Get Started" documentation (:pr:`1126`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`ajaypallekonda`
+    :user:`ajaypallekonda`, :user:`thehomebrewnerd`
 
 v0.7.1 Aug 25, 2021
 ===================
