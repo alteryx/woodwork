@@ -109,7 +109,7 @@ class WoodworkColumnAccessor:
     @property
     @_check_column_schema
     def nullable(self):
-        """Whether the column schema contains a nullable logical type."""
+        """Whether the column can contain null values."""
         dtype = self._schema.logical_type._get_valid_dtype(type(self._series))
         return dtype in _NULLABLE_PHYSICAL_TYPES
 
