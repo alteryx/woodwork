@@ -13,6 +13,7 @@ Future Release
         * Update ``get_invalid_schema_message`` to improve performance (:pr:`1132`)
     * Documentation Changes
         * Fix typo in the "Get Started" documentation (:pr:`1126`)
+        * Clean up the logical types guide (:pr:`1134`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
