@@ -60,6 +60,7 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.loc
     WoodworkColumnAccessor.logical_type
     WoodworkColumnAccessor.metadata
+    WoodworkColumnAccessor.nullable
     WoodworkColumnAccessor.remove_semantic_tags
     WoodworkColumnAccessor.reset_semantic_tags
     WoodworkColumnAccessor.semantic_tags
