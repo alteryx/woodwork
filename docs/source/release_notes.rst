@@ -2,6 +2,20 @@
 
 Release Notes
 -------------
+
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+        * Update ``Datetime.transform`` to use default nrows value when calling ``_infer_datetime_format`` (:pr:`1137`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
+
 v0.8.0 Sep 9, 2021
 ==================
     * Enhancements
