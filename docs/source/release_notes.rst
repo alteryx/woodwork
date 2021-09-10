@@ -9,12 +9,12 @@ Future Release
     * Fixes
     * Changes
         * Update ``Datetime.transform`` to use default nrows value when calling ``_infer_datetime_format`` (:pr:`1137`)
-        * Hide spark config in Using Dask and Koalas Guide (:pr:`1139`)
     * Documentation Changes
+        * Hide spark config in Using Dask and Koalas Guide (:pr:`1139`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`simha104`, :user:`thehomebrewnerd`
 
 
 v0.8.0 Sep 9, 2021
