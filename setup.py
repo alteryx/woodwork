@@ -16,7 +16,7 @@ setup(
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     license='BSD 3-clause',
-    version='0.8.0',
+    version='0.8.1',
     description='a two-dimensional data object with labeled axes and typing information',
     url='https://github.com/alteryx/woodwork/',
     classifiers=[
