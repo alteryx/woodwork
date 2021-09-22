@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update reviewers for minimum and latest dependency checkers (:pr:`1715`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 v0.8.1 Sep 16, 2021
 ===================
