@@ -9,7 +9,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Update reviewers for minimum and latest dependency checkers (:pr:`1715`)
+        * Update reviewers for minimum and latest dependency checkers (:pr:`1150`)
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
