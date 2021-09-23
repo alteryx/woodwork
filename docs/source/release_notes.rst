@@ -7,12 +7,13 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Added notebook standardizer to remove executed outputs (:pr:`1153`)
     * Documentation Changes
     * Testing Changes
         * Update reviewers for minimum and latest dependency checkers (:pr:`1150`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`thehomebrewnerd`, :user:`bchen1116`
 
 v0.8.1 Sep 16, 2021
 ===================
