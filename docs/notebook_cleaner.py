@@ -56,20 +56,15 @@ def _fix_execution_and_output(notebook):
         json.dump(source, f, ensure_ascii=False, indent=1)
 
 
-def _get_notebooks_with_executions(notebooks):
+def _get_notebooks_with_executions_and_empty(notebooks):
     executed = []
+    empty_last_cell = []
     for notebook in notebooks:
         if not _check_execution_and_output(notebook):
             executed.append(notebook)
-    return executed
-
-
-def _get_notebook_with_empty_last_cell(notebooks):
-    empty_last_cell = []
-    for notebook in notebooks:
         if not _check_delete_empty_cell(notebook, delete=False):
             empty_last_cell.append(notebook)
-    return empty_last_cell
+    return (executed, empty_last_cell)
 
 
 def _remove_notebook_empty_last_cell(notebooks):
@@ -90,8 +85,7 @@ def cli():
 @cli.command()
 def standardize():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks = _get_notebooks_with_executions(notebooks)
-    empty_cells = _get_notebook_with_empty_last_cell(notebooks)
+    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         _standardize_outputs(executed_notebooks)
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
@@ -111,8 +105,7 @@ def standardize():
 @cli.command()
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks = _get_notebooks_with_executions(notebooks)
-    empty_cells = _get_notebook_with_empty_last_cell(notebooks)
+    executed_notebooks, empty_cells = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
