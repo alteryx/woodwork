@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fixed an issue when inferring the format of datetime strings with day of week or meridiem placeholders (:pr:`1158`)
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -13,7 +14,7 @@ Future Release
         * Added notebook standardizer to remove executed outputs (:pr:`1153`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`bchen1116`
+    :user:`davesque`, :user:`thehomebrewnerd`, :user:`bchen1116`
 
 v0.8.1 Sep 16, 2021
 ===================

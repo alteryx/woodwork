@@ -461,9 +461,19 @@ def test_infer_datetime_format(datetimes):
         fmt = _infer_datetime_format(series)
         assert fmt == '%m/%d/%Y'
 
-    dt1 = pd.Series(['3/11/2000 9:00', '3/11/2000 10:00', '3/11/2000 11:00', '3/11/2000 12:00'])
-    fmt = _infer_datetime_format(dt1)
+    dt = pd.Series(['3/11/2000 9:00', '3/11/2000 10:00', '3/11/2000 11:00', '3/11/2000 12:00'])
+    fmt = _infer_datetime_format(dt)
     assert fmt == '%m/%d/%Y %H:%M'
+
+    # https://github.com/alteryx/woodwork/pull/1158
+    dt = pd.Series(['Tue 24 Aug 2021 01:30:48 AM'])
+    fmt = _infer_datetime_format(dt)
+    assert fmt == '%a %d %b %Y %H:%M:%S %p'
+
+    # https://github.com/alteryx/woodwork/pull/1158
+    dt = pd.Series(['Tuesday 24 Aug 2021 01:30:48 AM'])
+    fmt = _infer_datetime_format(dt)
+    assert fmt == '%A %d %b %Y %H:%M:%S %p'
 
 
 def test_infer_datetime_format_all_null():
