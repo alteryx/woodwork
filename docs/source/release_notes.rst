@@ -5,6 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added ``read_file`` parameter for replacing empty string values with NaN values (:pr:`1161`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Future Release
         * Added notebook standardizer to remove executed outputs (:pr:`1153`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`bchen1116`
+    :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`bchen1116`
 
 v0.8.1 Sep 16, 2021
 ===================
