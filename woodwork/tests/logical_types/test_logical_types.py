@@ -140,7 +140,7 @@ def test_datetime_transform(datetimes):
         assert datetime.datetime_format is not None
 
 
-def test_datetime_inference_ambiguous_format(sample_series):
+def test_datetime_inference_ambiguous_format():
     datetime = Datetime()
     dates = pd.Series(["01/01/2017"] * 2 + ["13/12/2017"])
     transformed = datetime.transform(dates)
