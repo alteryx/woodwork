@@ -97,6 +97,7 @@ def read_file(filepath=None,
               logical_types=None,
               use_standard_tags=True,
               column_origins=None,
+              replace_nan=True,
               validate=True,
               **kwargs):
     """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
@@ -127,6 +128,7 @@ def read_file(filepath=None,
             on the inferred or specified logical type for the column. Defaults to True.
         column_origins (str or dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
+        replace_nan (bool, optional): Whether to replace empty string values with NaN values. Deafults to True.
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -155,6 +157,10 @@ def read_file(filepath=None,
             kwargs['engine'] = 'pyarrow'
 
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
+
+    if replace_nan:
+        dataframe = replace_nan_empty_strings(dataframe)
+
     dataframe.ww.init(name=name,
                       index=index,
                       time_index=time_index,
@@ -464,3 +470,15 @@ def _infer_datetime_format(dates, n=100):
     except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
         mode_fmt = None
     return mode_fmt
+
+
+def replace_nan_empty_strings(df):
+    """Replaces empty string values with NaNs."""
+    df = df.fillna(value=np.nan)
+
+    for col, dtype in df.dtypes.items():
+        if str(dtype) not in ["boolean", "Int64", "Float64Dtype", "string"]:
+            df[col] = df[col].replace(r"^\s*$", np.nan, regex=True)
+            df[col] = df[col].replace("nan", np.nan)
+            df[col] = df[col].replace("<NA>", np.nan)
+    return df

@@ -116,3 +116,20 @@ def test_read_file(sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_
         schema_df = schema_df.head(kwargs["nrows"])
 
     pd.testing.assert_frame_equal(df, schema_df)
+
+
+def test_replace_empty_strings(tmpdir):
+    filepath = os.path.join(tmpdir, 'data.parquet')
+    content_type = 'application/parquet'
+
+    data = {
+        "double": ["<NA>", "6.2", "4.2", "3.11"],
+        "integer": ["<NA>", "6", "4", "3"],
+        "null": ["<NA>"] * 4,
+    }
+
+    df = pd.DataFrame(data=data)
+    df.to_parquet(filepath)
+    logical_types = {'double': 'Double', 'integer': 'Double', 'null': 'Double'}
+    actual = ww.read_file(content_type=content_type, filepath=filepath, replace_nan=True, logical_types=logical_types)
+    assert actual.isnull().sum().sum() == 6
