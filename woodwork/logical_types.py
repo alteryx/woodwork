@@ -200,19 +200,17 @@ class Datetime(LogicalType):
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             self.datetime_format = self.datetime_format or _infer_datetime_format(series)
-            try:
-                if _is_dask_series(series):
-                    name = series.name
-                    series = dd.to_datetime(series, format=self.datetime_format)
-                    series.name = name
-                elif _is_koalas_series(series):
-                    series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                      format=self.datetime_format),
-                                       name=series.name)
-                else:
-                    series = pd.to_datetime(series, format=self.datetime_format)
-            except (TypeError, ValueError):
-                raise TypeConversionError(series, new_dtype, type(self))
+            if _is_dask_series(series):
+                name = series.name
+                series = dd.to_datetime(series, format=self.datetime_format, errors="coerce")
+                series.name = name
+            elif _is_koalas_series(series):
+                series = ks.Series(ks.to_datetime(series.to_numpy(),
+                                                  format=self.datetime_format,
+                                                  errors="coerce"),
+                                   name=series.name)
+            else:
+                series = pd.to_datetime(series, format=self.datetime_format, errors="coerce")
         return super().transform(series)
 
 
