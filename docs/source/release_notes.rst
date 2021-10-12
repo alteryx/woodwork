@@ -7,6 +7,7 @@ Future Release
     * Enhancements
     * Fixes
         * Fixed an issue when inferring the format of datetime strings with day of week or meridiem placeholders (:pr:`1158`)
+        * Implements change in ``Datetime.transform`` to prevent initialization failure in some cases (:pr:`1162`)
     * Changes
     * Documentation Changes
     * Testing Changes
