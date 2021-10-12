@@ -216,8 +216,9 @@ class Datetime(LogicalType):
                     series = pd.to_datetime(series, format=self.datetime_format)
                 except (TypeError, ValueError):
                     warnings.warn(f"Some rows in series '{series.name}' are incompatible with datetime format "
-                                  f"'{self.datetime_format}' and have been replaced with null values. You may be able "
-                                  "to fix this by specifying a different datetime format string.", TypeConversionWarning)
+                                  f"'{self.datetime_format}' and have been replaced with null values. You may be "
+                                  "able to fix this by using an instantiated Datetime logical type with a different format "
+                                  "string specified for this column during Woodwork initialization.", TypeConversionWarning)
                     series = pd.to_datetime(series, format=self.datetime_format, errors="coerce")
         return super().transform(series)
 

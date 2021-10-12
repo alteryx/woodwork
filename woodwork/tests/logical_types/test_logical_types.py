@@ -146,7 +146,8 @@ def test_datetime_inference_ambiguous_format():
     dates = pd.Series(["01/01/2017"] * 2 + ["13/12/2017"], name="dates")
     warning = "Some rows in series 'dates' are incompatible with datetime format " \
               "'%m/%d/%Y' and have been replaced with null values. You may be able " \
-              "to fix this by specifying a different datetime format string."
+              "to fix this by using an instantiated Datetime logical type with a different " \
+              "format string specified for this column during Woodwork initialization."
     with pytest.warns(TypeConversionWarning, match=warning):
         transformed = datetime.transform(dates)
     assert str(transformed.dtype) == "datetime64[ns]"
@@ -159,7 +160,8 @@ def test_datetime_coerce_user_format():
     dates = pd.Series(["01/01/2017"] * 2 + ["13/12/2017"], name="dates")
     warning = "Some rows in series 'dates' are incompatible with datetime format " \
               "'%m/%d/%Y' and have been replaced with null values. You may be able " \
-              "to fix this by specifying a different datetime format string."
+              "to fix this by using an instantiated Datetime logical type with a different " \
+              "format string specified for this column during Woodwork initialization."
     with pytest.warns(TypeConversionWarning, match=warning):
         transformed = datetime.transform(dates)
     assert str(transformed.dtype) == "datetime64[ns]"
