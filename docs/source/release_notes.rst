@@ -2,20 +2,27 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+    ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.8.2 Oct 12, 2021
+===================
     * Fixes
         * Fixed an issue when inferring the format of datetime strings with day of week or meridiem placeholders (:pr:`1158`)
         * Implements change in ``Datetime.transform`` to prevent initialization failure in some cases (:pr:`1162`)
-    * Changes
-    * Documentation Changes
     * Testing Changes
         * Update reviewers for minimum and latest dependency checkers (:pr:`1150`)
         * Added notebook standardizer to remove executed outputs (:pr:`1153`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`thehomebrewnerd`, :user:`bchen1116`
+    :user:`bchen1116`, :user:`davesque`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 v0.8.1 Sep 16, 2021
 ===================
