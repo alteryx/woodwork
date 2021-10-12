@@ -3,8 +3,8 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
-from woodwork.exceptions import TypeConversionError
+from woodwork.accessor_utils import _is_koalas_series
+from woodwork.exceptions import TypeConversionWarning
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -141,15 +141,32 @@ def test_datetime_transform(datetimes):
         assert datetime.datetime_format is not None
 
 
-def test_datetime_conversion_error(sample_series):
-    if _is_dask_series(sample_series):
-        pytest.xfail('Dask does not show error until compute is made.')
+def test_datetime_inference_ambiguous_format():
+    datetime = Datetime()
+    dates = pd.Series(["01/01/2017"] * 2 + ["13/12/2017"], name="dates")
+    warning = "Some rows in series 'dates' are incompatible with datetime format " \
+              "'%m/%d/%Y' and have been replaced with null values. You may be able " \
+              "to fix this by using an instantiated Datetime logical type with a different " \
+              "format string specified for this column during Woodwork initialization."
+    with pytest.warns(TypeConversionWarning, match=warning):
+        transformed = datetime.transform(dates)
+    assert str(transformed.dtype) == "datetime64[ns]"
+    assert transformed[2] is pd.NaT
+    assert datetime.datetime_format == "%m/%d/%Y"
 
-    dtype = str(sample_series.dtype)
-    match = f'Error converting datatype for sample_series from type {dtype} to type datetime64[ns]. '
-    match += 'Please confirm the underlying data is consistent with logical type Datetime.'
-    with pytest.raises(TypeConversionError, match=re.escape(match)):
-        Datetime().transform(sample_series)
+
+def test_datetime_coerce_user_format():
+    datetime = Datetime(datetime_format="%m/%d/%Y")
+    dates = pd.Series(["01/01/2017"] * 2 + ["13/12/2017"], name="dates")
+    warning = "Some rows in series 'dates' are incompatible with datetime format " \
+              "'%m/%d/%Y' and have been replaced with null values. You may be able " \
+              "to fix this by using an instantiated Datetime logical type with a different " \
+              "format string specified for this column during Woodwork initialization."
+    with pytest.warns(TypeConversionWarning, match=warning):
+        transformed = datetime.transform(dates)
+    assert str(transformed.dtype) == "datetime64[ns]"
+    assert transformed[2] is pd.NaT
+    assert datetime.datetime_format == "%m/%d/%Y"
 
 
 def test_ordinal_transform(sample_series):
