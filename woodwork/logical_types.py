@@ -1,8 +1,10 @@
+import warnings
+
 import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
-from woodwork.exceptions import TypeConversionError
+from woodwork.exceptions import TypeConversionError, TypeConversionWarning
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
     _infer_datetime_format,
@@ -210,7 +212,13 @@ class Datetime(LogicalType):
                                                   errors="coerce"),
                                    name=series.name)
             else:
-                series = pd.to_datetime(series, format=self.datetime_format, errors="coerce")
+                try:
+                    series = pd.to_datetime(series, format=self.datetime_format)
+                except (TypeError, ValueError):
+                    warnings.warn(f"Some rows in series '{series.name}' are incompatible with datetime format "
+                                  f"'{self.datetime_format}' and have been replaced with null values. You may be able "
+                                  "to fix this by specifying a different datetime format string.", TypeConversionWarning)
+                    series = pd.to_datetime(series, format=self.datetime_format, errors="coerce")
         return super().transform(series)
 
 

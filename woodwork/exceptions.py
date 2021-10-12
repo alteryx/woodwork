@@ -45,6 +45,10 @@ class TypeConversionError(Exception):
         super().__init__(message)
 
 
+class TypeConversionWarning(UserWarning):
+    pass
+
+
 class ParametersIgnoredWarning(UserWarning):
     pass
 
