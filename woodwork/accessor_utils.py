@@ -6,12 +6,19 @@ import pandas as pd
 from woodwork.exceptions import WoodworkNotInitError
 from woodwork.utils import _get_column_logical_type, import_or_none
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 
-def init_series(series, logical_type=None, semantic_tags=None,
-                use_standard_tags=True, description=None, origin=None, metadata=None):
+def init_series(
+    series,
+    logical_type=None,
+    semantic_tags=None,
+    use_standard_tags=True,
+    description=None,
+    origin=None,
+    metadata=None,
+):
     """Initializes Woodwork typing information for a series, numpy.ndarray or pd.api.extensions.
     ExtensionArray, returning a new Series. The dtype of the returned series will be converted
     to match the dtype associated with the LogicalType.
@@ -37,20 +44,29 @@ def init_series(series, logical_type=None, semantic_tags=None,
         Series: A series with Woodwork typing information initialized
     """
     if not _is_series(series):
-        if isinstance(series, (np.ndarray, pd.api.extensions.ExtensionArray)) and series.ndim == 1:
+        if (
+            isinstance(series, (np.ndarray, pd.api.extensions.ExtensionArray))
+            and series.ndim == 1
+        ):
             series = pd.Series(series)
         elif isinstance(series, np.ndarray) and series.ndim != 1:
-            raise ValueError(f'np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional')
+            raise ValueError(
+                f"np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional"
+            )
         else:
-            raise TypeError(f'Input must be of series type. The current input is of type {type(series)}')
+            raise TypeError(
+                f"Input must be of series type. The current input is of type {type(series)}"
+            )
     logical_type = _get_column_logical_type(series, logical_type, series.name)
     new_series = logical_type.transform(series)
-    new_series.ww.init(logical_type=logical_type,
-                       semantic_tags=semantic_tags,
-                       use_standard_tags=use_standard_tags,
-                       description=description,
-                       origin=origin,
-                       metadata=metadata)
+    new_series.ww.init(
+        logical_type=logical_type,
+        semantic_tags=semantic_tags,
+        use_standard_tags=use_standard_tags,
+        description=description,
+        origin=origin,
+        metadata=metadata,
+    )
     return new_series
 
 
@@ -91,25 +107,33 @@ def get_invalid_schema_message(dataframe, schema):
 
     df_cols_not_in_schema = dataframe_cols - schema_cols
     if df_cols_not_in_schema:
-        return f'The following columns in the DataFrame were missing from the typing information: '\
-            f'{df_cols_not_in_schema}'
+        return (
+            f"The following columns in the DataFrame were missing from the typing information: "
+            f"{df_cols_not_in_schema}"
+        )
     schema_cols_not_in_df = schema_cols - dataframe_cols
     if schema_cols_not_in_df:
-        return f'The following columns in the typing information were missing from the DataFrame: '\
-            f'{schema_cols_not_in_df}'
+        return (
+            f"The following columns in the typing information were missing from the DataFrame: "
+            f"{schema_cols_not_in_df}"
+        )
     logical_types = schema.logical_types
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
         valid_dtype = logical_types[name]._get_valid_dtype(type(dataframe[name]))
         if str(df_dtype) != valid_dtype:
-            return f'dtype mismatch for column {name} between DataFrame dtype, '\
-                f'{df_dtype}, and {logical_types[name]} dtype, {valid_dtype}'
+            return (
+                f"dtype mismatch for column {name} between DataFrame dtype, "
+                f"{df_dtype}, and {logical_types[name]} dtype, {valid_dtype}"
+            )
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
         # Index validation not performed for Dask/Koalas
-        if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(pd.Series(dataframe[schema.index].values)):
-            return 'Index mismatch between DataFrame and typing information'
+        if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(
+            pd.Series(dataframe[schema.index].values)
+        ):
+            return "Index mismatch between DataFrame and typing information"
         elif not dataframe[schema.index].is_unique:
-            return 'Index column is not unique'
+            return "Index column is not unique"
 
 
 def is_schema_valid(dataframe, schema):
@@ -154,24 +178,32 @@ def _is_koalas_series(data):
 
 
 def _check_column_schema(method):
-    '''Decorator for WoodworkColumnAccessor that checks schema initialization'''
+    """Decorator for WoodworkColumnAccessor that checks schema initialization"""
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if self._schema is None:
-            msg = ("Woodwork not initialized for this Series. Initialize by "
-                   "calling Series.ww.init")
+            msg = (
+                "Woodwork not initialized for this Series. Initialize by "
+                "calling Series.ww.init"
+            )
             raise WoodworkNotInitError(msg)
         return method(self, *args, **kwargs)
+
     return wrapper
 
 
 def _check_table_schema(method):
-    '''Decorator for WoodworkTableAccessor that checks schema initialization'''
+    """Decorator for WoodworkTableAccessor that checks schema initialization"""
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if self._schema is None:
-            msg = ("Woodwork not initialized for this DataFrame. Initialize by "
-                   "calling DataFrame.ww.init")
+            msg = (
+                "Woodwork not initialized for this DataFrame. Initialize by "
+                "calling DataFrame.ww.init"
+            )
             raise WoodworkNotInitError(msg)
         return method(self, *args, **kwargs)
+
     return wrapper

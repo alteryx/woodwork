@@ -4,7 +4,7 @@ from woodwork.accessor_utils import (
     _is_dask_dataframe,
     _is_dask_series,
     _is_dataframe,
-    _is_series
+    _is_series,
 )
 
 
@@ -37,7 +37,9 @@ def _process_selection(selection, original_data):
             index_vals = selection.index.values.compute()
         else:
             index_vals = selection.index.values
-        if _is_dataframe(original_data) and set(index_vals) == set(original_data.columns):
+        if _is_dataframe(original_data) and set(index_vals) == set(
+            original_data.columns
+        ):
             # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
             schema = None
         elif _is_dataframe(original_data):

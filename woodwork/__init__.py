@@ -13,14 +13,16 @@ import woodwork.table_accessor
 from woodwork.accessor_utils import (
     get_invalid_schema_message,
     init_series,
-    is_schema_valid
+    is_schema_valid,
 )
 
 # Call functions registered by other libraries when woodwork is imported
-for entry_point in pkg_resources.iter_entry_points('alteryx_open_src_initialize'):  # pragma: no cover
+for entry_point in pkg_resources.iter_entry_points(
+    "alteryx_open_src_initialize"
+):  # pragma: no cover
     try:
         method = entry_point.load()
         if callable(method):
-            method('woodwork')
+            method("woodwork")
     except Exception:
         pass

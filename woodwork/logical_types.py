@@ -10,11 +10,11 @@ from woodwork.utils import (
     _infer_datetime_format,
     _reformat_to_latlong,
     camel_to_snake,
-    import_or_none
+    import_or_none,
 )
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 
 class ClassNameDescriptor(object):
@@ -25,20 +25,22 @@ class ClassNameDescriptor(object):
 
 
 class LogicalTypeMetaClass(type):
-
     def __repr__(cls):
         return cls.__name__
 
 
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
+
     type_string = ClassNameDescriptor()
-    primary_dtype = 'string'
+    primary_dtype = "string"
     backup_dtype = None
     standard_tags = set()
 
     def __eq__(self, other, deep=False):
-        return isinstance(other, self.__class__) and _get_specified_ltype_params(other) == _get_specified_ltype_params(self)
+        return isinstance(other, self.__class__) and _get_specified_ltype_params(
+            other
+        ) == _get_specified_ltype_params(self)
 
     def __str__(self):
         return str(self.__class__)
@@ -72,7 +74,8 @@ class Address(LogicalType):
             ['1 Miller Drive, New York, NY 12345', '1 Berkeley Street, Boston, MA 67891']
             ['26387 Russell Hill, Dallas, TX 34521', '54305 Oxford Street, Seattle, WA 95132']
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class Age(LogicalType):
@@ -85,8 +88,9 @@ class Age(LogicalType):
             [15, 22, 45]
             [30, 62, 87]
     """
-    primary_dtype = 'int64'
-    standard_tags = {'numeric'}
+
+    primary_dtype = "int64"
+    standard_tags = {"numeric"}
 
 
 class AgeFractional(LogicalType):
@@ -99,8 +103,9 @@ class AgeFractional(LogicalType):
             [0.34, 24.34, 45.0]
             [30.5, 62.82, np.nan]
     """
-    primary_dtype = 'float64'
-    standard_tags = {'numeric'}
+
+    primary_dtype = "float64"
+    standard_tags = {"numeric"}
 
 
 class AgeNullable(LogicalType):
@@ -113,8 +118,9 @@ class AgeNullable(LogicalType):
             [np.nan, 22, 45]
             [30, 62, np.nan]
     """
-    primary_dtype = 'Int64'
-    standard_tags = {'numeric'}
+
+    primary_dtype = "Int64"
+    standard_tags = {"numeric"}
 
 
 class Boolean(LogicalType):
@@ -126,7 +132,8 @@ class Boolean(LogicalType):
             [True, False, True]
             [0, 1, 1]
     """
-    primary_dtype = 'bool'
+
+    primary_dtype = "bool"
 
 
 class BooleanNullable(LogicalType):
@@ -139,7 +146,8 @@ class BooleanNullable(LogicalType):
             [True, False, None]
             [0, 1, 1]
     """
-    primary_dtype = 'boolean'
+
+    primary_dtype = "boolean"
 
 
 class Categorical(LogicalType):
@@ -153,9 +161,10 @@ class Categorical(LogicalType):
             ["produce", "dairy", "bakery"]
             [3, 1, 2]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
-    standard_tags = {'category'}
+
+    primary_dtype = "category"
+    backup_dtype = "string"
+    standard_tags = {"category"}
 
     def __init__(self, encoding=None):
         # encoding dict(str -> int)
@@ -173,9 +182,10 @@ class CountryCode(LogicalType):
             ["AU", "US", "UA"]
             ["GB", "NZ", "DE"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
-    standard_tags = {'category'}
+
+    primary_dtype = "category"
+    backup_dtype = "string"
+    standard_tags = {"category"}
 
 
 class Datetime(LogicalType):
@@ -191,7 +201,8 @@ class Datetime(LogicalType):
              "2020-01-10 00:00:00",
              "01/01/2000 08:30"]
     """
-    primary_dtype = 'datetime64[ns]'
+
+    primary_dtype = "datetime64[ns]"
     datetime_format = None
 
     def __init__(self, datetime_format=None):
@@ -201,25 +212,36 @@ class Datetime(LogicalType):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
-            self.datetime_format = self.datetime_format or _infer_datetime_format(series)
+            self.datetime_format = self.datetime_format or _infer_datetime_format(
+                series
+            )
             if _is_dask_series(series):
                 name = series.name
-                series = dd.to_datetime(series, format=self.datetime_format, errors="coerce")
+                series = dd.to_datetime(
+                    series, format=self.datetime_format, errors="coerce"
+                )
                 series.name = name
             elif _is_koalas_series(series):
-                series = ks.Series(ks.to_datetime(series.to_numpy(),
-                                                  format=self.datetime_format,
-                                                  errors="coerce"),
-                                   name=series.name)
+                series = ks.Series(
+                    ks.to_datetime(
+                        series.to_numpy(), format=self.datetime_format, errors="coerce"
+                    ),
+                    name=series.name,
+                )
             else:
                 try:
                     series = pd.to_datetime(series, format=self.datetime_format)
                 except (TypeError, ValueError):
-                    warnings.warn(f"Some rows in series '{series.name}' are incompatible with datetime format "
-                                  f"'{self.datetime_format}' and have been replaced with null values. You may be "
-                                  "able to fix this by using an instantiated Datetime logical type with a different format "
-                                  "string specified for this column during Woodwork initialization.", TypeConversionWarning)
-                    series = pd.to_datetime(series, format=self.datetime_format, errors="coerce")
+                    warnings.warn(
+                        f"Some rows in series '{series.name}' are incompatible with datetime format "
+                        f"'{self.datetime_format}' and have been replaced with null values. You may be "
+                        "able to fix this by using an instantiated Datetime logical type with a different format "
+                        "string specified for this column during Woodwork initialization.",
+                        TypeConversionWarning,
+                    )
+                    series = pd.to_datetime(
+                        series, format=self.datetime_format, errors="coerce"
+                    )
         return super().transform(series)
 
 
@@ -234,8 +256,9 @@ class Double(LogicalType):
             [1.2, 100.4, 3.5]
             [-15.34, 100, 58.3]
     """
-    primary_dtype = 'float64'
-    standard_tags = {'numeric'}
+
+    primary_dtype = "float64"
+    standard_tags = {"numeric"}
 
 
 class Integer(LogicalType):
@@ -249,8 +272,9 @@ class Integer(LogicalType):
             [100, 35, 0]
             [-54, 73, 11]
     """
-    primary_dtype = 'int64'
-    standard_tags = {'numeric'}
+
+    primary_dtype = "int64"
+    standard_tags = {"numeric"}
 
 
 class IntegerNullable(LogicalType):
@@ -264,8 +288,9 @@ class IntegerNullable(LogicalType):
             [100, 35, np.nan]
             [-54, 73, 11]
     """
-    primary_dtype = 'Int64'
-    standard_tags = {'numeric'}
+
+    primary_dtype = "Int64"
+    standard_tags = {"numeric"}
 
 
 class EmailAddress(LogicalType):
@@ -278,7 +303,8 @@ class EmailAddress(LogicalType):
              "support@example.com",
              "team@example.com"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class Filepath(LogicalType):
@@ -292,7 +318,8 @@ class Filepath(LogicalType):
              "/Users/john.smith/dev/index.html",
              "/tmp"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class PersonFullName(LogicalType):
@@ -306,7 +333,8 @@ class PersonFullName(LogicalType):
              "Doe, Mrs. Jane",
              "James Brown"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class IPAddress(LogicalType):
@@ -320,7 +348,8 @@ class IPAddress(LogicalType):
              "192.0.0.0",
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class LatLong(LogicalType):
@@ -342,7 +371,8 @@ class LatLong(LogicalType):
              (40.423599, -86.921162),
              (-45.031705, nan)]
     """
-    primary_dtype = 'object'
+
+    primary_dtype = "object"
 
     def transform(self, series):
         """Formats a series to be a tuple (or list for Koalas) of two floats."""
@@ -352,7 +382,9 @@ class LatLong(LogicalType):
             series = series.apply(_reformat_to_latlong, meta=meta)
             series.name = name
         elif _is_koalas_series(series):
-            formatted_series = series.to_pandas().apply(_reformat_to_latlong, use_list=True)
+            formatted_series = series.to_pandas().apply(
+                _reformat_to_latlong, use_list=True
+            )
             series = ks.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
@@ -371,7 +403,8 @@ class NaturalLanguage(LogicalType):
              "I like to eat pizza!",
              "When will humans go to mars?"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class Unknown(LogicalType):
@@ -385,7 +418,8 @@ class Unknown(LogicalType):
              "xnmvz@@Dcmeods-0"]
 
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class Ordinal(LogicalType):
@@ -403,9 +437,10 @@ class Ordinal(LogicalType):
             ["first", "second", "third"]
             ["bronze", "silver", "gold"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
-    standard_tags = {'category'}
+
+    primary_dtype = "category"
+    backup_dtype = "string"
+    standard_tags = {"category"}
 
     def __init__(self, order=None):
         self.order = order
@@ -423,8 +458,10 @@ class Ordinal(LogicalType):
         if isinstance(series, pd.Series):
             missing_order_vals = set(series.dropna().values).difference(self.order)
             if missing_order_vals:
-                error_msg = f'Ordinal column {series.name} contains values that are not present ' \
-                    f'in the order values provided: {sorted(list(missing_order_vals))}'
+                error_msg = (
+                    f"Ordinal column {series.name} contains values that are not present "
+                    f"in the order values provided: {sorted(list(missing_order_vals))}"
+                )
                 raise ValueError(error_msg)
 
     def transform(self, series):
@@ -449,7 +486,8 @@ class PhoneNumber(LogicalType):
              "+1-555-123-5495",
              "5551235495"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class SubRegionCode(LogicalType):
@@ -463,9 +501,10 @@ class SubRegionCode(LogicalType):
             ["US-CO", "US-MA", "US-CA"]
             ["AU-NSW", "AU-TAS", "AU-QLD"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
-    standard_tags = {'category'}
+
+    primary_dtype = "category"
+    backup_dtype = "string"
+    standard_tags = {"category"}
 
 
 class Timedelta(LogicalType):
@@ -478,7 +517,8 @@ class Timedelta(LogicalType):
              pd.Timedelta('-1 days +23:40:00'),
              pd.Timedelta('4 days 12:00:00')]
     """
-    primary_dtype = 'timedelta64[ns]'
+
+    primary_dtype = "timedelta64[ns]"
 
 
 class URL(LogicalType):
@@ -492,7 +532,8 @@ class URL(LogicalType):
              "https://example.com/index.html",
              "example.com"]
     """
-    primary_dtype = 'string'
+
+    primary_dtype = "string"
 
 
 class PostalCode(LogicalType):
@@ -506,26 +547,27 @@ class PostalCode(LogicalType):
              "60018-0123",
              "SW1A"]
     """
-    primary_dtype = 'category'
-    backup_dtype = 'string'
-    standard_tags = {'category'}
+
+    primary_dtype = "category"
+    backup_dtype = "string"
+    standard_tags = {"category"}
 
 
 _NULLABLE_PHYSICAL_TYPES = {
-    'boolean',
-    'category',
-    'datetime64[ns]',
-    'Int8',
-    'Int16',
-    'Int32',
-    'Int64',
-    'Float32',
-    'Float64',
-    'float16',
-    'float32',
-    'float64',
-    'float128',
-    'object',
-    'string',
-    'timedelta64[ns]',
+    "boolean",
+    "category",
+    "datetime64[ns]",
+    "Int8",
+    "Int16",
+    "Int32",
+    "Int64",
+    "Float32",
+    "Float64",
+    "float16",
+    "float32",
+    "float64",
+    "float128",
+    "object",
+    "string",
+    "timedelta64[ns]",
 }

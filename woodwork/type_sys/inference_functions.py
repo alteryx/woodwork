@@ -12,12 +12,14 @@ def categorical_func(series):
         return True
 
     if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
-        categorical_threshold = ww.config.get_option('categorical_threshold')
+        categorical_threshold = ww.config.get_option("categorical_threshold")
 
         return _is_categorical_series(series, categorical_threshold)
 
     if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
-        numeric_categorical_threshold = ww.config.get_option('numeric_categorical_threshold')
+        numeric_categorical_threshold = ww.config.get_option(
+            "numeric_categorical_threshold"
+        )
         if numeric_categorical_threshold is not None:
             return _is_categorical_series(series, numeric_categorical_threshold)
         else:
@@ -34,7 +36,7 @@ def integer_func(series):
 
 def integer_nullable_func(series):
     if pdtypes.is_integer_dtype(series.dtype):
-        threshold = ww.config.get_option('numeric_categorical_threshold')
+        threshold = ww.config.get_option("numeric_categorical_threshold")
         if threshold is not None:
             return not _is_categorical_series(series, threshold)
         else:
@@ -45,7 +47,7 @@ def integer_nullable_func(series):
 
 def double_func(series):
     if pdtypes.is_float_dtype(series.dtype):
-        threshold = ww.config.get_option('numeric_categorical_threshold')
+        threshold = ww.config.get_option("numeric_categorical_threshold")
         if threshold is not None:
             return not _is_categorical_series(series, threshold)
         else:
@@ -61,7 +63,9 @@ def boolean_func(series):
 
 
 def boolean_nullable_func(series):
-    if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(series.dtype):
+    if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
+        series.dtype
+    ):
         return True
     return False
 
@@ -102,9 +106,16 @@ class InferWithRegex:
         return matches.sum() == matches.count()
 
 
-email_address_func = InferWithRegex(lambda: ww.config.get_option('email_inference_regex'))
-url_func = InferWithRegex(lambda: ww.config.get_option('url_inference_regex'))
-ip_address_func = InferWithRegex(lambda: (
-    "(" + ww.config.get_option('ipv4_inference_regex') +
-    "|" + ww.config.get_option('ipv6_inference_regex') + ")"
-))
+email_address_func = InferWithRegex(
+    lambda: ww.config.get_option("email_inference_regex")
+)
+url_func = InferWithRegex(lambda: ww.config.get_option("url_inference_regex"))
+ip_address_func = InferWithRegex(
+    lambda: (
+        "("
+        + ww.config.get_option("ipv4_inference_regex")
+        + "|"
+        + ww.config.get_option("ipv6_inference_regex")
+        + ")"
+    )
+)
