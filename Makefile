@@ -4,15 +4,18 @@ clean:
 	find . -name '*.pyc' -delete
 	find . -name __pycache__ -delete
 	find . -name '*~' -delete
+	find . -name '.coverage.*' -delete
 
 .PHONY: lint
 lint:
-	flake8 woodwork && isort --check-only woodwork
+	isort --check-only woodwork
 	python docs/notebook_cleaner.py check-execution
+	black woodwork -t py39 --check
+	flake8 woodwork
 
 .PHONY: lint-fix
 lint-fix:
-	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221,E261,E111,E114" woodwork
+	black -t py39 woodwork
 	isort woodwork
 	python docs/notebook_cleaner.py standardize
 
@@ -42,23 +45,6 @@ installdeps-dev:
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark|koalas')
 	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_FILEPATH)
-
-.PHONY: gen-min-deps
-gen-min-deps:
-	python tools/minimum_dependency/minimum_dependency_generator.py $(OUTPUT_FILEPATH) --requirements_paths $(INPUT_PATHS)
-
-.PHONY: test-min-deps
-test-min-deps:
-	python -m pytest tools/minimum_dependency/test_minimum_dependency_generator.py  --cov=tools/minimum_dependency/ --cov-report term-missing
-
-.PHONY: lint-min-deps
-lint-min-deps:
-	flake8 tools && isort --check-only tools
-
-.PHONY: lint-fix-min-deps
-lint-fix-min-deps:
-	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221,E261,E111,E114" tools
-	isort tools
 
 .PHONY: package_woodwork
 package_woodwork:

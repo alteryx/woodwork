@@ -11,25 +11,25 @@ from woodwork.logical_types import (
     IntegerNullable,
     LogicalType,
     Timedelta,
-    Unknown
+    Unknown,
 )
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import import_or_none
 
 UNSUPPORTED_KOALAS_DTYPES = [
-    'int32',
-    'intp',
-    'uint8',
-    'uint16',
-    'uint32',
-    'uint64',
-    'uintp',
-    'float_',
-    'object',
-    'category',
+    "int32",
+    "intp",
+    "uint8",
+    "uint16",
+    "uint32",
+    "uint64",
+    "uintp",
+    "float_",
+    "object",
+    "category",
 ]
 
-ks = import_or_none('databricks.koalas')
+ks = import_or_none("databricks.koalas")
 
 
 def get_koalas_dtypes(dtypes):
@@ -37,7 +37,7 @@ def get_koalas_dtypes(dtypes):
 
 
 def test_integer_inference(integers):
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    dtypes = ["int8", "int16", "int32", "int64", "intp", "int", "Int64"]
     if _is_koalas_series(integers[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -48,7 +48,7 @@ def test_integer_inference(integers):
 
 
 def test_double_inference(doubles):
-    dtypes = ['float', 'float32', 'float64', 'float_']
+    dtypes = ["float", "float32", "float64", "float_"]
     if _is_koalas_series(doubles[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -59,7 +59,7 @@ def test_double_inference(doubles):
 
 
 def test_boolean_inference(bools):
-    dtypes = ['bool', 'boolean']
+    dtypes = ["bool", "boolean"]
 
     for series in bools:
         for dtype in dtypes:
@@ -72,7 +72,7 @@ def test_boolean_inference(bools):
 
 
 def test_datetime_inference(datetimes):
-    dtypes = ['object', 'string', 'datetime64[ns]']
+    dtypes = ["object", "string", "datetime64[ns]"]
     if _is_koalas_series(datetimes[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -83,7 +83,7 @@ def test_datetime_inference(datetimes):
 
 
 def test_email_inference(emails):
-    dtypes = ['object', 'string']
+    dtypes = ["object", "string"]
     if _is_koalas_series(emails[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -94,7 +94,7 @@ def test_email_inference(emails):
 
 
 def test_email_inference_failure(bad_emails):
-    dtypes = ['object', 'string']
+    dtypes = ["object", "string"]
     if _is_koalas_series(bad_emails[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -105,7 +105,7 @@ def test_email_inference_failure(bad_emails):
 
 
 def test_categorical_inference(categories):
-    dtypes = ['object', 'string', 'category']
+    dtypes = ["object", "string", "category"]
     if _is_koalas_series(categories[0]):
         dtypes = get_koalas_dtypes(dtypes)
     for series in categories:
@@ -129,7 +129,7 @@ def test_categorical_inference_based_on_dtype(categories_dtype):
 
 def test_categorical_integers_inference(integers):
     with ww.config.with_options(numeric_categorical_threshold=0.5):
-        dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+        dtypes = ["int8", "int16", "int32", "int64", "intp", "int", "Int64"]
         if _is_koalas_series(integers[0]):
             dtypes = get_koalas_dtypes(dtypes)
         for series in integers:
@@ -140,7 +140,7 @@ def test_categorical_integers_inference(integers):
 
 def test_categorical_double_inference(doubles):
     with ww.config.with_options(numeric_categorical_threshold=0.5):
-        dtypes = ['float', 'float32', 'float64', 'float_']
+        dtypes = ["float", "float32", "float64", "float_"]
         if _is_koalas_series(doubles[0]):
             dtypes = get_koalas_dtypes(dtypes)
         for series in doubles:
@@ -150,7 +150,7 @@ def test_categorical_double_inference(doubles):
 
 
 def test_timedelta_inference(timedeltas):
-    dtypes = ['timedelta64[ns]']
+    dtypes = ["timedelta64[ns]"]
     for series in timedeltas:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
@@ -158,7 +158,7 @@ def test_timedelta_inference(timedeltas):
 
 
 def test_unknown_inference(strings):
-    dtypes = ['object', 'string']
+    dtypes = ["object", "string"]
     if _is_koalas_series(strings[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -169,7 +169,7 @@ def test_unknown_inference(strings):
 
 
 def test_unknown_inference_all_null(nulls):
-    dtypes = ['object', 'string', 'category', 'datetime64[ns]']
+    dtypes = ["object", "string", "category", "datetime64[ns]"]
     if _is_koalas_series(nulls[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -197,11 +197,11 @@ def test_updated_ltype_inference(integers, type_sys):
     type_sys.remove_type(ww.logical_types.Integer)
 
     class Integer(LogicalType):
-        primary_dtype = 'string'
+        primary_dtype = "string"
 
     type_sys.add_type(Integer, inference_function=inference_fn)
 
-    dtypes = ['int8', 'int16', 'int32', 'int64', 'intp', 'int', 'Int64']
+    dtypes = ["int8", "int16", "int32", "int64", "intp", "int", "Int64"]
     if _is_koalas_series(integers[0]):
         dtypes = get_koalas_dtypes(dtypes)
 
@@ -209,4 +209,4 @@ def test_updated_ltype_inference(integers, type_sys):
         for dtype in dtypes:
             inferred_type = type_sys.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Integer)
-            assert inferred_type.primary_dtype == 'string'
+            assert inferred_type.primary_dtype == "string"

@@ -62,26 +62,26 @@ def guess_datetime_format(
     if not isinstance(dt_str, str):
         return None
 
-    day_attribute_and_format = (('day',), '%d', 2)
+    day_attribute_and_format = (("day",), "%d", 2)
 
     # attr name, format, padding (if any)
     datetime_attrs_to_format = [
-        (('year', 'month', 'day'), '%Y%m%d', 0),
-        (('year',), '%Y', 0),
-        (('month',), '%B', 0),
-        (('month',), '%b', 0),
-        (('month',), '%m', 2),
+        (("year", "month", "day"), "%Y%m%d", 0),
+        (("year",), "%Y", 0),
+        (("month",), "%B", 0),
+        (("month",), "%b", 0),
+        (("month",), "%m", 2),
         day_attribute_and_format,
-        (('hour',), '%H', 2),
-        (('minute',), '%M', 2),
-        (('second',), '%S', 2),
-        (('microsecond',), '%f', 6),
-        (('second', 'microsecond'), '%S.%f', 0),
-        (('tzinfo',), '%z', 0),
-        (('tzinfo',), '%Z', 0),
-        (('day_of_week',), '%a', 0),
-        (('day_of_week',), '%A', 0),
-        (('meridiem',), '%p', 0),
+        (("hour",), "%H", 2),
+        (("minute",), "%M", 2),
+        (("second",), "%S", 2),
+        (("microsecond",), "%f", 6),
+        (("second", "microsecond"), "%S.%f", 0),
+        (("tzinfo",), "%z", 0),
+        (("tzinfo",), "%Z", 0),
+        (("day_of_week",), "%a", 0),
+        (("day_of_week",), "%A", 0),
+        (("meridiem",), "%p", 0),
     ]
 
     if dayfirst:
@@ -109,13 +109,13 @@ def guess_datetime_format(
     # instead of ‘+09:00’.
     if parsed_datetime.tzinfo is not None:
         offset_index = None
-        if len(tokens) > 0 and tokens[-1] == 'Z':
+        if len(tokens) > 0 and tokens[-1] == "Z":
             # the last 'Z' means zero offset
             offset_index = -1
-        elif len(tokens) > 1 and tokens[-2] in ('+', '-'):
+        elif len(tokens) > 1 and tokens[-2] in ("+", "-"):
             # ex. [..., '+', '0900']
             offset_index = -2
-        elif len(tokens) > 3 and tokens[-4] in ('+', '-'):
+        elif len(tokens) > 3 and tokens[-4] in ("+", "-"):
             # ex. [..., '+', '09', ':', '00']
             offset_index = -4
 
@@ -126,7 +126,7 @@ def guess_datetime_format(
             # from correctly parsing the time zone format.
             # So in addition to the format nomalization, we rejoin them here.
             tokens[offset_index] = parsed_datetime.strftime("%z")
-            tokens = tokens[:offset_index + 1 or None]
+            tokens = tokens[: offset_index + 1 or None]
 
     format_guess = [None] * len(tokens)
     found_attrs = set()
@@ -151,7 +151,7 @@ def guess_datetime_format(
                 break
 
     # Only consider it a valid guess if we have a year, month and day
-    if len({'year', 'month', 'day'} & found_attrs) != 3:
+    if len({"year", "month", "day"} & found_attrs) != 3:
         return None
 
     output_format = []
@@ -171,10 +171,10 @@ def guess_datetime_format(
 
             output_format.append(tokens[i])
 
-    guessed_format = ''.join(output_format)
+    guessed_format = "".join(output_format)
 
     # rebuild string, capturing any inferred padding
-    dt_str = ''.join(tokens)
+    dt_str = "".join(tokens)
     if parsed_datetime.strftime(guessed_format) == dt_str:
         return guessed_format
     else:

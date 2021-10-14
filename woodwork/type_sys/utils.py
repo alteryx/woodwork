@@ -6,8 +6,8 @@ import woodwork as ww
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.utils import import_or_none
 
-ks = import_or_none('databricks.koalas')
-dd = import_or_none('dask.dataframe')
+ks = import_or_none("databricks.koalas")
+dd = import_or_none("dask.dataframe")
 
 
 def col_is_datetime(col, datetime_format=None):
@@ -16,18 +16,24 @@ def col_is_datetime(col, datetime_format=None):
     if _is_koalas_series(col):
         col = col.to_pandas()
 
-    if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.head(1), datetime))):
+    if col.dtype.name.find("datetime") > -1 or (
+        len(col) and isinstance(col.head(1), datetime)
+    ):
         return True
 
     # if it can be cast to numeric, it's not a datetime
     try:
-        pd.to_numeric(col, errors='raise')
+        pd.to_numeric(col, errors="raise")
     except (ValueError, TypeError):
         # finally, try to cast to datetime
-        if col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
+        if col.dtype.name.find("str") > -1 or col.dtype.name.find("object") > -1:
             try:
-                pd.to_datetime(col, errors='raise', format=datetime_format, infer_datetime_format=True)
+                pd.to_datetime(
+                    col,
+                    errors="raise",
+                    format=datetime_format,
+                    infer_datetime_format=True,
+                )
             except Exception:
                 return False
             else:
@@ -46,7 +52,7 @@ def _is_numeric_series(series, logical_type):
 
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
-        pd.to_numeric(series, errors='raise')
+        pd.to_numeric(series, errors="raise")
     except (ValueError, TypeError):
         return False
 
@@ -55,12 +61,14 @@ def _is_numeric_series(series, logical_type):
             logical_type = ww.type_system.str_to_logical_type(logical_type)
 
         # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
-        if _get_ltype_class(logical_type) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
+        if _get_ltype_class(
+            logical_type
+        ) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
         logical_type = ww.type_system.infer_logical_type(series)
 
-    return 'numeric' in logical_type.standard_tags
+    return "numeric" in logical_type.standard_tags
 
 
 def list_logical_types():
@@ -74,17 +82,21 @@ def list_logical_types():
         the corresponding physical type and any standard semantic tags.
     """
     ltypes_df = pd.DataFrame(
-        [{'name': ltype.__name__,
-          'type_string': ltype.type_string,
-          'description': ltype.__doc__,
-          'physical_type': ltype.primary_dtype,
-          'standard_tags': ltype.standard_tags,
-          'is_default_type': ltype in ww.type_system._default_inference_functions,
-          'is_registered': ltype in ww.type_system.registered_types,
-          'parent_type': ww.type_system._get_parent(ltype)}
-            for ltype in ww.logical_types.LogicalType.__subclasses__()]
+        [
+            {
+                "name": ltype.__name__,
+                "type_string": ltype.type_string,
+                "description": ltype.__doc__,
+                "physical_type": ltype.primary_dtype,
+                "standard_tags": ltype.standard_tags,
+                "is_default_type": ltype in ww.type_system._default_inference_functions,
+                "is_registered": ltype in ww.type_system.registered_types,
+                "parent_type": ww.type_system._get_parent(ltype),
+            }
+            for ltype in ww.logical_types.LogicalType.__subclasses__()
+        ]
     )
-    return ltypes_df.sort_values('name').reset_index(drop=True)
+    return ltypes_df.sort_values("name").reset_index(drop=True)
 
 
 def list_semantic_tags():
@@ -105,18 +117,33 @@ def list_semantic_tags():
             else:
                 sem_tags[tag] = [ltype]
     tags_df = pd.DataFrame(
-        [{'name': tag,
-          'is_standard_tag': True,
-          'valid_logical_types': sem_tags[tag]}
-         for tag in sem_tags]
+        [
+            {"name": tag, "is_standard_tag": True, "valid_logical_types": sem_tags[tag]}
+            for tag in sem_tags
+        ]
     )
     tags_df = tags_df.append(
-        pd.DataFrame([['index', False, 'Any LogicalType'],
-                      ['time_index', False, [ww.type_system.str_to_logical_type('datetime')] + sem_tags['numeric']],
-                      ['date_of_birth', False, [ww.type_system.str_to_logical_type('datetime')]],
-                      ['ignore', False, 'Any LogicalType'],
-                      ['passthrough', False, 'Any LogicalType']
-                      ], columns=tags_df.columns), ignore_index=True)
+        pd.DataFrame(
+            [
+                ["index", False, "Any LogicalType"],
+                [
+                    "time_index",
+                    False,
+                    [ww.type_system.str_to_logical_type("datetime")]
+                    + sem_tags["numeric"],
+                ],
+                [
+                    "date_of_birth",
+                    False,
+                    [ww.type_system.str_to_logical_type("datetime")],
+                ],
+                ["ignore", False, "Any LogicalType"],
+                ["passthrough", False, "Any LogicalType"],
+            ],
+            columns=tags_df.columns,
+        ),
+        ignore_index=True,
+    )
     return tags_df
 
 

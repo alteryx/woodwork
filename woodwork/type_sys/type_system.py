@@ -11,7 +11,7 @@ from .inference_functions import (
     integer_nullable_func,
     ip_address_func,
     timedelta_func,
-    url_func
+    url_func,
 )
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
@@ -41,7 +41,7 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode,
     Timedelta,
-    Unknown
+    Unknown,
 )
 
 DEFAULT_INFERENCE_FUNCTIONS = {
@@ -69,7 +69,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     SubRegionCode: None,
     Timedelta: timedelta_func,
     URL: url_func,
-    Unknown: None
+    Unknown: None,
 }
 
 # (ParentType, ChildType)
@@ -82,7 +82,7 @@ DEFAULT_RELATIONSHIPS = [
     (Double, AgeFractional),
     (Integer, Age),
     (IntegerNullable, AgeNullable),
-    (IntegerNullable, Integer)
+    (IntegerNullable, Integer),
 ]
 
 DEFAULT_TYPE = Unknown
@@ -91,7 +91,9 @@ INFERENCE_SAMPLE_SIZE = 100000
 
 
 class TypeSystem(object):
-    def __init__(self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE):
+    def __init__(
+        self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE
+    ):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
 
@@ -137,13 +139,17 @@ class TypeSystem(object):
         """
         if isinstance(parent, str):
             parent = self.str_to_logical_type(parent)
-        self._validate_type_input(logical_type=logical_type,
-                                  inference_function=inference_function,
-                                  parent=parent)
+        self._validate_type_input(
+            logical_type=logical_type,
+            inference_function=inference_function,
+            parent=parent,
+        )
 
         registered_ltype_names = [ltype.__name__ for ltype in self.registered_types]
         if logical_type.__name__ in registered_ltype_names:
-            raise ValueError(f'Logical Type with name {logical_type.__name__} already present in the Type System. Please rename the LogicalType or remove existing one.')
+            raise ValueError(
+                f"Logical Type with name {logical_type.__name__} already present in the Type System. Please rename the LogicalType or remove existing one."
+            )
         self.update_inference_function(logical_type, inference_function)
         if parent:
             self.update_relationship(logical_type, parent)
@@ -171,7 +177,9 @@ class TypeSystem(object):
                 self.update_relationship(child, parent)
 
         # Rebuild the relationships list to remove any reference to the removed type
-        self.relationships = [rel for rel in self.relationships if logical_type not in rel]
+        self.relationships = [
+            rel for rel in self.relationships if logical_type not in rel
+        ]
 
     def update_inference_function(self, logical_type, inference_function):
         """Update the inference function for the specified LogicalType.
@@ -183,7 +191,9 @@ class TypeSystem(object):
         """
         if isinstance(logical_type, str):
             logical_type = self.str_to_logical_type(logical_type)
-        self._validate_type_input(logical_type=logical_type, inference_function=inference_function)
+        self._validate_type_input(
+            logical_type=logical_type, inference_function=inference_function
+        )
         self.inference_functions[logical_type] = inference_function
 
     def update_relationship(self, logical_type, parent):
@@ -201,7 +211,9 @@ class TypeSystem(object):
             parent = self.str_to_logical_type(parent)
         self._validate_type_input(logical_type=logical_type, parent=parent)
         # If the logical_type already has a parent, remove that from the list
-        self.relationships = [rel for rel in self.relationships if rel[1] != logical_type]
+        self.relationships = [
+            rel for rel in self.relationships if rel[1] != logical_type
+        ]
         # Add the new/updated relationship
         self.relationships.append((parent, logical_type))
 
@@ -223,7 +235,9 @@ class TypeSystem(object):
     @property
     def root_types(self):
         """Returns a list of all registered types that do not have a parent type"""
-        return [ltype for ltype in self.registered_types if self._get_parent(ltype) is None]
+        return [
+            ltype for ltype in self.registered_types if self._get_parent(ltype) is None
+        ]
 
     def _get_children(self, logical_type):
         """List of all the child types for the given logical type"""
@@ -245,15 +259,17 @@ class TypeSystem(object):
             parent = self._get_parent(parent)
         return depth
 
-    def _validate_type_input(self, logical_type=None, inference_function=None, parent=None):
+    def _validate_type_input(
+        self, logical_type=None, inference_function=None, parent=None
+    ):
         if logical_type and logical_type not in LogicalType.__subclasses__():
-            raise TypeError('logical_type must be a valid LogicalType')
+            raise TypeError("logical_type must be a valid LogicalType")
 
         if inference_function and not callable(inference_function):
-            raise TypeError('inference_function must be a function')
+            raise TypeError("inference_function must be a function")
 
         if parent and parent not in self.registered_types:
-            raise ValueError('parent must be a valid LogicalType')
+            raise ValueError("parent must be a valid LogicalType")
 
     def infer_logical_type(self, series):
         """Infer the logical type for the given series
@@ -273,7 +289,9 @@ class TypeSystem(object):
             elif _is_koalas_series(series):
                 series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
             else:
-                raise ValueError(f"Unsupported series type `{type(series)}`")  # pragma: no cover
+                raise ValueError(
+                    f"Unsupported series type `{type(series)}`"
+                )  # pragma: no cover
 
             # For dask or koalas collections, unknown type special case comes
             # *after* head calls to avoid evaluating a potentially large
@@ -322,9 +340,15 @@ class TypeSystem(object):
     def _get_logical_types(self):
         """Returns a dictionary of logical type name strings and logical type classes"""
         # Get snake case strings
-        logical_types = {logical_type.type_string: logical_type for logical_type in self.registered_types}
+        logical_types = {
+            logical_type.type_string: logical_type
+            for logical_type in self.registered_types
+        }
         # Add class name strings
-        class_name_dict = {logical_type.__name__: logical_type for logical_type in self.registered_types}
+        class_name_dict = {
+            logical_type.__name__: logical_type
+            for logical_type in self.registered_types
+        }
         logical_types.update(class_name_dict)
 
         return logical_types
@@ -333,7 +357,10 @@ class TypeSystem(object):
         """Helper function for converting a string value to the corresponding logical type object.
         If a dictionary of params for the logical type is provided, apply them."""
         logical_str_lower = logical_str.lower()
-        logical_types_dict = {ltype_name.lower(): ltype for ltype_name, ltype in self._get_logical_types().items()}
+        logical_types_dict = {
+            ltype_name.lower(): ltype
+            for ltype_name, ltype in self._get_logical_types().items()
+        }
 
         if logical_str_lower in logical_types_dict:
             ltype = logical_types_dict[logical_str_lower]
@@ -342,9 +369,11 @@ class TypeSystem(object):
             else:
                 return ltype
         elif raise_error:
-            raise ValueError('String %s is not a valid logical type' % logical_str)
+            raise ValueError("String %s is not a valid logical type" % logical_str)
 
 
-type_system = TypeSystem(inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
-                         relationships=DEFAULT_RELATIONSHIPS,
-                         default_type=DEFAULT_TYPE)
+type_system = TypeSystem(
+    inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
+    relationships=DEFAULT_RELATIONSHIPS,
+    default_type=DEFAULT_TYPE,
+)
