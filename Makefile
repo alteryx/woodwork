@@ -9,7 +9,7 @@ clean:
 .PHONY: lint
 lint:
 	isort --check-only woodwork
-	python docs/notebook_cleaner.py check-execution
+	python docs/notebook_version_standardizer.py check-execution
 	black woodwork -t py39 --check
 	flake8 woodwork
 
@@ -17,7 +17,7 @@ lint:
 lint-fix:
 	black -t py39 woodwork
 	isort woodwork
-	python docs/notebook_cleaner.py standardize
+	python docs/notebook_version_standardizer.py standardize
 
 .PHONY: test
 test: lint
