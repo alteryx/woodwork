@@ -3,7 +3,6 @@ import pytest
 from mock import patch
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_koalas_dataframe
 from woodwork.logical_types import Categorical, Double, Integer
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import concat_columns
@@ -507,13 +506,7 @@ def test_concat_cols_row_order(sample_df):
 
     assert sample_df.ww == combined_df.ww
 
-    # koalas does not preserve index order in the same way
-    if _is_koalas_dataframe(sample_df):
-        pd.testing.assert_index_equal(
-            to_pandas(combined_df.index), pd.Index([2, 0, 1, 3])
-        )
-    else:
-        pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))
+    pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))
 
 
 def test_concat_empty_list():
