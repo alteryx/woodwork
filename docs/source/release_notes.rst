@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Pin upper bound for pyspark (:pr:`1174`)
     * Changes
     * Documentation Changes
     * Testing Changes
