@@ -6,6 +6,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Set a maximum version for pyspark until we understand why :pr:`1169` failed (:pr:`1179`)
     * Changes
     * Documentation Changes
         * Update docs dependencies (:pr:`1176`)
