@@ -1,17 +1,18 @@
 -r test-requirements.txt
-codecov==2.1.9
-flake8==4.0.1
+codecov==2.1.12
+flake8==3.9.2
+autopep8==1.5.7
 isort==5.9.3
 black==21.9b0
-nbsphinx==0.8.5
-pydata-sphinx-theme==0.4.0
-Sphinx==3.2.1
-nbconvert==6.0.2
-ipython==7.16.1
-pygments==2.8.1
+nbsphinx==0.8.7
+pydata-sphinx-theme==0.7.1
+Sphinx==4.2.0
+nbconvert==6.2.0
+ipython==7.28.0
+pygments==2.10.0
 jupyter==1.0.0
-pandoc==1.0.2
-ipykernel==5.3.4
+pandoc==1.1.0
+ipykernel==6.4.2
 click>=7.1.2
 -r dask-requirements.txt
 -r koalas-requirements.txt

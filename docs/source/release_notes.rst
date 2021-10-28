@@ -9,12 +9,13 @@ Future Release
         * Set a maximum version for pyspark until we understand why :pr:`1169` failed (:pr:`1179`)
     * Changes
     * Documentation Changes
+        * Update docs dependencies (:pr:`1176`)
     * Testing Changes
         * Add black linting package and remove autopep8 (:pr:`1164`)
         * Updated notebook standardizer to standardize python versions (:pr:`1166`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`bchen1116`
+    :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`
 
 v0.8.2 Oct 12, 2021
 ===================
