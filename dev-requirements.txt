@@ -1,7 +1,6 @@
 -r test-requirements.txt
 codecov==2.1.12
 flake8==3.9.2
-autopep8==1.5.7
 isort==5.9.3
 black==21.9b0
 nbsphinx==0.8.7
