@@ -12,7 +12,7 @@ Future Release
     * Documentation Changes
         * Update docs dependencies (:pr:`1176`)
     * Testing Changes
-        * Add black linting package and remove autopep8 (:pr:`1164`)
+        * Add black linting package and remove autopep8 (:pr:`1164`, :pr:`1183`)
         * Updated notebook standardizer to standardize python versions (:pr:`1166`)
 
     Thanks to the following people for contributing to this release:
