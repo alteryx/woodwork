@@ -428,7 +428,7 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     return val_counts
 
 
-def _get_box_plot_info_for_column(series, quantiles=None):
+def _get_box_plot_info_for_column(series, quantiles=None, include_indices_and_values=True):
     """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -437,6 +437,9 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             Will be used to calculate quantiles if none are provided.
         quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
             where the key indicates the quantile, and the value is the quantile's value for the data.
+        include_indices_and_values (bool, optional): Whether or not the lists containing individual
+            outlier values and their indices will be included in the returned dictionary.
+            Defaults to True.
 
     Note:
         The minimum quantiles necessary for outlier detection using the IQR method are the
@@ -453,10 +456,14 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             - quantiles (list[float]): the quantiles used to determine the bounds.
                 If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
                 quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
-            - low_values (list[float, int]): the values of the lower outliers
-            - high_values (list[float, int]): the values of the upper outliers
-            - low_indices (list[int]): the corresponding index values for each of the lower outliers
-            - high_indices (list[int]): the corresponding index values for each of the upper outliers
+            - low_values (list[float, int], optional): the values of the lower outliers.
+                Will not be included if ``include_indices_and_values`` is False.
+            - high_values (list[float, int], optional): the values of the upper outliers
+                Will not be included if ``include_indices_and_values`` is False.
+            - low_indices (list[int], optional): the corresponding index values for each of the lower outliers
+                Will not be included if ``include_indices_and_values`` is False.
+            - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
+                Will not be included if ``include_indices_and_values`` is False.
     """
     if not series.ww._schema.is_numeric:
         raise TypeError("Cannot calculate box plot statistics for non-numeric column")
@@ -472,8 +479,14 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     # remove null values from the data
     series = series.dropna()
 
+    outliers_dict = {}
     # An empty or fully null Series has no outliers, bounds, or quantiles
     if series.shape[0] == 0:
+        if include_indices_and_values:
+            outliers_dict = {"low_values": [],
+                             "high_values": [],
+                             "low_indices": [],
+                             "high_indices": []}
         return {
             "low_bound": np.nan,
             "high_bound": np.nan,
@@ -484,10 +497,7 @@ def _get_box_plot_info_for_column(series, quantiles=None):
                 0.75: np.nan,
                 1.0: np.nan,
             },
-            "low_values": [],
-            "high_values": [],
-            "low_indices": [],
-            "high_indices": [],
+            **outliers_dict
         }
 
     # calculate the outlier bounds using IQR
@@ -507,26 +517,27 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     low_bound = q1 - (iqr * 1.5)
     high_bound = q3 + (iqr * 1.5)
 
-    # identify outliers in the series
-    min = quantiles.get(0.0)
-    max = quantiles.get(1.0)
-    if min is not None and max is not None and low_bound <= min and high_bound >= max:
-        outliers_dict = {
-            "low_values": [],
-            "high_values": [],
-            "low_indices": [],
-            "high_indices": [],
-        }
-    else:
-        low_series = series[series < low_bound]
-        high_series = series[series > high_bound]
+    if include_indices_and_values:
+        # identify outliers in the series
+        min = quantiles.get(0.0)
+        max = quantiles.get(1.0)
+        if min is not None and max is not None and low_bound <= min and high_bound >= max:
+            outliers_dict = {
+                "low_values": [],
+                "high_values": [],
+                "low_indices": [],
+                "high_indices": [],
+            }
+        else:
+            low_series = series[series < low_bound]
+            high_series = series[series > high_bound]
 
-        outliers_dict = {
-            "low_values": low_series.tolist(),
-            "high_values": high_series.tolist(),
-            "low_indices": low_series.index.tolist(),
-            "high_indices": high_series.index.tolist(),
-        }
+            outliers_dict = {
+                "low_values": low_series.tolist(),
+                "high_values": high_series.tolist(),
+                "low_indices": low_series.index.tolist(),
+                "high_indices": high_series.index.tolist(),
+            }
 
     return {
         "low_bound": low_bound,

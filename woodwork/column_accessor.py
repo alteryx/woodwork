@@ -429,11 +429,9 @@ class WoodworkColumnAccessor:
                 - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
                     Will not be included if ``include_indices_and_values`` is False.
         """
-        box_plot_dict = _get_box_plot_info_for_column(self._series, quantiles=quantiles)
-
-        if not include_indices_and_values:
-            return {key: value for key, value in box_plot_dict.items() if key in ['quantiles', 'high_bound', 'low_bound']}
-        return box_plot_dict
+        return _get_box_plot_info_for_column(self._series,
+                                             quantiles=quantiles,
+                                             include_indices_and_values=include_indices_and_values)
 
 
 def _validate_schema(schema, series):
