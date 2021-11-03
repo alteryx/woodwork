@@ -1256,6 +1256,13 @@ def test_box_plot_optional_return_values(outliers_df):
     has_outliers_series = outliers_df["has_outliers"]
     has_outliers_series.ww.init()
 
-    box_plot_info = has_outliers_series.ww.box_plot_dict(include_indices_and_values=False)
+    has_outliers_box_plot_info = has_outliers_series.ww.box_plot_dict(include_indices_and_values=False)
 
-    assert {"low_bound", "high_bound", "quantiles"} == set(box_plot_info.keys())
+    assert {"low_bound", "high_bound", "quantiles"} == set(has_outliers_box_plot_info.keys())
+
+    no_outliers_series = outliers_df["no_outliers"]
+    no_outliers_series.ww.init()
+
+    no_outliers_box_plot_info = no_outliers_series.ww.box_plot_dict(include_indices_and_values=False)
+
+    assert {"low_bound", "high_bound", "quantiles"} == set(no_outliers_box_plot_info.keys())
