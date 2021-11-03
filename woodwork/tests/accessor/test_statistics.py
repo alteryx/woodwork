@@ -1250,3 +1250,12 @@ def test_box_plot_quantiles_errors(outliers_df):
     error = "quantiles must be a dictionary."
     with pytest.raises(TypeError, match=error):
         series.ww.box_plot_dict(quantiles=1)
+
+
+def test_box_plot_optional_return_values(outliers_df):
+    has_outliers_series = outliers_df["has_outliers"]
+    has_outliers_series.ww.init()
+
+    box_plot_info = has_outliers_series.ww.box_plot_dict(include_indices_and_values=False)
+
+    assert {"low_bound", "high_bound", "quantiles"} == set(box_plot_info.keys())
