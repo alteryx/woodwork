@@ -9,6 +9,7 @@ Future Release
         * Set a maximum version for pyspark until we understand why :pr:`1169` failed (:pr:`1179`)
         * Require newer dask version (:pr:`1180`)
     * Changes
+        * Make box plot low/high indices/values optional to return in ``box_plot_dict`` (:pr:`1184`)
     * Documentation Changes
         * Update docs dependencies (:pr:`1176`)
     * Testing Changes
@@ -16,7 +17,7 @@ Future Release
         * Updated notebook standardizer to standardize python versions (:pr:`1166`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`
+    :user:`davesque`, :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`tamargrey`
 
 v0.8.2 Oct 12, 2021
 ===================
