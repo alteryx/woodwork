@@ -428,7 +428,9 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     return val_counts
 
 
-def _get_box_plot_info_for_column(series, quantiles=None, include_indices_and_values=True):
+def _get_box_plot_info_for_column(
+    series, quantiles=None, include_indices_and_values=True
+):
     """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -483,10 +485,12 @@ def _get_box_plot_info_for_column(series, quantiles=None, include_indices_and_va
     # An empty or fully null Series has no outliers, bounds, or quantiles
     if series.shape[0] == 0:
         if include_indices_and_values:
-            outliers_dict = {"low_values": [],
-                             "high_values": [],
-                             "low_indices": [],
-                             "high_indices": []}
+            outliers_dict = {
+                "low_values": [],
+                "high_values": [],
+                "low_indices": [],
+                "high_indices": [],
+            }
         return {
             "low_bound": np.nan,
             "high_bound": np.nan,
@@ -497,7 +501,7 @@ def _get_box_plot_info_for_column(series, quantiles=None, include_indices_and_va
                 0.75: np.nan,
                 1.0: np.nan,
             },
-            **outliers_dict
+            **outliers_dict,
         }
 
     # calculate the outlier bounds using IQR
@@ -521,7 +525,12 @@ def _get_box_plot_info_for_column(series, quantiles=None, include_indices_and_va
         # identify outliers in the series
         min = quantiles.get(0.0)
         max = quantiles.get(1.0)
-        if min is not None and max is not None and low_bound <= min and high_bound >= max:
+        if (
+            min is not None
+            and max is not None
+            and low_bound <= min
+            and high_bound >= max
+        ):
             outliers_dict = {
                 "low_values": [],
                 "high_values": [],
