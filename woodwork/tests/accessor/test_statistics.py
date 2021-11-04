@@ -1250,3 +1250,51 @@ def test_box_plot_quantiles_errors(outliers_df):
     error = "quantiles must be a dictionary."
     with pytest.raises(TypeError, match=error):
         series.ww.box_plot_dict(quantiles=1)
+
+
+def test_box_plot_optional_return_values(outliers_df):
+    has_outliers_series = outliers_df["has_outliers"]
+    has_outliers_series.ww.init()
+
+    has_outliers_box_plot_info_without_optional = has_outliers_series.ww.box_plot_dict(
+        include_indices_and_values=False
+    )
+    has_outliers_box_plot_info_with_optional = has_outliers_series.ww.box_plot_dict(
+        include_indices_and_values=True
+    )
+
+    assert {"low_bound", "high_bound", "quantiles"} == set(
+        has_outliers_box_plot_info_without_optional.keys()
+    )
+    assert {
+        "low_bound",
+        "high_bound",
+        "quantiles",
+        "low_values",
+        "high_values",
+        "low_indices",
+        "high_indices",
+    } == set(has_outliers_box_plot_info_with_optional.keys())
+
+    no_outliers_series = outliers_df["no_outliers"]
+    no_outliers_series.ww.init()
+
+    no_outliers_box_plot_info_without_optional = no_outliers_series.ww.box_plot_dict(
+        include_indices_and_values=False
+    )
+    no_outliers_box_plot_info_with_optional = no_outliers_series.ww.box_plot_dict(
+        include_indices_and_values=True
+    )
+
+    assert {"low_bound", "high_bound", "quantiles"} == set(
+        no_outliers_box_plot_info_without_optional.keys()
+    )
+    assert {
+        "low_bound",
+        "high_bound",
+        "quantiles",
+        "low_values",
+        "high_values",
+        "low_indices",
+        "high_indices",
+    } == set(no_outliers_box_plot_info_with_optional.keys())

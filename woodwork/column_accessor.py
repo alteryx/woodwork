@@ -393,7 +393,7 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     @_check_column_schema
-    def box_plot_dict(self, quantiles=None):
+    def box_plot_dict(self, quantiles=None, include_indices_and_values=True):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -401,6 +401,9 @@ class WoodworkColumnAccessor:
             quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
                 where the key indicates the quantile, and the value is the quantile's value for the data. If
                 no qantiles are provided, they will be computed from the data.
+            include_indices_and_values (bool, optional): Whether or not the lists containing individual
+                outlier values and their indices will be included in the returned dictionary.
+                Defaults to True.
 
         Note:
             The minimum quantiles necessary for outlier detection using the IQR method are the
@@ -417,12 +420,20 @@ class WoodworkColumnAccessor:
                 - quantiles (list[float]): the quantiles used to determine the bounds.
                     If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
                     quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
-                - low_values (list[float, int]): the values of the lower outliers
-                - high_values (list[float, int]): the values of the upper outliers
-                - low_indices (list[int]): the corresponding index values for each of the lower outliers
-                - high_indices (list[int]): the corresponding index values for each of the upper outliers
+                - low_values (list[float, int], optional): the values of the lower outliers.
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_values (list[float, int], optional): the values of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - low_indices (list[int], optional): the corresponding index values for each of the lower outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
         """
-        return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
+        return _get_box_plot_info_for_column(
+            self._series,
+            quantiles=quantiles,
+            include_indices_and_values=include_indices_and_values,
+        )
 
 
 def _validate_schema(schema, series):
