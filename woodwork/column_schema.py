@@ -2,23 +2,22 @@ import warnings
 from inspect import isclass
 
 import woodwork as ww
-from woodwork.exceptions import (
-    DuplicateTagsWarning,
-    StandardTagsChangedWarning
-)
+from woodwork.exceptions import DuplicateTagsWarning, StandardTagsChangedWarning
 from woodwork.logical_types import Boolean, BooleanNullable, Datetime
 from woodwork.utils import _convert_input_to_set
 
 
 class ColumnSchema(object):
-    def __init__(self,
-                 logical_type=None,
-                 semantic_tags=None,
-                 use_standard_tags=False,
-                 description=None,
-                 origin=None,
-                 metadata=None,
-                 validate=True):
+    def __init__(
+        self,
+        logical_type=None,
+        semantic_tags=None,
+        use_standard_tags=False,
+        description=None,
+        origin=None,
+        metadata=None,
+        validate=True,
+    ):
         """Create ColumnSchema
 
         Args:
@@ -72,15 +71,16 @@ class ColumnSchema(object):
     def __repr__(self):
         msg = "<ColumnSchema"
         if self.logical_type is not None:
-            msg += u" (Logical Type = {})".format(self.logical_type)
+            msg += " (Logical Type = {})".format(self.logical_type)
         if self.semantic_tags:
-            msg += u" (Semantic Tags = {})".format(sorted(list(self.semantic_tags)))
+            msg += " (Semantic Tags = {})".format(sorted(list(self.semantic_tags)))
         msg += ">"
         return msg
 
     def _get_column_tags(self, semantic_tags, validate):
-        semantic_tags = _convert_input_to_set(semantic_tags, error_language='semantic_tags',
-                                              validate=validate)
+        semantic_tags = _convert_input_to_set(
+            semantic_tags, error_language="semantic_tags", validate=validate
+        )
 
         if self.use_standard_tags:
             if self.logical_type is None:
@@ -123,12 +123,18 @@ class ColumnSchema(object):
     @property
     def is_numeric(self):
         """Whether the ColumnSchema is numeric in nature"""
-        return self.logical_type is not None and 'numeric' in self.logical_type.standard_tags
+        return (
+            self.logical_type is not None
+            and "numeric" in self.logical_type.standard_tags
+        )
 
     @property
     def is_categorical(self):
         """Whether the ColumnSchema is categorical in nature"""
-        return self.logical_type is not None and 'category' in self.logical_type.standard_tags
+        return (
+            self.logical_type is not None
+            and "category" in self.logical_type.standard_tags
+        )
 
     @property
     def is_datetime(self):
@@ -152,8 +158,10 @@ class ColumnSchema(object):
 
         duplicate_tags = sorted(list(self.semantic_tags.intersection(new_tags)))
         if duplicate_tags:
-            warnings.warn(DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
-                          DuplicateTagsWarning)
+            warnings.warn(
+                DuplicateTagsWarning().get_warning_message(duplicate_tags, name),
+                DuplicateTagsWarning,
+            )
         self.semantic_tags = self.semantic_tags.union(new_tags)
 
     def _remove_semantic_tags(self, tags_to_remove, name):
@@ -166,11 +174,19 @@ class ColumnSchema(object):
         tags_to_remove = _convert_input_to_set(tags_to_remove)
         invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
         if invalid_tags:
-            raise LookupError(f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'")
+            raise LookupError(
+                f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'"
+            )
 
-        if self.use_standard_tags and sorted(list(tags_to_remove.intersection(self.logical_type.standard_tags))):
-            warnings.warn(StandardTagsChangedWarning().get_warning_message(not self.use_standard_tags, name),
-                          StandardTagsChangedWarning)
+        if self.use_standard_tags and sorted(
+            list(tags_to_remove.intersection(self.logical_type.standard_tags))
+        ):
+            warnings.warn(
+                StandardTagsChangedWarning().get_warning_message(
+                    not self.use_standard_tags, name
+                ),
+                StandardTagsChangedWarning,
+            )
         self.semantic_tags = self.semantic_tags.difference(tags_to_remove)
 
     def _reset_semantic_tags(self):
@@ -200,7 +216,7 @@ class ColumnSchema(object):
 
 def _validate_logical_type(logical_type):
     if type(logical_type) not in ww.type_system.registered_types:
-        raise TypeError(f'logical_type {logical_type} is not a registered LogicalType.')
+        raise TypeError(f"logical_type {logical_type} is not a registered LogicalType.")
 
 
 def _validate_description(column_description):

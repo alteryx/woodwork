@@ -3,8 +3,8 @@ import pandas as pd
 
 from woodwork.utils import import_or_none
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 
 def validate_subset_schema(subset_schema, schema):
@@ -17,10 +17,14 @@ def validate_subset_schema(subset_schema, schema):
 
 
 def mi_between_cols(col1, col2, df):
-    mi_series = df.loc[df['column_1'] == col1].loc[df['column_2'] == col2]['mutual_info']
+    mi_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2][
+        "mutual_info"
+    ]
 
     if len(mi_series) == 0:
-        mi_series = df.loc[df['column_1'] == col2].loc[df['column_2'] == col1]['mutual_info']
+        mi_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1][
+            "mutual_info"
+        ]
 
     return mi_series.iloc[0]
 
@@ -50,7 +54,7 @@ def to_pandas(df, index=None, sort_index=False):
 
 def is_public_method(class_to_check, name):
     """Determine if the specified name is a public method on a class"""
-    if hasattr(class_to_check, name) and name[0] != '_':
+    if hasattr(class_to_check, name) and name[0] != "_":
         if callable(getattr(class_to_check, name)):
             return True
     return False
@@ -58,18 +62,20 @@ def is_public_method(class_to_check, name):
 
 def is_property(class_to_check, name):
     """Determine if the specified name is a property on a class"""
-    if hasattr(class_to_check, name) and isinstance(getattr(class_to_check, name), property):
+    if hasattr(class_to_check, name) and isinstance(
+        getattr(class_to_check, name), property
+    ):
         return True
     return False
 
 
 def check_empty_box_plot_dict(box_plot_dict):
-    assert np.isnan(box_plot_dict['low_bound'])
-    assert np.isnan(box_plot_dict['high_bound'])
-    assert len(box_plot_dict['quantiles']) == 5
-    assert all([np.isnan(elt) for elt in box_plot_dict['quantiles'].values()])
-    assert len(box_plot_dict['low_values']) == 0
-    assert len(box_plot_dict['high_values']) == 0
+    assert np.isnan(box_plot_dict["low_bound"])
+    assert np.isnan(box_plot_dict["high_bound"])
+    assert len(box_plot_dict["quantiles"]) == 5
+    assert all([np.isnan(elt) for elt in box_plot_dict["quantiles"].values()])
+    assert len(box_plot_dict["low_values"]) == 0
+    assert len(box_plot_dict["high_values"]) == 0
 
 
 def assert_schema_equal(left_schema, right_schema, deep=True):
@@ -78,6 +84,8 @@ def assert_schema_equal(left_schema, right_schema, deep=True):
     assert left_schema.time_index == right_schema.time_index
     assert set(left_schema.columns.keys()) == set(right_schema.columns.keys())
     for col_name in left_schema.columns:
-        assert left_schema.columns[col_name].__eq__(right_schema.columns[col_name], deep=deep)
+        assert left_schema.columns[col_name].__eq__(
+            right_schema.columns[col_name], deep=deep
+        )
     if deep:
         assert left_schema.metadata == right_schema.metadata

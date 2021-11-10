@@ -7,16 +7,30 @@ Future Release
     * Enhancements
         * Added ``read_file`` parameter for replacing empty string values with NaN values (:pr:`1161`)
     * Fixes
+        * Set a maximum version for pyspark until we understand why :pr:`1169` failed (:pr:`1179`)
+        * Require newer dask version (:pr:`1180`)
+    * Changes
+        * Make box plot low/high indices/values optional to return in ``box_plot_dict`` (:pr:`1184`)
+    * Documentation Changes
+        * Update docs dependencies (:pr:`1176`)
+    * Testing Changes
+        * Add black linting package and remove autopep8 (:pr:`1164`, :pr:`1183`)
+        * Updated notebook standardizer to standardize python versions (:pr:`1166`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`davesque`, :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+
+v0.8.2 Oct 12, 2021
+===================
+    * Fixes
         * Fixed an issue when inferring the format of datetime strings with day of week or meridiem placeholders (:pr:`1158`)
         * Implements change in ``Datetime.transform`` to prevent initialization failure in some cases (:pr:`1162`)
-    * Changes
-    * Documentation Changes
     * Testing Changes
         * Update reviewers for minimum and latest dependency checkers (:pr:`1150`)
         * Added notebook standardizer to remove executed outputs (:pr:`1153`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`bchen1116`
+    :user:`bchen1116`, :user:`davesque`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 v0.8.1 Sep 16, 2021
 ===================

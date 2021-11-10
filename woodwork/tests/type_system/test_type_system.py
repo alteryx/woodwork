@@ -14,19 +14,21 @@ from woodwork.logical_types import (
     Ordinal,
     PersonFullName,
     SubRegionCode,
-    Unknown
+    Unknown,
 )
 from woodwork.type_sys.inference_functions import (
     categorical_func,
     double_func,
-    integer_func
+    integer_func,
 )
 from woodwork.type_sys.type_system import TypeSystem
 
 
 def test_type_system_init(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships)
+    type_sys = TypeSystem(
+        inference_functions=default_inference_functions,
+        relationships=default_relationships,
+    )
     assert len(type_sys.inference_functions) == 5
     assert type_sys.inference_functions[Double] is double_func
     assert type_sys.inference_functions[Integer] is integer_func
@@ -37,18 +39,18 @@ def test_type_system_init(default_inference_functions, default_relationships):
 
 
 def test_add_type_validation_errors(type_sys):
-    error_msg = 'logical_type must be a valid LogicalType'
+    error_msg = "logical_type must be a valid LogicalType"
     with pytest.raises(TypeError, match=error_msg):
         type_sys.add_type(logical_type=1)
 
     with pytest.raises(TypeError, match=error_msg):
         type_sys.add_type(logical_type=Double())
 
-    error_msg = 'inference_function must be a function'
+    error_msg = "inference_function must be a function"
     with pytest.raises(TypeError, match=error_msg):
-        type_sys.add_type(logical_type=Ordinal, inference_function='not a function')
+        type_sys.add_type(logical_type=Ordinal, inference_function="not a function")
 
-    error_msg = 'parent must be a valid LogicalType'
+    error_msg = "parent must be a valid LogicalType"
     with pytest.raises(ValueError, match=error_msg):
         type_sys.add_type(logical_type=Ordinal, parent=1)
 
@@ -57,58 +59,72 @@ def test_add_type_validation_errors(type_sys):
 
 
 def test_remove_type_validation_errors(type_sys):
-    error_msg = 'logical_type must be a valid LogicalType'
+    error_msg = "logical_type must be a valid LogicalType"
     with pytest.raises(TypeError, match=error_msg):
         type_sys.add_type(logical_type=1)
 
 
 def test_update_inference_function_validation_errors(type_sys):
-    error_msg = 'logical_type must be a valid LogicalType'
+    error_msg = "logical_type must be a valid LogicalType"
     with pytest.raises(TypeError, match=error_msg):
         type_sys.update_inference_function(logical_type=1, inference_function=None)
 
-    error_msg = 'inference_function must be a function'
+    error_msg = "inference_function must be a function"
     with pytest.raises(TypeError, match=error_msg):
-        type_sys.update_inference_function(logical_type=Ordinal, inference_function='not a function')
+        type_sys.update_inference_function(
+            logical_type=Ordinal, inference_function="not a function"
+        )
 
 
 def test_update_relationship_validation_errors(type_sys):
-    error_msg = 'logical_type must be a valid LogicalType'
+    error_msg = "logical_type must be a valid LogicalType"
     with pytest.raises(TypeError, match=error_msg):
         type_sys.update_relationship(logical_type=1, parent=Ordinal)
 
-    error_msg = 'parent must be a valid LogicalType'
+    error_msg = "parent must be a valid LogicalType"
     with pytest.raises(ValueError, match=error_msg):
         type_sys.update_relationship(logical_type=Ordinal, parent=1)
 
 
 def test_type_system_default_type(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships,
-                          default_type=SubRegionCode)
+    type_sys = TypeSystem(
+        inference_functions=default_inference_functions,
+        relationships=default_relationships,
+        default_type=SubRegionCode,
+    )
     assert type_sys.default_type == SubRegionCode
     type_sys.update_inference_function(Categorical, None)
-    test_series = pd.Series(['a', 'b', 'c'])
+    test_series = pd.Series(["a", "b", "c"])
     assert isinstance(type_sys.infer_logical_type(test_series), SubRegionCode)
     assert SubRegionCode in type_sys.registered_types
 
 
-def test_type_system_default_type_remove_error(default_inference_functions, default_relationships):
-    type_sys = TypeSystem(inference_functions=default_inference_functions,
-                          relationships=default_relationships,
-                          default_type=SubRegionCode)
+def test_type_system_default_type_remove_error(
+    default_inference_functions, default_relationships
+):
+    type_sys = TypeSystem(
+        inference_functions=default_inference_functions,
+        relationships=default_relationships,
+        default_type=SubRegionCode,
+    )
     error_msg = "Default LogicalType cannot be removed"
     with pytest.raises(ValueError, match=error_msg):
         type_sys.remove_type(SubRegionCode)
     with pytest.raises(ValueError, match=error_msg):
-        type_sys.remove_type('SubRegionCode')
+        type_sys.remove_type("SubRegionCode")
     with pytest.raises(ValueError, match=error_msg):
-        type_sys.remove_type('sub_region_code')
+        type_sys.remove_type("sub_region_code")
 
 
 def test_type_system_registered_types(type_sys):
     assert isinstance(type_sys.registered_types, list)
-    assert set(type_sys.registered_types) == {Double, Integer, Categorical, CountryCode, Unknown}
+    assert set(type_sys.registered_types) == {
+        Double,
+        Integer,
+        Categorical,
+        CountryCode,
+        Unknown,
+    }
 
 
 def test_type_system_root_types(type_sys):
@@ -140,25 +156,25 @@ def test_add_type_with_parent():
 def test_add_duplicate_ltype(type_sys):
     inference_fn = type_sys.inference_functions[ww.logical_types.Integer]
 
-    assert ww.type_system.str_to_logical_type('Integer') == ww.logical_types.Integer
+    assert ww.type_system.str_to_logical_type("Integer") == ww.logical_types.Integer
 
     class Integer(LogicalType):
-        primary_dtype = 'string'
+        primary_dtype = "string"
 
-    error_msg = 'Logical Type with name Integer already present in the Type System. Please rename the LogicalType or remove existing one.'
+    error_msg = "Logical Type with name Integer already present in the Type System. Please rename the LogicalType or remove existing one."
     with pytest.raises(ValueError, match=error_msg):
         type_sys.add_type(Integer, inference_function=inference_fn)
 
     type_sys.remove_type(ww.logical_types.Integer)
     type_sys.add_type(Integer, inference_function=inference_fn)
 
-    ltype = type_sys.str_to_logical_type('Integer')
-    assert ltype.primary_dtype == 'string'
+    ltype = type_sys.str_to_logical_type("Integer")
+    assert ltype.primary_dtype == "string"
     assert ltype == Integer
 
     type_sys.reset_defaults()
-    ltype = type_sys.str_to_logical_type('Integer')
-    assert ltype.primary_dtype == 'int64'
+    ltype = type_sys.str_to_logical_type("Integer")
+    assert ltype.primary_dtype == "int64"
     assert ltype == ww.logical_types.Integer
 
 
@@ -167,7 +183,7 @@ def test_remove_type_no_children(type_sys):
     assert len(type_sys.inference_functions) == 4
     assert Integer not in type_sys.inference_functions.keys()
     assert len(type_sys.relationships) == 1
-    type_sys.remove_type('CountryCode')
+    type_sys.remove_type("CountryCode")
     assert len(type_sys.inference_functions) == 3
     assert CountryCode not in type_sys.inference_functions.keys()
     assert len(type_sys.relationships) == 0
@@ -206,7 +222,7 @@ def test_update_inference_function(type_sys):
     assert type_sys.inference_functions[Double] is double_func
     type_sys.update_inference_function(Double, integer_func)
     assert type_sys.inference_functions[Double] is integer_func
-    type_sys.update_inference_function('CountryCode', integer_func)
+    type_sys.update_inference_function("CountryCode", integer_func)
     assert type_sys.inference_functions[CountryCode] is integer_func
 
 
@@ -218,7 +234,7 @@ def test_update_relationship_no_children(type_sys):
 
 
 def test_update_relationship_string_input(type_sys):
-    type_sys.update_relationship('CountryCode', 'Integer')
+    type_sys.update_relationship("CountryCode", "Integer")
     assert len(type_sys.relationships) == 2
     assert (Integer, CountryCode) in type_sys.relationships
     assert type_sys._get_parent(CountryCode) == Integer
@@ -236,15 +252,18 @@ def test_update_relationship_with_children(type_sys):
 def test_inference_multiple_matches_same_depth(default_relationships):
     def always_true(series):
         return True
+
     inference_functions = {
         Categorical: always_true,
         Double: always_true,
         Integer: always_true,
         CountryCode: always_true,
     }
-    type_sys = TypeSystem(inference_functions=inference_functions,
-                          relationships=default_relationships,
-                          default_type=NaturalLanguage)
+    type_sys = TypeSystem(
+        inference_functions=inference_functions,
+        relationships=default_relationships,
+        default_type=NaturalLanguage,
+    )
     type_sys.update_inference_function(Integer, always_true)
     type_sys.update_inference_function(CountryCode, always_true)
     inferred_type = type_sys.infer_logical_type(pd.Series([1, 2, 3]))
@@ -256,15 +275,18 @@ def test_inference_multiple_matches_same_depth(default_relationships):
 def test_inference_multiple_matches_different_depths(default_relationships):
     def always_true(series):
         return True
+
     inference_functions = {
         Categorical: always_true,
         Double: always_true,
         Integer: always_true,
         CountryCode: always_true,
     }
-    type_sys = TypeSystem(inference_functions=inference_functions,
-                          relationships=default_relationships,
-                          default_type=NaturalLanguage)
+    type_sys = TypeSystem(
+        inference_functions=inference_functions,
+        relationships=default_relationships,
+        default_type=NaturalLanguage,
+    )
     type_sys.update_inference_function(Integer, always_true)
     type_sys.update_inference_function(CountryCode, always_true)
     type_sys.add_type(SubRegionCode, inference_function=always_true, parent=CountryCode)
@@ -274,7 +296,7 @@ def test_inference_multiple_matches_different_depths(default_relationships):
 
 
 def test_reset_defaults(type_sys, default_inference_functions, default_relationships):
-    type_sys.update_inference_function('Integer', None)
+    type_sys.update_inference_function("Integer", None)
     type_sys.update_relationship(CountryCode, parent=Unknown)
     type_sys.default_type = Categorical
     type_sys.reset_defaults()
@@ -298,36 +320,45 @@ def test_get_logical_types():
 def test_str_to_logical_type():
     all_types = ww.type_system.registered_types
 
-    with pytest.raises(ValueError, match='String test is not a valid logical type'):
-        ww.type_system.str_to_logical_type('test')
-    assert ww.type_system.str_to_logical_type('test', raise_error=False) is None
+    with pytest.raises(ValueError, match="String test is not a valid logical type"):
+        ww.type_system.str_to_logical_type("test")
+    assert ww.type_system.str_to_logical_type("test", raise_error=False) is None
 
     for logical_type in all_types:
         assert ww.type_system.str_to_logical_type(logical_type.__name__) == logical_type
-        assert ww.type_system.str_to_logical_type(logical_type.type_string) == logical_type
+        assert (
+            ww.type_system.str_to_logical_type(logical_type.type_string) == logical_type
+        )
 
-    assert ww.type_system.str_to_logical_type('bOoLeAn') == Boolean
-    assert ww.type_system.str_to_logical_type('person_full_NAME') == PersonFullName
-    assert ww.type_system.str_to_logical_type('PersonFullnamE') == PersonFullName
+    assert ww.type_system.str_to_logical_type("bOoLeAn") == Boolean
+    assert ww.type_system.str_to_logical_type("person_full_NAME") == PersonFullName
+    assert ww.type_system.str_to_logical_type("PersonFullnamE") == PersonFullName
 
-    ymd = '%Y-%m-%d'
-    datetime_with_format = ww.type_system.str_to_logical_type('datetime', params={'datetime_format': ymd})
+    ymd = "%Y-%m-%d"
+    datetime_with_format = ww.type_system.str_to_logical_type(
+        "datetime", params={"datetime_format": ymd}
+    )
     assert datetime_with_format.__class__ == Datetime
     assert datetime_with_format.datetime_format == ymd
     assert datetime_with_format == Datetime(datetime_format=ymd)
 
-    datetime_no_format = ww.type_system.str_to_logical_type('datetime', params={'datetime_format': None})
+    datetime_no_format = ww.type_system.str_to_logical_type(
+        "datetime", params={"datetime_format": None}
+    )
     assert datetime_no_format.__class__ == Datetime
     assert datetime_no_format.datetime_format is None
     assert datetime_no_format == Datetime()
 
     # When parameters are supplied in a non-empty dictionary, the logical type gets instantiated
-    assert ww.type_system.str_to_logical_type('person_full_NAME', params={}) == PersonFullName
+    assert (
+        ww.type_system.str_to_logical_type("person_full_NAME", params={})
+        == PersonFullName
+    )
     assert datetime_no_format != Datetime
 
     # Input a different type system
     new_type_sys = TypeSystem()
-    with pytest.raises(ValueError, match='String Integer is not a valid logical type'):
-        new_type_sys.str_to_logical_type('Integer')
+    with pytest.raises(ValueError, match="String Integer is not a valid logical type"):
+        new_type_sys.str_to_logical_type("Integer")
     new_type_sys.add_type(Boolean)
-    assert Boolean == new_type_sys.str_to_logical_type('Boolean')
+    assert Boolean == new_type_sys.str_to_logical_type("Boolean")

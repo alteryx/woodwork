@@ -4,8 +4,8 @@ import pandas as pd
 
 from woodwork.utils import import_or_none
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 ColumnName = Hashable
 UseStandardTagsDict = Dict[ColumnName, bool]

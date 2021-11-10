@@ -53,14 +53,14 @@ def import_or_none(library):
 
 
 def camel_to_snake(s):
-    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
+    s = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s).lower()
 
 
-def _convert_input_to_set(semantic_tags, error_language='semantic_tags', validate=True):
+def _convert_input_to_set(semantic_tags, error_language="semantic_tags", validate=True):
     """Takes input as a single string, a list of strings, or a set of strings
-        and returns a set with the supplied values. If no values are supplied,
-        an empty set will be returned."""
+    and returns a set with the supplied values. If no values are supplied,
+    an empty set will be returned."""
     if not semantic_tags:
         return set()
 
@@ -212,7 +212,7 @@ def _is_s3(string):
 
 def _is_url(string):
     """Checks if the given string is an url path. Returns a boolean."""
-    return 'http' in string
+    return "http" in string
 
 
 def _reformat_to_latlong(latlong, use_list=False):
@@ -225,17 +225,19 @@ def _reformat_to_latlong(latlong, use_list=False):
             # Serialized latlong columns from csv or parquet will be strings, so null values will be
             # read as the string 'nan' in pandas and Dask and 'NaN' in Koalas
             # neither of which which is interpretable as a null value
-            if 'nan' in latlong:
-                latlong = latlong.replace('nan', 'None')
-            if 'NaN' in latlong:
-                latlong = latlong.replace('NaN', 'None')
+            if "nan" in latlong:
+                latlong = latlong.replace("nan", "None")
+            if "NaN" in latlong:
+                latlong = latlong.replace("NaN", "None")
             latlong = ast.literal_eval(latlong)
         except ValueError:
             pass
 
     if isinstance(latlong, (tuple, list)):
         if len(latlong) != 2:
-            raise ValueError(f'LatLong values must have exactly two values. {latlong} does not have two values.')
+            raise ValueError(
+                f"LatLong values must have exactly two values. {latlong} does not have two values."
+            )
 
         latitude, longitude = map(_to_latlong_float, latlong)
 
@@ -247,7 +249,9 @@ def _reformat_to_latlong(latlong, use_list=False):
             return [latitude, longitude]
         return (latitude, longitude)
 
-    raise ValueError(f'LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria.')
+    raise ValueError(
+        f"LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria."
+    )
 
 
 def _to_latlong_float(val):
@@ -258,7 +262,9 @@ def _to_latlong_float(val):
     try:
         return float(val)
     except (ValueError, TypeError):
-        raise ValueError(f'Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {val} cannot be converted to a float.')
+        raise ValueError(
+            f"Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {val} cannot be converted to a float."
+        )
 
 
 def _is_valid_latlong_series(series):
@@ -292,7 +298,7 @@ def _is_valid_latlong_value(val, bracket_type=tuple):
 
 def _is_null_latlong(val):
     if isinstance(val, str):
-        return val == 'None' or val == 'nan' or val == 'NaN'
+        return val == "None" or val == "nan" or val == "NaN"
 
     # Since we can have list inputs here, pd.isnull will not have a relevant truth value for lists
     return not isinstance(val, list) and pd.isnull(val)
@@ -312,12 +318,15 @@ def get_valid_mi_types():
     """
     valid_types = []
     for ltype in ww.type_system.registered_types:
-        if 'category' in ltype.standard_tags:
+        if "category" in ltype.standard_tags:
             valid_types.append(ltype)
-        elif 'numeric' in ltype.standard_tags:
+        elif "numeric" in ltype.standard_tags:
             valid_types.append(ltype)
-        elif (ltype == ww.logical_types.Datetime or ltype == ww.logical_types.Boolean or
-                ltype == ww.logical_types.BooleanNullable):
+        elif (
+            ltype == ww.logical_types.Datetime
+            or ltype == ww.logical_types.Boolean
+            or ltype == ww.logical_types.BooleanNullable
+        ):
             valid_types.append(ltype)
 
     return valid_types
@@ -359,9 +368,9 @@ def concat_columns(objs, validate_schema=True):
         DataFrame: A Woodwork dataframe whose typing information is also a concatenation of the input dataframes.
     """
     if not objs:
-        raise ValueError('No objects to concatenate')
+        raise ValueError("No objects to concatenate")
 
-    table_name = ''
+    table_name = ""
 
     logical_types = {}
     semantic_tags = {}
@@ -382,14 +391,16 @@ def concat_columns(objs, validate_schema=True):
             # Raise error if there's overlap between table metadata
             overlapping_keys = obj.ww.metadata.keys() & table_metadata.keys()
             if overlapping_keys:
-                raise ValueError(f'Cannot resolve overlapping keys in table metadata: {overlapping_keys}')
+                raise ValueError(
+                    f"Cannot resolve overlapping keys in table metadata: {overlapping_keys}"
+                )
 
             table_metadata = {**obj.ww.metadata, **table_metadata}
 
             # Combine table names
             if obj.ww.name is not None:
                 if table_name:
-                    table_name += '_'
+                    table_name += "_"
                 table_name += str(obj.ww.name)
 
             # Cannot have multiple tables with indexes or time indexes set
@@ -397,14 +408,18 @@ def concat_columns(objs, validate_schema=True):
                 if index is None:
                     index = obj.ww.index
                 else:
-                    raise IndexError('Cannot set the Woodwork index of multiple input objects. '
-                                     'Please remove the index columns from all but one table.')
+                    raise IndexError(
+                        "Cannot set the Woodwork index of multiple input objects. "
+                        "Please remove the index columns from all but one table."
+                    )
             if obj.ww.time_index is not None:
                 if time_index is None:
                     time_index = obj.ww.time_index
                 else:
-                    raise IndexError('Cannot set the Woodwork time index of multiple input objects. '
-                                     'Please remove the time index columns from all but one table.')
+                    raise IndexError(
+                        "Cannot set the Woodwork time index of multiple input objects. "
+                        "Please remove the time index columns from all but one table."
+                    )
 
             ww_columns = obj.ww.schema.columns
         elif isinstance(obj.ww.schema, ww.column_schema.ColumnSchema):
@@ -413,10 +428,12 @@ def concat_columns(objs, validate_schema=True):
         # Compile the typing information per column
         for name, col_schema in ww_columns.items():
             if name in col_names_seen:
-                raise ValueError(f"Duplicate column '{name}' has been found in more than one input object. "
-                                 "Please remove duplicate columns from all but one table.")
+                raise ValueError(
+                    f"Duplicate column '{name}' has been found in more than one input object. "
+                    "Please remove duplicate columns from all but one table."
+                )
             logical_types[name] = col_schema.logical_type
-            semantic_tags[name] = col_schema.semantic_tags - {'time_index'} - {'index'}
+            semantic_tags[name] = col_schema.semantic_tags - {"time_index"} - {"index"}
             col_metadata[name] = col_schema.metadata
             col_descriptions[name] = col_schema.description
             col_origins[name] = col_schema.origin
@@ -426,35 +443,48 @@ def concat_columns(objs, validate_schema=True):
 
     # Perform concatenation with the correct library
     obj = objs[0]
-    dd = import_or_none('dask.dataframe')
-    ks = import_or_none('databricks.koalas')
+    dd = import_or_none("dask.dataframe")
+    ks = import_or_none("databricks.koalas")
 
     lib = pd
-    if ww.accessor_utils._is_koalas_dataframe(obj) or ww.accessor_utils._is_koalas_series(obj):
+    if ww.accessor_utils._is_koalas_dataframe(
+        obj
+    ) or ww.accessor_utils._is_koalas_series(obj):
         lib = ks
-    elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(obj):
+    elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
+        obj
+    ):
         lib = dd
 
-    combined_df = lib.concat(objs, axis=1, join='outer')
+    combined_df = lib.concat(objs, axis=1, join="outer")
 
     # Initialize Woodwork with all of the typing information from the input objs
     # performing type inference on any columns that did not already have Woodwork initialized
-    combined_df.ww.init(name=table_name or None,
-                        index=index,
-                        time_index=time_index,
-                        logical_types=logical_types,
-                        semantic_tags=semantic_tags,
-                        table_metadata=table_metadata or None,
-                        column_metadata=col_metadata,
-                        column_descriptions=col_descriptions,
-                        column_origins=col_origins,
-                        use_standard_tags=use_standard_tags,
-                        validate=validate_schema)
+    combined_df.ww.init(
+        name=table_name or None,
+        index=index,
+        time_index=time_index,
+        logical_types=logical_types,
+        semantic_tags=semantic_tags,
+        table_metadata=table_metadata or None,
+        column_metadata=col_metadata,
+        column_descriptions=col_descriptions,
+        column_origins=col_origins,
+        use_standard_tags=use_standard_tags,
+        validate=validate_schema,
+    )
     return combined_df
 
 
-def _update_progress(start_time, current_time, progress_increment,
-                     current_progress, total, unit, callback_function):
+def _update_progress(
+    start_time,
+    current_time,
+    progress_increment,
+    current_progress,
+    total,
+    unit,
+    callback_function,
+):
     """Helper function for updating progress of a function and making a call to the progress callback
     function, if provided. Adds the progress increment to the current progress amount and returns the
     updated progress amount.

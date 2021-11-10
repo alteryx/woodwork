@@ -5,21 +5,22 @@ import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
-from woodwork.logical_types import (
-    Datetime,
-    Double,
-    Integer,
-    IntegerNullable,
-    LatLong
-)
+from woodwork.logical_types import Datetime, Double, Integer, IntegerNullable, LatLong
 from woodwork.utils import _update_progress, get_valid_mi_types, import_or_none
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 
-def _get_describe_dict(dataframe, include=None, callback=None,
-                       extra_stats=False, bins=10, top_x=10, recent_x=10):
+def _get_describe_dict(
+    dataframe,
+    include=None,
+    callback=None,
+    extra_stats=False,
+    bins=10,
+    top_x=10,
+    recent_x=10,
+):
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
     Args:
@@ -55,15 +56,17 @@ def _get_describe_dict(dataframe, include=None, callback=None,
         with a value containing a dictionary containing relevant statistics for that column.
     """
     start_time = timer()
-    unit = 'calculations'
+    unit = "calculations"
     agg_stats_to_calculate = {
-        'category': ["count", "nunique"],
-        'numeric': ["count", "max", "min", "nunique", "mean", "std"],
+        "category": ["count", "nunique"],
+        "numeric": ["count", "max", "min", "nunique", "mean", "std"],
         Datetime: ["count", "max", "min", "nunique", "mean"],
     }
     if include is not None:
         filtered_cols = dataframe.ww._filter_cols(include, col_names=True)
-        cols_to_include = [(k, v) for k, v in dataframe.ww.columns.items() if k in filtered_cols]
+        cols_to_include = [
+            (k, v) for k, v in dataframe.ww.columns.items() if k in filtered_cols
+        ]
     else:
         cols_to_include = dataframe.ww.columns.items()
 
@@ -76,19 +79,29 @@ def _get_describe_dict(dataframe, include=None, callback=None,
 
         # Any LatLong columns will be using lists, which we must convert
         # back to tuples so we can calculate the mode, which requires hashable values
-        latlong_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) == LatLong]
-        df[latlong_columns] = df[latlong_columns].applymap(lambda latlong: tuple(latlong) if latlong else latlong)
+        latlong_columns = [
+            col_name
+            for col_name, col in dataframe.ww.columns.items()
+            if type(col.logical_type) == LatLong
+        ]
+        df[latlong_columns] = df[latlong_columns].applymap(
+            lambda latlong: tuple(latlong) if latlong else latlong
+        )
     else:
         df = dataframe
 
     # Setup for progress callback and make initial call
     # Assume 1 unit for general preprocessing, plus main loop over column
     total_loops = 1 + len(cols_to_include)
-    current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, unit, callback)
+    current_progress = _update_progress(
+        start_time, timer(), 1, 0, total_loops, unit, callback
+    )
 
     for column_name, column in cols_to_include:
-        if 'index' in column.semantic_tags:
-            current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, unit, callback)
+        if "index" in column.semantic_tags:
+            current_progress = _update_progress(
+                start_time, timer(), 1, current_progress, total_loops, unit, callback
+            )
             continue
         values = {}
         logical_type = column.logical_type
@@ -97,9 +110,9 @@ def _get_describe_dict(dataframe, include=None, callback=None,
 
         # Calculate Aggregation Stats
         if column.is_categorical:
-            agg_stats = agg_stats_to_calculate['category']
+            agg_stats = agg_stats_to_calculate["category"]
         elif column.is_numeric:
-            agg_stats = agg_stats_to_calculate['numeric']
+            agg_stats = agg_stats_to_calculate["numeric"]
         elif column.is_datetime:
             agg_stats = agg_stats_to_calculate[Datetime]
         else:
@@ -111,7 +124,9 @@ def _get_describe_dict(dataframe, include=None, callback=None,
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            float_series = series.astype('float64')  # workaround for https://github.com/pandas-dev/pandas/issues/42626
+            float_series = series.astype(
+                "float64"
+            )  # workaround for https://github.com/pandas-dev/pandas/issues/42626
             quant_values = float_series.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[1]
@@ -137,14 +152,18 @@ def _get_describe_dict(dataframe, include=None, callback=None,
                     # Calculate top numeric values if range of values present
                     # is less than or equal number of histogram bins
                     if len(_range) <= bins:
-                        values["top_values"] = _get_numeric_value_counts_in_range(series, _range)
+                        values["top_values"] = _get_numeric_value_counts_in_range(
+                            series, _range
+                        )
             elif column.is_categorical:
                 values["top_values"] = _get_top_values_categorical(series, top_x)
             elif column.is_datetime:
                 values["recent_values"] = _get_recent_value_counts(series, recent_x)
 
         results[column_name] = values
-        current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, unit, callback)
+        current_progress = _update_progress(
+            start_time, timer(), 1, current_progress, total_loops, unit, callback
+        )
     return results
 
 
@@ -173,8 +192,12 @@ def _replace_nans_for_mutual_info(schema, data):
 
         if column.is_numeric or column.is_datetime:
             mean = series.mean()
-            if isinstance(mean, float) and not mean.is_integer() and not type(column.logical_type) == Double:
-                data[column_name] = series.astype('float')
+            if (
+                isinstance(mean, float)
+                and not mean.is_integer()
+                and not type(column.logical_type) == Double
+            ):
+                data[column_name] = series.astype("float")
             data[column_name] = data[column_name].fillna(mean)
         elif column.is_categorical or column.is_boolean:
             mode = _get_mode(series)
@@ -203,16 +226,20 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
             data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
         # Convert Datetimes to total seconds - an integer - and bin
         if column.is_datetime:
-            data[col_name] = pd.qcut(data[col_name].view('int64'), num_bins, duplicates="drop")
+            data[col_name] = pd.qcut(
+                data[col_name].view("int64"), num_bins, duplicates="drop"
+            )
         # convert categories to integers
         new_col = data[col_name]
-        if str(new_col.dtype) != 'category':
-            new_col = new_col.astype('category')
+        if str(new_col.dtype) != "category":
+            new_col = new_col.astype("category")
         data[col_name] = new_col.cat.codes
     return data
 
 
-def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_index=False, callback=None):
+def _get_mutual_information_dict(
+    dataframe, num_bins=10, nrows=None, include_index=False, callback=None
+):
     """Calculates mutual information between all pairs of columns in the DataFrame that
     support mutual information. Logical Types that support mutual information are as
     follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
@@ -243,11 +270,15 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
         `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
         Mutual information values are between 0 (no mutual information) and 1
         (perfect dependency).
-        """
+    """
     start_time = timer()
-    unit = 'calculations'
+    unit = "calculations"
     valid_types = get_valid_mi_types()
-    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if type(col.logical_type) in valid_types]
+    valid_columns = [
+        col_name
+        for col_name, col in dataframe.ww.columns.items()
+        if type(col.logical_type) in valid_types
+    ]
 
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
@@ -271,13 +302,19 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
     # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n)/2 for main calculation loop
     n = len(data.columns)
     total_loops = 1 + 2 * n + (n * n + n) / 2
-    current_progress = _update_progress(start_time, timer(), 1, 0, total_loops, unit, callback)
+    current_progress = _update_progress(
+        start_time, timer(), 1, 0, total_loops, unit, callback
+    )
 
     data = _replace_nans_for_mutual_info(dataframe.ww.schema, data)
-    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, unit, callback)
+    current_progress = _update_progress(
+        start_time, timer(), n, current_progress, total_loops, unit, callback
+    )
 
     data = _make_categorical_for_mutual_info(dataframe.ww.schema, data, num_bins)
-    current_progress = _update_progress(start_time, timer(), n, current_progress, total_loops, unit, callback)
+    current_progress = _update_progress(
+        start_time, timer(), n, current_progress, total_loops, unit, callback
+    )
 
     # calculate mutual info for all pairs of columns
     mutual_info = []
@@ -287,15 +324,31 @@ def _get_mutual_information_dict(dataframe, num_bins=10, nrows=None, include_ind
             b_col = col_names[j]
             if a_col == b_col:
                 # Ignore because the mutual info for a column with itself will always be 1
-                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, unit, callback)
+                current_progress = _update_progress(
+                    start_time,
+                    timer(),
+                    1,
+                    current_progress,
+                    total_loops,
+                    unit,
+                    callback,
+                )
                 continue
             else:
                 mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
                 mutual_info.append(
                     {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
                 )
-                current_progress = _update_progress(start_time, timer(), 1, current_progress, total_loops, unit, callback)
-    mutual_info.sort(key=lambda mi: mi['mutual_info'], reverse=True)
+                current_progress = _update_progress(
+                    start_time,
+                    timer(),
+                    1,
+                    current_progress,
+                    total_loops,
+                    unit,
+                    callback,
+                )
+    mutual_info.sort(key=lambda mi: mi["mutual_info"], reverse=True)
 
     return mutual_info
 
@@ -317,7 +370,11 @@ def _get_valid_mi_columns(dataframe, include_index=False):
         mutual information.
     """
     valid_types = tuple(get_valid_mi_types())
-    valid_columns = [col_name for col_name, col in dataframe.ww.columns.items() if isinstance(col.logical_type, valid_types)]
+    valid_columns = [
+        col_name
+        for col_name, col in dataframe.ww.columns.items()
+        if isinstance(col.logical_type, valid_types)
+    ]
     if not include_index and dataframe.ww.index is not None:
         valid_columns.remove(dataframe.ww.index)
 
@@ -345,7 +402,9 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
         and `value`.
     """
     val_counts = {}
-    valid_cols = [col for col, column in dataframe.ww.columns.items() if column.is_categorical]
+    valid_cols = [
+        col for col, column in dataframe.ww.columns.items() if column.is_categorical
+    ]
     data = dataframe[valid_cols]
     is_ks = False
     if _is_dask_dataframe(data):
@@ -358,7 +417,7 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
         if dropna and is_ks:
             # Koalas categorical columns will have missing values replaced with the string 'None'
             # Replace them with np.nan so dropna work
-            datacol = data[col].replace(to_replace='None', value=np.nan)
+            datacol = data[col].replace(to_replace="None", value=np.nan)
         else:
             datacol = data[col]
         frequencies = datacol.value_counts(ascending=ascending, dropna=dropna)
@@ -369,7 +428,9 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     return val_counts
 
 
-def _get_box_plot_info_for_column(series, quantiles=None):
+def _get_box_plot_info_for_column(
+    series, quantiles=None, include_indices_and_values=True
+):
     """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -378,6 +439,9 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             Will be used to calculate quantiles if none are provided.
         quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
             where the key indicates the quantile, and the value is the quantile's value for the data.
+        include_indices_and_values (bool, optional): Whether or not the lists containing individual
+            outlier values and their indices will be included in the returned dictionary.
+            Defaults to True.
 
     Note:
         The minimum quantiles necessary for outlier detection using the IQR method are the
@@ -394,16 +458,20 @@ def _get_box_plot_info_for_column(series, quantiles=None):
             - quantiles (list[float]): the quantiles used to determine the bounds.
                 If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
                 quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
-            - low_values (list[float, int]): the values of the lower outliers
-            - high_values (list[float, int]): the values of the upper outliers
-            - low_indices (list[int]): the corresponding index values for each of the lower outliers
-            - high_indices (list[int]): the corresponding index values for each of the upper outliers
+            - low_values (list[float, int], optional): the values of the lower outliers.
+                Will not be included if ``include_indices_and_values`` is False.
+            - high_values (list[float, int], optional): the values of the upper outliers
+                Will not be included if ``include_indices_and_values`` is False.
+            - low_indices (list[int], optional): the corresponding index values for each of the lower outliers
+                Will not be included if ``include_indices_and_values`` is False.
+            - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
+                Will not be included if ``include_indices_and_values`` is False.
     """
     if not series.ww._schema.is_numeric:
-        raise TypeError('Cannot calculate box plot statistics for non-numeric column')
+        raise TypeError("Cannot calculate box plot statistics for non-numeric column")
 
     if quantiles and not isinstance(quantiles, dict):
-        raise TypeError('quantiles must be a dictionary.')
+        raise TypeError("quantiles must be a dictionary.")
 
     if dd and isinstance(series, dd.Series):
         series = series.compute()
@@ -413,24 +481,37 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     # remove null values from the data
     series = series.dropna()
 
+    outliers_dict = {}
     # An empty or fully null Series has no outliers, bounds, or quantiles
     if series.shape[0] == 0:
+        if include_indices_and_values:
+            outliers_dict = {
+                "low_values": [],
+                "high_values": [],
+                "low_indices": [],
+                "high_indices": [],
+            }
         return {
-            'low_bound': np.nan,
-            'high_bound': np.nan,
-            'quantiles': {0.0: np.nan, 0.25: np.nan, 0.5: np.nan, 0.75: np.nan, 1.0: np.nan},
-            "low_values": [],
-            "high_values": [],
-            "low_indices": [],
-            "high_indices": []
+            "low_bound": np.nan,
+            "high_bound": np.nan,
+            "quantiles": {
+                0.0: np.nan,
+                0.25: np.nan,
+                0.5: np.nan,
+                0.75: np.nan,
+                1.0: np.nan,
+            },
+            **outliers_dict,
         }
 
     # calculate the outlier bounds using IQR
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
     elif 0.25 not in quantiles or 0.75 not in quantiles:
-        raise ValueError("Input quantiles do not contain the minimum necessary quantiles for outlier calculation: "
-                         "0.25 (the first quartile) and 0.75 (the third quartile).")
+        raise ValueError(
+            "Input quantiles do not contain the minimum necessary quantiles for outlier calculation: "
+            "0.25 (the first quartile) and 0.75 (the third quartile)."
+        )
 
     q1 = quantiles[0.25]
     q3 = quantiles[0.75]
@@ -440,31 +521,39 @@ def _get_box_plot_info_for_column(series, quantiles=None):
     low_bound = q1 - (iqr * 1.5)
     high_bound = q3 + (iqr * 1.5)
 
-    # identify outliers in the series
-    min = quantiles.get(0.0)
-    max = quantiles.get(1.0)
-    if min is not None and max is not None and low_bound <= min and high_bound >= max:
-        outliers_dict = {
-            "low_values": [],
-            "high_values": [],
-            "low_indices": [],
-            "high_indices": []
-        }
-    else:
-        low_series = series[series < low_bound]
-        high_series = series[series > high_bound]
+    if include_indices_and_values:
+        # identify outliers in the series
+        min = quantiles.get(0.0)
+        max = quantiles.get(1.0)
+        if (
+            min is not None
+            and max is not None
+            and low_bound <= min
+            and high_bound >= max
+        ):
+            outliers_dict = {
+                "low_values": [],
+                "high_values": [],
+                "low_indices": [],
+                "high_indices": [],
+            }
+        else:
+            low_series = series[series < low_bound]
+            high_series = series[series > high_bound]
 
-        outliers_dict = {
-            "low_values": low_series.tolist(),
-            "high_values": high_series.tolist(),
-            "low_indices": low_series.index.tolist(),
-            "high_indices": high_series.index.tolist()
-        }
+            outliers_dict = {
+                "low_values": low_series.tolist(),
+                "high_values": high_series.tolist(),
+                "low_indices": low_series.index.tolist(),
+                "high_indices": high_series.index.tolist(),
+            }
 
-    return {'low_bound': low_bound,
-            'high_bound': high_bound,
-            'quantiles': quantiles,
-            **outliers_dict}
+    return {
+        "low_bound": low_bound,
+        "high_bound": high_bound,
+        "quantiles": quantiles,
+        **outliers_dict,
+    }
 
 
 def _get_numeric_value_counts_in_range(series, _range):
@@ -480,7 +569,9 @@ def _get_numeric_value_counts_in_range(series, _range):
             `count`. Output is sorted in descending order based on the value counts.
     """
     frequencies = series.value_counts(dropna=True)
-    value_counts = [{"value": i, "count": frequencies[i] if i in frequencies else 0} for i in _range]
+    value_counts = [
+        {"value": i, "count": frequencies[i] if i in frequencies else 0} for i in _range
+    ]
     return sorted(value_counts, key=lambda i: (-i["count"], i["value"]))
 
 
@@ -535,9 +626,7 @@ def _get_histogram_values(series, bins=10):
         histogram (list(dict)): a list of dictionary with keys `bins` and
             `frequency`
     """
-    values = (
-        pd.cut(series, bins=bins, duplicates='drop').value_counts().sort_index()
-    )
+    values = pd.cut(series, bins=bins, duplicates="drop").value_counts().sort_index()
     df = values.reset_index()
     df.columns = ["bins", "frequency"]
     return list(df.to_dict(orient="index").values())

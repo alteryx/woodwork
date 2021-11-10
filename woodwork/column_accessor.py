@@ -8,13 +8,10 @@ from woodwork.accessor_utils import (
     _check_column_schema,
     _is_dataframe,
     _is_series,
-    init_series
+    init_series,
 )
 from woodwork.column_schema import ColumnSchema
-from woodwork.exceptions import (
-    ParametersIgnoredWarning,
-    TypingInfoMismatchWarning
-)
+from woodwork.exceptions import ParametersIgnoredWarning, TypingInfoMismatchWarning
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
 from woodwork.statistics_utils import _get_box_plot_info_for_column
@@ -22,11 +19,11 @@ from woodwork.table_schema import TableSchema
 from woodwork.utils import (
     _get_column_logical_type,
     _is_valid_latlong_series,
-    import_or_none
+    import_or_none,
 )
 
-dd = import_or_none('dask.dataframe')
-ks = import_or_none('databricks.koalas')
+dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 
 class WoodworkColumnAccessor:
@@ -34,9 +31,17 @@ class WoodworkColumnAccessor:
         self._series_weakref = weakref.ref(series)
         self._schema = None
 
-    def init(self, logical_type=None, semantic_tags=None,
-             use_standard_tags=True, description=None, origin=None,
-             metadata=None, schema=None, validate=True):
+    def init(
+        self,
+        logical_type=None,
+        semantic_tags=None,
+        use_standard_tags=True,
+        description=None,
+        origin=None,
+        metadata=None,
+        schema=None,
+        validate=True,
+    ):
         """Initializes Woodwork typing information for a Series.
 
         Args:
@@ -69,34 +74,42 @@ class WoodworkColumnAccessor:
 
             extra_params = []
             if logical_type is not None:
-                extra_params.append('logical_type')
+                extra_params.append("logical_type")
             if semantic_tags is not None:
-                extra_params.append('semantic_tags')
+                extra_params.append("semantic_tags")
             if description is not None:
-                extra_params.append('description')
+                extra_params.append("description")
             if origin is not None:
-                extra_params.append('origin')
+                extra_params.append("origin")
             if metadata is not None:
-                extra_params.append('metadata')
+                extra_params.append("metadata")
             if not use_standard_tags:
-                extra_params.append('use_standard_tags')
+                extra_params.append("use_standard_tags")
             if extra_params:
-                warnings.warn("A schema was provided and the following parameters were ignored: " + ", ".join(extra_params), ParametersIgnoredWarning)
+                warnings.warn(
+                    "A schema was provided and the following parameters were ignored: "
+                    + ", ".join(extra_params),
+                    ParametersIgnoredWarning,
+                )
 
             self._schema = schema
         else:
-            logical_type = _get_column_logical_type(self._series, logical_type, self._series.name)
+            logical_type = _get_column_logical_type(
+                self._series, logical_type, self._series.name
+            )
 
             if validate:
                 self._validate_logical_type(logical_type)
 
-            self._schema = ColumnSchema(logical_type=logical_type,
-                                        semantic_tags=semantic_tags,
-                                        use_standard_tags=use_standard_tags,
-                                        description=description,
-                                        origin=origin,
-                                        metadata=metadata,
-                                        validate=validate)
+            self._schema = ColumnSchema(
+                logical_type=logical_type,
+                semantic_tags=semantic_tags,
+                use_standard_tags=use_standard_tags,
+                description=description,
+                origin=origin,
+                metadata=metadata,
+                validate=validate,
+            )
 
     @property
     def _series(self):
@@ -234,10 +247,10 @@ class WoodworkColumnAccessor:
 
     @_check_column_schema
     def __repr__(self):
-        msg = u"<Series: {} ".format(self._series.name)
-        msg += u"(Physical Type = {}) ".format(self._series.dtype)
-        msg += u"(Logical Type = {}) ".format(self.logical_type)
-        msg += u"(Semantic Tags = {})>".format(self.semantic_tags)
+        msg = "<Series: {} ".format(self._series.name)
+        msg += "(Physical Type = {}) ".format(self._series.dtype)
+        msg += "(Logical Type = {}) ".format(self.logical_type)
+        msg += "(Semantic Tags = {})>".format(self.semantic_tags)
         return msg
 
     def _make_series_call(self, attr):
@@ -247,37 +260,47 @@ class WoodworkColumnAccessor:
         series_attr = getattr(self._series, attr)
 
         if callable(series_attr):
+
             def wrapper(*args, **kwargs):
                 # Make Series call and intercept the result
                 result = series_attr(*args, **kwargs)
 
                 # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
-                    valid_dtype = self._schema.logical_type._get_valid_dtype(type(result))
+                    valid_dtype = self._schema.logical_type._get_valid_dtype(
+                        type(result)
+                    )
                     if str(result.dtype) == valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
                     else:
-                        invalid_schema_message = 'dtype mismatch between original dtype, ' \
-                            f'{valid_dtype}, and returned dtype, {result.dtype}'
-                        warning_message = TypingInfoMismatchWarning().get_warning_message(attr,
-                                                                                          invalid_schema_message,
-                                                                                          'Series')
+                        invalid_schema_message = (
+                            "dtype mismatch between original dtype, "
+                            f"{valid_dtype}, and returned dtype, {result.dtype}"
+                        )
+                        warning_message = (
+                            TypingInfoMismatchWarning().get_warning_message(
+                                attr, invalid_schema_message, "Series"
+                            )
+                        )
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
                 elif _is_dataframe(result):
                     # Initialize Woodwork with a partial schema
                     col_schema = self.schema
                     col_name = self.name or result.columns.to_list()[0]
-                    table_schema = TableSchema(column_names=[col_name],
-                                               logical_types={col_name: col_schema.logical_type},
-                                               semantic_tags={col_name: col_schema.semantic_tags},
-                                               column_metadata={col_name: col_schema.metadata},
-                                               use_standard_tags={col_name: col_schema.use_standard_tags},
-                                               column_descriptions={col_name: col_schema.description},
-                                               column_origins={col_name: col_schema.origin},
-                                               validate=False)
+                    table_schema = TableSchema(
+                        column_names=[col_name],
+                        logical_types={col_name: col_schema.logical_type},
+                        semantic_tags={col_name: col_schema.semantic_tags},
+                        column_metadata={col_name: col_schema.metadata},
+                        use_standard_tags={col_name: col_schema.use_standard_tags},
+                        column_descriptions={col_name: col_schema.description},
+                        column_origins={col_name: col_schema.origin},
+                        validate=False,
+                    )
                     result.ww.init_with_partial_schema(table_schema)
                 # Always return the results of the Series operation whether or not Woodwork is initialized
                 return result
+
             return wrapper
         # Directly return non-callable Series attributes
         return series_attr
@@ -287,18 +310,22 @@ class WoodworkColumnAccessor:
         specific validation, as required."""
         valid_dtype = logical_type._get_valid_dtype(type(self._series))
         if valid_dtype != str(self._series.dtype):
-            raise ValueError(f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
-                             f"incompatible with {logical_type} dtype. Try converting series "
-                             f"dtype to '{valid_dtype}' before initializing or use the "
-                             "woodwork.init_series function to initialize.")
+            raise ValueError(
+                f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
+                f"incompatible with {logical_type} dtype. Try converting series "
+                f"dtype to '{valid_dtype}' before initializing or use the "
+                "woodwork.init_series function to initialize."
+            )
 
         if isinstance(logical_type, Ordinal):
             logical_type._validate_data(self._series)
         elif isinstance(logical_type, LatLong):
             if not _is_valid_latlong_series(self._series):
-                raise ValueError("Cannot initialize Woodwork. Series does not contain properly formatted "
-                                 "LatLong data. Try reformatting before initializing or use the "
-                                 "woodwork.init_series function to initialize.")
+                raise ValueError(
+                    "Cannot initialize Woodwork. Series does not contain properly formatted "
+                    "LatLong data. Try reformatting before initializing or use the "
+                    "woodwork.init_series function to initialize."
+                )
 
     @_check_column_schema
     def add_semantic_tags(self, semantic_tags):
@@ -307,8 +334,7 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): New semantic tag(s) to add
         """
-        self._schema._add_semantic_tags(semantic_tags,
-                                        self._series.name)
+        self._schema._add_semantic_tags(semantic_tags, self._series.name)
 
     @_check_column_schema
     def remove_semantic_tags(self, semantic_tags):
@@ -317,8 +343,7 @@ class WoodworkColumnAccessor:
         Args:
             semantic_tags (str/list/set): Semantic tag(s) to remove.
         """
-        self._schema._remove_semantic_tags(semantic_tags,
-                                           self._series.name)
+        self._schema._remove_semantic_tags(semantic_tags, self._series.name)
 
     @_check_column_schema
     def reset_semantic_tags(self):
@@ -346,13 +371,15 @@ class WoodworkColumnAccessor:
         # schema with current series
         new_series = self._series.copy()
         new_series._schema = None
-        return init_series(new_series,
-                           logical_type=logical_type,
-                           semantic_tags=None,
-                           use_standard_tags=self._schema.use_standard_tags,
-                           description=self.description,
-                           origin=self.origin,
-                           metadata=copy.deepcopy(self.metadata))
+        return init_series(
+            new_series,
+            logical_type=logical_type,
+            semantic_tags=None,
+            use_standard_tags=self._schema.use_standard_tags,
+            description=self.description,
+            origin=self.origin,
+            metadata=copy.deepcopy(self.metadata),
+        )
 
     @_check_column_schema
     def set_semantic_tags(self, semantic_tags):
@@ -366,7 +393,7 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     @_check_column_schema
-    def box_plot_dict(self, quantiles=None):
+    def box_plot_dict(self, quantiles=None, include_indices_and_values=True):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -374,6 +401,9 @@ class WoodworkColumnAccessor:
             quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
                 where the key indicates the quantile, and the value is the quantile's value for the data. If
                 no qantiles are provided, they will be computed from the data.
+            include_indices_and_values (bool, optional): Whether or not the lists containing individual
+                outlier values and their indices will be included in the returned dictionary.
+                Defaults to True.
 
         Note:
             The minimum quantiles necessary for outlier detection using the IQR method are the
@@ -390,30 +420,41 @@ class WoodworkColumnAccessor:
                 - quantiles (list[float]): the quantiles used to determine the bounds.
                     If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
                     quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
-                - low_values (list[float, int]): the values of the lower outliers
-                - high_values (list[float, int]): the values of the upper outliers
-                - low_indices (list[int]): the corresponding index values for each of the lower outliers
-                - high_indices (list[int]): the corresponding index values for each of the upper outliers
+                - low_values (list[float, int], optional): the values of the lower outliers.
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_values (list[float, int], optional): the values of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - low_indices (list[int], optional): the corresponding index values for each of the lower outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
         """
-        return _get_box_plot_info_for_column(self._series, quantiles=quantiles)
+        return _get_box_plot_info_for_column(
+            self._series,
+            quantiles=quantiles,
+            include_indices_and_values=include_indices_and_values,
+        )
 
 
 def _validate_schema(schema, series):
     if not isinstance(schema, ColumnSchema):
-        raise TypeError('Provided schema must be a Woodwork.ColumnSchema object.')
+        raise TypeError("Provided schema must be a Woodwork.ColumnSchema object.")
 
     valid_dtype = schema.logical_type._get_valid_dtype(type(series))
     if str(series.dtype) != valid_dtype:
-        raise ValueError(f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}")
+        raise ValueError(
+            f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}"
+        )
 
 
-@pd.api.extensions.register_series_accessor('ww')
+@pd.api.extensions.register_series_accessor("ww")
 class PandasColumnAccessor(WoodworkColumnAccessor):
     pass
 
 
 if dd:
-    @dd.extensions.register_series_accessor('ww')
+
+    @dd.extensions.register_series_accessor("ww")
     class DaskColumnAccessor(WoodworkColumnAccessor):
         pass
 
@@ -421,6 +462,6 @@ if dd:
 if ks:
     from databricks.koalas.extensions import register_series_accessor
 
-    @register_series_accessor('ww')
+    @register_series_accessor("ww")
     class KoalasColumnAccessor(WoodworkColumnAccessor):
         pass

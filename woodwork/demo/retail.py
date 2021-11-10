@@ -1,4 +1,3 @@
-
 import pandas as pd
 
 import woodwork as ww
@@ -8,11 +7,11 @@ from woodwork.logical_types import (
     Datetime,
     Double,
     Integer,
-    NaturalLanguage
+    NaturalLanguage,
 )
 
 
-def load_retail(id='demo_retail_data', nrows=None, init_woodwork=True):
+def load_retail(id="demo_retail_data", nrows=None, init_woodwork=True):
     """Load a demo retail dataset into a DataFrame, optionally initializing Woodwork's typing information.
 
     Args:
@@ -29,39 +28,43 @@ def load_retail(id='demo_retail_data', nrows=None, init_woodwork=True):
         pd.DataFrame: A DataFrame containing the demo data with Woodwork typing initialized.
         If `init_woodwork` is False, will return an uninitialized DataFrame.
     """
-    csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?library=woodwork&version=" + ww.__version__
-    csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=woodwork&version=" + ww.__version__
+    csv_s3_gz = (
+        "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?library=woodwork&version="
+        + ww.__version__
+    )
+    csv_s3 = (
+        "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=woodwork&version="
+        + ww.__version__
+    )
     # Try to read in gz compressed file
     try:
-        df = pd.read_csv(csv_s3_gz,
-                         nrows=nrows,
-                         parse_dates=["order_date"])
+        df = pd.read_csv(csv_s3_gz, nrows=nrows, parse_dates=["order_date"])
     # Fall back to uncompressed
     except Exception:
-        df = pd.read_csv(csv_s3,
-                         nrows=nrows,
-                         parse_dates=["order_date"])
+        df = pd.read_csv(csv_s3, nrows=nrows, parse_dates=["order_date"])
     # Add unique column for index
-    df.insert(0, 'order_product_id', range(len(df)))
+    df.insert(0, "order_product_id", range(len(df)))
 
     if init_woodwork:
         logical_types = {
-            'order_product_id': Categorical,
-            'order_id': Categorical,
-            'product_id': Categorical,
-            'description': NaturalLanguage,
-            'quantity': Integer,
-            'order_date': Datetime,
-            'unit_price': Double,
-            'customer_name': Categorical,
-            'country': Categorical,
-            'total': Double,
-            'cancelled': Boolean,
+            "order_product_id": Categorical,
+            "order_id": Categorical,
+            "product_id": Categorical,
+            "description": NaturalLanguage,
+            "quantity": Integer,
+            "order_date": Datetime,
+            "unit_price": Double,
+            "customer_name": Categorical,
+            "country": Categorical,
+            "total": Double,
+            "cancelled": Boolean,
         }
 
-        df.ww.init(name=id,
-                   index='order_product_id',
-                   time_index='order_date',
-                   logical_types=logical_types)
+        df.ww.init(
+            name=id,
+            index="order_product_id",
+            time_index="order_date",
+            logical_types=logical_types,
+        )
 
     return df

@@ -11,18 +11,21 @@ from woodwork.utils import _convert_input_to_set
 
 
 class TableSchema(object):
-    def __init__(self, column_names,
-                 logical_types,
-                 name=None,
-                 index=None,
-                 time_index=None,
-                 semantic_tags=None,
-                 table_metadata=None,
-                 column_metadata=None,
-                 use_standard_tags=False,
-                 column_descriptions=None,
-                 column_origins=None,
-                 validate=True):
+    def __init__(
+        self,
+        column_names,
+        logical_types,
+        name=None,
+        index=None,
+        time_index=None,
+        semantic_tags=None,
+        table_metadata=None,
+        column_metadata=None,
+        use_standard_tags=False,
+        column_descriptions=None,
+        column_origins=None,
+        validate=True,
+    ):
         """Create TableSchema
 
         Args:
@@ -60,28 +63,45 @@ class TableSchema(object):
         """
         if validate:
             # Check that inputs are valid
-            _validate_params(column_names, name, index, time_index, logical_types, table_metadata,
-                             column_metadata, semantic_tags, column_descriptions, column_origins,
-                             use_standard_tags)
+            _validate_params(
+                column_names,
+                name,
+                index,
+                time_index,
+                logical_types,
+                table_metadata,
+                column_metadata,
+                semantic_tags,
+                column_descriptions,
+                column_origins,
+                use_standard_tags,
+            )
 
         self._name = name
         self._metadata = table_metadata or {}
 
         # use_standard_tags should be a dictionary mapping each column to its boolean
         if isinstance(use_standard_tags, bool):
-            use_standard_tags = {col_name: use_standard_tags for col_name in column_names}
+            use_standard_tags = {
+                col_name: use_standard_tags for col_name in column_names
+            }
         else:
-            use_standard_tags = {**{col_name: False for col_name in column_names}, **use_standard_tags}
+            use_standard_tags = {
+                **{col_name: False for col_name in column_names},
+                **use_standard_tags,
+            }
 
         # Infer logical types and create columns
-        self.columns = self._create_columns(column_names,
-                                            logical_types,
-                                            semantic_tags,
-                                            use_standard_tags,
-                                            column_descriptions,
-                                            column_origins,
-                                            column_metadata,
-                                            validate)
+        self.columns = self._create_columns(
+            column_names,
+            logical_types,
+            semantic_tags,
+            use_standard_tags,
+            column_descriptions,
+            column_origins,
+            column_metadata,
+            validate,
+        )
         if index is not None:
             self.set_index(index, validate=validate)
 
@@ -127,13 +147,12 @@ class TableSchema(object):
             types = [col.logical_type, str(list(col.semantic_tags))]
             typing_info[col_name] = types
 
-        columns = ['Logical Type', 'Semantic Tag(s)']
+        columns = ["Logical Type", "Semantic Tag(s)"]
 
-        df = pd.DataFrame.from_dict(typing_info,
-                                    orient='index',
-                                    columns=columns,
-                                    dtype="object")
-        df.index.name = 'Column'
+        df = pd.DataFrame.from_dict(
+            typing_info, orient="index", columns=columns, dtype="object"
+        )
+        df.index.name = "Column"
         return df
 
     @property
@@ -174,7 +193,7 @@ class TableSchema(object):
     def index(self):
         """The index column for the table"""
         for col_name, column in self.columns.items():
-            if 'index' in column.semantic_tags:
+            if "index" in column.semantic_tags:
                 return col_name
         return None
 
@@ -182,13 +201,15 @@ class TableSchema(object):
     def time_index(self):
         """The time index column for the table"""
         for col_name, column in self.columns.items():
-            if 'time_index' in column.semantic_tags:
+            if "time_index" in column.semantic_tags:
                 return col_name
         return None
 
     @property
     def use_standard_tags(self):
-        return {col_name: col.use_standard_tags for col_name, col in self.columns.items()}
+        return {
+            col_name: col.use_standard_tags for col_name, col in self.columns.items()
+        }
 
     def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
@@ -209,7 +230,7 @@ class TableSchema(object):
         semantic_tags = semantic_tags or {}
         _check_semantic_tags(self.columns.keys(), semantic_tags)
 
-        for col_name in (logical_types.keys() | semantic_tags.keys()):
+        for col_name in logical_types.keys() | semantic_tags.keys():
             original_tags = self.semantic_tags[col_name]
 
             # Update Logical Type for the TableSchema, getting new semantic tags
@@ -225,9 +246,9 @@ class TableSchema(object):
                 self.columns[col_name]._set_semantic_tags(new_semantic_tags)
                 _validate_not_setting_index_tags(self.semantic_tags[col_name], col_name)
 
-            if retain_index_tags and 'index' in original_tags:
+            if retain_index_tags and "index" in original_tags:
                 self._set_index_tags(col_name)
-            if retain_index_tags and 'time_index' in original_tags:
+            if retain_index_tags and "time_index" in original_tags:
                 self._set_time_index_tags(col_name)
 
     def add_semantic_tags(self, semantic_tags):
@@ -259,14 +280,21 @@ class TableSchema(object):
             tags_to_remove = _convert_input_to_set(tags_to_remove)
             original_tags = self.semantic_tags[col_name].copy()
 
-            self.columns[col_name]._remove_semantic_tags(tags_to_remove,
-                                                         col_name)
+            self.columns[col_name]._remove_semantic_tags(tags_to_remove, col_name)
 
             # If the index is removed, reinsert any standard tags not explicitly removed
-            if self.use_standard_tags[col_name] and 'index' in original_tags and 'index' not in self.columns[col_name].semantic_tags:
+            if (
+                self.use_standard_tags[col_name]
+                and "index" in original_tags
+                and "index" not in self.columns[col_name].semantic_tags
+            ):
                 standard_tags_removed = tags_to_remove.intersection(standard_tags)
-                standard_tags_to_reinsert = standard_tags.difference(standard_tags_removed)
-                self.columns[col_name].semantic_tags = self.semantic_tags[col_name].union(standard_tags_to_reinsert)
+                standard_tags_to_reinsert = standard_tags.difference(
+                    standard_tags_removed
+                )
+                self.columns[col_name].semantic_tags = self.semantic_tags[
+                    col_name
+                ].union(standard_tags_to_reinsert)
 
     def reset_semantic_tags(self, columns=None, retain_index_tags=False):
         """Reset the semantic tags for the specified columns to the default values.
@@ -292,39 +320,50 @@ class TableSchema(object):
             original_tags = self.semantic_tags[col_name]
             self.columns[col_name]._reset_semantic_tags()
 
-            if retain_index_tags and 'index' in original_tags:
+            if retain_index_tags and "index" in original_tags:
                 self._set_index_tags(col_name)
-            if retain_index_tags and 'time_index' in original_tags:
+            if retain_index_tags and "time_index" in original_tags:
                 self._set_time_index_tags(col_name)
 
-    def _create_columns(self,
-                        column_names,
-                        logical_types,
-                        semantic_tags,
-                        use_standard_tags,
-                        column_descriptions,
-                        column_origins,
-                        column_metadata,
-                        validate):
+    def _create_columns(
+        self,
+        column_names,
+        logical_types,
+        semantic_tags,
+        use_standard_tags,
+        column_descriptions,
+        column_origins,
+        column_metadata,
+        validate,
+    ):
         """Create a dictionary with column names as keys and new column dictionaries holding
         each column's typing information as values."""
         columns = {}
         for name in column_names:
-            semantic_tags_for_col = _convert_input_to_set((semantic_tags or {}).get(name),
-                                                          error_language=f'semantic_tags for {name}', validate=validate)
+            semantic_tags_for_col = _convert_input_to_set(
+                (semantic_tags or {}).get(name),
+                error_language=f"semantic_tags for {name}",
+                validate=validate,
+            )
             if validate:
                 _validate_not_setting_index_tags(semantic_tags_for_col, name)
             description = (column_descriptions or {}).get(name)
-            origin = column_origins if isinstance(column_origins, str) else (column_origins or {}).get(name)
+            origin = (
+                column_origins
+                if isinstance(column_origins, str)
+                else (column_origins or {}).get(name)
+            )
             metadata_for_col = (column_metadata or {}).get(name)
 
-            columns[name] = ColumnSchema(logical_type=logical_types.get(name),
-                                         semantic_tags=semantic_tags_for_col,
-                                         use_standard_tags=use_standard_tags.get(name),
-                                         description=description,
-                                         origin=origin,
-                                         metadata=metadata_for_col,
-                                         validate=validate)
+            columns[name] = ColumnSchema(
+                logical_type=logical_types.get(name),
+                semantic_tags=semantic_tags_for_col,
+                use_standard_tags=use_standard_tags.get(name),
+                description=description,
+                origin=origin,
+                metadata=metadata_for_col,
+                validate=validate,
+            )
         return columns
 
     def set_index(self, new_index, validate=True):
@@ -336,14 +375,14 @@ class TableSchema(object):
         """
         old_index = self.index
         if old_index is not None:
-            self.remove_semantic_tags({old_index: 'index'})
+            self.remove_semantic_tags({old_index: "index"})
         if new_index is not None:
             if validate:
                 _check_index(self.columns.keys(), new_index)
 
-                if 'time_index' in self.columns[new_index].semantic_tags:
+                if "time_index" in self.columns[new_index].semantic_tags:
                     info = f'"{new_index}" is already set as the time index. '
-                    info += 'A time index cannot also be the index.'
+                    info += "A time index cannot also be the index."
                     raise ValueError(info)
 
             self._set_index_tags(new_index)
@@ -358,14 +397,18 @@ class TableSchema(object):
         """
         old_time_index = self.time_index
         if old_time_index is not None:
-            self.remove_semantic_tags({old_time_index: 'time_index'})
+            self.remove_semantic_tags({old_time_index: "time_index"})
         if new_time_index is not None:
             if validate:
-                _check_time_index(self.columns.keys(), new_time_index, self.logical_types.get(new_time_index))
+                _check_time_index(
+                    self.columns.keys(),
+                    new_time_index,
+                    self.logical_types.get(new_time_index),
+                )
 
-                if 'index' in self.columns[new_time_index].semantic_tags:
+                if "index" in self.columns[new_time_index].semantic_tags:
                     info = f'"{new_time_index}" is already set as the index. '
-                    info += 'An index cannot also be the time index.'
+                    info += "An index cannot also be the time index."
                     raise ValueError(info)
 
             self._set_time_index_tags(new_time_index)
@@ -380,16 +423,20 @@ class TableSchema(object):
             woodwork.TableSchema: TableSchema with the specified columns renamed.
         """
         if not isinstance(columns, dict):
-            raise TypeError('columns must be a dictionary')
+            raise TypeError("columns must be a dictionary")
 
         for old_name, new_name in columns.items():
             if old_name not in self.columns:
-                raise ColumnNotPresentError(f"Column to rename must be present. {old_name} cannot be found.")
+                raise ColumnNotPresentError(
+                    f"Column to rename must be present. {old_name} cannot be found."
+                )
             if new_name in self.columns and new_name not in columns.keys():
-                raise ValueError(f"The column {new_name} is already present. Please choose another name to rename {old_name} to or also rename {old_name}.")
+                raise ValueError(
+                    f"The column {new_name} is already present. Please choose another name to rename {old_name} to or also rename {old_name}."
+                )
 
         if len(columns) != len(set(columns.values())):
-            raise ValueError('New columns names must be unique from one another.')
+            raise ValueError("New columns names must be unique from one another.")
 
         new_schema = copy.deepcopy(self)
 
@@ -408,12 +455,12 @@ class TableSchema(object):
 
         standard_tags = column.logical_type.standard_tags
         new_tags = column.semantic_tags.difference(standard_tags)
-        new_tags.add('index')
+        new_tags.add("index")
 
         self.columns[index].semantic_tags = new_tags
 
     def _set_time_index_tags(self, time_index):
-        self.columns[time_index].semantic_tags.add('time_index')
+        self.columns[time_index].semantic_tags.add("time_index")
 
     def _filter_cols(self, include=None, exclude=None, col_names=False):
         """Return list of columns filtered with any of: semantic tags, LogicalTypes, column names
@@ -446,7 +493,9 @@ class TableSchema(object):
         ltypes_in_schema = {type(col.logical_type) for col in self.columns.values()}
 
         tags_used = set()
-        tags_in_schema = {tag for col in self.columns.values() for tag in col.semantic_tags}
+        tags_in_schema = {
+            tag for col in self.columns.values() for tag in col.semantic_tags
+        }
 
         col_name_matches = set()
 
@@ -455,22 +504,30 @@ class TableSchema(object):
             maybe_ltype = selector
             if isinstance(selector, str):
                 # Convert possible string to LogicalType - unregistered LogicalTypes return None
-                maybe_ltype = ww.type_system.str_to_logical_type(selector, raise_error=False)
+                maybe_ltype = ww.type_system.str_to_logical_type(
+                    selector, raise_error=False
+                )
             # Get the class - unregistered LogicalTypes return LogicalTypeMetaClass
             maybe_ltype_class = _get_ltype_class(maybe_ltype)
 
             if maybe_ltype_class in ww.type_system.registered_types:
                 if maybe_ltype not in ww.type_system.registered_types:
-                    raise TypeError(f"Invalid selector used in include: {maybe_ltype} cannot be instantiated")
+                    raise TypeError(
+                        f"Invalid selector used in include: {maybe_ltype} cannot be instantiated"
+                    )
                 if maybe_ltype in ltypes_in_schema:
                     ltypes_used.add(maybe_ltype)
             elif maybe_ltype_class == ww.logical_types.LogicalType.__class__:
-                raise TypeError(f"Specified LogicalType selector {maybe_ltype} is not registered in Woodwork's type system.")
+                raise TypeError(
+                    f"Specified LogicalType selector {maybe_ltype} is not registered in Woodwork's type system."
+                )
 
             # Hashability as a proxy for whether a selector is possibly a semantic tag or column name
             if not isinstance(selector, Hashable):
-                raise TypeError(f"Invalid selector used in include: {selector} must be a "
-                                "string, uninstantiated and registered LogicalType, or valid column name")
+                raise TypeError(
+                    f"Invalid selector used in include: {selector} must be a "
+                    "string, uninstantiated and registered LogicalType, or valid column name"
+                )
             # Determine if the selector is a semantic tag
             if selector in tags_in_schema:
                 tags_used.add(selector)
@@ -481,9 +538,11 @@ class TableSchema(object):
         cols_to_return = []
         cols_seen = set()
         for col_name, col in self.columns.items():
-            is_match = (type(col.logical_type) in ltypes_used or
-                        col.semantic_tags.intersection(tags_used) or
-                        col_name in col_name_matches)
+            is_match = (
+                type(col.logical_type) in ltypes_used
+                or col.semantic_tags.intersection(tags_used)
+                or col_name in col_name_matches
+            )
             if include is not None and is_match and col_name not in cols_seen:
                 cols_to_return.append(col_name)
                 cols_seen.add(col_name)
@@ -518,27 +577,43 @@ class TableSchema(object):
         new_index = self.index if self.index in subset_cols else None
         new_time_index = self.time_index if self.time_index in subset_cols else None
         if new_index is not None:
-            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference({'index'})
+            new_semantic_tags[new_index] = new_semantic_tags[new_index].difference(
+                {"index"}
+            )
         if new_time_index is not None:
-            new_semantic_tags[new_time_index] = new_semantic_tags[new_time_index].difference({'time_index'})
+            new_semantic_tags[new_time_index] = new_semantic_tags[
+                new_time_index
+            ].difference({"time_index"})
 
-        return TableSchema(subset_cols,
-                           new_logical_types,
-                           name=self.name,
-                           index=new_index,
-                           time_index=new_time_index,
-                           semantic_tags=copy.deepcopy(new_semantic_tags),
-                           use_standard_tags=self.use_standard_tags.copy(),
-                           table_metadata=copy.deepcopy(self.metadata),
-                           column_metadata=copy.deepcopy(new_column_metadata),
-                           column_descriptions=new_column_descriptions,
-                           column_origins=new_column_origins,
-                           validate=False)
+        return TableSchema(
+            subset_cols,
+            new_logical_types,
+            name=self.name,
+            index=new_index,
+            time_index=new_time_index,
+            semantic_tags=copy.deepcopy(new_semantic_tags),
+            use_standard_tags=self.use_standard_tags.copy(),
+            table_metadata=copy.deepcopy(self.metadata),
+            column_metadata=copy.deepcopy(new_column_metadata),
+            column_descriptions=new_column_descriptions,
+            column_origins=new_column_origins,
+            validate=False,
+        )
 
 
-def _validate_params(column_names, name, index, time_index, logical_types,
-                     table_metadata, column_metadata, semantic_tags, column_descriptions,
-                     column_origins, use_standard_tags):
+def _validate_params(
+    column_names,
+    name,
+    index,
+    time_index,
+    logical_types,
+    table_metadata,
+    column_metadata,
+    semantic_tags,
+    column_descriptions,
+    column_origins,
+    use_standard_tags,
+):
     """Check that values supplied during TableSchema initialization are valid"""
     _check_column_names(column_names)
     _check_use_standard_tags(column_names, use_standard_tags)
@@ -564,120 +639,151 @@ def _validate_params(column_names, name, index, time_index, logical_types,
 
 def _check_name(name):
     if not isinstance(name, str):
-        raise TypeError('Table name must be a string')
+        raise TypeError("Table name must be a string")
 
 
 def _check_column_names(column_names):
     if not isinstance(column_names, (list, set)):
-        raise TypeError('Column names must be a list or set')
+        raise TypeError("Column names must be a list or set")
 
     if len(column_names) != len(set(column_names)):
-        raise IndexError('TableSchema cannot contain duplicate columns names')
+        raise IndexError("TableSchema cannot contain duplicate columns names")
 
 
 def _check_index(column_names, index):
     if index not in column_names:
         # User specifies an index that is not in the list of column names
-        raise ColumnNotPresentError(f'Specified index column `{index}` not found in TableSchema.')
+        raise ColumnNotPresentError(
+            f"Specified index column `{index}` not found in TableSchema."
+        )
 
 
 def _check_time_index(column_names, time_index, logical_type):
     if time_index not in column_names:
-        raise ColumnNotPresentError(f'Specified time index column `{time_index}` not found in TableSchema')
+        raise ColumnNotPresentError(
+            f"Specified time index column `{time_index}` not found in TableSchema"
+        )
     ltype_class = _get_ltype_class(logical_type)
 
-    if not (ltype_class == ww.logical_types.Datetime or 'numeric' in ltype_class.standard_tags):
-        raise TypeError('Time index column must be a Datetime or numeric column.')
+    if not (
+        ltype_class == ww.logical_types.Datetime
+        or "numeric" in ltype_class.standard_tags
+    ):
+        raise TypeError("Time index column must be a Datetime or numeric column.")
 
 
 def _check_logical_types(column_names, logical_types, require_all_cols=True):
     if not isinstance(logical_types, dict):
-        raise TypeError('logical_types must be a dictionary')
+        raise TypeError("logical_types must be a dictionary")
     cols_in_ltypes = set(logical_types.keys())
     cols_in_schema = set(column_names)
 
     cols_not_found_in_schema = cols_in_ltypes.difference(cols_in_schema)
     if cols_not_found_in_schema:
-        raise ColumnNotPresentError('logical_types contains columns that are not present in '
-                                    f'TableSchema: {sorted(list(cols_not_found_in_schema))}')
+        raise ColumnNotPresentError(
+            "logical_types contains columns that are not present in "
+            f"TableSchema: {sorted(list(cols_not_found_in_schema))}"
+        )
     cols_not_found_in_ltypes = cols_in_schema.difference(cols_in_ltypes)
     if cols_not_found_in_ltypes and require_all_cols:
-        raise ColumnNotPresentError(f'logical_types is missing columns that are present in '
-                                    f'TableSchema: {sorted(list(cols_not_found_in_ltypes))}')
+        raise ColumnNotPresentError(
+            f"logical_types is missing columns that are present in "
+            f"TableSchema: {sorted(list(cols_not_found_in_ltypes))}"
+        )
 
     for col_name, logical_type in logical_types.items():
         if _get_ltype_class(logical_type) not in ww.type_system.registered_types:
-            raise TypeError("Logical Types must be of the LogicalType class "
-                            "and registered in Woodwork's type system. "
-                            f"{logical_type} does not meet that criteria.")
+            raise TypeError(
+                "Logical Types must be of the LogicalType class "
+                "and registered in Woodwork's type system. "
+                f"{logical_type} does not meet that criteria."
+            )
 
 
 def _check_semantic_tags(column_names, semantic_tags):
     if not isinstance(semantic_tags, dict):
-        raise TypeError('semantic_tags must be a dictionary')
+        raise TypeError("semantic_tags must be a dictionary")
     cols_not_found = set(semantic_tags.keys()).difference(set(column_names))
     if cols_not_found:
-        raise ColumnNotPresentError('semantic_tags contains columns that are not present in '
-                                    f'TableSchema: {sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError(
+            "semantic_tags contains columns that are not present in "
+            f"TableSchema: {sorted(list(cols_not_found))}"
+        )
 
     for col_name, col_tags in semantic_tags.items():
         if not isinstance(col_tags, (str, list, set)):
-            raise TypeError(f"semantic_tags for {col_name} must be a string, set or list")
+            raise TypeError(
+                f"semantic_tags for {col_name} must be a string, set or list"
+            )
 
 
 def _check_column_descriptions(column_names, column_descriptions):
     if not isinstance(column_descriptions, dict):
-        raise TypeError('column_descriptions must be a dictionary')
+        raise TypeError("column_descriptions must be a dictionary")
     cols_not_found = set(column_descriptions.keys()).difference(set(column_names))
     if cols_not_found:
-        raise ColumnNotPresentError('column_descriptions contains columns that are not present in '
-                                    f'TableSchema: {sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError(
+            "column_descriptions contains columns that are not present in "
+            f"TableSchema: {sorted(list(cols_not_found))}"
+        )
 
 
 def _check_column_origins(column_names, column_origins):
     if not isinstance(column_origins, (dict, str)):
-        raise TypeError('column_origins must be a dictionary or a string')
+        raise TypeError("column_origins must be a dictionary or a string")
 
     if isinstance(column_origins, dict):
         cols_not_found = set(column_origins.keys()).difference(set(column_names))
         if cols_not_found:
-            raise ColumnNotPresentError('column_origins contains columns that are not present in '
-                                        f'TableSchema: {sorted(list(cols_not_found))}')
+            raise ColumnNotPresentError(
+                "column_origins contains columns that are not present in "
+                f"TableSchema: {sorted(list(cols_not_found))}"
+            )
 
 
 def _check_table_metadata(table_metadata):
     if not isinstance(table_metadata, dict):
-        raise TypeError('Table metadata must be a dictionary.')
+        raise TypeError("Table metadata must be a dictionary.")
 
 
 def _check_column_metadata(column_names, column_metadata):
     if not isinstance(column_metadata, dict):
-        raise TypeError('Column metadata must be a dictionary.')
+        raise TypeError("Column metadata must be a dictionary.")
     cols_not_found = set(column_metadata.keys()).difference(set(column_names))
     if cols_not_found:
-        raise ColumnNotPresentError('column_metadata contains columns that are not present in '
-                                    f'TableSchema: {sorted(list(cols_not_found))}')
+        raise ColumnNotPresentError(
+            "column_metadata contains columns that are not present in "
+            f"TableSchema: {sorted(list(cols_not_found))}"
+        )
 
 
 def _check_use_standard_tags(column_names, use_standard_tags):
     if not isinstance(use_standard_tags, (dict, bool)):
-        raise TypeError('use_standard_tags must be a dictionary or a boolean')
+        raise TypeError("use_standard_tags must be a dictionary or a boolean")
     if isinstance(use_standard_tags, dict):
         cols_not_found = set(use_standard_tags.keys()).difference(set(column_names))
         if cols_not_found:
-            raise ColumnNotPresentError('use_standard_tags contains columns that are not present in '
-                                        f'TableSchema: {sorted(list(cols_not_found))}')
+            raise ColumnNotPresentError(
+                "use_standard_tags contains columns that are not present in "
+                f"TableSchema: {sorted(list(cols_not_found))}"
+            )
 
         for col_name, use_standard_tags_for_col in use_standard_tags.items():
             if not isinstance(use_standard_tags_for_col, bool):
-                raise TypeError(f"use_standard_tags for column {col_name} must be a boolean")
+                raise TypeError(
+                    f"use_standard_tags for column {col_name} must be a boolean"
+                )
 
 
 def _validate_not_setting_index_tags(semantic_tags, col_name):
     """Verify user has not supplied tags that cannot be set directly"""
-    if 'index' in semantic_tags:
-        raise ValueError(f"Cannot add 'index' tag directly for column {col_name}. To set a column as the index, "
-                         "use DataFrame.ww.set_index() instead.")
-    if 'time_index' in semantic_tags:
-        raise ValueError(f"Cannot add 'time_index' tag directly for column {col_name}. To set a column as the time index, "
-                         "use DataFrame.ww.set_time_index() instead.")
+    if "index" in semantic_tags:
+        raise ValueError(
+            f"Cannot add 'index' tag directly for column {col_name}. To set a column as the index, "
+            "use DataFrame.ww.set_index() instead."
+        )
+    if "time_index" in semantic_tags:
+        raise ValueError(
+            f"Cannot add 'time_index' tag directly for column {col_name}. To set a column as the time index, "
+            "use DataFrame.ww.set_time_index() instead."
+        )
