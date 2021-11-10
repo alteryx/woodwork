@@ -6,7 +6,7 @@ from mock import patch
 
 import woodwork as ww
 from woodwork.serialize import save_orc_file
-from woodwork.utils import replace_nan_empty_strings
+from woodwork.utils import replace_nan_strings
 
 
 def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
@@ -198,7 +198,7 @@ def test_read_file(
     pd.testing.assert_frame_equal(df, schema_df)
 
 
-def test_replace_nan_empty_strings(tmpdir):
+def test_replace_nan_strings(tmpdir):
     data = {
         "double": ["<NA>", "6.2", "4.2", "3.11"],
         "integer": ["<NA>", "6", "4", "3"],
@@ -228,12 +228,12 @@ def test_replace_nan_empty_strings(tmpdir):
     }
 
     df = pd.DataFrame(data=data)
-    replaced_df = replace_nan_empty_strings(df)
+    replaced_df = replace_nan_strings(df)
     for col in replaced_df:
         assert replaced_df[col].isnull().sum() == expected_null_count[col]
 
 
-def test_replace_nan_empty_strings_with_read_file(tmpdir):
+def test_replace_nan_strings_with_read_file(tmpdir):
     filepath = os.path.join(tmpdir, "data.parquet")
     content_type = "application/parquet"
 
@@ -245,11 +245,19 @@ def test_replace_nan_empty_strings_with_read_file(tmpdir):
 
     df = pd.DataFrame(data=data)
     df.to_parquet(filepath)
-    logical_types = {"double": "Double", "integer": "Double", "null": "Double"}
+
+    # Without replacement
+    actual = ww.read_file(
+        content_type=content_type,
+        filepath=filepath,
+        replace_nan=False,
+    )
+    assert actual.isnull().sum().sum() == 1
+    
+    # With replacement
     actual = ww.read_file(
         content_type=content_type,
         filepath=filepath,
         replace_nan=True,
-        logical_types=logical_types,
     )
     assert actual.isnull().sum().sum() == 6
