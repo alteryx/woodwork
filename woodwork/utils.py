@@ -527,10 +527,15 @@ def replace_nan_empty_strings(df):
     df = df.fillna(value=np.nan)
 
     for col, dtype in df.dtypes.items():
-        # boolean and string dtypes result in an error with the replace calls
-        # so they are skipped.
-        if str(dtype) not in ["boolean", "string"]:
-            df[col] = df[col].replace(r"^\s*$", np.nan, regex=True)
-            df[col] = df[col].replace("nan", np.nan)
-            df[col] = df[col].replace("<NA>", np.nan)
+        replace_val = np.nan
+        if str(dtype) == "boolean":
+            # All replace calls below fail with boolean dtype
+            continue
+        elif str(dtype) == "string":
+            # Must use pd.NA as replacement value for string dtype
+            replace_val = pd.NA
+        
+        df[col] = df[col].replace(r"^\s*$", replace_val, regex=True)
+        df[col] = df[col].replace("nan", replace_val)
+        df[col] = df[col].replace("<NA>", replace_val)
     return df
