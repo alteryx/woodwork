@@ -230,7 +230,6 @@ def test_replace_nan_empty_strings(tmpdir):
     df = pd.DataFrame(data=data)
     replaced_df = replace_nan_empty_strings(df)
     for col in replaced_df:
-        print(col)
         assert replaced_df[col].isnull().sum() == expected_null_count[col]
 
 
