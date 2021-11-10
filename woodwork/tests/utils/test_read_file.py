@@ -202,7 +202,7 @@ def test_replace_empty_strings(tmpdir):
     data = {
         "double": ["<NA>", "6.2", "4.2", "3.11"],
         "integer": ["<NA>", "6", "4", "3"],
-        "null": ["<NA>", "", "nan", ""],
+        "null": ["<NA>", "", "nan", None],
         "null_string": pd.Series(["<NA>", "", "nan", ""], dtype="string"),
         "Int64": pd.Series([1, 2, 3, 4], dtype="Int64"),
         "Float64": pd.Series([1.1, 2.2, 3.3, 4.4], dtype="Float64"),
