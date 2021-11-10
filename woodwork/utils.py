@@ -12,16 +12,16 @@ from woodwork.pandas_backport import guess_datetime_format
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
 type_to_read_func_map = {
-    'csv': pd.read_csv,
-    'text/csv': pd.read_csv,
-    'parquet': pd.read_parquet,
-    'application/parquet': pd.read_parquet,
-    'arrow': pd.read_feather,
-    'application/arrow': pd.read_feather,
-    'feather': pd.read_feather,
-    'application/feather': pd.read_feather,
-    'orc': pd.read_orc,
-    'application/orc': pd.read_orc,
+    "csv": pd.read_csv,
+    "text/csv": pd.read_csv,
+    "parquet": pd.read_parquet,
+    "application/parquet": pd.read_parquet,
+    "arrow": pd.read_feather,
+    "application/arrow": pd.read_feather,
+    "feather": pd.read_feather,
+    "application/feather": pd.read_feather,
+    "orc": pd.read_orc,
+    "application/orc": pd.read_orc,
 }
 
 PYARROW_ERR_MSG = (
@@ -33,10 +33,10 @@ PYARROW_ERR_MSG = (
 )
 
 # Add new mimetypes
-add_type('application/parquet', '.parquet')
-add_type('application/arrow', '.arrow')
-add_type('application/feather', '.feather')
-add_type('application/orc', '.orc')
+add_type("application/parquet", ".parquet")
+add_type("application/arrow", ".arrow")
+add_type("application/feather", ".feather")
+add_type("application/orc", ".orc")
 
 
 def import_or_none(library):
@@ -89,18 +89,20 @@ def _validate_string_tags(semantic_tags, error_language):
         raise TypeError(f"{error_language} must contain only strings")
 
 
-def read_file(filepath=None,
-              content_type=None,
-              name=None,
-              index=None,
-              time_index=None,
-              semantic_tags=None,
-              logical_types=None,
-              use_standard_tags=True,
-              column_origins=None,
-              replace_nan=True,
-              validate=True,
-              **kwargs):
+def read_file(
+    filepath=None,
+    content_type=None,
+    name=None,
+    index=None,
+    time_index=None,
+    semantic_tags=None,
+    logical_types=None,
+    use_standard_tags=True,
+    column_origins=None,
+    replace_nan=False,
+    validate=True,
+    **kwargs,
+):
     """Read data from the specified file and return a DataFrame with initialized Woodwork typing information.
 
         Note:
@@ -129,7 +131,9 @@ def read_file(filepath=None,
             on the inferred or specified logical type for the column. Defaults to True.
         column_origins (str or dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
-        replace_nan (bool, optional): Whether to replace empty string values with NaN values. Deafults to True.
+        replace_nan (bool, optional): Whether to replace empty string values and string representations of
+            NaN values ("nan", "<NA>") with np.nan. Defaults to False. Does not replace values in columns with
+            a "string" dtype.
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -142,34 +146,48 @@ def read_file(filepath=None,
     if content_type is None:
         inferred_type, _ = guess_type(filepath)
         if inferred_type is None:
-            raise RuntimeError('Content type could not be inferred. Please specify content_type and try again.')
+            raise RuntimeError(
+                "Content type could not be inferred. Please specify content_type and try again."
+            )
         content_type = inferred_type
 
     if content_type not in type_to_read_func_map:
-        raise RuntimeError('Reading from content type {} is not currently supported'.format(content_type))
+        raise RuntimeError(
+            "Reading from content type {} is not currently supported".format(
+                content_type
+            )
+        )
 
-    pyarrow_types = ['parquet', 'application/parquet',
-                     'arrow', 'application/arrow',
-                     'feather', 'application/feather',
-                     'orc', 'application/orc']
+    pyarrow_types = [
+        "parquet",
+        "application/parquet",
+        "arrow",
+        "application/arrow",
+        "feather",
+        "application/feather",
+        "orc",
+        "application/orc",
+    ]
     if content_type in pyarrow_types:
-        import_or_raise('pyarrow', PYARROW_ERR_MSG)
-        if content_type in ['parquet', 'application/parquet']:
-            kwargs['engine'] = 'pyarrow'
+        import_or_raise("pyarrow", PYARROW_ERR_MSG)
+        if content_type in ["parquet", "application/parquet"]:
+            kwargs["engine"] = "pyarrow"
 
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
 
     if replace_nan:
         dataframe = replace_nan_empty_strings(dataframe)
 
-    dataframe.ww.init(name=name,
-                      index=index,
-                      time_index=time_index,
-                      semantic_tags=semantic_tags,
-                      logical_types=logical_types,
-                      use_standard_tags=use_standard_tags,
-                      column_origins=column_origins,
-                      validate=validate)
+    dataframe.ww.init(
+        name=name,
+        index=index,
+        time_index=time_index,
+        semantic_tags=semantic_tags,
+        logical_types=logical_types,
+        use_standard_tags=use_standard_tags,
+        column_origins=column_origins,
+        validate=validate,
+    )
     return dataframe
 
 
@@ -474,11 +492,14 @@ def _infer_datetime_format(dates, n=100):
 
 
 def replace_nan_empty_strings(df):
-    """Replaces empty string values with NaNs."""
+    """Replaces empty string values and string representations of
+    NaN values ("nan", "<NA>") with np.nan."""
     df = df.fillna(value=np.nan)
 
     for col, dtype in df.dtypes.items():
-        if str(dtype) not in ["boolean", "Int64", "Float64Dtype", "string"]:
+        # boolean and string dtypes result in an error with the replace calls
+        # so they are skipped.
+        if str(dtype) not in ["boolean", "string"]:
             df[col] = df[col].replace(r"^\s*$", np.nan, regex=True)
             df[col] = df[col].replace("nan", np.nan)
             df[col] = df[col].replace("<NA>", np.nan)
