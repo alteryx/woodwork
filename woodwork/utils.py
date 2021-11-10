@@ -535,7 +535,7 @@ def replace_nan_empty_strings(df):
         elif str(dtype) == "string":
             # Must use pd.NA as replacement value for string dtype
             replace_val = pd.NA
-        
+
         df[col] = df[col].replace(r"^\s*$", replace_val, regex=True)
         df[col] = df[col].replace("nan", replace_val)
         df[col] = df[col].replace("<NA>", replace_val)
