@@ -175,7 +175,7 @@ def read_file(
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
 
     if replace_nan:
-        dataframe = replace_nan_strings(dataframe)
+        dataframe = _replace_nan_strings(dataframe)
 
     dataframe.ww.init(
         name=name,
@@ -520,7 +520,7 @@ def _infer_datetime_format(dates, n=100):
     return mode_fmt
 
 
-def replace_nan_strings(df):
+def _replace_nan_strings(df):
     """Replaces empty string values and string representations of
     NaN values ("nan", "<NA>") with np.nan or pd.NA depending on
     column dtype."""
@@ -536,7 +536,10 @@ def replace_nan_strings(df):
             # Must use pd.NA as replacement value for string dtype
             replace_val = pd.NA
 
-        df[col] = df[col].replace(r"^\s*$", replace_val, regex=True)
-        df[col] = df[col].replace("nan", replace_val)
-        df[col] = df[col].replace("<NA>", replace_val)
+        replaced_series = df[col].replace(r"^\s*$", replace_val, regex=True)
+        replaced_series = replaced_series.replace(
+            {"nan": replace_val, "<NA>": replace_val}
+        )
+        df[col] = replaced_series
+
     return df
