@@ -132,8 +132,7 @@ def read_file(
         column_origins (str or dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
         replace_nan (bool, optional): Whether to replace empty string values and string representations of
-            NaN values ("nan", "<NA>") with np.nan. Defaults to False. Does not replace values in columns with
-            a "string" dtype.
+            NaN values ("nan", "<NA>") with np.nan or pd.NA values based on column dtype. Defaults to False.
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -523,13 +522,15 @@ def _infer_datetime_format(dates, n=100):
 
 def replace_nan_empty_strings(df):
     """Replaces empty string values and string representations of
-    NaN values ("nan", "<NA>") with np.nan."""
+    NaN values ("nan", "<NA>") with np.nan or pd.NA depending on
+    column dtype."""
     df = df.fillna(value=np.nan)
 
     for col, dtype in df.dtypes.items():
         replace_val = np.nan
         if str(dtype) == "boolean":
             # All replace calls below fail with boolean dtype
+            # but boolean cols cannot contain strings to begin with.
             continue
         elif str(dtype) == "string":
             # Must use pd.NA as replacement value for string dtype
