@@ -241,7 +241,7 @@ def test_replace_nan_empty_strings_with_read_file(tmpdir):
     data = {
         "double": ["<NA>", "6.2", "4.2", "3.11"],
         "integer": ["<NA>", "6", "4", "3"],
-        "null": ["<NA>"] * 4,
+        "null": ["<NA>", "", None, "nan"],
     }
 
     df = pd.DataFrame(data=data)
