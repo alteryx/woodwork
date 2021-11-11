@@ -5,6 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added ``read_file`` parameter for replacing empty string values with NaN values (:pr:`1161`)
     * Fixes
         * Set a maximum version for pyspark until we understand why :pr:`1169` failed (:pr:`1179`)
         * Require newer dask version (:pr:`1180`)
@@ -17,7 +18,7 @@ Future Release
         * Updated notebook standardizer to standardize python versions (:pr:`1166`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`tamargrey`
+    :user:`davesque`, :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.8.2 Oct 12, 2021
 ===================

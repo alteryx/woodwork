@@ -6,6 +6,7 @@ from mock import patch
 
 import woodwork as ww
 from woodwork.serialize import save_orc_file
+from woodwork.utils import _replace_nan_strings
 
 
 def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
@@ -195,3 +196,68 @@ def test_read_file(
         schema_df = schema_df.head(kwargs["nrows"])
 
     pd.testing.assert_frame_equal(df, schema_df)
+
+
+def test_replace_nan_strings():
+    data = {
+        "double": ["<NA>", "6.2", "4.2", "3.11"],
+        "integer": ["<NA>", "6", "4", "3"],
+        "null": ["<NA>", "", "nan", None],
+        "null_string": pd.Series(["<NA>", "", "nan", ""], dtype="string"),
+        "Int64": pd.Series([1, 2, 3, 4], dtype="Int64"),
+        "Float64": pd.Series([1.1, 2.2, 3.3, 4.4], dtype="Float64"),
+        "boolean": pd.Series([True, True, False, False], dtype="boolean"),
+        "int64": pd.Series([1, 2, 3, 4], dtype="int64"),
+        "double2": pd.Series([1, 2, 3, 4.5], dtype="float64"),
+        "bool": pd.Series([True, True, False, False], dtype="bool"),
+        "category": pd.Series([1, 2, 2, 1], dtype="category"),
+    }
+
+    expected_null_count = {
+        "double": 1,
+        "integer": 1,
+        "null": 4,
+        "null_string": 4,
+        "Int64": 0,
+        "Float64": 0,
+        "boolean": 0,
+        "int64": 0,
+        "double2": 0,
+        "bool": 0,
+        "category": 0,
+    }
+
+    df = pd.DataFrame(data=data)
+    replaced_df = _replace_nan_strings(df)
+    for col in replaced_df:
+        assert replaced_df[col].isnull().sum() == expected_null_count[col]
+
+
+def test_replace_nan_strings_with_read_file(tmpdir):
+    filepath = os.path.join(tmpdir, "data.parquet")
+    content_type = "application/parquet"
+
+    data = {
+        "double": ["<NA>", "6.2", "4.2", "3.11"],
+        "integer": ["<NA>", "6", "4", "3"],
+        "null": ["<NA>", "", None, "nan"],
+    }
+
+    df = pd.DataFrame(data=data)
+    df.to_parquet(filepath)
+
+    # Without replacement
+    actual = ww.read_file(
+        content_type=content_type,
+        filepath=filepath,
+        replace_nan=False,
+    )
+    assert actual.isnull().sum().sum() == 1
+
+    # With replacement
+    actual = ww.read_file(
+        content_type=content_type,
+        filepath=filepath,
+        replace_nan=True,
+    )
+    assert actual.isnull().sum().sum() == 6

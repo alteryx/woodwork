@@ -99,6 +99,7 @@ def read_file(
     logical_types=None,
     use_standard_tags=True,
     column_origins=None,
+    replace_nan=False,
     validate=True,
     **kwargs,
 ):
@@ -130,6 +131,8 @@ def read_file(
             on the inferred or specified logical type for the column. Defaults to True.
         column_origins (str or dict[str -> str], optional): Origin of each column. If a string is supplied, it is
                 used as the origin for all columns. A dictionary can be used to set origins for individual columns.
+        replace_nan (bool, optional): Whether to replace empty string values and string representations of
+            NaN values ("nan", "<NA>") with np.nan or pd.NA values based on column dtype. Defaults to False.
         validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
@@ -170,6 +173,10 @@ def read_file(
             kwargs["engine"] = "pyarrow"
 
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
+
+    if replace_nan:
+        dataframe = _replace_nan_strings(dataframe)
+
     dataframe.ww.init(
         name=name,
         index=index,
@@ -511,3 +518,28 @@ def _infer_datetime_format(dates, n=100):
     except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
         mode_fmt = None
     return mode_fmt
+
+
+def _replace_nan_strings(df):
+    """Replaces empty string values and string representations of
+    NaN values ("nan", "<NA>") with np.nan or pd.NA depending on
+    column dtype."""
+    df = df.fillna(value=np.nan)
+
+    for col, dtype in df.dtypes.items():
+        replace_val = np.nan
+        if str(dtype) == "boolean":
+            # All replace calls below fail with boolean dtype
+            # but boolean cols cannot contain strings to begin with.
+            continue
+        elif str(dtype) == "string":
+            # Must use pd.NA as replacement value for string dtype
+            replace_val = pd.NA
+
+        replaced_series = df[col].replace(r"^\s*$", replace_val, regex=True)
+        replaced_series = replaced_series.replace(
+            {"nan": replace_val, "<NA>": replace_val}
+        )
+        df[col] = replaced_series
+
+    return df
