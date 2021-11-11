@@ -2,8 +2,18 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.9.0 Nov 11, 2021
+===================
     * Enhancements
         * Added ``read_file`` parameter for replacing empty string values with NaN values (:pr:`1161`)
     * Fixes
@@ -18,7 +28,7 @@ Future Release
         * Updated notebook standardizer to standardize python versions (:pr:`1166`)
 
     Thanks to the following people for contributing to this release:
-    :user:`davesque`, :user:`gsheni`, :user:`bchen1116`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`bchen1116`, :user:`davesque`, :user:`gsheni`,  :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.8.2 Oct 12, 2021
 ===================
