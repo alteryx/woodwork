@@ -2,15 +2,17 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+        * Update install page with updated minimum optional dependencies (:pr:`1193`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.9.0 Nov 11, 2021
 ===================
