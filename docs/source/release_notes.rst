@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Update pip to 21.3.1 for test requirements (:pr:`1196`)
     * Documentation Changes
         * Update install page with updated minimum optional dependencies (:pr:`1193`)
     * Testing Changes
