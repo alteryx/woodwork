@@ -2,17 +2,24 @@
 
 Release Notes
 -------------
-
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.9.1 Nov 19, 2021
+===================
     * Fixes
         * Fix bug that causes ``mutual_information`` to fail with certain index types (:pr:`1199`)
     * Changes
         * Update pip to 21.3.1 for test requirements (:pr:`1196`)
     * Documentation Changes
         * Update install page with updated minimum optional dependencies (:pr:`1193`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`
