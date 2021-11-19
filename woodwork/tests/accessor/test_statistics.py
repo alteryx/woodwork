@@ -295,6 +295,23 @@ def test_get_valid_mi_columns_with_index(sample_df):
     assert "id" in mi
 
 
+def test_mutual_info_with_string_index():
+    df = pd.DataFrame(
+        {
+            "id": ["a", "b", "c"],
+            "col1": [1, 2, 3],
+            "col2": [10, 20, 30],
+        }
+    )
+    df.ww.init(index="id", logical_types={"id": "unknown"})
+    mi = df.ww.mutual_information()
+
+    cols_used = set(np.unique(mi[["column_1", "column_2"]].values))
+    assert "id" not in cols_used
+    assert "col1" in cols_used
+    assert "col2" in cols_used
+
+
 def test_get_describe_dict(describe_df):
     describe_df.ww.init(index="index_col")
 

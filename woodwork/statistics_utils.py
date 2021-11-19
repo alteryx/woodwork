@@ -280,8 +280,9 @@ def _get_mutual_information_dict(
         if type(col.logical_type) in valid_types
     ]
 
-    if not include_index and dataframe.ww.index is not None:
-        valid_columns.remove(dataframe.ww.index)
+    index = dataframe.ww.index
+    if not include_index and index is not None and index in valid_columns:
+        valid_columns.remove(index)
 
     data = dataframe.loc[:, valid_columns]
     if _is_dask_dataframe(data):

@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix bug that causes ``mutual_information`` to fail with certain index types (:pr:`1199`)
     * Changes
         * Update pip to 21.3.1 for test requirements (:pr:`1196`)
     * Documentation Changes
@@ -14,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 
 v0.9.0 Nov 11, 2021
 ===================
