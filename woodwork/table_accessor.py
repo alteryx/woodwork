@@ -27,7 +27,7 @@ from woodwork.statistics_utils import (
     _get_mutual_information_dict,
     _get_valid_mi_columns,
     _get_value_counts,
-    _infer_datetime_frequencies,
+    _infer_temporal_frequencies,
 )
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
@@ -1083,9 +1083,23 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
     @_check_table_schema
-    def infer_datetime_frequencies(self, datetime_columns=None):
-        """--> add docstring"""
-        return _infer_datetime_frequencies(self._dataframe, datetime_columns)
+    def infer_temporal_frequencies(self, temporal_columns=None):
+        """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
+            in the DataFrame. Temporal columns are ones with the logical type Datetime or Timedelta.
+
+        Args:
+            temporal_columns (list[str], optional): Columns for which frequencies should be inferred. Must be columns
+                that are present in the DataFrame and are temporal in nature. Defaults to None. If not
+                specified, all temporal columns will have their frequencies inferred.
+
+        Returns:
+            (dict): A dictionary where each key is a temporal column from the DataFrame, and the
+                value is its observation frequency represented as a pandas offset alias string (D, M, Y, etc.)
+                or None if no uniform frequency was present in the data.
+        """
+        return _infer_temporal_frequencies(
+            self._dataframe, temporal_columns=temporal_columns
+        )
 
 
 def _validate_accessor_params(
