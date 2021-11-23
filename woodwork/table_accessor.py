@@ -27,6 +27,7 @@ from woodwork.statistics_utils import (
     _get_mutual_information_dict,
     _get_valid_mi_columns,
     _get_value_counts,
+    _infer_datetime_frequencies,
 )
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
@@ -1080,6 +1081,12 @@ class WoodworkTableAccessor:
             and `value`.
         """
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
+
+    @_check_table_schema
+    def infer_datetime_frequencies(self, columns=None):
+        """ --> add docstring
+        """
+        return _infer_datetime_frequencies(self._dataframe, columns)
 
 
 def _validate_accessor_params(

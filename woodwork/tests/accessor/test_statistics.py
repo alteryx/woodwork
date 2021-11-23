@@ -1318,3 +1318,18 @@ def test_box_plot_optional_return_values(outliers_df):
         "low_indices",
         "high_indices",
     } == set(no_outliers_box_plot_info_with_optional.keys())
+
+
+def test_infer_datetime_frequencies(datetime_freqs_df_pandas):
+    datetime_freqs_df_pandas.ww.init()
+
+    frequency_dict = datetime_freqs_df_pandas.ww.infer_datetime_frequencies()
+    assert len(frequency_dict) == len(datetime_freqs_df_pandas.columns) - 1
+    assert 'ints' not in frequency_dict
+
+    expected_no_frequency = {'same_date', '1d_skipped_one_freq', '3M_missing_one_freq'}
+    assert {key for key, val in frequency_dict.items() if val is None} == expected_no_frequency
+
+
+# def test_infer_datetime_frequencies_with_columns():
+#     pass

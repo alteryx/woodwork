@@ -640,3 +640,14 @@ def _get_histogram_values(series, bins=10):
         )
 
     return results
+
+
+def _infer_datetime_frequencies(dataframe, columns=None):
+    """
+    note that for frequency to work there needs to be more than 3 elements
+    """
+    # if columns is not none confirm all columns are present and datetimes
+    # otherwise just select all datetime columns
+
+    # loop over datetime columns and get frequencies, returning them as strings or None
+    return {}
