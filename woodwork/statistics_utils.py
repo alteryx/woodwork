@@ -5,7 +5,14 @@ import pandas as pd
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
-from woodwork.logical_types import Datetime, Double, Integer, IntegerNullable, LatLong
+from woodwork.logical_types import (
+    Datetime,
+    Double,
+    Integer,
+    IntegerNullable,
+    LatLong,
+    Timedelta,
+)
 from woodwork.utils import _update_progress, get_valid_mi_types, import_or_none
 
 dd = import_or_none("dask.dataframe")
@@ -642,12 +649,20 @@ def _get_histogram_values(series, bins=10):
     return results
 
 
-def _infer_datetime_frequencies(dataframe, columns=None):
+def _infer_datetime_frequencies(dataframe, datetime_columns=None):
     """
     note that for frequency to work there needs to be more than 3 elements
+    changing the data may mean you need to rerun this
     """
-    # if columns is not none confirm all columns are present and datetimes
-    # otherwise just select all datetime columns
+    if datetime_columns is None:
+        logical_types = dataframe.ww.logical_types
+        datetime_columns = [
+            col
+            for col, ltype in logical_types.items()
+            if isinstance(ltype, (Datetime, Timedelta))
+        ]
+    else:
+        # confirm all columns are present in the dataframe and are datetime in nature
+        pass
 
-    # loop over datetime columns and get frequencies, returning them as strings or None
-    return {}
+    return {col: pd.infer_freq(dataframe[col]) for col in datetime_columns}

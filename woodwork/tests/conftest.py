@@ -121,15 +121,27 @@ def sample_df_koalas(sample_df_pandas):
 
 @pytest.fixture()
 def datetime_freqs_df_pandas():
-    return pd.DataFrame({
-        '2d_freq': pd.date_range(start='2020-01-01', end='2020-01-20', freq='2D'),
-        '3M_freq': pd.date_range(start='2015-01-01', freq='3M', periods=10),
-        '1d_skipped_one_freq': pd.date_range(start='2020-01-01', end='2020-01-11', freq='1D').drop('2020-01-04'),
-        '3M_missing_one_freq': list(pd.date_range(start='2015-01-01', freq='3M', periods=10).drop('2015-07-31')) + [None],
-        '2d_timedelta': pd.date_range(start='2020-01-01', end='2020-01-20', freq='2D') - pd.Timestamp("2020-01-01"),
-        'ints': range(10),
-        'same_date': ['2015-01-01'] * 10
-    })
+    return pd.DataFrame(
+        {
+            "2d_freq": pd.date_range(start="2020-01-01", end="2020-01-20", freq="2D"),
+            "3M_freq": pd.date_range(start="2015-01-01", freq="3M", periods=10),
+            "1d_skipped_one_freq": pd.date_range(
+                start="2020-01-01", end="2020-01-11", freq="1D"
+            ).drop("2020-01-04"),
+            "3M_missing_one_freq": list(
+                pd.date_range(start="2015-01-01", freq="3M", periods=10).drop(
+                    "2015-07-31"
+                )
+            )
+            + [None],
+            "2d_timedelta": pd.date_range(
+                start="2020-01-01", end="2020-01-20", freq="2D"
+            )
+            - pd.Timestamp("2020-01-01"),
+            "ints": range(10),
+            "same_date": ["2015-01-01"] * 10,
+        }
+    )
 
 
 @pytest.fixture(
