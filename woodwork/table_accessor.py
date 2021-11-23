@@ -1083,9 +1083,9 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
     @_check_table_schema
-    def infer_datetime_frequencies(self, columns=None):
+    def infer_datetime_frequencies(self, datetime_columns=None):
         """--> add docstring"""
-        return _infer_datetime_frequencies(self._dataframe, columns)
+        return _infer_datetime_frequencies(self._dataframe, datetime_columns)
 
 
 def _validate_accessor_params(

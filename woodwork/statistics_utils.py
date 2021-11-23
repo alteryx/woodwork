@@ -654,15 +654,22 @@ def _infer_datetime_frequencies(dataframe, datetime_columns=None):
     note that for frequency to work there needs to be more than 3 elements
     changing the data may mean you need to rerun this
     """
+    logical_types = dataframe.ww.logical_types
+
     if datetime_columns is None:
-        logical_types = dataframe.ww.logical_types
         datetime_columns = [
             col
             for col, ltype in logical_types.items()
             if isinstance(ltype, (Datetime, Timedelta))
         ]
     else:
-        # confirm all columns are present in the dataframe and are datetime in nature
-        pass
+        for col in datetime_columns:
+            if col not in dataframe:
+                raise ValueError(f"Column {col} not found in dataframe.")
+            ltype = logical_types[col]
+            if not isinstance(ltype, (Datetime, Timedelta)):
+                raise TypeError(
+                    f"Cannot determine frequency for column {col} with logical type {ltype}"
+                )
 
     return {col: pd.infer_freq(dataframe[col]) for col in datetime_columns}
