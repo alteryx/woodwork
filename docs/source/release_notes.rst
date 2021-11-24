@@ -5,6 +5,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`) 
     * Fixes
     * Changes
         * Return histogram bins as a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
@@ -12,7 +13,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`tamargrey`, :user:`thehomebrewnerd`
 
 Breaking Changes
 ++++++++++++++++
