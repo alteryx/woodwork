@@ -328,6 +328,7 @@ def test_accessor_init_errors_methods(sample_df):
         "to_disk": ["dir"],
         "to_dictionary": None,
         "value_counts": None,
+        "infer_temporal_frequencies": None,
     }
     error = re.escape(
         "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
