@@ -630,4 +630,13 @@ def _get_histogram_values(series, bins=10):
     values = pd.cut(series, bins=bins, duplicates="drop").value_counts().sort_index()
     df = values.reset_index()
     df.columns = ["bins", "frequency"]
-    return list(df.to_dict(orient="index").values())
+    results = []
+    for _, row in df.iterrows():
+        results.append(
+            {
+                "bins": [row["bins"].left, row["bins"].right],
+                "frequency": row["frequency"],
+            }
+        )
+
+    return results
