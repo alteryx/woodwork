@@ -1327,7 +1327,12 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
     assert len(frequency_dict) == len(datetime_freqs_df_pandas.columns) - 1
     assert "ints" not in frequency_dict
 
-    expected_no_frequency = {"same_date", "1d_skipped_one_freq", "3M_missing_one_freq"}
+    expected_no_frequency = {
+        "same_date",
+        "1d_skipped_one_freq",
+        "3M_one_nan",
+        "3B_no_freq",
+    }
     assert {
         key for key, val in frequency_dict.items() if val is None
     } == expected_no_frequency
