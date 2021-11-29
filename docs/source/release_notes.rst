@@ -17,10 +17,10 @@ Future Release
 Breaking Changes
 ++++++++++++++++
     * :pr:``1207``: The behavior of ``describe_dict`` has changed when using
-    ``extra_stats=True``. Previously, the histogram bins were returned as
-    ``pandas.Interval`` objects. This has been updated so that the histogram
-    bins are now represented as a two-element list of floats with the first element
-    being the left edge of the bin and the second element being the right edge.
+      ``extra_stats=True``. Previously, the histogram bins were returned as
+      ``pandas.Interval`` objects. This has been updated so that the histogram
+      bins are now represented as a two-element list of floats with the first element
+      being the left edge of the bin and the second element being the right edge.
 
 v0.9.1 Nov 19, 2021
 ===================
