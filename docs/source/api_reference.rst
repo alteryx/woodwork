@@ -16,6 +16,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.drop
     WoodworkTableAccessor.iloc
     WoodworkTableAccessor.index
+    WoodworkTableAccessor.infer_temporal_frequencies
     WoodworkTableAccessor.init
     WoodworkTableAccessor.init_with_full_schema
     WoodworkTableAccessor.init_with_partial_schema
