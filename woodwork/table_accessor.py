@@ -1099,8 +1099,8 @@ class WoodworkTableAccessor:
 
         Note:
             The pandas util ``pd.infer_freq``, which is used in this method, has the following behaviors:
-                - If even one row in a column does not follow the frequency seen in the remaining columns,
-                    no frequency will be able to be inferred. Example of otherwise daily data that skips one day:
+                - If even one row in a column does not follow the frequency seen in the remaining rows,
+                    no frequency will be inferred. Example of otherwise daily data that skips one day:
                     ``['2011-01-03', '2011-01-04', '2011-01-05', '2011-01-07']``.
                 - If any NaNs are present in the data, no frequency will be inferred.
                 - Pandas will use the largest offset alias available to it, so ``W`` will be inferred for weekly data instead of ``7D``.
@@ -1117,7 +1117,7 @@ class WoodworkTableAccessor:
                 - Some frequencies that can be defined for a ``pd.date_range`` cannot then be re-inferred by pandas' ``pd.infer_freq``.
                     One example of this can be seen when using the business day offset alias ``B``
                     ``pd.date_range(start="2020-01-01", freq="4b", periods=10)``, which is a valid ``freq``
-                    parameter when building the date range, but is not then re-inferrable.
+                    parameter when building the date range, but is not then inferrable.
         """
         return _infer_temporal_frequencies(
             self._dataframe, temporal_columns=temporal_columns
