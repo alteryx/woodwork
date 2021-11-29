@@ -833,6 +833,12 @@ def test_describe_dict_extra_stats(describe_df):
     describe_df["nullable_integer_col"] = describe_df["numeric_col"]
     describe_df["integer_col"] = describe_df["numeric_col"].fillna(0)
     describe_df["small_range_col"] = describe_df["numeric_col"].fillna(0) // 10
+    describe_df["small_range_col_ints_as_double"] = (
+        describe_df["numeric_col"].fillna(0) // 10.0
+    )
+    describe_df["small_range_col_double_not_valid"] = (
+        describe_df["numeric_col"].fillna(0) / 10
+    )
 
     ltypes = {
         "category_col": "Categorical",
@@ -841,6 +847,8 @@ def test_describe_dict_extra_stats(describe_df):
         "nullable_integer_col": "IntegerNullable",
         "integer_col": "Integer",
         "small_range_col": "Integer",
+        "small_range_col_ints_as_double": "Double",
+        "small_range_col_double_not_valid": "Double",
     }
     describe_df.ww.init(index="index_col", logical_types=ltypes)
     desc_dict = describe_df.ww.describe_dict(extra_stats=True)
@@ -861,10 +869,12 @@ def test_describe_dict_extra_stats(describe_df):
         "nullable_integer_col",
         "integer_col",
         "small_range_col",
+        "small_range_col_ints_as_double",
+        "small_range_col_double_not_valid",
     ]:
         assert isinstance(desc_dict[col]["histogram"], list)
         assert desc_dict[col].get("recent_values") is None
-        if col == "small_range_col":
+        if col in {"small_range_col", "small_range_col_ints_as_double"}:
             # If values are in a narrow range, top values should be present
             assert isinstance(desc_dict[col]["top_values"], list)
         else:
