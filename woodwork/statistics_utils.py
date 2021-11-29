@@ -153,7 +153,6 @@ def _get_describe_dict(
                 # is less than or equal number of histogram bins
                 if (
                     len(_range) <= bins
-                    and values["nunique"] <= bins
                     and (series % 1 == 0).all()
                 ):
                     values["top_values"] = _get_numeric_value_counts_in_range(
