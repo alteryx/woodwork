@@ -2,17 +2,11 @@ from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
+from pandas.core.dtypes.common import is_integer_dtype
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
-from woodwork.logical_types import (
-    Datetime,
-    Double,
-    Integer,
-    IntegerNullable,
-    LatLong,
-    Timedelta,
-)
+from woodwork.logical_types import Datetime, Double, LatLong, Timedelta
 from woodwork.utils import _update_progress, get_valid_mi_types, import_or_none
 
 dd = import_or_none("dask.dataframe")
@@ -153,12 +147,16 @@ def _get_describe_dict(
         # Calculate extra detailed stats, if requested
         if extra_stats:
             if column.is_numeric:
-                values["histogram"] = _get_histogram_values(series, bins=bins)
-                if isinstance(column.logical_type, (Integer, IntegerNullable)):
+                if pd.isnull(values["max"]) or pd.isnull(values["min"]):
+                    values["histogram"] = []
+                    values["top_values"] = []
+                else:
+                    values["histogram"] = _get_histogram_values(series, bins=bins)
                     _range = range(int(values["min"]), int(values["max"]) + 1)
                     # Calculate top numeric values if range of values present
-                    # is less than or equal number of histogram bins
-                    if len(_range) <= bins:
+                    # is less than or equal number of histogram bins and series
+                    # contains only integer values
+                    if len(_range) <= bins and (series % 1 == 0).all():
                         values["top_values"] = _get_numeric_value_counts_in_range(
                             series, _range
                         )
@@ -578,7 +576,11 @@ def _get_numeric_value_counts_in_range(series, _range):
     """
     frequencies = series.value_counts(dropna=True)
     value_counts = [
-        {"value": i, "count": frequencies[i] if i in frequencies else 0} for i in _range
+        {
+            "value": i if is_integer_dtype(series) else float(i),
+            "count": frequencies[i] if i in frequencies else 0,
+        }
+        for i in _range
     ]
     return sorted(value_counts, key=lambda i: (-i["count"], i["value"]))
 
