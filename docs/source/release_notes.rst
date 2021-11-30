@@ -7,7 +7,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Return histogram bins a a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
+        * Return histogram bins as a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
     * Documentation Changes
     * Testing Changes
 
