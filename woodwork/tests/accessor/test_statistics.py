@@ -969,6 +969,9 @@ def test_numeric_histogram():
     total = 0
     for info in values:
         assert "bins" in info
+        assert len(info["bins"]) == 2
+        assert isinstance(info["bins"][0], float)
+        assert isinstance(info["bins"][1], float)
         assert "frequency" in info
         freq = info["frequency"]
         total += freq
