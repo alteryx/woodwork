@@ -147,15 +147,19 @@ def _get_describe_dict(
         # Calculate extra detailed stats, if requested
         if extra_stats:
             if column.is_numeric:
-                values["histogram"] = _get_histogram_values(series, bins=bins)
-                _range = range(int(values["min"]), int(values["max"]) + 1)
-                # Calculate top numeric values if range of values present
-                # is less than or equal number of histogram bins and series
-                # contains only integer values
-                if len(_range) <= bins and (series % 1 == 0).all():
-                    values["top_values"] = _get_numeric_value_counts_in_range(
-                        series, _range
-                    )
+                if pd.isnull(values["max"]) or pd.isnull(values["min"]):
+                    values["histogram"] = []
+                    values["top_values"] = []
+                else:
+                    values["histogram"] = _get_histogram_values(series, bins=bins)
+                    _range = range(int(values["min"]), int(values["max"]) + 1)
+                    # Calculate top numeric values if range of values present
+                    # is less than or equal number of histogram bins and series
+                    # contains only integer values
+                    if len(_range) <= bins and (series % 1 == 0).all():
+                        values["top_values"] = _get_numeric_value_counts_in_range(
+                            series, _range
+                        )
             elif column.is_categorical:
                 values["top_values"] = _get_top_values_categorical(series, top_x)
             elif column.is_datetime:

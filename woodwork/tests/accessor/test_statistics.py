@@ -763,6 +763,20 @@ def test_describe_with_include(sample_df):
     multi_params_df["full_name"].equals(sample_df.ww.describe()["full_name"])
 
 
+def test_describe_numeric_all_nans():
+    df = pd.DataFrame({"float": [np.nan] * 5})
+    df.ww.init(logical_types={"float": "double"})
+
+    stats = df.ww.describe_dict(extra_stats=True)
+    assert pd.isnull(stats["float"]["max"])
+    assert pd.isnull(stats["float"]["min"])
+    assert pd.isnull(stats["float"]["mean"])
+    assert pd.isnull(stats["float"]["std"])
+    assert stats["float"]["nan_count"] == 5
+    assert stats["float"]["histogram"] == []
+    assert stats["float"]["top_values"] == []
+
+
 def test_pandas_nullable_integer_quantile_fix():
     """Should fail when https://github.com/pandas-dev/pandas/issues/42626 gets fixed"""
     if pd.__version__ not in ["1.3.0", "1.3.1"]:  # pragma: no cover
