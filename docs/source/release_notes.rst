@@ -2,16 +2,23 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.10.0 Nov 30, 2020
+====================
     * Enhancements
         * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`) 
         * Update ``describe_dict`` to compute ``top_values`` for double columns that contain only integer values (:pr:`1206`)
-    * Fixes
     * Changes
         * Return histogram bins as a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`, :user:`thehomebrewnerd`
