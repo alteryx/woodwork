@@ -2,15 +2,25 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Return histogram bins as a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+    * :pr:``1207``: The behavior of ``describe_dict`` has changed when using
+      ``extra_stats=True``. Previously, the histogram bins were returned as
+      ``pandas.Interval`` objects. This has been updated so that the histogram
+      bins are now represented as a two-element list of floats with the first element
+      being the left edge of the bin and the second element being the right edge.
 
 v0.9.1 Nov 19, 2021
 ===================
