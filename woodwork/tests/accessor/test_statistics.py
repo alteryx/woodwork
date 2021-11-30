@@ -1318,3 +1318,53 @@ def test_box_plot_optional_return_values(outliers_df):
         "low_indices",
         "high_indices",
     } == set(no_outliers_box_plot_info_with_optional.keys())
+
+
+def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
+    # TODO: Add support for Dask and Koalas DataFrames
+    datetime_freqs_df_pandas.ww.init()
+
+    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies()
+    assert len(frequency_dict) == len(datetime_freqs_df_pandas.columns) - 1
+    assert "ints" not in frequency_dict
+
+    expected_no_frequency = {
+        "same_date",
+        "1d_skipped_one_freq",
+        "3M_one_nan",
+        "3B_no_freq",
+    }
+    assert {
+        key for key, val in frequency_dict.items() if val is None
+    } == expected_no_frequency
+
+
+def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
+    datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
+
+    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+        temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
+    )
+    assert len(frequency_dict) == 1
+    assert frequency_dict["2D_freq"] == "2D"
+
+    empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+        temporal_columns=[]
+    )
+    assert len(empty_frequency_dict) == 0
+
+
+def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
+    datetime_freqs_df_pandas.ww.init()
+
+    error = "Column not_present not found in dataframe."
+    with pytest.raises(ValueError, match=error):
+        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+            temporal_columns=["2D_freq", "not_present"]
+        )
+
+    error = "Cannot determine frequency for column ints with logical type Integer"
+    with pytest.raises(TypeError, match=error):
+        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+            temporal_columns=["1d_skipped_one_freq", "ints"]
+        )
