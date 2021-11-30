@@ -766,7 +766,7 @@ def test_describe_with_include(sample_df):
 def test_describe_numeric_all_nans():
     df = pd.DataFrame({"nulls": [np.nan] * 5})
     logical_types = ["double", "integer_nullable"]
-    
+
     for logical_type in logical_types:
         df.ww.init(logical_types={"nulls": logical_type})
         stats = df.ww.describe_dict(extra_stats=True)
