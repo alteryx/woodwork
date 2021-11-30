@@ -764,19 +764,19 @@ def test_describe_with_include(sample_df):
 
 
 def test_describe_numeric_all_nans():
-    df = pd.DataFrame({"float": [np.nan] * 5})
+    df = pd.DataFrame({"nulls": [np.nan] * 5})
     logical_types = ["double", "integer_nullable"]
     
     for logical_type in logical_types:
-        df.ww.init(logical_types={"float": logical_type})
+        df.ww.init(logical_types={"nulls": logical_type})
         stats = df.ww.describe_dict(extra_stats=True)
-        assert pd.isnull(stats["float"]["max"])
-        assert pd.isnull(stats["float"]["min"])
-        assert pd.isnull(stats["float"]["mean"])
-        assert pd.isnull(stats["float"]["std"])
-        assert stats["float"]["nan_count"] == 5
-        assert stats["float"]["histogram"] == []
-        assert stats["float"]["top_values"] == []
+        assert pd.isnull(stats["nulls"]["max"])
+        assert pd.isnull(stats["nulls"]["min"])
+        assert pd.isnull(stats["nulls"]["mean"])
+        assert pd.isnull(stats["nulls"]["std"])
+        assert stats["nulls"]["nan_count"] == 5
+        assert stats["nulls"]["histogram"] == []
+        assert stats["nulls"]["top_values"] == []
 
 
 def test_pandas_nullable_integer_quantile_fix():
