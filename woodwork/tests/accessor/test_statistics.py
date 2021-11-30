@@ -1321,6 +1321,7 @@ def test_box_plot_optional_return_values(outliers_df):
 
 
 def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
+    # TODO: Add support for Dask and Koalas DataFrames
     datetime_freqs_df_pandas.ww.init()
 
     frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies()

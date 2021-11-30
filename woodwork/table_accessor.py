@@ -1086,6 +1086,7 @@ class WoodworkTableAccessor:
     def infer_temporal_frequencies(self, temporal_columns=None):
         """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
             in the DataFrame. Temporal columns are ones with the logical type Datetime or Timedelta.
+            Not supported for Dask and Koalas DataFrames.
 
         Args:
             temporal_columns (list[str], optional): Columns for which frequencies should be inferred. Must be columns
