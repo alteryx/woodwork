@@ -17,6 +17,7 @@ COMMON_WORDS_SET = set(
 
 NL_delimiters = "[- \[\].,!\?;\n]"
 
+
 def categorical_func(series):
     if pdtypes.is_categorical_dtype(series.dtype):
         return True

@@ -240,7 +240,11 @@ def timedeltas(request):
 def pandas_natural_language():
     return [
         pd.Series(
-            ["Hello World! My name is bob!", "I like to move it move it", "its cold outside"]
+            [
+                "Hello World! My name is bob!",
+                "I like to move it move it",
+                "its cold outside",
+            ]
         ),
     ]
 
@@ -255,7 +259,13 @@ def koalas_natural_language(pandas_natural_language):
     return [pd_to_koalas(series) for series in pandas_natural_language]
 
 
-@pytest.fixture(params=["pandas_natural_language", "dask_natural_language", "koalas_natural_language"])
+@pytest.fixture(
+    params=[
+        "pandas_natural_language",
+        "dask_natural_language",
+        "koalas_natural_language",
+    ]
+)
 def natural_language(request):
     return request.getfixturevalue(request.param)
 
@@ -290,7 +300,12 @@ def strings(request):
 def pandas_pdnas():
     return [
         pd.Series(
-            ["Hello World! My name is bob!",  pd.NA, "I like to move it move it", "its cold outside"]
+            [
+                "Hello World! My name is bob!",
+                pd.NA,
+                "I like to move it move it",
+                "its cold outside",
+            ]
         ),
         pd.Series(["Mr. John Doe", pd.NA, "James Brown", "Ms. Paige Turner"]).astype(
             "string"
