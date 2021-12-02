@@ -1,11 +1,22 @@
 from typing import Callable
 
 import pandas as pd
+import numpy as np
 import pandas.api.types as pdtypes
 
 import woodwork as ww
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
+from woodwork import data
+import importlib.resources as pkg_resources
+from typing import Any, Iterable, Union
 
+Tokens = Iterable[str]
+
+COMMON_WORDS_SET = set(
+    line.strip() for line in pkg_resources.open_text(data, "1-1000.txt")
+)
+
+NL_delimiters = "[- \[\].,!\?;\n]"
 
 def categorical_func(series):
     if pdtypes.is_categorical_dtype(series.dtype):
@@ -80,6 +91,23 @@ def timedelta_func(series):
     if pdtypes.is_timedelta64_dtype(series.dtype):
         return True
     return False
+
+
+def num_common_words(l: Union[Tokens, Any]) -> float:
+    if not isinstance(l, Iterable):
+        return np.nan
+    num_common_words = 0
+    for x in l:
+        if x in COMMON_WORDS_SET or x.lower() in COMMON_WORDS_SET:
+            num_common_words += 1
+    return num_common_words
+
+
+def naturallanguage_func(series):
+    tokens = series.astype("string").str.split(NL_delimiters)
+    mean_num_common_words = np.nanmean(tokens.map(num_common_words))
+
+    return mean_num_common_words > 1.14
 
 
 class InferWithRegex:
