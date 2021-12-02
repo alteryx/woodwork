@@ -11,7 +11,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+   Thanks to the following people for contributing to this release:
    :user:`tuethan1999`
 
 v0.10.0 Nov 30, 2020
