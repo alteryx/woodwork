@@ -235,6 +235,31 @@ def timedeltas(request):
     return request.getfixturevalue(request.param)
 
 
+# Natural Language Fixtures
+@pytest.fixture
+def pandas_natural_language():
+    return [
+        pd.Series(
+            ["Hello World! My name is bob!", "I like to move it move it", "its cold outside"]
+        ),
+    ]
+
+
+@pytest.fixture
+def dask_natural_language(pandas_natural_language):
+    return [pd_to_dask(series) for series in pandas_natural_language]
+
+
+@pytest.fixture
+def koalas_natural_language(pandas_natural_language):
+    return [pd_to_koalas(series) for series in pandas_natural_language]
+
+
+@pytest.fixture(params=["pandas_natural_language", "dask_natural_language", "koalas_natural_language"])
+def natural_language(request):
+    return request.getfixturevalue(request.param)
+
+
 # Unknown Inference Fixtures
 @pytest.fixture
 def pandas_strings():
@@ -264,6 +289,9 @@ def strings(request):
 @pytest.fixture
 def pandas_pdnas():
     return [
+        pd.Series(
+            ["Hello World! My name is bob!",  pd.NA, "I like to move it move it", "its cold outside"]
+        ),
         pd.Series(["Mr. John Doe", pd.NA, "James Brown", "Ms. Paige Turner"]).astype(
             "string"
         ),

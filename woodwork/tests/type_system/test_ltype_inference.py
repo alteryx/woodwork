@@ -10,6 +10,7 @@ from woodwork.logical_types import (
     Integer,
     IntegerNullable,
     LogicalType,
+    NaturalLanguage,
     Timedelta,
     Unknown,
 )
@@ -112,6 +113,16 @@ def test_categorical_inference(categories):
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Categorical)
+
+
+def test_natural_language_inference(natural_language):
+    dtypes = ["object", "string"]
+    if _is_koalas_series(natural_language[0]):
+        dtypes = get_koalas_dtypes(dtypes)
+    for series in natural_language:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, NaturalLanguage)
 
 
 def test_categorical_inference_based_on_dtype(categories_dtype):
