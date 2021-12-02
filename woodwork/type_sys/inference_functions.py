@@ -15,7 +15,7 @@ COMMON_WORDS_SET = set(
     line.strip() for line in pkg_resources.open_text(data, "1-1000.txt")
 )
 
-NL_delimiters = "[- \[\].,!\?;\n]"
+NL_delimiters = r"[- \[\].,!\?;\n]"
 
 
 def categorical_func(series):
@@ -93,11 +93,11 @@ def timedelta_func(series):
     return False
 
 
-def num_common_words(l: Union[Tokens, Any]) -> float:
-    if not isinstance(l, Iterable):
+def num_common_words(wordlist: Union[Tokens, Any]) -> float:
+    if not isinstance(wordlist, Iterable):
         return np.nan
     num_common_words = 0
-    for x in l:
+    for x in wordlist:
         if x in COMMON_WORDS_SET or x.lower() in COMMON_WORDS_SET:
             num_common_words += 1
     return num_common_words
