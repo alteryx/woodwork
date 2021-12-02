@@ -2,7 +2,7 @@
 
 Release Notes
 -------------
-.. Future Release
+Future Release
 ==============
     * Enhancements
         * Add type inference for natural language (:pr:`1210`) 
