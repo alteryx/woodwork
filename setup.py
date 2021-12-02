@@ -40,5 +40,6 @@ setup(
         ]
     },
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type='text/markdown',
+    data_files=[('woodwork/data', ['woodwork/data/1-1000.txt'])]
 )
