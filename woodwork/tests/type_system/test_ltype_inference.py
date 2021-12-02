@@ -193,6 +193,7 @@ def test_unknown_inference_all_null(nulls):
 
 def test_pdna_inference(pdnas):
     expected_logical_types = [
+        NaturalLanguage,
         Unknown,
         IntegerNullable,
         BooleanNullable,
