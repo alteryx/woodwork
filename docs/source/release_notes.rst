@@ -5,12 +5,14 @@ Release Notes
 .. Future Release
   ==============
     * Enhancements
+        * Add type inference for natural language (:pr:`1210`) 
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+   :user:`tuethan1999`
 
 v0.10.0 Nov 30, 2020
 ====================
