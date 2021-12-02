@@ -1,14 +1,13 @@
-from typing import Callable
+import importlib.resources as pkg_resources
+from typing import Any, Callable, Iterable, Union
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pandas.api.types as pdtypes
 
 import woodwork as ww
-from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 from woodwork import data
-import importlib.resources as pkg_resources
-from typing import Any, Iterable, Union
+from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
 Tokens = Iterable[str]
 
