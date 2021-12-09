@@ -107,7 +107,9 @@ def natural_language_func(series):
     tokens = series.astype("string").str.split(NL_delimiters)
     mean_num_common_words = np.nanmean(tokens.map(num_common_words))
 
-    return mean_num_common_words > 1.14 # determined through https://github.com/alteryx/nl_inference
+    return (
+        mean_num_common_words > 1.14
+    )  # determined through https://github.com/alteryx/nl_inference
 
 
 class InferWithRegex:
