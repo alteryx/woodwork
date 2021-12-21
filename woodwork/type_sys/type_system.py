@@ -10,6 +10,7 @@ from .inference_functions import (
     integer_func,
     integer_nullable_func,
     ip_address_func,
+    natural_language_func,
     timedelta_func,
     url_func,
 )
@@ -62,7 +63,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     IntegerNullable: integer_nullable_func,
     IPAddress: ip_address_func,
     LatLong: None,
-    NaturalLanguage: None,
+    NaturalLanguage: natural_language_func,
     Ordinal: None,
     PhoneNumber: None,
     PostalCode: None,
