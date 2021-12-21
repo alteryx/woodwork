@@ -53,7 +53,7 @@ def _process_selection(selection, original_data):
     elif _is_dataframe(selection):
         # Selecting a new DataFrame from an existing DataFrame
         schema = original_data.ww.schema
-        new_schema = schema._get_subset_schema(list(selection.columns))
+        new_schema = schema.get_subset_schema(list(selection.columns))
         selection.ww.init_with_full_schema(schema=new_schema, validate=False)
     # Selecting a single value or return selection from above
     return selection
