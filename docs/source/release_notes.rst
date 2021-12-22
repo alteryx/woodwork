@@ -2,20 +2,27 @@
 
 Release Notes
 -------------
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
-        * Add type inference for natural language (:pr:`1210`) 
     * Fixes
     * Changes
-        * Make public method ``get_subset_schema`` (:pr:`1218`)
     * Documentation Changes
     * Testing Changes
 
-   Thanks to the following people for contributing to this release:
-   :user:`jeff-hernandez`, :user:`tuethan1999`
+.. Thanks to the following people for contributing to this release:
 
-v0.10.0 Nov 30, 2020
+v0.11.0 Dec 22, 2021
+====================
+    * Enhancements
+        * Add type inference for natural language (:pr:`1210`) 
+    * Changes
+        * Make public method ``get_subset_schema`` (:pr:`1218`)
+
+   Thanks to the following people for contributing to this release:
+   :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`tuethan1999`
+
+v0.10.0 Nov 30, 2021
 ====================
     * Enhancements
         * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`) 
