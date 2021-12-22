@@ -520,7 +520,7 @@ def test_get_subset_schema_all_params(
     assert set(possible_schema_params) == set(kwargs.keys())
 
     schema = TableSchema(**kwargs)
-    copy_schema = schema._get_subset_schema(sample_column_names)
+    copy_schema = schema.get_subset_schema(sample_column_names)
 
     assert schema == copy_schema
     assert schema is not copy_schema
@@ -1158,7 +1158,7 @@ def test_set_index_twice(sample_column_names, sample_inferred_logical_types):
         index="id",
         time_index="signup_date",
     )
-    original_schema = schema._get_subset_schema(list(schema.columns.keys()))
+    original_schema = schema.get_subset_schema(list(schema.columns.keys()))
 
     schema.set_index("id")
     assert schema.index == "id"
@@ -1210,7 +1210,7 @@ def test_schema_rename(sample_column_names, sample_inferred_logical_types):
         column_descriptions={"id": id_description},
         column_origins={"id": id_origin},
     )
-    original_schema = schema._get_subset_schema(list(schema.columns.keys()))
+    original_schema = schema.get_subset_schema(list(schema.columns.keys()))
 
     renamed_schema = schema.rename({"age": "birthday"})
 

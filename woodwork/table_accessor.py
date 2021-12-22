@@ -577,7 +577,7 @@ class WoodworkTableAccessor:
         cols_to_include = self._schema._filter_cols(include, exclude)
 
         if return_schema:
-            return self._schema._get_subset_schema(cols_to_include)
+            return self._schema.get_subset_schema(cols_to_include)
         return self._get_subset_df_with_schema(cols_to_include)
 
     @_check_table_schema
@@ -776,7 +776,7 @@ class WoodworkTableAccessor:
 
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
-        new_schema = self._schema._get_subset_schema(cols_to_include)
+        new_schema = self._schema.get_subset_schema(cols_to_include)
         if inplace:
             cols_to_drop = [
                 col_name

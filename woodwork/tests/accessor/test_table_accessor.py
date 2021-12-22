@@ -2014,7 +2014,7 @@ def test_pop(sample_df):
     assert "age" not in schema_df.ww.logical_types.keys()
     assert "age" not in schema_df.ww.semantic_tags.keys()
 
-    assert schema_df.ww.schema == original_schema._get_subset_schema(
+    assert schema_df.ww.schema == original_schema.get_subset_schema(
         list(schema_df.columns)
     )
 

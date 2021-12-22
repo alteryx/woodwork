@@ -8,11 +8,12 @@ Future Release
         * Add type inference for natural language (:pr:`1210`) 
     * Fixes
     * Changes
+        * Make public method ``get_subset_schema`` (:pr:`1218`)
     * Documentation Changes
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
-   :user:`tuethan1999`
+   :user:`jeff-hernandez`, :user:`tuethan1999`
 
 v0.10.0 Nov 30, 2020
 ====================
