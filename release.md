@@ -52,7 +52,8 @@ If you'd like to create a development release, which won't be deployed to pypi a
     .. Thanks to the following people for contributing to this release:
     ```
 
-An example can be found here: <https://github.com/alteryx/woodwork/pull/158>
+#### Create Release PR
+A [release pr](https://github.com/alteryx/woodwork/pull/158) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 Checklist before merging:
 
