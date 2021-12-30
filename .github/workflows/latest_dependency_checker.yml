@@ -48,7 +48,8 @@ jobs:
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_dask_dependencies.txt
         cat woodwork/tests/requirement_files/latest_dask_dependencies.txt
     - name: Create Pull Request
-      uses: FeatureLabs/create-pull-request@v3
+      id: cpr
+      uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.REPO_SCOPED_TOKEN }}
         commit-message: Update latest dependencies
