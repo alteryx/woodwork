@@ -2,16 +2,19 @@
 
 Release Notes
 -------------
-.. Future Release
-  ==============
+
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
-
+        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`)
+        
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+	
 v0.11.0 Dec 22, 2021
 ====================
     * Enhancements
