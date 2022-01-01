@@ -13,6 +13,7 @@ jobs:
     - name: Find dependency PRs
       id: find_prs
       run: |
+        gh pr list --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url
         gh pr list --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
         echo "dep_pull_request_url=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")" >> $GITHUB_ENV
         echo "${{ env.dep_pull_request_url }}"
