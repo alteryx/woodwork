@@ -9,16 +9,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Shallow Clone of Repo      
+        run: |
+          git clone --no-checkout https://${{ github.actor }}:${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/${{ github.repository }}.git .
       - name: Debug
         run: |
           gh auth status
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Find dependency PRs
         id: find_prs
         run: |
