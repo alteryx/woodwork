@@ -11,12 +11,12 @@ jobs:
     steps:
       - name: Shallow Clone of Repo      
         run: |
-          git clone --no-checkout https://${{ github.actor }}:${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/${{ github.repository }}.git .
+          git clone --no-checkout https://${{ github.actor }}:${{ secrets.REPO_SCOPED_TOKEN }}@github.com/${{ github.repository }}.git .
       - name: Debug
         run: |
           gh auth status
         env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Find dependency PRs
         id: find_prs
         run: |
