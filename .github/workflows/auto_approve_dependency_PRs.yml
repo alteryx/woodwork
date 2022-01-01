@@ -10,21 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Debug
-        run: |
-          gh auth status
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
-      - name: Find dependency PRs
-        run: |
-          echo $(gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url)
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Find dependency PRs
         id: find_prs
         run: |
-          echo $(gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1)
-          gh pr list --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
+          gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
           echo "dep_pull_request_url=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")" >> $GITHUB_ENV
           echo "${{ env.dep_pull_request_url }}"
           if [[ "${{ env.dep_pull_request_url }}" -gt 8 ]]; then
