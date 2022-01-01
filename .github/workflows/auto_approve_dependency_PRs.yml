@@ -22,7 +22,7 @@ jobs:
       - name: Approve dependency PRs and enable auto-merge
         if: startsWith( ${{ steps.find_prs.outputs.dep_pull_request_url }}, "https://github.com/alteryx/woodwork/pull/" )
         run: | 
-          gh pr review ${{ steps.find_prs.outputs.dep_pull_request_url }} --approve --comment --body "auto approve"
-          gh pr merge ${{ steps.find_prs.outputs.dep_pull_request_url }} --auto --squash
+          gh pr review --approve --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request_url }}
+          gh pr merge --auto --squash ${{ steps.find_prs.outputs.dep_pull_request_url }}
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
