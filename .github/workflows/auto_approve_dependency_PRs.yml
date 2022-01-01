@@ -15,6 +15,7 @@ jobs:
         run: |
           gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
           cat dep_PRs_waiting_approval.json
+          echo $(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
           echo "dep_pull_request_url=$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")" >> $GITHUB_ENV
           echo ENV Var
           echo "${{ env.dep_pull_request_url }}"
