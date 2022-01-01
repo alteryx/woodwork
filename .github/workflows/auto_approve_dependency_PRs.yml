@@ -18,6 +18,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Find dependency PRs
+        run: |
+          echo $(gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url)
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+      - name: Find dependency PRs
         id: find_prs
         run: |
           echo $(gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1)
@@ -30,7 +35,7 @@ jobs:
             echo No matching PR found;
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Approve dependency PRs and enable auto-merge 
         if: steps.find_prs.outputs.dep_pull_request_url && steps.find_prs.outputs.dep_pull_request_url != null
         run: |
