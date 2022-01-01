@@ -27,4 +27,4 @@ jobs:
         gh pr merge ${{ steps.find_prs.outputs.dep_pull_request_url }} --auto --squash
         rm dep_PRs_waiting_approval.json
       env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
