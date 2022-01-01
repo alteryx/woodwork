@@ -1,7 +1,10 @@
 name: Auto Approve Dependency PRs
 on:
-  schedule:
-    - cron: '0 * * * *'
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +22,7 @@ jobs:
           echo No matching PR found;
         fi
       env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
     - name: Approve dependency PRs and enable auto-merge 
       if: steps.find_prs.outputs.dep_pull_request_url && steps.find_prs.outputs.dep_pull_request_url != null
       run: |
