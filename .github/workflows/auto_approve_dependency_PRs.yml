@@ -10,15 +10,22 @@ jobs:
       - name: Find dependency PRs
         id: find_prs
         run: |
-          gh pr list --repo "alteryx/woodwork" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
+          rm -f dep_PRs_waiting_approval.json
+          gh pr list --repo "${{ github.repository }}" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json url > dep_PRs_waiting_approval.json
           echo ::set-output name=dep_pull_request_url::$(cat dep_PRs_waiting_approval.json | grep -Eo "(https)://[a-zA-Z0-9./?=_%:-]*")
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Approve dependency PRs and enable auto-merge
-        if: startsWith( ${{ steps.find_prs.outputs.dep_pull_request_url }}, "https://github.com/alteryx/woodwork/pull/" )
-        run: | 
-          gh pr review --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request_url }}
-          gh pr review --approve ${{ steps.find_prs.outputs.dep_pull_request_url }}
-          gh pr merge --auto --squash ${{ steps.find_prs.outputs.dep_pull_request_url }}
+        id: approve_prs
+        if: >-
+          ${{
+            steps.find_prs.outputs.dep_pull_request_url != '' &&
+            contains( steps.find_prs.outputs.dep_pull_request_url, 'https://github.com/alteryx/woodwork/pull/')
+          }}
+        run: |
+          echo ${{ steps.find_prs.outputs.dep_pull_request_url }}
+          gh pr review --repo "${{ github.repository }}" --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request_url }}
+          gh pr review --repo "${{ github.repository }}" --approve ${{ steps.find_prs.outputs.dep_pull_request_url }}
+          gh pr merge --repo "${{ github.repository }}" --auto --squash ${{ steps.find_prs.outputs.dep_pull_request_url }}
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
