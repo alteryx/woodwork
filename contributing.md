@@ -28,7 +28,8 @@ Whether you are a novice or experienced software developer, all contributions an
 
      **macOS** (use [Homebrew](https://brew.sh/)):
      ```bash
-     brew cask install homebrew/cask-versions/adoptopenjdk11
+     brew tap AdoptOpenJDK/openjdk
+     brew install --cask adoptopenjdk11
      brew install scala
      brew install apache-spark
      ```
