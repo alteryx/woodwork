@@ -8,12 +8,13 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Update inference process to only check for NaturalLanguage if no other type matches are found first (:pr:`1234`)
     * Documentation Changes
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`)
         
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`thehomebrewnerd`
 	
 v0.11.0 Dec 22, 2021
 ====================
