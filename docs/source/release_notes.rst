@@ -10,11 +10,12 @@ Future Release
     * Changes
         * Update inference process to only check for NaturalLanguage if no other type matches are found first (:pr:`1234`)
     * Documentation Changes
+        * Updating contributing doc with Spark installation instructions (:pr:`1232`)
     * Testing Changes
-        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`)
+        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`, :pr:`1230`)
         
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`willsmithorg`
 	
 v0.11.0 Dec 22, 2021
 ====================
