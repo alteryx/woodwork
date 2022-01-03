@@ -1,3 +1,5 @@
+from mock import patch
+
 import woodwork as ww
 from woodwork.accessor_utils import _is_koalas_series
 from woodwork.logical_types import (
@@ -15,6 +17,12 @@ from woodwork.logical_types import (
     Unknown,
 )
 from woodwork.tests.testing_utils import to_pandas
+from woodwork.type_sys.type_system import (
+    DEFAULT_INFERENCE_FUNCTIONS,
+    DEFAULT_RELATIONSHIPS,
+    DEFAULT_TYPE,
+    TypeSystem,
+)
 from woodwork.utils import import_or_none
 
 UNSUPPORTED_KOALAS_DTYPES = [
@@ -123,6 +131,32 @@ def test_natural_language_inference(natural_language):
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, NaturalLanguage)
+
+
+@patch("woodwork.type_sys.inference_functions.natural_language_func")
+def test_nl_inference_called_on_no_other_matches(nl_mock, pandas_natural_language):
+    new_type_sys = TypeSystem(
+        inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
+        relationships=DEFAULT_RELATIONSHIPS,
+        default_type=DEFAULT_TYPE,
+    )
+    new_type_sys.inference_functions[NaturalLanguage] = nl_mock
+    inferred_type = new_type_sys.infer_logical_type(pandas_natural_language[0])
+    assert isinstance(inferred_type, NaturalLanguage)
+    assert nl_mock.called
+
+
+@patch("woodwork.type_sys.inference_functions.natural_language_func")
+def test_nl_inference_not_called_with_other_matches(nl_mock, pandas_integers):
+    new_type_sys = TypeSystem(
+        inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
+        relationships=DEFAULT_RELATIONSHIPS,
+        default_type=DEFAULT_TYPE,
+    )
+    new_type_sys.inference_functions[NaturalLanguage] = nl_mock
+    inferred_type = new_type_sys.infer_logical_type(pandas_integers[0])
+    assert isinstance(inferred_type, Integer)
+    assert not nl_mock.called
 
 
 def test_categorical_inference_based_on_dtype(categories_dtype):

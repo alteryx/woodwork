@@ -315,11 +315,22 @@ class TypeSystem(object):
                 get_inference_matches(check_next, series, type_matches)
             return type_matches
 
-        type_matches = get_inference_matches(self.root_types, series)
+        # Don't include NaturalLanguage as we only want to check that if
+        # no other matches are found
+        types_to_check = [
+            ltype for ltype in self.root_types if ltype != NaturalLanguage
+        ]
+        type_matches = get_inference_matches(types_to_check, series)
 
         if len(type_matches) == 0:
-            # If no matches, set type to default type (Unknown)
-            logical_type = self.default_type
+            # Check if this is NaturalLanguage, otherwise set
+            # type to default type (Unknown)
+            if self.inference_functions.get(
+                NaturalLanguage
+            ) and self.inference_functions[NaturalLanguage](series):
+                logical_type = NaturalLanguage
+            else:
+                logical_type = self.default_type
         elif len(type_matches) == 1:
             # If we match only one type, return it
             logical_type = type_matches[0]
