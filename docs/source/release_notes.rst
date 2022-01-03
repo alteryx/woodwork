@@ -9,11 +9,12 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+        * Updating contributing doc with Spark installat instructions (:pr:`1232`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`, :pr:`1230`)
         
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`willsmithorg`
 	
 v0.11.0 Dec 22, 2021
 ====================

@@ -24,7 +24,26 @@ Whether you are a novice or experienced software developer, all contributions an
   make installdeps
   git checkout -b issue####-branch_name
   ```
+* You will need to install Spark & Scala to run all unit tests:
 
+     **macOS** (use [Homebrew](https://brew.sh/)):
+     ```bash
+     brew tap AdoptOpenJDK/openjdk
+     brew install --cask adoptopenjdk11
+     brew install scala
+     brew install apache-spark
+     ```
+
+     **Ubuntu**:
+     ```bash
+     sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
+     ```
+     
+     **Amazon Linux**:
+     ```bash
+     sudo amazon-linux-extras install java-openjdk11 scala -y
+     ```
+     
 #### 2. Implement your Pull Request
 
 * Implement your pull request. If needed, add new tests or update the documentation.

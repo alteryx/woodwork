@@ -20,11 +20,11 @@ lint-fix:
 	python docs/notebook_version_standardizer.py standardize
 
 .PHONY: test
-test: lint
+test:
 	pytest woodwork/
 
 .PHONY: testcoverage
-testcoverage: lint
+testcoverage:
 	pytest woodwork/ --cov=woodwork
 
 .PHONY: installdeps
