@@ -24,6 +24,28 @@ Whether you are a novice or experienced software developer, all contributions an
   make installdeps
   git checkout -b issue####-branch_name
   ```
+* You will need to install Koalas to run all unit tests:
+
+     **macOS** (use [Homebrew](https://brew.sh/)):
+     ```bash
+     brew cask install homebrew/cask-versions/adoptopenjdk8
+     brew install scala
+     brew install apache-spark
+     ```
+
+     **Ubuntu**:
+     ```bash
+     sudo apt install default-jdk scala -y
+     ```
+     
+     **Amazon Linux**:
+     ```bash
+     sudo amazon-linux-extras install java-openjdk11
+     ```
+
+In order to use Woodwork with Dask or Koalas DataFrames, the following commands must be run for your library of choice prior to installing Woodwork with conda: conda install dask for Dask or conda install koalas and conda install pyspark for Koalas.
+
+
 
 #### 2. Implement your Pull Request
 
