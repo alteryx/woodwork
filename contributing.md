@@ -43,11 +43,7 @@ Whether you are a novice or experienced software developer, all contributions an
      ```bash
      sudo amazon-linux-extras install java-openjdk11 scala -y
      ```
-
-In order to use Woodwork with Dask or Koalas DataFrames, the following commands must be run for your library of choice prior to installing Woodwork with conda: conda install dask for Dask or conda install koalas and conda install pyspark for Koalas.
-
-
-
+     
 #### 2. Implement your Pull Request
 
 * Implement your pull request. If needed, add new tests or update the documentation.
