@@ -3,10 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.11.1 Jan 4, 2022
+===================
     * Changes
         * Update inference process to only check for NaturalLanguage if no other type matches are found first (:pr:`1234`)
     * Documentation Changes
