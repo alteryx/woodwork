@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
-.. Thanks to the following people for contributing to this release:
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 v0.11.1 Jan 4, 2022
 ===================
