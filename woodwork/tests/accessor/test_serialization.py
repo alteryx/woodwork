@@ -608,7 +608,8 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL="public-read-write")
 
 
-def test_to_csv_S3(sample_df, s3_client, s3_bucket):
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_to_csv_S3(sample_df, s3_client, s3_bucket, profile_name):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init(
@@ -617,10 +618,18 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
         semantic_tags={"id": "tag1"},
         logical_types={"age": Ordinal(order=[25, 33, 57])},
     )
-    sample_df.ww.to_disk(TEST_S3_URL, format="csv", encoding="utf-8", engine="python")
+    sample_df.ww.to_disk(
+        TEST_S3_URL,
+        format="csv",
+        encoding="utf-8",
+        engine="python",
+        profile_name=profile_name,
+    )
     make_public(s3_client, s3_bucket)
 
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
+    deserialized_df = deserialize.read_woodwork_table(
+        TEST_S3_URL, profile_name=profile_name
+    )
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -629,11 +638,14 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket):
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket, profile_name):
     sample_df_pandas.ww.init()
-    sample_df_pandas.ww.to_disk(TEST_S3_URL, format="pickle")
+    sample_df_pandas.ww.to_disk(TEST_S3_URL, format="pickle", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
+    deserialized_df = deserialize.read_woodwork_table(
+        TEST_S3_URL, profile_name=profile_name
+    )
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index, sort_index=True),
@@ -642,69 +654,20 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket):
     assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
 
 
-def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket):
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket, profile_name):
     xfail_tmp_disappears(sample_df)
 
     sample_df.ww.init()
-    sample_df.ww.to_disk(TEST_S3_URL, format="parquet")
+    sample_df.ww.to_disk(TEST_S3_URL, format="parquet", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL)
+    deserialized_df = deserialize.read_woodwork_table(
+        TEST_S3_URL, profile_name=profile_name
+    )
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
-    )
-    assert sample_df.ww.schema == deserialized_df.ww.schema
-
-
-def test_to_csv_S3_anon(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
-
-    sample_df.ww.init(
-        name="test_data",
-        index="id",
-        time_index="signup_date",
-        semantic_tags={"id": "tag1"},
-        logical_types={"age": Ordinal(order=[25, 33, 57])},
-    )
-    sample_df.ww.to_disk(
-        TEST_S3_URL, format="csv", encoding="utf-8", engine="python", profile_name=False
-    )
-    make_public(s3_client, s3_bucket)
-
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
-
-    pd.testing.assert_frame_equal(
-        to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
-        to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
-    )
-    assert sample_df.ww.schema == deserialized_df.ww.schema
-
-
-def test_serialize_s3_pickle_anon(sample_df_pandas, s3_client, s3_bucket):
-    sample_df_pandas.ww.init()
-    sample_df_pandas.ww.to_disk(TEST_S3_URL, format="pickle", profile_name=False)
-    make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
-
-    pd.testing.assert_frame_equal(
-        to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index),
-        to_pandas(deserialized_df, index=deserialized_df.ww.index),
-    )
-    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema
-
-
-def test_serialize_s3_parquet_anon(sample_df, s3_client, s3_bucket):
-    xfail_tmp_disappears(sample_df)
-
-    sample_df.ww.init()
-    sample_df.ww.to_disk(TEST_S3_URL, format="parquet", profile_name=False)
-    make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name=False)
-
-    pd.testing.assert_frame_equal(
-        to_pandas(sample_df, index=sample_df.ww.index),
-        to_pandas(deserialized_df, index=deserialized_df.ww.index),
     )
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
