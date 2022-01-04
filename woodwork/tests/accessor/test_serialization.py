@@ -783,7 +783,7 @@ def test_deserialize_url_csv_anon(sample_df_pandas):
 
 def test_deserialize_s3_csv(sample_df_pandas):
     sample_df_pandas.ww.init(index="id")
-    deserialized_df = deserialize.read_woodwork_table(S3_URL)
+    deserialized_df = deserialize.read_woodwork_table(S3_URL, profile_name=False)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index),
