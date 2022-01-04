@@ -12,7 +12,7 @@ Future Release
     * Documentation Changes
         * Updating contributing doc with Spark installation instructions (:pr:`1232`)
     * Testing Changes
-        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`, :pr:`1230`)
+        * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`, :pr:`1230`, :pr:`1233`)
         
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`willsmithorg`
