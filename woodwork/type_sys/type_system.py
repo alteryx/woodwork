@@ -324,7 +324,11 @@ class TypeSystem(object):
 
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set
-            # type to default type (Unknown)
+            # type to default type (Unknown). Assume that a column
+            # can only be natural language if it is not already a
+            # match for another type. Also improves performance by
+            # limiting the times the natural language inference function
+            # is called.
             if self.inference_functions.get(
                 NaturalLanguage
             ) and self.inference_functions[NaturalLanguage](series):
