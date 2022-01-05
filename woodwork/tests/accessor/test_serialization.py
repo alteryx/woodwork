@@ -413,6 +413,18 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     assert deserialized_tags_df.ww.schema == standard_tags_df.ww.schema
 
 
+def test_deserialize_handles_indexes(sample_df, tmpdir):
+    sample_df.ww.init(
+        name="test_data",
+        index="id",
+        time_index="signup_date",
+    )
+    sample_df.ww.to_disk(str(tmpdir), format="csv")
+    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    assert deserialized_df.ww.index == "id"
+    assert deserialized_df.ww.time_index == "signup_date"
+
+
 def test_to_pickle(sample_df, tmpdir):
     sample_df.ww.init()
     if not isinstance(sample_df, pd.DataFrame):
