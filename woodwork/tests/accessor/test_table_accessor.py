@@ -2546,7 +2546,7 @@ def test_setitem_overwrite_column(sample_df):
 
 def test_maintain_column_order_on_type_changes(sample_df):
     # removing null values to use email as index
-    sample_df = sample_df[sample_df['email'].notnull()]
+    sample_df = sample_df[sample_df["email"].notnull()]
 
     sample_df.ww.init()
     schema_df = sample_df.ww.copy()
