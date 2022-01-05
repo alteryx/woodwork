@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Change auto approve workfow to use PR number (:pr:`1240`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.11.1 Jan 4, 2022
 ===================
