@@ -1173,7 +1173,7 @@ def _check_index(dataframe, index):
             # Does not check for Dask as Dask does not support is_unique
             raise IndexError("Index column must be unique")
 
-        if dataframe[index].notnull().any():
+        if dataframe[index].isnull().any():
             raise IndexError("Index contains null values")
 
 
