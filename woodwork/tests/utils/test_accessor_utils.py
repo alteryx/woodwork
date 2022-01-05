@@ -255,7 +255,7 @@ def test_get_invalid_schema_message_index_checks(sample_df):
 
     nan_df = pd.DataFrame(
         {
-            "id": pd.Series([5, 4, None, 2], dtype="float64"),
+            "id": pd.Series([5, 4, 3, 2], dtype="float64"),
             "col": pd.Series(["b", "b", "b", "d"], dtype="category"),
         }
     )
