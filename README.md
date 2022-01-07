@@ -72,7 +72,7 @@ Column
 order_id                category      Categorical    ['category']
 product_id              category      Categorical    ['category']
 description               string  NaturalLanguage              []
-quantity                   Int64          Integer     ['numeric']
+quantity                   int64          Integer     ['numeric']
 order_date        datetime64[ns]         Datetime              []
 unit_price               float64           Double     ['numeric']
 customer_name             string   PersonFullName              []
