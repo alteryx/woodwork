@@ -10,7 +10,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Change auto approve workfow to use PR number and run every 30 minutes (:pr:`1240`)
+        * Change auto approve workfow to use PR number and run every 5 minutes (:pr:`1240`, :pr:`1241`)
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
