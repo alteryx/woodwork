@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Add slack link to GitHub issue creation templates (:pr:`1242`)
+        * Add Slack link to GitHub issue creation templates (:pr:`1242`)
     * Fixes
     * Changes
     * Documentation Changes
