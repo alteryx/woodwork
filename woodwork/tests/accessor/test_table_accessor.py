@@ -2967,3 +2967,12 @@ def test_falsy_columns_in_partial_schema(falsy_names_df):
     assert new_df.ww.index == 0
     assert new_df.ww.time_index == ""
     assert new_df.ww.name == 0
+
+
+def test_nan_index_error(sample_df_pandas):
+    with pytest.raises(IndexError, match="Index contains null values"):
+        sample_df_pandas.ww.init(index="email")
+
+    sample_df_pandas.ww.init()
+    with pytest.raises(IndexError, match="Index contains null values"):
+        sample_df_pandas.ww.set_index("email")
