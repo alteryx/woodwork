@@ -217,7 +217,7 @@ def _check_schema_version(saved_version_str):
         )
 
 
-def read_parquet_file(filepath):
+def read_parquet(filepath):
     """Read data from the specified parquet file and initialize Woodwork using
     the typing information stored in the parquet file metadata."""
     import pyarrow as pa

@@ -779,7 +779,7 @@ def test_to_parquet_single_file(sample_df, tmpdir):
     filepath = os.path.join(str(tmpdir), "sample_df.parquet")
     sample_df.ww.to_parquet(filepath)
 
-    deserialized_df = deserialize.read_parquet_file(filepath)
+    deserialized_df = deserialize.read_parquet(filepath)
 
     pd.testing.assert_frame_equal(
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
