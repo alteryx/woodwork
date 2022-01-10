@@ -2,6 +2,7 @@
 import pkg_resources
 
 from .config import config
+from .deserialize import read_parquet_file
 from .type_sys import type_system
 from .type_sys.utils import list_logical_types, list_semantic_tags
 from .utils import concat_columns, read_file

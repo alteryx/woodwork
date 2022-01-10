@@ -749,3 +749,40 @@ def test_earlier_schema_version():
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)
     test_version(major, minor, patch - 1, raises=False)
+
+
+def test_to_parquet_single_file(sample_df, tmpdir):
+    # if _is_dask_dataframe(sample_df):
+    #     # Dask errors with pd.NA in some partitions, but not others
+    #     sample_df["age"] = sample_df["age"].fillna(25)
+    if not isinstance(sample_df, pd.DataFrame):
+        pytest.skip("Skipping for now")
+    sample_df.ww.init(
+        name="test_data",
+        index="full_name",
+        semantic_tags={"id": "tag1"},
+        logical_types={"age": Ordinal(order=[25, 33, 57])},
+        column_descriptions={
+            "signup_date": "original signup date",
+            "age": "age of the user",
+        },
+        column_origins={
+            "phone_number": "base",
+            "age": "base",
+            "signup_date": "engineered",
+        },
+        column_metadata={
+            "id": {"is_sorted": True},
+            "age": {"interesting_values": [33, 57]},
+        },
+    )
+    filepath = os.path.join(str(tmpdir), "sample_df.parquet")
+    sample_df.ww.to_parquet(filepath)
+
+    deserialized_df = deserialize.read_parquet_file(filepath)
+
+    pd.testing.assert_frame_equal(
+        to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+        to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+    )
+    assert deserialized_df.ww.schema == sample_df.ww.schema

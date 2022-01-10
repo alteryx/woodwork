@@ -223,3 +223,21 @@ def save_orc_file(dataframe, filepath):
             df[c] = df[c].astype("string")
     pa_table = Table.from_pandas(df, preserve_index=False)
     orc.write_table(pa_table, filepath)
+
+
+def save_parquet_file(dataframe, filepath):
+    """Write a Woodwork dataframe to disk, saving typing information in
+    the parquet file metadata."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    table = pa.Table.from_pandas(dataframe)
+    table_meta = table.schema.metadata
+    ww_typing = typing_info_to_dict(dataframe)
+    combined_metadata = {
+        "woodwork_metadata".encode(): json.dumps(ww_typing).encode(),
+        **table_meta,
+    }
+    table = table.replace_schema_metadata(combined_metadata)
+
+    pq.write_table(table, filepath)

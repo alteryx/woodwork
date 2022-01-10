@@ -215,3 +215,73 @@ def _check_schema_version(saved_version_str):
             OutdatedSchemaWarning().get_warning_message(saved_version_str),
             OutdatedSchemaWarning,
         )
+
+
+def read_parquet_file(filepath):
+    """Read data from the specified parquet file and initialize Woodwork using
+    the typing information stored in the parquet file metadata."""
+    import pyarrow as pa
+
+    dataframe = pd.read_parquet(filepath)
+    file_metadata = pa.parquet.read_metadata(filepath)
+    table_typing_info = json.loads(file_metadata.metadata[b"woodwork_metadata"])
+
+    loading_info = table_typing_info["loading_info"]
+    table_type = loading_info.get("table_type", "pandas")
+
+    logical_types = {}
+    semantic_tags = {}
+    column_descriptions = {}
+    column_origins = {}
+    column_metadata = {}
+    use_standard_tags = {}
+    column_dtypes = {}
+    for col in table_typing_info["column_typing_info"]:
+        col_name = col["name"]
+
+        ltype_metadata = col["logical_type"]
+        ltype = ww.type_system.str_to_logical_type(
+            ltype_metadata["type"], params=ltype_metadata["parameters"]
+        )
+
+        tags = col["semantic_tags"]
+
+        if "index" in tags:
+            tags.remove("index")
+        elif "time_index" in tags:
+            tags.remove("time_index")
+
+        logical_types[col_name] = ltype
+        semantic_tags[col_name] = tags
+        column_descriptions[col_name] = col["description"]
+        column_origins[col_name] = col["origin"]
+        column_metadata[col_name] = col["metadata"]
+        use_standard_tags[col_name] = col["use_standard_tags"]
+
+        col_type = col["physical_type"]["type"]
+        if col_type == "category":
+            # Make sure categories are recreated properly
+            cat_values = col["physical_type"]["cat_values"]
+            cat_dtype = col["physical_type"]["cat_dtype"]
+            if table_type == "pandas":
+                cat_object = pd.CategoricalDtype(pd.Index(cat_values, dtype=cat_dtype))
+            else:
+                cat_object = pd.CategoricalDtype(pd.Series(cat_values))
+            col_type = cat_object
+        column_dtypes[col_name] = col_type
+
+    dataframe.ww.init(
+        name=table_typing_info.get("name"),
+        index=table_typing_info.get("index"),
+        time_index=table_typing_info.get("time_index"),
+        logical_types=logical_types,
+        semantic_tags=semantic_tags,
+        use_standard_tags=use_standard_tags,
+        table_metadata=table_typing_info.get("table_metadata"),
+        column_metadata=column_metadata,
+        column_descriptions=column_descriptions,
+        column_origins=column_origins,
+        validate=False,
+    )
+
+    return dataframe
