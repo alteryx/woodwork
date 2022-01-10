@@ -83,6 +83,9 @@ def test_check_index_errors(sample_df):
         with pytest.raises(LookupError, match=error_message):
             _check_index(sample_df, index="age")
 
+        with pytest.raises(IndexError, match="Index contains null values"):
+            _check_index(sample_df, index="email")
+
 
 def test_check_logical_types_errors(sample_df):
     error_message = "logical_types must be a dictionary"
@@ -2964,8 +2967,3 @@ def test_falsy_columns_in_partial_schema(falsy_names_df):
     assert new_df.ww.index == 0
     assert new_df.ww.time_index == ""
     assert new_df.ww.name == 0
-
-
-def test_nan_index_error(sample_df_pandas):
-    with pytest.raises(IndexError, match="Index contains null values"):
-        sample_df_pandas.ww.init(index="email")
