@@ -134,6 +134,8 @@ def get_invalid_schema_message(dataframe, schema):
             return "Index mismatch between DataFrame and typing information"
         elif not dataframe[schema.index].is_unique:
             return "Index column is not unique"
+        elif dataframe[schema.index].isnull().any():
+            return "Index contains null values"
 
 
 def is_schema_valid(dataframe, schema):
