@@ -2978,10 +2978,10 @@ def test_nan_index_error(sample_df_pandas):
     with pytest.raises(IndexError, match=match):
         sample_df_pandas.ww.set_index("email")
 
-    sample_df_pandas.ww.init(index='id', logical_types={'id': 'Double'})
+    sample_df_pandas.ww.init(index="id", logical_types={"id": "Double"})
     schema = sample_df_pandas.ww.schema
 
-    nan_df = sample_df_pandas.replace({3: float('nan')})
+    nan_df = sample_df_pandas.replace({3: float("nan")})
     nan_df = nan_df.set_index("id", drop=False)
 
     with pytest.raises(ValueError, match=match):

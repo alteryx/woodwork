@@ -262,7 +262,7 @@ def test_get_invalid_schema_message_index_checks(sample_df):
     df.ww.init(index="id")
     df_schema = df.ww.schema
 
-    nan_df = df.replace({3:None})
+    nan_df = df.replace({3: None})
     nan_df["id"] = nan_df["id"].astype("float64")
     nan_df = nan_df.set_index("id", drop=False)
     actual = get_invalid_schema_message(nan_df, df_schema)
