@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
+        * Add ``df.ww.to_parquet`` and ``ww.read_parquet`` methods to read/write a Woodwork table to a single parquet file (:pr:`968`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -15,7 +16,7 @@ Future Release
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================
