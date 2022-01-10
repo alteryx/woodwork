@@ -60,7 +60,7 @@ def _typing_information_to_woodwork_table(table_typing_info, validate, **kwargs)
     column_dtypes = {}
     for col in table_typing_info["column_typing_info"]:
         col_name = col["name"]
-        
+
         col_type = col["physical_type"]["type"]
         if col_type == "category":
             # Make sure categories are recreated properly
