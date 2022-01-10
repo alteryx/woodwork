@@ -40,6 +40,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.time_index
     WoodworkTableAccessor.to_disk
     WoodworkTableAccessor.to_dictionary
+    WoodworkTableAccessor.to_parquet
     WoodworkTableAccessor.types
     WoodworkTableAccessor.use_standard_tags
     WoodworkTableAccessor.value_counts
@@ -128,6 +129,7 @@ Deserialization
 .. autosummary::
     :toctree: generated/
 
+    read_parquet
     read_table_typing_information
     read_woodwork_table
 
