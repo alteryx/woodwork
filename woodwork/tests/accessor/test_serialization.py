@@ -760,6 +760,7 @@ def test_to_parquet_single_file(sample_df, tmpdir):
     sample_df.ww.init(
         name="test_data",
         index="full_name",
+        time_index="signup_date",
         semantic_tags={"id": "tag1"},
         logical_types={"age": Ordinal(order=[25, 33, 57])},
         column_descriptions={
