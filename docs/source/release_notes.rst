@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
-        * Add ``df.ww.to_parquet`` and ``ww.read_parquet`` methods to read/write a Woodwork table to a single parquet file (:pr:`968`)
+        * Add ``df.ww.to_parquet`` and ``ww.read_parquet`` methods to read/write a Woodwork table to a single parquet file (:pr:`1243`)
     * Fixes
     * Changes
     * Documentation Changes
