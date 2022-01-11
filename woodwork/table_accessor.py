@@ -1182,14 +1182,14 @@ def _check_index(dataframe, index):
         raise ColumnNotPresentError(
             f"Specified index column `{index}` not found in dataframe"
         )
-    if (
-        index is not None
-        and isinstance(dataframe, pd.DataFrame)
-        and not dataframe[index].is_unique
-    ):
-        # User specifies an index that is in the dataframe but not unique
-        # Does not check for Dask as Dask does not support is_unique
-        raise IndexError("Index column must be unique")
+    if index is not None and isinstance(dataframe, pd.DataFrame):
+        # User specifies a dataframe index that is not unique or contains null values
+        # Does not check Dask dataframes to avoid pulling data into memory and Dask does not support is_unique
+        if not dataframe[index].is_unique:
+            raise IndexError("Index column must be unique")
+
+        if dataframe[index].isnull().any():
+            raise IndexError("Index contains null values")
 
 
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):

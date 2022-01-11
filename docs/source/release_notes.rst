@@ -10,13 +10,14 @@ Future Release
         * Add ``df.ww.to_parquet`` and ``ww.read_parquet`` methods to read/write a Woodwork table to a single parquet file (:pr:`1243`)
     * Fixes
     * Changes
+        * Prevent setting index that contains null values (:pr:`1239`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workfow to use PR number and run every 10 minutes (:pr:`1240`, :pr:`1241`)
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================

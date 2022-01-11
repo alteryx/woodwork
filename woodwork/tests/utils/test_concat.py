@@ -387,7 +387,7 @@ def test_concat_cols_validate_schema(mock_validate_accessor_params, sample_df):
 
 
 def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
-    sample_df.ww.init(index="id")
+    sample_df.ww.init()
 
     df1 = sample_df.ww.loc[[0, 1, 2], ["id", "full_name"]]
     df2 = sample_df.ww.loc[[1, 2, 3], ["signup_date", "email"]]
@@ -399,7 +399,7 @@ def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
             concat_columns([df1, df2])
 
     # If the dtype can handle nans, it won't change
-    sample_df.ww.init(index="id", logical_types={"id": "IntegerNullable"})
+    sample_df.ww.init(logical_types={"id": "IntegerNullable"})
 
     df1 = sample_df.ww.loc[[0, 1, 2], ["id", "full_name"]]
     df2 = sample_df.ww.loc[[1, 2, 3], ["signup_date", "email"]]

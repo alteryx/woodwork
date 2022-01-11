@@ -83,6 +83,9 @@ def test_check_index_errors(sample_df):
         with pytest.raises(LookupError, match=error_message):
             _check_index(sample_df, index="age")
 
+        with pytest.raises(IndexError, match="Index contains null values"):
+            _check_index(sample_df, index="email")
+
 
 def test_check_logical_types_errors(sample_df):
     error_message = "logical_types must be a dictionary"
@@ -2546,6 +2549,9 @@ def test_setitem_overwrite_column(sample_df):
 
 
 def test_maintain_column_order_on_type_changes(sample_df):
+    # removing null values to use email as index
+    sample_df = sample_df[sample_df["email"].notnull()]
+
     sample_df.ww.init()
     schema_df = sample_df.ww.copy()
 
@@ -2962,3 +2968,22 @@ def test_falsy_columns_in_partial_schema(falsy_names_df):
     assert new_df.ww.index == 0
     assert new_df.ww.time_index == ""
     assert new_df.ww.name == 0
+
+
+def test_nan_index_error(sample_df_pandas):
+    match = "Index contains null values"
+    with pytest.raises(IndexError, match=match):
+        sample_df_pandas.ww.init(index="email")
+
+    sample_df_pandas.ww.init()
+    with pytest.raises(IndexError, match=match):
+        sample_df_pandas.ww.set_index("email")
+
+    sample_df_pandas.ww.init(index="id", logical_types={"id": "Double"})
+    schema = sample_df_pandas.ww.schema
+
+    nan_df = sample_df_pandas.replace({3: float("nan")})
+    nan_df = nan_df.set_index("id", drop=False)
+
+    with pytest.raises(ValueError, match=match):
+        nan_df.ww.init_with_full_schema(schema)
