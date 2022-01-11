@@ -788,3 +788,13 @@ def test_to_parquet_single_file(sample_df, tmpdir):
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
     )
     assert deserialized_df.ww.schema == sample_df.ww.schema
+
+
+def test_to_parquet_single_file_default_pandas_name(sample_df_pandas, tmpdir):
+    sample_df_pandas.ww.init()
+    sample_df_pandas.ww.to_parquet(str(tmpdir))
+
+    deserialized_df = deserialize.read_parquet(str(tmpdir), "data.parquet")
+
+    pd.testing.assert_frame_equal(sample_df_pandas, deserialized_df)
+    assert deserialized_df.ww.schema == sample_df_pandas.ww.schema

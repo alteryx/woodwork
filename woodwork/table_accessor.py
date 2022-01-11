@@ -692,8 +692,7 @@ class WoodworkTableAccessor:
 
         Args:
             path (str): Location on disk to write to.
-            filename (str): Name of file to write. Optional for Dask dataframes. Defaults to `data.parquet`
-                if not specified for pandas dataframes.
+            filename (str): Name of file to write. Optional for Dask dataframes. Defaults to `data.parquet` if not specified for pandas dataframes.
         """
         serialize._save_parquet_file(self._dataframe, path, filename)
 
