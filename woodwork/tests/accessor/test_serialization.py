@@ -752,7 +752,7 @@ def test_earlier_schema_version():
 
 
 def test_to_parquet_single_file(sample_df, tmpdir):
-    if _is_koalas_dataframe:
+    if _is_koalas_dataframe(sample_df):
         pytest.skip("Skipping for now")
     sample_df.ww.init(
         name="test_data",
