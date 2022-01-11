@@ -752,12 +752,7 @@ def test_earlier_schema_version():
 
 
 def test_to_parquet_single_file(sample_df, tmpdir):
-    # if _is_dask_dataframe(sample_df):
-    #     # Dask errors with pd.NA in some partitions, but not others
-    #     sample_df["age"] = sample_df["age"].fillna(25)
-    import databricks.koalas as ks
-
-    if isinstance(sample_df, ks.DataFrame):
+    if _is_koalas_dataframe:
         pytest.skip("Skipping for now")
     sample_df.ww.init(
         name="test_data",
