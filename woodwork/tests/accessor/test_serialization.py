@@ -780,9 +780,6 @@ def test_to_parquet_single_file(sample_df, tmpdir):
     if _is_dask_dataframe(sample_df):
         lib = "dask"
         filename = None
-    # if _is_koalas_dataframe(sample_df):
-    #     lib = "koalas"
-    #     filename = None
 
     sample_df.ww.to_parquet(str(tmpdir), filename)
     deserialized_df = deserialize.read_parquet(str(tmpdir), filename, lib)

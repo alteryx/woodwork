@@ -16,7 +16,6 @@ from woodwork.serialize import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_none, import_or_raise
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
 
 
 def read_table_typing_information(path):
