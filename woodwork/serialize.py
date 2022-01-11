@@ -236,18 +236,6 @@ def _save_parquet_file(dataframe, path, filename):
     if _is_dask_dataframe(dataframe):
         ww_metadata = {"woodwork_metadata": json.dumps(ww_typing)}
         dataframe.to_parquet(path, custom_metadata=ww_metadata)
-    # elif _is_koalas_dataframe(dataframe):
-    #     dataframe.to_parquet(path)
-    #     parquet_files = glob.glob(os.path.join(path, "*.parquet"))
-    #     for parquet_file in parquet_files:
-    #         table = pq.read_table(parquet_file)
-    #         table_meta = table.schema.metadata
-    #         combined_metadata = {
-    #             "woodwork_metadata".encode(): json.dumps(ww_typing).encode(),
-    #             **table_meta,
-    #         }
-    #         table = table.replace_schema_metadata(combined_metadata)
-    #         pq.write_table(table, parquet_file)
     else:
         table = pa.Table.from_pandas(dataframe)
         table_meta = table.schema.metadata

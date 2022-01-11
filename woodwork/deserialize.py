@@ -234,13 +234,14 @@ def read_parquet(path, filename, lib="pandas"):
     """
     Read data from the parquet file at the location specified by `path`
     with the filename specified by `filename`. Will initialize Woodwork using
-    the typing information stored in the parquet file metadata, if present.
+    the typing information stored in the parquet file metadata. If typing info
+    is not present, will initialize Woodwork without any arguments.
 
     Args:
         path (str): Location on disk to read from.
-        filename (str): Name of file to read.
+        filename (str): Name of file to read. Will be ignored if reading dataframe with Dask.
         lib (str): Name of library to use for reading data. Defaults to pandas.
-            Should be one of ["pandas", "dask", "koalas"]
+            Should be one of ["pandas", "dask"]
     """
     import pyarrow as pa
 
@@ -249,20 +250,19 @@ def read_parquet(path, filename, lib="pandas"):
         # Read the metadata from the first parquet file in the directory
         meta_filepath = glob.glob(os.path.join(path, "*.parquet"))[0]
         file_metadata = pa.parquet.read_metadata(meta_filepath)
-    # elif lib == "koalas":
-    #     filepath = os.path.join(path, "*.parquet")
-    #     dataframe = ks.read_parquet(filepath)
-    #     # Read the metadata from the first parquet file in the directory
-    #     meta_filepath = glob.glob(filepath)[0]
-    #     file_metadata = pa.parquet.read_metadata(meta_filepath)
     else:
         filepath = os.path.join(path, filename)
         dataframe = pd.read_parquet(filepath)
         file_metadata = pa.parquet.read_metadata(filepath)
 
-    table_typing_info = json.loads(file_metadata.metadata[b"woodwork_metadata"])
-    init_params = _typing_info_to_init_params(table_typing_info)
+    ww_metadata = file_metadata.metadata.get(b"woodwork_metadata")
+    init_params = {}
+    validate = True
+    if ww_metadata is not None:
+        table_typing_info = json.loads(ww_metadata)
+        init_params = _typing_info_to_init_params(table_typing_info)
+        validate = False
 
-    dataframe.ww.init(**init_params, validate=False)
+    dataframe.ww.init(**init_params, validate=validate)
 
     return dataframe

@@ -802,3 +802,29 @@ def test_to_parquet_single_file_default_pandas_name(sample_df_pandas, tmpdir):
 
     pd.testing.assert_frame_equal(sample_df_pandas, deserialized_df)
     assert deserialized_df.ww.schema == sample_df_pandas.ww.schema
+
+
+def test_read_parquet_without_ww_info(sample_df, tmpdir):
+    if _is_koalas_dataframe(sample_df):
+        pytest.skip("Not supported for Koalas yet")
+
+    if _is_dask_dataframe(sample_df):
+        lib = "dask"
+        filename = None
+        savepath = str(tmpdir)
+    else:
+        lib = "pandas"
+        filename = "pandas.parquet"
+        savepath = os.path.join(str(tmpdir), filename)
+
+    # Save a parquet file without WW info
+    sample_df.to_parquet(savepath)
+    deserialized_df = deserialize.read_parquet(str(tmpdir), filename, lib)
+
+    # If no WW info is found in parquet file, init will be called without arguments
+    sample_df.ww.init()
+    pd.testing.assert_frame_equal(
+        to_pandas(deserialized_df, sort_index=True),
+        to_pandas(sample_df, sort_index=True),
+    )
+    assert deserialized_df.ww.schema == sample_df.ww.schema
