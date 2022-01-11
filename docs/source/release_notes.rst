@@ -9,13 +9,14 @@ Future Release
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
     * Fixes
     * Changes
+        * Prevent setting index that contains null values (:pr:`1239`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workfow to use PR number and run every 10 minutes (:pr:`1240`, :pr:`1241`)
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 v0.11.1 Jan 4, 2022
 ===================

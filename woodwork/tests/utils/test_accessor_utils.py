@@ -253,16 +253,20 @@ def test_get_invalid_schema_message_index_checks(sample_df):
         == "Index column is not unique"
     )
 
-    nan_df = pd.DataFrame(
+    df = pd.DataFrame(
         {
-            "id": pd.Series([5, 4, None, 2], dtype="float64"),
+            "id": pd.Series([5, 4, 3, 2], dtype="float64"),
             "col": pd.Series(["b", "b", "b", "d"], dtype="category"),
         }
     )
-    nan_df.ww.init(index="id")
-    nan_df_schema = nan_df.ww.schema
+    df.ww.init(index="id")
+    df_schema = df.ww.schema
 
-    assert get_invalid_schema_message(nan_df, nan_df_schema) is None
+    nan_df = df.replace({3: None})
+    nan_df["id"] = nan_df["id"].astype("float64")
+    nan_df = nan_df.set_index("id", drop=False)
+    actual = get_invalid_schema_message(nan_df, df_schema)
+    assert actual == "Index contains null values"
 
 
 def test_is_schema_valid_true(sample_df):
