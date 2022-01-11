@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import tarfile
@@ -6,6 +7,7 @@ import warnings
 from itertools import zip_longest
 from pathlib import Path
 
+import dask.dataframe as dd
 import pandas as pd
 
 import woodwork as ww
@@ -226,23 +228,29 @@ def _typing_info_to_init_params(typing_info):
     }
 
 
-def read_parquet(path, filename, profile_name):
-    """Read data from the specified parquet file and initialize Woodwork using
-    the typing information stored in the parquet file metadata."""
+def read_parquet(path, filename, lib="pandas"):
+    """
+    Read data from the parquet file at the location specified by `path`
+    with the filename specified by `filename. Will initialize Woodwork using
+    the typing information stored in the parquet file metadata, if present.
+
+    Args:
+        path (str): Location on disk to read from.
+        filename (str): Name of file to read.
+        lib (str): Name of library to use for reading data. Defaults to pandas.
+            Should be one of ["pandas", "dask", "koalas"]
+    """
     import pyarrow as pa
 
-    if _is_s3(path):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            filepath = os.path.join(tmpdir, filename)
-            transport_params = get_transport_params(profile_name)
-            use_smartopen(filepath, path, transport_params)
-
-            dataframe = pd.read_parquet(filepath)
-            file_metadata = pa.parquet.read_metadata(filepath)
-    else:
+    if lib == "pandas":
         filepath = os.path.join(path, filename)
         dataframe = pd.read_parquet(filepath)
         file_metadata = pa.parquet.read_metadata(filepath)
+    elif lib == "dask":
+        dataframe = dd.read_parquet(path)
+        # Read the metadata from the first parquet file in the directory
+        meta_filepath = glob.glob(os.path.join(path, "*.parquet"))[0]
+        file_metadata = pa.parquet.read_metadata(meta_filepath)
 
     table_typing_info = json.loads(file_metadata.metadata[b"woodwork_metadata"])
     init_params = _typing_info_to_init_params(table_typing_info)
