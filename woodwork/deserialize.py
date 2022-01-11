@@ -231,15 +231,15 @@ def _typing_info_to_init_params(typing_info):
 
 def read_parquet(path, filename, lib="pandas"):
     """
-    Read data from the parquet file at the location specified by `path`
-    with the filename specified by `filename`. Will initialize Woodwork using
+    Read data from the parquet file at the location specified by ``path``
+    with the filename specified by ``filename``. Will initialize Woodwork using
     the typing information stored in the parquet file metadata. If typing info
     is not present, will initialize Woodwork without any arguments.
 
     Args:
         path (str): Location on disk to read from.
         filename (str): Name of file to read. Will be ignored if reading dataframe with Dask.
-        lib (str): Name of library to use for reading data. Defaults to pandas.
+        lib (str): Name of library to use for reading data. Defaults to ``pandas``.
             Should be one of ["pandas", "dask"]
     """
     import pyarrow as pa

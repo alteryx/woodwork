@@ -683,8 +683,8 @@ class WoodworkTableAccessor:
 
     @_check_table_schema
     def to_parquet(self, path, filename=None):
-        """Write Woodwork table to disk as a parquet file at the location specified by `path`, with
-        the filename specified by `filename`. All Woodwork typing information will be stored in the
+        """Write Woodwork table to disk as a parquet file at the location specified by ``path``, with
+        the filename specified by ``filename``. All Woodwork typing information will be stored in the
         parquet file metadata. Only supported for pandas and Dask DataFrames.
 
         Note:
@@ -693,7 +693,7 @@ class WoodworkTableAccessor:
         Args:
             path (str): Location on disk to write to.
             filename (str): Name of file to write. Optional for Dask dataframes, and will be ignored if provided.
-                Defaults to `data.parquet` if not specified for pandas dataframes.
+                Defaults to ``data.parquet`` if not specified for pandas dataframes.
         """
         serialize._save_parquet_file(self._dataframe, path, filename)
 
