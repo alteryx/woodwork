@@ -249,12 +249,12 @@ def read_parquet(path, filename, lib="pandas"):
         # Read the metadata from the first parquet file in the directory
         meta_filepath = glob.glob(os.path.join(path, "*.parquet"))[0]
         file_metadata = pa.parquet.read_metadata(meta_filepath)
-    elif lib == "koalas":
-        filepath = os.path.join(path, "*.parquet")
-        dataframe = ks.read_parquet(filepath)
-        # Read the metadata from the first parquet file in the directory
-        meta_filepath = glob.glob(filepath)[0]
-        file_metadata = pa.parquet.read_metadata(meta_filepath)
+    # elif lib == "koalas":
+    #     filepath = os.path.join(path, "*.parquet")
+    #     dataframe = ks.read_parquet(filepath)
+    #     # Read the metadata from the first parquet file in the directory
+    #     meta_filepath = glob.glob(filepath)[0]
+    #     file_metadata = pa.parquet.read_metadata(meta_filepath)
     else:
         filepath = os.path.join(path, filename)
         dataframe = pd.read_parquet(filepath)
