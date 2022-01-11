@@ -226,15 +226,25 @@ def _typing_info_to_init_params(typing_info):
     }
 
 
-def read_parquet(filepath):
+def read_parquet(path, filename, profile_name):
     """Read data from the specified parquet file and initialize Woodwork using
     the typing information stored in the parquet file metadata."""
     import pyarrow as pa
 
-    dataframe = pd.read_parquet(filepath)
-    file_metadata = pa.parquet.read_metadata(filepath)
-    table_typing_info = json.loads(file_metadata.metadata[b"woodwork_metadata"])
+    if _is_s3(path):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = os.path.join(tmpdir, filename)
+            transport_params = get_transport_params(profile_name)
+            use_smartopen(filepath, path, transport_params)
 
+            dataframe = pd.read_parquet(filepath)
+            file_metadata = pa.parquet.read_metadata(filepath)
+    else:
+        filepath = os.path.join(path, filename)
+        dataframe = pd.read_parquet(filepath)
+        file_metadata = pa.parquet.read_metadata(filepath)
+
+    table_typing_info = json.loads(file_metadata.metadata[b"woodwork_metadata"])
     init_params = _typing_info_to_init_params(table_typing_info)
 
     dataframe.ww.init(**init_params, validate=False)

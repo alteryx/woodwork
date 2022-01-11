@@ -777,13 +777,35 @@ def test_to_parquet_single_file(sample_df, tmpdir):
             "age": {"interesting_values": [33, 57]},
         },
     )
-    filepath = os.path.join(str(tmpdir), "sample_df.parquet")
-    sample_df.ww.to_parquet(filepath)
+    sample_df.ww.to_parquet(str(tmpdir), "sample_df.parquet")
 
-    deserialized_df = deserialize.read_parquet(filepath)
+    deserialized_df = deserialize.read_parquet(str(tmpdir), "sample_df.parquet")
 
     pd.testing.assert_frame_equal(
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
     )
     assert deserialized_df.ww.schema == sample_df.ww.schema
+
+
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_parquet_single_file(
+    sample_df, s3_client, s3_bucket, profile_name
+):
+    if not isinstance(sample_df, pd.DataFrame):
+        pytest.skip("Skipping for now")
+    xfail_tmp_disappears(sample_df)
+
+    sample_df.ww.init()
+    sample_df.ww.to_parquet(TEST_S3_URL, "sample_df.parquet", profile_name=profile_name)
+
+    make_public(s3_client, s3_bucket)
+    deserialized_df = deserialize.read_parquet(
+        TEST_S3_URL, "sample_df.parquet", profile_name=profile_name
+    )
+
+    pd.testing.assert_frame_equal(
+        to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+        to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+    )
+    assert sample_df.ww.schema == deserialized_df.ww.schema
