@@ -752,8 +752,6 @@ def test_earlier_schema_version():
 
 
 def test_to_parquet_single_file(sample_df, tmpdir):
-    if _is_koalas_dataframe(sample_df):
-        pytest.skip("Skipping for now")
     sample_df.ww.init(
         name="test_data",
         index="full_name",
@@ -774,15 +772,19 @@ def test_to_parquet_single_file(sample_df, tmpdir):
             "age": {"interesting_values": [33, 57]},
         },
     )
-    sample_df.ww.to_parquet(str(tmpdir), "sample_df.parquet")
 
     lib = "pandas"
+    filename = "sample_df.parquet"
     if _is_dask_dataframe(sample_df):
         lib = "dask"
-    deserialized_df = deserialize.read_parquet(
-        str(tmpdir), "sample_df.parquet", lib=lib
-    )
+        filename = None
+    if _is_koalas_dataframe(sample_df):
+        lib = "koalas"
+        filename = None
 
+    sample_df.ww.to_parquet(str(tmpdir), filename)
+    deserialized_df = deserialize.read_parquet(str(tmpdir), filename, lib)
+    breakpoint()
     pd.testing.assert_frame_equal(
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),

@@ -16,6 +16,7 @@ from woodwork.serialize import FORMATS, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_none, import_or_raise
 
 dd = import_or_none("dask.dataframe")
+ks = import_or_none("databricks.koalas")
 
 
 def read_table_typing_information(path):
@@ -243,15 +244,21 @@ def read_parquet(path, filename, lib="pandas"):
     """
     import pyarrow as pa
 
-    if lib == "pandas":
-        filepath = os.path.join(path, filename)
-        dataframe = pd.read_parquet(filepath)
-        file_metadata = pa.parquet.read_metadata(filepath)
-    elif lib == "dask":
+    if lib == "dask":
         dataframe = dd.read_parquet(path)
         # Read the metadata from the first parquet file in the directory
         meta_filepath = glob.glob(os.path.join(path, "*.parquet"))[0]
         file_metadata = pa.parquet.read_metadata(meta_filepath)
+    elif lib == "koalas":
+        filepath = os.path.join(path, "*.parquet")
+        dataframe = ks.read_parquet(filepath)
+        # Read the metadata from the first parquet file in the directory
+        meta_filepath = glob.glob(filepath)[0]
+        file_metadata = pa.parquet.read_metadata(meta_filepath)
+    else:
+        filepath = os.path.join(path, filename)
+        dataframe = pd.read_parquet(filepath)
+        file_metadata = pa.parquet.read_metadata(filepath)
 
     table_typing_info = json.loads(file_metadata.metadata[b"woodwork_metadata"])
     init_params = _typing_info_to_init_params(table_typing_info)
