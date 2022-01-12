@@ -240,9 +240,7 @@ class TableSchema(object):
 
             # Set new semantic tags, removing existing tags
             new_semantic_tags = semantic_tags.get(col_name)
-            if new_semantic_tags is None:
-                self.columns[col_name]._reset_semantic_tags()
-            else:
+            if new_semantic_tags is not None:
                 self.columns[col_name]._set_semantic_tags(new_semantic_tags)
                 _validate_not_setting_index_tags(self.semantic_tags[col_name], col_name)
 
