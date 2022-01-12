@@ -225,7 +225,7 @@ def save_orc_file(dataframe, filepath):
     orc.write_table(pa_table, filepath)
 
 
-def _save_parquet_file(dataframe, path, filename):
+def _save_parquet_file(dataframe, path, filename, profile_name):
     """Write a Woodwork dataframe to disk, saving typing information in
     the parquet file metadata."""
     import pyarrow as pa
@@ -237,6 +237,8 @@ def _save_parquet_file(dataframe, path, filename):
         ww_metadata = {"woodwork_metadata": json.dumps(ww_typing)}
         dataframe.to_parquet(path, custom_metadata=ww_metadata)
     else:
+        if filename is None:
+            filename = "data.parquet"
         table = pa.Table.from_pandas(dataframe)
         table_meta = table.schema.metadata
         combined_metadata = {
@@ -244,7 +246,20 @@ def _save_parquet_file(dataframe, path, filename):
             **table_meta,
         }
         table = table.replace_schema_metadata(combined_metadata)
-        if filename is None:
-            filename = "data.parquet"
-        filepath = os.path.join(path, filename)
-        pq.write_table(table, filepath)
+
+        if _is_s3(path):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                local_filepath = os.path.join(tmpdir, filename)
+                s3_path = f"{path}/{filename}"
+                pq.write_table(table, local_filepath)
+
+                transport_params = get_transport_params(profile_name)
+                use_smartopen(
+                    local_filepath,
+                    s3_path,
+                    read=False,
+                    transport_params=transport_params,
+                )
+        else:
+            filepath = os.path.join(path, filename)
+            pq.write_table(table, filepath)

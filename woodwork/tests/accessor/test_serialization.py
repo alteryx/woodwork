@@ -825,3 +825,20 @@ def test_read_parquet_without_ww_info(sample_df, tmpdir):
         to_pandas(sample_df, sort_index=True),
     )
     assert deserialized_df.ww.schema == sample_df.ww.schema
+
+
+@pytest.mark.parametrize("profile_name", [None, False])
+def test_serialize_s3_to_parquet_single_file(
+    sample_df_pandas, s3_client, s3_bucket, profile_name
+):
+    sample_df_pandas.ww.init()
+    filename = "s3_test.parquet"
+    sample_df_pandas.ww.to_parquet(TEST_S3_URL, filename, profile_name=profile_name)
+    make_public(s3_client, s3_bucket)
+
+    deserialized_df = deserialize.read_parquet(
+        TEST_S3_URL, filename, profile_name=profile_name
+    )
+
+    pd.testing.assert_frame_equal(sample_df_pandas, deserialized_df)
+    assert sample_df_pandas.ww.schema == deserialized_df.ww.schema

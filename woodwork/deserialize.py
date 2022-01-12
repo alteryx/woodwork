@@ -229,7 +229,7 @@ def _typing_info_to_init_params(typing_info):
     }
 
 
-def read_parquet(path, filename, lib="pandas"):
+def read_parquet(path, filename, lib="pandas", profile_name=None):
     """
     Read data from the parquet file at the location specified by ``path``
     with the filename specified by ``filename``. Will initialize Woodwork using
@@ -241,6 +241,7 @@ def read_parquet(path, filename, lib="pandas"):
         filename (str): Name of file to read. Will be ignored if reading dataframe with Dask.
         lib (str): Name of library to use for reading data. Defaults to ``pandas``.
             Should be one of ["pandas", "dask"]
+        profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
     """
     import pyarrow as pa
 
@@ -250,9 +251,20 @@ def read_parquet(path, filename, lib="pandas"):
         meta_filepath = glob.glob(os.path.join(path, "*.parquet"))[0]
         file_metadata = pa.parquet.read_metadata(meta_filepath)
     else:
-        filepath = os.path.join(path, filename)
-        dataframe = pd.read_parquet(filepath)
-        file_metadata = pa.parquet.read_metadata(filepath)
+        if _is_s3(path):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                local_filepath = os.path.join(tmpdir, filename)
+                s3_path = f"{path}/{filename}"
+                transport_params = None
+                transport_params = get_transport_params(profile_name)
+
+                use_smartopen(local_filepath, s3_path, transport_params)
+                dataframe = pd.read_parquet(local_filepath)
+                file_metadata = pa.parquet.read_metadata(local_filepath)
+        else:
+            filepath = os.path.join(path, filename)
+            dataframe = pd.read_parquet(filepath)
+            file_metadata = pa.parquet.read_metadata(filepath)
 
     ww_metadata = file_metadata.metadata.get(b"woodwork_metadata")
     init_params = {}
