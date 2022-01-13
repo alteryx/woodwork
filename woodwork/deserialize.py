@@ -12,7 +12,7 @@ import pandas as pd
 import woodwork as ww
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serialize import FORMATS, SCHEMA_VERSION
+from woodwork.serialize import FORMATS, METADATA_KEY, SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_none, import_or_raise
 
 dd = import_or_none("dask.dataframe")
@@ -250,23 +250,22 @@ def read_parquet(path, filename, lib="pandas", profile_name=None):
         # Read the metadata from the first parquet file in the directory
         meta_filepath = glob.glob(os.path.join(path, "*.parquet"))[0]
         file_metadata = pa.parquet.read_metadata(meta_filepath)
+    elif _is_s3(path):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            local_filepath = os.path.join(tmpdir, filename)
+            s3_path = f"{path}/{filename}"
+            transport_params = None
+            transport_params = get_transport_params(profile_name)
+
+            use_smartopen(local_filepath, s3_path, transport_params)
+            dataframe = pd.read_parquet(local_filepath)
+            file_metadata = pa.parquet.read_metadata(local_filepath)
     else:
-        if _is_s3(path):
-            with tempfile.TemporaryDirectory() as tmpdir:
-                local_filepath = os.path.join(tmpdir, filename)
-                s3_path = f"{path}/{filename}"
-                transport_params = None
-                transport_params = get_transport_params(profile_name)
+        filepath = os.path.join(path, filename)
+        dataframe = pd.read_parquet(filepath)
+        file_metadata = pa.parquet.read_metadata(filepath)
 
-                use_smartopen(local_filepath, s3_path, transport_params)
-                dataframe = pd.read_parquet(local_filepath)
-                file_metadata = pa.parquet.read_metadata(local_filepath)
-        else:
-            filepath = os.path.join(path, filename)
-            dataframe = pd.read_parquet(filepath)
-            file_metadata = pa.parquet.read_metadata(filepath)
-
-    ww_metadata = file_metadata.metadata.get(b"woodwork_metadata")
+    ww_metadata = file_metadata.metadata.get(str.encode(METADATA_KEY))
     init_params = {}
     validate = True
     if ww_metadata is not None:

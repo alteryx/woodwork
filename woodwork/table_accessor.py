@@ -688,7 +688,9 @@ class WoodworkTableAccessor:
         parquet file metadata. Only supported for pandas and Dask DataFrames.
 
         Note:
-            As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used.
+            As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used. Also,
+            users should take care if modifying the parquet file metadata, as changes to the information
+            written by Woodwork could prevent the data from being deserialized correctly.
 
         Args:
             path (str): Location on disk to write to.
