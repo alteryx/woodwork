@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from woodwork.exceptions import WoodworkNotInitError
+from woodwork.type_sys.type_system import VALIDATE_SAMPLE_SIZE
 from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
@@ -59,7 +60,7 @@ def init_series(
             )
     logical_type = _get_column_logical_type(series, logical_type, series.name)
     new_series = logical_type.transform(series)
-    logical_type.validate(new_series)
+    logical_type.validate(new_series.head(VALIDATE_SAMPLE_SIZE))
     new_series.ww.init(
         logical_type=logical_type,
         semantic_tags=semantic_tags,

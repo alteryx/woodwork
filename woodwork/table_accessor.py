@@ -30,6 +30,7 @@ from woodwork.statistics_utils import (
     _infer_temporal_frequencies,
 )
 from woodwork.table_schema import TableSchema
+from woodwork.type_sys.type_system import VALIDATE_SAMPLE_SIZE
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
 from woodwork.utils import (
@@ -541,7 +542,7 @@ class WoodworkTableAccessor:
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
             updated_series = logical_type.transform(series)
-            logical_type.validate(updated_series)
+            logical_type.validate(updated_series.head(VALIDATE_SAMPLE_SIZE))
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
