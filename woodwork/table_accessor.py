@@ -541,6 +541,7 @@ class WoodworkTableAccessor:
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
             updated_series = logical_type.transform(series)
+            logical_type.validate(updated_series)
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
@@ -1247,7 +1248,9 @@ def _infer_missing_logical_types(
         parsed_logical_types[name] = _get_column_logical_type(
             series, logical_type, name
         )
-        updated_series = parsed_logical_types[name].transform(series)
+        parsed_logical_type = parsed_logical_types[name]
+        updated_series = parsed_logical_type.transform(series)
+        parsed_logical_type.validate(updated_series)
         if updated_series is not series:
             dataframe[name] = updated_series
     return parsed_logical_types

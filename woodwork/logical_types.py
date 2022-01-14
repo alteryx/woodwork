@@ -64,6 +64,9 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
                 raise TypeConversionError(series, new_dtype, type(self))
         return series
 
+    def validate(self, series):
+        return
+
 
 class Address(LogicalType):
     """Represents Logical Types that contain address values.
@@ -305,6 +308,13 @@ class EmailAddress(LogicalType):
     """
 
     primary_dtype = "string"
+
+    def validate(self, series):
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        invalid = ~series.str.fullmatch(regex).astype('boolean')
+
+        if invalid.any():
+            raise ValueError('email address not understood')
 
 
 class Filepath(LogicalType):
