@@ -5,7 +5,14 @@ import pytest
 
 from woodwork.accessor_utils import _is_koalas_series
 from woodwork.exceptions import TypeConversionWarning
-from woodwork.logical_types import Boolean, Categorical, Datetime, EmailAddress, LatLong, Ordinal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    EmailAddress,
+    LatLong,
+    Ordinal,
+)
 
 
 def test_logical_eq():
@@ -191,5 +198,5 @@ def test_ordinal_transform(sample_series):
 
 def test_email_address_validate():
     series = pd.Series(["bad_email", "good@google.com", pd.NA])
-    with pytest.raises(ValueError, match='email address not understood'):
+    with pytest.raises(ValueError, match="email address not understood"):
         EmailAddress().validate(series)

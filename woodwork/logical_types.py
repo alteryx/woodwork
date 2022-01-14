@@ -310,11 +310,11 @@ class EmailAddress(LogicalType):
     primary_dtype = "string"
 
     def validate(self, series):
-        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        invalid = ~series.str.fullmatch(regex).astype('boolean')
+        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        invalid = ~series.str.fullmatch(regex).astype("boolean")
 
         if invalid.any():
-            raise ValueError('email address not understood')
+            raise ValueError("email address not understood")
 
 
 class Filepath(LogicalType):
