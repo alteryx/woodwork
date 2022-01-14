@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
+        * Validate email address logical types (:pr:`1247`)
     * Fixes
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
