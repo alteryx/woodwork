@@ -18,6 +18,7 @@ CONFIG_DEFAULTS = {
 """.splitlines()
     ),
 }
+VALIDATE_SAMPLE_SIZE = 100000
 
 
 class Config:

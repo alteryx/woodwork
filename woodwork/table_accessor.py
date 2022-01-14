@@ -14,6 +14,7 @@ from woodwork.accessor_utils import (
     get_invalid_schema_message,
     init_series,
 )
+from woodwork.config import VALIDATE_SAMPLE_SIZE
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,
@@ -30,7 +31,6 @@ from woodwork.statistics_utils import (
     _infer_temporal_frequencies,
 )
 from woodwork.table_schema import TableSchema
-from woodwork.type_sys.type_system import VALIDATE_SAMPLE_SIZE
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
 from woodwork.utils import (
