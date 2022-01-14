@@ -265,7 +265,7 @@ def read_parquet(path, filename, lib="pandas", profile_name=None):
         dataframe = pd.read_parquet(filepath)
         file_metadata = pa.parquet.read_metadata(filepath)
 
-    ww_metadata = file_metadata.metadata.get(str.encode(METADATA_KEY))
+    ww_metadata = file_metadata.metadata.get(METADATA_KEY)
     init_params = {}
     validate = True
     if ww_metadata is not None:

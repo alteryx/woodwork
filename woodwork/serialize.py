@@ -14,7 +14,7 @@ from woodwork.utils import _is_s3, _is_url
 
 SCHEMA_VERSION = "11.3.0"
 FORMATS = ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
-METADATA_KEY = "_woodwork_metadata"
+METADATA_KEY = b"_woodwork_metadata"
 
 
 def typing_info_to_dict(dataframe):
@@ -241,12 +241,9 @@ def _save_parquet_file(dataframe, path, filename, profile_name):
         if filename is None:
             filename = "data.parquet"
         table = pa.Table.from_pandas(dataframe)
-        table_meta = table.schema.metadata
-        combined_metadata = {
-            METADATA_KEY.encode(): json.dumps(ww_typing).encode(),
-            **table_meta,
-        }
-        table = table.replace_schema_metadata(combined_metadata)
+        new_metadata = table.schema.metadata
+        new_metadata[METADATA_KEY] = json.dumps(ww_typing).encode()
+        table = table.replace_schema_metadata(new_metadata)
 
         if _is_s3(path):
             with tempfile.TemporaryDirectory() as tmpdir:
