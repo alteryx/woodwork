@@ -49,13 +49,12 @@ jobs:
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_dask_dependencies.txt
         cat woodwork/tests/requirement_files/latest_dask_dependencies.txt
     - name: Create Pull Request
-      id: cpr
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.REPO_SCOPED_TOKEN }}
         commit-message: Update latest dependencies
         title: Automated Latest Dependency Updates
-        author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+        author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
         body: "This is an auto-generated PR with **latest** dependency updates.
                Please do not delete the `latest-dep-update` branch because it's needed by the auto-dependency bot."
         branch: latest-dep-update

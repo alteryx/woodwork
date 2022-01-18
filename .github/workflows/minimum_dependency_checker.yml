@@ -79,16 +79,16 @@ jobs:
         run: |
           printf "${{ steps.min_dep_gen_dask.outputs.min_reqs }}" > woodwork/tests/requirement_files/minimum_dask_requirements.txt
       - name: Create Pull Request
-        id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.REPO_SCOPED_TOKEN }}
           commit-message: Update minimum dependencies
           title: Automated Minimum Dependency Updates
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           body: "This is an auto-generated PR with **minimum** dependency updates.
                  Please do not delete the `min-dep-update` branch because it's needed by the auto-dependency bot."
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
+          assignees: machineFL
+          reviewers: machineAYX
