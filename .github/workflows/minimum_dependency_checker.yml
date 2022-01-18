@@ -79,7 +79,6 @@ jobs:
         run: |
           printf "${{ steps.min_dep_gen_dask.outputs.min_reqs }}" > woodwork/tests/requirement_files/minimum_dask_requirements.txt
       - name: Create Pull Request
-        id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.REPO_SCOPED_TOKEN }}
