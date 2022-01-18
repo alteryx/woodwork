@@ -84,10 +84,11 @@ jobs:
           token: ${{ secrets.REPO_SCOPED_TOKEN }}
           commit-message: Update minimum dependencies
           title: Automated Minimum Dependency Updates
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           body: "This is an auto-generated PR with **minimum** dependency updates.
                  Please do not delete the `min-dep-update` branch because it's needed by the auto-dependency bot."
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez, tuethan1999, davesque
+          assignees: machineFL
+          reviewers: machineAYX
