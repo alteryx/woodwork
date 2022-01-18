@@ -1,8 +1,13 @@
 name: Auto Approve Dependency PRs
 on:
-  schedule:
-    - cron: '*/10 * * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Unit Tests - Latest Dependencies", "3.7 unit tests minimum dependencies"]
+    branches:    
+      - 'latest-dep-update-[a-f0-9]+'
+      - 'min-dep-update-[a-f0-9]+'
+    types:
+      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,11 +22,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
       - name: Approve dependency PRs and enable auto-merge
-        id: approve_prs
         if: ${{ steps.find_prs.outputs.dep_pull_request > 1 }}
         run: |
           gh pr review --repo "${{ github.repository }}" --comment --body "auto approve" ${{ steps.find_prs.outputs.dep_pull_request }}
           gh pr review --repo "${{ github.repository }}" --approve ${{ steps.find_prs.outputs.dep_pull_request }}
-          gh pr merge --repo "${{ github.repository }}" --auto --squash ${{ steps.find_prs.outputs.dep_pull_request }}
+          gh pr merge --repo "${{ github.repository }}" --auto --squash --delete-branch ${{ steps.find_prs.outputs.dep_pull_request }}
         env:
           GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
