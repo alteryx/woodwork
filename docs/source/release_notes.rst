@@ -12,7 +12,8 @@ Future Release
         * Prevent setting index that contains null values (:pr:`1239`)
     * Documentation Changes
     * Testing Changes
-        * Change auto approve workfow to use PR number and run every 10 minutes (:pr:`1240`, :pr:`1241`)
+        * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
+        * Update auto approve workflow to delete branch and change on trigger (:pr:`1251`)
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
