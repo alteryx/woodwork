@@ -8,7 +8,7 @@ Future Release
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
     * Fixes
-        * Fixed issue with tuples being incorrectly inferred as EmailAddress
+        * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
     * Documentation Changes
