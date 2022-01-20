@@ -17,7 +17,7 @@ from woodwork.logical_types import (
     PhoneNumber,
     Unknown,
 )
-from woodwork.utils import import_or_non
+from woodwork.utils import import_or_none
 
 
 @pytest.fixture(scope="session", autouse=True)
