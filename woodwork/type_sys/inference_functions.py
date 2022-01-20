@@ -117,6 +117,7 @@ class InferWithRegex:
         self.get_regex = get_regex
 
     def __call__(self, series: pd.Series) -> bool:
+        series = series.dropna()
         regex = self.get_regex()
 
         # Includes a check for object dtypes
@@ -133,7 +134,7 @@ class InferWithRegex:
             return False
         matches = series_match_method(pat=regex)
 
-        return matches.sum() == matches.count()
+        return matches.sum() == len(matches)
 
 
 email_address_func = InferWithRegex(

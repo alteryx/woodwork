@@ -150,6 +150,9 @@ def bad_pandas_emails():
         pd.Series(["fl@alteryx.com", "b☃d@email.com", "good@email.com", np.nan]),
         pd.Series(["fl@alteryx.com", "@email.com", "good@email.com", "foo@bar.com"]),
         pd.Series(["fl@alteryx.com", "bad@email", "good@email.com", np.nan]),
+        pd.Series([1, 2, 3, 4]).astype("int"),
+        pd.Series([{"key": "value"}]).astype("O"),
+        pd.Series([(1, 2), (3, 4)]).astype("O"),
     ]
 
 
