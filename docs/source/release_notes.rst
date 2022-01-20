@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
     * Fixes
+        * Fixed issue with tuples being incorrectly inferred as EmailAddress
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
     * Documentation Changes
@@ -17,7 +18,7 @@ Future Release
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`
 
 v0.11.1 Jan 4, 2022
 ===================
