@@ -3,24 +3,13 @@ import pandas as pd
 import pytest
 
 from woodwork.logical_types import Categorical, CountryCode, Double, Integer, Unknown
+from woodwork.tests.testing_utils import pd_to_dask, pd_to_koalas
 from woodwork.type_sys.inference_functions import (
     categorical_func,
     double_func,
     integer_func,
 )
 from woodwork.type_sys.type_system import TypeSystem
-
-
-def pd_to_dask(series):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(series, npartitions=2)
-
-
-def pd_to_koalas(series):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
-    )
-    return ks.from_pandas(series)
 
 
 # Integer Inference Fixtures
@@ -163,6 +152,7 @@ def bad_dask_emails(bad_pandas_emails):
 
 @pytest.fixture
 def bad_koalas_emails(bad_pandas_emails):
+
     return [pd_to_koalas(series) for series in bad_pandas_emails]
 
 
