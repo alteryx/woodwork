@@ -684,7 +684,6 @@ def test_describe_accessor_method(describe_df):
             semantic_tags={"latlong_col": "custom_tag"},
         )
         stats_df = latlong_data.ww.describe()
-
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {"latlong_col"}
         assert stats_df.index.tolist() == expected_index
