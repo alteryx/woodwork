@@ -241,8 +241,8 @@ def _reformat_to_latlong(latlong, use_list=False):
         latitude, longitude = map(_to_latlong_float, latlong)
 
         # (np.nan, np.nan) should be counted as a single null value
-        if pd.isnull(latitude) and pd.isnull(longitude):
-            return np.nan
+        # if pd.isnull(latitude) and pd.isnull(longitude):
+        #     return np.nan
 
         if use_list:
             return [latitude, longitude]
