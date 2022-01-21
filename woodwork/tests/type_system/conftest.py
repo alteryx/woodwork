@@ -153,7 +153,6 @@ def bad_dask_emails(bad_pandas_emails):
 
 @pytest.fixture
 def bad_koalas_emails(bad_pandas_emails):
-
     return [pd_to_koalas(series) for series in bad_pandas_emails]
 
 
