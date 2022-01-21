@@ -11,6 +11,7 @@ Future Release
         * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
+        * Allow tuple NaN LatLong values (:pr:`1255`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
