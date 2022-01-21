@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
         * Allow tuple NaN LatLong values (:pr:`1255`)
+        * Update ipython to 7.31.1 (:pr:`1258`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
