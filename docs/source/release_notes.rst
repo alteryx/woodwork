@@ -13,6 +13,7 @@ Future Release
         * Prevent setting index that contains null values (:pr:`1239`)
         * Update ipython to 7.31.1 (:pr:`1258`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1261`)
+        * Update to support pandas version 1.4.0 (:pr:`1264`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
