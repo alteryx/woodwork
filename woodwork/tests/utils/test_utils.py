@@ -37,6 +37,7 @@ from woodwork.utils import (
     _infer_datetime_format,
     _is_null_latlong,
     _is_s3,
+    _is_tuple_nan,
     _is_url,
     _is_valid_latlong_series,
     _is_valid_latlong_value,
@@ -522,3 +523,12 @@ def test_is_categorical() -> None:
     assert _is_categorical_series(pd.Series([1, 1]), 0.5)
     assert _is_categorical_series(pd.Series([1, 2, 1, 1]), 0.5)
     assert _is_categorical_series(pd.Series([1, 2, 3, 1]), 0.75)
+
+
+def test_is_tuple_nan():
+    assert (_is_tuple_nan((np.nan, np.nan)), True)
+    assert (_is_tuple_nan((np.nan, 2.0)), False)
+    assert (_is_tuple_nan((np.nan,)), True)
+    assert (_is_tuple_nan(np.nan), True)
+    assert (_is_tuple_nan((2.0, 3.0)), False)
+    assert (_is_tuple_nan("test"), False)

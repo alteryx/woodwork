@@ -3,7 +3,7 @@ from inspect import isclass
 
 import woodwork as ww
 from woodwork.exceptions import DuplicateTagsWarning, StandardTagsChangedWarning
-from woodwork.logical_types import Boolean, BooleanNullable, Datetime
+from woodwork.logical_types import Boolean, BooleanNullable, Datetime, LatLong
 from woodwork.utils import _convert_input_to_set
 
 
@@ -140,6 +140,11 @@ class ColumnSchema(object):
     def is_datetime(self):
         """Whether the ColumnSchema is a Datetime column"""
         return type(self.logical_type) == Datetime
+
+    @property
+    def is_latlong(self):
+        """Whether the ColumnSchema is a LatLong column"""
+        return type(self.logical_type) == LatLong
 
     @property
     def is_boolean(self):

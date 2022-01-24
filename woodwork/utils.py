@@ -539,3 +539,12 @@ def _replace_nan_strings(df):
         df[col] = replaced_series
 
     return df
+
+
+def _is_tuple_nan(value):
+    """Checks if a tuple contains all NaNs"""
+    if type(value) is tuple:
+        return all([pd.isna(x) for x in value])
+
+    else:
+        return pd.isna(value)
