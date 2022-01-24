@@ -12,11 +12,13 @@ Future Release
         * Add validation to EmailAddress logical type (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
         * Add validation to Age, AgeFractional, and AgeNullable logical types (:pr:`1289`)
+        * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
     * Fixes
         * Check range length in table stats without producing overflow error (:pr:`1287`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
         * Add back support for Python 3.7 (:pr:`1292`)
+        * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
