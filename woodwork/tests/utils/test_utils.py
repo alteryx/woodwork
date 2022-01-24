@@ -526,9 +526,9 @@ def test_is_categorical() -> None:
 
 
 def test_is_tuple_nan():
-    assert (_is_tuple_nan((np.nan, np.nan)), True)
-    assert (_is_tuple_nan((np.nan, 2.0)), False)
-    assert (_is_tuple_nan((np.nan,)), True)
-    assert (_is_tuple_nan(np.nan), True)
-    assert (_is_tuple_nan((2.0, 3.0)), False)
-    assert (_is_tuple_nan("test"), False)
+    assert _is_tuple_nan((np.nan, np.nan))
+    assert not _is_tuple_nan((np.nan, 2.0))
+    assert _is_tuple_nan((np.nan,))
+    assert _is_tuple_nan(np.nan)
+    assert not _is_tuple_nan((2.0, 3.0))
+    assert not _is_tuple_nan("test")
