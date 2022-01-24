@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
         * Update ipython to 7.31.1 (:pr:`1258`)
+        * Temporarily restrict pandas and koalas max versions (:pr:`1261`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
@@ -19,7 +20,7 @@ Future Release
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================
