@@ -2,6 +2,7 @@
 import pytest
 from .table_utils import (
     check_empty_box_plot_dict,
+    corr_between_cols,
     is_property,
     is_public_method,
     mi_between_cols,

@@ -23,8 +23,8 @@ from woodwork.exceptions import (
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
 from woodwork.statistics_utils import (
+    _get_dependence_dict,
     _get_describe_dict,
-    _get_mutual_information_dict,
     _get_valid_mi_columns,
     _get_value_counts,
     _infer_temporal_frequencies,
@@ -869,7 +869,13 @@ class WoodworkTableAccessor:
 
     @_check_table_schema
     def mutual_information_dict(
-        self, num_bins=10, nrows=None, include_index=False, callback=None
+        self,
+        num_bins=10,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
@@ -890,12 +896,18 @@ class WoodworkTableAccessor:
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
-
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  if True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe.
+            min_shared (int): the number of shared non-null rows needed to
+                calculate.  Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative.
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -903,12 +915,25 @@ class WoodworkTableAccessor:
             Mutual information values are between 0 (no mutual information) and 1
             (perfect dependency).
         """
-        return _get_mutual_information_dict(
-            self._dataframe, num_bins, nrows, include_index, callback
+        return _get_dependence_dict(
+            self._dataframe,
+            ["mutual"],
+            num_bins,
+            nrows,
+            include_index,
+            callback,
+            extra_stats,
+            min_shared,
         )
 
     def mutual_information(
-        self, num_bins=10, nrows=None, include_index=False, callback=None
+        self,
+        num_bins=10,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Use get_valid_mi_types to see which Logical Types support
@@ -928,13 +953,18 @@ class WoodworkTableAccessor:
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
             callback (callable, optional): function to be called with incremental updates. Has the following parameters:
-
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-
+            extra_stats (bool):  if True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe.
+            min_shared (int): the number of shared non-null rows needed to
+                calculate.  Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative.
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -942,9 +972,117 @@ class WoodworkTableAccessor:
             (perfect dependency).
         """
         mutual_info = self.mutual_information_dict(
-            num_bins, nrows, include_index, callback
+            num_bins, nrows, include_index, callback, extra_stats, min_shared
         )
         return pd.DataFrame(mutual_info)
+
+    @_check_table_schema
+    def pearson_correlation_dict(
+        self,
+        num_bins=10,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
+    ):
+        """
+        Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
+        support correlation. Use get_valid_dependence_types to see which Logical Types support
+        correlation:
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
+        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining correlation.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for correlation calculations.
+                If False, the index column will not have the Pearson correlation calculated for it.
+                Defaults to False.
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  if True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe.
+            min_shared (int): the number of shared non-null rows needed to
+                calculate.  Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative.
+
+        Returns:
+            list(dict): A list containing dictionaries that have keys `column_1`,
+            `column_2`, and `pearson` that is sorted in decending order by correlation coefficient.
+            Correlation coefficient values are between -1 and 1.
+        """
+        return _get_dependence_dict(
+            self._dataframe,
+            ["pearson"],
+            num_bins,
+            nrows,
+            include_index,
+            callback,
+            extra_stats,
+            min_shared,
+        )
+
+    def pearson_correlation(
+        self,
+        num_bins=10,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
+    ):
+        """Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
+        support correlation. Use get_valid_dependence_types to see which Logical Types support
+        correlation:
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
+        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
+
+        Args:
+            num_bins (int): Determines number of bins to use for converting
+                numeric features into categorical.
+            nrows (int): The number of rows to sample for when determining correlation.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for correlation calculations.
+                If False, the index column will not have the Pearson correlation calculated for it.
+                Defaults to False.
+            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  if True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe.
+            min_shared (int): the number of shared non-null rows needed to
+                calculate.  Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative.
+        Returns:
+            pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
+            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
+            Mutual information values are between 0 (no mutual information) and 1
+            (perfect dependency).
+        """
+        pearson_correlation = self.pearson_correlation_dict(
+            num_bins, nrows, include_index, callback, extra_stats, min_shared
+        )
+        return pd.DataFrame(pearson_correlation)
 
     def get_valid_mi_columns(self, include_index=False):
         """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual

@@ -1,11 +1,13 @@
+import warnings
 from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_integer_dtype
-from sklearn.metrics.cluster import normalized_mutual_info_score
+from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.exceptions import SparseDataWarning
 from woodwork.logical_types import Datetime, Double, LatLong, Timedelta
 from woodwork.utils import (
     _is_latlong_nan,
@@ -224,13 +226,13 @@ def _replace_nans_for_mutual_info(schema, data):
     return data
 
 
-def _make_categorical_for_mutual_info(schema, data, num_bins):
+def _bin_numeric_cols_into_categories(schema, data, num_bins):
     """Transforms dataframe columns into numeric categories so that
-    mutual information can be calculated
+    dependence can be calculated
 
     Args:
         schema (woodwork.TableSchema): Woodwork typing info for the data
-        data (pd.DataFrame): dataframe to use for calculating mutual information
+        data (pd.DataFrame): dataframe to use for calculating dependence
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.
 
@@ -242,11 +244,13 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
         column = schema.columns[col_name]
         if column.is_numeric:
             # bin numeric features to make categories
-            data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
+            data[col_name] = pd.qcut(
+                data[col_name].dropna(), num_bins, duplicates="drop"
+            )
         # Convert Datetimes to total seconds - an integer - and bin
         if column.is_datetime:
             data[col_name] = pd.qcut(
-                data[col_name].view("int64"), num_bins, duplicates="drop"
+                data[col_name].dropna().view("int64"), num_bins, duplicates="drop"
             )
         # convert categories to integers
         new_col = data[col_name]
@@ -256,26 +260,40 @@ def _make_categorical_for_mutual_info(schema, data, num_bins):
     return data
 
 
-def _get_mutual_information_dict(
-    dataframe, num_bins=10, nrows=None, include_index=False, callback=None
+def _get_dependence_dict(
+    dataframe,
+    measure,
+    num_bins=10,
+    nrows=None,
+    include_index=False,
+    callback=None,
+    extra_stats=False,
+    min_shared=25,
 ):
-    """Calculates mutual information between all pairs of columns in the DataFrame that
-    support mutual information. Logical Types that support mutual information are as
+    """Calculates dependence measures between all pairs of columns in the DataFrame that
+    support measuring dependence. Logical Types that are supported are as
     follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
     PostalCode, and SubRegionCode
 
     Args:
         dataframe (pd.DataFrame): Data containing Woodwork typing information
-            from which to calculate mutual information.
+            from which to calculate dependence.
+        measure (list or str): which dependence measures to calculate.
+            A list of measures can be provided to calculate multiple
+            measures at once.  Valid measure strings:
+                - "pearson": calculates the Pearson correlation coefficient
+                - "mutual": calculates the mutual information between columns
+                - "max": calculates both Pearson and mutual information and
+                    returns max(abs(pearson), mutual) for each pair of columns
+                - "all": includes columns for "pearson", "mutual", and "max"
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.
-        nrows (int): The number of rows to sample for when determining mutual info.
+        nrows (int): The number of rows to sample for when determining dependence.
             If specified, samples the desired number of rows from the data.
             Defaults to using all rows.
         include_index (bool): If True, the column specified as the index will be
-            included as long as its LogicalType is valid for mutual information calculations.
-            If False, the index column will not have mutual information calculated for it.
-            Defaults to False.
+            included as long as its LogicalType is valid for measuring dependence.
+            If False, the index column will not be considered. Defaults to False.
         callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
             - update (int): change in progress since last call
@@ -283,14 +301,37 @@ def _get_mutual_information_dict(
             - total (int): the total number of calculations to do
             - unit (str): unit of measurement for progress/total
             - time_elapsed (float): total time in seconds elapsed since start of call
-
+        extra_stats (bool):  if True, additional column "shared_rows"
+            recording the number of shared non-null rows for a column
+            pair will be included with the dataframe.  If the "max"
+            measure is being used, a "measure_used" column will be added
+            that records whether Pearson or mutual information was the
+            maximum dependence for a particular row.
+        min_shared (int): the number of shared non-null rows needed to
+            calculate.  Less rows than this will be considered too sparse
+            to measure accurately and will return a NaN value. Must be
+            non-negative.
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
-        `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
-        Mutual information values are between 0 (no mutual information) and 1
-        (perfect dependency).
+        `column_2`, and keys for the specified dependence measures. The list is
+        sorted in decending order by the first specified measure.
+        Dependence information values are between 0 (no dependence) and 1
+        (perfect dependency). For Pearson, values range from -1 to 1 but 0 is
+        still no dependence.
     """
     start_time = timer()
+    if not isinstance(measure, list):
+        measure = [measure]
+    if measure == ["all"]:
+        measure = ["max", "mutual", "pearson"]
+
+    if "max" in measure:
+        calc_mutual = calc_pearson = calc_max = True
+    else:
+        calc_max = False
+        calc_mutual = "mutual" in measure
+        calc_pearson = "pearson" in measure
+
     unit = "calculations"
     valid_types = get_valid_mi_types()
     valid_columns = [
@@ -304,40 +345,39 @@ def _get_mutual_information_dict(
         valid_columns.remove(index)
 
     data = dataframe.loc[:, valid_columns]
-    if _is_dask_dataframe(data):
-        data = data.compute()
-    if _is_koalas_dataframe(dataframe):
-        data = data.to_pandas()
-
     # cut off data if necessary
-    if nrows is not None and nrows < data.shape[0]:
-        data = data.sample(nrows)
+    if _is_dask_dataframe(data):
+        if nrows:
+            data = data.head(nrows)
+        else:
+            data = data.compute()
+    elif _is_koalas_dataframe(dataframe):
+        if nrows:
+            data = data.head(nrows)
+        data = data.to_pandas()
+    elif nrows is not None and nrows < data.shape[0]:
+        data = data.head(nrows)
 
-    # remove fully null columns
-    not_null_cols = data.columns[data.notnull().any()]
+    notna_mask = data.notnull()
+    not_null_cols = data.columns[notna_mask.any()]
     if set(not_null_cols) != set(valid_columns):
         data = data.loc[:, not_null_cols]
 
     # Setup for progress callback and make initial call
-    # Assume 1 unit for preprocessing, n for replace nans, n for make categorical and (n*n+n)/2 for main calculation loop
+    # Assume 1 unit for preprocessing, 2n for make categorical and (n*n+n)/2 for main calculation loop
     n = len(data.columns)
     total_loops = 1 + 2 * n + (n * n + n) / 2
     current_progress = _update_progress(
         start_time, timer(), 1, 0, total_loops, unit, callback
     )
 
-    data = _replace_nans_for_mutual_info(dataframe.ww.schema, data)
+    data = _bin_numeric_cols_into_categories(dataframe.ww.schema, data, num_bins)
     current_progress = _update_progress(
-        start_time, timer(), n, current_progress, total_loops, unit, callback
-    )
-
-    data = _make_categorical_for_mutual_info(dataframe.ww.schema, data, num_bins)
-    current_progress = _update_progress(
-        start_time, timer(), n, current_progress, total_loops, unit, callback
+        start_time, timer(), 2 * n, current_progress, total_loops, unit, callback
     )
 
     # calculate mutual info for all pairs of columns
-    mutual_info = []
+    dependence_list = []
     col_names = data.columns.to_list()
     for i, a_col in enumerate(col_names):
         for j in range(i, len(col_names)):
@@ -355,10 +395,33 @@ def _get_mutual_information_dict(
                 )
                 continue
             else:
-                mi_score = normalized_mutual_info_score(data[a_col], data[b_col])
-                mutual_info.append(
-                    {"column_1": a_col, "column_2": b_col, "mutual_info": mi_score}
-                )
+                result = {"column_1": a_col, "column_2": b_col}
+                num_intersect = (notna_mask[a_col] & notna_mask[b_col]).sum()
+                too_sparse = num_intersect < min_shared
+                if too_sparse:
+                    # TODO: reword since Pearson can return NaN naturally
+                    warnings.warn(
+                        "One or more values in the returned matrix are NaN. A "
+                        "NaN value indicates there were not enough rows where "
+                        "both columns had non-null data",
+                        SparseDataWarning,
+                    )
+                    result.update({measure_type: np.nan for measure_type in measure})
+                else:
+                    num_union = (notna_mask[a_col] | notna_mask[b_col]).sum()
+                    if calc_mutual:
+                        mi_score = adjusted_mutual_info_score(data[a_col], data[b_col])
+                        mi_score = mi_score * num_intersect / num_union
+                        result["mutual"] = mi_score
+                    if calc_pearson:
+                        pearson_score = np.corrcoef(data[a_col], data[b_col])[0, 1]
+                        pearson_score = pearson_score * num_intersect / num_union
+                        result["pearson"] = pearson_score
+                    if calc_max:
+                        max_score = max(abs(pearson_score), mi_score)
+                        result["max"] = max_score
+
+                dependence_list.append(result)
                 current_progress = _update_progress(
                     start_time,
                     timer(),
@@ -368,9 +431,16 @@ def _get_mutual_information_dict(
                     unit,
                     callback,
                 )
-    mutual_info.sort(key=lambda mi: mi["mutual_info"], reverse=True)
 
-    return mutual_info
+    def sort_key(result):
+        key = result[measure[0]]
+        if np.isnan(key):
+            key = -2
+        return key
+
+    dependence_list.sort(key=sort_key, reverse=True)
+
+    return dependence_list
 
 
 def _get_valid_mi_columns(dataframe, include_index=False):

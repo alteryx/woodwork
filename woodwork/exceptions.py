@@ -78,3 +78,7 @@ class WoodworkNotInitWarning(UserWarning):
 
 class TypeValidationError(Exception):
     pass
+
+
+class SparseDataWarning(UserWarning):
+    pass

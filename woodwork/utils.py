@@ -322,6 +322,7 @@ def get_valid_mi_types():
     Returns:
         list(LogicalType): A list of the LogicalTypes that can be use to calculate mutual information
     """
+    # TODO: add deprecation warning in favor of get_valid_dependence_types
     valid_types = []
     for ltype in ww.type_system.registered_types:
         if "category" in ltype.standard_tags:
@@ -336,6 +337,21 @@ def get_valid_mi_types():
             valid_types.append(ltype)
 
     return valid_types
+
+
+def get_valid_dependence_types():
+    """
+    Generate a list of LogicalTypes that are valid for calculating dependence. Note that
+    index columns are not valid for calculating dependence, but their types may be
+    returned by this function.
+
+    Args:
+        None
+
+    Returns:
+        list(LogicalType): A list of the LogicalTypes that can be use to calculate dependence
+    """
+    return get_valid_mi_types()
 
 
 def _get_column_logical_type(series, logical_type, name):

@@ -17,16 +17,25 @@ def validate_subset_schema(subset_schema, schema):
 
 
 def mi_between_cols(col1, col2, df):
-    mi_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2][
-        "mutual_info"
-    ]
+    mi_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2]["mutual"]
 
     if len(mi_series) == 0:
-        mi_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1][
-            "mutual_info"
-        ]
+        mi_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1]["mutual"]
 
     return mi_series.iloc[0]
+
+
+def corr_between_cols(col1, col2, df):
+    pearson_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2][
+        "pearson"
+    ]
+
+    if len(pearson_series) == 0:
+        pearson_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1][
+            "pearson"
+        ]
+
+    return pearson_series.iloc[0]
 
 
 def to_pandas(df, index=None, sort_index=False):
