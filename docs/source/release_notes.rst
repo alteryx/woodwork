@@ -14,6 +14,7 @@ Future Release
         * Allow tuple NaN LatLong values (:pr:`1255`)
         * Update ipython to 7.31.1 (:pr:`1258`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1261`)
+        * Update to drop Python 3.7 support and add support for pandas version 1.4.0 (:pr:`1264`)
     * Documentation Changes
     * Testing Changes
         * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
