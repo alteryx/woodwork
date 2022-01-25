@@ -215,7 +215,7 @@ def _is_url(string):
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values."""
+    """Reformats LatLong columns to be tuples of floats. Uses (np.nan, np.nan) for null values."""
     if _is_latlong_nan(latlong):
         latlong = (np.nan, np.nan)
 
