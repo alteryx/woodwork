@@ -17,6 +17,7 @@ CONFIG_DEFAULTS = {
 [0-9]){0,1}[0-9]))
 """.splitlines()
     ),
+    "nan_values": ["", "None", "nan", "NaN", "<NA>", "null"],
 }
 
 

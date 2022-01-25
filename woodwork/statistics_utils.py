@@ -8,7 +8,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.logical_types import Datetime, Double, LatLong, Timedelta
 from woodwork.utils import (
-    _is_tuple_nan,
+    _is_latlong_nan,
     _update_progress,
     get_valid_mi_types,
     import_or_none,
@@ -144,7 +144,7 @@ def _get_describe_dict(
             mode = list(mode)
 
         if column.is_latlong:
-            nan_count = series.apply(_is_tuple_nan).sum()
+            nan_count = series.apply(_is_latlong_nan).sum()
             count = len(series) - nan_count
 
             values["nan_count"] = nan_count
