@@ -1127,7 +1127,10 @@ class WoodworkTableAccessor:
 
     def validate(self, return_indices=False):
         if return_indices:
-            indices = [self.ww[column].ww.validate(return_indices=True) for column in self.columns]
+            indices = [
+                self.ww[column].ww.validate(return_indices=True)
+                for column in self.columns
+            ]
             return pd.concat(indices, axis=1)
 
         else:

@@ -66,7 +66,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def validate(self, series, return_indices=False):
         if return_indices:
-            return pd.Series(name=series.name, dtype='boolean')
+            return pd.Series(name=series.name, dtype="boolean")
 
 
 class Address(LogicalType):

@@ -204,5 +204,5 @@ def test_email_address_validate():
         email_address.validate(series)
 
     indices = email_address.validate(series, return_indices=True)
-    expected = pd.Series([False, True, pd.NA], dtype='boolean')
+    expected = pd.Series([False, True, pd.NA], dtype="boolean")
     assert indices.equals(expected)

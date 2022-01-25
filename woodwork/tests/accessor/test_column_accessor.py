@@ -976,5 +976,5 @@ def test_validate(sample_df_pandas):
         series.ww.validate()
 
     actual = series.ww.validate(return_indices=True)
-    expected = pd.Series([True, pd.NA, True, True, False], dtype='boolean')
+    expected = pd.Series([True, pd.NA, True, True, False], dtype="boolean")
     assert actual.equals(expected)
