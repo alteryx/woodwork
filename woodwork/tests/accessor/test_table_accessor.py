@@ -2989,7 +2989,7 @@ def test_nan_index_error(sample_df_pandas):
 
 
 def test_validate(sample_df_pandas):
-    df = sample_df_pandas[["email"]]
+    df = sample_df_pandas[["email", "age"]]
     df.loc[4, "email"] = "bad_email"
 
     df.ww.init(logical_types={"email": "EmailAddress"})
@@ -2997,6 +2997,6 @@ def test_validate(sample_df_pandas):
         df.ww.validate()
 
     actual = df.ww.validate(return_indices=True)
-    expected = pd.DataFrame({"email": [True, pd.NA, True, True, False]})
-    expected = expected.astype({"email": "boolean"})
+    data = {"email": [True, pd.NA, True, True, False], "age": [pd.NA] * 5}
+    expected = pd.DataFrame(data).astype({"email": "boolean", "age": "boolean"})
     assert actual.equals(expected)
