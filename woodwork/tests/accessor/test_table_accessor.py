@@ -338,7 +338,7 @@ def test_accessor_init_errors_methods(sample_df):
     )
     for method in public_methods:
         func = getattr(sample_df.ww, method)
-        method_args = method_args_dict[method]
+        method_args = method_args_dict.get(method)
         with pytest.raises(WoodworkNotInitError, match=error):
             if method_args:
                 func(*method_args)

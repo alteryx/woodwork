@@ -1124,6 +1124,7 @@ class WoodworkTableAccessor:
             self._dataframe, temporal_columns=temporal_columns
         )
 
+    @_check_table_schema
     def validate(self, return_indices=False):
         if return_indices:
             indices = [
