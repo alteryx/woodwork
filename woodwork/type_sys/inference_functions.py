@@ -121,8 +121,7 @@ class InferWithRegex:
         regex = self.get_regex()
 
         # Includes a check for object dtypes
-        is_object = pdtypes.is_object_dtype(series.dtype)
-        if is_object or not pdtypes.is_string_dtype(series.dtype):
+        if not pdtypes.is_string_dtype(series.dtype):
             return False
 
         try:
