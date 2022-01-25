@@ -326,7 +326,7 @@ def test_to_latlong_float():
         _to_latlong_float([1, 2, 3])
 
 
-def _is_nan():
+def test_is_nan():
     assert _is_nan(None)
     assert _is_nan(np.nan)
     assert _is_nan(pd.NA)
@@ -338,6 +338,7 @@ def _is_nan():
     assert _is_nan("null")
 
     assert not _is_nan([None, 1, 3])
+    assert not _is_nan([])
     assert not _is_nan("none")
     assert not _is_nan(0)
     assert not _is_nan(False)
