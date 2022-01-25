@@ -2990,8 +2990,10 @@ def test_nan_index_error(sample_df_pandas):
 
 def test_validate(sample_df_pandas):
     df = sample_df_pandas[["email", "age"]]
-    df.loc[4, "email"] = "bad_email"
+    df.ww.init(logical_types={"email": "EmailAddress"})
+    assert df.ww.validate() is None
 
+    df.loc[4, "email"] = "bad_email"
     df.ww.init(logical_types={"email": "EmailAddress"})
     with pytest.raises(ValueError, match="email address not understood"):
         df.ww.validate()

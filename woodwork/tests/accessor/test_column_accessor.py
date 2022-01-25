@@ -969,8 +969,10 @@ def test_nullable_attribute(sample_df_pandas):
 
 def test_validate(sample_df_pandas):
     series = sample_df_pandas["email"]
-    series.loc[4] = "bad_email"
+    series = init_series(series, logical_type="EmailAddress")
+    assert series.ww.validate() is None
 
+    series.loc[4] = "bad_email"
     series = init_series(series, logical_type="EmailAddress")
     with pytest.raises(ValueError, match="email address not understood"):
         series.ww.validate()
