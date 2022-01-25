@@ -9,15 +9,20 @@ Future Release
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
         * Validate email address logical types (:pr:`1247`)
     * Fixes
+        * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
+        * Update ipython to 7.31.1 (:pr:`1258`)
+        * Temporarily restrict pandas and koalas max versions (:pr:`1261`)
+        * Update to drop Python 3.7 support and add support for pandas version 1.4.0 (:pr:`1264`)
     * Documentation Changes
     * Testing Changes
-        * Change auto approve workfow to use PR number and run every 10 minutes (:pr:`1240`, :pr:`1241`)
+        * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
+        * Update auto approve workflow to delete branch and change on trigger (:pr:`1251`)
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================

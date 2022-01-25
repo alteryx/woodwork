@@ -17,19 +17,8 @@ from woodwork.logical_types import (
     PhoneNumber,
     Unknown,
 )
+from woodwork.tests.testing_utils import pd_to_dask, pd_to_koalas
 from woodwork.utils import import_or_none
-
-
-def pd_to_dask(series):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(series, npartitions=2)
-
-
-def pd_to_koalas(series):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
-    )
-    return ks.from_pandas(series)
 
 
 @pytest.fixture(scope="session", autouse=True)
