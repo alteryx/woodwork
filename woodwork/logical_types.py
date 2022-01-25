@@ -64,8 +64,9 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
                 raise TypeConversionError(series, new_dtype, type(self))
         return series
 
-    def validate(self, series):
-        return
+    def validate(self, series, return_indices=False):
+        if return_indices:
+            return pd.Series(name=series.name, dtype='boolean')
 
 
 class Address(LogicalType):
@@ -309,11 +310,14 @@ class EmailAddress(LogicalType):
 
     primary_dtype = "string"
 
-    def validate(self, series):
+    def validate(self, series, return_indices=False):
         regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-        invalid = ~series.str.fullmatch(regex).astype("boolean")
+        valid = series.str.fullmatch(regex).astype("boolean")
 
-        if invalid.any():
+        if return_indices:
+            return valid.rename(series.name)
+
+        elif (~valid).any():
             raise ValueError("email address not understood")
 
 

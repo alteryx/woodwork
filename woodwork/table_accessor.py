@@ -542,7 +542,6 @@ class WoodworkTableAccessor:
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
             updated_series = logical_type.transform(series)
-            logical_type.validate(updated_series.head(VALIDATE_SAMPLE_SIZE))
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
@@ -1125,6 +1124,15 @@ class WoodworkTableAccessor:
         return _infer_temporal_frequencies(
             self._dataframe, temporal_columns=temporal_columns
         )
+
+    def validate(self, return_indices=False):
+        if return_indices:
+            indices = [self.ww[column].ww.validate(return_indices=True) for column in self.columns]
+            return pd.concat(indices, axis=1)
+
+        else:
+            for column in self.columns:
+                self.ww[column].ww.validate(return_indices=False)
 
 
 def _validate_accessor_params(

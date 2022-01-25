@@ -60,7 +60,6 @@ def init_series(
             )
     logical_type = _get_column_logical_type(series, logical_type, series.name)
     new_series = logical_type.transform(series)
-    logical_type.validate(new_series.head(VALIDATE_SAMPLE_SIZE))
     new_series.ww.init(
         logical_type=logical_type,
         semantic_tags=semantic_tags,

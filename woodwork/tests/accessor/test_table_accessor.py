@@ -2986,3 +2986,17 @@ def test_nan_index_error(sample_df_pandas):
 
     with pytest.raises(ValueError, match=match):
         nan_df.ww.init_with_full_schema(schema)
+
+
+def test_validate(sample_df_pandas):
+    df = sample_df_pandas[["email"]]
+    df.loc[4, "email"] = "bad_email"
+
+    df.ww.init(logical_types={"email": "EmailAddress"})
+    with pytest.raises(ValueError, match="email address not understood"):
+        df.ww.validate()
+
+    actual = df.ww.validate(return_indices=True)
+    expected = pd.DataFrame({"email": [True, pd.NA, True, True, False]})
+    expected = expected.astype({"email": "boolean"})
+    assert actual.equals(expected)

@@ -436,6 +436,11 @@ class WoodworkColumnAccessor:
         )
 
 
+    @_check_column_schema
+    def validate(self, return_indices=False):
+        return self.logical_type.validate(self._series_weakref(), return_indices=return_indices)
+
+
 def _validate_schema(schema, series):
     if not isinstance(schema, ColumnSchema):
         raise TypeError("Provided schema must be a Woodwork.ColumnSchema object.")

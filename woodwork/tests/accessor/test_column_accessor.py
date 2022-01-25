@@ -965,3 +965,16 @@ def test_nullable_attribute(sample_df_pandas):
         expected = EXPECTED_COLUMN_NULLABILITIES[key]
 
         assert actual is expected
+
+
+def test_validate(sample_df_pandas):
+    series = sample_df_pandas["email"]
+    series.loc[4] = "bad_email"
+
+    series = init_series(series, logical_type="EmailAddress")
+    with pytest.raises(ValueError, match="email address not understood"):
+        series.ww.validate()
+
+    actual = series.ww.validate(return_indices=True)
+    expected = pd.Series([True, pd.NA, True, True, False], dtype='boolean')
+    assert actual.equals(expected)
