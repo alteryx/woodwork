@@ -14,7 +14,6 @@ from woodwork.accessor_utils import (
     get_invalid_schema_message,
     init_series,
 )
-from woodwork.config import VALIDATE_SAMPLE_SIZE
 from woodwork.exceptions import (
     ColumnNotPresentError,
     IndexTagRemovedWarning,

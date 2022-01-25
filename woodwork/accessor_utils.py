@@ -3,7 +3,6 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 
-from woodwork.config import VALIDATE_SAMPLE_SIZE
 from woodwork.exceptions import WoodworkNotInitError
 from woodwork.utils import _get_column_logical_type, import_or_none
 
