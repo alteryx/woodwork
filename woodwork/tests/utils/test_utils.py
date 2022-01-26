@@ -35,7 +35,8 @@ from woodwork.utils import (
     _convert_input_to_set,
     _get_column_logical_type,
     _infer_datetime_format,
-    _is_null_latlong,
+    _is_latlong_nan,
+    _is_nan,
     _is_s3,
     _is_url,
     _is_valid_latlong_series,
@@ -281,7 +282,7 @@ def test_reformat_to_latlong():
     assert _reformat_to_latlong("[1, 2]") == simple_latlong
     assert _reformat_to_latlong("1, 2") == simple_latlong
 
-    assert _reformat_to_latlong(None) is np.nan
+    assert _reformat_to_latlong(None) == (np.nan, np.nan)
     assert _reformat_to_latlong((1, np.nan)) == (1, np.nan)
     assert _reformat_to_latlong((np.nan, "1")) == (np.nan, 1)
 
@@ -325,18 +326,23 @@ def test_to_latlong_float():
         _to_latlong_float([1, 2, 3])
 
 
-def test_is_null_latlong():
-    assert _is_null_latlong(None)
-    assert _is_null_latlong(np.nan)
-    assert _is_null_latlong(pd.NA)
-    assert _is_null_latlong("None")
-    assert _is_null_latlong("nan")
-    assert _is_null_latlong("NaN")
+def test_is_nan():
+    assert _is_nan(None)
+    assert _is_nan(np.nan)
+    assert _is_nan(pd.NA)
+    assert _is_nan("None")
+    assert _is_nan("nan")
+    assert _is_nan("NaN")
+    assert _is_nan("<NA>")
+    assert _is_nan("")
+    assert _is_nan("null")
 
-    assert not _is_null_latlong([None, 1, 3])
-    assert not _is_null_latlong("none")
-    assert not _is_null_latlong(0)
-    assert not _is_null_latlong(False)
+    assert not _is_nan([None, 1, 3])
+    assert not _is_nan([])
+    assert not _is_nan("none")
+    assert not _is_nan(0)
+    assert not _is_nan(False)
+    assert not _is_nan({"key": "value"})
 
 
 def test_is_valid_latlong_value():
@@ -522,3 +528,14 @@ def test_is_categorical() -> None:
     assert _is_categorical_series(pd.Series([1, 1]), 0.5)
     assert _is_categorical_series(pd.Series([1, 2, 1, 1]), 0.5)
     assert _is_categorical_series(pd.Series([1, 2, 3, 1]), 0.75)
+
+
+def test_is_latlong_nan():
+    assert _is_latlong_nan((np.nan, np.nan))
+    assert _is_latlong_nan([np.nan, np.nan])
+    assert _is_latlong_nan((np.nan,))
+    assert _is_latlong_nan(np.nan)
+    assert not _is_latlong_nan((np.nan, 2.0))
+    assert not _is_latlong_nan([np.nan, 2.0])
+    assert not _is_latlong_nan((2.0, 3.0))
+    assert not _is_latlong_nan("test")

@@ -7,7 +7,12 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.logical_types import Datetime, Double, LatLong, Timedelta
-from woodwork.utils import _update_progress, get_valid_mi_types, import_or_none
+from woodwork.utils import (
+    _is_latlong_nan,
+    _update_progress,
+    get_valid_mi_types,
+    import_or_none,
+)
 
 dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")
@@ -138,7 +143,15 @@ def _get_describe_dict(
         if _is_koalas_dataframe(dataframe) and series.name in latlong_columns:
             mode = list(mode)
 
-        values["nan_count"] = series.isna().sum()
+        if column.is_latlong:
+            nan_count = series.apply(_is_latlong_nan).sum()
+            count = len(series) - nan_count
+
+            values["nan_count"] = nan_count
+            values["count"] = count
+        else:
+            values["nan_count"] = series.isna().sum()
+
         values["mode"] = mode
         values["physical_type"] = series.dtype
         values["logical_type"] = logical_type
