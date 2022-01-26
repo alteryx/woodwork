@@ -304,7 +304,7 @@ def _is_nan(value):
 
 def _is_latlong_nan(value):
     """Checks if a LatLong value is NaN"""
-    if isinstance(value, tuple):
+    if isinstance(value, (tuple, list)):
         return all([_is_nan(x) for x in value])
 
     return _is_nan(value)

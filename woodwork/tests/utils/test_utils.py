@@ -532,8 +532,10 @@ def test_is_categorical() -> None:
 
 def test_is_latlong_nan():
     assert _is_latlong_nan((np.nan, np.nan))
+    assert _is_latlong_nan([np.nan, np.nan])
     assert _is_latlong_nan((np.nan,))
     assert _is_latlong_nan(np.nan)
     assert not _is_latlong_nan((np.nan, 2.0))
+    assert not _is_latlong_nan([np.nan, 2.0])
     assert not _is_latlong_nan((2.0, 3.0))
     assert not _is_latlong_nan("test")
