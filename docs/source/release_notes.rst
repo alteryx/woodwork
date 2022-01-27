@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.12.0 Jan 27, 2022
+====================
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
         * Validate email address logical types (:pr:`1247`)
@@ -17,14 +27,13 @@ Future Release
         * Update ipython to 7.31.1 (:pr:`1258`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1261`)
         * Update to drop Python 3.7 support and add support for pandas version 1.4.0 (:pr:`1264`)
-    * Documentation Changes
     * Testing Changes
         * Change auto approve workflow to use PR number (:pr:`1240`, :pr:`1241`)
         * Update auto approve workflow to delete branch and change on trigger (:pr:`1251`)
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`,:user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================
