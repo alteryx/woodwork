@@ -315,6 +315,10 @@ def test_accessor_init_errors_methods(sample_df):
     method_args_dict = {
         "add_semantic_tags": [{"id": "new_tag"}],
         "pop": ["id"],
+        "dependence": None,
+        "dependence_dict": None,
+        "describe": None,
+        "describe_dict": None,
         "drop": ["id"],
         "get_valid_mi_columns": None,
         "mutual_information": None,

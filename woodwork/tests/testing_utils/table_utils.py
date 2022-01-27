@@ -16,26 +16,15 @@ def validate_subset_schema(subset_schema, schema):
         assert subset_col.semantic_tags == col.semantic_tags
 
 
-def mi_between_cols(col1, col2, df):
-    mi_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2]["mutual"]
+def dep_between_cols(col1, col2, dep_name, df):
+    dep_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2][dep_name]
 
-    if len(mi_series) == 0:
-        mi_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1]["mutual"]
-
-    return mi_series.iloc[0]
-
-
-def corr_between_cols(col1, col2, df):
-    pearson_series = df.loc[df["column_1"] == col1].loc[df["column_2"] == col2][
-        "pearson"
-    ]
-
-    if len(pearson_series) == 0:
-        pearson_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1][
-            "pearson"
+    if len(dep_series) == 0:
+        dep_series = df.loc[df["column_1"] == col2].loc[df["column_2"] == col1][
+            dep_name
         ]
 
-    return pearson_series.iloc[0]
+    return dep_series.iloc[0]
 
 
 def to_pandas(df, index=None, sort_index=False):
@@ -98,3 +87,10 @@ def assert_schema_equal(left_schema, right_schema, deep=True):
         )
     if deep:
         assert left_schema.metadata == right_schema.metadata
+
+
+def _check_close(actual, expected):
+    if pd.isnull(expected):
+        assert pd.isnull(actual)
+    else:
+        np.testing.assert_allclose(actual, expected, atol=1e-3)

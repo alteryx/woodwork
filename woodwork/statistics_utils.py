@@ -412,13 +412,15 @@ def _get_dependence_dict(
                     if calc_mutual:
                         mi_score = adjusted_mutual_info_score(data[a_col], data[b_col])
                         mi_score = mi_score * num_intersect / num_union
-                        result["mutual"] = mi_score
+                        if "mutual" in measure:
+                            result["mutual"] = mi_score
                     if calc_pearson:
                         pearson_score = np.corrcoef(data[a_col], data[b_col])[0, 1]
                         pearson_score = pearson_score * num_intersect / num_union
-                        result["pearson"] = pearson_score
+                        if "pearson" in measure:
+                            result["pearson"] = pearson_score
                     if calc_max:
-                        max_score = max(abs(pearson_score), mi_score)
+                        max_score = pd.Series([abs(pearson_score), mi_score]).max()
                         result["max"] = max_score
 
                 dependence_list.append(result)
