@@ -215,9 +215,9 @@ def _is_url(string):
 
 
 def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of floats. Uses np.nan for null values."""
-    if _is_null_latlong(latlong):
-        return np.nan
+    """Reformats LatLong columns to be tuples of floats. Uses (np.nan, np.nan) for null values."""
+    if _is_latlong_nan(latlong):
+        latlong = (np.nan, np.nan)
 
     if isinstance(latlong, str):
         try:
@@ -240,10 +240,6 @@ def _reformat_to_latlong(latlong, use_list=False):
 
         latitude, longitude = map(_to_latlong_float, latlong)
 
-        # (np.nan, np.nan) should be counted as a single null value
-        if pd.isnull(latitude) and pd.isnull(longitude):
-            return np.nan
-
         if use_list:
             return [latitude, longitude]
         return (latitude, longitude)
@@ -255,7 +251,7 @@ def _reformat_to_latlong(latlong, use_list=False):
 
 def _to_latlong_float(val):
     """Attempts to convert a value to a float, propagating null values."""
-    if _is_null_latlong(val):
+    if _is_nan(val):
         return np.nan
 
     try:
@@ -295,12 +291,23 @@ def _is_valid_latlong_value(val, bracket_type=tuple):
     return False
 
 
-def _is_null_latlong(val):
-    if isinstance(val, str):
-        return val == "None" or val == "nan" or val == "NaN"
+def _is_nan(value):
+    """This function checks if string values are common NaN values.
+    Lists are not counted as NaN, and all other values are passed to pd.isnull
+    """
+    if isinstance(value, str):
+        return value in ww.config.get_option("nan_values")
+    if isinstance(value, list):
+        return False
+    return pd.isnull(value)
 
-    # Since we can have list inputs here, pd.isnull will not have a relevant truth value for lists
-    return not isinstance(val, list) and pd.isnull(val)
+
+def _is_latlong_nan(value):
+    """Checks if a LatLong value is NaN"""
+    if isinstance(value, (tuple, list)):
+        return all([_is_nan(x) for x in value])
+
+    return _is_nan(value)
 
 
 def get_valid_mi_types():
@@ -520,7 +527,7 @@ def _infer_datetime_format(dates, n=100):
     return mode_fmt
 
 
-def _replace_nan_strings(df):
+def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
     """Replaces empty string values and string representations of
     NaN values ("nan", "<NA>") with np.nan or pd.NA depending on
     column dtype."""
@@ -538,7 +545,7 @@ def _replace_nan_strings(df):
 
         replaced_series = df[col].replace(r"^\s*$", replace_val, regex=True)
         replaced_series = replaced_series.replace(
-            {"nan": replace_val, "<NA>": replace_val}
+            ww.config.get_option("nan_values"), replace_val
         )
         df[col] = replaced_series
 

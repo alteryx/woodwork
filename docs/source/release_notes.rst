@@ -10,8 +10,10 @@ Future Release
         * Validate email address logical types (:pr:`1247`)
     * Fixes
         * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
+        * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
+        * Allow tuple NaN LatLong values (:pr:`1255`)
         * Update ipython to 7.31.1 (:pr:`1258`)
         * Temporarily restrict pandas and koalas max versions (:pr:`1261`)
         * Update to drop Python 3.7 support and add support for pandas version 1.4.0 (:pr:`1264`)
@@ -22,7 +24,7 @@ Future Release
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`dvreed77`,:user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================
