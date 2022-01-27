@@ -1074,8 +1074,10 @@ def test_box_plot_outliers(outliers_df):
 
     no_outliers_dict = no_outliers_series.ww.box_plot_dict()
 
-    assert no_outliers_dict["low_bound"] == 8.125
-    assert no_outliers_dict["high_bound"] == 83.125
+    # Since there are no outliers, the the low bound is the min value
+    # and the high bound is the max value
+    assert no_outliers_dict["low_bound"] == 23.0
+    assert no_outliers_dict["high_bound"] == 60.0
     assert no_outliers_dict["quantiles"] == {
         0.0: 23.0,
         0.25: 36.25,
@@ -1117,8 +1119,8 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
         quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0}
     )
 
-    assert no_outliers_dict["low_bound"] == 8.125
-    assert no_outliers_dict["high_bound"] == 83.125
+    assert no_outliers_dict["low_bound"] == 23.0
+    assert no_outliers_dict["high_bound"] == 60.0
     assert no_outliers_dict["quantiles"] == {
         0.0: 23.0,
         0.25: 36.25,
@@ -1221,6 +1223,7 @@ def test_box_plot_different_quantiles(outliers_df):
     has_outliers_series = outliers_df["has_outliers"]
     has_outliers_series.ww.init()
 
+    # No quantiles passed in - they all get calculated
     box_plot_info = has_outliers_series.ww.box_plot_dict()
 
     assert set(box_plot_info.keys()) == {
@@ -1238,25 +1241,7 @@ def test_box_plot_different_quantiles(outliers_df):
     assert len(box_plot_info["high_values"]) == 1
     assert len(box_plot_info["low_values"]) == 1
 
-    box_plot_info = has_outliers_series.ww.box_plot_dict(
-        quantiles={0.25: 36.25, 0.75: 55.0}
-    )
-
-    assert set(box_plot_info.keys()) == {
-        "low_bound",
-        "high_bound",
-        "quantiles",
-        "low_values",
-        "high_values",
-        "low_indices",
-        "high_indices",
-    }
-    assert box_plot_info["low_bound"] == 8.125
-    assert box_plot_info["high_bound"] == 83.125
-    assert len(box_plot_info["quantiles"]) == 2
-    assert len(box_plot_info["high_values"]) == 1
-    assert len(box_plot_info["low_values"]) == 1
-
+    # The minimum required quantiles passed in with outliers present
     partial_quantiles = {0.0: -16, 0.25: 36.25, 0.75: 55.0, 1.0: 93}
     box_plot_info = has_outliers_series.ww.box_plot_dict(quantiles=partial_quantiles)
 
@@ -1275,17 +1260,38 @@ def test_box_plot_different_quantiles(outliers_df):
     assert len(box_plot_info["high_values"]) == 1
     assert len(box_plot_info["low_values"]) == 1
 
+    # The minimum required quantiles passed in without outliers present
+    no_outliers_series = outliers_df["no_outliers"]
+    no_outliers_series.ww.init()
+    partial_quantiles = {0.0: 23.0, 0.25: 36.25, 0.75: 55.0, 1.0: 60.0}
+    box_plot_info = no_outliers_series.ww.box_plot_dict(quantiles=partial_quantiles)
+
+    assert set(box_plot_info.keys()) == {
+        "low_bound",
+        "high_bound",
+        "quantiles",
+        "low_values",
+        "high_values",
+        "low_indices",
+        "high_indices",
+    }
+    assert box_plot_info["low_bound"] == 23.0
+    assert box_plot_info["high_bound"] == 60.0
+    assert len(box_plot_info["quantiles"]) == 4
+    assert len(box_plot_info["high_values"]) == 0
+    assert len(box_plot_info["low_values"]) == 0
+
 
 def test_box_plot_quantiles_errors(outliers_df):
     series = outliers_df["has_outliers"]
     series.ww.init()
 
     error = re.escape(
-        "Input quantiles do not contain the minimum necessary quantiles for outlier calculation: "
-        "0.25 (the first quartile) and 0.75 (the third quartile)."
+        "Input quantiles do not contain the minimum necessary quantiles for box plot calculation: "
+        "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value)."
     )
 
-    partial_quantiles = {0.25: 36.25}
+    partial_quantiles = {0.25: 36.25, 0.75: 20, 1.0: 90}
     with pytest.raises(ValueError, match=error):
         series.ww.box_plot_dict(quantiles=partial_quantiles)
 
