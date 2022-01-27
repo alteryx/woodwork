@@ -19,6 +19,7 @@ v0.12.0 Jan 27, 2022
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
     * Fixes
         * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
+        * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)
     * Changes
         * Prevent setting index that contains null values (:pr:`1239`)
         * Allow tuple NaN LatLong values (:pr:`1255`)
@@ -31,7 +32,7 @@ v0.12.0 Jan 27, 2022
         * Fix permissions issue with S3 deserialization test (:pr:`1238`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.11.1 Jan 4, 2022
 ===================
