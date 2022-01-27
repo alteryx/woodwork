@@ -2985,7 +2985,9 @@ def test_validate(sample_df_pandas):
 
     df.loc[4, "email"] = "bad_email"
     df.ww.init(logical_types={"email": "EmailAddress"})
-    with pytest.raises(ValueError, match="Series email contains invalid email addresses."):
+    with pytest.raises(
+        ValueError, match="Series email contains invalid email addresses."
+    ):
         df.ww.validate()
 
     actual = df.ww.validate(return_indices=True)
