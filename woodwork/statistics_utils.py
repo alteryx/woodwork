@@ -543,8 +543,12 @@ def _get_box_plot_info_for_column(
 
     if include_indices_and_values:
         # identify outliers in the series
-        low_series = series[series < low_bound] if low_bound > min_value else pd.Series()
-        high_series = series[series > high_bound] if high_bound < max_value else pd.Series()
+        low_series = (
+            series[series < low_bound] if low_bound > min_value else pd.Series()
+        )
+        high_series = (
+            series[series > high_bound] if high_bound < max_value else pd.Series()
+        )
 
         outliers_dict = {
             "low_values": low_series.tolist(),
