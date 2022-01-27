@@ -415,8 +415,8 @@ class WoodworkColumnAccessor:
             (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
                 The following elements will be found in the dictionary:
 
-                - low_bound (float): the lower bound below which outliers lay - to be used as a whisker
-                - high_bound (float): the high bound above which outliers lay - to be used as a whisker
+                - low_bound (float): the lowest data point in the dataset excluding any outliers - to be used as a whisker
+                - high_bound (float): the highest point in the dataset excluding any outliers - to be used as a whisker
                 - quantiles (list[float]): the quantiles used to determine the bounds.
                     If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
                     quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
