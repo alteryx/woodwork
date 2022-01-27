@@ -313,25 +313,15 @@ def test_accessor_init_errors_methods(sample_df):
     ]
     method_args_dict = {
         "add_semantic_tags": [{"id": "new_tag"}],
-        "describe": None,
         "pop": ["id"],
-        "describe": None,
-        "describe_dict": None,
         "drop": ["id"],
-        "get_valid_mi_columns": None,
-        "mutual_information": None,
-        "mutual_information_dict": None,
         "remove_semantic_tags": [{"id": "new_tag"}],
         "rename": [{"id": "new_id"}],
-        "reset_semantic_tags": None,
         "select": [["Double"]],
         "set_index": ["id"],
         "set_time_index": ["signup_date"],
         "set_types": [{"id": "Integer"}],
         "to_disk": ["dir"],
-        "to_dictionary": None,
-        "value_counts": None,
-        "infer_temporal_frequencies": None,
     }
     error = re.escape(
         "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
