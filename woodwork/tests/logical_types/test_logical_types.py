@@ -199,8 +199,8 @@ def test_ordinal_transform(sample_series):
 def test_email_address_validate():
     email_address = EmailAddress()
 
-    series = pd.Series(["bad_email", "good@google.com", pd.NA])
-    with pytest.raises(ValueError, match="email address not understood"):
+    series = pd.Series(["bad_email", "good@google.com", pd.NA], name='email')
+    with pytest.raises(ValueError, match="Series email contains invalid email addresses."):
         email_address.validate(series)
 
     indices = email_address.validate(series, return_indices=True)

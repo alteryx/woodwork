@@ -319,7 +319,9 @@ class EmailAddress(LogicalType):
             return valid.rename(series.name)
 
         elif (~valid).any():
-            raise ValueError("email address not understood")
+            info = f"Series {series.name} contains invalid email addresses. "
+            info += "The email address regex can be changed in the config if needed."
+            raise ValueError(info)
 
 
 class Filepath(LogicalType):
