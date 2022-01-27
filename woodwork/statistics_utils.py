@@ -7,12 +7,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.logical_types import Datetime, Double, LatLong, Timedelta
-from woodwork.utils import (
-    _is_latlong_nan,
-    _update_progress,
-    get_valid_mi_types,
-    import_or_none,
-)
+from woodwork.utils import _update_progress, get_valid_mi_types, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")
@@ -143,15 +138,7 @@ def _get_describe_dict(
         if _is_koalas_dataframe(dataframe) and series.name in latlong_columns:
             mode = list(mode)
 
-        if column.is_latlong:
-            nan_count = series.apply(_is_latlong_nan).sum()
-            count = len(series) - nan_count
-
-            values["nan_count"] = nan_count
-            values["count"] = count
-        else:
-            values["nan_count"] = series.isna().sum()
-
+        values["nan_count"] = series.isna().sum()
         values["mode"] = mode
         values["physical_type"] = series.dtype
         values["logical_type"] = logical_type
@@ -526,46 +513,32 @@ def _get_box_plot_info_for_column(
     # calculate the outlier bounds using IQR
     if quantiles is None:
         quantiles = series.quantile([0.0, 0.25, 0.5, 0.75, 1.0]).to_dict()
-    elif 0.25 not in quantiles or 0.75 not in quantiles:
+    elif len(set(quantiles.keys()) & {0.0, 0.25, 0.75, 1.0}) != 4:
         raise ValueError(
-            "Input quantiles do not contain the minimum necessary quantiles for outlier calculation: "
-            "0.25 (the first quartile) and 0.75 (the third quartile)."
+            "Input quantiles do not contain the minimum necessary quantiles for box plot calculation: "
+            "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value)."
         )
-
+    min_value = quantiles[0.0]
     q1 = quantiles[0.25]
     q3 = quantiles[0.75]
+    max_value = quantiles[1.0]
 
+    # Box plot bounds calculation - the bounds should never be beyond the min and max values
     iqr = q3 - q1
-
-    low_bound = q1 - (iqr * 1.5)
-    high_bound = q3 + (iqr * 1.5)
+    low_bound = max(q1 - (iqr * 1.5), min_value)
+    high_bound = min(q3 + (iqr * 1.5), max_value)
 
     if include_indices_and_values:
         # identify outliers in the series
-        min = quantiles.get(0.0)
-        max = quantiles.get(1.0)
-        if (
-            min is not None
-            and max is not None
-            and low_bound <= min
-            and high_bound >= max
-        ):
-            outliers_dict = {
-                "low_values": [],
-                "high_values": [],
-                "low_indices": [],
-                "high_indices": [],
-            }
-        else:
-            low_series = series[series < low_bound]
-            high_series = series[series > high_bound]
+        low_series = series[series < low_bound] if low_bound > min_value else pd.Series()
+        high_series = series[series > high_bound] if high_bound < max_value else pd.Series()
 
-            outliers_dict = {
-                "low_values": low_series.tolist(),
-                "high_values": high_series.tolist(),
-                "low_indices": low_series.index.tolist(),
-                "high_indices": high_series.index.tolist(),
-            }
+        outliers_dict = {
+            "low_values": low_series.tolist(),
+            "high_values": high_series.tolist(),
+            "low_indices": low_series.index.tolist(),
+            "high_indices": high_series.index.tolist(),
+        }
 
     return {
         "low_bound": low_bound,
