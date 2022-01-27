@@ -14,7 +14,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v0.12.0 Jan 27, 2022
-===================
+====================
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
     * Fixes
