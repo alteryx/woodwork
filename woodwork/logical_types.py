@@ -4,6 +4,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
+from woodwork.config import config
 from woodwork.exceptions import TypeConversionError, TypeConversionWarning
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
@@ -311,7 +312,7 @@ class EmailAddress(LogicalType):
     primary_dtype = "string"
 
     def validate(self, series, return_indices=False):
-        regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+        regex = config.get_option("email_inference_regex")
         valid = series.str.fullmatch(regex).astype("boolean")
 
         if return_indices:
