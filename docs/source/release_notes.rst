@@ -7,11 +7,13 @@ Release Notes
   ==============
     * Enhancements
     * Fixes
+        * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
 
 v0.11.1 Jan 4, 2022
 ===================
