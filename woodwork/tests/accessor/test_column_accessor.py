@@ -761,7 +761,7 @@ def test_accessor_shallow_equality(sample_series):
     assert not metadata_col.ww.__eq__(diff_metadata_col.ww, deep=True)
 
     schema = metadata_col.ww.schema
-    diff_data_col = metadata_col.replace({"a": "1"})
+    diff_data_col = metadata_col.replace(to_replace="a", value="1")
     # dtype gets changed to object in replace
     diff_data_col = diff_data_col.astype("string")
 

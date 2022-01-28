@@ -7,13 +7,24 @@ Release Notes
   ==============
     * Enhancements
     * Fixes
-        * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
+.. Thanks to the following people for contributing to this release:
+
+v0.11.2 Jan 28, 2022
+====================
+    * Fixes
+        * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)
+
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`
+
+Note
+++++
+    * The pandas version for Koalas has been restricted, and a change was made to a pandas ``replace`` call to account for
+      the recent pandas 1.4.0 release.
 
 v0.11.1 Jan 4, 2022
 ===================
