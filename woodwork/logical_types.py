@@ -324,9 +324,8 @@ class EmailAddress(LogicalType):
 
             if any_invalid:
                 info = f"Series {series.name} contains invalid email addresses. "
-                info += (
-                    "The email address regex can be changed in the config if needed."
-                )
+                info += "The email address regex can be changed "
+                info += "in the config if needed."
                 raise ValueError(info)
 
 
