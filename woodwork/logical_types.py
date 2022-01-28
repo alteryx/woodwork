@@ -65,9 +65,8 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
                 raise TypeConversionError(series, new_dtype, type(self))
         return series
 
-    def validate(self, series, return_indices=False):
-        if return_indices:
-            return pd.Series(name=series.name, dtype="boolean")
+    def validate(self, series, return_invalid_values=True):
+        return
 
 
 class Address(LogicalType):
@@ -311,17 +310,24 @@ class EmailAddress(LogicalType):
 
     primary_dtype = "string"
 
-    def validate(self, series, return_indices=False):
+    def validate(self, series, return_invalid_values=False):
         regex = config.get_option("email_inference_regex")
-        valid = series.str.fullmatch(regex).astype("boolean")
+        invalid = ~series.str.match(regex).astype("boolean")
 
-        if return_indices:
-            return valid.rename(series.name)
+        if return_invalid_values:
+            return series[invalid]
 
-        elif (~valid).any():
-            info = f"Series {series.name} contains invalid email addresses. "
-            info += "The email address regex can be changed in the config if needed."
-            raise ValueError(info)
+        else:
+            any_invalid = invalid.any()
+            if dd and isinstance(any_invalid, dd.core.Scalar):
+                any_invalid = any_invalid.compute()
+
+            if any_invalid:
+                info = f"Series {series.name} contains invalid email addresses. "
+                info += (
+                    "The email address regex can be changed in the config if needed."
+                )
+                raise ValueError(info)
 
 
 class Filepath(LogicalType):

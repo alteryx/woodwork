@@ -2978,19 +2978,25 @@ def test_nan_index_error(sample_df_pandas):
         nan_df.ww.init_with_full_schema(schema)
 
 
-def test_validate(sample_df_pandas):
-    df = sample_df_pandas[["email", "age"]]
+def test_validate(sample_df):
+    if _is_koalas_dataframe(sample_df):
+        pytest.skip("Koalas string methods have inconsistencies")
+
+    df = sample_df[["email", "age"]]
     df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate() is None
 
-    df.loc[4, "email"] = "bad_email"
+    df = df.append(pd.Series({4: "bad_email"}, name="email", dtype="string").to_frame())
     df.ww.init(logical_types={"email": "EmailAddress"})
-    with pytest.raises(
-        ValueError, match="Series email contains invalid email addresses."
-    ):
+    match = "Series email contains invalid email addresses."
+
+    with pytest.raises(ValueError, match=match):
         df.ww.validate()
 
-    actual = df.ww.validate(return_indices=True)
-    data = {"email": [True, pd.NA, True, True, False], "age": [pd.NA] * 5}
-    expected = pd.DataFrame(data).astype({"email": "boolean", "age": "boolean"})
+    actual = df.ww.validate(return_invalid_values=True)
+    if _is_dask_dataframe(actual):
+        actual = actual.compute()
+
+    expected = pd.DataFrame({"email": {4: "bad_email"}})
+    expected = expected.astype({"email": "string"})
     assert actual.equals(expected)

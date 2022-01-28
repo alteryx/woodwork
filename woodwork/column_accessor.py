@@ -436,8 +436,11 @@ class WoodworkColumnAccessor:
         )
 
     @_check_column_schema
-    def validate(self, return_indices=False):
-        return self.logical_type.validate(self._series, return_indices=return_indices)
+    def validate(self, return_invalid_values=False):
+        return self.logical_type.validate(
+            series=self._series,
+            return_invalid_values=return_invalid_values,
+        )
 
 
 def _validate_schema(schema, series):
