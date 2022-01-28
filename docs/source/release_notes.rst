@@ -21,6 +21,11 @@ v0.11.2 Jan 28, 2022
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`
 
+Note
+++++
+    * The pandas version for Koalas has been restricted, and a change was made to a pandas ``replace`` call to account for
+    the recent pandas 1.4.0 release.
+
 v0.11.1 Jan 4, 2022
 ===================
     * Changes
