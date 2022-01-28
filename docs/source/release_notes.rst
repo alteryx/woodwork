@@ -24,7 +24,7 @@ v0.11.2 Jan 28, 2022
 Note
 ++++
     * The pandas version for Koalas has been restricted, and a change was made to a pandas ``replace`` call to account for
-    the recent pandas 1.4.0 release.
+      the recent pandas 1.4.0 release.
 
 v0.11.1 Jan 4, 2022
 ===================
