@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_koalas_series
+from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.exceptions import TypeConversionWarning
 from woodwork.logical_types import (
     Boolean,
@@ -196,15 +196,23 @@ def test_ordinal_transform(sample_series):
         ordinal_incomplete_order.transform(sample_series)
 
 
-def test_email_address_validate():
-    email_address = EmailAddress()
+def test_email_address_validate(sample_df):
+    series = sample_df["email"]
+    if _is_koalas_series(series):
+        pytest.skip("Koalas string methods have inconsistencies")
 
-    series = pd.Series(["bad_email", "good@google.com", pd.NA], name="email")
-    with pytest.raises(
-        ValueError, match="Series email contains invalid email addresses."
-    ):
+    email_address = EmailAddress()
+    assert email_address.validate(series) is None
+
+    series = series.append(pd.Series({4: "bad_email"}, name="email"))
+    match = "Series email contains invalid email addresses."
+
+    with pytest.raises(ValueError, match=match):
         email_address.validate(series)
 
-    indices = email_address.validate(series, return_indices=True)
-    expected = pd.Series([False, True, pd.NA], dtype="boolean")
-    assert indices.equals(expected)
+    actual = email_address.validate(series, return_invalid_values=True)
+    if _is_dask_series(actual):
+        actual = actual.compute()
+
+    expected = pd.Series({4: "bad_email"}, name="email")
+    assert actual.equals(expected)
