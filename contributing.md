@@ -30,6 +30,7 @@ Whether you are a novice or experienced software developer, all contributions an
      ```bash
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
+     echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      brew install scala
      brew install apache-spark
      ```
