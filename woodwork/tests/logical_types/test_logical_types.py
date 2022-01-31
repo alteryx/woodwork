@@ -13,6 +13,9 @@ from woodwork.logical_types import (
     LatLong,
     Ordinal,
 )
+from woodwork.utils import import_or_none
+
+ks = import_or_none("databricks.koalas")
 
 
 def test_logical_eq():
@@ -198,21 +201,27 @@ def test_ordinal_transform(sample_series):
 
 def test_email_address_validate(sample_df):
     series = sample_df["email"]
+    invalid_row = pd.Series({4: "bad_email"}, name="email")
+
     if _is_koalas_series(series):
-        pytest.skip("Koalas string methods have inconsistencies")
+        invalid_row = ks.from_pandas(invalid_row)
 
     email_address = EmailAddress()
     assert email_address.validate(series) is None
 
-    series = series.append(pd.Series({4: "bad_email"}, name="email"))
+    series = series.append(invalid_row)
     match = "Series email contains invalid email addresses."
 
     with pytest.raises(ValueError, match=match):
         email_address.validate(series)
 
     actual = email_address.validate(series, return_invalid_values=True)
+
     if _is_dask_series(actual):
         actual = actual.compute()
+
+    if _is_koalas_series(actual):
+        actual = actual.to_frame().to_pandas()["email"]
 
     expected = pd.Series({4: "bad_email"}, name="email")
     assert actual.equals(expected)

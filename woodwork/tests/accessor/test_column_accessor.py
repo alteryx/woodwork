@@ -8,7 +8,6 @@ from mock import patch
 from woodwork.accessor_utils import (
     _is_dask_series,
     _is_dataframe,
-    _is_koalas_dataframe,
     _is_koalas_series,
     init_series,
 )
@@ -967,14 +966,16 @@ def test_nullable_attribute(sample_df_pandas):
 
 
 def test_validate(sample_df):
-    if _is_koalas_dataframe(sample_df):
-        pytest.skip("Koalas string methods have inconsistencies")
-
     series = sample_df["email"]
     series = init_series(series, logical_type="EmailAddress")
     assert series.ww.validate() is None
 
-    series = series.append(pd.Series({4: "bad_email"}, name="email", dtype="string"))
+    invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string")
+
+    if _is_koalas_series(series):
+        invalid_row = ks.from_pandas(invalid_row)
+
+    series = series.append(invalid_row)
     series = init_series(series, logical_type="EmailAddress")
     match = "Series email contains invalid email addresses."
 
@@ -982,8 +983,12 @@ def test_validate(sample_df):
         series.ww.validate()
 
     actual = series.ww.validate(return_invalid_values=True)
+
     if _is_dask_series(actual):
         actual = actual.compute()
+
+    if _is_koalas_series(actual):
+        actual = actual.to_frame().to_pandas()["email"]
 
     expected = pd.Series({4: "bad_email"}, dtype="string")
     assert actual.equals(expected)

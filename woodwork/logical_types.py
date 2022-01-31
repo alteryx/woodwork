@@ -1,3 +1,4 @@
+import re
 import warnings
 
 import pandas as pd
@@ -312,7 +313,17 @@ class EmailAddress(LogicalType):
 
     def validate(self, series, return_invalid_values=False):
         regex = config.get_option("email_inference_regex")
-        invalid = ~series.str.match(regex).astype("boolean")
+
+        if _is_koalas_series(series):
+
+            def match(x):
+                if isinstance(x, str):
+                    return bool(re.match(regex, x))
+
+            invalid = ~series.apply(match).astype("boolean")
+
+        else:
+            invalid = ~series.str.match(regex).astype("boolean")
 
         if return_invalid_values:
             return series[invalid]

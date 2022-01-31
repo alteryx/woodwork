@@ -1137,6 +1137,8 @@ class WoodworkTableAccessor:
             concat = pd.concat
             if _is_dask_dataframe(self._dataframe):
                 concat = dd.concat
+            if _is_koalas_dataframe(self._dataframe):
+                concat = ks.concat
 
             return concat(invalid_values, axis=1)
 

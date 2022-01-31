@@ -2979,14 +2979,16 @@ def test_nan_index_error(sample_df_pandas):
 
 
 def test_validate(sample_df):
-    if _is_koalas_dataframe(sample_df):
-        pytest.skip("Koalas string methods have inconsistencies")
-
     df = sample_df[["email", "age"]]
     df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate() is None
 
-    df = df.append(pd.Series({4: "bad_email"}, name="email", dtype="string").to_frame())
+    invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string").to_frame()
+
+    if _is_koalas_dataframe(df):
+        invalid_row = ks.from_pandas(invalid_row)
+
+    df = df.append(invalid_row)
     df.ww.init(logical_types={"email": "EmailAddress"})
     match = "Series email contains invalid email addresses."
 
@@ -2994,8 +2996,12 @@ def test_validate(sample_df):
         df.ww.validate()
 
     actual = df.ww.validate(return_invalid_values=True)
+
     if _is_dask_dataframe(actual):
         actual = actual.compute()
+
+    if _is_koalas_dataframe(actual):
+        actual = actual.to_pandas()
 
     expected = pd.DataFrame({"email": {4: "bad_email"}})
     expected = expected.astype({"email": "string"})
