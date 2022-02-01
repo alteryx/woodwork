@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+        * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+
 
 v0.12.0 Jan 27, 2022
 ====================
