@@ -1126,14 +1126,14 @@ class WoodworkTableAccessor:
 
     @_check_table_schema
     def validate(self, return_invalid_values=False):
-        if return_invalid_values:
-            invalid_values = []
-            for column in self.columns:
-                series = self.ww[column]
-                values = series.ww.validate(return_invalid_values=True)
-                if values is not None:
-                    invalid_values.append(values)
+        invalid_values = []
+        for column in self.columns:
+            series = self.ww[column]
+            values = series.ww.validate(return_invalid_values=return_invalid_values)
+            if values is not None:
+                invalid_values.append(values)
 
+        if return_invalid_values:
             concat = pd.concat
             if _is_dask_dataframe(self._dataframe):
                 concat = dd.concat
@@ -1141,11 +1141,6 @@ class WoodworkTableAccessor:
                 concat = ks.concat
 
             return concat(invalid_values, axis=1)
-
-        else:
-            for column in self.columns:
-                series = self.ww[column]
-                series.ww.validate(return_invalid_values=False)
 
 
 def _validate_accessor_params(
