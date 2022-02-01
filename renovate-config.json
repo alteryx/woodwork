@@ -17,7 +17,8 @@
       ]
    },
    "ignorePaths":[
-      "/woodwork/data/1-1000.txt"
+      "/woodwork/data/1-1000.txt",
+      "/.github/workflows/*"
    ],
    "dependencyDashboard":true,
    "autodiscover":true,
