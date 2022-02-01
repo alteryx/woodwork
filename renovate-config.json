@@ -19,6 +19,6 @@
    "ignorePaths":[
       "/woodwork/data/1-1000.txt"
    ],
-   "dependencyDashboard":true.
-   "autodiscover":true,
+   "dependencyDashboard":true,
+   "autodiscover":true
 }
