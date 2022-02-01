@@ -10,8 +10,15 @@ jobs:
   renovate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Self-hosted Renovate
         uses: renovatebot/github-action@v31.63.2
         with:
