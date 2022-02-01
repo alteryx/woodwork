@@ -16,6 +16,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypeConversionError,
+    TypeValidationError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError,
 )
@@ -979,7 +980,7 @@ def test_validate(sample_df):
     series = init_series(series, logical_type="EmailAddress")
     match = "Series email contains invalid email addresses."
 
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(TypeValidationError, match=match):
         series.ww.validate()
 
     actual = series.ww.validate(return_invalid_values=True)

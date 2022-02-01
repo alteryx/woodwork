@@ -6,7 +6,11 @@ import pandas.api.types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.config import config
-from woodwork.exceptions import TypeConversionError, TypeConversionWarning
+from woodwork.exceptions import (
+    TypeConversionError,
+    TypeConversionWarning,
+    TypeValidationError,
+)
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
     _infer_datetime_format,
@@ -337,7 +341,7 @@ class EmailAddress(LogicalType):
                 info = f"Series {series.name} contains invalid email addresses. "
                 info += "The email address regex can be changed "
                 info += "in the config if needed."
-                raise ValueError(info)
+                raise TypeValidationError(info)
 
 
 class Filepath(LogicalType):

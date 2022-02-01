@@ -19,6 +19,7 @@ from woodwork.exceptions import (
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
+    TypeValidationError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError,
 )
@@ -2992,7 +2993,7 @@ def test_validate(sample_df):
     df.ww.init(logical_types={"email": "EmailAddress"})
     match = "Series email contains invalid email addresses."
 
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(TypeValidationError, match=match):
         df.ww.validate()
 
     actual = df.ww.validate(return_invalid_values=True)

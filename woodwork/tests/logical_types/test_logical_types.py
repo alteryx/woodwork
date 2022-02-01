@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_koalas_series
-from woodwork.exceptions import TypeConversionWarning
+from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -213,7 +213,7 @@ def test_email_address_validate(sample_df):
     series = series.append(invalid_row)
     match = "Series email contains invalid email addresses."
 
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(TypeValidationError, match=match):
         email_address.validate(series)
 
     actual = email_address.validate(series, return_invalid_values=True)
