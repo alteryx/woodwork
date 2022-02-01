@@ -1126,6 +1126,14 @@ class WoodworkTableAccessor:
 
     @_check_table_schema
     def validate(self, return_invalid_values=False):
+        """Validates the dataframe based on the logical types.
+
+        Args:
+            return_invalid_values (bool): Whether or not to return invalid data values
+
+        Returns:
+            DataFrame: If return_invalid_values is True, returns invalid data values.
+        """
         invalid_values = []
         for column in self.columns:
             series = self.ww[column]

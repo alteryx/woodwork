@@ -316,6 +316,15 @@ class EmailAddress(LogicalType):
     primary_dtype = "string"
 
     def validate(self, series, return_invalid_values=False):
+        """Validates email address values based on the regex in the config.
+
+        Args:
+            series (Series): Series of email address values
+            return_invalid_values (bool): Whether to return invalid email address values
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid email address.
+        """
         regex = config.get_option("email_inference_regex")
 
         if _is_koalas_series(series):
