@@ -22,5 +22,6 @@
    ],
    "dependencyDashboard":true,
    "autodiscover":true,
-   "autodiscoverFilter": "alteryx/woodwork"
+   "autodiscoverFilter": "alteryx/woodwork",
+   "enabledManagers": ["python"]
 }
