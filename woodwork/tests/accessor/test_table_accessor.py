@@ -2990,13 +2990,19 @@ def test_validate(sample_df):
         invalid_row = ks.from_pandas(invalid_row)
 
     df = df.append(invalid_row)
-    df.ww.init(logical_types={"email": "EmailAddress"})
-    match = "Series email contains invalid email addresses."
+    df["email_2"] = df["email"].fillna("bad_email_2")
+    types = dict(email="EmailAddress", email_2="EmailAddress")
+    df.ww.init(logical_types=types)
 
+    match = "Series email contains invalid email addresses."
     with pytest.raises(TypeValidationError, match=match):
         df.ww.validate()
 
+    email = {1: pd.NA, 4: "bad_email"}
+    email_2 = {1: "bad_email_2", 4: "bad_email"}
+    expected = pd.DataFrame({"email": email, "email_2": email_2})
+    expected = expected.astype({"email": "string", "email_2": "string"})
+
     actual = df.ww.validate(return_invalid_values=True)
-    expected = pd.DataFrame({"email": {4: "bad_email"}})
-    expected = expected.astype({"email": "string"})
-    assert to_pandas(actual).equals(expected)
+    actual = to_pandas(actual).sort_index()
+    assert actual.equals(expected)
