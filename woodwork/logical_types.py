@@ -320,7 +320,7 @@ class EmailAddress(LogicalType):
 
         Args:
             series (Series): Series of email address values
-            return_invalid_values (bool): Whether to return invalid email address values
+            return_invalid_values (bool): Whether or not to return invalid email address values
 
         Returns:
             Series: If return_invalid_values is True, returns invalid email address.
