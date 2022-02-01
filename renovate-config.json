@@ -1,23 +1,23 @@
 {
-    "extends": [
-        "config:base"
-    ],
-    "prConcurrentLimit": 3,
-    "rebaseWhen": "never",
-    "masterIssue": true,
-    "pip_requirements": {
-        "fileMatch": [
-            "dask-requirements.txt",
-            "dev-requirements.txt",
-            "koalas-requirements.txt",
-            "requirements.txt",
-            "test-requirements.txt",
-            "/woodwork/tests/requirement_files/latest_core_dependencies.txt",
-            "/woodwork/tests/requirement_files/latest_dask_dependencies.txt",
-            "/woodwork/tests/requirement_files/latest_koalas_dependencies.txt"
-        ]
-    },
-    "ignorePaths": [
-        "/woodwork/data/1-1000.txt"
-    ]
+   "extends":[
+      "config:base"
+   ],
+   "prConcurrentLimit":3,
+   "rebaseWhen":"never",
+   "pip_requirements":{
+      "fileMatch":[
+         "dask-requirements.txt",
+         "dev-requirements.txt",
+         "koalas-requirements.txt",
+         "requirements.txt",
+         "test-requirements.txt",
+         "/woodwork/tests/requirement_files/latest_core_dependencies.txt",
+         "/woodwork/tests/requirement_files/latest_dask_dependencies.txt",
+         "/woodwork/tests/requirement_files/latest_koalas_dependencies.txt"
+      ]
+   },
+   "ignorePaths":[
+      "/woodwork/data/1-1000.txt"
+   ],
+   "dependencyDashboard":true
 }
