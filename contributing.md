@@ -32,6 +32,8 @@ Whether you are a novice or experienced software developer, all contributions an
      brew install --cask adoptopenjdk11
      brew install scala
      brew install apache-spark
+     echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
+     echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc 
      ```
 
      **Ubuntu**:
