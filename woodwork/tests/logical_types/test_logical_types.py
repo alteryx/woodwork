@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
+from woodwork.accessor_utils import _is_koalas_series
 from woodwork.exceptions import TypeConversionWarning
 from woodwork.logical_types import (
     Boolean,
@@ -13,6 +13,7 @@ from woodwork.logical_types import (
     LatLong,
     Ordinal,
 )
+from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
 
 ks = import_or_none("databricks.koalas")
@@ -216,12 +217,5 @@ def test_email_address_validate(sample_df):
         email_address.validate(series)
 
     actual = email_address.validate(series, return_invalid_values=True)
-
-    if _is_dask_series(actual):
-        actual = actual.compute()
-
-    if _is_koalas_series(actual):
-        actual = actual.to_frame().to_pandas()["email"]
-
     expected = pd.Series({4: "bad_email"}, name="email")
-    assert actual.equals(expected)
+    assert to_pandas(actual).equals(expected)

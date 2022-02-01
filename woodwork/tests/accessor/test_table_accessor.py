@@ -2996,13 +2996,6 @@ def test_validate(sample_df):
         df.ww.validate()
 
     actual = df.ww.validate(return_invalid_values=True)
-
-    if _is_dask_dataframe(actual):
-        actual = actual.compute()
-
-    if _is_koalas_dataframe(actual):
-        actual = actual.to_pandas()
-
     expected = pd.DataFrame({"email": {4: "bad_email"}})
     expected = expected.astype({"email": "string"})
-    assert actual.equals(expected)
+    assert to_pandas(actual).equals(expected)

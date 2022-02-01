@@ -983,12 +983,5 @@ def test_validate(sample_df):
         series.ww.validate()
 
     actual = series.ww.validate(return_invalid_values=True)
-
-    if _is_dask_series(actual):
-        actual = actual.compute()
-
-    if _is_koalas_series(actual):
-        actual = actual.to_frame().to_pandas()["email"]
-
     expected = pd.Series({4: "bad_email"}, dtype="string")
-    assert actual.equals(expected)
+    assert to_pandas(actual).equals(expected)
