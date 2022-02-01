@@ -20,5 +20,6 @@
       "/woodwork/data/1-1000.txt"
    ],
    "dependencyDashboard":true,
-   "autodiscover":true
+   "autodiscover":true,
+   "autodiscoverFilter": "alteryx/woodwork"
 }
