@@ -966,10 +966,10 @@ def test_nullable_attribute(sample_df_pandas):
         assert actual is expected
 
 
-def test_validate(sample_df):
+def test_validate_logical_type(sample_df):
     series = sample_df["email"]
     series = init_series(series, logical_type="EmailAddress")
-    assert series.ww.validate() is None
+    assert series.ww.validate_logical_type() is None
 
     invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string")
 
@@ -981,8 +981,8 @@ def test_validate(sample_df):
     match = "Series email contains invalid email addresses."
 
     with pytest.raises(TypeValidationError, match=match):
-        series.ww.validate()
+        series.ww.validate_logical_type()
 
-    actual = series.ww.validate(return_invalid_values=True)
+    actual = series.ww.validate_logical_type(return_invalid_values=True)
     expected = pd.Series({4: "bad_email"}, dtype="string")
     assert to_pandas(actual).equals(expected)

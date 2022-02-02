@@ -42,7 +42,7 @@ WoodworkTableAccessor
     WoodworkTableAccessor.to_dictionary
     WoodworkTableAccessor.types
     WoodworkTableAccessor.use_standard_tags
-    WoodworkTableAccessor.validate
+    WoodworkTableAccessor.validate_logical_types
     WoodworkTableAccessor.value_counts
 
 WoodworkColumnAccessor
@@ -69,7 +69,7 @@ WoodworkColumnAccessor
     WoodworkColumnAccessor.set_logical_type
     WoodworkColumnAccessor.set_semantic_tags
     WoodworkColumnAccessor.use_standard_tags
-    WoodworkColumnAccessor.validate
+    WoodworkColumnAccessor.validate_logical_type
 
 TableSchema
 ===========

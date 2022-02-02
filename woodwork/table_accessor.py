@@ -1125,7 +1125,7 @@ class WoodworkTableAccessor:
         )
 
     @_check_table_schema
-    def validate(self, return_invalid_values=False):
+    def validate_logical_types(self, return_invalid_values=False):
         """Validates the dataframe based on the logical types.
 
         Args:
@@ -1137,7 +1137,9 @@ class WoodworkTableAccessor:
         invalid_values = []
         for column in self.columns:
             series = self.ww[column]
-            values = series.ww.validate(return_invalid_values=return_invalid_values)
+            values = series.ww.validate_logical_type(
+                return_invalid_values=return_invalid_values
+            )
             if values is not None:
                 invalid_values.append(values)
 

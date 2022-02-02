@@ -2979,10 +2979,10 @@ def test_nan_index_error(sample_df_pandas):
         nan_df.ww.init_with_full_schema(schema)
 
 
-def test_validate(sample_df):
+def test_validate_logical_types(sample_df):
     df = sample_df[["email", "age"]]
     df.ww.init(logical_types={"email": "EmailAddress"})
-    assert df.ww.validate() is None
+    assert df.ww.validate_logical_types() is None
 
     invalid_row_1 = pd.Series({4: "bad_email"}).to_frame("email")
     invalid_row_2 = pd.Series({5: "bad_email"}).to_frame("email_2")
@@ -3000,13 +3000,13 @@ def test_validate(sample_df):
 
     match = "Series email contains invalid email addresses."
     with pytest.raises(TypeValidationError, match=match):
-        df.ww.validate()
+        df.ww.validate_logical_types()
 
     email = {4: "bad_email", 5: pd.NA}
     email_2 = {4: pd.NA, 5: "bad_email"}
     expected = pd.DataFrame({"email": email, "email_2": email_2})
     expected = expected.astype({"email": "string", "email_2": "string"})
 
-    actual = df.ww.validate(return_invalid_values=True)
+    actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
     assert actual.equals(expected)

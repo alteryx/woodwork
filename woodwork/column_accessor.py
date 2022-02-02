@@ -436,7 +436,7 @@ class WoodworkColumnAccessor:
         )
 
     @_check_column_schema
-    def validate(self, return_invalid_values=False):
+    def validate_logical_type(self, return_invalid_values=False):
         """Validates series data based on the logical type.
 
         Args:
