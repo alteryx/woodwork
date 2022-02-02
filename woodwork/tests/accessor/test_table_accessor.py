@@ -2984,13 +2984,17 @@ def test_validate(sample_df):
     df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate() is None
 
-    invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string").to_frame()
+    invalid_row_1 = pd.Series({4: "bad_email"}).to_frame("email")
+    invalid_row_2 = pd.Series({5: "bad_email"}).to_frame("email_2")
 
     if _is_koalas_dataframe(df):
-        invalid_row = ks.from_pandas(invalid_row)
+        invalid_row_1 = ks.from_pandas(invalid_row_1)
+        invalid_row_2 = ks.from_pandas(invalid_row_2)
 
-    df = df.append(invalid_row)
-    df["email_2"] = df["email"].fillna("bad_email_2")
+    df["email_2"] = df["email"]
+    df = df.append(invalid_row_1)
+    df = df.append(invalid_row_2)
+
     types = dict(email="EmailAddress", email_2="EmailAddress")
     df.ww.init(logical_types=types)
 
@@ -2998,8 +3002,8 @@ def test_validate(sample_df):
     with pytest.raises(TypeValidationError, match=match):
         df.ww.validate()
 
-    email = {1: pd.NA, 4: "bad_email"}
-    email_2 = {1: "bad_email_2", 4: "bad_email"}
+    email = {4: "bad_email", 5: pd.NA}
+    email_2 = {4: pd.NA, 5: "bad_email"}
     expected = pd.DataFrame({"email": email, "email_2": email_2})
     expected = expected.astype({"email": "string", "email_2": "string"})
 
