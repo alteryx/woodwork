@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from inspect import isclass
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -325,22 +326,31 @@ def test_dependence_unique_cols(df_mi_unique, measure):
     assert "ints" in cols_used
 
 
+class MockCallback:
+    def __init__(self):
+        self.progress_history = []
+        self.total_update = 0
+        self.total_elapsed_time = 0
+
+    def __call__(self, update, progress, total, unit, time_elapsed):
+        self.total_update += update
+        self.total = total
+        self.progress_history.append(progress)
+        self.unit = unit
+        self.total_elapsed_time = time_elapsed
+
+
+def test_dependence_extra_stats():
+    pass  # TODO: implement
+
+
+def test_dependence_min_shared():
+    pass  # TODO: implement
+
+
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_callback(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
-
-    class MockCallback:
-        def __init__(self):
-            self.progress_history = []
-            self.total_update = 0
-            self.total_elapsed_time = 0
-
-        def __call__(self, update, progress, total, unit, time_elapsed):
-            self.total_update += update
-            self.total = total
-            self.progress_history.append(progress)
-            self.unit = unit
-            self.total_elapsed_time = time_elapsed
 
     mock_callback = MockCallback()
 
@@ -362,6 +372,120 @@ def test_dependence_callback(df_mi, measure):
     assert mock_callback.total_elapsed_time > 0
 
 
+@pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
+def test_dependence_with_string_index(measure):
+    df = pd.DataFrame(
+        {
+            "id": ["a", "b", "c"],
+            "col1": [1, 2, 3],
+            "col2": [10, 20, 30],
+        }
+    )
+    df.ww.init(index="id", logical_types={"id": "unknown"})
+    dependence_df = df.ww.dependence(measure=measure)
+
+    cols_used = set(np.unique(dependence_df[["column_1", "column_2"]].values))
+    assert "id" not in cols_used
+    assert "col1" in cols_used
+    assert "col2" in cols_used
+
+
+@patch("woodwork.table_accessor._get_dependence_dict")
+def test_pearson_dict(_get_dependence_dict, df_mi):
+    df_mi.ww.init()
+    callback = MockCallback()
+    df_mi.ww.pearson_correlation_dict(
+        num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=callback,
+        extra_stats=True,
+        min_shared=25,
+    )
+    assert _get_dependence_dict.called
+    _get_dependence_dict.assert_called_with(
+        dataframe=df_mi,
+        measure=["pearson"],
+        num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=callback,
+        extra_stats=True,
+        min_shared=25,
+    )
+
+
+def test_pearson_method(df_mi):
+    df_mi.ww.init()
+    callback = MockCallback()
+    with patch.object(df_mi.ww, "pearson_correlation_dict") as pearson_dict_method:
+        df_mi.ww.pearson_correlation(
+            num_bins=5,
+            nrows=100,
+            include_index=True,
+            callback=callback,
+            extra_stats=True,
+            min_shared=25,
+        )
+    assert pearson_dict_method.called
+    pearson_dict_method.assert_called_with(
+        num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=callback,
+        extra_stats=True,
+        min_shared=25,
+    )
+
+
+@patch("woodwork.table_accessor._get_dependence_dict")
+def test_mutual_dict(_get_dependence_dict, df_mi):
+    df_mi.ww.init()
+    callback = MockCallback()
+    df_mi.ww.mutual_information_dict(
+        num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=callback,
+        extra_stats=True,
+        min_shared=25,
+    )
+    assert _get_dependence_dict.called
+    _get_dependence_dict.assert_called_with(
+        dataframe=df_mi,
+        measure=["mutual"],
+        num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=callback,
+        extra_stats=True,
+        min_shared=25,
+    )
+
+
+def test_mutual(df_mi):
+    df_mi.ww.init()
+    callback = MockCallback()
+    with patch.object(df_mi.ww, "mutual_information_dict") as mi_dict_method:
+        df_mi.ww.mutual_information(
+            num_bins=5,
+            nrows=100,
+            include_index=True,
+            callback=callback,
+            extra_stats=True,
+            min_shared=25,
+        )
+    assert mi_dict_method.called
+    mi_dict_method.assert_called_with(
+        num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=callback,
+        extra_stats=True,
+        min_shared=25,
+    )
+
+
 def test_get_valid_mi_columns(df_mi):
     df_mi.ww.init()
     valid_columns = df_mi.ww.get_valid_mi_columns()
@@ -378,24 +502,6 @@ def test_get_valid_mi_columns_with_index(sample_df):
 
     mi = sample_df.ww.get_valid_mi_columns(include_index=True)
     assert "id" in mi
-
-
-# TODO: extend
-def test_mutual_info_with_string_index():
-    df = pd.DataFrame(
-        {
-            "id": ["a", "b", "c"],
-            "col1": [1, 2, 3],
-            "col2": [10, 20, 30],
-        }
-    )
-    df.ww.init(index="id", logical_types={"id": "unknown"})
-    mi = df.ww.mutual_information()
-
-    cols_used = set(np.unique(mi[["column_1", "column_2"]].values))
-    assert "id" not in cols_used
-    assert "col1" in cols_used
-    assert "col2" in cols_used
 
 
 def test_get_describe_dict(describe_df):

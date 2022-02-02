@@ -916,14 +916,14 @@ class WoodworkTableAccessor:
             (perfect dependency).
         """
         return _get_dependence_dict(
-            self._dataframe,
-            ["mutual"],
-            num_bins,
-            nrows,
-            include_index,
-            callback,
-            extra_stats,
-            min_shared,
+            dataframe=self._dataframe,
+            measure=["mutual"],
+            num_bins=num_bins,
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
         )
 
     def mutual_information(
@@ -972,7 +972,12 @@ class WoodworkTableAccessor:
             (perfect dependency).
         """
         mutual_info = self.mutual_information_dict(
-            num_bins, nrows, include_index, callback, extra_stats, min_shared
+            num_bins=num_bins,
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
         )
         return pd.DataFrame(mutual_info)
 
@@ -1024,14 +1029,14 @@ class WoodworkTableAccessor:
             Correlation coefficient values are between -1 and 1.
         """
         return _get_dependence_dict(
-            self._dataframe,
-            ["pearson"],
-            num_bins,
-            nrows,
-            include_index,
-            callback,
-            extra_stats,
-            min_shared,
+            dataframe=self._dataframe,
+            measure=["pearson"],
+            num_bins=num_bins,
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
         )
 
     def pearson_correlation(
@@ -1080,7 +1085,12 @@ class WoodworkTableAccessor:
             (perfect dependency).
         """
         pearson_dict = self.pearson_correlation_dict(
-            num_bins, nrows, include_index, callback, extra_stats, min_shared
+            num_bins=num_bins,
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
         )
         return pd.DataFrame(pearson_dict)
 
