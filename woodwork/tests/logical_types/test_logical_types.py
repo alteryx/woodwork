@@ -4,8 +4,19 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_koalas_series
-from woodwork.exceptions import TypeConversionWarning
-from woodwork.logical_types import Boolean, Categorical, Datetime, LatLong, Ordinal
+from woodwork.exceptions import TypeConversionWarning, TypeValidationError
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    EmailAddress,
+    LatLong,
+    Ordinal,
+)
+from woodwork.tests.testing_utils.table_utils import to_pandas
+from woodwork.utils import import_or_none
+
+ks = import_or_none("databricks.koalas")
 
 
 def test_logical_eq():
@@ -187,3 +198,24 @@ def test_ordinal_transform(sample_series):
 
     with pytest.raises(ValueError, match=error_msg):
         ordinal_incomplete_order.transform(sample_series)
+
+
+def test_email_address_validate(sample_df):
+    series = sample_df["email"]
+    invalid_row = pd.Series({4: "bad_email"}, name="email")
+
+    if _is_koalas_series(series):
+        invalid_row = ks.from_pandas(invalid_row)
+
+    email_address = EmailAddress()
+    assert email_address.validate(series) is None
+
+    series = series.append(invalid_row)
+    match = "Series email contains invalid email addresses."
+
+    with pytest.raises(TypeValidationError, match=match):
+        email_address.validate(series)
+
+    actual = email_address.validate(series, return_invalid_values=True)
+    expected = pd.Series({4: "bad_email"}, name="email")
+    assert to_pandas(actual).equals(expected)

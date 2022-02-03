@@ -435,6 +435,21 @@ class WoodworkColumnAccessor:
             include_indices_and_values=include_indices_and_values,
         )
 
+    @_check_column_schema
+    def validate_logical_type(self, return_invalid_values=False):
+        """Validates series data based on the logical type.
+
+        Args:
+            return_invalid_values (bool): Whether or not to return invalid data values
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid data values.
+        """
+        return self.logical_type.validate(
+            series=self._series,
+            return_invalid_values=return_invalid_values,
+        )
+
 
 def _validate_schema(schema, series):
     if not isinstance(schema, ColumnSchema):

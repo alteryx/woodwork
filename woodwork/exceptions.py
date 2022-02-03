@@ -74,3 +74,7 @@ class WoodworkNotInitError(AttributeError):
 
 class WoodworkNotInitWarning(UserWarning):
     pass
+
+
+class TypeValidationError(Exception):
+    pass

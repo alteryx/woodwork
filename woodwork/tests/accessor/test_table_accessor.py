@@ -19,6 +19,7 @@ from woodwork.exceptions import (
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
+    TypeValidationError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError,
 )
@@ -313,32 +314,22 @@ def test_accessor_init_errors_methods(sample_df):
     ]
     method_args_dict = {
         "add_semantic_tags": [{"id": "new_tag"}],
-        "describe": None,
         "pop": ["id"],
-        "describe": None,
-        "describe_dict": None,
         "drop": ["id"],
-        "get_valid_mi_columns": None,
-        "mutual_information": None,
-        "mutual_information_dict": None,
         "remove_semantic_tags": [{"id": "new_tag"}],
         "rename": [{"id": "new_id"}],
-        "reset_semantic_tags": None,
         "select": [["Double"]],
         "set_index": ["id"],
         "set_time_index": ["signup_date"],
         "set_types": [{"id": "Integer"}],
         "to_disk": ["dir"],
-        "to_dictionary": None,
-        "value_counts": None,
-        "infer_temporal_frequencies": None,
     }
     error = re.escape(
         "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
     )
     for method in public_methods:
         func = getattr(sample_df.ww, method)
-        method_args = method_args_dict[method]
+        method_args = method_args_dict.get(method)
         with pytest.raises(WoodworkNotInitError, match=error):
             if method_args:
                 func(*method_args)
@@ -2986,3 +2977,36 @@ def test_nan_index_error(sample_df_pandas):
 
     with pytest.raises(ValueError, match=match):
         nan_df.ww.init_with_full_schema(schema)
+
+
+def test_validate_logical_types(sample_df):
+    df = sample_df[["email", "age"]]
+    df.ww.init(logical_types={"email": "EmailAddress"})
+    assert df.ww.validate_logical_types() is None
+
+    invalid_row_1 = pd.Series({4: "bad_email"}).to_frame("email")
+    invalid_row_2 = pd.Series({5: "bad_email"}).to_frame("email_2")
+
+    if _is_koalas_dataframe(df):
+        invalid_row_1 = ks.from_pandas(invalid_row_1)
+        invalid_row_2 = ks.from_pandas(invalid_row_2)
+
+    df["email_2"] = df["email"]
+    df = df.append(invalid_row_1)
+    df = df.append(invalid_row_2)
+
+    types = dict(email="EmailAddress", email_2="EmailAddress")
+    df.ww.init(logical_types=types)
+
+    match = "Series email contains invalid email addresses."
+    with pytest.raises(TypeValidationError, match=match):
+        df.ww.validate_logical_types()
+
+    email = {4: "bad_email", 5: pd.NA}
+    email_2 = {4: pd.NA, 5: "bad_email"}
+    expected = pd.DataFrame({"email": email, "email_2": email_2})
+    expected = expected.astype({"email": "string", "email_2": "string"})
+
+    actual = df.ww.validate_logical_types(return_invalid_values=True)
+    actual = to_pandas(actual).sort_index()
+    assert actual.equals(expected)
