@@ -10,6 +10,8 @@ Future Release
     * Changes
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
+        * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
+
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
