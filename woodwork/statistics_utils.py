@@ -688,3 +688,20 @@ def _infer_temporal_frequencies(dataframe, temporal_columns=None):
                 )
 
     return {col: pd.infer_freq(dataframe[col]) for col in temporal_columns}
+
+
+def infer_freq_v2(series):
+    """
+    """
+    dt_index = series.to_series()
+    alias_dict = {}
+
+    for window in dt_index.rolling(3):
+        if (len(window) == 3):
+            alias = pd.infer_freq(window)
+            if alias in alias_dict:
+                alias_dict[alias] += 1
+            else:
+                alias_dict[alias] = 1
+
+    return sorted(alias_dict.items(), key=lambda item: item[1], reverse=True)[0][0]
