@@ -16,6 +16,7 @@ from woodwork.column_schema import ColumnSchema
 from woodwork.exceptions import (
     ParametersIgnoredWarning,
     TypeConversionError,
+    TypeValidationError,
     TypingInfoMismatchWarning,
     WoodworkNotInitError,
 )
@@ -198,17 +199,15 @@ def test_error_accessing_methods_before_init(sample_series):
     method_args_dict = {
         "add_semantic_tags": [{"new_tag"}],
         "remove_semantic_tags": [{"new_tag"}],
-        "reset_semantic_tags": None,
         "set_logical_type": ["Integer"],
         "set_semantic_tags": [{"new_tag"}],
-        "box_plot_dict": [None],
     }
     error = (
         "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
     )
     for method in public_methods:
         func = getattr(sample_series.ww, method)
-        method_args = method_args_dict[method]
+        method_args = method_args_dict.get(method)
         with pytest.raises(WoodworkNotInitError, match=error):
             if method_args:
                 func(*method_args)
@@ -965,3 +964,25 @@ def test_nullable_attribute(sample_df_pandas):
         expected = EXPECTED_COLUMN_NULLABILITIES[key]
 
         assert actual is expected
+
+
+def test_validate_logical_type(sample_df):
+    series = sample_df["email"]
+    series = init_series(series, logical_type="EmailAddress")
+    assert series.ww.validate_logical_type() is None
+
+    invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string")
+
+    if _is_koalas_series(series):
+        invalid_row = ks.from_pandas(invalid_row)
+
+    series = series.append(invalid_row)
+    series = init_series(series, logical_type="EmailAddress")
+    match = "Series email contains invalid email addresses."
+
+    with pytest.raises(TypeValidationError, match=match):
+        series.ww.validate_logical_type()
+
+    actual = series.ww.validate_logical_type(return_invalid_values=True)
+    expected = pd.Series({4: "bad_email"}, dtype="string")
+    assert to_pandas(actual).equals(expected)
