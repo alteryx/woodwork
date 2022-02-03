@@ -704,4 +704,17 @@ def infer_freq_v2(series):
             else:
                 alias_dict[alias] = 1
 
-    return sorted(alias_dict.items(), key=lambda item: item[1], reverse=True)[0][0]
+    """
+    TODO: better handling here
+    - check dictionary has keys
+    - top key should be greater than some threshold >80% for example
+    - figure out what to return. Do we want a confidence number, etc?
+    """
+    most_likely_freq = sorted(alias_dict.items(), key=lambda item: item[1], reverse=True)[0][0]
+
+    if most_likely_freq is not None:
+        # Strip off anchor
+        most_likely_freq = most_likely_freq.split("-")[0]
+        return most_likely_freq
+    else:
+        return None

@@ -134,10 +134,6 @@ def datetime_freqs_df_pandas():
         }
     )
 
-@pytest.fixture()
-def datetime_freqs_series():
-    return datetime_freq_fixtures
-
 @pytest.fixture(
     params=[
         "sample_unsorted_df_pandas",

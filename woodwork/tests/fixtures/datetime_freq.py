@@ -1,6 +1,7 @@
+from lib2to3.pytree import convert
 import pandas as pd
 
-
+# https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases
 ALL_ALIASES = [
     { "alias": ["B"], "desc": "business day frequency"},
     { "alias": ["C"], "desc": "custom business day frequency"},
@@ -31,7 +32,18 @@ ALL_ALIASES = [
     { "alias": ["N"], "desc": "nanoseconds"}
 ]
 
-def case1():
+# These keys are inferred to these values by pandas
+KNOWN_FREQ_ISSUES = {
+    'B': 'D',
+    'C': 'D',
+    'SM': None,
+    'CBM': 'BM',
+    'SMS': None,
+    'CBMS': 'BMS',
+    'BH': 'H'
+}
+
+def case0():
     # 1 hour separation
     # Missing 2005-01-01 20:00:00 at index 20
     dates_1 = pd.date_range("2005-01-01 00:00:00", periods=20, freq="1H")
@@ -45,7 +57,7 @@ def case1():
         "actual_freq": ["H"]
     }
 
-def case2():
+def case1():
     # 2 day separation
     # Missing 2005-02-10 at index 20
     dates_1 = pd.date_range("2005-01-01", periods=20, freq="2D")
@@ -60,7 +72,7 @@ def case2():
     }
 
 
-def case3():
+def case2():
     # 3 week separation
     # Missing 2006-02-26 at index 20
     dates_1 = pd.date_range("2005-01-02", periods=20, freq="3W")
@@ -74,7 +86,7 @@ def case3():
         "actual_freq": ["3W", "3W-SUN"]
     }
 
-def case4():
+def case3():
     # 1 month start separation
     # Missing 2006-09-01 at index 0
     dates_1 = pd.DatetimeIndex(["2006-08-01"])
@@ -88,7 +100,7 @@ def case4():
         "actual_freq": ["MS"]
     }
 
-def case5():
+def case4():
     # 2 month end separation
     # Missing 2006-08-31 at index 0
     dates_1 = pd.DatetimeIndex(["2006-06-30"])
@@ -102,7 +114,7 @@ def case5():
         "actual_freq": ["2M"]
     }
 
-def case6():
+def case5():
     # 3 year start separation
     # Missing 1943-01-01 at index 0
     dates_1 = pd.DatetimeIndex(["1940-01-01"])
@@ -116,7 +128,7 @@ def case6():
         "actual_freq": ["3AS"]
     }
 
-def case7():
+def case6():
     # 1 month start separation
     # Missing 2009-04-01 at index 30
     dates_1 = pd.date_range("2006-10-01", periods=30, freq="1MS")
@@ -130,7 +142,7 @@ def case7():
         "actual_freq": ["MS"]
     }
 
-def case8():
+def case7():
     # 2 month end separation
     # Missing 2011-10-31 at index 30
     dates_1 = pd.date_range("2006-10-31", periods=30, freq="2M")
@@ -144,7 +156,7 @@ def case8():
         "actual_freq": ["2M"]
     }
 
-def case9():
+def case8():
     # 3 year end separation
     # Missing 2036-12-31 at index 30
     dates_1 = pd.date_range("1946", periods=30, freq="3A")
@@ -158,7 +170,7 @@ def case9():
         "actual_freq":  ["3A", "3A-DEC"]
     }
 
-def case10():
+def case9():
     # 3 hour start separation
     # Missing 2010-04-15 12:00:00 at index 20
     # Missing 2010-04-16 18:00:00 at index 29
@@ -175,7 +187,7 @@ def case10():
     }
 
 
-def case11():
+def case10():
     # 5 day separation
     # Missing 2014-05-25 at index 17
     # Missing 2014-07-14 at index 26
@@ -193,7 +205,7 @@ def case11():
         "actual_freq": ["5D"]
     }
 
-def case12():
+def case11():
     # 2 week separation
     # Missing 2010-04-15 12:00:00 at index 20
     # Missing 2010-04-15 15:00:00 at index 21
@@ -208,7 +220,7 @@ def case12():
         "actual_freq": ["3H"]
     }
 
-def case13():
+def case12():
     # 5 day separation
     # Missing 2014-03-06 at index 1
     # Missing 2014-03-11 at index 2
@@ -231,7 +243,7 @@ def case13():
         "actual_freq": ["5D"]
     }
 
-def case14():
+def case13():
     # 10 hours separation
     # 2005-01-09 12:00:00 should be 2005-01-09 08:00:00 at index 20
     dates_1 = pd.date_range("2005-01-01 00:00:00", periods=20, freq="10H")
@@ -243,10 +255,10 @@ def case14():
         "name": "10 hours separation",
         "description": "2005-01-09 12:00:00 should be 2005-01-09 08:00:00 at index 20",
         "data": dates,
-        "actual_freq": ["3H"]
+        "actual_freq": ["10H"]
     }
 
-def case15():
+def case14():
     # 3 months, or quarter start separation
     # 2006-01-12 should be 2006-01-01 at index 20
     dates_1 = pd.date_range("2001-01-01", periods=20, freq="3MS")
@@ -261,7 +273,7 @@ def case15():
         "actual_freq": ["3MS", "QS", "QS-OCT"]
     }
 
-def case16():
+def case15():
     # 1 semi-month end separation
     # 2001-11-12 should be 2001-11-15 at index 20
     # Note that pandas has trouble actually inferring this as `1SM` frequency, despite accepting
@@ -276,10 +288,10 @@ def case16():
         "name": "1 semi-month end separation",
         "description": "2001-11-12 should be 2001-11-15 at index 20 (pandas has trouble with this)",
         "data": dates,
-        "actual_freq": ["SM"]
+        "actual_freq": [None]
     }
 
-def case17():
+def case16():
     # 1 month start separation
     # 2006-09-25 should be 2006-09-01 at index 0
     dates_1 = pd.DatetimeIndex(["2006-09-25"])
@@ -293,7 +305,7 @@ def case17():
         "actual_freq": ["MS"]
     }
 
-def case18():
+def case17():
     # 2 month end separation
     # 2006-07-23 should be 2006-08-31 at index 0
     dates_1 = pd.DatetimeIndex(["2006-07-23"])
@@ -307,7 +319,7 @@ def case18():
         "actual_freq": ["2M"]
     }
 
-def case19():
+def case18():
     # 3 year start separation
     # 1945-07-03 should be 1943-01-01 at index 0
     dates_1 = pd.DatetimeIndex(["1945-07-03"])
@@ -321,7 +333,7 @@ def case19():
         "actual_freq": ["3AS", "3AS-JAN"]
     }
 
-def case20():
+def case19():
     # 1 month start separation
     # 2009-03-26 should be 2009-04-01 at index 30
     dates_1 = pd.date_range("2006-10-01", periods=30, freq="1MS")
@@ -335,7 +347,7 @@ def case20():
         "actual_freq": ["MS"]
     }
 
-def case21():
+def case20():
     # 2 month end separation
     # 2011-11-12 should be 2011-10-31 at index 30
     dates_1 = pd.date_range("2006-10-31", periods=30, freq="2M")
@@ -349,7 +361,7 @@ def case21():
         "actual_freq": ["2M"]
     }
 
-def case22():
+def case21():
     # 3 year end separation
     # 2034-04-21 should be 2036-12-31 at index 30
     dates_1 = pd.date_range("1946", periods=30, freq="3Y")
@@ -363,7 +375,7 @@ def case22():
         "actual_freq": ["3A", "3A-DEC"]
     }
 
-def case23():
+def case22():
     # 3 hour start separation
     # 2010-04-15 10:00:00 should be 2010-04-15 12:00:00 at index 20
     # 2010-04-16 17:00:00 should be 2010-04-16 15:00:00 at index 29
@@ -380,7 +392,7 @@ def case23():
         "actual_freq": ["3H"]
     }
 
-def case24():
+def case23():
     # 5 day separation
     # 2014-05-23 should be 2014-05-25 at index 17
     # 2014-07-11 should be 2014-07-09 at index 26
@@ -404,7 +416,7 @@ def case24():
 
 # Duplicate
 
-def case25():
+def case24():
     # 1 month start separation
     # 2006-09-01 is a duplicate at index 0 and should be 2006-08-01
     dates_1 = pd.DatetimeIndex(["2006-09-01"])
@@ -418,7 +430,7 @@ def case25():
         "actual_freq": ["MS"]
     }
 
-def case26():
+def case25():
     # 3 day separation
     # 2001-04-10 is a duplicate at index 30 and should be 2001-04-07
     dates_1 = pd.date_range("2001-01-07", periods=30, freq="3D")
@@ -432,7 +444,7 @@ def case26():
         "actual_freq": ["3D"]
     }
 
-def case27():
+def case26():
     # 1 year start separation
     # 2001-01-01 is a duplicate at index 0 and should be 1999-01-01
     # 2001-01-01 is a duplicate at index 1 and should be 2000-01-01
@@ -452,7 +464,7 @@ def case27():
         "actual_freq": ["AS", "AS-JAN"]
     }
 
-def case28():
+def case27():
     # 3 days separation
     # 2003-01-01 is a duplicate at index 0 and should be 2002-12-29
     # 2003-01-30 should be 2003-01-31 at index 11
@@ -479,17 +491,20 @@ def all_pandas_aliases():
     out = []
     for r in ALL_ALIASES:
         alias, desc = r.values()
+
+        converted_alias = [KNOWN_FREQ_ISSUES[x] if (x in KNOWN_FREQ_ISSUES) else x for x in alias]
         dates = pd.date_range("2005-01-01 00:00:00", periods=20, freq=alias[0])
         out.append({
             "name": desc,
             "description": f"Checking pandas infer capability on {desc}",
             "data": dates,
-            "actual_freq": alias
+            "actual_freq": converted_alias
         })
     return out
 
 
 datetime_freq_fixtures = [
+    case0(),
     case1(),
     case2(),
     case3(),
@@ -517,5 +532,4 @@ datetime_freq_fixtures = [
     case25(),
     case26(),
     case27(),
-    case28()
 ] + all_pandas_aliases()
