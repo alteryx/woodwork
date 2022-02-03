@@ -40,6 +40,10 @@ $ python -m pip install "woodwork[update_checker]"
 ````
 
 ````{tab} Conda
+```{tab} All Add-ons
+```console
+$ conda install -c conda-forge dask koalas pyspark alteryx-open-src-update-checker
+```
 ```{tab} Dask
 ```console
 $ conda install -c conda-forge dask
