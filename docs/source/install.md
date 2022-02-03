@@ -20,6 +20,10 @@ $ conda install -c conda-forge woodwork
 
 Woodwork allows users to install add-ons. Woodwork allows users to install add-ons individually or all at once:
 
+```{hint}
+Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Koalas
+```
+
 ````{tab} PyPI
 ```{tab} All Add-ons
 ```console
