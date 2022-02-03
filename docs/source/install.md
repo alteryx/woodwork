@@ -94,7 +94,6 @@ $ echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
 ````{tab} Ubuntu
 ```console
 $ sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
-$ amazon-linux-extras enable java-openjdk11
 $ echo "export SPARK_HOME=/opt/spark" >> ~/.profile
 $ echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
 $ echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
@@ -104,6 +103,7 @@ $ echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
 ````{tab} Amazon Linux
 ```console
 $ sudo amazon-linux-extras install java-openjdk11 scala -y
+$ amazon-linux-extras enable java-openjdk11
 ```
 ````
 
