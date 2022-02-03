@@ -59,6 +59,9 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
+    'sphinx_inline_tabs',
+    'sphinx_copybutton',
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -204,6 +207,11 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
+# -- Options for Markdown files ----------------------------------------------
+
+myst_admonition_enable = True
+myst_deflist_enable = True
+myst_heading_anchors = 3
 
 # -- Extension configuration -------------------------------------------------
 
