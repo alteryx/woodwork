@@ -1,4 +1,4 @@
-# Install V2
+# Install
 
 Woodwork is available for Python 3.8 and 3.9. It can be installed from PyPi, conda-forge, or from source.
 
@@ -18,77 +18,47 @@ $ conda install -c conda-forge woodwork
 
 ## Add-ons
 
+Woodwork allows users to install add-ons. Woodwork allows users to install add-ons individually or all at once:
 
-Woodwork allows users to install add-ons.
-
-### All Add-ons
 ````{tab} PyPI
-:new-set:
+```{tab} All Add-ons
 ```console
 $ python -m pip install "woodwork[complete]"
 ```
-````
-
-````{tab} Conda
-```console
-$ conda install -c conda-forge dask koalas pyspark alteryx-open-src-update-checker
-```
-````
-
-### Dask
-You can use Woodwork with Dask DataFrames by running:
-
-````{tab} PyPI
-:new-set:
+```{tab} Dask
 ```console
 $ python -m pip install "woodwork[dask]"
 ```
-````
-
-````{tab} Conda
-```console
-$ conda install -c conda-forge dask
-```
-````
-
-### Koalas
-You can use Woodwork with Koalas DataFrames by running:
-
-````{tab} PyPI
-:new-set:
-```{hint}
-Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Koalas
-```
-
+```{tab} Koalas
 ```console
 $ python -m pip install "woodwork[koalas]"
 ```
-````
-
-````{tab} Conda
-```{hint}
-Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Koalas
-```
-```console
-$ conda install -c conda-forge koalas pyspark
-```
-````
-
-#### Update Checker
-You can receive automatic notifications of new Woodwork releases
-
-````{tab} PyPI
-:new-set:
+```{tab} Update Checker
 ```console
 $ python -m pip install "woodwork[update_checker]"
 ```
 ````
-
 ````{tab} Conda
+```{tab} All Add-ons
+```console
+$ conda install -c conda-forge dask koalas pyspark alteryx-open-src-update-checker
+```
+```{tab} Dask
+```console
+$ conda install -c conda-forge dask
+```
+```{tab} Koalas
+```console
+$ conda install -c conda-forge koalas pyspark
+```
+```{tab} Update Checker
 ```console
 $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
+- **Dask**: Use Woodwork with Dask DataFrames
+- **Koalas**: Use Woodwork with Koalas DataFrames
+- **Update Checker**: Receive automatic notifications of new Woodwork releases
 
 ## Source
 
