@@ -2980,7 +2980,7 @@ def test_nan_index_error(sample_df_pandas):
 
 
 def test_validate_logical_types(sample_df):
-    df = sample_df[["email", "url"]]
+    df = sample_df[["email", "url", "age"]]
     df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate_logical_types() is None
 
