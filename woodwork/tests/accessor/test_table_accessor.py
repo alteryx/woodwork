@@ -2980,32 +2980,49 @@ def test_nan_index_error(sample_df_pandas):
 
 
 def test_validate_logical_types(sample_df):
-    df = sample_df[["email", "age"]]
+    df = sample_df[["email", "url"]]
     df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate_logical_types() is None
 
-    invalid_row_1 = pd.Series({4: "bad_email"}).to_frame("email")
-    invalid_row_2 = pd.Series({5: "bad_email"}).to_frame("email_2")
+    invalid_df = pd.DataFrame(
+        data={
+            "url": {4: "bad_url"},
+            "email": {4: "bad_email"},
+            "email_2": {5: "bad_email"},
+        }
+    )
 
     if _is_koalas_dataframe(df):
-        invalid_row_1 = ks.from_pandas(invalid_row_1)
-        invalid_row_2 = ks.from_pandas(invalid_row_2)
+        invalid_df = ks.from_pandas(invalid_df)
+    df = df.append(invalid_df)
 
-    df["email_2"] = df["email"]
-    df = df.append(invalid_row_1)
-    df = df.append(invalid_row_2)
-
-    types = dict(email="EmailAddress", email_2="EmailAddress")
-    df.ww.init(logical_types=types)
+    df.ww.init(
+        logical_types={
+            "url": "URL",
+            "email": "EmailAddress",
+            "email_2": "EmailAddress",
+        }
+    )
 
     match = "Series email contains invalid email addresses."
     with pytest.raises(TypeValidationError, match=match):
         df.ww.validate_logical_types()
 
-    email = {4: "bad_email", 5: pd.NA}
-    email_2 = {4: pd.NA, 5: "bad_email"}
-    expected = pd.DataFrame({"email": email, "email_2": email_2})
-    expected = expected.astype({"email": "string", "email_2": "string"})
+    expected = pd.DataFrame(
+        data={
+            "email": {4: "bad_email", 5: pd.NA},
+            "url": {4: "bad_url"},
+            "email_2": {4: pd.NA, 5: "bad_email"},
+        }
+    )
+
+    expected = expected.astype(
+        {
+            "url": "string",
+            "email": "string",
+            "email_2": "string",
+        }
+    )
 
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
