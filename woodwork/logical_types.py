@@ -581,6 +581,43 @@ class URL(LogicalType):
 
     primary_dtype = "string"
 
+    def validate(self, series, return_invalid_values=False):
+        """Validates URL values based on the regex in the config.
+
+        Args:
+            series (Series): Series of URL values
+            return_invalid_values (bool): Whether or not to return invalid URLs
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid URLs.
+        """
+        regex = config.get_option("url_inference_regex")
+
+        if _is_koalas_series(series):
+
+            def match(x):
+                if isinstance(x, str):
+                    return bool(re.match(regex, x))
+
+            invalid = ~series.apply(match).astype("boolean")
+
+        else:
+            invalid = ~series.str.match(regex).astype("boolean")
+
+        if return_invalid_values:
+            return series[invalid]
+
+        else:
+            any_invalid = invalid.any()
+            if dd and isinstance(any_invalid, dd.core.Scalar):
+                any_invalid = any_invalid.compute()
+
+            if any_invalid:
+                info = f"Series {series.name} contains invalid URL values. "
+                info += "The URL regex can be changed "
+                info += "in the config if needed."
+                raise TypeValidationError(info)
+
 
 class PostalCode(LogicalType):
     """Represents Logical Types that contain a series of postal codes for
