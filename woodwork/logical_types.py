@@ -1,10 +1,16 @@
+import re
 import warnings
 
 import pandas as pd
 import pandas.api.types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
-from woodwork.exceptions import TypeConversionError, TypeConversionWarning
+from woodwork.config import config
+from woodwork.exceptions import (
+    TypeConversionError,
+    TypeConversionWarning,
+    TypeValidationError,
+)
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
     _infer_datetime_format,
@@ -63,6 +69,9 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
             except (TypeError, ValueError):
                 raise TypeConversionError(series, new_dtype, type(self))
         return series
+
+    def validate(self, series, return_invalid_values=True):
+        return
 
 
 class Address(LogicalType):
@@ -305,6 +314,43 @@ class EmailAddress(LogicalType):
     """
 
     primary_dtype = "string"
+
+    def validate(self, series, return_invalid_values=False):
+        """Validates email address values based on the regex in the config.
+
+        Args:
+            series (Series): Series of email address values
+            return_invalid_values (bool): Whether or not to return invalid email address values
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid email address.
+        """
+        regex = config.get_option("email_inference_regex")
+
+        if _is_koalas_series(series):
+
+            def match(x):
+                if isinstance(x, str):
+                    return bool(re.match(regex, x))
+
+            invalid = ~series.apply(match).astype("boolean")
+
+        else:
+            invalid = ~series.str.match(regex).astype("boolean")
+
+        if return_invalid_values:
+            return series[invalid]
+
+        else:
+            any_invalid = invalid.any()
+            if dd and isinstance(any_invalid, dd.core.Scalar):
+                any_invalid = any_invalid.compute()
+
+            if any_invalid:
+                info = f"Series {series.name} contains invalid email addresses. "
+                info += "The email address regex can be changed "
+                info += "in the config if needed."
+                raise TypeValidationError(info)
 
 
 class Filepath(LogicalType):

@@ -1124,6 +1124,34 @@ class WoodworkTableAccessor:
             self._dataframe, temporal_columns=temporal_columns
         )
 
+    @_check_table_schema
+    def validate_logical_types(self, return_invalid_values=False):
+        """Validates the dataframe based on the logical types.
+
+        Args:
+            return_invalid_values (bool): Whether or not to return invalid data values
+
+        Returns:
+            DataFrame: If return_invalid_values is True, returns invalid data values.
+        """
+        invalid_values = []
+        for column in self.columns:
+            series = self.ww[column]
+            values = series.ww.validate_logical_type(
+                return_invalid_values=return_invalid_values
+            )
+            if values is not None:
+                invalid_values.append(values)
+
+        if return_invalid_values:
+            concat = pd.concat
+            if _is_dask_dataframe(self._dataframe):
+                concat = dd.concat
+            if _is_koalas_dataframe(self._dataframe):
+                concat = ks.concat
+
+            return concat(invalid_values, axis=1)
+
 
 def _validate_accessor_params(
     dataframe, index, time_index, logical_types, schema, use_standard_tags

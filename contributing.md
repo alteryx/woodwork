@@ -30,8 +30,7 @@ Whether you are a novice or experienced software developer, all contributions an
      ```bash
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
-     brew install scala
-     brew install apache-spark
+     brew install scala apache-spark
      echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
      echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc 
      ```
@@ -44,6 +43,7 @@ Whether you are a novice or experienced software developer, all contributions an
      **Amazon Linux**:
      ```bash
      sudo amazon-linux-extras install java-openjdk11 scala -y
+     amazon-linux-extras enable java-openjdk11
      ```
      
 #### 2. Implement your Pull Request
