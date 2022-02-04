@@ -10,7 +10,7 @@ Future Release
     * Changes
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
-        * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`)
+        * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
