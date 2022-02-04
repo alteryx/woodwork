@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add validation to URL logical type (:pr:`1285`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -14,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`jeff-hernandez`
 
 
 v0.12.0 Jan 27, 2022
