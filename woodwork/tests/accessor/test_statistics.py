@@ -2,10 +2,10 @@ import re
 from datetime import datetime
 from inspect import isclass
 
-from mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from mock import patch
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
@@ -899,11 +899,15 @@ def test_describe_dict_extra_stats(describe_df):
 
 
 @patch("woodwork.statistics_utils._get_numeric_value_counts_in_range")
-def test_describe_dict_extra_stats_overflow_range(mock_get_numeric_value_counts_in_range, describe_df):
-    df = pd.DataFrame({
-        "large_range": [-9215883799005046784, 0, 1, 9223177510267041793],
-        'large_nums': [97896598486960007123867158471523621205853924, 0, 1, 2]
-    })
+def test_describe_dict_extra_stats_overflow_range(
+    mock_get_numeric_value_counts_in_range, describe_df
+):
+    df = pd.DataFrame(
+        {
+            "large_range": [-9215883799005046784, 0, 1, 9223177510267041793],
+            "large_nums": [97896598486960007123867158471523621205853924, 0, 1, 2],
+        }
+    )
     df.ww.init()
 
     assert not mock_get_numeric_value_counts_in_range.called
