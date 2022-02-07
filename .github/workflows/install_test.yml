@@ -9,11 +9,13 @@ name: Install Test
 jobs:
   install_ww_complete:
     name: ${{ matrix.python_version }} install woodwork complete
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python_version: ["3.8", "3.9"]
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
