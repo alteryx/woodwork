@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Validate email address logical types (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
     * Fixes
     * Changes
@@ -22,7 +23,6 @@ v0.12.0 Jan 27, 2022
 ====================
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
-        * Validate email address logical types (:pr:`1247`)
     * Fixes
         * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
         * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)
