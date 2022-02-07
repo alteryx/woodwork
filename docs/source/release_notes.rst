@@ -9,6 +9,7 @@ Future Release
         * Add validation to EmailAddress logical type (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
     * Fixes
+        * Check range length in table stats without producing overflow error (:pr:`1287`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
     * Documentation Changes
@@ -17,7 +18,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`
 
 
 v0.12.0 Jan 27, 2022
