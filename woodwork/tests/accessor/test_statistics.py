@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from inspect import isclass
 
+from mock import patch
 import numpy as np
 import pandas as pd
 import pytest
@@ -895,6 +896,30 @@ def test_describe_dict_extra_stats(describe_df):
             assert isinstance(desc_dict[col]["top_values"], list)
         else:
             assert desc_dict[col].get("top_values") is None
+
+
+@patch("woodwork.statistics_utils._get_numeric_value_counts_in_range")
+def test_describe_dict_extra_stats_overflow_range(mock_get_numeric_value_counts_in_range, describe_df):
+    df = pd.DataFrame({
+        "large_range": [-9215883799005046784, 0, 1, 9223177510267041793],
+        'large_nums': [97896598486960007123867158471523621205853924, 0, 1, 2]
+    })
+    df.ww.init()
+
+    assert not mock_get_numeric_value_counts_in_range.called
+
+    # Confirm we don't make it inside the block that calls _get_numeric_value_counts_in_range,
+    # since that would still have an overflow error. This is okay, because when the range is so
+    # large that it causes overflow errors, it'd be absurd for there to be more bins such that
+    # we should go into that block of code
+    df.ww.describe_dict(extra_stats=True)
+    assert not mock_get_numeric_value_counts_in_range.called
+
+    # Confirm we actually have the ability to make it into that block
+    describe_df["small_range_col"] = describe_df["numeric_col"].fillna(0) // 10
+    describe_df.ww.init(index="index_col")
+    describe_df.ww.describe_dict(extra_stats=True)
+    assert mock_get_numeric_value_counts_in_range.called
 
 
 def test_value_counts(categorical_df):
