@@ -3028,3 +3028,12 @@ def test_validate_logical_types(sample_df):
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
     assert actual.equals(expected)
+
+
+def test_validate_logical_types_call(sample_df):
+    sample_df.ww.init(logical_types={"email": "EmailAddress"})
+    for logical_type in sample_df.ww.logical_types.values():
+        with patch.object(type(logical_type), 'validate', return_value=None) as validate_method:
+            assert not validate_method.called
+            assert sample_df.ww.validate_logical_types() is None
+            assert validate_method.called
