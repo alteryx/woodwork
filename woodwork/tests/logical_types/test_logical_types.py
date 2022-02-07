@@ -212,7 +212,8 @@ def test_email_address_validate(sample_df):
     assert email_address.validate(series) is None
 
     series = series.append(invalid_row)
-    match = "Series email contains invalid email addresses."
+    match = "Series email contains invalid email_address values. "
+    match += "The email_inference_regex can be changed in the config if needed."
 
     with pytest.raises(TypeValidationError, match=match):
         email_address.validate(series)
@@ -233,7 +234,8 @@ def test_url_validate(sample_df):
     assert logical_type.validate(series) is None
 
     series = series.append(invalid_row)
-    match = "Series url contains invalid URL values."
+    match = "Series url contains invalid url values. "
+    match += "The url_inference_regex can be changed in the config if needed."
 
     with pytest.raises(TypeValidationError, match=match):
         logical_type.validate(series)
