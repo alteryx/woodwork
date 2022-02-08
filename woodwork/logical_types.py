@@ -102,6 +102,15 @@ class Age(LogicalType):
     standard_tags = {"numeric"}
 
     def validate(self, series, return_invalid_values=True):
+        """Validates age values by checking for non-negative values.
+
+        Args:
+            series (Series): Series of age values
+            return_invalid_values (bool): Whether or not to return invalid age values
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid age values.
+        """
         return _validate_not_negative(series, return_invalid_values)
 
 
@@ -135,6 +144,15 @@ class AgeNullable(LogicalType):
     standard_tags = {"numeric"}
 
     def validate(self, series, return_invalid_values=True):
+        """Validates age values by checking for non-negative values.
+
+        Args:
+            series (Series): Series of age values
+            return_invalid_values (bool): Whether or not to return invalid age values
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid age values.
+        """
         return _validate_not_negative(series, return_invalid_values)
 
 
