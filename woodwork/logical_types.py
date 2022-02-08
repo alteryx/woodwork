@@ -325,32 +325,7 @@ class EmailAddress(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid email address.
         """
-        regex = config.get_option("email_inference_regex")
-
-        if _is_koalas_series(series):
-
-            def match(x):
-                if isinstance(x, str):
-                    return bool(re.match(regex, x))
-
-            invalid = ~series.apply(match).astype("boolean")
-
-        else:
-            invalid = ~series.str.match(regex).astype("boolean")
-
-        if return_invalid_values:
-            return series[invalid]
-
-        else:
-            any_invalid = invalid.any()
-            if dd and isinstance(any_invalid, dd.core.Scalar):
-                any_invalid = any_invalid.compute()
-
-            if any_invalid:
-                info = f"Series {series.name} contains invalid email addresses. "
-                info += "The email address regex can be changed "
-                info += "in the config if needed."
-                raise TypeValidationError(info)
+        return _regex_validate("email_inference_regex", series, return_invalid_values)
 
 
 class Filepath(LogicalType):
@@ -581,6 +556,18 @@ class URL(LogicalType):
 
     primary_dtype = "string"
 
+    def validate(self, series, return_invalid_values=False):
+        """Validates URL values based on the regex in the config.
+
+        Args:
+            series (Series): Series of URL values
+            return_invalid_values (bool): Whether or not to return invalid URLs
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid URLs.
+        """
+        return _regex_validate("url_inference_regex", series, return_invalid_values)
+
 
 class PostalCode(LogicalType):
     """Represents Logical Types that contain a series of postal codes for
@@ -617,3 +604,37 @@ _NULLABLE_PHYSICAL_TYPES = {
     "string",
     "timedelta64[ns]",
 }
+
+
+def _regex_validate(regex_key, series, return_invalid_values):
+    """Validates data values based on the logical type regex in the config."""
+    regex = config.get_option(regex_key)
+
+    if _is_koalas_series(series):
+
+        def match(x):
+            if isinstance(x, str):
+                return bool(re.match(regex, x))
+
+        invalid = ~series.apply(match).astype("boolean")
+
+    else:
+        invalid = ~series.str.match(regex).astype("boolean")
+
+    if return_invalid_values:
+        return series[invalid]
+
+    else:
+        any_invalid = invalid.any()
+        if dd and isinstance(any_invalid, dd.core.Scalar):
+            any_invalid = any_invalid.compute()
+
+        if any_invalid:
+            type_string = {
+                "url_inference_regex": "url",
+                "email_inference_regex": "email address",
+            }[regex_key]
+
+            info = f"Series {series.name} contains invalid {type_string} values. "
+            info += f"The {regex_key} can be changed in the config if needed."
+            raise TypeValidationError(info)
