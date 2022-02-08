@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Validate email address logical types (:pr:`1247`)
+        * Add validation to EmailAddress logical type (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
     * Fixes
     * Changes
