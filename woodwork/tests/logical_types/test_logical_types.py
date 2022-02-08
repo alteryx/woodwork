@@ -212,7 +212,7 @@ def test_email_address_validate(sample_df):
     assert email_address.validate(series) is None
 
     series = series.append(invalid_row)
-    match = "Series email contains invalid email_address values. "
+    match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
 
     with pytest.raises(TypeValidationError, match=match):

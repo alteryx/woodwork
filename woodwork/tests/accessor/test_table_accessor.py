@@ -3004,7 +3004,7 @@ def test_validate_logical_types(sample_df):
         }
     )
 
-    match = "Series email contains invalid email_address values. "
+    match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
     with pytest.raises(TypeValidationError, match=match):
         df.ww.validate_logical_types()
