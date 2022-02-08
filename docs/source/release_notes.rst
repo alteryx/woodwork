@@ -10,13 +10,14 @@ Future Release
         * Add validation to URL logical type (:pr:`1285`)
     * Fixes
     * Changes
+        * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 
 v0.12.0 Jan 27, 2022

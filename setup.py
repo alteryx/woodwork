@@ -35,7 +35,6 @@ setup(
     extras_require=extras_require,
     keywords="data science machine learning typing",
     include_package_data=True,
-    entry_points={"console_scripts": ["woodwork = woodwork.__main__:cli"]},
     long_description=long_description,
     long_description_content_type="text/markdown",
     data_files=[("woodwork/data", ["woodwork/data/1-1000.txt"])],
