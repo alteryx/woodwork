@@ -101,6 +101,9 @@ class Age(LogicalType):
     primary_dtype = "int64"
     standard_tags = {"numeric"}
 
+    def validate(self, series, return_invalid_values=True):
+        return _validate_not_negative(series, return_invalid_values)
+
 
 class AgeFractional(LogicalType):
     """Represents Logical Types that contain non-negative floating point numbers indicating a person's age.
@@ -130,6 +133,9 @@ class AgeNullable(LogicalType):
 
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
+
+    def validate(self, series, return_invalid_values=True):
+        return _validate_not_negative(series, return_invalid_values)
 
 
 class Boolean(LogicalType):
@@ -637,4 +643,20 @@ def _regex_validate(regex_key, series, return_invalid_values):
 
             info = f"Series {series.name} contains invalid {type_string} values. "
             info += f"The {regex_key} can be changed in the config if needed."
+            raise TypeValidationError(info)
+
+
+def _validate_not_negative(series, return_invalid_values):
+    """Validates data values are non-negative."""
+    invalid = series.lt(0)
+    if return_invalid_values:
+        return series[invalid]
+
+    else:
+        any_invalid = invalid.any()
+        if dd and isinstance(any_invalid, dd.core.Scalar):
+            any_invalid = any_invalid.compute()
+
+        if any_invalid:
+            info = f"Series {series.name} contains negative values."
             raise TypeValidationError(info)
