@@ -1941,7 +1941,7 @@ def test_accessor_set_index_errors(sample_df):
 
 
 def test_set_types(sample_df):
-    sample_df.ww.init(index="full_name", time_index="signup_date")
+    sample_df.ww.init(index="full_name", time_index="signup_date", semantic_tags={"is_registered": "custom_tag"})
 
     original_df = sample_df.ww.copy()
 
@@ -1959,6 +1959,7 @@ def test_set_types(sample_df):
     )
     assert sample_df.ww.index is None
     assert sample_df.ww.time_index is None
+    assert "custom_tag" in sample_df.ww.semantic_tags["is_registered"]
 
 
 def test_set_types_errors(sample_df):
@@ -3010,3 +3011,4 @@ def test_validate_logical_types(sample_df):
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
     assert actual.equals(expected)
+
