@@ -7,6 +7,8 @@ from woodwork.accessor_utils import _is_koalas_series
 from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     URL,
+    Age,
+    AgeNullable,
     Boolean,
     Categorical,
     Datetime,
@@ -17,6 +19,7 @@ from woodwork.logical_types import (
 from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
 
+dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")
 
 
@@ -243,3 +246,25 @@ def test_url_validate(sample_df):
     actual = logical_type.validate(series, return_invalid_values=True)
     expected = pd.Series({4: "bad_url"}, name="url")
     assert to_pandas(actual).equals(expected)
+
+
+@pytest.mark.parametrize(
+    argnames="logical_type",
+    ids=["age", "age_nullable"],
+    argvalues=[Age(), AgeNullable()],
+)
+def test_age_validate(sample_df, logical_type):
+    invalid_row = pd.Series({4: -3}, name="age", dtype="Int64")
+    series = sample_df["age"]
+
+    if _is_koalas_series(series):
+        invalid_row = ks.from_pandas(invalid_row)
+    assert logical_type.validate(series, return_invalid_values=False) is None
+
+    series = series.append(invalid_row).astype("Int64")
+    match = "Series age contains negative values."
+    with pytest.raises(TypeValidationError, match=match):
+        logical_type.validate(series, return_invalid_values=False)
+
+    actual = logical_type.validate(series, return_invalid_values=True)
+    assert to_pandas(actual).equals(to_pandas(invalid_row))
