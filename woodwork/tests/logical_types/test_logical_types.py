@@ -254,20 +254,19 @@ def test_url_validate(sample_df):
     argvalues=[Age(), AgeFractional(), AgeNullable()],
 )
 def test_age_validate(sample_df, logical_type):
-    invalid_row = pd.Series({4: -3}, name="age", dtype="Int64")
+    dtype = logical_type.primary_dtype
 
     series = sample_df["age"]
-    if isinstance(logical_type, AgeFractional):
-        series = series.astype("float64")
+    if isinstance(logical_type, Age):
+        series = series.dropna()
+
+    series = series.astype(dtype)
+    assert logical_type.validate(series, return_invalid_values=False) is None
+    invalid_row = pd.Series({4: -3}, name="age", dtype=dtype)
 
     if _is_koalas_series(series):
         invalid_row = ks.from_pandas(invalid_row)
-    assert logical_type.validate(series, return_invalid_values=False) is None
-
-    series = series.append(invalid_row).astype("Int64")
-    if isinstance(logical_type, AgeFractional):
-        invalid_row = invalid_row.astype("float64")
-        series = series.astype("float64")
+    series = series.append(invalid_row).astype(dtype)
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
