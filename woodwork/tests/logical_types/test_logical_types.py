@@ -19,7 +19,6 @@ from woodwork.logical_types import (
 from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
 
-dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")
 
 
