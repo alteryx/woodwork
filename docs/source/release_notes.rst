@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Add validation to EmailAddress logical type (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
+        * Add validation to Age, AgeFractional, and AgeNullable logical types (:pr:`1289`)
     * Fixes
         * Check range length in table stats without producing overflow error (:pr:`1287`)
     * Changes
