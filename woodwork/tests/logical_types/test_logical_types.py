@@ -263,8 +263,8 @@ def test_age_validate(sample_df, logical_type):
 
     series = series.append(invalid_row).astype("Int64")
     if isinstance(logical_type, AgeFractional):
-        invalid_row = invalid_row.astype('float64')
-        series = series.astype('float64')
+        invalid_row = invalid_row.astype("float64")
+        series = series.astype("float64")
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
