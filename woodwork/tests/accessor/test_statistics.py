@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.tests.fixtures.datetime_freq import datetime_freq_fixtures
+from woodwork.tests.fixtures.datetime_freq import datetime_freq_fixtures, bad_dt_freq_fixtures
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
@@ -1379,11 +1379,26 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
     datetime_freq_fixtures
 )
 def test_infer_temporal_frequencies_v2(case):
-    data = case['data']
+    data = case['data'].to_series()
+
     actual_freqs = case['actual_freq']
     estimated_freq = infer_freq_v2(data)
 
     assert estimated_freq in actual_freqs
+
+
+@pytest.mark.parametrize(
+    "bad_case",
+    bad_dt_freq_fixtures
+)
+def test_infer_temporal_frequencies_v2_bad(bad_case):
+    data = bad_case['data'].to_series()
+
+    actual_freqs = bad_case['actual_freq']
+    estimated_freq = infer_freq_v2(data)
+
+    assert estimated_freq in actual_freqs
+
 
 
 def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):

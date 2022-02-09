@@ -533,3 +533,26 @@ datetime_freq_fixtures = [
     case26(),
     case27(),
 ] + all_pandas_aliases()
+
+
+def bad_case0():
+    # 3 days and 4 days
+    # inferred frequency should be None because there isn't enough information
+    # to accurately determine the frequency
+    
+    dates_1 = pd.date_range("2005-01-01", periods=9, freq="3D")
+    dates_2 = pd.date_range("2005-01-01", periods=8, freq="4D")
+
+    dates = dates_1.append(dates_2)
+
+    return {
+        "name": "3 days and 4 days",
+        "description": "many",
+        "data": dates,
+        "actual_freq": [None]
+    }
+
+
+bad_dt_freq_fixtures = [
+    bad_case0()
+] 

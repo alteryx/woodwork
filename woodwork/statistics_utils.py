@@ -688,33 +688,3 @@ def _infer_temporal_frequencies(dataframe, temporal_columns=None):
                 )
 
     return {col: pd.infer_freq(dataframe[col]) for col in temporal_columns}
-
-
-def infer_freq_v2(series):
-    """
-    """
-    dt_index = series.to_series()
-    alias_dict = {}
-
-    for window in dt_index.rolling(3):
-        if (len(window) == 3):
-            alias = pd.infer_freq(window)
-            if alias in alias_dict:
-                alias_dict[alias] += 1
-            else:
-                alias_dict[alias] = 1
-
-    """
-    TODO: better handling here
-    - check dictionary has keys
-    - top key should be greater than some threshold >80% for example
-    - figure out what to return. Do we want a confidence number, etc?
-    """
-    most_likely_freq = sorted(alias_dict.items(), key=lambda item: item[1], reverse=True)[0][0]
-
-    if most_likely_freq is not None:
-        # Strip off anchor
-        most_likely_freq = most_likely_freq.split("-")[0]
-        return most_likely_freq
-    else:
-        return None
