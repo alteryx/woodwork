@@ -254,13 +254,13 @@ def test_url_validate(sample_df):
     argvalues=[Age(), AgeFractional(), AgeNullable()],
 )
 def test_age_validate(sample_df, logical_type):
-    dtype = logical_type.primary_dtype
-
     series = sample_df["age"]
     if isinstance(logical_type, Age):
         series = series.dropna()
 
+    dtype = logical_type.primary_dtype
     series = series.astype(dtype)
+
     assert logical_type.validate(series, return_invalid_values=False) is None
     invalid_row = pd.Series({4: -3}, name="age", dtype=dtype)
 
