@@ -255,7 +255,10 @@ def test_url_validate(sample_df):
 )
 def test_age_validate(sample_df, logical_type):
     invalid_row = pd.Series({4: -3}, name="age", dtype="Int64")
+
     series = sample_df["age"]
+    if isinstance(logical_type, AgeFractional):
+        series = series.astype("float64")
 
     if _is_koalas_series(series):
         invalid_row = ks.from_pandas(invalid_row)
