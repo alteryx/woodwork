@@ -8,6 +8,7 @@ from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     URL,
     Age,
+    AgeFractional,
     AgeNullable,
     Boolean,
     Categorical,
@@ -249,8 +250,8 @@ def test_url_validate(sample_df):
 
 @pytest.mark.parametrize(
     argnames="logical_type",
-    ids=["age", "age_nullable"],
-    argvalues=[Age(), AgeNullable()],
+    ids=["age", "age_fractional", "age_nullable"],
+    argvalues=[Age(), AgeFractional(), AgeNullable()],
 )
 def test_age_validate(sample_df, logical_type):
     invalid_row = pd.Series({4: -3}, name="age", dtype="Int64")
