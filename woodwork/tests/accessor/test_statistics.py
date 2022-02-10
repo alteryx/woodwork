@@ -1,7 +1,7 @@
 import re
+import sys
 from datetime import datetime
 from inspect import isclass
-import sys
 
 import numpy as np
 import pandas as pd
