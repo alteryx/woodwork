@@ -44,8 +44,6 @@ conda install -c conda-forge woodwork
 python -m pip install "woodwork[update_checker]"
 ```
 
-
-
 ## Example
 
 Below is an example of using Woodwork. In this example, a sample dataset of order items is used to create a Woodwork `DataFrame`, specifying the `LogicalType` for five of the columns.
@@ -107,7 +105,16 @@ filtered_df
 
 As you can see, Woodwork makes it easy to manage typing information for your data, and provides simple interfaces to access only the data you need based on the logical types or semantic tags. Please refer to the [Woodwork documentation](https://woodwork.alteryx.com/) for more detail on working with a Woodwork DataFrame.
 
+## Support
+The Woodwork community is happy to provide support to users of Woodwork. Project support can be found in four places depending on the type of question:
+1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/woodwork) with the `woodwork` tag.
+2. For bugs, issues, or feature requests start a [Github issue](https://github.com/alteryx/woodwork/issues).
+3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
+4. For everything else, the core developers can be reached by email at open_source_support@alteryx.com
+
 ## Built at Alteryx Innovation Labs
+
+**Woodwork** is an open source project built by [Alteryx](https://www.alteryx.com). To see the other open source projects we’re working on visit [Alteryx Open Source](https://www.alteryx.com/open-source). If building impactful data science pipelines is important to you or your business, please get in touch.
 
 <a href="https://www.alteryx.com/innovation-labs">
     <img src="https://evalml-web-images.s3.amazonaws.com/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
