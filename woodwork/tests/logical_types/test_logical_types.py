@@ -6,6 +6,10 @@ import pytest
 from woodwork.accessor_utils import _is_koalas_series
 from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
+    URL,
+    Age,
+    AgeFractional,
+    AgeNullable,
     Boolean,
     Categorical,
     Datetime,
@@ -211,7 +215,8 @@ def test_email_address_validate(sample_df):
     assert email_address.validate(series) is None
 
     series = series.append(invalid_row)
-    match = "Series email contains invalid email addresses."
+    match = "Series email contains invalid email address values. "
+    match += "The email_inference_regex can be changed in the config if needed."
 
     with pytest.raises(TypeValidationError, match=match):
         email_address.validate(series)
@@ -219,3 +224,53 @@ def test_email_address_validate(sample_df):
     actual = email_address.validate(series, return_invalid_values=True)
     expected = pd.Series({4: "bad_email"}, name="email")
     assert to_pandas(actual).equals(expected)
+
+
+def test_url_validate(sample_df):
+    series = sample_df["url"]
+    invalid_row = pd.Series({4: "bad_url"}, name="url")
+
+    if _is_koalas_series(series):
+        invalid_row = ks.from_pandas(invalid_row)
+
+    logical_type = URL()
+    assert logical_type.validate(series) is None
+
+    series = series.append(invalid_row)
+    match = "Series url contains invalid url values. "
+    match += "The url_inference_regex can be changed in the config if needed."
+
+    with pytest.raises(TypeValidationError, match=match):
+        logical_type.validate(series)
+
+    actual = logical_type.validate(series, return_invalid_values=True)
+    expected = pd.Series({4: "bad_url"}, name="url")
+    assert to_pandas(actual).equals(expected)
+
+
+@pytest.mark.parametrize(
+    argnames="logical_type",
+    ids=["age", "age_fractional", "age_nullable"],
+    argvalues=[Age(), AgeFractional(), AgeNullable()],
+)
+def test_age_validate(sample_df, logical_type):
+    series = sample_df["age"]
+    if isinstance(logical_type, Age):
+        series = series.dropna()
+
+    dtype = logical_type.primary_dtype
+    series = series.astype(dtype)
+
+    assert logical_type.validate(series, return_invalid_values=False) is None
+    invalid_row = pd.Series({4: -3}, name="age", dtype=dtype)
+
+    if _is_koalas_series(series):
+        invalid_row = ks.from_pandas(invalid_row)
+    series = series.append(invalid_row).astype(dtype)
+
+    match = "Series age contains negative values."
+    with pytest.raises(TypeValidationError, match=match):
+        logical_type.validate(series, return_invalid_values=False)
+
+    actual = logical_type.validate(series, return_invalid_values=True)
+    assert to_pandas(actual).equals(to_pandas(invalid_row))

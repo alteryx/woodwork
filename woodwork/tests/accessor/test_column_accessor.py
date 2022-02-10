@@ -978,7 +978,8 @@ def test_validate_logical_type(sample_df):
 
     series = series.append(invalid_row)
     series = init_series(series, logical_type="EmailAddress")
-    match = "Series email contains invalid email addresses."
+    match = "Series email contains invalid email address values. "
+    match += "The email_inference_regex can be changed in the config if needed."
 
     with pytest.raises(TypeValidationError, match=match):
         series.ww.validate_logical_type()

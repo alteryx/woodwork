@@ -169,7 +169,8 @@ def _get_describe_dict(
                     # Calculate top numeric values if range of values present
                     # is less than or equal number of histogram bins and series
                     # contains only integer values
-                    if len(_range) <= bins and (series % 1 == 0).all():
+                    range_len = int(values["max"]) + 1 - int(values["min"])
+                    if range_len <= bins and (series % 1 == 0).all():
                         values["top_values"] = _get_numeric_value_counts_in_range(
                             series, _range
                         )
