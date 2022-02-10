@@ -1,5 +1,6 @@
 from .get_ranges import _get_ranges
 from .constants import OBSERVED_COLUMN_NAME
+from .types import RangeObject
 import pandas as pd
 
 
@@ -13,7 +14,7 @@ def _determine_duplicate_values(observed):
     if len(observed_dupes) == 0:
         return []
 
-    ranges = get_ranges(observed_dupes.index)
+    ranges = _get_ranges(observed_dupes.index)
     out = []
 
     for start_idx, end_idx in ranges:

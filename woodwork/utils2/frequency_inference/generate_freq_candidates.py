@@ -1,8 +1,5 @@
 import pandas as pd
-from .constants import (
-    NON_INFERABLE_FREQ,
-    WINDOW_LENGTH,
-)
+from .constants import NON_INFERABLE_FREQ, WINDOW_LENGTH, CANDIDATE_COLUMN_NAME
 
 
 def _generate_freq_candidates(time_series):
@@ -25,6 +22,6 @@ def _generate_freq_candidates(time_series):
                     candidates[i] = [alias]
             window_idx += 1
 
-    candidate_df = pd.DataFrame({"candidates": candidates}, index=time_series)
+    candidate_df = pd.DataFrame({CANDIDATE_COLUMN_NAME: candidates}, index=time_series)
 
     return (candidate_df, alias_dict)

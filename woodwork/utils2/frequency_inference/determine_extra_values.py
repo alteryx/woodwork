@@ -1,5 +1,6 @@
 from .get_ranges import _get_ranges
 from .constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
+from .types import RangeObject
 import pandas as pd
 
 
@@ -19,7 +20,7 @@ def _determine_extra_values(estimated, observed):
     if len(estimated_null) == 0:
         return []
 
-    ranges = get_ranges(estimated_null.index)
+    ranges = _get_ranges(estimated_null.index)
     out = []
 
     for start_idx, end_idx in ranges:

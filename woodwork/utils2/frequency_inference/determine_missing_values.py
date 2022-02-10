@@ -1,20 +1,21 @@
 from .get_ranges import _get_ranges
 from .constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
+from .types import RangeObject
 import pandas as pd
 
 
 def _determine_missing_values(estimated, observed):
     estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated})
-    observed_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: observed})
+    observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed})
 
     merged_df = estimated_df.merge(
         observed_df,
         how="left",
         left_on=ESTIMATED_COLUMN_NAME,
-        right_on=ESTIMATED_COLUMN_NAME,
+        right_on=OBSERVED_COLUMN_NAME,
     )
 
-    observed_null = merged_df[merged_df[ESTIMATED_COLUMN_NAME].isnull()]
+    observed_null = merged_df[merged_df[OBSERVED_COLUMN_NAME].isnull()]
 
     if len(observed_null) == 0:
         return []
