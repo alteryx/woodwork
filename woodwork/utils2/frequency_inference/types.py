@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from __future__ import annotations
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -25,9 +25,9 @@ class InferDebug:
     estimated_range_start: str = None
     estimated_range_end: str = None
 
-    duplicate_values: list[RangeObject] = []
-    missing_values: list[RangeObject] = []
-    extra_values: list[RangeObject] = []
+    duplicate_values: list[RangeObject] = field(default_factory=list)
+    missing_values: list[RangeObject] = field(default_factory=list)
+    extra_values: list[RangeObject] = field(default_factory=list)
 
 
 class DataCheckMessageCode(Enum):

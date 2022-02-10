@@ -22,8 +22,8 @@ def infer_frequency(observed_ts: pd.Series):
             `frequency`
     """
 
-    actual_range_start: observed_ts.min().isoformat()
-    actual_range_end: observed_ts.max().isoformat()
+    actual_range_start = observed_ts.min().isoformat()
+    actual_range_end = observed_ts.max().isoformat()
 
     # Determine if series if Monotonic
     is_monotonic = observed_ts.is_monotonic_increasing
@@ -59,8 +59,8 @@ def infer_frequency(observed_ts: pd.Series):
 
     estimated_ts = _generate_estimated_timeseries(freq_df, most_likely_freq)
 
-    estimated_range_start: estimated_ts.min().isoformat()
-    estimated_range_end: estimated_ts.max().isoformat()
+    estimated_range_start = estimated_ts.min().isoformat()
+    estimated_range_end = estimated_ts.max().isoformat()
 
     missing = _determine_missing_values(estimated_ts, observed_ts)
     print("Missing")
