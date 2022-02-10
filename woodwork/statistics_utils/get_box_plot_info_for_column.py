@@ -1,8 +1,7 @@
-from woodwork.utils import (
-    import_or_none,
-)
 import numpy as np
 import pandas as pd
+
+from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")

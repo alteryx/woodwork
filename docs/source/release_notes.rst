@@ -13,6 +13,7 @@ Future Release
         * Check range length in table stats without producing overflow error (:pr:`1287`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
+        * Nested statistical utility functions into directory (:pr:`1295`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)

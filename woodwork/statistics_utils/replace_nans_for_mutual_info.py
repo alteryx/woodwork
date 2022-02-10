@@ -1,4 +1,5 @@
-from ._get_mode import _get_mode
+from .get_mode import _get_mode
+
 from woodwork.logical_types import Double
 
 
