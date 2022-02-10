@@ -1,5 +1,3 @@
-from timeit import default_timer as timer
-
 import pandas as pd
 
 
