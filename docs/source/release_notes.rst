@@ -5,6 +5,9 @@ Release Notes
 
 Future Release
 ==============
+    .. warning::
+        Woodwork may not support Python 3.7 in next non-bugfix release.
+
     * Enhancements
         * Add validation to EmailAddress logical type (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
