@@ -1,11 +1,11 @@
 import pandas as pd
-from woodwork.utils.frequency_inference.constants import (
+from .constants import (
     NON_INFERABLE_FREQ,
     WINDOW_LENGTH,
 )
 
 
-def generate_freq_candidates(time_series):
+def _generate_freq_candidates(time_series):
     candidates = [[] for x in range(len(time_series))]
     window_idx = 0
     alias_dict = {}

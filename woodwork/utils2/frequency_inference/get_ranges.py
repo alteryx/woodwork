@@ -1,4 +1,4 @@
-def get_ranges(idx_series):
+def _get_ranges(idx_series):
     start_idx = idx_series[0]
     last_idx = idx_series[0]
     ranges = []

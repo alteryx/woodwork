@@ -1,6 +1,9 @@
-def build_freq_dataframe(df):
+from .constants import CANDIDATE_COLUMN_NAME
+
+
+def _build_freq_dataframe(df):
     def to_series(row):
-        for alias in row["candidates"]:
+        for alias in row[CANDIDATE_COLUMN_NAME]:
             row[alias] = True
         return row
 

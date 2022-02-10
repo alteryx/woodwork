@@ -1,7 +1,7 @@
-from constants import FREQ_INFERENCE_THRESHOLD, NON_INFERABLE_FREQ
+from .constants import FREQ_INFERENCE_THRESHOLD, NON_INFERABLE_FREQ
 
 
-def determine_most_likely_freq(alias_dict):
+def _determine_most_likely_freq(alias_dict):
     n_total = sum(alias_dict.values())
     sorted_freqs = sorted(alias_dict.items(), key=lambda item: item[1], reverse=True)
 

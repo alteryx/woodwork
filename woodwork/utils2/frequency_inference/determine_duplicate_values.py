@@ -1,11 +1,14 @@
-from get_ranges import get_ranges
+from .get_ranges import _get_ranges
+from .constants import OBSERVED_COLUMN_NAME
 import pandas as pd
 
 
-def determine_duplicates_values(observed):
-    observed_df = pd.DataFrame({"observed": observed}).reset_index(drop=True).diff()
+def _determine_duplicate_values(observed):
+    observed_df = (
+        pd.DataFrame({OBSERVED_COLUMN_NAME: observed}).reset_index(drop=True).diff()
+    )
 
-    observed_dupes = observed_df[observed_df["observed"] == pd.Timedelta(0)]
+    observed_dupes = observed_df[observed_df[OBSERVED_COLUMN_NAME] == pd.Timedelta(0)]
 
     if len(observed_dupes) == 0:
         return []
