@@ -16,6 +16,7 @@ Future Release
         * Check range length in table stats without producing overflow error (:pr:`1287`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
+        * Add back support for Python 3.7 (:pr:`1292`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
@@ -23,7 +24,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 
 v0.12.0 Jan 27, 2022
