@@ -1079,10 +1079,9 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
         Returns:
-            pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
-            `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
-            Mutual information values are between 0 (no mutual information) and 1
-            (perfect dependency).
+            pd.DataFrame: A DataFrame containing Pearson correlation coefficients with columns `column_1`,
+            `column_2`, and `pearson` that is sorted in decending order by correlation value.
+            Pearson values are between -1 and 1, with 0 meaning no correlation.
         """
         pearson_dict = self.pearson_correlation_dict(
             num_bins=num_bins,
@@ -1217,12 +1216,13 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
         Returns:
-            list(dict): A list containing dictionaries that have keys `column_1`,
-            `column_2`, and keys for the specified dependence measures. The list is
-            sorted in decending order by the first specified measure.
+            pd.DataFrame: A DataFrame with the columns `column_1`,
+            `column_2`, and keys for the specified dependence measures. The rows
+            are sorted in decending order by the first specified measure.
             Dependence information values are between 0 (no dependence) and 1
             (perfect dependency). For Pearson, values range from -1 to 1 but 0 is
-            still no dependence.
+            still no dependence.  Additional columns will be included if the
+            `extra_stats` is True.
         """
         dep_dict = _get_dependence_dict(
             self._dataframe,
