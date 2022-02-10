@@ -308,8 +308,8 @@ def test_dependence_sort(df_mi, measure):
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_dict(df_mi, measure):
     df_mi.ww.init()
-    dep_dict = df_mi.ww.dependence_dict(measure=measure)
-    dep_df = df_mi.ww.dependence(measure=measure)
+    dep_dict = df_mi.ww.dependence_dict(measure=measure, min_shared=12)
+    dep_df = df_mi.ww.dependence(measure=measure, min_shared=12)
 
     pd.testing.assert_frame_equal(pd.DataFrame(dep_dict), dep_df)
 
