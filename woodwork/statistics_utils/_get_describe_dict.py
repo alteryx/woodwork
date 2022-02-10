@@ -2,11 +2,11 @@ from timeit import default_timer as timer
 
 import pandas as pd
 
-from .get_histogram_values import _get_histogram_values
-from .get_mode import _get_mode
-from .get_numeric_value_counts_in_range import _get_numeric_value_counts_in_range
-from .get_recent_value_counts import _get_recent_value_counts
-from .get_top_values_categorical import _get_top_values_categorical
+from ._get_histogram_values import _get_histogram_values
+from ._get_mode import _get_mode
+from ._get_numeric_value_counts_in_range import _get_numeric_value_counts_in_range
+from ._get_recent_value_counts import _get_recent_value_counts
+from ._get_top_values_categorical import _get_top_values_categorical
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.logical_types import Datetime, LatLong

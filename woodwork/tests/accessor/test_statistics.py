@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from inspect import isclass
+import sys
 
 import numpy as np
 import pandas as pd
@@ -898,7 +899,10 @@ def test_describe_dict_extra_stats(describe_df):
             assert desc_dict[col].get("top_values") is None
 
 
-@patch("woodwork.statistics_utils.get_describe_dict._get_numeric_value_counts_in_range")
+@patch.object(
+    sys.modules["woodwork.statistics_utils._get_describe_dict"],
+    "_get_numeric_value_counts_in_range",
+)
 def test_describe_dict_extra_stats_overflow_range(
     mock_get_numeric_value_counts_in_range, describe_df
 ):
