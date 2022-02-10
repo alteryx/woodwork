@@ -340,12 +340,71 @@ class MockCallback:
         self.total_elapsed_time = time_elapsed
 
 
-def test_dependence_extra_stats():
-    pass  # TODO: implement
+@pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
+def test_dependence_extra_stats(measure):
+    df_nans = pd.DataFrame(
+        {
+            "ints": pd.Series([2, pd.NA, 5, 2], dtype="Int64"),
+            "floats": pd.Series([3.3, None, 2.3, 1.3]),
+            "bools": pd.Series([True, None, True, False]),
+            "bools_pdna": pd.Series([True, pd.NA, True, False], dtype="boolean"),
+            "int_to_cat_nan": pd.Series([1, np.nan, 3, 1], dtype="category"),
+            "str": pd.Series(["test", np.nan, "test2", "test"]),
+            "str_no_nan": pd.Series(["test", "test2", "test2", "test"]),
+            "dates": pd.Series(["2020-01-01", None, "2020-01-02", "2020-01-03"]),
+        }
+    )
+    df_nans.ww.init(
+        logical_types={
+            "str": "Categorical",
+            "str_no_nan": "Categorical",
+        }
+    )
+    original_df = df_nans.copy()
+    dep_df_extra = df_nans.ww.dependence(measure, extra_stats=True, min_shared=3)
+    pd.testing.assert_frame_equal(df_nans, original_df)
+    dep_df = df_nans.ww.dependence(measure, min_shared=3)
+    pd.testing.assert_frame_equal(dep_df, dep_df_extra[dep_df.columns])
+
+    assert (dep_df_extra["shared_rows"] == 3).all()
+    if measure in ("max", "all"):
+        assert "measure_used" in dep_df_extra.columns
+        both_dep_df = df_nans.ww.dependence(measure=["mutual", "pearson"], min_shared=3)
+        both_dep_df["pearson"] = both_dep_df["pearson"].abs()
+        both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
+        both_dep_df = both_dep_df.transpose()
+
+        for row in dep_df_extra.index:
+            col_1 = dep_df_extra["column_1"][row]
+            col_2 = dep_df_extra["column_2"][row]
+            expected_max = both_dep_df[col_1][col_2].idxmax()
+            assert expected_max == dep_df_extra["measure_used"][row]
+    else:
+        assert "measure_used" not in dep_df_extra.columns
 
 
-def test_dependence_min_shared():
-    pass  # TODO: implement
+@pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
+def test_dependence_min_shared(time_index_df, measure):
+    time_index_df.ww.init(
+        logical_types={"strs": "categorical", "letters": "Categorical"}
+    )
+    for min_shared in (25, 4, 3):
+        dep_df = time_index_df.ww.dependence(measure=measure, min_shared=min_shared)
+
+        if measure == "all":
+            measure_columns = ["mutual", "pearson", "max"]
+        else:
+            measure_columns = [measure]
+
+        for measurement in measure_columns:
+            if min_shared is None:
+                assert (dep_df[measurement].isna()).all()
+            elif min_shared == 4:
+                assert not (dep_df[measurement].isna()).all()
+                assert (dep_df[measurement].isna()).any()
+            elif min_shared == 3:
+                assert not (dep_df[measurement].isna()).all()
+                assert not (dep_df[measurement].isna()).any()
 
 
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])

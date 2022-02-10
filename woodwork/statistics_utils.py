@@ -420,8 +420,15 @@ def _get_dependence_dict(
                         if "pearson" in measure:
                             result["pearson"] = pearson_score
                     if calc_max:
-                        max_score = pd.Series([abs(pearson_score), mi_score]).max()
-                        result["max"] = max_score
+                        score = pd.Series(
+                            [mi_score, abs(pearson_score)], index=["mutual", "pearson"]
+                        )
+                        result["max"] = score.max()
+                        if extra_stats:
+                            result["measure_used"] = score.idxmax()
+
+                if extra_stats:
+                    result["shared_rows"] = num_intersect
 
                 dependence_list.append(result)
                 current_progress = _update_progress(
