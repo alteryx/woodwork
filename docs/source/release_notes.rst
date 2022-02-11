@@ -5,23 +5,32 @@ Release Notes
 
 Future Release
 ==============
+    .. warning::
+        Woodwork may not support Python 3.7 in next non-bugfix release.
+
     * Enhancements
+        * Add validation to EmailAddress logical type (:pr:`1247`)
+        * Add validation to URL logical type (:pr:`1285`)
+        * Add validation to Age, AgeFractional, and AgeNullable logical types (:pr:`1289`)
     * Fixes
+        * Check range length in table stats without producing overflow error (:pr:`1287`)
     * Changes
+        * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
+        * Add back support for Python 3.7 (:pr:`1292`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
+        * Update README.md with Alteryx link (:pr:`1291`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 
 v0.12.0 Jan 27, 2022
 ====================
     * Enhancements
         * Add Slack link to GitHub issue creation templates (:pr:`1242`)
-        * Validate email address logical types (:pr:`1247`)
     * Fixes
         * Fixed issue with tuples being incorrectly inferred as EmailAddress (:pr:`1253`)
         * Set high and low bounds to the max and min values if no outliers are present in ``box_plot_dict`` (:pr:`1269`)

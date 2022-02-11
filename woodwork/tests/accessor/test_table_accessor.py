@@ -2981,34 +2981,64 @@ def test_nan_index_error(sample_df_pandas):
 
 
 def test_validate_logical_types(sample_df):
-    df = sample_df[["email", "age"]]
+    df = sample_df[["email", "url", "age"]]
     df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate_logical_types() is None
 
-    invalid_row_1 = pd.Series({4: "bad_email"}).to_frame("email")
-    invalid_row_2 = pd.Series({5: "bad_email"}).to_frame("email_2")
+    invalid_df = pd.DataFrame(
+        data={
+            "url": {4: "bad_url"},
+            "email": {4: "bad_email"},
+            "email_2": {5: "bad_email"},
+        }
+    )
 
     if _is_koalas_dataframe(df):
-        invalid_row_1 = ks.from_pandas(invalid_row_1)
-        invalid_row_2 = ks.from_pandas(invalid_row_2)
+        invalid_df = ks.from_pandas(invalid_df)
+    df = df.append(invalid_df)
 
-    df["email_2"] = df["email"]
-    df = df.append(invalid_row_1)
-    df = df.append(invalid_row_2)
+    df.ww.init(
+        logical_types={
+            "url": "URL",
+            "email": "EmailAddress",
+            "email_2": "EmailAddress",
+        }
+    )
 
-    types = dict(email="EmailAddress", email_2="EmailAddress")
-    df.ww.init(logical_types=types)
-
-    match = "Series email contains invalid email addresses."
+    match = "Series email contains invalid email address values. "
+    match += "The email_inference_regex can be changed in the config if needed."
     with pytest.raises(TypeValidationError, match=match):
         df.ww.validate_logical_types()
 
-    email = {4: "bad_email", 5: pd.NA}
-    email_2 = {4: pd.NA, 5: "bad_email"}
-    expected = pd.DataFrame({"email": email, "email_2": email_2})
-    expected = expected.astype({"email": "string", "email_2": "string"})
+    expected = pd.DataFrame(
+        data={
+            "email": {4: "bad_email", 5: pd.NA},
+            "url": {4: "bad_url"},
+            "email_2": {4: pd.NA, 5: "bad_email"},
+        }
+    )
+
+    expected = expected.astype(
+        {
+            "url": "string",
+            "email": "string",
+            "email_2": "string",
+        }
+    )
 
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
     assert actual.equals(expected)
 
+
+def test_validate_logical_types_call(sample_df):
+    sample_df.ww.init(logical_types={"email": "EmailAddress"})
+    for logical_type in sample_df.ww.logical_types.values():
+        with patch.object(
+            target=type(logical_type),
+            attribute="validate",
+            return_value=None,
+        ) as validate_method:
+            assert not validate_method.called
+            assert sample_df.ww.validate_logical_types() is None
+            assert validate_method.called
