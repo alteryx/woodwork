@@ -450,7 +450,6 @@ class WoodworkColumnAccessor:
             return_invalid_values=return_invalid_values,
         )
 
-
     @property
     @_check_column_schema
     def custom_tags(self):

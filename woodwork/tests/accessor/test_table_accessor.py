@@ -1941,7 +1941,11 @@ def test_accessor_set_index_errors(sample_df):
 
 
 def test_set_types(sample_df):
-    sample_df.ww.init(index="full_name", time_index="signup_date", semantic_tags={"is_registered": "custom_tag"})
+    sample_df.ww.init(
+        index="full_name",
+        time_index="signup_date",
+        semantic_tags={"is_registered": "custom_tag"},
+    )
 
     original_df = sample_df.ww.copy()
 

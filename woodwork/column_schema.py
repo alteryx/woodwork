@@ -220,8 +220,10 @@ class ColumnSchema(object):
 
     @property
     def custom_tags(self):
-        standard_tags = self.logical_type.standard_tags if self.use_standard_tags else set()
-        return self.semantic_tags - standard_tags - {'index', 'time_index'}
+        standard_tags = set()
+        if self.use_standard_tags:
+            standard_tags |=self.logical_type.standard_tags
+        return self.semantic_tags - standard_tags - {"index", "time_index"}
 
 
 def _validate_logical_type(logical_type):
