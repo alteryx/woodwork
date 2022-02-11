@@ -220,6 +220,7 @@ class ColumnSchema(object):
 
     @property
     def custom_tags(self):
+        """The custom semantic tag(s) specified for the column."""
         standard_tags = set()
         if self.use_standard_tags:
             standard_tags |= self.logical_type.standard_tags
