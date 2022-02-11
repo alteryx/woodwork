@@ -575,7 +575,7 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
         use_standard_tags=True,
     )
 
-    # An empty set should reset the tags
+    # An empty set should preserve custom tags
     schema.set_types(semantic_tags={"full_name": set()}, retain_index_tags=False)
     assert isinstance(schema.logical_types["full_name"], Unknown)
     assert schema.semantic_tags["full_name"] == {"tag1"}
