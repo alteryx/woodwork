@@ -14,7 +14,7 @@ from woodwork.accessor_utils import (
     is_schema_valid,
 )
 from woodwork.exceptions import TypeConversionError
-from woodwork.logical_types import Categorical, Datetime, NaturalLanguage
+from woodwork.logical_types import Categorical, Datetime, LatLong, NaturalLanguage
 
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):
@@ -99,6 +99,14 @@ def test_init_series_with_datetime(sample_datetime_series):
     series = init_series(sample_datetime_series, logical_type="datetime")
     assert series.dtype == "datetime64[ns]"
     assert isinstance(series.ww.logical_type, Datetime)
+
+
+def test_init_series_with_latlong(latlong_df_pandas):
+
+    for column in latlong_df_pandas:
+        series = latlong_df_pandas[column]
+        series = init_series(series, logical_type="LatLong")
+        assert isinstance(series.ww.logical_type, LatLong)
 
 
 def test_init_series_all_parameters(sample_series):

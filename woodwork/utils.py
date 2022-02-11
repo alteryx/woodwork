@@ -216,6 +216,10 @@ def _is_url(string):
 
 def _reformat_to_latlong(latlong, use_list=False):
     """Reformats LatLong columns to be tuples of floats. Uses (np.nan, np.nan) for null values."""
+
+    if _is_nan(latlong):
+        return np.nan
+
     if _is_latlong_nan(latlong):
         latlong = (np.nan, np.nan)
 
@@ -283,8 +287,6 @@ def _is_valid_latlong_value(val, bracket_type=tuple):
     if isinstance(val, bracket_type) and len(val) == 2:
         latitude, longitude = val
         if isinstance(latitude, float) and isinstance(longitude, float):
-            if pd.isnull(latitude) and pd.isnull(longitude):
-                return False
             return True
     elif isinstance(val, float) and pd.isnull(val):
         return True

@@ -282,7 +282,7 @@ def test_reformat_to_latlong():
     assert _reformat_to_latlong("[1, 2]") == simple_latlong
     assert _reformat_to_latlong("1, 2") == simple_latlong
 
-    assert _reformat_to_latlong(None) == (np.nan, np.nan)
+    assert np.isnan(_reformat_to_latlong(None))
     assert _reformat_to_latlong((1, np.nan)) == (1, np.nan)
     assert _reformat_to_latlong((np.nan, "1")) == (np.nan, 1)
 
@@ -345,21 +345,20 @@ def test_is_nan():
     assert not _is_nan({"key": "value"})
 
 
-def test_is_valid_latlong_value():
-    values = [
-        (1.0, 2.0),
-        np.nan,
-        [1.0, 2.0],
-        (np.nan, np.nan),
-        ("a", 2.0),
-        (1.0, 2.0, 3.0),
-        None,
-    ]
-
-    expected_values = [True, True, False, False, False, False, False]
-
-    for index, value in enumerate(values):
-        assert _is_valid_latlong_value(value) is expected_values[index]
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ((1.0, 2.0), True),
+        (np.nan, True),
+        ([1.0, 2.0], False),
+        ((np.nan, np.nan), True),
+        (("a", 2.0), False),
+        ((1.0, 2.0, 3.0), False),
+        (None, False),
+    ],
+)
+def test_is_valid_latlong_value(test_input, expected):
+    assert _is_valid_latlong_value(test_input) is expected
 
 
 def test_is_valid_latlong_value_koalas():
