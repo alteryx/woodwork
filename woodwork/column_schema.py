@@ -222,7 +222,7 @@ class ColumnSchema(object):
     def custom_tags(self):
         standard_tags = set()
         if self.use_standard_tags:
-            standard_tags |=self.logical_type.standard_tags
+            standard_tags |= self.logical_type.standard_tags
         return self.semantic_tags - standard_tags - {"index", "time_index"}
 
 
