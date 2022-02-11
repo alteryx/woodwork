@@ -218,6 +218,11 @@ class ColumnSchema(object):
 
         self.semantic_tags = semantic_tags
 
+    @property
+    def custom_tags(self):
+        standard_tags = self.logical_type.standard_tags if self.use_standard_tags else set()
+        return self.semantic_tags - standard_tags - {'index', 'time_index'}
+
 
 def _validate_logical_type(logical_type):
     if type(logical_type) not in ww.type_system.registered_types:

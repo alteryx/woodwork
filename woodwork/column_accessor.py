@@ -451,6 +451,13 @@ class WoodworkColumnAccessor:
         )
 
 
+    @property
+    @_check_column_schema
+    def custom_tags(self):
+        """The semantic tags assigned to the series"""
+        return self._schema.custom_tags
+
+
 def _validate_schema(schema, series):
     if not isinstance(schema, ColumnSchema):
         raise TypeError("Provided schema must be a Woodwork.ColumnSchema object.")
