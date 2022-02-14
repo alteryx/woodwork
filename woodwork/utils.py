@@ -309,6 +309,9 @@ def _is_valid_latlong_value(val, is_koalas=False):
     if isinstance(val, float):
         return np.isnan(val)
 
+    if is_koalas and val is None:
+        return True
+
     return False
 
 
