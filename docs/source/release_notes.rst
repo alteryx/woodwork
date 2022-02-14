@@ -26,7 +26,7 @@ Future Release
         * Replace mock with unittest.mock (:pr:`1304`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 
 v0.12.0 Jan 27, 2022
