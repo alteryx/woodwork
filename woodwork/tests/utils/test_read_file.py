@@ -1,8 +1,8 @@
 import os
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from mock import patch
 
 import woodwork as ww
 from woodwork.serialize import save_orc_file
