@@ -1,6 +1,3 @@
-from enum import Enum
-
-
 class DuplicateTagsWarning(UserWarning):
     def get_warning_message(self, duplicate_tags, name):
         return f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{name}'"

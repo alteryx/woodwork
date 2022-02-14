@@ -247,12 +247,12 @@ def _reformat_to_latlong(latlong, is_koalas=False):
 
         try:
             latitude = _coerce_to_float(latitude)
-        except:
+        except ValueError:
             raise LatLongIsNotDecimalError(latlong)
 
         try:
             longitude = _coerce_to_float(longitude)
-        except:
+        except ValueError:
             raise LatLongIsNotDecimalError(latlong)
 
         if is_koalas:
