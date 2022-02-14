@@ -221,7 +221,8 @@ def _is_url(string):
 
 def _reformat_to_latlong(latlong, is_koalas=False):
     """
-    Reformats LatLong columns to be tuples of floats. NaN like values are replaced with np.nan.
+    Accepts 2-tuple like values, or a unary NaN like value.
+    NaN like values are replaced with np.nan.
     """
     if isinstance(latlong, str):
 
