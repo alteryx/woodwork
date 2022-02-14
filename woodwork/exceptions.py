@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class DuplicateTagsWarning(UserWarning):
     def get_warning_message(self, duplicate_tags, name):
         return f"Semantic tag(s) '{', '.join(duplicate_tags)}' already present on column '{name}'"
@@ -78,3 +81,33 @@ class WoodworkNotInitWarning(UserWarning):
 
 class TypeValidationError(Exception):
     pass
+
+
+# class LatLongExceptions(Enum):
+#     """Enum identifying the type of error encountered in LatLong inference."""
+
+#     LAT_LONGS_MUST_BE_TUPLE = "LatLongs must either be a tuple, a list, or a string representation of a tuple."
+#     INVALID_LATITUDE = "Latitude value must be in decimal degrees."
+#     INVALID_LONGITUDE = "Longitude value must be in decimal degrees."
+#     NOT_2_VALUES = "LatLong values must have exactly two values."
+
+
+class LatLongIsNotTupleError(ValueError):
+    def __init__(self, value):
+        return super().__init__(
+            f"LatLongs must either be a tuple, a list, or a string representation of a tuple. {value} does not fit the criteria."
+        )
+
+
+class LatLongIsNotDecimalError(ValueError):
+    def __init__(self, value):
+        return super().__init__(
+            f"Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {value} cannot be converted to a float."
+        )
+
+
+class LatLongLengthTwoError(ValueError):
+    def __init__(self, value):
+        return super().__init__(
+            f" LatLong values must have exactly two values. {value} does not have two values."
+        )

@@ -8,6 +8,11 @@ import numpy as np
 import pandas as pd
 
 import woodwork as ww
+from woodwork.exceptions import (
+    LatLongIsNotDecimalError,
+    LatLongIsNotTupleError,
+    LatLongLengthTwoError,
+)
 from woodwork.pandas_backport import guess_datetime_format
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
@@ -214,46 +219,53 @@ def _is_url(string):
     return "http" in string
 
 
-def _reformat_to_latlong(latlong, use_list=False):
-    """Reformats LatLong columns to be tuples of floats. Uses (np.nan, np.nan) for null values."""
+def _reformat_to_latlong(latlong, is_koalas=False):
+    """
+    Reformats LatLong columns to be tuples of floats. NaN like values are replaced with np.nan.
+    """
 
-    if _is_nan(latlong):
-        return np.nan
-
-    if _is_latlong_nan(latlong):
-        latlong = (np.nan, np.nan)
+    if _is_valid_latlong_value(latlong, is_koalas):
+        return latlong
 
     if isinstance(latlong, str):
+
+        nan_values = [x for x in ww.config.get_option("nan_values") if len(x)]
+        nan_values = "|".join(nan_values)
+
+        latlong = re.sub(nan_values, "None", latlong)
+
         try:
-            # Serialized latlong columns from csv or parquet will be strings, so null values will be
-            # read as the string 'nan' in pandas and Dask and 'NaN' in Koalas
-            # neither of which which is interpretable as a null value
-            if "nan" in latlong:
-                latlong = latlong.replace("nan", "None")
-            if "NaN" in latlong:
-                latlong = latlong.replace("NaN", "None")
             latlong = ast.literal_eval(latlong)
         except ValueError:
             pass
 
-    if isinstance(latlong, (tuple, list)):
+    if isinstance(latlong, (list, tuple)):
         if len(latlong) != 2:
-            raise ValueError(
-                f"LatLong values must have exactly two values. {latlong} does not have two values."
-            )
+            raise LatLongLengthTwoError(latlong)
 
-        latitude, longitude = map(_to_latlong_float, latlong)
+        latitude, longitude = latlong
 
-        if use_list:
+        try:
+            latitude = _coerce_to_float(latitude)
+        except:
+            raise LatLongIsNotDecimalError(latlong)
+
+        try:
+            longitude = _coerce_to_float(longitude)
+        except:
+            raise LatLongIsNotDecimalError(latlong)
+
+        if is_koalas:
             return [latitude, longitude]
         return (latitude, longitude)
 
-    raise ValueError(
-        f"LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria."
-    )
+    if _is_nan(latlong):
+        return np.nan
+
+    raise LatLongIsNotTupleError(latlong)
 
 
-def _to_latlong_float(val):
+def _coerce_to_float(val):
     """Attempts to convert a value to a float, propagating null values."""
     if _is_nan(val):
         return np.nan
@@ -262,7 +274,7 @@ def _to_latlong_float(val):
         return float(val)
     except (ValueError, TypeError):
         raise ValueError(
-            f"Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {val} cannot be converted to a float."
+            f"The value represented by {val} cannot be converted to a float."
         )
 
 
@@ -270,26 +282,33 @@ def _is_valid_latlong_series(series):
     """Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False"""
     if ww.accessor_utils._is_dask_series(series):
-        series = series = series.get_partition(0).compute()
+        series = series.get_partition(0).compute()
     if ww.accessor_utils._is_koalas_series(series):
         series = series.to_pandas()
-        bracket_type = list
+        is_koalas = True
     else:
-        bracket_type = tuple
-    if series.apply(_is_valid_latlong_value, args=(bracket_type,)).all():
+        is_koalas = False
+    if series.apply(_is_valid_latlong_value, args=(is_koalas,)).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val, bracket_type=tuple):
+def _is_valid_latlong_value(val, is_koalas=False):
     """Returns True if the value provided is a properly formatted LatLong value for a
     pandas, Dask or Koalas Series, otherwise returns False."""
-    if isinstance(val, bracket_type) and len(val) == 2:
+    if isinstance(val, (list, tuple)) and len(val) == 2:
+        if len(val) != 2:
+            return False
+
+        if not isinstance(val, list if is_koalas else tuple):
+            return False
+
         latitude, longitude = val
-        if isinstance(latitude, float) and isinstance(longitude, float):
-            return True
-    elif isinstance(val, float) and pd.isnull(val):
-        return True
+        return isinstance(latitude, float) and isinstance(longitude, float)
+
+    if isinstance(val, float):
+        return np.isnan(val)
+
     return False
 
 

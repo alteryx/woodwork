@@ -1,3 +1,4 @@
+from cgi import test
 import re
 
 import numpy as np
@@ -6,6 +7,11 @@ import pytest
 from mock import patch
 
 import woodwork as ww
+from woodwork.exceptions import (
+    LatLongIsNotDecimalError,
+    LatLongIsNotTupleError,
+    LatLongLengthTwoError,
+)
 from woodwork.logical_types import (
     Age,
     AgeFractional,
@@ -43,7 +49,7 @@ from woodwork.utils import (
     _is_valid_latlong_value,
     _parse_logical_type,
     _reformat_to_latlong,
-    _to_latlong_float,
+    _coerce_to_float,
     camel_to_snake,
     get_valid_mi_types,
     import_or_none,
@@ -243,87 +249,107 @@ def test_is_s3():
     assert not _is_s3("https://woodwork-static.s3.amazonaws.com/")
 
 
-def test_reformat_to_latlong_errors():
-    for latlong in [{1, 2, 3}, "{1, 2, 3}", "This is text"]:
-        error = f"LatLongs must either be a tuple, a list, or a string representation of a tuple. {latlong} does not fit the criteria."
-        with pytest.raises(ValueError, match=error):
-            _reformat_to_latlong(latlong)
-
-    error = re.escape(
-        "LatLongs must either be a tuple, a list, or a string representation of a tuple. (1,2) does not fit the criteria."
-    )
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong("'(1,2)'")
-
-    for latlong in [(1, 2, 3), "(1, 2, 3)"]:
-        error = re.escape(
-            "LatLong values must have exactly two values. (1, 2, 3) does not have two values."
-        )
-        with pytest.raises(ValueError, match=error):
-            _reformat_to_latlong(latlong)
-
-    error = re.escape(
-        "Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by 41deg52'54\" N cannot be converted to a float."
-    )
-    with pytest.raises(ValueError, match=error):
-        _reformat_to_latlong(("41deg52'54\" N", "21deg22'54\" W"))
+@pytest.mark.parametrize(
+    "test_input, error",
+    [
+        ({1, 2, 3}, LatLongIsNotTupleError),
+        ("{1, 2, 3}", LatLongIsNotTupleError),
+        ("This is text", LatLongIsNotTupleError),
+        ("'(1,2)'", LatLongIsNotTupleError),
+        ((1, 2, 3), LatLongLengthTwoError),
+        ("(1, 2, 3)", LatLongLengthTwoError),
+        ("(1,)", LatLongLengthTwoError),
+        (("41deg52'54\" N", "21deg22'54\" W"), LatLongIsNotDecimalError),
+    ],
+)
+def test_reformat_to_latlong_errors(test_input, error):
+    with pytest.raises(error):
+        _reformat_to_latlong(test_input)
 
 
-def test_reformat_to_latlong():
-    simple_latlong = (1, 2)
-
-    assert _reformat_to_latlong((1, 2)) == simple_latlong
-    assert _reformat_to_latlong(("1", "2")) == simple_latlong
-    assert _reformat_to_latlong("(1,2)") == simple_latlong
-
-    # Check non-standard tuple formats
-    assert _reformat_to_latlong([1, 2]) == simple_latlong
-    assert _reformat_to_latlong(["1", "2"]) == simple_latlong
-    assert _reformat_to_latlong("[1, 2]") == simple_latlong
-    assert _reformat_to_latlong("1, 2") == simple_latlong
-
-    assert np.isnan(_reformat_to_latlong(None))
-    assert _reformat_to_latlong((1, np.nan)) == (1, np.nan)
-    assert _reformat_to_latlong((np.nan, "1")) == (np.nan, 1)
-
-    # This is how csv and parquet will deserialize
-    assert _reformat_to_latlong("(1, nan)") == (1, np.nan)
-    assert _reformat_to_latlong("(NaN, 9)") == (np.nan, 9)
-
-
-def test_reformat_to_latlong_list():
-    simple_latlong = [1, 2]
-
-    assert _reformat_to_latlong((1, 2), use_list=True) == simple_latlong
-    assert _reformat_to_latlong(("1", "2"), use_list=True) == simple_latlong
-    assert _reformat_to_latlong("(1,2)", use_list=True) == simple_latlong
-
-    assert _reformat_to_latlong([1, 2], use_list=True) == simple_latlong
-    assert _reformat_to_latlong(["1", "2"], use_list=True) == simple_latlong
-    assert _reformat_to_latlong("[1, 2]", use_list=True) == simple_latlong
-    assert _reformat_to_latlong("1, 2", use_list=True) == simple_latlong
-
-    assert _reformat_to_latlong((1, np.nan), use_list=True) == [1, np.nan]
-    assert _reformat_to_latlong((np.nan, "1"), use_list=True) == [np.nan, 1]
-
-    # This is how csv and parquet will deserialize
-    assert _reformat_to_latlong("[1, nan]", use_list=True) == [1, np.nan]
-    assert _reformat_to_latlong("[1, NaN]", use_list=True) == [1, np.nan]
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ((1, 2), (1, 2)),
+        (("1", "2"), (1, 2)),
+        ("(1,2)", (1, 2)),
+        ([1, 2], (1, 2)),
+        (["1", "2"], (1, 2)),
+        ("[1, 2]", (1, 2)),
+        ("1, 2", (1, 2)),
+        ((1, np.nan), (1, np.nan)),
+        ((np.nan, "1"), (np.nan, 1)),
+        ("(1, nan)", (1, np.nan)),
+        ("(NaN, 9)", (np.nan, 9)),
+        ("(1, None)", (1, np.nan)),
+        ("(<NA>, 9)", (np.nan, 9)),
+        ((np.nan, np.nan), (np.nan, np.nan)),
+        ((pd.NA, pd.NA), (np.nan, np.nan)),
+        ((None, None), (np.nan, np.nan)),
+        (None, np.nan),
+        (np.nan, np.nan),
+        (pd.NA, np.nan),
+        ("None", np.nan),
+        ("NaN", np.nan),
+        ("<NA>", np.nan),
+    ],
+)
+def test_reformat_to_latlong(test_input, expected):
+    if isinstance(expected, (list, tuple)):
+        assert _reformat_to_latlong(test_input) == expected
+    else:
+        assert _reformat_to_latlong(test_input) is expected
 
 
-def test_to_latlong_float():
-    assert _to_latlong_float(4) == 4.0
-    assert _to_latlong_float("2.2") == 2.2
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ((1, 2), [1, 2]),
+        (("1", "2"), [1, 2]),
+        ("(1,2)", [1, 2]),
+        ([1, 2], [1, 2]),
+        (["1", "2"], [1, 2]),
+        ("[1, 2]", [1, 2]),
+        ("1, 2", [1, 2]),
+        ((1, np.nan), [1, np.nan]),
+        ((np.nan, "1"), [np.nan, 1]),
+        ("(1, nan)", [1, np.nan]),
+        ("(NaN, 9)", [np.nan, 9]),
+        ("(1, None)", [1, np.nan]),
+        ("(<NA>, 9)", [np.nan, 9]),
+        ((np.nan, np.nan), [np.nan, np.nan]),
+        ((pd.NA, pd.NA), [np.nan, np.nan]),
+        ((None, None), [np.nan, np.nan]),
+        (None, np.nan),
+        (np.nan, np.nan),
+        (pd.NA, np.nan),
+        ("None", np.nan),
+        ("NaN", np.nan),
+        ("<NA>", np.nan),
+    ],
+)
+def test_reformat_to_latlong_koalas(test_input, expected):
+    if isinstance(expected, (list, tuple)):
+        assert _reformat_to_latlong(test_input, is_koalas=True) == expected
+    else:
+        assert _reformat_to_latlong(test_input, is_koalas=True) is expected
 
-    assert _to_latlong_float(None) is np.nan
-    assert _to_latlong_float(np.nan) is np.nan
-    assert _to_latlong_float(pd.NA) is np.nan
 
-    error = re.escape(
-        "Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by [1, 2, 3] cannot be converted to a float."
-    )
-    with pytest.raises(ValueError, match=error):
-        _to_latlong_float([1, 2, 3])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        (4, 4.0),
+        ("2.2", 2.2),
+        (None, np.nan),
+        (np.nan, np.nan),
+        (pd.NA, np.nan),
+    ],
+)
+def test_coerce_to_float(test_input, expected):
+    if np.isnan(expected):
+        assert _coerce_to_float(test_input) is expected
+    else:
+        assert _coerce_to_float(test_input) == expected
 
 
 def test_is_nan():
@@ -349,35 +375,48 @@ def test_is_nan():
     "test_input,expected",
     [
         ((1.0, 2.0), True),
-        (np.nan, True),
-        ([1.0, 2.0], False),
+        ((1.0, np.nan), True),
+        ((np.nan, 2.0), True),
         ((np.nan, np.nan), True),
+        (np.nan, True),
+        (pd.NA, False),
+        (2.0, False),
+        ([2.0], False),
+        ([None, None], False),
+        ("None", False),
+        ([1.0, 2.0], False),
+        ((pd.NA, pd.NA), False),
         (("a", 2.0), False),
         ((1.0, 2.0, 3.0), False),
         (None, False),
     ],
 )
 def test_is_valid_latlong_value(test_input, expected):
-    assert _is_valid_latlong_value(test_input) is expected
+    assert _is_valid_latlong_value(test_input) == expected
 
 
-def test_is_valid_latlong_value_koalas():
-    values = [
-        (1.0, 2.0),
-        np.nan,
-        [1.0, 2.0],
-        (np.nan, np.nan),
-        ("a", 2.0),
-        (1.0, 2.0, 3.0),
-        None,
-    ]
-
-    expected_values = [False, True, True, False, False, False, False]
-
-    for index, value in enumerate(values):
-        assert (
-            _is_valid_latlong_value(value, bracket_type=list) is expected_values[index]
-        )
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ([1.0, 2.0], True),
+        ([1.0, np.nan], True),
+        ([np.nan, 2.0], True),
+        ([np.nan, np.nan], True),
+        (np.nan, True),
+        (pd.NA, False),
+        (2.0, False),
+        ([2.0], False),
+        ([None, None], False),
+        ("None", False),
+        ((1.0, 2.0), False),
+        ((pd.NA, pd.NA), False),
+        (("a", 2.0), False),
+        ((1.0, 2.0, 3.0), False),
+        (None, False),
+    ],
+)
+def test_is_valid_latlong_value_koalas(test_input, expected):
+    assert _is_valid_latlong_value(test_input, is_koalas=True) == expected
 
 
 def test_is_valid_latlong_series():

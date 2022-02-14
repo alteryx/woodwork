@@ -101,10 +101,9 @@ def test_init_series_with_datetime(sample_datetime_series):
     assert isinstance(series.ww.logical_type, Datetime)
 
 
-def test_init_series_with_latlong(latlong_df_pandas):
-
-    for column in latlong_df_pandas:
-        series = latlong_df_pandas[column]
+def test_init_series_with_latlong(latlong_df):
+    for column in latlong_df:
+        series = latlong_df[column]
         series = init_series(series, logical_type="LatLong")
         assert isinstance(series.ww.logical_type, LatLong)
 
