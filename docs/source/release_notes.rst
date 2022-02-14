@@ -18,6 +18,7 @@ Future Release
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
         * Add back support for Python 3.7 (:pr:`1292`)
+        * Nested statistical utility functions into directory (:pr:`1295`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
