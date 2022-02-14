@@ -292,45 +292,15 @@ def test_reformat_to_latlong_errors(test_input, error):
         ("<NA>", np.nan),
     ],
 )
-def test_reformat_to_latlong(test_input, expected):
+@pytest.mark.parametrize("is_koalas", [True, False])
+def test_reformat_to_latlong(test_input, expected, is_koalas):
     if isinstance(expected, (list, tuple)):
-        assert _reformat_to_latlong(test_input) == expected
+        if is_koalas:
+            assert _reformat_to_latlong(test_input, is_koalas) == list(expected)
+        else:
+            assert _reformat_to_latlong(test_input, is_koalas) == expected
     else:
         assert _reformat_to_latlong(test_input) is expected
-
-
-@pytest.mark.parametrize(
-    "test_input,expected",
-    [
-        ((1, 2), [1, 2]),
-        (("1", "2"), [1, 2]),
-        ("(1,2)", [1, 2]),
-        ([1, 2], [1, 2]),
-        (["1", "2"], [1, 2]),
-        ("[1, 2]", [1, 2]),
-        ("1, 2", [1, 2]),
-        ((1, np.nan), [1, np.nan]),
-        ((np.nan, "1"), [np.nan, 1]),
-        ("(1, nan)", [1, np.nan]),
-        ("(NaN, 9)", [np.nan, 9]),
-        ("(1, None)", [1, np.nan]),
-        ("(<NA>, 9)", [np.nan, 9]),
-        ((np.nan, np.nan), [np.nan, np.nan]),
-        ((pd.NA, pd.NA), [np.nan, np.nan]),
-        ((None, None), [np.nan, np.nan]),
-        (None, None),
-        (np.nan, np.nan),
-        (pd.NA, np.nan),
-        ("None", np.nan),
-        ("NaN", np.nan),
-        ("<NA>", np.nan),
-    ],
-)
-def test_reformat_to_latlong_koalas(test_input, expected):
-    if isinstance(expected, (list, tuple)):
-        assert _reformat_to_latlong(test_input, is_koalas=True) == expected
-    else:
-        assert _reformat_to_latlong(test_input, is_koalas=True) is expected
 
 
 @pytest.mark.parametrize(
@@ -401,6 +371,7 @@ def test_is_valid_latlong_value(test_input, expected):
         ([np.nan, 2.0], True),
         ([np.nan, np.nan], True),
         (np.nan, True),
+        (None, True),
         (pd.NA, False),
         (2.0, False),
         ([2.0], False),
@@ -410,7 +381,6 @@ def test_is_valid_latlong_value(test_input, expected):
         ((pd.NA, pd.NA), False),
         (("a", 2.0), False),
         ((1.0, 2.0, 3.0), False),
-        (None, False),
     ],
 )
 def test_is_valid_latlong_value_koalas(test_input, expected):

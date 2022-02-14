@@ -223,10 +223,6 @@ def _reformat_to_latlong(latlong, is_koalas=False):
     """
     Reformats LatLong columns to be tuples of floats. NaN like values are replaced with np.nan.
     """
-
-    if _is_valid_latlong_value(latlong, is_koalas):
-        return latlong
-
     if isinstance(latlong, str):
 
         nan_values = [x for x in ww.config.get_option("nan_values") if len(x)]
