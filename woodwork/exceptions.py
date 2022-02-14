@@ -83,7 +83,12 @@ class TypeValidationError(Exception):
 class LatLongIsNotTupleError(ValueError):
     def __init__(self, value):
         return super().__init__(
-            f"LatLongs must either be a tuple, a list, or a string representation of a tuple. {value} does not fit the criteria."
+            f"""LatLong values must be one of the following:
+- A 2-tuple or list of 2 values representing decimal latitude or longitude values (NaN values are allowed). 
+- A single NaN value.
+- A string representation of the above. 
+
+{value} does not fit the criteria."""
         )
 
 
