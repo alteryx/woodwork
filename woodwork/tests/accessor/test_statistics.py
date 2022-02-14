@@ -6,7 +6,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
