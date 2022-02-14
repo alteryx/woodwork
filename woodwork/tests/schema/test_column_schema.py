@@ -1,7 +1,7 @@
 import re
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 import woodwork as ww
 from woodwork.column_schema import (

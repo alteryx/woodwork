@@ -1,10 +1,10 @@
 import json
 import os
+from unittest.mock import patch
 
 import boto3
 import pandas as pd
 import pytest
-from mock import patch
 
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize

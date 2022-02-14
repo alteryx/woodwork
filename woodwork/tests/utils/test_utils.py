@@ -1,10 +1,8 @@
-import re
-from cgi import test
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
 import woodwork as ww
 from woodwork.exceptions import (

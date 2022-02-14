@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 
 import woodwork as ww
 from woodwork.accessor_utils import _is_koalas_series

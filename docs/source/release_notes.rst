@@ -23,6 +23,7 @@ Future Release
         * Better install page with new Sphinx extensions for copying and in-line tabs (:pr:`1280`, :pr:`1282`)
         * Update README.md with Alteryx link (:pr:`1291`)
     * Testing Changes
+        * Replace mock with unittest.mock (:pr:`1304`)
 
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
