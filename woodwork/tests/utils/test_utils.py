@@ -318,7 +318,7 @@ def test_reformat_to_latlong(test_input, expected):
         ((np.nan, np.nan), [np.nan, np.nan]),
         ((pd.NA, pd.NA), [np.nan, np.nan]),
         ((None, None), [np.nan, np.nan]),
-        (None, np.nan),
+        (None, None),
         (np.nan, np.nan),
         (pd.NA, np.nan),
         ("None", np.nan),
