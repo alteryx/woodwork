@@ -296,7 +296,7 @@ def _is_valid_latlong_series(series):
 def _is_valid_latlong_value(val, is_koalas=False):
     """Returns True if the value provided is a properly formatted LatLong value for a
     pandas, Dask or Koalas Series, otherwise returns False."""
-    if isinstance(val, (list, tuple)) and len(val) == 2:
+    if isinstance(val, (list, tuple)):
         if len(val) != 2:
             return False
 
