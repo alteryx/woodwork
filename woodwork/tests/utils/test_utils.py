@@ -1,5 +1,5 @@
-from cgi import test
 import re
+from cgi import test
 
 import numpy as np
 import pandas as pd
@@ -38,6 +38,7 @@ from woodwork.type_sys.utils import (
     list_semantic_tags,
 )
 from woodwork.utils import (
+    _coerce_to_float,
     _convert_input_to_set,
     _get_column_logical_type,
     _infer_datetime_format,
@@ -49,7 +50,6 @@ from woodwork.utils import (
     _is_valid_latlong_value,
     _parse_logical_type,
     _reformat_to_latlong,
-    _coerce_to_float,
     camel_to_snake,
     get_valid_mi_types,
     import_or_none,

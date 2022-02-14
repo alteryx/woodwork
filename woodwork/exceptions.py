@@ -83,15 +83,6 @@ class TypeValidationError(Exception):
     pass
 
 
-# class LatLongExceptions(Enum):
-#     """Enum identifying the type of error encountered in LatLong inference."""
-
-#     LAT_LONGS_MUST_BE_TUPLE = "LatLongs must either be a tuple, a list, or a string representation of a tuple."
-#     INVALID_LATITUDE = "Latitude value must be in decimal degrees."
-#     INVALID_LONGITUDE = "Longitude value must be in decimal degrees."
-#     NOT_2_VALUES = "LatLong values must have exactly two values."
-
-
 class LatLongIsNotTupleError(ValueError):
     def __init__(self, value):
         return super().__init__(
