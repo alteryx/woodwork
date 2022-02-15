@@ -366,7 +366,7 @@ def test_dependence_min_shared(time_index_df, measure):
             measure_columns = [measure]
 
         for measurement in measure_columns:
-            if min_shared is None:
+            if min_shared == 25:
                 assert (dep_df[measurement].isna()).all()
             elif min_shared == 4:
                 assert not (dep_df[measurement].isna()).all()
