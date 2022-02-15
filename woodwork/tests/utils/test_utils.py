@@ -258,6 +258,7 @@ def test_is_s3():
         ("(1, 2, 3)", LatLongLengthTwoError),
         ("(1,)", LatLongLengthTwoError),
         (("41deg52'54\" N", "21deg22'54\" W"), LatLongIsNotDecimalError),
+        ((41.5, "21deg22'54\" W"), LatLongIsNotDecimalError),
     ],
 )
 def test_reformat_to_latlong_errors(test_input, error):
