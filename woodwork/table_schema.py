@@ -246,7 +246,6 @@ class TableSchema(object):
                 self.columns[col_name]._set_semantic_tags(custom_tags)
             else:
                 self.columns[col_name]._set_semantic_tags(new_semantic_tags)
-
                 _validate_not_setting_index_tags(self.semantic_tags[col_name], col_name)
 
             if retain_index_tags and "index" in original_tags:
