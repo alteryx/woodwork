@@ -554,7 +554,7 @@ def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
     assert schema.logical_types["phone_number"] == PhoneNumber
     assert schema.logical_types["age"] == Double
 
-    # Verify semantic tags include standard tags in columns with Logical Type changes
+    # Verify semantic tags were reset to standard tags in columns with Logical Type changes
     assert schema.semantic_tags["full_name"] == {"category", "tag1"}
     assert schema.semantic_tags["email"] == {"tag2"}
     assert schema.semantic_tags["phone_number"] == {"tag3", "tag2"}
