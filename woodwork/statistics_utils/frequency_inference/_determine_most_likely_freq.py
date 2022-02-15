@@ -1,4 +1,4 @@
-from .constants import FREQ_INFERENCE_THRESHOLD, NON_INFERABLE_FREQ
+from ._constants import FREQ_INFERENCE_THRESHOLD, NON_INFERABLE_FREQ
 
 
 def _determine_most_likely_freq(alias_dict):

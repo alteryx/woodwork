@@ -1,6 +1,6 @@
-from .get_ranges import _get_ranges
-from .constants import OBSERVED_COLUMN_NAME
-from .types import RangeObject
+from ._get_ranges import _get_ranges
+from ._constants import OBSERVED_COLUMN_NAME
+from ._types import RangeObject
 import pandas as pd
 
 

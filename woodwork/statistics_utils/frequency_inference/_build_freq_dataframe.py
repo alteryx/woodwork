@@ -1,4 +1,4 @@
-from .constants import CANDIDATE_COLUMN_NAME
+from ._constants import CANDIDATE_COLUMN_NAME
 
 
 def _build_freq_dataframe(df):

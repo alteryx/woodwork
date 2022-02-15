@@ -1,5 +1,5 @@
 import pandas as pd
-from .constants import NON_INFERABLE_FREQ, WINDOW_LENGTH, CANDIDATE_COLUMN_NAME
+from ._constants import NON_INFERABLE_FREQ, WINDOW_LENGTH, CANDIDATE_COLUMN_NAME
 
 
 def _generate_freq_candidates(time_series):
