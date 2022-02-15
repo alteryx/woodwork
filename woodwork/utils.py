@@ -8,11 +8,7 @@ import numpy as np
 import pandas as pd
 
 import woodwork as ww
-from woodwork.exceptions import (
-    LatLongIsNotDecimalError,
-    LatLongIsNotTupleError,
-    LatLongLengthTwoError,
-)
+from woodwork.exceptions import TypeValidationError
 from woodwork.pandas_backport import guess_datetime_format
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
@@ -238,19 +234,19 @@ def _reformat_to_latlong(latlong, is_koalas=False):
 
     if isinstance(latlong, (list, tuple)):
         if len(latlong) != 2:
-            raise LatLongLengthTwoError(latlong)
+            raise TypeValidationError(
+                f"LatLong values must have exactly two values. {latlong} does not have two values."
+            )
 
         latitude, longitude = latlong
 
         try:
             latitude = _coerce_to_float(latitude)
-        except ValueError:
-            raise LatLongIsNotDecimalError(latlong)
-
-        try:
             longitude = _coerce_to_float(longitude)
         except ValueError:
-            raise LatLongIsNotDecimalError(latlong)
+            raise TypeValidationError(
+                f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
+            )
 
         if is_koalas:
             return [latitude, longitude]
@@ -259,7 +255,14 @@ def _reformat_to_latlong(latlong, is_koalas=False):
     if _is_nan(latlong):
         return np.nan
 
-    raise LatLongIsNotTupleError(latlong)
+    raise TypeValidationError(
+        f"""LatLong value is properly formatted. Value must be one of the following:
+- A 2-tuple or list of 2 values representing decimal latitude or longitude values (NaN values are allowed).
+- A single NaN value.
+- A string representation of the above.
+
+{latlong} does not fit the criteria."""
+    )
 
 
 def _coerce_to_float(val):

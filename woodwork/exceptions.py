@@ -78,29 +78,3 @@ class WoodworkNotInitWarning(UserWarning):
 
 class TypeValidationError(Exception):
     pass
-
-
-class LatLongIsNotTupleError(ValueError):
-    def __init__(self, value):
-        return super().__init__(
-            f"""LatLong values must be one of the following:
-- A 2-tuple or list of 2 values representing decimal latitude or longitude values (NaN values are allowed).
-- A single NaN value.
-- A string representation of the above.
-
-{value} does not fit the criteria."""
-        )
-
-
-class LatLongIsNotDecimalError(ValueError):
-    def __init__(self, value):
-        return super().__init__(
-            f"Latitude and Longitude values must be in decimal degrees. The latitude or longitude represented by {value} cannot be converted to a float."
-        )
-
-
-class LatLongLengthTwoError(ValueError):
-    def __init__(self, value):
-        return super().__init__(
-            f" LatLong values must have exactly two values. {value} does not have two values."
-        )

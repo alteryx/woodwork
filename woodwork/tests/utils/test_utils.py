@@ -5,11 +5,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.exceptions import (
-    LatLongIsNotDecimalError,
-    LatLongIsNotTupleError,
-    LatLongLengthTwoError,
-)
+from woodwork.exceptions import TypeValidationError
 from woodwork.logical_types import (
     Age,
     AgeFractional,
@@ -248,21 +244,24 @@ def test_is_s3():
 
 
 @pytest.mark.parametrize(
-    "test_input, error",
+    "test_input, error_msg",
     [
-        ({1, 2, 3}, LatLongIsNotTupleError),
-        ("{1, 2, 3}", LatLongIsNotTupleError),
-        ("This is text", LatLongIsNotTupleError),
-        ("'(1,2)'", LatLongIsNotTupleError),
-        ((1, 2, 3), LatLongLengthTwoError),
-        ("(1, 2, 3)", LatLongLengthTwoError),
-        ("(1,)", LatLongLengthTwoError),
-        (("41deg52'54\" N", "21deg22'54\" W"), LatLongIsNotDecimalError),
-        ((41.5, "21deg22'54\" W"), LatLongIsNotDecimalError),
+        ({1, 2, 3}, "LatLong value is properly formatted."),
+        ("{1, 2, 3}", "LatLong value is properly formatted."),
+        ("This is text", "LatLong value is properly formatted."),
+        ("'(1,2)'", "LatLong value is properly formatted."),
+        ((1, 2, 3), "LatLong values must have exactly two values"),
+        ("(1, 2, 3)", "LatLong values must have exactly two values"),
+        ("(1,)", "LatLong values must have exactly two values"),
+        (
+            ("41deg52'54\" N", "21deg22'54\" W"),
+            "LatLong values must be in decimal degrees.",
+        ),
+        ((41.5, "21deg22'54\" W"), "LatLong values must be in decimal degrees."),
     ],
 )
-def test_reformat_to_latlong_errors(test_input, error):
-    with pytest.raises(error):
+def test_reformat_to_latlong_errors(test_input, error_msg):
+    with pytest.raises(TypeValidationError, match=error_msg):
         _reformat_to_latlong(test_input)
 
 
