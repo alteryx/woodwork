@@ -269,6 +269,7 @@ def _get_dependence_dict(
     callback=None,
     extra_stats=False,
     min_shared=25,
+    random_seed=0,
 ):
     """Calculates dependence measures between all pairs of columns in the DataFrame that
     support measuring dependence. Logical Types that are supported are as
@@ -311,6 +312,7 @@ def _get_dependence_dict(
             calculate.  Less rows than this will be considered too sparse
             to measure accurately and will return a NaN value. Must be
             non-negative.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
         `column_2`, and keys for the specified dependence measures. The list is
@@ -347,16 +349,11 @@ def _get_dependence_dict(
     data = dataframe.loc[:, valid_columns]
     # cut off data if necessary
     if _is_dask_dataframe(data):
-        if nrows:
-            data = data.head(nrows)
-        else:
-            data = data.compute()
+        data = data.compute()
     elif _is_koalas_dataframe(dataframe):
-        if nrows:
-            data = data.head(nrows)
         data = data.to_pandas()
-    elif nrows is not None and nrows < data.shape[0]:
-        data = data.head(nrows)
+    if nrows is not None and nrows < data.shape[0]:
+        data = data.sample(nrows, random_state=random_seed)
 
     notna_mask = data.notnull()
     not_null_cols = data.columns[notna_mask.any()]

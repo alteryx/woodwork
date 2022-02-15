@@ -217,6 +217,25 @@ def test_dependence_many_rows(df_mi, measure):
 
 
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
+def test_dependence_random_seed(df_mi, measure):
+    if _is_koalas_dataframe(df_mi):
+        # TODO: evaluate if koalas order remains same across other machines
+        pytest.xfail("koalas sample order differs, may not be deterministic")
+    df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
+    original_df = df_mi.copy()
+    dep_df = df_mi.ww.dependence(measure=measure, nrows=6, min_shared=6, random_seed=2)
+    row = dep_df[(dep_df.column_1 == "ints") & (dep_df.column_2 == "dates")].index[0]
+    if measure == "all":
+        measure = "max"
+    if measure == "mutual":
+        expected = 0.3552453
+    else:
+        expected = 0.7071067811865474
+    np.testing.assert_allclose(dep_df.loc[row][measure], expected)
+    pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
+
+
+@pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_one_row(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
@@ -459,6 +478,7 @@ def test_pearson_dict(_get_dependence_dict, df_mi):
         callback=callback,
         extra_stats=True,
         min_shared=25,
+        random_seed=5,
     )
     assert _get_dependence_dict.called
     _get_dependence_dict.assert_called_with(
@@ -470,6 +490,7 @@ def test_pearson_dict(_get_dependence_dict, df_mi):
         callback=callback,
         extra_stats=True,
         min_shared=25,
+        random_seed=5,
     )
 
 
@@ -484,6 +505,7 @@ def test_pearson_method(df_mi):
             callback=callback,
             extra_stats=True,
             min_shared=25,
+            random_seed=5,
         )
     assert pearson_dict_method.called
     pearson_dict_method.assert_called_with(
@@ -493,6 +515,7 @@ def test_pearson_method(df_mi):
         callback=callback,
         extra_stats=True,
         min_shared=25,
+        random_seed=5,
     )
 
 
@@ -507,6 +530,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi):
         callback=callback,
         extra_stats=True,
         min_shared=25,
+        random_seed=5,
     )
     assert _get_dependence_dict.called
     _get_dependence_dict.assert_called_with(
@@ -518,6 +542,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi):
         callback=callback,
         extra_stats=True,
         min_shared=25,
+        random_seed=5,
     )
 
 
@@ -532,6 +557,7 @@ def test_mutual(df_mi):
             callback=callback,
             extra_stats=True,
             min_shared=25,
+            random_seed=5,
         )
     assert mi_dict_method.called
     mi_dict_method.assert_called_with(
@@ -541,6 +567,7 @@ def test_mutual(df_mi):
         callback=callback,
         extra_stats=True,
         min_shared=25,
+        random_seed=5,
     )
 
 

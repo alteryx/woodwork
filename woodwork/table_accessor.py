@@ -876,6 +876,7 @@ class WoodworkTableAccessor:
         callback=None,
         extra_stats=False,
         min_shared=25,
+        random_seed=0,
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
@@ -908,7 +909,7 @@ class WoodworkTableAccessor:
                 calculate.  Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
-
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -924,6 +925,7 @@ class WoodworkTableAccessor:
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
+            random_seed=random_seed,
         )
 
     def mutual_information(
@@ -934,6 +936,7 @@ class WoodworkTableAccessor:
         callback=None,
         extra_stats=False,
         min_shared=25,
+        random_seed=0,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Use get_valid_mi_types to see which Logical Types support
@@ -965,6 +968,7 @@ class WoodworkTableAccessor:
                 calculate.  Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -978,6 +982,7 @@ class WoodworkTableAccessor:
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
+            random_seed=random_seed,
         )
         return pd.DataFrame(mutual_info)
 
@@ -990,6 +995,7 @@ class WoodworkTableAccessor:
         callback=None,
         extra_stats=False,
         min_shared=25,
+        random_seed=0,
     ):
         """
         Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
@@ -1022,7 +1028,7 @@ class WoodworkTableAccessor:
                 calculate.  Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
-
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `pearson` that is sorted in decending order by correlation coefficient.
@@ -1037,6 +1043,7 @@ class WoodworkTableAccessor:
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
+            random_seed=random_seed,
         )
 
     def pearson_correlation(
@@ -1047,6 +1054,7 @@ class WoodworkTableAccessor:
         callback=None,
         extra_stats=False,
         min_shared=25,
+        random_seed=0,
     ):
         """Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
         support correlation. Use get_valid_dependence_types to see which Logical Types support
@@ -1078,6 +1086,7 @@ class WoodworkTableAccessor:
                 calculate.  Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             pd.DataFrame: A DataFrame containing Pearson correlation coefficients with columns `column_1`,
             `column_2`, and `pearson` that is sorted in decending order by correlation value.
@@ -1090,6 +1099,7 @@ class WoodworkTableAccessor:
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
+            random_seed=random_seed,
         )
         return pd.DataFrame(pearson_dict)
 
@@ -1103,6 +1113,7 @@ class WoodworkTableAccessor:
         callback=None,
         extra_stats=False,
         min_shared=25,
+        random_seed=0,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Logical Types that are supported are as
@@ -1145,6 +1156,7 @@ class WoodworkTableAccessor:
                 calculate.  Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and keys for the specified dependence measures. The list is
@@ -1154,14 +1166,15 @@ class WoodworkTableAccessor:
             still no dependence.
         """
         return _get_dependence_dict(
-            self._dataframe,
-            measure,
-            num_bins,
-            nrows,
-            include_index,
-            callback,
-            extra_stats,
-            min_shared,
+            dataframe=self._dataframe,
+            measure=measure,
+            num_bins=num_bins,
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
+            random_seed=random_seed,
         )
 
     def dependence(
@@ -1173,6 +1186,7 @@ class WoodworkTableAccessor:
         callback=None,
         extra_stats=False,
         min_shared=25,
+        random_seed=0,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Logical Types that are supported are as
@@ -1215,6 +1229,7 @@ class WoodworkTableAccessor:
                 calculate.  Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
                 non-negative.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             pd.DataFrame: A DataFrame with the columns `column_1`,
             `column_2`, and keys for the specified dependence measures. The rows
@@ -1225,14 +1240,15 @@ class WoodworkTableAccessor:
             `extra_stats` is True.
         """
         dep_dict = _get_dependence_dict(
-            self._dataframe,
-            measure,
-            num_bins,
-            nrows,
-            include_index,
-            callback,
-            extra_stats,
-            min_shared,
+            dataframe=self._dataframe,
+            measure=measure,
+            num_bins=num_bins,
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
+            random_seed=random_seed,
         )
         return pd.DataFrame(dep_dict)
 
