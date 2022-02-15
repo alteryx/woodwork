@@ -1,7 +1,7 @@
 import re
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from woodwork.exceptions import ColumnNotPresentError
 from woodwork.logical_types import (
