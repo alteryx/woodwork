@@ -1,4 +1,5 @@
 import re
+import sys
 from datetime import datetime
 from inspect import isclass
 from unittest.mock import patch
@@ -41,7 +42,6 @@ from woodwork.statistics_utils import (
     _get_numeric_value_counts_in_range,
     _get_recent_value_counts,
     _get_top_values_categorical,
-    _replace_nans_for_mutual_info,
 )
 from woodwork.tests.testing_utils import (
     _check_close,
@@ -70,55 +70,6 @@ def test_get_mode():
             assert mode is None
         else:
             assert mode == answer
-
-
-def test_accessor_replace_nans_for_mutual_info():
-    df_nans = pd.DataFrame(
-        {
-            "ints": pd.Series([2, pd.NA, 5, 2], dtype="Int64"),
-            "floats": pd.Series([3.3, None, 2.3, 1.3]),
-            "bools": pd.Series([True, None, True, False]),
-            "bools_pdna": pd.Series([True, pd.NA, True, False], dtype="boolean"),
-            "int_to_cat_nan": pd.Series([1, np.nan, 3, 1], dtype="category"),
-            "str": pd.Series(["test", np.nan, "test2", "test"]),
-            "str_no_nan": pd.Series(["test", "test2", "test2", "test"]),
-            "dates": pd.Series(["2020-01-01", None, "2020-01-02", "2020-01-03"]),
-        }
-    )
-    df_nans.ww.init(
-        logical_types={
-            "bools": "Categorical",
-            "str": "Categorical",
-            "str_no_nan": "Categorical",
-        }
-    )
-    formatted_df = _replace_nans_for_mutual_info(df_nans.ww.schema, df_nans.copy())
-
-    assert isinstance(formatted_df, pd.DataFrame)
-
-    assert formatted_df["ints"].equals(pd.Series([2, 3, 5, 2], dtype="Int64"))
-    assert formatted_df["floats"].equals(pd.Series([3.3, 2.3, 2.3, 1.3], dtype="float"))
-    assert formatted_df["bools"].equals(
-        pd.Series([True, True, True, False], dtype="category")
-    )
-    assert formatted_df["bools_pdna"].equals(
-        pd.Series([True, True, True, False], dtype="boolean")
-    )
-    assert formatted_df["int_to_cat_nan"].equals(
-        pd.Series([1, 1, 3, 1], dtype="category")
-    )
-    assert formatted_df["str"].equals(
-        pd.Series(["test", "test", "test2", "test"], dtype="category")
-    )
-    assert formatted_df["str_no_nan"].equals(
-        pd.Series(["test", "test2", "test2", "test"], dtype="category")
-    )
-    assert formatted_df["dates"].equals(
-        pd.Series(
-            ["2020-01-01", "2020-01-02", "2020-01-02", "2020-01-03"],
-            dtype="datetime64[ns]",
-        )
-    )
 
 
 def test_accessor_bin_numeric_cols_into_categories():
@@ -1174,7 +1125,10 @@ def test_describe_dict_extra_stats(describe_df):
             assert desc_dict[col].get("top_values") is None
 
 
-@patch("woodwork.statistics_utils._get_numeric_value_counts_in_range")
+@patch.object(
+    sys.modules["woodwork.statistics_utils._get_describe_dict"],
+    "_get_numeric_value_counts_in_range",
+)
 def test_describe_dict_extra_stats_overflow_range(
     mock_get_numeric_value_counts_in_range, describe_df
 ):

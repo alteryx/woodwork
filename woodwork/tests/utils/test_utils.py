@@ -1,9 +1,9 @@
 import re
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
 import woodwork as ww
 from woodwork.logical_types import (
