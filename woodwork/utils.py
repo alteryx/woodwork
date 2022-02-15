@@ -256,7 +256,7 @@ def _reformat_to_latlong(latlong, is_koalas=False):
         return np.nan
 
     raise TypeValidationError(
-        f"""LatLong value is properly formatted. Value must be one of the following:
+        f"""LatLong value is not properly formatted. Value must be one of the following:
 - A 2-tuple or list of 2 values representing decimal latitude or longitude values (NaN values are allowed).
 - A single NaN value.
 - A string representation of the above.

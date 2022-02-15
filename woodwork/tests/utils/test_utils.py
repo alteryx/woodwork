@@ -246,10 +246,10 @@ def test_is_s3():
 @pytest.mark.parametrize(
     "test_input, error_msg",
     [
-        ({1, 2, 3}, "LatLong value is properly formatted."),
-        ("{1, 2, 3}", "LatLong value is properly formatted."),
-        ("This is text", "LatLong value is properly formatted."),
-        ("'(1,2)'", "LatLong value is properly formatted."),
+        ({1, 2, 3}, "LatLong value is not properly formatted."),
+        ("{1, 2, 3}", "LatLong value is not properly formatted."),
+        ("This is text", "LatLong value is not properly formatted."),
+        ("'(1,2)'", "LatLong value is not properly formatted."),
         ((1, 2, 3), "LatLong values must have exactly two values"),
         ("(1, 2, 3)", "LatLong values must have exactly two values"),
         ("(1,)", "LatLong values must have exactly two values"),
