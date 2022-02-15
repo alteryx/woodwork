@@ -582,7 +582,7 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
 
     schema.set_types(semantic_tags={"age": set()})
     assert isinstance(schema.logical_types["age"], IntegerNullable)
-    assert schema.semantic_tags["age"] == {"numeric", "test_tag"}
+    assert schema.semantic_tags["age"] == {"numeric"}
 
 
 def test_set_logical_types_invalid_data(
