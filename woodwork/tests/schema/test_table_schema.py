@@ -641,7 +641,7 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
 
     assert schema.semantic_tags["id"] == {"new_tag", "index"}
     assert schema.semantic_tags["age"] == {"numeric", "new_tag"}
-    assert schema.semantic_tags["email"] == {"new_tag", "category", "tag2"}
+    assert schema.semantic_tags["email"] == {"new_tag", "category"}
 
     assert schema.logical_types["id"] == Double
     assert schema.logical_types["age"] == Double
@@ -685,7 +685,7 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
     assert schema.index is None
     assert schema.time_index == "signup_date"
 
-    assert schema.semantic_tags["id"] == {"new_tag", "tag1"}
+    assert schema.semantic_tags["id"] == {"new_tag"}
     assert schema.semantic_tags["age"] == {"new_tag"}
     assert schema.semantic_tags["is_registered"] == {"new_tag"}
     assert schema.semantic_tags["email"] == {"tag2"}
@@ -712,7 +712,7 @@ def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
     schema.set_types(semantic_tags=new_tags)
 
     assert schema.semantic_tags["full_name"] == {"new_tag"}
-    assert schema.semantic_tags["age"] == {"numeric", "age"}
+    assert schema.semantic_tags["age"] == {"numeric"}
 
 
 def test_set_semantic_tags_with_index(
