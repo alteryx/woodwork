@@ -1955,6 +1955,7 @@ def test_set_types(sample_df):
 
     sample_df.ww.set_types(logical_types={"is_registered": "IntegerNullable"})
     assert sample_df["is_registered"].dtype == "Int64"
+    assert "custom_tag" in sample_df.ww.semantic_tags["is_registered"]
 
     sample_df.ww.set_types(
         semantic_tags={"signup_date": ["new_tag"]},
@@ -1963,7 +1964,6 @@ def test_set_types(sample_df):
     )
     assert sample_df.ww.index is None
     assert sample_df.ww.time_index is None
-    assert "custom_tag" in sample_df.ww.semantic_tags["is_registered"]
 
 
 def test_set_types_errors(sample_df):
