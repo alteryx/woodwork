@@ -25,7 +25,9 @@ def _determine_missing_values(estimated, observed):
     for start_idx, end_idx in ranges:
         out.append(
             RangeObject(
-                estimated[start_idx].isoformat(), start_idx, end_idx - start_idx + 1
+                estimated[start_idx].isoformat(),
+                int(start_idx),
+                int(end_idx - start_idx + 1),
             )
         )
 

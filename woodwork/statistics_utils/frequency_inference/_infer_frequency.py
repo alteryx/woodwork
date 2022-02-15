@@ -1,3 +1,4 @@
+import dataclasses
 from ._generate_freq_candidates import _generate_freq_candidates
 from ._determine_most_likely_freq import _determine_most_likely_freq
 from ._build_freq_dataframe import _build_freq_dataframe
@@ -63,24 +64,18 @@ def infer_frequency(observed_ts: pd.Series):
     estimated_range_end = estimated_ts.max().isoformat()
 
     missing = _determine_missing_values(estimated_ts, observed_ts)
-    print("Missing")
-    print(missing)
-
     extra = _determine_extra_values(estimated_ts, observed_ts)
-    print("Extra")
-    print(extra)
-
     duplicates = _determine_duplicate_values(observed_ts)
-    print("Duplicate")
-    print(duplicates)
 
-    return InferDebug(
-        actual_range_start=actual_range_start,
-        actual_range_end=actual_range_end,
-        estimated_freq=most_likely_freq,
-        estimated_range_start=estimated_range_start,
-        estimated_range_end=estimated_range_end,
-        missing_values=missing,
-        duplicate_values=duplicates,
-        extra_values=extra,
+    return dataclasses.asdict(
+        InferDebug(
+            actual_range_start=actual_range_start,
+            actual_range_end=actual_range_end,
+            estimated_freq=most_likely_freq,
+            estimated_range_start=estimated_range_start,
+            estimated_range_end=estimated_range_end,
+            missing_values=missing,
+            duplicate_values=duplicates,
+            extra_values=extra,
+        )
     )
