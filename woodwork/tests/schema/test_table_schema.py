@@ -575,10 +575,10 @@ def test_set_logical_types_empty(sample_column_names, sample_inferred_logical_ty
         use_standard_tags=True,
     )
 
-    # An empty set should preserve custom tags
+    # An empty set should reset the tags
     schema.set_types(semantic_tags={"full_name": set()}, retain_index_tags=False)
     assert isinstance(schema.logical_types["full_name"], Unknown)
-    assert schema.semantic_tags["full_name"] == {"tag1"}
+    assert schema.semantic_tags["full_name"] == set()
 
     schema.set_types(semantic_tags={"age": set()})
     assert isinstance(schema.logical_types["age"], IntegerNullable)
@@ -639,7 +639,7 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
         logical_types={"id": Double, "age": Double, "email": Categorical},
     )
 
-    assert schema.semantic_tags["id"] == {"new_tag", "index", "tag1"}
+    assert schema.semantic_tags["id"] == {"new_tag", "index"}
     assert schema.semantic_tags["age"] == {"numeric", "new_tag"}
     assert schema.semantic_tags["email"] == {"new_tag", "category", "tag2"}
 
@@ -711,7 +711,7 @@ def test_set_semantic_tags(sample_column_names, sample_inferred_logical_types):
     }
     schema.set_types(semantic_tags=new_tags)
 
-    assert schema.semantic_tags["full_name"] == {"new_tag", "tag1"}
+    assert schema.semantic_tags["full_name"] == {"new_tag"}
     assert schema.semantic_tags["age"] == {"numeric", "age"}
 
 
