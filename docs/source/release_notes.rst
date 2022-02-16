@@ -14,6 +14,7 @@ Future Release
         * Add validation to Age, AgeFractional, and AgeNullable logical types (:pr:`1289`)
     * Fixes
         * Check range length in table stats without producing overflow error (:pr:`1287`)
+        * Fixes issue with initializing Woodwork Series with LatLong values (:pr:`1299`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
         * Add back support for Python 3.7 (:pr:`1292`)

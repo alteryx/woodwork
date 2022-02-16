@@ -137,10 +137,8 @@ def test_latlong_transform(latlong_df):
         elif koalas:
             actual = actual.to_pandas()
 
-        actual = actual.apply(pd.Series)
-        series = pd.Series(expected_data[column])
-        expected = series.apply(pd.Series)
-        assert actual.equals(expected)
+        expected = pd.Series(expected_data[column], name=column)
+        pd.testing.assert_series_equal(actual, expected)
 
 
 def test_datetime_transform(datetimes):
