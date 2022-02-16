@@ -1,10 +1,10 @@
 import re
 from inspect import isclass
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
 import woodwork as ww
 from woodwork.accessor_utils import (

@@ -1,9 +1,9 @@
 import inspect
 import re
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from mock import patch
 
 from woodwork import type_system
 from woodwork.exceptions import ColumnNotPresentError, DuplicateTagsWarning

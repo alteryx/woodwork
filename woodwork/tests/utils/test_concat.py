@@ -1,6 +1,7 @@
+from unittest.mock import patch
+
 import pandas as pd
 import pytest
-from mock import patch
 
 import woodwork as ww
 from woodwork.accessor_utils import _is_koalas_dataframe

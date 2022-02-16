@@ -1,11 +1,12 @@
 import re
+import sys
 from datetime import datetime
 from inspect import isclass
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
@@ -898,7 +899,10 @@ def test_describe_dict_extra_stats(describe_df):
             assert desc_dict[col].get("top_values") is None
 
 
-@patch("woodwork.statistics_utils._get_numeric_value_counts_in_range")
+@patch.object(
+    sys.modules["woodwork.statistics_utils._get_describe_dict"],
+    "_get_numeric_value_counts_in_range",
+)
 def test_describe_dict_extra_stats_overflow_range(
     mock_get_numeric_value_counts_in_range, describe_df
 ):
