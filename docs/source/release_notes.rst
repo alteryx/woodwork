@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
+        * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+ Thanks to the following people for contributing to this release:
+ :user:`jeff-hernandez`
 
 v0.13.0 Feb 16, 2022
 ====================
@@ -25,7 +27,6 @@ v0.13.0 Feb 16, 2022
     * Fixes
         * Check range length in table stats without producing overflow error (:pr:`1287`)
         * Fixes issue with initializing Woodwork Series with LatLong values (:pr:`1299`)
-        * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
         * Add back support for Python 3.7 (:pr:`1292`)
