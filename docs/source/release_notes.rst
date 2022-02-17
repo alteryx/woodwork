@@ -12,8 +12,8 @@ Future Release
     * Documentation Changes
     * Testing Changes
 
-   Thanks to the following people for contributing to this release:
-   :user:`jeff-hernandez`
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
 
 v0.13.0 Feb 16, 2022
 ====================
