@@ -440,7 +440,7 @@ class LatLong(LogicalType):
             series.name = name
         elif _is_koalas_series(series):
             formatted_series = series.to_pandas().apply(
-                _reformat_to_latlong, use_list=True
+                _reformat_to_latlong, is_koalas=True
             )
             series = ks.from_pandas(formatted_series)
         else:
