@@ -239,7 +239,7 @@ class TableSchema(object):
             if new_logical_type is not None:
                 self.columns[col_name].logical_type = new_logical_type
 
-            # Retain custom tags, otherwise set to new semantic tags
+            # Retain custom tags if no tags are given, otherwise set to new semantic tags
             new_semantic_tags = semantic_tags.get(col_name)
             if new_semantic_tags is None:
                 self.columns[col_name]._reset_semantic_tags()
