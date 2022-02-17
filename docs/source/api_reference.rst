@@ -103,6 +103,7 @@ ColumnSchema
     :toctree: generated/
 
     ColumnSchema
+    ColumnSchema.custom_tags
     ColumnSchema.description
     ColumnSchema.origin
     ColumnSchema.is_boolean

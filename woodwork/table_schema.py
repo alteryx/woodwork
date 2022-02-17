@@ -232,16 +232,18 @@ class TableSchema(object):
 
         for col_name in logical_types.keys() | semantic_tags.keys():
             original_tags = self.semantic_tags[col_name]
+            custom_tags = self.columns[col_name].custom_tags
 
             # Update Logical Type for the TableSchema, getting new semantic tags
             new_logical_type = logical_types.get(col_name)
             if new_logical_type is not None:
                 self.columns[col_name].logical_type = new_logical_type
 
-            # Set new semantic tags, removing existing tags
+            # Retain custom tags if no tags are given, otherwise set to new semantic tags
             new_semantic_tags = semantic_tags.get(col_name)
             if new_semantic_tags is None:
                 self.columns[col_name]._reset_semantic_tags()
+                self.columns[col_name]._set_semantic_tags(custom_tags)
             else:
                 self.columns[col_name]._set_semantic_tags(new_semantic_tags)
                 _validate_not_setting_index_tags(self.semantic_tags[col_name], col_name)
