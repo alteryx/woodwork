@@ -10,10 +10,11 @@ Future Release
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
     * Documentation Changes
+        * Update copy and paste button to remove syntax signs (:pr:`1313`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`jeff-hernandez`
 
 v0.13.0 Feb 16, 2022
 ====================
