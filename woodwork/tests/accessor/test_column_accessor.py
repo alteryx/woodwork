@@ -156,7 +156,7 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
     correct_dtype = "string"
     error_message = re.escape(
         f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with "
-        f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before "
+        f"natural_language dtype. Try converting series dtype to '{correct_dtype}' before "
         "initializing or use the woodwork.init_series function to initialize."
     )
     with pytest.raises(ValueError, match=error_message):
@@ -857,7 +857,7 @@ def test_schema_property(sample_series):
     assert changed_schema != sample_series.ww._schema
 
 
-@patch("woodwork.column_accessor.WoodworkColumnAccessor._validate_logical_type")
+@patch("woodwork.logical_types.LogicalType.validate")
 def test_validation_methods_called_init(mock_validate_logical_type, sample_series):
     assert not mock_validate_logical_type.called
 

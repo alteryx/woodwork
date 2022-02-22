@@ -203,16 +203,17 @@ def test_ordinal_transform(sample_series):
 
 
 def test_email_address_validate(sample_df):
-    series = sample_df["email"]
-    invalid_row = pd.Series({4: "bad_email"}, name="email")
+    email_address = EmailAddress()
+    dtype = email_address.primary_dtype
+    series = sample_df["email"].astype(dtype)
+    invalid_row = pd.Series({4: "bad_email"}, name="email").astype(dtype)
 
     if _is_koalas_series(series):
         invalid_row = ks.from_pandas(invalid_row)
 
-    email_address = EmailAddress()
     assert email_address.validate(series) is None
 
-    series = series.append(invalid_row)
+    series = series.append(invalid_row).astype(dtype)
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
 
@@ -220,21 +221,21 @@ def test_email_address_validate(sample_df):
         email_address.validate(series)
 
     actual = email_address.validate(series, return_invalid_values=True)
-    expected = pd.Series({4: "bad_email"}, name="email")
+    expected = pd.Series({4: "bad_email"}, name="email").astype(dtype)
     assert to_pandas(actual).equals(expected)
 
 
 def test_url_validate(sample_df):
-    series = sample_df["url"]
-    invalid_row = pd.Series({4: "bad_url"}, name="url")
-
+    logical_type = URL()
+    dtype = logical_type.primary_dtype
+    series = sample_df["url"].astype(dtype)
+    invalid_row = pd.Series({4: "bad_url"}, name="url").astype(dtype)
     if _is_koalas_series(series):
         invalid_row = ks.from_pandas(invalid_row)
 
-    logical_type = URL()
     assert logical_type.validate(series) is None
 
-    series = series.append(invalid_row)
+    series = series.append(invalid_row).astype(dtype)
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
 
@@ -242,7 +243,7 @@ def test_url_validate(sample_df):
         logical_type.validate(series)
 
     actual = logical_type.validate(series, return_invalid_values=True)
-    expected = pd.Series({4: "bad_url"}, name="url")
+    expected = pd.Series({4: "bad_url"}, name="url").astype(dtype)
     assert to_pandas(actual).equals(expected)
 
 

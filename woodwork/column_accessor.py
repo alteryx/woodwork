@@ -99,7 +99,7 @@ class WoodworkColumnAccessor:
             )
 
             if validate:
-                self._validate_logical_type(logical_type)
+                logical_type.validate(self._series)
 
             self._schema = ColumnSchema(
                 logical_type=logical_type,
