@@ -559,8 +559,6 @@ class Ordinal(LogicalType):
         self._validate_data(series)
 
 
-
-
 class PhoneNumber(LogicalType):
     """Represents Logical Types that contain numeric digits and characters
     representing a phone number
