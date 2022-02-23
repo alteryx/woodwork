@@ -11,6 +11,7 @@ Future Release
     * Changes
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
