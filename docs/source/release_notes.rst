@@ -11,6 +11,7 @@ Future Release
     * Changes
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Add Python 3.10 support (:pr:`1316`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
