@@ -554,10 +554,10 @@ def test_set_logical_types(sample_column_names, sample_inferred_logical_types):
     assert schema.logical_types["phone_number"] == PhoneNumber
     assert schema.logical_types["age"] == Double
 
-    # Verify semantic tags were reset to standard tags in columns with Logical Type changes
-    assert schema.semantic_tags["full_name"] == {"category"}
-    assert schema.semantic_tags["email"] == set()
-    assert schema.semantic_tags["phone_number"] == set()
+    # Verify custom tags were not removed after changing logical types
+    assert schema.semantic_tags["full_name"] == {"category", "tag1"}
+    assert schema.semantic_tags["email"] == {"tag2"}
+    assert schema.semantic_tags["phone_number"] == {"tag3", "tag2"}
     assert schema.semantic_tags["age"] == {"numeric"}
 
     # Verify signup date column was unchanged
@@ -663,7 +663,7 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
         retain_index_tags=False,
     )
 
-    assert schema.semantic_tags["id"] == {"numeric"}
+    assert schema.semantic_tags["id"] == {"numeric", "tag1"}
     assert schema.semantic_tags["age"] == {"numeric", "new_tag"}
 
     # don't use standard tags and lose index tags
@@ -688,7 +688,7 @@ def test_set_types_combined(sample_column_names, sample_inferred_logical_types):
     assert schema.semantic_tags["id"] == {"new_tag"}
     assert schema.semantic_tags["age"] == {"new_tag"}
     assert schema.semantic_tags["is_registered"] == {"new_tag"}
-    assert schema.semantic_tags["email"] == set()
+    assert schema.semantic_tags["email"] == {"tag2"}
     assert schema.semantic_tags["signup_date"] == {"time_index", "secondary_time_index"}
 
     assert schema.logical_types["id"] == Double
