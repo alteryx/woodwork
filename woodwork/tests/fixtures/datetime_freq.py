@@ -43,6 +43,217 @@ KNOWN_FREQ_ISSUES = {
     "BH": "H",
 }
 
+HEAD_RANGE_LEN = 100
+TAIL_RANGE_LEN = 100
+
+
+
+def missing_values1():
+    head_range = pd.date_range(end="2005-01-01 00:00:00", periods=HEAD_RANGE_LEN, freq="H")[:-1]
+    error_range = [
+        "00:00:00",
+        "01:00:00",
+        "02:00:00",
+        "04:00:00", # <-- missing index is here
+        "05:00:00",
+    ]
+    error_range = [pd.DatetimeIndex([f"2005-01-01 {d}"]) for d in error_range]
+    tail_range = pd.date_range(start=error_range[-1].values[0], periods=100, freq="H")[1:]
+
+    dates = head_range.append(error_range).append(tail_range)
+
+    expected_output = {
+        'actual_range_start': dates[0].isoformat(),
+        'actual_range_end': dates[-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates[0].isoformat(),
+        'estimated_range_end': dates[-1].isoformat(),
+        'duplicate_values': [],
+        'missing_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 1}],
+        'extra_values': []
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
+def duplicate_values1():
+    head_range = pd.date_range(end="2005-01-01 00:00:00", periods=HEAD_RANGE_LEN, freq="H")[:-1]
+    error_range = [
+        "00:00:00",
+        "01:00:00",
+        "02:00:00",
+        "03:00:00",
+        "03:00:00", # <-- duplicate index starts here
+        "03:00:00",
+        "04:00:00",
+        "05:00:00",
+    ]
+    error_range = [pd.DatetimeIndex([f"2005-01-01 {d}"]) for d in error_range]
+    tail_range = pd.date_range(start=error_range[-1].values[0], periods=100, freq="H")[1:]
+
+    dates = head_range.append(error_range).append(tail_range)
+
+    expected_output = {
+        'actual_range_start': dates[0].isoformat(),
+        'actual_range_end': dates[-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates[0].isoformat(),
+        'estimated_range_end': dates[-1].isoformat(),
+        'duplicate_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 2}],
+        'missing_values': [],
+        'extra_values': []
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
+
+def extra_values1():
+    head_range = pd.date_range(end="2005-01-01 00:00:00", periods=HEAD_RANGE_LEN, freq="H")[:-1]
+    error_range = [
+        "00:00:00",
+        "01:00:00",
+        "02:00:00",
+        "03:00:00",
+        "03:10:00", # <-- extra index is here
+        "04:00:00",
+        "05:00:00",
+    ]
+    error_range = [pd.DatetimeIndex([f"2005-01-01 {d}"]) for d in error_range]
+    tail_range = pd.date_range(start=error_range[-1].values[0], periods=100, freq="H")[1:]
+
+    dates = head_range.append(error_range).append(tail_range)
+
+    expected_output = {
+        'actual_range_start': dates[0].isoformat(),
+        'actual_range_end': dates[-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates[0].isoformat(),
+        'estimated_range_end': dates[-1].isoformat(),
+        'duplicate_values': [],
+        'missing_values': [],
+        'extra_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 1}]
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
+def misaligned_values1():
+    head_range = pd.date_range(end="2005-01-01 00:00:00", periods=HEAD_RANGE_LEN, freq="H")[:-1]
+    error_range = [
+        "00:00:00",
+        "01:00:00",
+        "02:00:00",
+        "03:10:00", # <-- missing index and extra index is here
+        "04:00:00",
+        "05:00:00",
+    ]
+    error_range = [pd.DatetimeIndex([f"2005-01-01 {d}"]) for d in error_range]
+    tail_range = pd.date_range(start=error_range[-1].values[0], periods=100, freq="H")[1:]
+
+    dates = head_range.append(error_range).append(tail_range)
+
+    expected_output = {
+        'actual_range_start': dates[0].isoformat(),
+        'actual_range_end': dates[-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates[0].isoformat(),
+        'estimated_range_end': dates[-1].isoformat(),
+        'duplicate_values': [],
+        'missing_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 1}],
+        'extra_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 1}]
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
+def misaligned_values2():
+    head_range = pd.date_range(end="2005-01-01 00:00:00", periods=HEAD_RANGE_LEN, freq="H")[:-1]
+    error_range = [
+        "00:00:00",
+        "01:00:00",
+        "01:30:00",
+        "02:50:00",
+        "03:10:00",
+        "04:00:00",
+        "05:00:00",
+    ]
+    error_range = [pd.DatetimeIndex([f"2005-01-01 {d}"]) for d in error_range]
+    tail_range = pd.date_range(start=error_range[-1].values[0], periods=100, freq="H")[1:]
+
+    dates = head_range.append(error_range).append(tail_range)
+
+    expected_output = {
+        'actual_range_start': dates[0].isoformat(),
+        'actual_range_end': dates[-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates[0].isoformat(),
+        'estimated_range_end': dates[-1].isoformat(),
+        'duplicate_values': [],
+        'missing_values': [{'dt': '2005-01-01T02:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 2, 'range': 2}],
+        'extra_values': [
+            {'dt': '2005-01-01T01:30:00', 'idx': (HEAD_RANGE_LEN - 1) + 2, 'range': 3},
+        ]
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
+def bad_start1():
+    head_range = [pd.DatetimeIndex(["2004-12-31 23:50:00"])]
+    error_range = [
+        "01:00:00",
+        "01:30:00",
+        "02:50:00",
+        "03:10:00",
+        "04:00:00",
+        "05:00:00",
+    ]
+    error_range = [pd.DatetimeIndex([f"2005-01-01 {d}"]) for d in error_range]
+    tail_range = pd.date_range(start=error_range[-1].values[0], periods=100, freq="H")[1:]
+
+    dates = head_range.append(error_range).append(tail_range)
+
+    expected_output = {
+        'actual_range_start': dates[0].isoformat(),
+        'actual_range_end': dates[-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': error_range[0].isoformat(),
+        'estimated_range_end': dates[-1].isoformat(),
+        'duplicate_values': [],
+        'missing_values': [],
+        'extra_values': [
+            {'dt': '2004-12-31T23:50:00', 'idx': 0, 'range': 1},
+        ]
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
 
 def case0():
     # 1 hour separation
