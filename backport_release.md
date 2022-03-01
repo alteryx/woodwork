@@ -25,7 +25,7 @@ In situations where we need to backport commits to earlier versions of our softw
 2. Create a pull request with the backport `0.11.x` branch as its target and get confirmation that the desired changes were added and that the CI checks pass.
 3. Create a new section in the release notes for `Backport Release`. It should be located right after the release previous to this new backport release (so right after `0.11.1` in this example).
 4. Include the ported over commits' release notes in the `Backport Release` section (don't remove them from their original location in Future Release) with the following as its PR number `(backport of :pr:`1269`)` as well as a release note for the PR.
-5. Merge in the PR to `0.11.x`
+5. Merge in the PR into `0.11.x`
 
 ## 1. Create Woodwork Backport release on Github
 
@@ -44,7 +44,7 @@ With our backport branch `0.11.x` as our target, we now proceed with the release
 1. Replace "Backport Release" in `docs/source/release_notes.rst` with the current date
 
    ```
-   v0.13.3 Sep 28, 2020
+   v0.11.2 Sep 28, 2020
    ====================
    ```
 
@@ -67,7 +67,7 @@ Checklist before merging:
 
 After the release pull request has been merged into the `0.11.x` branch, it is time draft the github release. [Example release](https://github.com/alteryx/woodwork/releases/tag/v0.11.2)
 
-- The target should be the `0.11.x` backport branch
+- **The target should be the `0.11.x` backport branch**
 - The tag should be the version number with a v prefix (e.g. v0.11.2)
 - Release title is the same as the tag
 - Release description should be the full Release Notes updates for the release, including the line thanking contributors. Contributors should also have their links changed from the docs syntax (:user:\`gsheni\`) to github syntax (@gsheni)
