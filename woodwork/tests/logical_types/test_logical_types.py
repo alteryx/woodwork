@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_koalas_series
+from woodwork.accessor_utils import _is_koalas_series, init_series
 from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     URL,
@@ -141,6 +141,36 @@ def test_latlong_transform(latlong_df):
         pd.testing.assert_series_equal(actual, expected)
 
 
+def test_latlong_validate(latlong_df):
+    df_type = str(type(latlong_df))
+    dask = "dask" in df_type
+    koalas = "koalas" in df_type
+    nan = float("nan")
+
+    expected_data = {
+        "tuple_ints": [(1.0, 2.0), (3.0, 4.0)],
+        "tuple_strings": [(1.0, 2.0), (3.0, 4.0)],
+        "string_tuple": [(1.0, 2.0), (3.0, 4.0)],
+        "bracketless_string_tuple": [(1.0, 2.0), (3.0, 4.0)],
+        "list_strings": [(1.0, 2.0), (3.0, 4.0)],
+        "combo_tuple_types": [(1.0, 2.0), (3.0, 4.0)],
+        "null_value": [nan, (3.0, 4.0)],
+        "null_latitude": [(nan, 2.0), (3.0, 4.0)],
+        "both_null": [(nan, nan), (3.0, 4.0)],
+    }
+    error_message = re.escape(
+        "Cannot initialize Woodwork. Series does not contain properly formatted "
+        "LatLong data. Try reformatting before initializing or use the "
+        "woodwork.init_series function to initialize."
+    )
+    latlong = LatLong()
+    series = latlong_df["tuple_ints"]
+    new_series = init_series(series, logical_type=LatLong)
+    latlong.validate(new_series)
+    with pytest.raises(TypeValidationError, match=error_message):
+        latlong.validate(series)
+
+
 def test_datetime_transform(datetimes):
     datetime = Datetime()
     for series in datetimes:
@@ -200,6 +230,35 @@ def test_ordinal_transform(sample_series):
 
     with pytest.raises(ValueError, match=error_msg):
         ordinal_incomplete_order.transform(sample_series)
+
+
+def test_ordinal_validate(sample_series):
+    series_type = str(type(sample_series))
+    dask = "dask" in series_type
+    koalas = "koalas" in series_type
+
+    if dask or koalas:
+        pytest.xfail(
+            "Fails with Dask and Koalas - ordinal data validation not supported"
+        )
+
+    ordinal_incomplete_order = Ordinal(order=["a", "b"])
+    error_msg = re.escape(
+        "Ordinal column sample_series contains values that are not "
+        "present in the order values provided: ['c']"
+    )
+
+    with pytest.raises(ValueError, match=error_msg):
+        ordinal_incomplete_order.validate(sample_series)
+
+    new_type = "string"
+    error_message = re.escape(
+        f"Cannot initialize Woodwork. Series dtype '{new_type}' is incompatible with "
+        f"ordinal dtype. Try converting series dtype to '{sample_series.dtype}' before "
+        "initializing or use the woodwork.init_series function to initialize."
+    )
+    with pytest.raises(TypeValidationError, match=error_message):
+        ordinal_incomplete_order.validate(sample_series.astype(new_type))
 
 
 def test_email_address_validate(sample_df):
