@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.tests.fixtures.datetime_freq import datetime_freq_fixtures, bad_dt_freq_fixtures
+from woodwork.tests.fixtures.datetime_freq import datetime_freq_fixtures
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
@@ -45,7 +45,6 @@ from woodwork.statistics_utils import (
     _get_top_values_categorical,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info,
-    infer_freq_v2,
 )
 from woodwork.tests.testing_utils import (
     check_empty_box_plot_dict,
@@ -1412,25 +1411,27 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
     datetime_freq_fixtures
 )
 def test_infer_temporal_frequencies_v2(case):
-    data = case['data'].to_series()
+    print(case)
+    # data = case['data'].to_series()
 
-    actual_freqs = case['actual_freq']
-    estimated_freq = infer_freq_v2(data)
+    # actual_freqs = case['actual_freq']
 
-    assert estimated_freq in actual_freqs
+    # estimated_freq = infer_freq_v2(data)
+
+    # assert estimated_freq in actual_freqs
 
 
-@pytest.mark.parametrize(
-    "bad_case",
-    bad_dt_freq_fixtures
-)
-def test_infer_temporal_frequencies_v2_bad(bad_case):
-    data = bad_case['data'].to_series()
+# @pytest.mark.parametrize(
+#     "bad_case",
+#     bad_dt_freq_fixtures
+# )
+# def test_infer_temporal_frequencies_v2_bad(bad_case):
+#     data = bad_case['data'].to_series()
 
-    actual_freqs = bad_case['actual_freq']
-    estimated_freq = infer_freq_v2(data)
+#     actual_freqs = bad_case['actual_freq']
+#     estimated_freq = infer_freq_v2(data)
 
-    assert estimated_freq in actual_freqs
+#     assert estimated_freq in actual_freqs
 
 
 
