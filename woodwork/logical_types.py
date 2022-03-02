@@ -76,7 +76,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         specific validation, as required."""
         valid_dtype = self._get_valid_dtype(type(series))
         if valid_dtype != str(series.dtype):
-            raise ValueError(
+            raise TypeValidationError(
                 f"Cannot initialize Woodwork. Series dtype '{series.dtype}' is "
                 f"incompatible with {self.type_string} dtype. Try converting series "
                 f"dtype to '{valid_dtype}' before initializing or use the "
@@ -121,7 +121,8 @@ class Age(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        super().validate(series, return_invalid_values)
+        # Comment this out as so far only check valid_dtype for Ordinal and LatLong type
+        # super().validate(series, return_invalid_values)
         return _validate_not_negative(series, return_invalid_values)
 
 
@@ -149,7 +150,8 @@ class AgeFractional(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        super().validate(series, return_invalid_values)
+        # Comment this out as so far only check valid_dtype for Ordinal and LatLong type
+        # super().validate(series, return_invalid_values)
         return _validate_not_negative(series, return_invalid_values)
 
 
@@ -177,7 +179,8 @@ class AgeNullable(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        super().validate(series, return_invalid_values)
+        # Comment this out as so far only check valid_dtype for Ordinal and LatLong type
+        # super().validate(series, return_invalid_values)
         return _validate_not_negative(series, return_invalid_values)
 
 
@@ -374,7 +377,8 @@ class EmailAddress(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid email address.
         """
-        super().validate(series, return_invalid_values)
+        # Comment this out as so far only check valid_dtype for Ordinal and LatLong type
+        # super().validate(series, return_invalid_values)
         return _regex_validate("email_inference_regex", series, return_invalid_values)
 
 
@@ -465,7 +469,7 @@ class LatLong(LogicalType):
     def validate(self, series, return_invalid_values=True):
         super().validate(series, return_invalid_values)
         if not _is_valid_latlong_series(series):
-            raise ValueError(
+            raise TypeValidationError(
                 "Cannot initialize Woodwork. Series does not contain properly formatted "
                 "LatLong data. Try reformatting before initializing or use the "
                 "woodwork.init_series function to initialize."
@@ -629,7 +633,8 @@ class URL(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid URLs.
         """
-        super().validate(series, return_invalid_values)
+        # Comment this out as so far only check valid_dtype for Ordinal and LatLong type
+        # super().validate(series, return_invalid_values)
         return _regex_validate("url_inference_regex", series, return_invalid_values)
 
 

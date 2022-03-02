@@ -11,7 +11,7 @@ from woodwork.accessor_utils import (
     init_series,
 )
 from woodwork.column_schema import ColumnSchema
-from woodwork.exceptions import ParametersIgnoredWarning, TypingInfoMismatchWarning
+from woodwork.exceptions import ParametersIgnoredWarning, TypingInfoMismatchWarning, TypeValidationError
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
 from woodwork.statistics_utils import _get_box_plot_info_for_column
@@ -99,7 +99,10 @@ class WoodworkColumnAccessor:
             )
 
             if validate:
-                logical_type.validate(self._series)
+                if isinstance(logical_type, (Ordinal, LatLong)):
+                    logical_type.validate(self._series)
+                else:
+                    self._validate_logical_type(logical_type)
 
             self._schema = ColumnSchema(
                 logical_type=logical_type,
@@ -310,7 +313,7 @@ class WoodworkColumnAccessor:
         specific validation, as required."""
         valid_dtype = logical_type._get_valid_dtype(type(self._series))
         if valid_dtype != str(self._series.dtype):
-            raise ValueError(
+            raise TypeValidationError(
                 f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                 f"incompatible with {logical_type} dtype. Try converting series "
                 f"dtype to '{valid_dtype}' before initializing or use the "
@@ -321,7 +324,7 @@ class WoodworkColumnAccessor:
             logical_type._validate_data(self._series)
         elif isinstance(logical_type, LatLong):
             if not _is_valid_latlong_series(self._series):
-                raise ValueError(
+                raise TypeValidationError(
                     "Cannot initialize Woodwork. Series does not contain properly formatted "
                     "LatLong data. Try reformatting before initializing or use the "
                     "woodwork.init_series function to initialize."

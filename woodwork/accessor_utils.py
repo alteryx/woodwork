@@ -18,7 +18,6 @@ def init_series(
     description=None,
     origin=None,
     metadata=None,
-    validate=False,
 ):
     """Initializes Woodwork typing information for a series, numpy.ndarray or pd.api.extensions.
     ExtensionArray, returning a new Series. The dtype of the returned series will be converted
@@ -67,7 +66,6 @@ def init_series(
         description=description,
         origin=origin,
         metadata=metadata,
-        validate=validate,
     )
     return new_series
 
