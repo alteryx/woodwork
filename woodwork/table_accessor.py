@@ -880,10 +880,8 @@ class WoodworkTableAccessor:
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Use get_valid_dependence_types to see which Logical Types support
-        mutual information:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
+        support mutual information. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
+        mutual information.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -938,10 +936,8 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Use get_valid_dependence_types to see which Logical Types support
-        mutual information:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
+        support mutual information. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
+        mutual information.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -997,10 +993,8 @@ class WoodworkTableAccessor:
     ):
         """
         Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
-        support correlation. Use get_valid_dependence_types to see which Logical Types support
-        correlation:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
+        support correlation. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
+        correlation.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1054,10 +1048,8 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
-        support correlation. Use get_valid_dependence_types to see which Logical Types support
-        correlation:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
+        support correlation. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
+        correlation.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1113,9 +1105,7 @@ class WoodworkTableAccessor:
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-        Use get_valid_dependence_types for a complete list of supported Logical Types:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
+        Call woodwork.utils.get_valid_dependence_types for a complete list of supported Logical Types.
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
@@ -1123,11 +1113,11 @@ class WoodworkTableAccessor:
             measure (list or str): which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
-                    - "pearson": calculates the Pearson correlation coefficient
-                    - "mutual": calculates the mutual information between columns
-                    - "max": calculates both Pearson and mutual information and
-                        returns max(abs(pearson), mutual) for each pair of columns
-                    - "all": includes columns for "pearson", "mutual", and "max"
+
+                - "pearson": calculates the Pearson correlation coefficient
+                - "mutual": calculates the mutual information between columns
+                - "max":  max(abs(pearson), mutual) for each pair of columns
+                - "all": includes columns for "pearson", "mutual", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical.
             nrows (int): The number of rows to sample for when determining dependence.
@@ -1187,9 +1177,7 @@ class WoodworkTableAccessor:
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-        Use get_valid_dependence_types for a complete list of supported Logical Types:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
+        Call woodwork.utils.get_valid_dependence_types for a complete list of supported Logical Types.
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
@@ -1197,11 +1185,11 @@ class WoodworkTableAccessor:
             measure (list or str): which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
-                    - "pearson": calculates the Pearson correlation coefficient
-                    - "mutual": calculates the mutual information between columns
-                    - "max": calculates both Pearson and mutual information and
-                        returns max(abs(pearson), mutual) for each pair of columns
-                    - "all": includes columns for "pearson", "mutual", and "max"
+
+                - "pearson": calculates the Pearson correlation coefficient
+                - "mutual": calculates the mutual information between columns
+                - "max":  max(abs(pearson), mutual) for each pair of columns
+                - "all": includes columns for "pearson", "mutual", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical.
             nrows (int): The number of rows to sample for when determining dependence.
@@ -1252,10 +1240,7 @@ class WoodworkTableAccessor:
 
     def get_valid_mi_columns(self, include_index=False):
         """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
-        information. Use get_valid_dependence_types to see which Logical Types support mutual information:
-        >>> from woodwork.utils import get_valid_dependence_types
-        >>> get_valid_dependence_types()
-        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
+        information. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support mutual information.
 
         Args:
             include_index (bool): If True, the column specified as the index will be

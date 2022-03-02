@@ -25,9 +25,7 @@ def _get_dependence_dict(
 ):
     """Calculates dependence measures between all pairs of columns in the DataFrame that
     support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-    Use get_valid_dependence_types for a complete list of supported Logical Types:
-    >>> from woodwork.utils import get_valid_dependence_types
-    >>> get_valid_dependence_types()
+    Call woodwork.utils.get_valid_dependence_types for a complete list of supported Logical Types.
 
     Args:
         dataframe (pd.DataFrame): Data containing Woodwork typing information
@@ -35,10 +33,10 @@ def _get_dependence_dict(
         measure (list or str): which dependence measures to calculate.
             A list of measures can be provided to calculate multiple
             measures at once.  Valid measure strings:
+
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual": calculates the mutual information between columns
-                - "max": calculates both Pearson and mutual information and
-                    returns max(abs(pearson), mutual) for each pair of columns
+                - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.
