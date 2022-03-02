@@ -6,15 +6,17 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 v0.13.0 Feb 16, 2022
 ====================
@@ -25,14 +27,12 @@ v0.13.0 Feb 16, 2022
         * Add validation to EmailAddress logical type (:pr:`1247`)
         * Add validation to URL logical type (:pr:`1285`)
         * Add validation to Age, AgeFractional, and AgeNullable logical types (:pr:`1289`)
-        * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
     * Fixes
         * Check range length in table stats without producing overflow error (:pr:`1287`)
         * Fixes issue with initializing Woodwork Series with LatLong values (:pr:`1299`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
         * Add back support for Python 3.7 (:pr:`1292`)
-        * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
         * Nested statistical utility functions into directory (:pr:`1295`)
     * Documentation Changes
         * Updating contributing doc with PATH and JAVA_HOME instructions (:pr:`1273`)
