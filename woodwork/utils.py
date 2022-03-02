@@ -1,6 +1,7 @@
 import ast
 import importlib
 import re
+import warnings
 from inspect import isclass
 from mimetypes import add_type, guess_type
 
@@ -346,21 +347,9 @@ def get_valid_mi_types():
     Returns:
         list(LogicalType): A list of the LogicalTypes that can be use to calculate mutual information
     """
-    # TODO: add deprecation warning in favor of get_valid_dependence_types
-    valid_types = []
-    for ltype in ww.type_system.registered_types:
-        if "category" in ltype.standard_tags:
-            valid_types.append(ltype)
-        elif "numeric" in ltype.standard_tags:
-            valid_types.append(ltype)
-        elif (
-            ltype == ww.logical_types.Datetime
-            or ltype == ww.logical_types.Boolean
-            or ltype == ww.logical_types.BooleanNullable
-        ):
-            valid_types.append(ltype)
-
-    return valid_types
+    msg = "get_valid_mi_types has been deprecated, please use get_valid_dependence_types instead"
+    warnings.warn(DeprecationWarning(msg))
+    return get_valid_dependence_types()
 
 
 def get_valid_dependence_types():
@@ -375,7 +364,20 @@ def get_valid_dependence_types():
     Returns:
         list(LogicalType): A list of the LogicalTypes that can be use to calculate dependence
     """
-    return get_valid_mi_types()
+    valid_types = []
+    for ltype in ww.type_system.registered_types:
+        if "category" in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif "numeric" in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif (
+            ltype == ww.logical_types.Datetime
+            or ltype == ww.logical_types.Boolean
+            or ltype == ww.logical_types.BooleanNullable
+        ):
+            valid_types.append(ltype)
+
+    return valid_types
 
 
 def _get_column_logical_type(series, logical_type, name):

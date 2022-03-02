@@ -880,10 +880,10 @@ class WoodworkTableAccessor:
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Use get_valid_mi_types to see which Logical Types support
+        support mutual information. Use get_valid_dependence_types to see which Logical Types support
         mutual information:
-        >>> from woodwork.utils import get_valid_mi_types
-        >>> get_valid_mi_types()
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
         [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
@@ -939,10 +939,10 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Use get_valid_mi_types to see which Logical Types support
+        support mutual information. Use get_valid_dependence_types to see which Logical Types support
         mutual information:
-        >>> from woodwork.utils import get_valid_mi_types
-        >>> get_valid_mi_types()
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
         [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
@@ -1254,9 +1254,9 @@ class WoodworkTableAccessor:
 
     def get_valid_mi_columns(self, include_index=False):
         """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
-        information. Use get_valid_mi_types to see which Logical Types support mutual information:
-        >>> from woodwork.utils import get_valid_mi_types
-        >>> get_valid_mi_types()
+        information. Use get_valid_dependence_types to see which Logical Types support mutual information:
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
         [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:

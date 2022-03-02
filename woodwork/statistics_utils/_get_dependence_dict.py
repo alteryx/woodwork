@@ -9,7 +9,7 @@ from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.exceptions import SparseDataWarning
-from woodwork.utils import _update_progress, get_valid_mi_types
+from woodwork.utils import _update_progress, get_valid_dependence_types
 
 
 def _get_dependence_dict(
@@ -87,7 +87,7 @@ def _get_dependence_dict(
         calc_pearson = "pearson" in measure
 
     unit = "calculations"
-    valid_types = get_valid_mi_types()
+    valid_types = get_valid_dependence_types()
     valid_columns = [
         col_name
         for col_name, col in dataframe.ww.columns.items()
