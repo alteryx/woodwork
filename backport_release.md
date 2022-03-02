@@ -1,14 +1,26 @@
 # Backport Release Process
 
-In situations where we need to backport commits to earlier versions of our software, we'll need to perform the release process slightly differently than a normal release. This document outlines the differences between a normal release and a backport release. It uses the same outline as the [Release Guide](release.md) and will note any change between the two types of releases.
+In situations where we need to backport commits to earlier versions of our software, we'll need to perform the release process slightly differently than a normal release.
+
+![backport](/docs/source/_static/images/backport_release.png)
+
+This document outlines the differences between a normal release and a backport release. It uses the same outline as the [Release Guide](release.md).
 
 ## 0. Pre-Release Checklist
 
-- Get agreement on the version number to use for the backport release. This may be an intermediate number between two preexisting releases--for example a new `0.11.2` to be added between existing `0.11.1` and `0.12.0` releases. It can also be a new latest release--so `0.13.0` in the same situation--using only some of the commits that are present in the Future Release section of the release notes.
+Before starting the backport release process, verify the following:
+
 - Get agreement on the latest commit to use for targeting the release. A backport release will be targeted on some commit other than the latest on main. Many times the new target will be an old release, which will have a tag that can be referenced--for example `v0.11.1`.
 - Get agreement on the commits to port over for the backport release.
+- Get agreement on the version number to use for the backport release.
 
-## 0.5. Port over content for backport release
+#### Version Numbering for Backport Releases
+
+Woodwork uses [semantic versioning](https://semver.org/). Every release has a major, minor and patch version number, and are displayed like so: `<majorVersion>.<minorVersion>.<patchVersion>`. **A backport release will increment the patch version.**
+
+This may be an intermediate number between two preexisting releases--for example a new `0.11.2` to be added between existing `0.11.1` and `0.12.0` releases. It can also be a new latest release--so `0.12.1` in the same situation--using only some of the commits that are present in the Future Release section of the release notes.
+
+## 0.5. Create target branch for backport release
 
 #### Checkout intended target commit
 
@@ -21,11 +33,25 @@ In situations where we need to backport commits to earlier versions of our softw
 
 #### Port over desired commits
 
-1. Create a feature branch (this can be named whatever you'd like) and cherry-pick the desired commits.
-2. Create a pull request with the backport `0.11.x` branch as its target and get confirmation that the desired changes were added and that the CI checks pass.
-3. Create a new section in the release notes for `Backport Release`. It should be located right after the release previous to this new backport release (so right after `0.11.1` in this example).
-4. Include the ported over commits' release notes in the `Backport Release` section (don't remove them from their original location in Future Release) with the following as its PR number `(backport of :pr:`1269`)` as well as a release note for the PR.
-5. Merge in the PR into `0.11.x`
+1. Create a feature branch (this can be named whatever you'd like) off the backport branch and cherry-pick the desired commits.
+2. Create a pull request with the backport `0.11.x` branch as its target, get confirmation that the desired changes were added, and confirm that the CI checks pass.
+3. Under the "Future Release" section in the release notes, include the ported over commits' release notes (don't remove them from their original location back on `main`), indicating that they are a backport of the original PR. Additionally, include a release note for the current PR.
+
+   ```
+   Future Release
+   ==============
+       * Enhancements
+       * Fixes
+           * Fix bug (backport of :pr:`1110`)
+       * Changes
+           * Backport commits for release 0.11.2 (:pr:`1111`)
+       * Documentation Changes
+       * Testing Changes
+
+   Thanks to the following people for contributing to this release:
+   ```
+
+4. Merge the PR into the `0.11.x` backport branch
 
 ## 1. Create Woodwork Backport release on Github
 
@@ -33,7 +59,7 @@ With our backport branch `0.11.x` as our target, we now proceed with the release
 
 #### Create release branch
 
-1. Branch off of the backport branch `0.11.x`. For the branch name, please use "release_vX.Y.Z" as the naming scheme (e.g. "release_v0.11.2"). Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
+1. **Branch off of the backport branch `0.11.x`.** For the branch name, please use "release_vX.Y.Z" as the naming scheme (e.g. "release_v0.11.2"). Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 #### Bump version number
 
@@ -41,7 +67,7 @@ With our backport branch `0.11.x` as our target, we now proceed with the release
 
 #### Update Release Notes
 
-1. Replace "Backport Release" in `docs/source/release_notes.rst` with the current date
+1. Replace **"Future Release"** in `docs/source/release_notes.rst` with the current date
 
    ```
    v0.11.2 Sep 28, 2020
@@ -51,6 +77,19 @@ With our backport branch `0.11.x` as our target, we now proceed with the release
 2. Remove any unused Release Notes sections for this release (e.g. Fixes, Testing Changes)
 3. Add yourself to the list of contributors to this release and **put the contributors in alphabetical order**
 4. The release PR does not need to be mentioned in the list of changes
+5. Add a commented out "Future Release" section with all of the Release Notes sections above the current section
+
+   ```
+   .. Future Release
+     ==============
+       * Enhancements
+       * Fixes
+       * Changes
+       * Documentation Changes
+       * Testing Changes
+
+   .. Thanks to the following people for contributing to this release:
+   ```
 
 #### Create Release PR
 
@@ -81,4 +120,9 @@ Note that this backported release will show up on the repository's front page as
 If a later release exists, conda-forge will not automatically create a new PR in [conda-forge/woodwork-feedstock](https://github.com/conda-forge/woodwork-feedstock/pulls). Instead a PR will need to be manually created. You can do either of the following:
 
 - Branch off of the 0.11.1 meta.yaml update commit for the 0.11.2 meta.yaml changes. This is "cleaner" and sometimes easier, but if migration files (like py310) have been added between 0.11.1 and 0.12.0 you will have to add them in and re-render yourself.
-- Tack the 0.11.2 changes on after the 0.12.0 update commit in the feedstock repo. This means that if any of the boilerplate has changed, you do not have to manually re-add it yourself.
+- Tack the 0.11.2 changes on after the 0.12.0 update commit in the feedstock repo. This means that if any of the boilerplate has changed, you do not have to manually re-add it yourself. An example of this can be seen [here](https://github.com/conda-forge/woodwork-feedstock/pull/32).
+
+Once the PR is created:
+
+1. Update requirements changes in `recipe/meta.yaml` - you may need to handle the version, source links, and SHA256 if you had to open the PR yourself. You will also need to update the requirements.
+2. After tests pass, a maintainer will merge the PR in
