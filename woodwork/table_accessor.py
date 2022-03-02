@@ -884,7 +884,6 @@ class WoodworkTableAccessor:
         mutual information:
         >>> from woodwork.utils import get_valid_dependence_types
         >>> get_valid_dependence_types()
-        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -943,7 +942,6 @@ class WoodworkTableAccessor:
         mutual information:
         >>> from woodwork.utils import get_valid_dependence_types
         >>> get_valid_dependence_types()
-        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1003,7 +1001,6 @@ class WoodworkTableAccessor:
         correlation:
         >>> from woodwork.utils import get_valid_dependence_types
         >>> get_valid_dependence_types()
-        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1061,7 +1058,6 @@ class WoodworkTableAccessor:
         correlation:
         >>> from woodwork.utils import get_valid_dependence_types
         >>> get_valid_dependence_types()
-        [Age, AgeFractional, AgeNullable, Boolean, BooleanNullable, Categorical, CountryCode, Datetime, Double, Integer, IntegerNullable, Ordinal, PostalCode, SubRegionCode]
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1116,9 +1112,10 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
-        support measuring dependence. Logical Types that are supported are as
-        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
-        PostalCode, and SubRegionCode
+        support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
+        Use get_valid_dependence_types for a complete list of supported Logical Types:
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
@@ -1189,9 +1186,10 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
-        support measuring dependence. Logical Types that are supported are as
-        follows:  Boolean, Categorical, CountryCode, Datetime, Double, Integer, Ordinal,
-        PostalCode, and SubRegionCode
+        support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
+        Use get_valid_dependence_types for a complete list of supported Logical Types:
+        >>> from woodwork.utils import get_valid_dependence_types
+        >>> get_valid_dependence_types()
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
