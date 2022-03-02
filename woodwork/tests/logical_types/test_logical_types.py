@@ -142,22 +142,6 @@ def test_latlong_transform(latlong_df):
 
 
 def test_latlong_validate(latlong_df):
-    df_type = str(type(latlong_df))
-    dask = "dask" in df_type
-    koalas = "koalas" in df_type
-    nan = float("nan")
-
-    expected_data = {
-        "tuple_ints": [(1.0, 2.0), (3.0, 4.0)],
-        "tuple_strings": [(1.0, 2.0), (3.0, 4.0)],
-        "string_tuple": [(1.0, 2.0), (3.0, 4.0)],
-        "bracketless_string_tuple": [(1.0, 2.0), (3.0, 4.0)],
-        "list_strings": [(1.0, 2.0), (3.0, 4.0)],
-        "combo_tuple_types": [(1.0, 2.0), (3.0, 4.0)],
-        "null_value": [nan, (3.0, 4.0)],
-        "null_latitude": [(nan, 2.0), (3.0, 4.0)],
-        "both_null": [(nan, nan), (3.0, 4.0)],
-    }
     error_message = re.escape(
         "Cannot initialize Woodwork. Series does not contain properly formatted "
         "LatLong data. Try reformatting before initializing or use the "
