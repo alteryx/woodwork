@@ -27,7 +27,7 @@ Whether you are a novice or experienced software developer, all contributions an
 * You will need to install Spark & Scala to run all unit tests:
 
      **macOS** (use [Homebrew](https://brew.sh/)):
-     ```bash
+     ```console
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
      brew install scala apache-spark
@@ -36,12 +36,15 @@ Whether you are a novice or experienced software developer, all contributions an
      ```
 
      **Ubuntu**:
-     ```bash
+     ```console
      sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
+     echo "export SPARK_HOME=/opt/spark" >> ~/.profile
+     echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
+     echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
      ```
      
      **Amazon Linux**:
-     ```bash
+     ```console
      sudo amazon-linux-extras install java-openjdk11 scala -y
      amazon-linux-extras enable java-openjdk11
      ```

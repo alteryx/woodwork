@@ -1950,7 +1950,11 @@ def test_accessor_set_index_errors(sample_df):
 
 
 def test_set_types(sample_df):
-    sample_df.ww.init(index="full_name", time_index="signup_date")
+    sample_df.ww.init(
+        index="full_name",
+        time_index="signup_date",
+        semantic_tags={"is_registered": "custom_tag"},
+    )
 
     original_df = sample_df.ww.copy()
 
@@ -1960,6 +1964,7 @@ def test_set_types(sample_df):
 
     sample_df.ww.set_types(logical_types={"is_registered": "IntegerNullable"})
     assert sample_df["is_registered"].dtype == "Int64"
+    assert "custom_tag" in sample_df.ww.semantic_tags["is_registered"]
 
     sample_df.ww.set_types(
         semantic_tags={"signup_date": ["new_tag"]},

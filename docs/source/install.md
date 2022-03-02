@@ -107,6 +107,20 @@ $ amazon-linux-extras enable java-openjdk11
 ```
 ````
 
+## Docker
+
+It is also possible to run Woodwork inside a Docker container.
+You can do so by installing it as a package inside a container (following the normal install guide) or
+creating a new image with Woodwork pre-installed, using the following commands in your `Dockerfile`:
+
+```dockerfile
+FROM python:3.8-slim-buster
+RUN apt-get update && apt-get -y update
+RUN apt-get install -y build-essential python3-pip python3-dev
+RUN pip -q install pip --upgrade
+RUN pip install woodwork
+```
+
 ## Optional Python Dependencies
 Woodwork has several other Python dependencies that are used only for specific methods. Attempting to use one of these methods without having the necessary library installed will result in an ``ImportError`` with instructions on how to install the necessary dependency.
 

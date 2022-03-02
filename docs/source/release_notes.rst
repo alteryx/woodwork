@@ -5,6 +5,19 @@ Release Notes
 
 Future Release
 ==============
+    * Enhancements
+    * Fixes
+        * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
+    * Changes
+    * Documentation Changes
+        * Update copy and paste button to remove syntax signs (:pr:`1313`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`jeff-hernandez`
+
+v0.13.0 Feb 16, 2022
+====================
     .. warning::
         Woodwork may not support Python 3.7 in next non-bugfix release.
 
@@ -15,6 +28,7 @@ Future Release
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
     * Fixes
         * Check range length in table stats without producing overflow error (:pr:`1287`)
+        * Fixes issue with initializing Woodwork Series with LatLong values (:pr:`1299`)
     * Changes
         * Remove framework for unused ``woodwork`` CLI (:pr:`1288`)
         * Add back support for Python 3.7 (:pr:`1292`)
