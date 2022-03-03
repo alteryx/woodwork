@@ -3,7 +3,7 @@
 In situations where we need to backport commits to earlier versions of our software, we'll need to perform the release process slightly differently than a normal release.
 
 <p align="center">
-<img width=60% src="docs/source/_static/images/backport_release.png" alt="Featuretools" />
+<img width=60% src="source/_static/images/backport_release.png" alt="Backport Release" />
 </p>
 
 This document outlines the differences between a normal release and a backport release. It uses the same outline as the [Release Guide](../release.md).
