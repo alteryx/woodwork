@@ -35,9 +35,10 @@ This may be an intermediate number between two preexisting releases--for example
 
 #### Port over desired commits
 
-1. Create a feature branch (this can be named whatever you'd like) off the backport branch and cherry-pick the desired commits.
-2. Create a pull request with the backport `0.11.x` branch as its target, get confirmation that the desired changes were added, and confirm that the CI checks pass.
-3. Under the "Future Release" section in the release notes, include the ported over commits' release notes (don't remove them from their original location back on `main`), indicating that they are a backport of the original PR. Additionally, include a release note for the current PR.
+1. Create a feature branch off the backport branch. For the branch name, please use "backport_vX.Y.Z" as the naming scheme (e.g. "backport_v0.11.2). Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
+2. Cherry-pick the desired commits onto `backport_v0.11.2`.
+3. Create a pull request with the backport `0.11.x` branch as its target, get confirmation that the desired changes were added, and confirm that the CI checks pass.
+4. Under the "Future Release" section in the release notes, include the ported over commits' release notes (don't remove them from their original location back on `main`), indicating that they are a backport of the original PR.
 
    ```
    Future Release
@@ -46,14 +47,13 @@ This may be an intermediate number between two preexisting releases--for example
        * Fixes
            * Fix bug (backport of :pr:`1110`)
        * Changes
-           * Backport commits for release 0.11.2 (:pr:`1111`)
        * Documentation Changes
        * Testing Changes
 
    Thanks to the following people for contributing to this release:
    ```
 
-4. Merge the PR into the `0.11.x` backport branch
+5. Merge the PR into the `0.11.x` backport branch
 
 ## 1. Create Woodwork Backport release on Github
 
