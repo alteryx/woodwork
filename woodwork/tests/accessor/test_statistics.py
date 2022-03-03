@@ -45,6 +45,7 @@ from woodwork.statistics_utils import (
     _get_top_values_categorical,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info,
+    infer_frequency
 )
 from woodwork.tests.testing_utils import (
     check_empty_box_plot_dict,
@@ -1411,8 +1412,14 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
     datetime_freq_fixtures
 )
 def test_infer_temporal_frequencies_v2(case):
-    print(case)
-    # data = case['data'].to_series()
+    input_series = case['dates'].to_series()
+
+    expected_output = case["expected_output"]
+
+    actual_output = infer_frequency(input_series)
+
+    
+    assert actual_output == expected_output
 
     # actual_freqs = case['actual_freq']
 
