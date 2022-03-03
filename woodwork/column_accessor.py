@@ -23,7 +23,8 @@ from woodwork.utils import (
 )
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+# ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 class WoodworkColumnAccessor:

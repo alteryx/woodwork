@@ -102,10 +102,14 @@ def sample_df_dask(sample_df_pandas):
 
 @pytest.fixture()
 def sample_df_koalas(sample_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+    # ks = pytest.importorskip(
+    #     "databricks.koalas", reason="Koalas not installed, skipping"
+    # )
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Pyspark pandas not installed, skipping"
     )
-    return ks.from_pandas(sample_df_pandas)
+    # return ks.from_pandas(sample_df_pandas)
+    return ps.DataFrame(sample_df_pandas)
 
 
 @pytest.fixture()

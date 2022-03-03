@@ -70,7 +70,9 @@ from woodwork.tests.testing_utils.table_utils import assert_schema_equal
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+# ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
+
 
 
 def test_check_index_errors(sample_df):

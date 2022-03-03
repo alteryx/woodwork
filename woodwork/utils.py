@@ -474,13 +474,15 @@ def concat_columns(objs, validate_schema=True):
     # Perform concatenation with the correct library
     obj = objs[0]
     dd = import_or_none("dask.dataframe")
-    ks = import_or_none("databricks.koalas")
+    # ks = import_or_none("databricks.koalas")
+    ps = import_or_none("pyspark.pandas")
 
     lib = pd
     if ww.accessor_utils._is_koalas_dataframe(
         obj
     ) or ww.accessor_utils._is_koalas_series(obj):
-        lib = ks
+        # lib = ks
+        lib = ps
     elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
         obj
     ):

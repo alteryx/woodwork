@@ -35,7 +35,8 @@ from woodwork.tests.testing_utils import is_property, is_public_method, to_panda
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+# ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def test_accessor_init(sample_series):

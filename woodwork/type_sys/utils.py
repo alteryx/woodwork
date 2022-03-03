@@ -6,7 +6,8 @@ import woodwork as ww
 from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
 from woodwork.utils import import_or_none
 
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
+# ks = import_or_none("databricks.koalas")
 dd = import_or_none("dask.dataframe")
 
 

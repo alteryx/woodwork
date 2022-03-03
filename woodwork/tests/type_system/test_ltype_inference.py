@@ -38,7 +38,8 @@ UNSUPPORTED_KOALAS_DTYPES = [
     "category",
 ]
 
-ks = import_or_none("databricks.koalas")
+# ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def get_koalas_dtypes(dtypes):
