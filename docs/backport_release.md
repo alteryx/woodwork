@@ -6,7 +6,7 @@ In situations where we need to backport commits to earlier versions of our softw
 <img width=60% src="docs/source/_static/images/backport_release.png" alt="Featuretools" />
 </p>
 
-This document outlines the differences between a normal release and a backport release. It uses the same outline as the [Release Guide](release.md).
+This document outlines the differences between a normal release and a backport release. It uses the same outline as the [Release Guide](../release.md).
 
 ## 0. Pre-Release Checklist
 
