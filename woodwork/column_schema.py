@@ -154,7 +154,7 @@ class ColumnSchema(object):
 
     @property
     def is_unknown(self):
-        """Whether the ColumnSchema is a Datetime column"""
+        """Whether the ColumnSchema is a Unknown column"""
         return type(self.logical_type) == Unknown
 
     def _add_semantic_tags(self, new_tags, name):

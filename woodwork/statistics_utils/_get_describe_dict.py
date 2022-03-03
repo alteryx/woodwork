@@ -62,7 +62,7 @@ def _get_describe_dict(
         "category": ["count", "nunique"],
         "numeric": ["count", "max", "min", "nunique", "mean", "std"],
         Datetime: ["count", "max", "min", "nunique", "mean"],
-        Unknown: ["nunique"],
+        Unknown: ["count", "nunique"],
     }
     if include is not None:
         filtered_cols = dataframe.ww._filter_cols(include, col_names=True)
