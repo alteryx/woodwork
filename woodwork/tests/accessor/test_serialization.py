@@ -6,8 +6,8 @@ import boto3
 import pandas as pd
 import pytest
 
-import woodwork.deserialize as deserialize
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.deserialize import read_woodwork_table
 from woodwork.deserializers import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
@@ -345,7 +345,7 @@ def test_to_csv(sample_df, tmpdir):
         },
     )
     sample_df.ww.to_disk(str(tmpdir), format="csv", encoding="utf-8", engine="python")
-    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_df = read_woodwork_table(str(tmpdir))
 
     pd.testing.assert_frame_equal(
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -364,7 +364,7 @@ def test_to_disk_with_whitespace(whitespace_df, tmpdir, format):
             df.ww.to_disk(str(tmpdir), format="pickle")
     else:
         df.ww.to_disk(str(tmpdir), format=format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
         assert deserialized_df.ww.schema == df.ww.schema
         pd.testing.assert_frame_equal(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -379,7 +379,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     no_standard_tags_df.ww.to_disk(
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
-    deserialized_no_tags_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_no_tags_df = read_woodwork_table(str(tmpdir))
 
     standard_tags_df = sample_df.copy()
     standard_tags_df.ww.init(use_standard_tags=True)
@@ -387,7 +387,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     standard_tags_df.ww.to_disk(
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
-    deserialized_tags_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_tags_df = read_woodwork_table(str(tmpdir))
 
     assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
 
@@ -402,7 +402,7 @@ def test_deserialize_handles_indexes(sample_df, tmpdir):
         time_index="signup_date",
     )
     sample_df.ww.to_disk(str(tmpdir), format="csv")
-    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_df = read_woodwork_table(str(tmpdir))
     assert deserialized_df.ww.index == "id"
     assert deserialized_df.ww.time_index == "signup_date"
 
@@ -428,7 +428,7 @@ def test_to_disk(sample_df, tmpdir, file_format):
             sample_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         sample_df.ww.to_disk(str(tmpdir), format=file_format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -458,7 +458,7 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
             latlong_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         latlong_df.ww.to_disk(str(tmpdir), format=file_format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
 
         pd.testing.assert_frame_equal(
             to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
@@ -485,7 +485,7 @@ def test_categorical_dtype_serialization(serialize_df, tmpdir):
         df = serialize_df.copy()
         df.ww.init(index="id", logical_types=ltypes)
         df.ww.to_disk(str(tmpdir), format=format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
         pd.testing.assert_frame_equal(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
             to_pandas(df, index=df.ww.index, sort_index=True),
@@ -537,9 +537,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket, profile_name):
     )
     make_public(s3_client, s3_bucket)
 
-    deserialized_df = deserialize.read_woodwork_table(
-        TEST_S3_URL, profile_name=profile_name
-    )
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -553,9 +551,7 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket, profile_nam
     sample_df_pandas.ww.init()
     sample_df_pandas.ww.to_disk(TEST_S3_URL, format="pickle", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(
-        TEST_S3_URL, profile_name=profile_name
-    )
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index, sort_index=True),
@@ -571,9 +567,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket, profile_name):
     sample_df.ww.init()
     sample_df.ww.to_disk(TEST_S3_URL, format="parquet", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(
-        TEST_S3_URL, profile_name=profile_name
-    )
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -634,7 +628,7 @@ def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
         profile_name="test",
     )
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name="test")
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name="test")
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index),
@@ -672,7 +666,7 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 @pytest.mark.parametrize("profile_name", [None, False])
 def test_deserialize_url_csv(sample_df_pandas, profile_name):
     sample_df_pandas.ww.init(index="id")
-    deserialized_df = deserialize.read_woodwork_table(URL, profile_name=profile_name)
+    deserialized_df = read_woodwork_table(URL, profile_name=profile_name)
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index),
         to_pandas(deserialized_df, index=deserialized_df.ww.index),
@@ -682,7 +676,7 @@ def test_deserialize_url_csv(sample_df_pandas, profile_name):
 
 def test_deserialize_s3_csv(sample_df_pandas):
     sample_df_pandas.ww.init(index="id")
-    deserialized_df = deserialize.read_woodwork_table(S3_URL, profile_name=False)
+    deserialized_df = read_woodwork_table(S3_URL, profile_name=False)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index),
@@ -694,9 +688,9 @@ def test_deserialize_s3_csv(sample_df_pandas):
 @patch("woodwork.table_accessor._validate_accessor_params")
 def test_deserialize_validation_control(mock_validate_accessor_params):
     assert not mock_validate_accessor_params.called
-    deserialize.read_woodwork_table(URL)
+    read_woodwork_table(URL)
     assert not mock_validate_accessor_params.called
-    deserialize.read_woodwork_table(URL, validate=True)
+    read_woodwork_table(URL, validate=True)
     assert mock_validate_accessor_params.called
 
 
