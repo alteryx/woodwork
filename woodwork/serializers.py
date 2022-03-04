@@ -9,10 +9,12 @@ import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serialize import typing_info_to_dict
 from woodwork.serializer_utils import clean_latlong
+from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
+SCHEMA_VERSION = "11.3.0"
+FORMATS = ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
 PYARROW_IMPORT_ERROR_MESSAGE = (
     f"The pyarrow library is required to serialize to {format}.\n"
     "Install via pip:\n"
@@ -270,3 +272,67 @@ def get_serializer(format=None, filename=None):
         raise ValueError(error.format(", ".join(FORMAT_TO_SERIALIZER.keys())))
 
     return serializer
+
+
+def typing_info_to_dict(dataframe):
+    """Creates the description for a Woodwork table, including typing information for each column
+    and loading information.
+
+    Args:
+        dataframe (pd.DataFrame, dd.Dataframe, ks.DataFrame): DataFrame with Woodwork typing
+            information initialized.
+
+    Returns:
+        dict: Dictionary containing Woodwork typing information
+    """
+    if _is_dask_dataframe(dataframe):
+        # Need to determine the category info for Dask it can be saved below
+        category_cols = [
+            colname
+            for colname, col in dataframe.ww._schema.columns.items()
+            if col.is_categorical
+        ]
+        dataframe = dataframe.ww.categorize(columns=category_cols)
+    ordered_columns = dataframe.columns
+
+    def _get_physical_type_dict(column):
+        type_dict = {"type": str(column.dtype)}
+        if str(column.dtype) == "category":
+            type_dict["cat_values"] = column.dtype.categories.to_list()
+            type_dict["cat_dtype"] = str(column.dtype.categories.dtype)
+        return type_dict
+
+    column_typing_info = [
+        {
+            "name": col_name,
+            "ordinal": ordered_columns.get_loc(col_name),
+            "use_standard_tags": col.use_standard_tags,
+            "logical_type": {
+                "parameters": _get_specified_ltype_params(col.logical_type),
+                "type": str(_get_ltype_class(col.logical_type)),
+            },
+            "physical_type": _get_physical_type_dict(dataframe[col_name]),
+            "semantic_tags": sorted(list(col.semantic_tags)),
+            "description": col.description,
+            "origin": col.origin,
+            "metadata": col.metadata,
+        }
+        for col_name, col in dataframe.ww.columns.items()
+    ]
+
+    if _is_dask_dataframe(dataframe):
+        table_type = "dask"
+    elif _is_koalas_dataframe(dataframe):
+        table_type = "koalas"
+    else:
+        table_type = "pandas"
+
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "name": dataframe.ww.name,
+        "index": dataframe.ww.index,
+        "time_index": dataframe.ww.time_index,
+        "column_typing_info": column_typing_info,
+        "loading_info": {"table_type": table_type},
+        "table_metadata": dataframe.ww.metadata,
+    }

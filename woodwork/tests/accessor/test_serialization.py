@@ -7,23 +7,21 @@ import pandas as pd
 import pytest
 
 import woodwork.deserialize as deserialize
-import woodwork.serialize as serialize
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.deserializers import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
     WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
-from woodwork.serializers import get_serializer
+from woodwork.serializers import SCHEMA_VERSION, get_serializer
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_{}.tar".format(
-    serialize.SCHEMA_VERSION
-)
+TEST_FILE = "test_serialization_woodwork_table_schema_{}.tar".format(SCHEMA_VERSION)
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -84,7 +82,7 @@ def test_to_dictionary(sample_df):
     double_val = "float64"
 
     expected = {
-        "schema_version": serialize.SCHEMA_VERSION,
+        "schema_version": SCHEMA_VERSION,
         "name": "test_data",
         "index": "id",
         "time_index": None,
@@ -659,8 +657,7 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     with open(str(write_path.join("woodwork_typing_info.json")), "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
     compression = None
-    serialize.write_woodwork_table(
-        sample_df,
+    sample_df.ww.to_disk(
         path=str(write_path),
         index="1",
         sep="\t",
@@ -711,16 +708,16 @@ def test_check_later_schema_version():
                 "The schema version of the saved Woodwork table "
                 "%s is greater than the latest supported %s. "
                 "You may need to upgrade woodwork. Attempting to load Woodwork table ..."
-                % (version_to_check, serialize.SCHEMA_VERSION)
+                % (version_to_check, SCHEMA_VERSION)
             )
             with pytest.warns(UpgradeSchemaWarning, match=warning_text):
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
         else:
             with pytest.warns(None) as record:
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
             assert len(record) == 0
 
-    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split(".")]
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
     test_version(major + 1, minor, patch)
     test_version(major, minor + 1, patch)
@@ -739,13 +736,13 @@ def test_earlier_schema_version():
                 % (version_to_check)
             )
             with pytest.warns(OutdatedSchemaWarning, match=warning_text):
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
         else:
             with pytest.warns(None) as record:
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
             assert len(record) == 0
 
-    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split(".")]
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)

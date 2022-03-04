@@ -5,7 +5,6 @@ from typing import Dict, Iterable, List, Set, Union
 
 import pandas as pd
 
-import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
     _check_table_schema,
     _is_dask_dataframe,
@@ -22,7 +21,7 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
-from woodwork.serializers import get_serializer
+from woodwork.serializers import get_serializer, typing_info_to_dict
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
@@ -624,7 +623,7 @@ class WoodworkTableAccessor:
         Returns:
             dict: Description of the typing information.
         """
-        return serialize.typing_info_to_dict(self._dataframe)
+        return typing_info_to_dict(self._dataframe)
 
     @_check_table_schema
     def to_disk(
