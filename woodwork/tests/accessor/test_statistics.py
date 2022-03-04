@@ -8,7 +8,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.tests.fixtures.datetime_freq import datetime_freq_fixtures
+from woodwork.tests.fixtures.datetime_freq import (
+    inferrable_freq_fixtures,
+    generate_pandas_inferrable,
+)
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
@@ -1409,9 +1412,9 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
 
 @pytest.mark.parametrize(
     "case",
-    datetime_freq_fixtures
+    inferrable_freq_fixtures
 )
-def test_infer_temporal_frequencies_v2(case):
+def test_inferable_temporal_frequencies(case):
     input_series = case['dates']
 
     expected_debug_obj = case["expected_debug_obj"]
@@ -1423,6 +1426,22 @@ def test_infer_temporal_frequencies_v2(case):
 
     assert actual_debug_obj == expected_debug_obj
 
+
+@pytest.mark.parametrize(
+    "case",
+    generate_pandas_inferrable()
+)
+def test_pandas_inferable_temporal_frequencies(case):
+    input_series = case['dates']
+
+    expected_infer_freq = case["expected_infer_freq"]
+
+    inferred_freq = infer_frequency(
+        observed_ts=input_series,
+        debug=False
+    )
+
+    assert inferred_freq == expected_infer_freq
 
 # @pytest.mark.parametrize(
 #     "bad_case",

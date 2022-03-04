@@ -20,7 +20,6 @@ from woodwork.logical_types import (
 from woodwork.tests.testing_utils import pd_to_dask, pd_to_koalas
 from woodwork.utils import import_or_none
 
-from woodwork.tests.fixtures.datetime_freq import datetime_freq_fixtures
 
 @pytest.fixture(scope="session", autouse=True)
 def spark_session():

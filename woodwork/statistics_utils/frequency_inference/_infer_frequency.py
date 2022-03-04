@@ -33,6 +33,17 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
         histogram (list(dict)): a list of dictionary with keys `bins` and
             `frequency`
     """
+
+    pandas_inferred_freq = pd.infer_freq(observed_ts)
+
+    if pandas_inferred_freq:
+        pandas_inferred_freq = pandas_inferred_freq.split("-")[0]
+        return inference_response(
+            inferred_freq=pandas_inferred_freq,
+            debug_obj=InferDebug(),
+            debug=debug
+        )
+
     # clean observed timeseries from duplicates and NaTs
     observed_ts_clean = _clean_timeseries(observed_ts)
 
@@ -73,7 +84,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
             debug_obj=InferDebug(
                 actual_range_start,
                 actual_range_end,
-                message = DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
+                message = DataCheckMessageCode.DATETIME_SERIES_IS_NOT_MONOTONIC,
                 duplicate_values=duplicate_values,
                 nan_values=nan_values
             ),
@@ -91,7 +102,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
             debug_obj=InferDebug(
                 actual_range_start,
                 actual_range_end,
-                DataCheckMessageCode.DATETIME_FREQ_CANNOT_BE_ESTIMATED,
+                DataCheckMessageCode.DATETIME_SERIES_FREQ_CANNOT_BE_ESTIMATED,
                 duplicate_values=duplicate_values,
                 nan_values=nan_values
             ),

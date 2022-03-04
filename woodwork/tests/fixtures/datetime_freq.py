@@ -35,13 +35,13 @@ ALL_ALIASES = [
 
 # These keys are inferred to these values by pandas
 KNOWN_FREQ_ISSUES = {
-    "B": "D",
-    "C": "D",
+    # "B": "D",
+    "C": "B",
     "SM": None,
     "CBM": "BM",
     "SMS": None,
     "CBMS": "BMS",
-    "BH": "H",
+    # "BH": "H",
 }
 
 HEAD_RANGE_LEN = 100
@@ -63,7 +63,26 @@ def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
     return pd.concat([head, pd.Series(dates), tail]).reset_index(drop=True).astype("datetime64[ns]")
 
 
-def missing_values1():
+def generate_pandas_inferrable():
+    dates = ["2005-01-01T00:00:00Z"]
+
+    output = []
+    for alias_obj in ALL_ALIASES:
+        for freq in alias_obj["alias"]:
+            pd_inferred_freq = KNOWN_FREQ_ISSUES[freq] if freq in KNOWN_FREQ_ISSUES else alias_obj["alias"][0]
+            if pd_inferred_freq is not None:
+                output.append({
+                    "expected_infer_freq": pd_inferred_freq,
+                    "dates": pad_datetime_series(dates, freq=freq, pad_end=TAIL_RANGE_LEN)[1:]
+                })
+    
+    return output
+
+def case0():
+    """
+    missing values
+    """
+
     dates = [
         "00:00:00",
         "01:00:00",
@@ -94,7 +113,11 @@ def missing_values1():
         "expected_debug_obj": expected_debug_obj
     }
 
-def duplicate_values1():
+def case1():
+    """
+    duplicate values
+    """
+
     dates = [
         "00:00:00",
         "01:00:00",
@@ -127,7 +150,11 @@ def duplicate_values1():
         "expected_debug_obj": expected_debug_obj
     }
 
-def extra_values1():
+def case2():
+    """
+    extra values
+    """
+
     dates = [
         "00:00:00",
         "01:00:00",
@@ -159,7 +186,11 @@ def extra_values1():
         "expected_debug_obj": expected_debug_obj
     }
 
-def misaligned_values1():
+def case3():
+    """
+    misaligned values - simple
+    """
+
     dates = [
         "00:00:00",
         "01:00:00",
@@ -190,7 +221,11 @@ def misaligned_values1():
         "expected_debug_obj": expected_debug_obj
     }
 
-def misaligned_values2():
+def case4():
+    """
+    misaligned values - complex
+    """
+
     dates = [
         "00:00:00",
         "01:00:00",
@@ -224,7 +259,11 @@ def misaligned_values2():
         "expected_debug_obj": expected_debug_obj
     }
 
-def bad_start1():
+def case5():
+    """
+    bad start
+    """
+
     head_range = pd.DatetimeIndex(["2004-12-31 23:50:00"])
     tail_range = pd.date_range(start="2005-01-01 01:00:00", periods=100, freq="H")[1:]
 
@@ -250,7 +289,11 @@ def bad_start1():
         "expected_debug_obj": expected_debug_obj
     }
 
-def nan_values1():
+def case6():
+    """
+    nan values
+    """
+
     dates = [
         "2005-01-01T00:00:00.000Z",
         "2005-01-01T01:00:00.000Z",
@@ -285,7 +328,11 @@ def nan_values1():
     }
 
 
-def nans_and_duplicates_values1():
+def case7():
+    """
+    nans and duplicates
+    """
+
     dates = [
         "2005-01-01T00:00:00.000Z",
         "2005-01-01T01:00:00.000Z",
@@ -325,7 +372,10 @@ def nans_and_duplicates_values1():
 
 
 def case8():
-    # Duplicates and extra
+    """
+    duplicates and extra
+    """
+
     dates = [
         "2005-01-01T00:00:00.000Z",
         "2005-01-01T01:00:00.000Z",
@@ -364,7 +414,10 @@ def case8():
 
 
 def case9():
-    # Duplicates and missing
+    """
+    duplicates and missing
+    """
+
     dates = [
         "2005-01-01T00:00:00.000Z",
         "2005-01-01T01:00:00.000Z",
@@ -976,15 +1029,15 @@ def case9():
 # bad_dt_freq_fixtures = [bad_case0()]
 
 
-datetime_freq_fixtures = [
-    missing_values1(),
-    duplicate_values1(),
-    extra_values1(),
-    misaligned_values1(),
-    misaligned_values2(),
-    bad_start1(),
-    nan_values1(),
-    nans_and_duplicates_values1(),
+inferrable_freq_fixtures = [
+    case0(),
+    case1(),
+    case2(),
+    case3(),
+    case4(),
+    case5(),
+    case6(),
+    case7(),
     case8(),
     case9(),
 ]
