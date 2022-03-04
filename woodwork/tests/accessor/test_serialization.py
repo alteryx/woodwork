@@ -15,7 +15,7 @@ from woodwork.exceptions import (
     WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
-from woodwork.serializer_utils import get_serializer
+from woodwork.serializers import get_serializer
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"

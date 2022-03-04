@@ -3,13 +3,23 @@ import json
 import os
 import tarfile
 import tempfile
+from mimetypes import add_type, guess_type
 
 import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import typing_info_to_dict
-from woodwork.utils import _is_s3, _is_url
+from woodwork.serializer_utils import clean_latlong
+from woodwork.utils import _is_s3, _is_url, import_or_raise
+
+PYARROW_IMPORT_ERROR_MESSAGE = (
+    f"The pyarrow library is required to serialize to {format}.\n"
+    "Install via pip:\n"
+    "    pip install pyarrow\n"
+    "Install via conda:\n"
+    "   conda install pyarrow -c conda-forge"
+)
 
 
 class Serializer:
@@ -152,13 +162,31 @@ class CSVSerializer(Serializer):
 class ParquetSerializer(Serializer):
     format = "parquet"
 
+    def serialize(self, dataframe, profile_name, **kwargs):
+        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
+        self.kwargs["engine"] = "pyarrow"
+        return super().serialize(dataframe, profile_name, **kwargs)
 
-class ArrowSerializer(Serializer):
-    format = "arrow"
+    def write_dataframe(self):
+        file = self._get_filename()
+        dataframe = clean_latlong(self.dataframe)
+        dataframe.to_parquet(file, **self.kwargs)
 
 
 class FeatherSerializer(Serializer):
     format = "feather"
+
+    def serialize(self, dataframe, profile_name, **kwargs):
+        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
+        return super().serialize(dataframe, profile_name, **kwargs)
+
+    def write_dataframe(self):
+        file = self._get_filename()
+        dataframe = clean_latlong(self.dataframe)
+        dataframe.to_feather(file, **self.kwargs)
+
+class ArrowSerializer(FeatherSerializer):
+    format = "arrow"
 
 
 class OrcSerializer(Serializer):
@@ -175,3 +203,48 @@ class PickleSerializer(Serializer):
 
         file = self._get_filename()
         self.dataframe.to_pickle(file, **self.kwargs)
+
+
+# Dictionary mapping content types to the appropriate format specifier
+CONTENT_TYPE_TO_FORMAT = {
+    "text/csv": "csv",
+    "application/parquet": "parquet",
+    "application/arrow": "arrow",
+    "application/feather": "feather",
+    "application/orc": "orc",
+}
+
+# Dictionary used to get the corret serializer from a given format
+FORMAT_TO_SERIALIZER = {
+    CSVSerializer.format: CSVSerializer,
+    PickleSerializer.format: PickleSerializer,
+    ParquetSerializer.format: ParquetSerializer,
+    ArrowSerializer.format: ArrowSerializer,
+    FeatherSerializer.format: FeatherSerializer,
+    OrcSerializer.format: OrcSerializer,
+}
+
+# Add new mimetypes
+add_type("application/parquet", ".parquet")
+add_type("application/arrow", ".arrow")
+add_type("application/feather", ".feather")
+add_type("application/orc", ".orc")
+
+
+def get_serializer(format=None, filename=None):
+    """Get serializer class based on format or filename"""
+    if format is None and filename is not None:
+        content_type, _ = guess_type(filename)
+        format = CONTENT_TYPE_TO_FORMAT.get(content_type)
+        if format is None:
+            raise RuntimeError(
+                "Content type could not be inferred. Please specify content_type and try again."
+            )
+
+    serializer = FORMAT_TO_SERIALIZER.get(format)
+
+    if serializer is None:
+        error = "must be one of the following formats: {}"
+        raise ValueError(error.format(", ".join(FORMAT_TO_SERIALIZER.keys())))
+
+    return serializer

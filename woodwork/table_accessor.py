@@ -22,7 +22,7 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
-from woodwork.serializer_utils import get_serializer
+from woodwork.serializers import get_serializer
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
