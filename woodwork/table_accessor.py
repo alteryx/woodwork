@@ -671,17 +671,6 @@ class WoodworkTableAccessor:
             **kwargs,
         )
 
-        # elif format in ["parquet", "orc"]:
-        #     import_error_message = (
-        #         f"The pyarrow library is required to serialize to {format}.\n"
-        #         "Install via pip:\n"
-        #         "    pip install pyarrow\n"
-        #         "Install via conda:\n"
-        #         "   conda install pyarrow -c conda-forge"
-        #     )
-        #     import_or_raise("pyarrow", import_error_message)
-        #     kwargs["engine"] = "pyarrow"
-
     def _sort_columns(self, already_sorted):
         if _is_dask_dataframe(self._dataframe) or _is_koalas_dataframe(self._dataframe):
             already_sorted = True  # Skip sorting for Dask and Koalas input
