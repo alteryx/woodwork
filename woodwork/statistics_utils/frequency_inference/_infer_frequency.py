@@ -95,9 +95,8 @@ def infer_frequency(observed_ts: pd.Series):
     estimated_range_start = estimated_ts.min().isoformat()
     estimated_range_end = estimated_ts.max().isoformat()
 
-    missing_values = _determine_missing_values(estimated_ts, observed_ts)
-    extra_values = _determine_extra_values(estimated_ts, observed_ts)
-    
+    missing_values = _determine_missing_values(estimated_ts, observed_ts_clean)
+    extra_values = _determine_extra_values(estimated_ts, observed_ts_clean)
 
     return dataclasses.asdict(
         InferDebug(

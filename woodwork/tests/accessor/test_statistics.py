@@ -1412,7 +1412,7 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
     datetime_freq_fixtures
 )
 def test_infer_temporal_frequencies_v2(case):
-    input_series = case['dates'].to_series()
+    input_series = case['dates']
 
     expected_output = case["expected_output"]
 
