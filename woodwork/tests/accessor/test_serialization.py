@@ -15,6 +15,7 @@ from woodwork.exceptions import (
     WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
+from woodwork.serializer_utils import get_serializer
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"
@@ -319,7 +320,7 @@ def test_serialize_wrong_format(sample_df, tmpdir):
 
     error = "must be one of the following formats: csv, pickle, parquet"
     with pytest.raises(ValueError, match=error):
-        serialize.write_woodwork_table(sample_df, str(tmpdir), format="test")
+        get_serializer(format="test")
 
 
 def test_to_csv(sample_df, tmpdir):
@@ -409,7 +410,7 @@ def test_deserialize_handles_indexes(sample_df, tmpdir):
 
 
 @pytest.mark.parametrize(
-    "file_format", ["pickle", "parquet", "arrow", "feather", "orc"]
+    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
 )
 def test_to_disk(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
