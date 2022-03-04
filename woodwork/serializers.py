@@ -4,6 +4,8 @@ import os
 import tarfile
 import tempfile
 
+import pandas as pd
+
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serialize import typing_info_to_dict
@@ -59,7 +61,29 @@ class Serializer:
         raise NotImplementedError
 
     def write_typing_info(self):
-        raise NotImplementedError
+        loading_info = {
+            "location": self.location,
+            "type": self.format,
+            "params": self.kwargs,
+        }
+        self.typing_info["loading_info"].update(loading_info)
+        try:
+            file = os.path.join(self.write_path, self.typing_info_filename)
+            with open(file, "w") as file:
+                json.dump(self.typing_info, file)
+        except TypeError:
+            raise TypeError(
+                "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
+            )
+
+    def _get_filename(self):
+        if self.filename is None:
+            ww_name = self.dataframe.ww.name or "data"
+            basename = ".".join([ww_name, self.format])
+        else:
+            basename = self.filename
+        self.location = os.path.join(self.data_subdirectory, basename)
+        return os.path.join(self.write_path, self.location)
 
     def _create_archive(self):
         file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
@@ -95,9 +119,9 @@ class CSVSerializer(Serializer):
             self.default_kwargs["ignoreLeadingWhitespace"] = False
             self.default_kwargs["ignoreTrailingWhitespace"] = False
         self.kwargs = {**self.default_kwargs, **kwargs}
-        super().serialize(dataframe, profile_name, **kwargs)
+        return super().serialize(dataframe, profile_name, **kwargs)
 
-    def write_dataframe(self):
+    def _get_filename(self):
         if self.filename is None:
             ww_name = self.dataframe.ww.name or "data"
             if _is_dask_dataframe(self.dataframe):
@@ -107,8 +131,9 @@ class CSVSerializer(Serializer):
         else:
             basename = self.filename
         self.location = os.path.join(self.data_subdirectory, basename)
-        file = os.path.join(self.write_path, self.location)
+        return os.path.join(self.write_path, self.location)
 
+    def write_dataframe(self):
         csv_kwargs = self.kwargs.copy()
         # engine kwarg not needed for writing, only reading
         if "engine" in csv_kwargs.keys():
@@ -120,23 +145,8 @@ class CSVSerializer(Serializer):
             csv_kwargs["compression"] = str(csv_kwargs["compression"])
         else:
             dataframe = self.dataframe
+        file = self._get_filename()
         dataframe.to_csv(file, **csv_kwargs)
-
-    def write_typing_info(self):
-        loading_info = {
-            "location": self.location,
-            "type": self.format,
-            "params": self.kwargs,
-        }
-        self.typing_info["loading_info"].update(loading_info)
-        try:
-            file = os.path.join(self.write_path, self.typing_info_filename)
-            with open(file, "w") as file:
-                json.dump(self.typing_info, file)
-        except TypeError:
-            raise TypeError(
-                "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
-            )
 
 
 class ParquetSerializer(Serializer):
@@ -157,3 +167,11 @@ class OrcSerializer(Serializer):
 
 class PickleSerializer(Serializer):
     format = "pickle"
+
+    def write_dataframe(self):
+        if not isinstance(self.dataframe, pd.DataFrame):
+            msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
+            raise ValueError(msg)
+
+        file = self._get_filename()
+        self.dataframe.to_pickle(file, **self.kwargs)
