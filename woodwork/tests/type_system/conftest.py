@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from woodwork.logical_types import Categorical, CountryCode, Double, Integer, Unknown
-from woodwork.tests.testing_utils import pd_to_dask, pd_to_koalas
+from woodwork.tests.testing_utils import pd_to_dask, pd_to_spark
 from woodwork.type_sys.inference_functions import (
     categorical_func,
     double_func,
@@ -27,11 +27,11 @@ def dask_integers(pandas_integers):
 
 
 @pytest.fixture
-def koalas_integers(pandas_integers):
-    return [pd_to_koalas(series) for series in pandas_integers]
+def spark_integers(pandas_integers):
+    return [pd_to_spark(series) for series in pandas_integers]
 
 
-@pytest.fixture(params=["pandas_integers", "dask_integers", "koalas_integers"])
+@pytest.fixture(params=["pandas_integers", "dask_integers", "spark_integers"])
 def integers(request):
     return request.getfixturevalue(request.param)
 
@@ -48,11 +48,11 @@ def dask_doubles(pandas_doubles):
 
 
 @pytest.fixture
-def koalas_doubles(pandas_doubles):
-    return [pd_to_koalas(series) for series in pandas_doubles]
+def spark_doubles(pandas_doubles):
+    return [pd_to_spark(series) for series in pandas_doubles]
 
 
-@pytest.fixture(params=["pandas_doubles", "dask_doubles", "koalas_doubles"])
+@pytest.fixture(params=["pandas_doubles", "dask_doubles", "spark_doubles"])
 def doubles(request):
     return request.getfixturevalue(request.param)
 
@@ -72,11 +72,11 @@ def dask_bools(pandas_bools):
 
 
 @pytest.fixture
-def koalas_bools(pandas_bools):
-    return [pd_to_koalas(series) for series in pandas_bools]
+def spark_bools(pandas_bools):
+    return [pd_to_spark(series) for series in pandas_bools]
 
 
-@pytest.fixture(params=["pandas_bools", "dask_bools", "koalas_bools"])
+@pytest.fixture(params=["pandas_bools", "dask_bools", "spark_bools"])
 def bools(request):
     return request.getfixturevalue(request.param)
 
@@ -96,11 +96,11 @@ def dask_datetimes(pandas_datetimes):
 
 
 @pytest.fixture
-def koalas_datetimes(pandas_datetimes):
-    return [pd_to_koalas(series) for series in pandas_datetimes]
+def spark_datetimes(pandas_datetimes):
+    return [pd_to_spark(series) for series in pandas_datetimes]
 
 
-@pytest.fixture(params=["pandas_datetimes", "dask_datetimes", "koalas_datetimes"])
+@pytest.fixture(params=["pandas_datetimes", "dask_datetimes", "spark_datetimes"])
 def datetimes(request):
     return request.getfixturevalue(request.param)
 
@@ -122,11 +122,11 @@ def dask_emails(pandas_emails):
 
 
 @pytest.fixture
-def koalas_emails(pandas_emails):
-    return [pd_to_koalas(series) for series in pandas_emails]
+def spark_emails(pandas_emails):
+    return [pd_to_spark(series) for series in pandas_emails]
 
 
-@pytest.fixture(params=["pandas_emails", "dask_emails", "koalas_emails"])
+@pytest.fixture(params=["pandas_emails", "dask_emails", "spark_emails"])
 def emails(request):
     return request.getfixturevalue(request.param)
 
@@ -152,11 +152,11 @@ def bad_dask_emails(bad_pandas_emails):
 
 
 @pytest.fixture
-def bad_koalas_emails(bad_pandas_emails):
-    return [pd_to_koalas(series) for series in bad_pandas_emails]
+def bad_spark_emails(bad_pandas_emails):
+    return [pd_to_spark(series) for series in bad_pandas_emails]
 
 
-@pytest.fixture(params=["bad_pandas_emails", "bad_dask_emails", "bad_koalas_emails"])
+@pytest.fixture(params=["bad_pandas_emails", "bad_dask_emails", "bad_spark_emails"])
 def bad_emails(request):
     return request.getfixturevalue(request.param)
 
@@ -178,11 +178,11 @@ def dask_categories(pandas_categories):
 
 
 @pytest.fixture
-def koalas_categories(pandas_categories):
-    return [pd_to_koalas(series) for series in pandas_categories]
+def spark_categories(pandas_categories):
+    return [pd_to_spark(series) for series in pandas_categories]
 
 
-@pytest.fixture(params=["pandas_categories", "dask_categories", "koalas_categories"])
+@pytest.fixture(params=["pandas_categories", "dask_categories", "spark_categories"])
 def categories(request):
     return request.getfixturevalue(request.param)
 
@@ -204,7 +204,7 @@ def dask_categories_dtype(pandas_categories_dtype):
 
 @pytest.fixture(params=["pandas_categories_dtype", "dask_categories_dtype"])
 def categories_dtype(request):
-    # Koalas doesn't support the "category" dtype.  We just leave it out for
+    # Spark doesn't support the "category" dtype.  We just leave it out for
     # now.
     return request.getfixturevalue(request.param)
 
@@ -248,15 +248,15 @@ def dask_natural_language(pandas_natural_language):
 
 
 @pytest.fixture
-def koalas_natural_language(pandas_natural_language):
-    return [pd_to_koalas(series) for series in pandas_natural_language]
+def spark_natural_language(pandas_natural_language):
+    return [pd_to_spark(series) for series in pandas_natural_language]
 
 
 @pytest.fixture(
     params=[
         "pandas_natural_language",
         "dask_natural_language",
-        "koalas_natural_language",
+        "spark_natural_language",
     ]
 )
 def natural_language(request):
@@ -279,11 +279,11 @@ def dask_strings(pandas_strings):
 
 
 @pytest.fixture
-def koalas_strings(pandas_strings):
-    return [pd_to_koalas(series) for series in pandas_strings]
+def spark_strings(pandas_strings):
+    return [pd_to_spark(series) for series in pandas_strings]
 
 
-@pytest.fixture(params=["pandas_strings", "dask_strings", "koalas_strings"])
+@pytest.fixture(params=["pandas_strings", "dask_strings", "spark_strings"])
 def strings(request):
     return request.getfixturevalue(request.param)
 
@@ -335,11 +335,11 @@ def dask_nulls(pandas_nulls):
 
 
 @pytest.fixture
-def koalas_nulls(pandas_nulls):
-    return [pd_to_koalas(series) for series in pandas_nulls]
+def spark_nulls(pandas_nulls):
+    return [pd_to_spark(series) for series in pandas_nulls]
 
 
-@pytest.fixture(params=["pandas_nulls", "dask_nulls", "koalas_nulls"])
+@pytest.fixture(params=["pandas_nulls", "dask_nulls", "spark_nulls"])
 def nulls(request):
     return request.getfixturevalue(request.param)
 

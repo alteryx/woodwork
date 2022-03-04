@@ -7,7 +7,7 @@ import tempfile
 import pandas as pd
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url
@@ -21,7 +21,7 @@ def typing_info_to_dict(dataframe):
     and loading information.
 
     Args:
-        dataframe (pd.DataFrame, dd.Dataframe, ks.DataFrame): DataFrame with Woodwork typing
+        dataframe (pd.DataFrame, dd.Dataframe, ps.DataFrame): DataFrame with Woodwork typing
             information initialized.
 
     Returns:
@@ -64,8 +64,8 @@ def typing_info_to_dict(dataframe):
 
     if _is_dask_dataframe(dataframe):
         table_type = "dask"
-    elif _is_koalas_dataframe(dataframe):
-        table_type = "koalas"
+    elif _is_spark_dataframe(dataframe):
+        table_type = "spark"
     else:
         table_type = "pandas"
 
@@ -84,7 +84,7 @@ def write_woodwork_table(dataframe, path, profile_name=None, **kwargs):
     """Serialize Woodwork table and write to disk or S3 path.
 
     Args:
-        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
+        dataframe (pd.DataFrame, dd.DataFrame, ps.DataFrame): DataFrame with Woodwork typing information initialized.
         path (str) : Location on disk to write the Woodwork table.
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
                 Set to False to use an anonymous profile.
@@ -138,7 +138,7 @@ def write_dataframe(dataframe, path, format="csv", **kwargs):
     """Write underlying DataFrame data to disk or S3 path.
 
     Args:
-        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): DataFrame with Woodwork typing information initialized.
+        dataframe (pd.DataFrame, dd.DataFrame, ps.DataFrame): DataFrame with Woodwork typing information initialized.
         path (str) : Location on disk to write the Woodwork table.
         format (str) : Format to use for writing Woodwork data. Defaults to csv.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
@@ -162,14 +162,14 @@ def write_dataframe(dataframe, path, format="csv", **kwargs):
         csv_kwargs = kwargs.copy()
         if "engine" in csv_kwargs.keys():
             del csv_kwargs["engine"]
-        if _is_koalas_dataframe(dataframe):
+        if _is_spark_dataframe(dataframe):
             dataframe = dataframe.ww.copy()
             columns = list(dataframe.select_dtypes("object").columns)
             dataframe[columns] = dataframe[columns].astype(str)
             csv_kwargs["compression"] = str(csv_kwargs["compression"])
         dataframe.to_csv(file, **csv_kwargs)
     elif format == "pickle":
-        # Dask and Koalas currently do not support to_pickle
+        # Dask and Spark currently do not support to_pickle
         if not isinstance(dataframe, pd.DataFrame):
             msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
             raise ValueError(msg)

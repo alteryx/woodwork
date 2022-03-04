@@ -8,7 +8,7 @@ import pytest
 
 import woodwork.deserialize as deserialize
 import woodwork.serialize as serialize
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
@@ -59,8 +59,8 @@ def test_to_dictionary(sample_df):
             "cat_values": ["a", "b", "c"],
             "cat_dtype": "object",
         }
-    elif _is_koalas_dataframe(sample_df):
-        table_type = "koalas"
+    elif _is_spark_dataframe(sample_df):
+        table_type = "spark"
         age_cat_type_dict = {"type": "string"}
         cat_type_dict = {"type": "string"}
     else:
@@ -413,7 +413,7 @@ def test_deserialize_handles_indexes(sample_df, tmpdir):
 )
 def test_to_disk(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
-        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
 
     sample_df.ww.init(index="id")
     error_msg = None
@@ -442,7 +442,7 @@ def test_to_disk(sample_df, tmpdir, file_format):
 )
 def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(latlong_df, pd.DataFrame):
-        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
 
     latlong_df.ww.init(logical_types={col: "LatLong" for col in latlong_df.columns})
 

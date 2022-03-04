@@ -15,7 +15,7 @@ from .inference_functions import (
     url_func,
 )
 
-from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     URL,
     Address,
@@ -287,14 +287,14 @@ class TypeSystem(object):
         else:
             if _is_dask_series(series):
                 series = series.head(INFERENCE_SAMPLE_SIZE)
-            elif _is_koalas_series(series):
+            elif _is_spark_series(series):
                 series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
             else:
                 raise ValueError(
                     f"Unsupported series type `{type(series)}`"
                 )  # pragma: no cover
 
-            # For dask or koalas collections, unknown type special case comes
+            # For dask or spark collections, unknown type special case comes
             # *after* head calls to avoid evaluating a potentially large
             # dataset
             if series.count() == 0:

@@ -4,7 +4,7 @@ import pandas as pd
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def _get_box_plot_info_for_column(
@@ -54,7 +54,7 @@ def _get_box_plot_info_for_column(
 
     if dd and isinstance(series, dd.Series):
         series = series.compute()
-    if ks and isinstance(series, ks.Series):
+    if ps and isinstance(series, ps.Series):
         series = series.to_pandas()
 
     # remove null values from the data

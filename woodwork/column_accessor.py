@@ -23,7 +23,6 @@ from woodwork.utils import (
 )
 
 dd = import_or_none("dask.dataframe")
-# ks = import_or_none("databricks.koalas")
 ps = import_or_none("pyspark.pandas")
 
 
@@ -475,9 +474,9 @@ if dd:
         pass
 
 
-if ks:
-    from databricks.koalas.extensions import register_series_accessor
+if ps:
+    from pyspark.pandas.extensions import register_series_accessor
 
     @register_series_accessor("ww")
-    class KoalasColumnAccessor(WoodworkColumnAccessor):
+    class SparkColumnAccessor(WoodworkColumnAccessor):
         pass

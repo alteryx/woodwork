@@ -17,7 +17,7 @@ from woodwork.logical_types import (
     PhoneNumber,
     Unknown,
 )
-from woodwork.tests.testing_utils import pd_to_dask, pd_to_koalas
+from woodwork.tests.testing_utils import pd_to_dask, pd_to_spark
 from woodwork.utils import import_or_none
 
 
@@ -40,7 +40,7 @@ def spark_session():
         return spark
 
 
-@pytest.fixture(params=["sample_df_pandas", "sample_df_dask", "sample_df_koalas"])
+@pytest.fixture(params=["sample_df_pandas", "sample_df_dask", "sample_df_spark"])
 def sample_df(request):
     return request.getfixturevalue(request.param)
 
@@ -101,14 +101,10 @@ def sample_df_dask(sample_df_pandas):
 
 
 @pytest.fixture()
-def sample_df_koalas(sample_df_pandas):
-    # ks = pytest.importorskip(
-    #     "databricks.koalas", reason="Koalas not installed, skipping"
-    # )
+def sample_df_spark(sample_df_pandas):
     ps = pytest.importorskip(
         "pyspark.pandas", reason="Pyspark pandas not installed, skipping"
     )
-    # return ks.from_pandas(sample_df_pandas)
     return ps.DataFrame(sample_df_pandas)
 
 
@@ -142,7 +138,7 @@ def datetime_freqs_df_pandas():
     params=[
         "sample_unsorted_df_pandas",
         "sample_unsorted_df_dask",
-        "sample_unsorted_df_koalas",
+        "sample_unsorted_df_spark",
     ]
 )
 def sample_unsorted_df(request):
@@ -188,15 +184,15 @@ def sample_unsorted_df_dask(sample_unsorted_df_pandas):
 
 
 @pytest.fixture()
-def sample_unsorted_df_koalas(sample_unsorted_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def sample_unsorted_df_spark(sample_unsorted_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(sample_unsorted_df_pandas)
+    return ps.DataFrame(sample_unsorted_df_pandas)
 
 
 @pytest.fixture(
-    params=["sample_series_pandas", "sample_series_dask", "sample_series_koalas"]
+    params=["sample_series_pandas", "sample_series_dask", "sample_series_spark"]
 )
 def sample_series(request):
     return request.getfixturevalue(request.param)
@@ -216,18 +212,18 @@ def sample_series_dask(sample_series_pandas):
 
 
 @pytest.fixture()
-def sample_series_koalas(sample_series_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def sample_series_spark(sample_series_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(sample_series_pandas.astype("string"))
+    return ps.from_pandas(sample_series_pandas.astype("string"))
 
 
 @pytest.fixture(
     params=[
         "sample_datetime_series_pandas",
         "sample_datetime_series_dask",
-        "sample_datetime_series_koalas",
+        "sample_datetime_series_spark",
     ]
 )
 def sample_datetime_series(request):
@@ -248,11 +244,11 @@ def sample_datetime_series_dask(sample_datetime_series_pandas):
 
 
 @pytest.fixture()
-def sample_datetime_series_koalas(sample_datetime_series_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def sample_datetime_series_spark(sample_datetime_series_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(sample_datetime_series_pandas)
+    return ps.from_pandas(sample_datetime_series_pandas)
 
 
 @pytest.fixture()
@@ -267,11 +263,11 @@ def ordinal_transform_series_dask(ordinal_transform_series_pandas):
 
 
 @pytest.fixture()
-def ordinal_transform_series_koalas(ordinal_transform_series_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def ordinal_transform_series_spark(ordinal_transform_series_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(ordinal_transform_series_pandas)
+    return ps.from_pandas(ordinal_transform_series_pandas)
 
 
 @pytest.fixture()
@@ -295,15 +291,15 @@ def time_index_df_dask(time_index_df_pandas):
 
 
 @pytest.fixture()
-def time_index_df_koalas(time_index_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def time_index_df_spark(time_index_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(time_index_df_pandas)
+    return ps.from_pandas(time_index_df_pandas)
 
 
 @pytest.fixture(
-    params=["time_index_df_pandas", "time_index_df_dask", "time_index_df_koalas"]
+    params=["time_index_df_pandas", "time_index_df_dask", "time_index_df_spark"]
 )
 def time_index_df(request):
     return request.getfixturevalue(request.param)
@@ -327,18 +323,18 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 
 
 @pytest.fixture()
-def numeric_time_index_df_koalas(numeric_time_index_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def numeric_time_index_df_spark(numeric_time_index_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(numeric_time_index_df_pandas)
+    return ps.from_pandas(numeric_time_index_df_pandas)
 
 
 @pytest.fixture(
     params=[
         "numeric_time_index_df_pandas",
         "numeric_time_index_df_dask",
-        "numeric_time_index_df_koalas",
+        "numeric_time_index_df_spark",
     ]
 )
 def numeric_time_index_df(request):
@@ -419,11 +415,11 @@ def describe_df_dask(describe_df_pandas):
 
 
 @pytest.fixture()
-def describe_df_koalas(describe_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def describe_df_spark(describe_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(
+    return ps.from_pandas(
         describe_df_pandas.applymap(
             lambda tup: [None if pd.isnull(elt) else elt for elt in tup]
             if isinstance(tup, tuple)
@@ -432,7 +428,7 @@ def describe_df_koalas(describe_df_pandas):
     )
 
 
-@pytest.fixture(params=["describe_df_pandas", "describe_df_dask", "describe_df_koalas"])
+@pytest.fixture(params=["describe_df_pandas", "describe_df_dask", "describe_df_spark"])
 def describe_df(request):
     return request.getfixturevalue(request.param)
 
@@ -463,16 +459,16 @@ def df_same_mi_dask(df_same_mi_pandas):
 
 
 @pytest.fixture()
-def df_same_mi_koalas(df_same_mi_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def df_same_mi_spark(df_same_mi_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
     df_same_mi_pandas["ints"] = df_same_mi_pandas["ints"].astype("float")
     df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
-    return ks.DataFrame(df_same_mi_pandas)
+    return ps.DataFrame(df_same_mi_pandas)
 
 
-@pytest.fixture(params=["df_same_mi_pandas", "df_same_mi_dask", "df_same_mi_koalas"])
+@pytest.fixture(params=["df_same_mi_pandas", "df_same_mi_dask", "df_same_mi_spark"])
 def df_same_mi(request):
     return request.getfixturevalue(request.param)
 
@@ -499,14 +495,14 @@ def df_mi_dask(df_mi_pandas):
 
 
 @pytest.fixture()
-def df_mi_koalas(df_mi_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def df_mi_spark(df_mi_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(df_mi_pandas)
+    return ps.from_pandas(df_mi_pandas)
 
 
-@pytest.fixture(params=["df_mi_pandas", "df_mi_dask", "df_mi_koalas"])
+@pytest.fixture(params=["df_mi_pandas", "df_mi_dask", "df_mi_spark"])
 def df_mi(request):
     return request.getfixturevalue(request.param)
 
@@ -532,15 +528,15 @@ def df_mi_unique_dask(df_mi_unique_pandas):
 
 
 @pytest.fixture()
-def df_mi_unique_koalas(df_mi_unique_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def df_mi_unique_spark(df_mi_unique_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(df_mi_unique_pandas)
+    return ps.from_pandas(df_mi_unique_pandas)
 
 
 @pytest.fixture(
-    params=["df_mi_unique_pandas", "df_mi_unique_dask", "df_mi_unique_koalas"]
+    params=["df_mi_unique_pandas", "df_mi_unique_dask", "df_mi_unique_spark"]
 )
 def df_mi_unique(request):
     return request.getfixturevalue(request.param)
@@ -566,15 +562,15 @@ def categorical_df_dask(categorical_df_pandas):
 
 
 @pytest.fixture()
-def categorical_df_koalas(categorical_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def categorical_df_spark(categorical_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(categorical_df_pandas)
+    return ps.from_pandas(categorical_df_pandas)
 
 
 @pytest.fixture(
-    params=["categorical_df_pandas", "categorical_df_dask", "categorical_df_koalas"]
+    params=["categorical_df_pandas", "categorical_df_dask", "categorical_df_spark"]
 )
 def categorical_df(request):
     return request.getfixturevalue(request.param)
@@ -591,7 +587,7 @@ def empty_df_dask(empty_df_pandas):
     return dd.from_pandas(empty_df_pandas, npartitions=2)
 
 
-# Cannot have an empty Koalas DataFrame
+# Cannot have an empty Spark DataFrame
 @pytest.fixture(params=["empty_df_pandas", "empty_df_dask"])
 def empty_df(request):
     return request.getfixturevalue(request.param)
@@ -613,14 +609,15 @@ def small_df_dask(small_df_pandas):
 
 
 @pytest.fixture()
-def small_df_koalas(small_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def small_df_spark(small_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(small_df_pandas)
+    df = small_df_pandas.astype('datetime64[ns]')
+    return ps.from_pandas(df)
 
 
-@pytest.fixture(params=["small_df_pandas", "small_df_dask", "small_df_koalas"])
+@pytest.fixture(params=["small_df_pandas", "small_df_dask", "small_df_spark"])
 def small_df(request):
     return request.getfixturevalue(request.param)
 
@@ -649,18 +646,18 @@ def latlong_df_dask(latlong_df_pandas):
 
 
 @pytest.fixture()
-def latlong_df_koalas(latlong_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def latlong_df_spark(latlong_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(
+    return ps.from_pandas(
         latlong_df_pandas.applymap(
             lambda tup: list(tup) if isinstance(tup, tuple) else tup
         )
     )
 
 
-@pytest.fixture(params=["latlong_df_pandas", "latlong_df_dask", "latlong_df_koalas"])
+@pytest.fixture(params=["latlong_df_pandas", "latlong_df_dask", "latlong_df_spark"])
 def latlong_df(request):
     return request.getfixturevalue(request.param)
 
@@ -686,16 +683,16 @@ def dask_latlongs(pandas_latlongs):
 
 
 @pytest.fixture
-def koalas_latlongs(pandas_latlongs):
+def spark_latlongs(pandas_latlongs):
     return [
-        pd_to_koalas(
+        pd_to_spark(
             series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)
         )
         for series in pandas_latlongs
     ]
 
 
-@pytest.fixture(params=["pandas_latlongs", "dask_latlongs", "koalas_latlongs"])
+@pytest.fixture(params=["pandas_latlongs", "dask_latlongs", "spark_latlongs"])
 def latlongs(request):
     return request.getfixturevalue(request.param)
 
@@ -724,15 +721,15 @@ def whitespace_df_dask(whitespace_df_pandas):
 
 
 @pytest.fixture()
-def whitespace_df_koalas(whitespace_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def whitespace_df_spark(whitespace_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(whitespace_df_pandas)
+    return ps.from_pandas(whitespace_df_pandas)
 
 
 @pytest.fixture(
-    params=["whitespace_df_pandas", "whitespace_df_dask", "whitespace_df_koalas"]
+    params=["whitespace_df_pandas", "whitespace_df_dask", "whitespace_df_spark"]
 )
 def whitespace_df(request):
     return request.getfixturevalue(request.param)
@@ -755,11 +752,11 @@ def falsy_names_df_dask(falsy_names_df_pandas):
 
 
 @pytest.fixture()
-def falsy_names_df_koalas(falsy_names_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def falsy_names_df_spark(falsy_names_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(
+    return ps.from_pandas(
         falsy_names_df_pandas.applymap(
             lambda tup: list(tup) if isinstance(tup, tuple) else tup
         )
@@ -767,7 +764,7 @@ def falsy_names_df_koalas(falsy_names_df_pandas):
 
 
 @pytest.fixture(
-    params=["falsy_names_df_pandas", "falsy_names_df_dask", "falsy_names_df_koalas"]
+    params=["falsy_names_df_pandas", "falsy_names_df_dask", "falsy_names_df_spark"]
 )
 def falsy_names_df(request):
     return request.getfixturevalue(request.param)
@@ -845,15 +842,15 @@ def serialize_df_dask(serialize_df_pandas):
 
 
 @pytest.fixture()
-def serialize_df_koalas(serialize_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def serialize_df_spark(serialize_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(serialize_df_pandas)
+    return ps.from_pandas(serialize_df_pandas)
 
 
 @pytest.fixture(
-    params=["serialize_df_pandas", "serialize_df_dask", "serialize_df_koalas"]
+    params=["serialize_df_pandas", "serialize_df_dask", "serialize_df_spark"]
 )
 def serialize_df(request):
     return request.getfixturevalue(request.param)
@@ -873,11 +870,11 @@ def dask_datetimes(pandas_datetimes):
 
 
 @pytest.fixture()
-def koalas_datetimes(pandas_datetimes):
-    return [pd_to_koalas(series) for series in pandas_datetimes]
+def spark_datetimes(pandas_datetimes):
+    return [pd_to_spark(series) for series in pandas_datetimes]
 
 
-@pytest.fixture(params=["pandas_datetimes", "dask_datetimes", "koalas_datetimes"])
+@pytest.fixture(params=["pandas_datetimes", "dask_datetimes", "spark_datetimes"])
 def datetimes(request):
     return request.getfixturevalue(request.param)
 
@@ -902,13 +899,13 @@ def outliers_df_dask(outliers_df_pandas):
 
 
 @pytest.fixture()
-def outliers_df_koalas(outliers_df_pandas):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
+def outliers_df_spark(outliers_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ks.from_pandas(outliers_df_pandas)
+    return ps.from_pandas(outliers_df_pandas)
 
 
-@pytest.fixture(params=["outliers_df_pandas", "outliers_df_dask", "outliers_df_koalas"])
+@pytest.fixture(params=["outliers_df_pandas", "outliers_df_dask", "outliers_df_spark"])
 def outliers_df(request):
     return request.getfixturevalue(request.param)
