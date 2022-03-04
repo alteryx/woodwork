@@ -45,7 +45,6 @@ from woodwork.utils import (
     _parse_logical_type,
     _reformat_to_latlong,
     camel_to_snake,
-    get_valid_dependence_types,
     get_valid_mi_types,
     import_or_none,
     import_or_raise,
@@ -396,35 +395,26 @@ def test_is_valid_latlong_series():
     assert _is_valid_latlong_series(invalid_series) is False
 
 
-expected_dependence_types = [
-    Age,
-    AgeFractional,
-    AgeNullable,
-    Boolean,
-    BooleanNullable,
-    Categorical,
-    CountryCode,
-    Datetime,
-    Double,
-    Integer,
-    IntegerNullable,
-    Ordinal,
-    PostalCode,
-    SubRegionCode,
-]
-
-
-def test_get_valid_dependence_types():
-    valid_types = get_valid_dependence_types()
-    assert valid_types == expected_dependence_types
-
-
 def test_get_valid_mi_types():
-    msg = "get_valid_mi_types has been deprecated, please use get_valid_dependence_types instead"
-    with pytest.warns(DeprecationWarning, match=msg):
-        valid_types = get_valid_mi_types()
+    valid_types = get_valid_mi_types()
+    expected_types = [
+        Age,
+        AgeFractional,
+        AgeNullable,
+        Boolean,
+        BooleanNullable,
+        Categorical,
+        CountryCode,
+        Datetime,
+        Double,
+        Integer,
+        IntegerNullable,
+        Ordinal,
+        PostalCode,
+        SubRegionCode,
+    ]
 
-    assert valid_types == expected_dependence_types
+    assert valid_types == expected_types
 
 
 def test_get_column_logical_type(sample_series):

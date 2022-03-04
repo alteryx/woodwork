@@ -1,4 +1,4 @@
-from woodwork.utils import get_valid_dependence_types
+from woodwork.utils import get_valid_mi_types
 
 
 def _get_valid_mi_columns(dataframe, include_index=False):
@@ -17,7 +17,7 @@ def _get_valid_mi_columns(dataframe, include_index=False):
         list: A list of column names that have valid Logical Types that support
         mutual information.
     """
-    valid_types = tuple(get_valid_dependence_types())
+    valid_types = tuple(get_valid_mi_types())
     valid_columns = [
         col_name
         for col_name, col in dataframe.ww.columns.items()

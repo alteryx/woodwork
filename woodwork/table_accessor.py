@@ -880,7 +880,7 @@ class WoodworkTableAccessor:
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
+        support mutual information. Call woodwork.utils.get_valid_mi_types to see which Logical Types support
         mutual information.
 
         Args:
@@ -936,7 +936,7 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
-        support mutual information. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
+        support mutual information. Call woodwork.utils.get_valid_mi_types to see which Logical Types support
         mutual information.
 
         Args:
@@ -1240,7 +1240,7 @@ class WoodworkTableAccessor:
 
     def get_valid_mi_columns(self, include_index=False):
         """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
-        information. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support mutual information.
+        information. Call woodwork.utils.get_valid_mi_types to see which Logical Types support mutual information.
 
         Args:
             include_index (bool): If True, the column specified as the index will be
