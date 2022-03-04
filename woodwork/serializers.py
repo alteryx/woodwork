@@ -185,6 +185,7 @@ class FeatherSerializer(Serializer):
         dataframe = clean_latlong(self.dataframe)
         dataframe.to_feather(file, **self.kwargs)
 
+
 class ArrowSerializer(FeatherSerializer):
     format = "arrow"
 
@@ -203,7 +204,7 @@ class OrcSerializer(Serializer):
 
     def write_dataframe(self):
         from pyarrow import Table, orc
-        
+
         file = self._get_filename()
         dataframe = clean_latlong(self.dataframe)
         df = dataframe.copy()
@@ -212,6 +213,7 @@ class OrcSerializer(Serializer):
                 df[c] = df[c].astype("string")
         pa_table = Table.from_pandas(df, preserve_index=False)
         orc.write_table(pa_table, file)
+
 
 class PickleSerializer(Serializer):
     format = "pickle"
