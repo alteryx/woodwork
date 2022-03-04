@@ -1,10 +1,7 @@
-name: Test Featuretools with Master Branch
+name: Test Featuretools with main Branch
 on:
   schedule:
     - cron: "0 * * * *"
-  push:
-    branches:
-      - master
   workflow_dispatch:
   workflow_run:
     branches:
