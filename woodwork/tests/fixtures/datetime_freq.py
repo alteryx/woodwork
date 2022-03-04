@@ -324,6 +324,82 @@ def nans_and_duplicates_values1():
     }
 
 
+def case8():
+    # Duplicates and extra
+    dates = [
+        "2005-01-01T00:00:00.000Z",
+        "2005-01-01T01:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T03:00:00.000Z",
+        "2005-01-01T03:10:00.000Z",
+        "2005-01-01T04:00:00.000Z",   
+        "2005-01-01T05:00:00.000Z",
+    ]
+    
+    dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
+
+    expected_output = {
+        'actual_range_start': dates.loc[0].isoformat(),
+        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates.loc[0].isoformat(),
+        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
+        'duplicate_values': [
+            {'dt': "2005-01-01T02:00:00", 'idx': 3, 'range': 2},
+        ],
+        'missing_values': [],
+        'extra_values': [
+            {'dt': "2005-01-01T03:10:00", 'idx': 6, 'range': 1},
+        ],
+        'nan_values': []
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
+def case9():
+    # Duplicates and missing
+    dates = [
+        "2005-01-01T00:00:00.000Z",
+        "2005-01-01T01:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T03:00:00.000Z",
+        "2005-01-01T05:00:00.000Z",
+    ]
+    
+    dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
+
+    expected_output = {
+        'actual_range_start': dates.loc[0].isoformat(),
+        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
+        'message': None,
+        'estimated_freq': 'H',
+        'estimated_range_start': dates.loc[0].isoformat(),
+        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
+        'duplicate_values': [
+            {'dt': "2005-01-01T02:00:00", 'idx': 3, 'range': 2},
+        ],
+        'missing_values': [
+            {'dt': "2005-01-01T04:00:00", 'idx': 4, 'range': 1},
+        ],
+        'extra_values': [],
+        'nan_values': []
+    }
+
+    return {
+        "dates": dates,
+        "expected_output": expected_output
+    }
+
+
 
 # def case0():
 #     # 1 hour separation
@@ -908,5 +984,7 @@ datetime_freq_fixtures = [
     misaligned_values2(),
     bad_start1(),
     nan_values1(),
-    nans_and_duplicates_values1()
+    nans_and_duplicates_values1(),
+    case8(),
+    case9(),
 ]
