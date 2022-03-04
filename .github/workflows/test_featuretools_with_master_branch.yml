@@ -1,0 +1,79 @@
+name: Test Featuretools with Master Branch
+on:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  workflow_run:
+    branches:
+      - main
+    types:
+      - completed
+jobs:
+  scheduled_unit_latest_tests:
+    name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
+        libraries: ["core", "dask", "koalas"]
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build woodwork package
+        run: make package_woodwork
+      - name: Set up pip and graphviz
+        run: |
+          pip config --site set global.progress_bar off
+          python -m pip install -U pip
+          sudo apt update && sudo apt install -y graphviz
+
+      - if: ${{ matrix.libraries == 'core' }}
+        name: Install Woodwork & Featuretools - test requirements
+        run: |
+          python -m pip install -U featuretools
+          python -m pip install -e unpacked_sdist/
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - if: ${{ matrix.libraries == 'dask' }}
+        name: Install Woodwork & Featuretools - dask requirements
+        run: |
+          python -m pip install -U featuretools
+          python -m pip install -e unpacked_sdist/[dask]
+      - if: ${{ matrix.libraries == 'koalas' && matrix.python_version != '3.10' }}
+        name: Install Woodwork & Featuretools with koalas pkg - koalas requirements
+        run: |
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          python -m pip install -U featuretools[koalas]
+          python -m pip install -e unpacked_sdist/[koalas]
+          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - if: ${{ matrix.libraries != 'koalas' || (matrix.libraries == 'koalas' && (matrix.python_version == '3.7' || matrix.python_version == '3.8')) }}
+        name: Run unit tests without code coverage
+        run: |
+          echo "Run unit tests without code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
+          echo "woodwork version:"
+          python -c "import woodwork; print(woodwork.__version__)"
+          pytest `python -c "import os, featuretools; print(os.path.dirname(featuretools.__file__))"` -n 2
+      - if: ${{ matrix.python_version == '3.9' && matrix.libraries == 'koalas' }}
+        name: Run unit tests with code coverage
+        run: |
+          python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          coverage erase
+          cd unpacked_sdist/
+          coverage erase
+          echo "Run unit tests with code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
+          echo "woodwork version:"
+          python -c "import woodwork; print(woodwork.__version__)"
+          pytest `python -c "import os, featuretools; print(os.path.dirname(featuretools.__file__))"` -n 2 --cov=featuretools --cov-config=../.coveragerc
+      - if: ${{ matrix.python_version == '3.9' && matrix.libraries == 'koalas' }}
+        name: Upload to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
