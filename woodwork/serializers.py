@@ -9,7 +9,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serializer_utils import clean_latlong
+from woodwork.serializer_utils import clean_latlong, save_orc_file
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
@@ -205,16 +205,9 @@ class OrcSerializer(Serializer):
         return super().serialize(dataframe, profile_name, **kwargs)
 
     def write_dataframe(self):
-        from pyarrow import Table, orc
-
         file = self._get_filename()
         dataframe = clean_latlong(self.dataframe)
-        df = dataframe.copy()
-        for c in df:
-            if df[c].dtype.name == "category":
-                df[c] = df[c].astype("string")
-        pa_table = Table.from_pandas(df, preserve_index=False)
-        orc.write_table(pa_table, file)
+        save_orc_file(dataframe, file)
 
 
 class PickleSerializer(Serializer):

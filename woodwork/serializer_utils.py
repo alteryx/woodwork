@@ -60,3 +60,14 @@ def read_table_typing_information(path, typing_info_file, profile_name):
         typing_info["path"] = path
 
     return typing_info
+
+
+def save_orc_file(dataframe, filepath):
+    from pyarrow import Table, orc
+
+    df = dataframe.copy()
+    for c in df:
+        if df[c].dtype.name == "category":
+            df[c] = df[c].astype("string")
+    pa_table = Table.from_pandas(df, preserve_index=False)
+    orc.write_table(pa_table, filepath)
