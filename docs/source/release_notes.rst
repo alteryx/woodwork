@@ -9,12 +9,13 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
 
 v0.13.0 Feb 16, 2022
 ====================
