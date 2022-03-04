@@ -192,6 +192,26 @@ class ArrowSerializer(FeatherSerializer):
 class OrcSerializer(Serializer):
     format = "orc"
 
+    def serialize(self, dataframe, profile_name, **kwargs):
+        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
+        # Serialization to orc relies on pyarrow.Table.from_pandas which doesn't work with Dask
+        if _is_dask_dataframe(dataframe):
+            msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
+            raise ValueError(msg)
+        self.kwargs["engine"] = "pyarrow"
+        return super().serialize(dataframe, profile_name, **kwargs)
+
+    def write_dataframe(self):
+        from pyarrow import Table, orc
+        
+        file = self._get_filename()
+        dataframe = clean_latlong(self.dataframe)
+        df = dataframe.copy()
+        for c in df:
+            if df[c].dtype.name == "category":
+                df[c] = df[c].astype("string")
+        pa_table = Table.from_pandas(df, preserve_index=False)
+        orc.write_table(pa_table, file)
 
 class PickleSerializer(Serializer):
     format = "pickle"
