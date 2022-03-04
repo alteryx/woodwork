@@ -76,7 +76,7 @@ def missing_values1():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -91,7 +91,7 @@ def missing_values1():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 def duplicate_values1():
@@ -109,7 +109,7 @@ def duplicate_values1():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -124,7 +124,7 @@ def duplicate_values1():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 def extra_values1():
@@ -141,7 +141,7 @@ def extra_values1():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -156,7 +156,7 @@ def extra_values1():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 def misaligned_values1():
@@ -172,7 +172,7 @@ def misaligned_values1():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -187,7 +187,7 @@ def misaligned_values1():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 def misaligned_values2():
@@ -204,7 +204,7 @@ def misaligned_values2():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -221,7 +221,7 @@ def misaligned_values2():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 def bad_start1():
@@ -230,7 +230,7 @@ def bad_start1():
 
     dates = head_range.append(tail_range)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates[0].isoformat(),
         'actual_range_end': dates[-1].isoformat(),
         'message': None,
@@ -247,7 +247,7 @@ def bad_start1():
 
     return {
         "dates": dates.to_series(),
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 def nan_values1():
@@ -264,7 +264,7 @@ def nan_values1():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -281,7 +281,7 @@ def nan_values1():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 
@@ -301,7 +301,7 @@ def nans_and_duplicates_values1():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -320,7 +320,7 @@ def nans_and_duplicates_values1():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 
@@ -340,7 +340,7 @@ def case8():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -359,7 +359,7 @@ def case8():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 
@@ -377,7 +377,7 @@ def case9():
     
     dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
 
-    expected_output = {
+    expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
         'actual_range_end': dates.loc[len(dates)-1].isoformat(),
         'message': None,
@@ -396,7 +396,7 @@ def case9():
 
     return {
         "dates": dates,
-        "expected_output": expected_output
+        "expected_debug_obj": expected_debug_obj
     }
 
 

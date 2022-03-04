@@ -1414,18 +1414,14 @@ def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
 def test_infer_temporal_frequencies_v2(case):
     input_series = case['dates']
 
-    expected_output = case["expected_output"]
+    expected_debug_obj = case["expected_debug_obj"]
 
-    actual_output = infer_frequency(input_series)
+    inferred_freq, actual_debug_obj = infer_frequency(
+        observed_ts=input_series,
+        debug=True
+    )
 
-    
-    assert actual_output == expected_output
-
-    # actual_freqs = case['actual_freq']
-
-    # estimated_freq = infer_freq_v2(data)
-
-    # assert estimated_freq in actual_freqs
+    assert actual_debug_obj == expected_debug_obj
 
 
 # @pytest.mark.parametrize(

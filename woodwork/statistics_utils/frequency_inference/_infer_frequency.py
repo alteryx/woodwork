@@ -13,7 +13,16 @@ from ._types import InferDebug, DataCheckMessageCode
 import pandas as pd
 
 
-def infer_frequency(observed_ts: pd.Series):
+def inference_response(inferred_freq, debug_obj, debug):
+    if debug:
+        return (
+            inferred_freq,
+            dataclasses.asdict(debug_obj)
+        )
+    else:
+        return inferred_freq
+
+def infer_frequency(observed_ts: pd.Series, debug=False):
     """Infer the frequency of a given Pandas Datetime Series.
 
     Args:
@@ -29,9 +38,9 @@ def infer_frequency(observed_ts: pd.Series):
 
     # Determine if series is not empty
     if len(observed_ts_clean) == 0:
-        return (
-            None,
-            InferDebug(
+        return inference_response(
+            inferred_freq=None,
+            debug_obj=InferDebug(
                 message = DataCheckMessageCode.DATETIME_SERIES_IS_EMPTY,
             ),
         )
@@ -44,30 +53,31 @@ def infer_frequency(observed_ts: pd.Series):
 
     # Determine if series is long enough for inference
     if len(observed_ts_clean) < 3:
-        return (
-            None,
-            InferDebug(
+        return inference_response(
+            inferred_freq=None,
+            debug_obj=InferDebug(
                 actual_range_start=actual_range_start,
                 actual_range_end=actual_range_end,
                 message = DataCheckMessageCode.DATETIME_SERIES_IS_NOT_LONG_ENOUGH,
                 duplicate_values=duplicate_values,
                 nan_values=nan_values
             ),
+            debug=debug
         )
-
 
     # Determine if series if Monotonic
     is_monotonic = observed_ts_clean.is_monotonic_increasing
     if not is_monotonic:
-        return (
-            None,
-            InferDebug(
+        return inference_response(
+            inferred_freq=None,
+            debug_obj=InferDebug(
                 actual_range_start,
                 actual_range_end,
                 message = DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
                 duplicate_values=duplicate_values,
                 nan_values=nan_values
             ),
+            debug=debug
         )
 
     # Generate Frequency Candidates
@@ -76,15 +86,16 @@ def infer_frequency(observed_ts: pd.Series):
     most_likely_freq = _determine_most_likely_freq(alias_dict)
 
     if most_likely_freq is None:
-        return (
-            None,
-            InferDebug(
+        return inference_response(
+            inferred_freq=None,
+            debug_obj=InferDebug(
                 actual_range_start,
                 actual_range_end,
                 DataCheckMessageCode.DATETIME_FREQ_CANNOT_BE_ESTIMATED,
                 duplicate_values=duplicate_values,
                 nan_values=nan_values
             ),
+            debug=debug
         )
 
     # Build Freq Dataframe, get alias_dict
@@ -97,9 +108,10 @@ def infer_frequency(observed_ts: pd.Series):
 
     missing_values = _determine_missing_values(estimated_ts, observed_ts_clean)
     extra_values = _determine_extra_values(estimated_ts, observed_ts_clean)
-
-    return dataclasses.asdict(
-        InferDebug(
+ 
+    return inference_response(
+        inferred_freq=None,
+        debug_obj=InferDebug(
             actual_range_start=actual_range_start,
             actual_range_end=actual_range_end,
             estimated_freq=most_likely_freq,
@@ -109,5 +121,6 @@ def infer_frequency(observed_ts: pd.Series):
             duplicate_values=duplicate_values,
             extra_values=extra_values,
             nan_values=nan_values
-        )
+        ),
+        debug=debug
     )
