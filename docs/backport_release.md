@@ -30,8 +30,9 @@ This may be an intermediate number between two preexisting releases--for example
 
 #### Create backport branch
 
-1. Branch off of the target commit. For the branch name, please use the most recent major and minor versions to this commit, leaving the patch number as an `x`. This means that we would create `0.11.x`. This is necessary so that if any further backport releases are needed, we could continue to use this branch as the target. This branch is to be treated as `main` is treated in a normal release. It will be the target for our release.
-2. Protect this branch to avoid unintended commits from making their way into the release undetected.
+1. Branch off of the target commit. For the branch name, please use the most recent major and minor versions to this commit (in this example `0` and `11` respectively), leaving the patch number as an `x`. This means that we would create `0.11.x` in the working example. This is necessary so that if any further backport releases are needed, we could continue to use this branch as the target. This branch is to be treated as `main` is treated in a normal release. It will be the target for our release.
+
+This branch will be automatically protected to avoid unintended commits from making their way into the release undetected.
 
 #### Port over desired commits
 
