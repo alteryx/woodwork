@@ -9,6 +9,7 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Added CI workflow to test featuretools module with Woodwork main branch (:pr:`1326`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
     * Testing Changes
