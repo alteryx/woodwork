@@ -1,7 +1,6 @@
 import dataclasses
 from ._generate_freq_candidates import _generate_freq_candidates
 from ._determine_most_likely_freq import _determine_most_likely_freq
-from ._build_freq_dataframe import _build_freq_dataframe
 from ._generate_estimated_timeseries import _generate_estimated_timeseries
 from ._determine_missing_values import _determine_missing_values
 from ._determine_duplicate_values import _determine_duplicate_values
