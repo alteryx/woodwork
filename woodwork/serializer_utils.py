@@ -25,12 +25,12 @@ def clean_latlong(dataframe):
     return dataframe
 
 
-def read_table_typing_information(path, typing_info_file, profile_name):
+def read_table_typing_information(path, typing_info_filename, profile_name):
     """Read Woodwork typing information from disk, S3 path, or URL.
 
     Args:
         path (str): Location on disk, S3 path, or URL to read typing info file.
-        typing_info_file (str): Name of JSON file in which typing info is stored.
+        typing_info_filename (str): Name of JSON file in which typing info is stored.
 
     Returns:
         dict: Woodwork typing information dictionary
@@ -48,13 +48,13 @@ def read_table_typing_information(path, typing_info_file, profile_name):
             with tarfile.open(str(file_path)) as tar:
                 tar.extractall(path=tmpdir)
 
-            file = os.path.join(tmpdir, typing_info_file)
+            file = os.path.join(tmpdir, typing_info_filename)
             with open(file, "r") as file:
                 typing_info = json.load(file)
     else:
         path = os.path.abspath(path)
         assert os.path.exists(path), '"{}" does not exist'.format(path)
-        file = os.path.join(path, typing_info_file)
+        file = os.path.join(path, typing_info_filename)
         with open(file, "r") as file:
             typing_info = json.load(file)
         typing_info["path"] = path

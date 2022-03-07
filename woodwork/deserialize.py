@@ -5,7 +5,7 @@ def read_woodwork_table(
     path,
     filename=None,
     data_subdirectory="data",
-    typing_info_file="woodwork_typing_info.json",
+    typing_info_filename="woodwork_typing_info.json",
     profile_name=None,
     validate=False,
     **kwargs,
@@ -17,7 +17,7 @@ def read_woodwork_table(
         filename (str, optional): The name of the file used to store the data during serialization. If not specified, will be
             determined from the typing info file.
         data_subdirectory (str, optional): The subdirectory in which the data was stored during serialization. Defaults to "data".
-        typing_info_file (str, optional): The name of the JSON file used to store the Woodwork typing information during
+        typing_info_filename (str, optional): The name of the JSON file used to store the Woodwork typing information during
             serialization. Defaults to "woodwork_typing_info.json".
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
@@ -30,6 +30,6 @@ def read_woodwork_table(
         DataFrame: DataFrame with Woodwork typing information initialized.
     """
     deserializer = get_deserializer(
-        path, filename, data_subdirectory, typing_info_file, profile_name
+        path, filename, data_subdirectory, typing_info_filename, profile_name
     )
     return deserializer.deserialize(profile_name, validate, **kwargs)
