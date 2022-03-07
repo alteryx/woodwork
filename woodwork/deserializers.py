@@ -209,8 +209,12 @@ FORMAT_TO_DESERIALIZER = {
 }
 
 
-def get_deserializer(path, filename, data_subdirectory, typing_info_filename, profile_name):
-    typing_info = read_table_typing_information(path, typing_info_filename, profile_name)
+def get_deserializer(
+    path, filename, data_subdirectory, typing_info_filename, profile_name
+):
+    typing_info = read_table_typing_information(
+        path, typing_info_filename, profile_name
+    )
     format = typing_info["loading_info"]["type"]
 
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)

@@ -502,11 +502,19 @@ def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
     custom_typing_filename = "custom_typing_info.json"
     if error_msg:
         with pytest.raises(error_type, match=error_msg):
-            sample_df.ww.to_disk(str(tmpdir), format=file_format, typing_info_filename=custom_typing_filename)
+            sample_df.ww.to_disk(
+                str(tmpdir),
+                format=file_format,
+                typing_info_filename=custom_typing_filename,
+            )
     else:
-        sample_df.ww.to_disk(str(tmpdir), format=file_format, typing_info_filename=custom_typing_filename)
+        sample_df.ww.to_disk(
+            str(tmpdir), format=file_format, typing_info_filename=custom_typing_filename
+        )
         assert os.path.isfile(os.path.join(tmpdir, custom_typing_filename))
-        deserialized_df = read_woodwork_table(str(tmpdir), typing_info_filename=custom_typing_filename)
+        deserialized_df = read_woodwork_table(
+            str(tmpdir), typing_info_filename=custom_typing_filename
+        )
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
