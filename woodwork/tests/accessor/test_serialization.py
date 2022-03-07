@@ -314,8 +314,6 @@ def test_unserializable_table(sample_df, tmpdir):
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
-    sample_df.ww.init()
-
     error = "must be one of the following formats: csv, pickle, parquet"
     with pytest.raises(ValueError, match=error):
         get_serializer(format="test")
@@ -477,9 +475,7 @@ def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
             path=str(tmpdir), format=file_format, filename=data_filename
         )
         assert os.path.isfile(os.path.join(tmpdir, "data", filename_to_check))
-        deserialized_df = read_woodwork_table(
-            path=str(tmpdir), format=file_format, filename=data_filename
-        )
+        deserialized_df = read_woodwork_table(path=str(tmpdir), filename=data_filename)
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),

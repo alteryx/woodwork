@@ -212,7 +212,6 @@ FORMAT_TO_DESERIALIZER = {
 def get_deserializer(
     path, format, filename, data_subdirectory, typing_info_file, profile_name
 ):
-    typing_info = None
     typing_info = read_table_typing_information(path, typing_info_file, profile_name)
 
     if format is not None:
@@ -223,8 +222,6 @@ def get_deserializer(
         format = typing_info["loading_info"]["type"]
 
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
-    if deserializer_cls is None:
-        raise ValueError("invalid format")
 
     return deserializer_cls(path, filename, data_subdirectory, typing_info)
 
