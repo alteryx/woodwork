@@ -656,7 +656,7 @@ class WoodworkTableAccessor:
             profile_name (str): Name of AWS profile to use, False to use an anonymous profile, or None.
             kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
         """
-        serializer_cls = get_serializer(format, filename)
+        serializer_cls = get_serializer(format)
         serializer = serializer_cls(
             path=path,
             filename=filename,

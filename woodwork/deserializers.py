@@ -126,7 +126,7 @@ class Deserializer:
         """Read data from a local location into a dataframe"""
         raise NotImplementedError(
             "Must define read_from_local_path on Deserializer subclass"
-        )
+        )  # pragma: no cover
 
     def _get_library(self):
         table_type = self.typing_info["loading_info"]["table_type"]
@@ -209,17 +209,9 @@ FORMAT_TO_DESERIALIZER = {
 }
 
 
-def get_deserializer(
-    path, format, filename, data_subdirectory, typing_info_file, profile_name
-):
+def get_deserializer(path, filename, data_subdirectory, typing_info_file, profile_name):
     typing_info = read_table_typing_information(path, typing_info_file, profile_name)
-
-    if format is not None:
-        # User directly specifies format
-        format = format.lower()
-    else:
-        # Get format from saved typing info
-        format = typing_info["loading_info"]["type"]
+    format = typing_info["loading_info"]["type"]
 
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
 

@@ -3,7 +3,6 @@ from woodwork.deserializers import get_deserializer
 
 def read_woodwork_table(
     path,
-    format=None,
     filename=None,
     data_subdirectory="data",
     typing_info_file="woodwork_typing_info.json",
@@ -15,8 +14,6 @@ def read_woodwork_table(
 
     Args:
         path (str): Directory on disk, S3 path, or URL to read `woodwork_typing_info.json`.
-        format (str, optional): The format used to store the data upon serialization. If not specified, the format will be determined
-            from the filename or typing info file.
         filename (str, optional): The name of the file used to store the data during serialization. If not specified, will be
             determined from the typing info file.
         data_subdirectory (str, optional): The subdirectory in which the data was stored during serialization. Defaults to "data".
@@ -33,6 +30,6 @@ def read_woodwork_table(
         DataFrame: DataFrame with Woodwork typing information initialized.
     """
     deserializer = get_deserializer(
-        path, format, filename, data_subdirectory, typing_info_file, profile_name
+        path, filename, data_subdirectory, typing_info_file, profile_name
     )
     return deserializer.deserialize(profile_name, validate, **kwargs)

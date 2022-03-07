@@ -3,7 +3,6 @@ import json
 import os
 import tarfile
 import tempfile
-from mimetypes import add_type, guess_type
 
 import pandas as pd
 
@@ -70,7 +69,9 @@ class Serializer:
             )
 
     def write_dataframe(self):
-        raise NotImplementedError("Must define write_dataframe on Serializer subclass")
+        raise NotImplementedError(
+            "Must define write_dataframe on Serializer subclass"
+        )  # pragma: no cover
 
     def write_typing_info(self):
         loading_info = {
@@ -253,25 +254,10 @@ FORMAT_TO_SERIALIZER = {
     OrcSerializer.format: OrcSerializer,
 }
 
-# Add new mimetypes
-add_type("application/parquet", ".parquet")
-add_type("application/arrow", ".arrow")
-add_type("application/feather", ".feather")
-add_type("application/orc", ".orc")
 
-
-def get_serializer(format=None, filename=None):
-    """Get serializer class based on format or filename"""
-    if format is None and filename is not None:
-        content_type, _ = guess_type(filename)
-        format = CONTENT_TYPE_TO_FORMAT.get(content_type)
-        if format is None:
-            raise RuntimeError(
-                "Content type could not be inferred. Please specify content_type and try again."
-            )
-
+def get_serializer(format=None):
+    """Get serializer class based on format"""
     serializer = FORMAT_TO_SERIALIZER.get(format)
-
     if serializer is None:
         error = "must be one of the following formats: {}"
         raise ValueError(error.format(", ".join(FORMAT_TO_SERIALIZER.keys())))
