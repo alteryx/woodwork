@@ -49,9 +49,12 @@ class Serializer:
             self.save_to_local_path()
 
     def save_to_local_path(self):
-        os.makedirs(
-            os.path.join(self.write_path, self.data_subdirectory), exist_ok=True
-        )
+        if self.data_subdirectory:
+            os.makedirs(
+                os.path.join(self.write_path, self.data_subdirectory), exist_ok=True
+            )
+        else:
+            os.makedirs(self.write_path, exist_ok=True)
         self.write_dataframe()
         self.write_typing_info()
 
@@ -95,7 +98,9 @@ class Serializer:
             basename = ".".join([ww_name, self.format])
         else:
             basename = self.filename
-        self.location = os.path.join(self.data_subdirectory, basename)
+        self.location = basename
+        if self.data_subdirectory:
+            self.location = os.path.join(self.data_subdirectory, basename)
         return os.path.join(self.write_path, self.location)
 
     def _create_archive(self):
@@ -147,7 +152,9 @@ class CSVSerializer(Serializer):
                 basename = ".".join([ww_name, self.format])
         else:
             basename = self.filename
-        self.location = os.path.join(self.data_subdirectory, basename)
+        self.location = basename
+        if self.data_subdirectory:
+            self.location = os.path.join(self.data_subdirectory, basename)
         return os.path.join(self.write_path, self.location)
 
     def write_dataframe(self):

@@ -525,6 +525,46 @@ def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
 @pytest.mark.parametrize(
     "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
 )
+@pytest.mark.parametrize("data_subdirectory", ["custom_data_directory", None])
+def test_to_disk_custom_data_subdirectory(
+    sample_df, tmpdir, file_format, data_subdirectory
+):
+    if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+
+    sample_df.ww.init(index="id")
+    error_msg = None
+    if file_format == "orc" and _is_dask_dataframe(sample_df):
+        error_msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
+        error_type = ValueError
+    elif file_format == "pickle" and not isinstance(sample_df, pd.DataFrame):
+        error_msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
+        error_type = ValueError
+
+    if error_msg:
+        with pytest.raises(error_type, match=error_msg):
+            sample_df.ww.to_disk(
+                str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
+            )
+    else:
+        sample_df.ww.to_disk(
+            str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
+        )
+        if data_subdirectory:
+            assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
+        deserialized_df = read_woodwork_table(
+            str(tmpdir), data_subdirectory=data_subdirectory
+        )
+        pd.testing.assert_frame_equal(
+            to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+            to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+        )
+        assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+@pytest.mark.parametrize(
+    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
+)
 def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(latlong_df, pd.DataFrame):
         pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
