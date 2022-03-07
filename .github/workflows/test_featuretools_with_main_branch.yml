@@ -51,7 +51,7 @@ jobs:
           python -m pip install -U featuretools[koalas]
           python -m pip install -e unpacked_sdist/[koalas]
           python -m pip install -r unpacked_sdist/test-requirements.txt
-      - if: ! ${{ matrix.libraries == 'koalas' || matrix.python_version == '3.10' }}
+      - if: ${{ matrix.libraries != 'koalas' || (matrix.libraries == 'koalas' && matrix.python_version != '3.10') }}
         name: Run unit tests without code coverage
         run: |
           echo "Run unit tests without code coverage for ${{ matrix.python_version }} and ${{ matrix.libraries }}"
