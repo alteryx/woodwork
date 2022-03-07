@@ -258,7 +258,7 @@ class Datetime(LogicalType):
         new_dtype = self._get_valid_dtype(type(series))
         series_dtype = str(series.dtype)
 
-        if new_dtype != series_dtype and series_dtype not in ['int64']:
+        if new_dtype != series_dtype and series_dtype not in ["int64"]:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
             )

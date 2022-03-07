@@ -16,9 +16,7 @@ def pd_to_dask(series):
 
 
 def pd_to_spark(series):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(convert_tuples_to_lists(series))
 
 

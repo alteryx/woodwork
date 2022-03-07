@@ -185,9 +185,7 @@ def sample_unsorted_df_dask(sample_unsorted_df_pandas):
 
 @pytest.fixture()
 def sample_unsorted_df_spark(sample_unsorted_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(sample_unsorted_df_pandas)
 
 
@@ -213,9 +211,7 @@ def sample_series_dask(sample_series_pandas):
 
 @pytest.fixture()
 def sample_series_spark(sample_series_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(sample_series_pandas.astype("string"))
 
 
@@ -245,9 +241,7 @@ def sample_datetime_series_dask(sample_datetime_series_pandas):
 
 @pytest.fixture()
 def sample_datetime_series_spark(sample_datetime_series_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(sample_datetime_series_pandas.astype(str))
 
 
@@ -264,9 +258,7 @@ def ordinal_transform_series_dask(ordinal_transform_series_pandas):
 
 @pytest.fixture()
 def ordinal_transform_series_spark(ordinal_transform_series_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(ordinal_transform_series_pandas)
 
 
@@ -292,9 +284,7 @@ def time_index_df_dask(time_index_df_pandas):
 
 @pytest.fixture()
 def time_index_df_spark(time_index_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(time_index_df_pandas)
 
 
@@ -324,9 +314,7 @@ def numeric_time_index_df_dask(numeric_time_index_df_pandas):
 
 @pytest.fixture()
 def numeric_time_index_df_spark(numeric_time_index_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(numeric_time_index_df_pandas)
 
 
@@ -416,9 +404,7 @@ def describe_df_dask(describe_df_pandas):
 
 @pytest.fixture()
 def describe_df_spark(describe_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
         describe_df_pandas.applymap(
             lambda tup: [None if pd.isnull(elt) else elt for elt in tup]
@@ -460,9 +446,7 @@ def df_same_mi_dask(df_same_mi_pandas):
 
 @pytest.fixture()
 def df_same_mi_spark(df_same_mi_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     df_same_mi_pandas["ints"] = df_same_mi_pandas["ints"].astype("float")
     df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
     return ps.from_pandas(df_same_mi_pandas)
@@ -496,9 +480,7 @@ def df_mi_dask(df_mi_pandas):
 
 @pytest.fixture()
 def df_mi_spark(df_mi_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(df_mi_pandas)
 
 
@@ -529,9 +511,7 @@ def df_mi_unique_dask(df_mi_unique_pandas):
 
 @pytest.fixture()
 def df_mi_unique_spark(df_mi_unique_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(df_mi_unique_pandas)
 
 
@@ -563,9 +543,7 @@ def categorical_df_dask(categorical_df_pandas):
 
 @pytest.fixture()
 def categorical_df_spark(categorical_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(categorical_df_pandas)
 
 
@@ -610,10 +588,8 @@ def small_df_dask(small_df_pandas):
 
 @pytest.fixture()
 def small_df_spark(small_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
-    df = small_df_pandas.astype('datetime64[ns]')
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    df = small_df_pandas.astype("datetime64[ns]")
     return ps.from_pandas(df)
 
 
@@ -647,9 +623,7 @@ def latlong_df_dask(latlong_df_pandas):
 
 @pytest.fixture()
 def latlong_df_spark(latlong_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
         latlong_df_pandas.applymap(
             lambda tup: list(tup) if isinstance(tup, tuple) else tup
@@ -722,9 +696,7 @@ def whitespace_df_dask(whitespace_df_pandas):
 
 @pytest.fixture()
 def whitespace_df_spark(whitespace_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(whitespace_df_pandas)
 
 
@@ -753,9 +725,7 @@ def falsy_names_df_dask(falsy_names_df_pandas):
 
 @pytest.fixture()
 def falsy_names_df_spark(falsy_names_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
         falsy_names_df_pandas.applymap(
             lambda tup: list(tup) if isinstance(tup, tuple) else tup
@@ -843,9 +813,7 @@ def serialize_df_dask(serialize_df_pandas):
 
 @pytest.fixture()
 def serialize_df_spark(serialize_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(serialize_df_pandas)
 
 
@@ -900,9 +868,7 @@ def outliers_df_dask(outliers_df_pandas):
 
 @pytest.fixture()
 def outliers_df_spark(outliers_df_pandas):
-    ps = pytest.importorskip(
-        "pyspark.pandas", reason="Spark not installed, skipping"
-    )
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(outliers_df_pandas)
 
 

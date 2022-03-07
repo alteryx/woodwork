@@ -477,9 +477,9 @@ def concat_columns(objs, validate_schema=True):
     ps = import_or_none("pyspark.pandas")
 
     lib = pd
-    if ww.accessor_utils._is_spark_dataframe(
+    if ww.accessor_utils._is_spark_dataframe(obj) or ww.accessor_utils._is_spark_series(
         obj
-    ) or ww.accessor_utils._is_spark_series(obj):
+    ):
         lib = ps
     elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
         obj

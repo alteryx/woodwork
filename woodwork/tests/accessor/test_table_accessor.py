@@ -73,7 +73,6 @@ dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
-
 def test_check_index_errors(sample_df):
     error_message = "Specified index column `foo` not found in dataframe"
     with pytest.raises(ColumnNotPresentError, match=error_message):
