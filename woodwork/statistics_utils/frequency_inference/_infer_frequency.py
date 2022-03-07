@@ -30,8 +30,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
 
     Returns:
         inferred_freq: a string
-        histogram (list(dict)): a list of dictionary with keys `bins` and
-            `frequency`
+        debug: a dictionary containing debug information if frequency cannot be inferred
     """
 
     pandas_inferred_freq = pd.infer_freq(observed_ts)
@@ -92,7 +91,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
         )
 
     # Generate Frequency Candidates
-    candidate_df, alias_dict = _generate_freq_candidates(observed_ts_clean)
+    alias_dict = _generate_freq_candidates(observed_ts_clean)
 
     most_likely_freq = _determine_most_likely_freq(alias_dict)
 
@@ -109,10 +108,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
             debug=debug
         )
 
-    # Build Freq Dataframe, get alias_dict
-    freq_df = _build_freq_dataframe(candidate_df)
-
-    estimated_ts = _generate_estimated_timeseries(freq_df, most_likely_freq)
+    estimated_ts = _generate_estimated_timeseries(alias_dict[most_likely_freq])
 
     estimated_range_start = estimated_ts.min().isoformat()
     estimated_range_end = estimated_ts.max().isoformat()

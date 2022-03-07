@@ -3,8 +3,6 @@ from ._constants import NON_INFERABLE_FREQ, WINDOW_LENGTH, CANDIDATE_COLUMN_NAME
 
 
 def _generate_freq_candidates(time_series):
-    candidates = [[] for x in range(len(time_series))]
-    window_idx = 0
     alias_dict = {}
     for window in time_series.rolling(WINDOW_LENGTH):
         if len(window) == WINDOW_LENGTH:
@@ -12,15 +10,20 @@ def _generate_freq_candidates(time_series):
             # calculate alias 
             alias = pd.infer_freq(window) or NON_INFERABLE_FREQ
 
+            min_dt = window.min()
+            max_dt = window.max()
+
             if alias in alias_dict:
-                alias_dict[alias] += 1
+                curr_alias = alias_dict[alias]
+                curr_alias["count"] += 1
+                curr_alias["max_dt"] = window.iloc[WINDOW_LENGTH-1]
+
             else:
-                alias_dict[alias] = 1
+                alias_dict[alias] = {
+                    "alias": alias,
+                    "min_dt": min_dt,
+                    "max_dt": max_dt,
+                    "count": 1
+                }
 
-            for i in range(window_idx, window_idx + WINDOW_LENGTH):
-                candidates[i].append(alias)
-            window_idx += 1
-
-    candidate_df = pd.DataFrame({CANDIDATE_COLUMN_NAME: candidates}, index=time_series)
-
-    return (candidate_df, alias_dict)
+    return alias_dict
