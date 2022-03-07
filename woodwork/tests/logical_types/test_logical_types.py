@@ -237,9 +237,7 @@ def test_ordinal_validate(sample_series):
 
     new_type = "string"
     error_message = re.escape(
-        f"Cannot initialize Woodwork. Series dtype '{new_type}' is incompatible with "
-        f"ordinal dtype. Try converting series dtype to '{sample_series.dtype}' before "
-        "initializing or use the woodwork.init_series function to initialize."
+        f"Series dtype '{new_type}' is incompatible with ordinal dtype."
     )
     with pytest.raises(TypeValidationError, match=error_message):
         ordinal_incomplete_order.validate(sample_series.astype(new_type))

@@ -102,7 +102,14 @@ class WoodworkColumnAccessor:
                 if isinstance(logical_type, (Ordinal, LatLong)):
                     logical_type.validate(self._series)
                 else:
-                    self._validate_logical_type(logical_type)
+                    valid_dtype = logical_type._get_valid_dtype(type(self._series))
+                    if valid_dtype != str(self._series.dtype):
+                        raise TypeValidationError(
+                            f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
+                            f"incompatible with {logical_type} dtype. Try converting series "
+                            f"dtype to '{valid_dtype}' before initializing or use the "
+                            "woodwork.init_series function to initialize."
+                        )
 
             self._schema = ColumnSchema(
                 logical_type=logical_type,
@@ -307,18 +314,6 @@ class WoodworkColumnAccessor:
             return wrapper
         # Directly return non-callable Series attributes
         return series_attr
-
-    def _validate_logical_type(self, logical_type):
-        """Validates that a logical type is consistent with the series dtype. Performs additional type
-        specific validation, as required."""
-        valid_dtype = logical_type._get_valid_dtype(type(self._series))
-        if valid_dtype != str(self._series.dtype):
-            raise TypeValidationError(
-                f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
-                f"incompatible with {logical_type} dtype. Try converting series "
-                f"dtype to '{valid_dtype}' before initializing or use the "
-                "woodwork.init_series function to initialize."
-            )
 
     @_check_column_schema
     def add_semantic_tags(self, semantic_tags):
