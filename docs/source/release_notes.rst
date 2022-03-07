@@ -11,11 +11,13 @@ Future Release
     * Changes
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Add backport release support (:pr:`1321`)
     * Testing Changes
         * Added CI workflow to test featuretools module with Woodwork main branch (:pr:`1326`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`mingdavidqi`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`mingdavidqi`
+
 
 v0.13.0 Feb 16, 2022
 ====================
