@@ -11,10 +11,11 @@ Future Release
     * Changes
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Add backport release support (:pr:`1321`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`
 
 v0.13.0 Feb 16, 2022
 ====================
