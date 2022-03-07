@@ -256,7 +256,9 @@ class Datetime(LogicalType):
     def transform(self, series):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
-        if new_dtype != str(series.dtype):
+        series_dtype = str(series.dtype)
+
+        if new_dtype != series_dtype and series_dtype not in ['int64']:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
             )
@@ -652,7 +654,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
             if isinstance(x, str):
                 return bool(re.match(regex, x))
 
-        invalid = ~series.apply(match).astype("boolean")
+        invalid = series.apply(match).astype("boolean") == False
 
     else:
         invalid = ~series.str.match(regex).astype("boolean")

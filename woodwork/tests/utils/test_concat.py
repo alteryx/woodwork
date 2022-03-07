@@ -511,7 +511,7 @@ def test_concat_cols_row_order(sample_df):
     # spark does not preserve index order in the same way
     if _is_spark_dataframe(sample_df):
         pd.testing.assert_index_equal(
-            to_pandas(combined_df.index), pd.Index([2, 0, 1, 3])
+            to_pandas(combined_df.index), pd.Index([0, 1, 2, 3])
         )
     else:
         pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))

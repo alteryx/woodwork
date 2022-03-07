@@ -105,7 +105,7 @@ def sample_df_spark(sample_df_pandas):
     ps = pytest.importorskip(
         "pyspark.pandas", reason="Pyspark pandas not installed, skipping"
     )
-    return ps.DataFrame(sample_df_pandas)
+    return ps.from_pandas(sample_df_pandas)
 
 
 @pytest.fixture()
@@ -188,7 +188,7 @@ def sample_unsorted_df_spark(sample_unsorted_df_pandas):
     ps = pytest.importorskip(
         "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ps.DataFrame(sample_unsorted_df_pandas)
+    return ps.from_pandas(sample_unsorted_df_pandas)
 
 
 @pytest.fixture(
@@ -248,7 +248,7 @@ def sample_datetime_series_spark(sample_datetime_series_pandas):
     ps = pytest.importorskip(
         "pyspark.pandas", reason="Spark not installed, skipping"
     )
-    return ps.from_pandas(sample_datetime_series_pandas)
+    return ps.from_pandas(sample_datetime_series_pandas.astype(str))
 
 
 @pytest.fixture()
@@ -465,7 +465,7 @@ def df_same_mi_spark(df_same_mi_pandas):
     )
     df_same_mi_pandas["ints"] = df_same_mi_pandas["ints"].astype("float")
     df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
-    return ps.DataFrame(df_same_mi_pandas)
+    return ps.from_pandas(df_same_mi_pandas)
 
 
 @pytest.fixture(params=["df_same_mi_pandas", "df_same_mi_dask", "df_same_mi_spark"])
