@@ -70,7 +70,7 @@ class Serializer:
             )
 
     def write_dataframe(self):
-        raise NotImplementedError
+        raise NotImplementedError("Must define write_dataframe on Serializer subclass")
 
     def write_typing_info(self):
         loading_info = {
@@ -127,6 +127,10 @@ class CSVSerializer(Serializer):
 
     def serialize(self, dataframe, profile_name, **kwargs):
         if _is_koalas_dataframe(dataframe):
+            if self.filename is not None:
+                raise ValueError(
+                    "Writing a Koalas dataframe to csv with a filename specified is not supported"
+                )
             self.default_kwargs["multiline"] = True
             self.default_kwargs["ignoreLeadingWhitespace"] = False
             self.default_kwargs["ignoreTrailingWhitespace"] = False
@@ -166,6 +170,14 @@ class ParquetSerializer(Serializer):
 
     def serialize(self, dataframe, profile_name, **kwargs):
         import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
+        if self.filename is not None and _is_dask_dataframe(dataframe):
+            raise ValueError(
+                "Writing a Dask dataframe to parquet with a filename specified is not supported"
+            )
+        if self.filename is not None and _is_koalas_dataframe(dataframe):
+            raise ValueError(
+                "Writing a Koalas dataframe to parquet with a filename specified is not supported"
+            )
         self.kwargs["engine"] = "pyarrow"
         return super().serialize(dataframe, profile_name, **kwargs)
 
