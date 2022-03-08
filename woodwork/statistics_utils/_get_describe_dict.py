@@ -94,7 +94,7 @@ def _get_describe_dict(
     # Setup for progress callback and make initial call
     # Assume 1 unit for general preprocessing, plus main loop over column
     total_loops = 1 + len(cols_to_include)
-    callback_caller = CallbackCaller(callback, unit, total_loops)
+    callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
 
     for column_name, column in cols_to_include:
