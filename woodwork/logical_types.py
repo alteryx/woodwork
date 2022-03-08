@@ -654,7 +654,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
             if isinstance(x, str):
                 return bool(re.match(regex, x))
 
-        invalid = series.apply(match).astype("boolean") == False
+        invalid = series.apply(match).astype("boolean") == False  # noqa: E712
 
     else:
         invalid = ~series.str.match(regex).astype("boolean")
