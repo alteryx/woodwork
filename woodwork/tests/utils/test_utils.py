@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 from unittest.mock import patch
 
 import numpy as np
@@ -571,7 +572,7 @@ def test_callback_caller(mock_callback):
 def test_callback_caller_defaults(mock_callback):
     unit = "yards"
     total = 100
-    start_time = datetime.now()
+    start_time = timer()
     caller = CallbackCaller(
         callback=mock_callback,
         unit=unit,
