@@ -131,9 +131,9 @@ def test_dependence(df_mi, measure):
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
     if measure == "pearson":
-        assert dep_df.shape[0] == 1
+        assert dep_df.shape[0] == 3
     else:
-        assert dep_df.shape[0] == 10
+        assert dep_df.shape[0] == 15
 
     if measure == "all":
         measure_columns = ["mutual", "max", "pearson"]
@@ -204,9 +204,9 @@ def test_dependence_one_row(df_mi, measure):
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measure, nrows=1, min_shared=1)
     if measure == "pearson":
-        assert dep_df.shape[0] == 1
+        assert dep_df.shape[0] == 3
     else:
-        assert dep_df.shape[0] == 10
+        assert dep_df.shape[0] == 15
     expected = {"mutual": 1.0, "pearson": np.nan, "max": 1.0}
     if measure == "all":
         measure_columns = ["pearson", "mutual", "max"]
@@ -226,9 +226,9 @@ def test_dependence_num_bins(df_mi, measure):
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measure, num_bins=2, min_shared=12)
     if measure == "pearson":
-        assert dep_df.shape[0] == 1
+        assert dep_df.shape[0] == 3
     else:
-        assert dep_df.shape[0] == 10
+        assert dep_df.shape[0] == 15
 
     if measure == "pearson":
         expected_df = pd.DataFrame(data={"pearson": [0.5]}, index=["dates_ints"])
@@ -417,10 +417,10 @@ def test_dependence_min_shared(time_index_df, measure):
 @pytest.mark.parametrize(
     "measure, expected",
     [
-        ("mutual", (18, 6, 26)),
-        ("pearson", (5, 3, 6)),
-        ("max", (21, 6, 29)),
-        ("all", (21, 6, 29)),
+        ("mutual", (24, 7, 34)),
+        ("pearson", (8, 4, 10)),
+        ("max", (30, 7, 40)),
+        ("all", (30, 7, 40)),
     ],
 )
 def test_dependence_callback(df_mi, measure, expected):

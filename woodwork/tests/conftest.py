@@ -478,6 +478,7 @@ def df_mi_pandas():
     df = pd.DataFrame(
         {
             "ints": pd.Series([1, 2, 1]),
+            "ints2": pd.Series([2, 2, 2]),
             "bools": pd.Series([True, False, True]),
             "strs2": pd.Series(["bye", "hi", "bye"]),
             "strs": pd.Series(["hi", "hi", "hi"]),
