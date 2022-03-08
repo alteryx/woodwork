@@ -13,10 +13,12 @@ Future Release
         * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Add backport release support (:pr:`1321`)
     * Testing Changes
+        * Limit max version for ``responses`` dependency (:pr:`1327`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 v0.13.0 Feb 16, 2022
 ====================
