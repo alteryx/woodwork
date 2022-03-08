@@ -909,3 +909,22 @@ def outliers_df_koalas(outliers_df_pandas):
 @pytest.fixture(params=["outliers_df_pandas", "outliers_df_dask", "outliers_df_koalas"])
 def outliers_df(request):
     return request.getfixturevalue(request.param)
+
+
+class MockCallback:
+    def __init__(self):
+        self.progress_history = []
+        self.total_update = 0
+        self.total_elapsed_time = 0
+
+    def __call__(self, update, progress, total, unit, time_elapsed):
+        self.total_update += update
+        self.total = total
+        self.progress_history.append(progress)
+        self.unit = unit
+        self.total_elapsed_time = time_elapsed
+
+
+@pytest.fixture()
+def mock_callback():
+    return MockCallback()

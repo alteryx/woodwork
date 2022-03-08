@@ -323,20 +323,6 @@ def test_dependence_unique_cols(df_mi_unique, measure):
     assert "ints" in cols_used
 
 
-class MockCallback:
-    def __init__(self):
-        self.progress_history = []
-        self.total_update = 0
-        self.total_elapsed_time = 0
-
-    def __call__(self, update, progress, total, unit, time_elapsed):
-        self.total_update += update
-        self.total = total
-        self.progress_history.append(progress)
-        self.unit = unit
-        self.total_elapsed_time = time_elapsed
-
-
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_extra_stats(measure):
     df_nans = pd.DataFrame(
@@ -423,10 +409,8 @@ def test_dependence_min_shared(time_index_df, measure):
         ("all", (30, 7, 40)),
     ],
 )
-def test_dependence_callback(df_mi, measure, expected):
+def test_dependence_callback(df_mi, measure, expected, mock_callback):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
-
-    mock_callback = MockCallback()
 
     df_mi.ww.dependence(measures=measure, callback=mock_callback)
 
@@ -465,14 +449,13 @@ def test_dependence_with_string_index(measure):
 
 
 @patch("woodwork.table_accessor._get_dependence_dict")
-def test_pearson_dict(_get_dependence_dict, df_mi):
+def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.init()
-    callback = MockCallback()
     df_mi.ww.pearson_correlation_dict(
         num_bins=5,
         nrows=100,
         include_index=True,
-        callback=callback,
+        callback=mock_callback,
         extra_stats=True,
         min_shared=25,
         random_seed=5,
@@ -484,22 +467,21 @@ def test_pearson_dict(_get_dependence_dict, df_mi):
         num_bins=5,
         nrows=100,
         include_index=True,
-        callback=callback,
+        callback=mock_callback,
         extra_stats=True,
         min_shared=25,
         random_seed=5,
     )
 
 
-def test_pearson_method(df_mi):
+def test_pearson_method(df_mi, mock_callback):
     df_mi.ww.init()
-    callback = MockCallback()
     with patch.object(df_mi.ww, "pearson_correlation_dict") as pearson_dict_method:
         df_mi.ww.pearson_correlation(
             num_bins=5,
             nrows=100,
             include_index=True,
-            callback=callback,
+            callback=mock_callback,
             extra_stats=True,
             min_shared=25,
             random_seed=5,
@@ -509,7 +491,7 @@ def test_pearson_method(df_mi):
         num_bins=5,
         nrows=100,
         include_index=True,
-        callback=callback,
+        callback=mock_callback,
         extra_stats=True,
         min_shared=25,
         random_seed=5,
@@ -517,14 +499,13 @@ def test_pearson_method(df_mi):
 
 
 @patch("woodwork.table_accessor._get_dependence_dict")
-def test_mutual_dict(_get_dependence_dict, df_mi):
+def test_mutual_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.init()
-    callback = MockCallback()
     df_mi.ww.mutual_information_dict(
         num_bins=5,
         nrows=100,
         include_index=True,
-        callback=callback,
+        callback=mock_callback,
         extra_stats=True,
         min_shared=25,
         random_seed=5,
@@ -536,22 +517,21 @@ def test_mutual_dict(_get_dependence_dict, df_mi):
         num_bins=5,
         nrows=100,
         include_index=True,
-        callback=callback,
+        callback=mock_callback,
         extra_stats=True,
         min_shared=25,
         random_seed=5,
     )
 
 
-def test_mutual(df_mi):
+def test_mutual(df_mi, mock_callback):
     df_mi.ww.init()
-    callback = MockCallback()
     with patch.object(df_mi.ww, "mutual_information_dict") as mi_dict_method:
         df_mi.ww.mutual_information(
             num_bins=5,
             nrows=100,
             include_index=True,
-            callback=callback,
+            callback=mock_callback,
             extra_stats=True,
             min_shared=25,
             random_seed=5,
@@ -561,7 +541,7 @@ def test_mutual(df_mi):
         num_bins=5,
         nrows=100,
         include_index=True,
-        callback=callback,
+        callback=mock_callback,
         extra_stats=True,
         min_shared=25,
         random_seed=5,
@@ -1069,23 +1049,8 @@ def test_describe_with_no_match(sample_df):
     assert df.empty
 
 
-def test_describe_callback(describe_df):
+def test_describe_callback(describe_df, mock_callback):
     describe_df.ww.init(index="index_col")
-
-    class MockCallback:
-        def __init__(self):
-            self.progress_history = []
-            self.total_update = 0
-            self.total_elapsed_time = 0
-
-        def __call__(self, update, progress, total, unit, time_elapsed):
-            self.total_update += update
-            self.total = total
-            self.progress_history.append(progress)
-            self.unit = unit
-            self.total_elapsed_time = time_elapsed
-
-    mock_callback = MockCallback()
 
     describe_df.ww.describe(callback=mock_callback)
 
