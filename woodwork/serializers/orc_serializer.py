@@ -9,6 +9,7 @@ from woodwork.utils import import_or_raise
 
 class OrcSerializer(Serializer):
     """Serialize a Woodwork table to disk as an orc file."""
+
     format = "orc"
 
     def serialize(self, dataframe, profile_name, **kwargs):

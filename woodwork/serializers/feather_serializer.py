@@ -8,6 +8,7 @@ from woodwork.utils import import_or_raise
 
 class FeatherSerializer(Serializer):
     """Serialize a Woodwork table to disk as a feather file."""
+
     format = "feather"
 
     def serialize(self, dataframe, profile_name, **kwargs):
