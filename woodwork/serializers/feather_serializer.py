@@ -1,7 +1,7 @@
-from woodwork.serializer_utils import clean_latlong
 from woodwork.serializers.serializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE,
     Serializer,
+    clean_latlong,
 )
 from woodwork.utils import import_or_raise
 

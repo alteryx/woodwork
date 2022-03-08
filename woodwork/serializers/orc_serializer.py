@@ -1,8 +1,8 @@
 from woodwork.accessor_utils import _is_dask_dataframe
-from woodwork.serializer_utils import clean_latlong, save_orc_file
 from woodwork.serializers.serializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE,
     Serializer,
+    clean_latlong,
 )
 from woodwork.utils import import_or_raise
 
@@ -23,3 +23,14 @@ class OrcSerializer(Serializer):
         file = self._get_filename()
         dataframe = clean_latlong(self.dataframe)
         save_orc_file(dataframe, file)
+
+
+def save_orc_file(dataframe, filepath):
+    from pyarrow import Table, orc
+
+    df = dataframe.copy()
+    for c in df:
+        if df[c].dtype.name == "category":
+            df[c] = df[c].astype("string")
+    pa_table = Table.from_pandas(df, preserve_index=False)
+    orc.write_table(pa_table, filepath)
