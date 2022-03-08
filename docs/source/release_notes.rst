@@ -19,6 +19,7 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
 
+
 v0.13.0 Feb 16, 2022
 ====================
     .. warning::
