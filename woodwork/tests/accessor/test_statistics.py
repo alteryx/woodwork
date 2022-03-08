@@ -200,7 +200,7 @@ def test_dependence_one_row(df_mi, measure):
     if measure == "pearson":
         assert dep_df.shape[0] == 1
     else:
-        assert dep_df.shape[0] == 10       
+        assert dep_df.shape[0] == 10
     expected = {"mutual": 1.0, "pearson": np.nan, "max": 1.0}
     if measure == "all":
         measure_columns = ["pearson", "mutual", "max"]
