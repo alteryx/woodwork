@@ -542,7 +542,7 @@ class CallbackCaller:
         - time_elapsed (float): total time in seconds elapsed since start of call
 
     '''
-    def __init__(self, callback, unit, total, start_time=None, current_progress=0):
+    def __init__(self, callback, unit, total, start_time=None, start_progress=0):
         '''
         Args:
             callback (func): callback method to call
@@ -550,7 +550,7 @@ class CallbackCaller:
             total (int): the total number of calculations to do
             start_time (datetime): when time started for the callback.  Defaults
                 to when the class instance is created
-            current_progress (int): starting progress for the callback.  Defaults to 0.
+            start_progress (int): starting progress for the callback.  Defaults to 0.
         '''
         if start_time is not None:
             self.start_time = start_time
@@ -558,7 +558,7 @@ class CallbackCaller:
             self.start_time = timer()
         self.callback = callback
         self.unit = unit
-        self.current_progress = current_progress
+        self.current_progress = start_progress
         self.total = total
 
     def update(self, progress_increment):
