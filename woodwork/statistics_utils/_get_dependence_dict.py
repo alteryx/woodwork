@@ -187,9 +187,9 @@ def _get_dependence_dict(
         if measure == "mutual":
             data = _bin_numeric_cols_into_categories(dataframe.ww.schema, data, num_bins)
             callback_caller.update(n)
-            col_names = pearson_columns
-        elif measure == "pearson":
             col_names = mutual_columns
+        elif measure == "pearson":
+            col_names = pearson_columns
         elif measure == "max":
             break
         _calculate(callback_caller, data, col_names, results, measure)

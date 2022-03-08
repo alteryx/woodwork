@@ -399,29 +399,32 @@ def test_dependence_min_shared(time_index_df, measure):
                     assert not (dep_df[measurement].isna()).any()
 
 
-@pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
-def test_dependence_callback(df_mi, measure):
-    breakpoint()
+@pytest.mark.parametrize("measure, expected", [
+    ("mutual", (18, 6, 26)),
+    ("pearson", (5, 3, 6)),
+    ("max", (21, 6, 29)),
+    ("all", (21, 6, 29))
+])
+def test_dependence_callback(df_mi, measure, expected):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
 
     mock_callback = MockCallback()
 
     df_mi.ww.dependence(measures=measure, callback=mock_callback)
 
-    # Should be 17 total calls
-    # TODO: update test
-    assert len(mock_callback.progress_history) == 17  # X 3 X X
+    total_calls, second_call_progress, total_progress = expected
+
+    assert len(mock_callback.progress_history) == total_calls
 
     assert mock_callback.unit == "calculations"
     # First call should be 1 of 26 calculations complete
     assert mock_callback.progress_history[0] == 1
-    # After second call should be 11 of 26 units complete
-    assert mock_callback.progress_history[1] == 11
+    assert mock_callback.progress_history[1] == second_call_progress
 
     # Should be 26 calculations at end with a positive elapsed time
-    assert mock_callback.total == 26
-    assert mock_callback.total_update == 26
-    assert mock_callback.progress_history[-1] == 26
+    assert mock_callback.total == total_progress
+    assert mock_callback.total_update == total_progress
+    assert mock_callback.progress_history[-1] == total_progress
     assert mock_callback.total_elapsed_time > 0
 
 
