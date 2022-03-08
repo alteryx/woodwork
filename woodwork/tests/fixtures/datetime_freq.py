@@ -7,7 +7,7 @@ ALL_ALIASES = [
     {"alias": ["B"], "desc": "business day frequency"},
     {"alias": ["C"], "desc": "custom business day frequency"},
     {"alias": ["D"], "desc": "calendar day frequency"},
-    {"alias": ["W"], "desc": "weekly frequency"},
+    {"alias": ["W-SUN", "W"], "desc": "weekly frequency"},
     {"alias": ["M"], "desc": "month end frequency"},
     {"alias": ["SM"], "desc": "semi-month end frequency (15th and end of month)"},
     {"alias": ["BM"], "desc": "business month end frequency"},
@@ -16,14 +16,14 @@ ALL_ALIASES = [
     {"alias": ["SMS"], "desc": "semi-month start frequency (1st and 15th)"},
     {"alias": ["BMS"], "desc": "business month start frequency"},
     {"alias": ["CBMS"], "desc": "custom business month start frequency"},
-    {"alias": ["Q"], "desc": "quarter end frequency"},
-    {"alias": ["BQ"], "desc": "business quarter end frequency"},
-    {"alias": ["QS"], "desc": "quarter start frequency"},
-    {"alias": ["BQS"], "desc": "business quarter start frequency"},
-    {"alias": ["A", "Y"], "desc": "year end frequency"},
-    {"alias": ["BA", "BY"], "desc": "business year end frequency"},
-    {"alias": ["AS", "YS"], "desc": "year start frequency"},
-    {"alias": ["BAS", "BYS"], "desc": "business year start frequency"},
+    {"alias": ["Q-DEC", "Q"], "desc": "quarter end frequency"},
+    {"alias": ["BQ-DEC", "BQ"], "desc": "business quarter end frequency"},
+    {"alias": ["QS-OCT", "QS"], "desc": "quarter start frequency"},
+    {"alias": ["BQS-OCT", "BQS"], "desc": "business quarter start frequency"},
+    {"alias": ["A-DEC", "A", "Y"], "desc": "year end frequency"},
+    {"alias": ["BA-DEC", "BA", "BY"], "desc": "business year end frequency"},
+    {"alias": ["AS-JAN", "AS", "YS"], "desc": "year start frequency"},
+    {"alias": ["BAS-JAN", "BAS", "BYS"], "desc": "business year start frequency"},
     {"alias": ["BH"], "desc": "business hour frequency"},
     {"alias": ["H"], "desc": "hourly frequency"},
     {"alias": ["T", "min"], "desc": "minutely frequency"},
@@ -388,7 +388,7 @@ def case8():
         "2005-01-01T05:00:00.000Z",
     ]
     
-    dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
+    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
     expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
@@ -398,11 +398,11 @@ def case8():
         'estimated_range_start': dates.loc[0].isoformat(),
         'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
         'duplicate_values': [
-            {'dt': "2005-01-01T02:00:00", 'idx': 3, 'range': 2},
+            {'dt': "2005-01-01T02:00:00", 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 2},
         ],
         'missing_values': [],
         'extra_values': [
-            {'dt': "2005-01-01T03:10:00", 'idx': 6, 'range': 1},
+            {'dt': "2005-01-01T03:10:00", 'idx': (HEAD_RANGE_LEN - 1) + 6, 'range': 1},
         ],
         'nan_values': []
     }
@@ -428,7 +428,7 @@ def case9():
         "2005-01-01T05:00:00.000Z",
     ]
     
-    dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
+    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
 
     expected_debug_obj = {
         'actual_range_start': dates.loc[0].isoformat(),
@@ -438,10 +438,10 @@ def case9():
         'estimated_range_start': dates.loc[0].isoformat(),
         'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
         'duplicate_values': [
-            {'dt': "2005-01-01T02:00:00", 'idx': 3, 'range': 2},
+            {'dt': "2005-01-01T02:00:00", 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 2},
         ],
         'missing_values': [
-            {'dt': "2005-01-01T04:00:00", 'idx': 4, 'range': 1},
+            {'dt': "2005-01-01T04:00:00", 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 1},
         ],
         'extra_values': [],
         'nan_values': []
@@ -454,62 +454,6 @@ def case9():
 
 
 
-# def case0():
-#     # 1 hour separation
-#     # Missing 2005-01-01 20:00:00 at index 20
-#     dates_1 = pd.date_range("2005-01-01 00:00:00", periods=20, freq="1H")
-#     dates_2 = pd.date_range("2005-01-01 21:00:00", periods=30, freq="1H")
-#     dates = dates_1.append(dates_2)
-
-#     return {
-#         "actual_range_start": "2005-01-01T00:00:00",
-#         "actual_range_end": "2005-01-03T02:00:00",
-#         "message": None,
-#         "estimated_freq": "H",
-#         "estimated_range_start": "2005-01-01T00:00:00",
-#         "estimated_range_end": "2005-01-03T02:00:00",
-#         "duplicate_values": [],
-#         "missing_values": [{"dt": "2005-01-01T20:00:00", "idx": 20, "range": 1}],
-#         "extra_values": [],
-#         "data": dates,
-#     }
-
-#     return {
-#         "name": "1 hour separation",
-#         "description": "Missing 2005-01-01 20:00:00 at index 20",
-#         "data": dates,
-#         "actual_freq": ["H"],
-#     }
-
-
-# def case1():
-#     # 2 day separation
-#     # Missing 2005-02-10 at index 20
-#     dates_1 = pd.date_range("2005-01-01", periods=20, freq="2D")
-#     dates_2 = pd.date_range("2005-02-12", periods=30, freq="2D")
-#     dates = dates_1.append(dates_2)
-
-#     return {
-#         "name": "2 day separation",
-#         "description": "Missing 2005-02-10 at index 20",
-#         "data": dates,
-#         "actual_freq": ["2D"],
-#     }
-
-
-# def case2():
-#     # 3 week separation
-#     # Missing 2006-02-26 at index 20
-#     dates_1 = pd.date_range("2005-01-02", periods=20, freq="3W")
-#     dates_2 = pd.date_range("2006-03-19", periods=30, freq="3W")
-#     dates = dates_1.append(dates_2)
-
-#     return {
-#         "name": "3 week separation",
-#         "description": " Missing 2006-02-26 at index 20",
-#         "data": dates,
-#         "actual_freq": ["3W", "3W-SUN"],
-#     }
 
 
 # def case3():

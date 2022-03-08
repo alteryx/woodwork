@@ -35,7 +35,6 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
     pandas_inferred_freq = pd.infer_freq(observed_ts)
 
     if pandas_inferred_freq:
-        pandas_inferred_freq = pandas_inferred_freq.split("-")[0]
         return inference_response(
             inferred_freq=pandas_inferred_freq,
             debug_obj=InferDebug(),
@@ -59,6 +58,8 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
 
     actual_range_start = observed_ts_clean.min().isoformat()
     actual_range_end = observed_ts_clean.max().isoformat()
+
+    print("DAVE", actual_range_start, actual_range_end)
 
     # Determine if series is long enough for inference
     if len(observed_ts_clean) < 3:
@@ -91,6 +92,8 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
 
     # Generate Frequency Candidates
     alias_dict = _generate_freq_candidates(observed_ts_clean)
+
+    print(alias_dict)
 
     most_likely_freq = _determine_most_likely_freq(alias_dict)
 
