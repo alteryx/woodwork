@@ -384,6 +384,7 @@ def get_valid_pearson_types():
 
     return valid_types
 
+
 def _get_column_logical_type(series, logical_type, name):
     if logical_type:
         return _parse_logical_type(logical_type, name)
@@ -555,7 +556,8 @@ def _update_progress(
 
         return new_progress
 
-class CallbackCaller():
+
+class CallbackCaller:
     def __init__(self, callback, unit, total, start_time=None, current_progress=0):
         if start_time is not None:
             self.start_time = start_time
@@ -567,14 +569,16 @@ class CallbackCaller():
         self.total = total
 
     def update(self, progress_increment):
-        '''
+        """
         Args:
             progress_increment (int): change in progress since the last call
-        '''
+        """
         if self.callback is not None:
             elapsed_time = timer() - self.start_time
             new_progress = self.current_progress + progress_increment
-            self.callback(progress_increment, new_progress, self.total, self.unit, elapsed_time)
+            self.callback(
+                progress_increment, new_progress, self.total, self.unit, elapsed_time
+            )
             self.current_progress = new_progress
 
 

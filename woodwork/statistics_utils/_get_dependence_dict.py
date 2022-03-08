@@ -9,9 +9,9 @@ from sklearn.metrics.cluster import adjusted_mutual_info_score
 from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
-from woodwork.logical_types import IntegerNullable
 from woodwork.exceptions import SparseDataWarning
-from woodwork.utils import get_valid_mi_types, get_valid_pearson_types, CallbackCaller
+from woodwork.logical_types import IntegerNullable
+from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
 
 
 def _get_dependence_dict(
@@ -127,7 +127,7 @@ def _get_dependence_dict(
     # Assume 1 unit for preprocessing, n for handling null, m for make categorical
     # (p*p+p)/2 for pearson and (m*m+m)/2 for mutual
     total_loops = 1 + n + m + (p * p + p) / 2 + (m * m + m) / 2
-    callback_caller = CallbackCaller(callback, unit, total_loops, start_time = start_time)
+    callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
 
     data = data.dropna()
@@ -177,7 +177,7 @@ def _get_dependence_dict(
                             score = adjusted_mutual_info_score(data[a_col], data[b_col])
                         elif measure == "pearson":
                             score = np.corrcoef(data[a_col], data[b_col])[0, 1]
-                        
+
                         score = score * num_intersect / num_union
                         result[measure] = score
                 # increment progress in either case
@@ -185,7 +185,9 @@ def _get_dependence_dict(
 
     for measure in calc_order:
         if measure == "mutual":
-            data = _bin_numeric_cols_into_categories(dataframe.ww.schema, data, num_bins)
+            data = _bin_numeric_cols_into_categories(
+                dataframe.ww.schema, data, num_bins
+            )
             callback_caller.update(n)
             col_names = mutual_columns
         elif measure == "pearson":
@@ -194,12 +196,12 @@ def _get_dependence_dict(
             break
         _calculate(callback_caller, data, col_names, results, measure)
 
-    
     for (col_a, col_b), result in results.items():
         if calc_max:
             if "pearson" in result:
                 score = pd.Series(
-                    [result["mutual"], abs(result["pearson"])], index=["mutual", "pearson"]
+                    [result["mutual"], abs(result["pearson"])],
+                    index=["mutual", "pearson"],
                 )
                 result["max"] = score.max()
                 if extra_stats:
@@ -240,7 +242,7 @@ def _get_valid_columns(dataframe, valid_types):
 
 
 def _validate_measures(measures):
-    # TODO: test empty measures list   
+    # TODO: test empty measures list
     if not isinstance(measures, list):
         measures = [measures]
 
@@ -251,7 +253,9 @@ def _validate_measures(measures):
     for measure in measures:
         if measure == "all":
             if not measures == ["all"]:
-                warnings.warn("additional measures to 'all' measure found; 'all' should be used alone")
+                warnings.warn(
+                    "additional measures to 'all' measure found; 'all' should be used alone"
+                )
             measures = ["max", "pearson", "mutual"]
             calc_pearson = True
             calc_mutual = True
@@ -272,5 +276,5 @@ def _validate_measures(measures):
         calc_order.append("pearson")
     if calc_mutual:
         calc_order.append("mutual")
-    
+
     return measures, calc_order, calc_max

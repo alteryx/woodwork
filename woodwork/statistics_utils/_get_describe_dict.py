@@ -10,7 +10,7 @@ from ._get_top_values_categorical import _get_top_values_categorical
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.logical_types import Datetime, LatLong
-from woodwork.utils import _is_latlong_nan, CallbackCaller
+from woodwork.utils import CallbackCaller, _is_latlong_nan
 
 
 def _get_describe_dict(

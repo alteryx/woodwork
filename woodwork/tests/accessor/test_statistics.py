@@ -150,7 +150,13 @@ def test_dependence(df_mi, measure):
                 "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
                 "max": [1.0, 0.0, 0, 0.5, 0.208],
             },
-            index=["ints_bools", "ints_strs", "strs_bools", "dates_ints", "dates_bools"],
+            index=[
+                "ints_bools",
+                "ints_strs",
+                "strs_bools",
+                "dates_ints",
+                "dates_bools",
+            ],
         )
 
     for measurement in measure_columns:
@@ -233,7 +239,13 @@ def test_dependence_num_bins(df_mi, measure):
                 "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
                 "max": [0.0, 1.0, 0, 1.0, 1.0],
             },
-            index=["bools_ints", "strs_ints", "bools_strs", "dates_ints", "bools_strs2"],
+            index=[
+                "bools_ints",
+                "strs_ints",
+                "bools_strs",
+                "dates_ints",
+                "bools_strs2",
+            ],
         )
 
     if measure == "all":
@@ -355,7 +367,9 @@ def test_dependence_extra_stats(measure):
     if measure in ("max", "all"):
         assert "measure_used" in dep_df_extra.columns
         # recalculate max to compare
-        both_dep_df = df_nans.ww.dependence(measures=["mutual", "pearson"], min_shared=3)
+        both_dep_df = df_nans.ww.dependence(
+            measures=["mutual", "pearson"], min_shared=3
+        )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
         both_dep_df = both_dep_df.transpose()
@@ -365,8 +379,9 @@ def test_dependence_extra_stats(measure):
             col_2 = dep_df_extra["column_2"][row]
             expected_max = both_dep_df[col_1][col_2].idxmax()
             assert (
-                expected_max == dep_df_extra["measure_used"][row] or
-                both_dep_df[col_1][col_2]["pearson"] == both_dep_df[col_1][col_2]["mutual"]
+                expected_max == dep_df_extra["measure_used"][row]
+                or both_dep_df[col_1][col_2]["pearson"]
+                == both_dep_df[col_1][col_2]["mutual"]
             )
     else:
         assert "measure_used" not in dep_df_extra.columns
@@ -399,12 +414,15 @@ def test_dependence_min_shared(time_index_df, measure):
                     assert not (dep_df[measurement].isna()).any()
 
 
-@pytest.mark.parametrize("measure, expected", [
-    ("mutual", (18, 6, 26)),
-    ("pearson", (5, 3, 6)),
-    ("max", (21, 6, 29)),
-    ("all", (21, 6, 29))
-])
+@pytest.mark.parametrize(
+    "measure, expected",
+    [
+        ("mutual", (18, 6, 26)),
+        ("pearson", (5, 3, 6)),
+        ("max", (21, 6, 29)),
+        ("all", (21, 6, 29)),
+    ],
+)
 def test_dependence_callback(df_mi, measure, expected):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
 
