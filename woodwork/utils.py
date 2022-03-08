@@ -530,7 +530,7 @@ def concat_columns(objs, validate_schema=True):
 
 
 class CallbackCaller:
-    '''
+    """
     Helper class for updating progress of a function and making a call to the progress callback
     function, if provided. Adds the progress increment to the current progress.
 
@@ -541,9 +541,10 @@ class CallbackCaller:
         - unit (str): unit of measurement for progress/total
         - time_elapsed (float): total time in seconds elapsed since start of call
 
-    '''
+    """
+
     def __init__(self, callback, unit, total, start_time=None, start_progress=0):
-        '''
+        """
         Args:
             callback (func): callback method to call
             unit (str): unit of measurement for progress/total
@@ -551,7 +552,7 @@ class CallbackCaller:
             start_time (datetime): when time started for the callback.  Defaults
                 to when the class instance is created
             start_progress (int): starting progress for the callback.  Defaults to 0.
-        '''
+        """
         if start_time is not None:
             self.start_time = start_time
         else:
