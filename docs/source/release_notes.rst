@@ -12,10 +12,12 @@ Future Release
         * Calculate nunique for Unknown columns in `_get_describe_dict`  (:pr:`1322`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Add backport release support (:pr:`1321`)
     * Testing Changes
+        * Limit max version for ``responses`` dependency (:pr:`1327`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`mingdavidqi`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
 
 v0.13.0 Feb 16, 2022
 ====================
