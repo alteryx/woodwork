@@ -1,5 +1,3 @@
-from woodwork.serializer_utils import read_table_typing_information
-
 from woodwork.deserializers import (
     ArrowDeserializer,
     CSVDeserializer,
@@ -8,6 +6,7 @@ from woodwork.deserializers import (
     ParquetDeserializer,
     PickleDeserializer,
 )
+from woodwork.serializer_utils import read_table_typing_information
 
 FORMAT_TO_DESERIALIZER = {
     CSVDeserializer.format: CSVDeserializer,
@@ -30,5 +29,3 @@ def get_deserializer(
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
 
     return deserializer_cls(path, filename, data_subdirectory, typing_info)
-
-

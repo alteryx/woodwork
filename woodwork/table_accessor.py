@@ -21,8 +21,8 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
-from woodwork.serializers.utils import get_serializer
 from woodwork.serializers.serializer_base import typing_info_to_dict
+from woodwork.serializers.utils import get_serializer
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,

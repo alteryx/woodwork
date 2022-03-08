@@ -7,7 +7,6 @@ from woodwork.serializers import (
     PickleSerializer,
 )
 
-
 # Dictionary used to get the corret serializer from a given format
 FORMAT_TO_SERIALIZER = {
     CSVSerializer.format: CSVSerializer,
@@ -27,4 +26,3 @@ def get_serializer(format=None):
         raise ValueError(error.format(", ".join(FORMAT_TO_SERIALIZER.keys())))
 
     return serializer
-

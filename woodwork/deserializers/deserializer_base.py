@@ -1,13 +1,16 @@
 import os
 import tarfile
 import tempfile
+import warnings
+from itertools import zip_longest
 from pathlib import Path
 
 import pandas as pd
 
 import woodwork as ww
-# from woodwork.deserializers.utils import _check_schema_version
+from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
+from woodwork.serializers.serializer_base import SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
@@ -149,15 +152,6 @@ class Deserializer:
             lib = pd
 
         return lib
-
-
-import warnings
-from itertools import zip_longest
-
-
-from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
-
-from woodwork.serializers.serializer_base import SCHEMA_VERSION
 
 
 def _check_schema_version(saved_version_str):

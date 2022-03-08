@@ -4,14 +4,10 @@ import os
 import tarfile
 import tempfile
 
-from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import _is_s3, _is_url
-import warnings
-from itertools import zip_longest
-
-from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
+from woodwork.utils import _is_s3, _is_url
 
 SCHEMA_VERSION = "11.3.0"
 
