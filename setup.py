@@ -21,6 +21,10 @@ setup(
     version="0.13.0",
     description="a two-dimensional data object with labeled axes and typing information",
     url="https://github.com/alteryx/woodwork/",
+    project_urls={
+        "Documentation": "https://woodwork.alteryx.com",
+        "Source": "https://github.com/alteryx/woodwork",
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
