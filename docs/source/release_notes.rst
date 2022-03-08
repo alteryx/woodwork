@@ -9,7 +9,7 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
-        * Replace Koalas with the pandas API on Spark (:pr:``)
+        * Replace Koalas with the pandas API on Spark (:pr:`1331`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
     * Testing Changes
