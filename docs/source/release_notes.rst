@@ -19,6 +19,12 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
+Breaking Changes
+++++++++++++++++
+    * :pr:`1325`: The following serialization functions have been removed from the API:
+      ``woodwork.serialize.write_dataframe``, ``woodwork.serialize.write_typing_info`` and
+      ``woodwork.serialize.write_woodwork_table``.
+
 v0.13.0 Feb 16, 2022
 ====================
     .. warning::
