@@ -109,7 +109,7 @@ def test_accessor_bin_numeric_cols_into_categories():
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_same(df_same_mi, measure):
     df_same_mi.ww.init(logical_types={"nans": Categorical()})
-    dep_df = df_same_mi.ww.dependence(measure=measure, min_shared=3)
+    dep_df = df_same_mi.ww.dependence(measures=measure, min_shared=3)
 
     cols_used = set(np.unique(dep_df[["column_1", "column_2"]].values))
     assert "nans" not in cols_used
@@ -117,7 +117,7 @@ def test_dependence_same(df_same_mi, measure):
     assert dep_df.shape[0] == 1
 
     if measure == "all":
-        measure_columns = ["mutual", "pearson", "max"]
+        measure_columns = ["pearson", "mutual", "max"]
     else:
         measure_columns = [measure]
     for measure_col in measure_columns:
@@ -129,23 +129,29 @@ def test_dependence_same(df_same_mi, measure):
 def test_dependence(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
-    dep_df = df_mi.ww.dependence(measure=measure, min_shared=12)
-    assert dep_df.shape[0] == 10
+    dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
+    if measure == "pearson":
+        assert dep_df.shape[0] == 1
+    else:
+        assert dep_df.shape[0] == 10
 
     if measure == "all":
-        measure_columns = ["mutual", "pearson", "max"]
+        measure_columns = ["mutual", "max", "pearson"]
     else:
         measure_columns = [measure]
     assert dep_df.columns.tolist() == ["column_1", "column_2"] + measure_columns
 
-    expected_df = pd.DataFrame(
-        data={
-            "mutual": [1.0, 0.0, 0, 0.208, 0.208],
-            "pearson": [-1.0, np.nan, np.nan, 0.5, -0.5],
-            "max": [1.0, 0.0, 0, 0.5, 0.5],
-        },
-        index=["ints_bools", "ints_strs", "strs_bools", "dates_ints", "dates_bools"],
-    )
+    if measure == "pearson":
+        expected_df = pd.DataFrame(data={"pearson": [0.5]}, index=["dates_ints"])
+    else:
+        expected_df = pd.DataFrame(
+            data={
+                "mutual": [1.0, 0.0, 0, 0.208, 0.208],
+                "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
+                "max": [1.0, 0.0, 0, 0.5, 0.208],
+            },
+            index=["ints_bools", "ints_strs", "strs_bools", "dates_ints", "dates_bools"],
+        )
 
     for measurement in measure_columns:
         for row in expected_df.index:
@@ -161,7 +167,7 @@ def test_dependence(df_mi, measure):
 def test_dependence_many_rows(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
-    dep_df = df_mi.ww.dependence(measure=measure, min_shared=12)
+    dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
     many_rows_df = df_mi.ww.dependence(measure, nrows=100000, min_shared=12)
     pd.testing.assert_frame_equal(dep_df, many_rows_df)
     pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
@@ -174,7 +180,7 @@ def test_dependence_random_seed(df_mi, measure):
         pytest.xfail("koalas sample order differs, may not be deterministic")
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
-    dep_df = df_mi.ww.dependence(measure=measure, nrows=6, min_shared=6, random_seed=2)
+    dep_df = df_mi.ww.dependence(measures=measure, nrows=6, min_shared=6, random_seed=2)
     row = dep_df[(dep_df.column_1 == "ints") & (dep_df.column_2 == "dates")].index[0]
     if measure == "all":
         measure = "max"
@@ -191,10 +197,13 @@ def test_dependence_one_row(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measure, nrows=1, min_shared=1)
-    assert dep_df.shape[0] == 10
+    if measure == "pearson":
+        assert dep_df.shape[0] == 1
+    else:
+        assert dep_df.shape[0] == 10       
     expected = {"mutual": 1.0, "pearson": np.nan, "max": 1.0}
     if measure == "all":
-        measure_columns = ["mutual", "pearson", "max"]
+        measure_columns = ["pearson", "mutual", "max"]
     else:
         measure_columns = [measure]
 
@@ -210,19 +219,25 @@ def test_dependence_num_bins(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measure, num_bins=2, min_shared=12)
-    assert dep_df.shape[0] == 10
+    if measure == "pearson":
+        assert dep_df.shape[0] == 1
+    else:
+        assert dep_df.shape[0] == 10
 
-    expected_df = pd.DataFrame(
-        data={
-            "mutual": [0.0, 1.0, 0, 1.0, 1.0],
-            "pearson": [np.nan, np.nan, np.nan, np.nan, -1.0],
-            "max": [0.0, 1.0, 0, 1.0, 1.0],
-        },
-        index=["bools_ints", "strs_ints", "bools_strs", "dates_strs", "bools_strs2"],
-    )
+    if measure == "pearson":
+        expected_df = pd.DataFrame(data={"pearson": [0.5]}, index=["dates_ints"])
+    else:
+        expected_df = pd.DataFrame(
+            data={
+                "mutual": [0.0, 1.0, 0, 1.0, 1.0],
+                "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
+                "max": [0.0, 1.0, 0, 1.0, 1.0],
+            },
+            index=["bools_ints", "strs_ints", "bools_strs", "dates_ints", "bools_strs2"],
+        )
 
     if measure == "all":
-        measure_columns = ["mutual", "pearson", "max"]
+        measure_columns = ["pearson", "mutual", "max"]
     else:
         measure_columns = [measure]
 
@@ -239,11 +254,11 @@ def test_dependence_num_bins(df_mi, measure):
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_on_index(sample_df, measure):
     sample_df.ww.init(index="id")
-    dep_df = sample_df.ww.dependence(measure=measure, min_shared=3)
+    dep_df = sample_df.ww.dependence(measures=measure, min_shared=3)
 
     assert not ("id" in dep_df["column_1"].values or "id" in dep_df["column_2"].values)
 
-    dep_df = sample_df.ww.dependence(measure=measure, include_index=True)
+    dep_df = sample_df.ww.dependence(measures=measure, include_index=True)
     assert "id" in dep_df["column_1"].values or "id" in dep_df["column_2"].values
 
 
@@ -252,14 +267,14 @@ def test_dependence_returns_empty_df_properly(sample_df, measure):
     schema_df = sample_df[["id", "age"]]
     schema_df.ww.init(index="id")
 
-    dependence_df = schema_df.ww.dependence(measure=measure)
+    dependence_df = schema_df.ww.dependence(measures=measure)
     assert dependence_df.empty
 
 
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_sort(df_mi, measure):
     df_mi.ww.init()
-    dep_df = df_mi.ww.dependence(measure=measure, min_shared=12)
+    dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
 
     if measure == "all":
         measure = "max"
@@ -277,8 +292,8 @@ def test_dependence_sort(df_mi, measure):
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_dict(df_mi, measure):
     df_mi.ww.init()
-    dep_dict = df_mi.ww.dependence_dict(measure=measure, min_shared=12)
-    dep_df = df_mi.ww.dependence(measure=measure, min_shared=12)
+    dep_dict = df_mi.ww.dependence_dict(measures=measure, min_shared=12)
+    dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
 
     pd.testing.assert_frame_equal(pd.DataFrame(dep_dict), dep_df)
 
@@ -286,11 +301,12 @@ def test_dependence_dict(df_mi, measure):
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_unique_cols(df_mi_unique, measure):
     df_mi_unique.ww.init()
-    dependence_df = df_mi_unique.ww.dependence(measure=measure)
+    dependence_df = df_mi_unique.ww.dependence(measures=measure)
 
     cols_used = set(np.unique(dependence_df[["column_1", "column_2"]].values))
-    assert "unique" in cols_used
-    assert "unique_with_one_nan" in cols_used
+    if measure != "pearson":
+        assert "unique" in cols_used
+        assert "unique_with_one_nan" in cols_used
     assert "unique_with_nans" in cols_used
     assert "ints" in cols_used
 
@@ -338,7 +354,8 @@ def test_dependence_extra_stats(measure):
     assert (dep_df_extra["shared_rows"] == 3).all()
     if measure in ("max", "all"):
         assert "measure_used" in dep_df_extra.columns
-        both_dep_df = df_nans.ww.dependence(measure=["mutual", "pearson"], min_shared=3)
+        # recalculate max to compare
+        both_dep_df = df_nans.ww.dependence(measures=["mutual", "pearson"], min_shared=3)
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
         both_dep_df = both_dep_df.transpose()
@@ -347,7 +364,10 @@ def test_dependence_extra_stats(measure):
             col_1 = dep_df_extra["column_1"][row]
             col_2 = dep_df_extra["column_2"][row]
             expected_max = both_dep_df[col_1][col_2].idxmax()
-            assert expected_max == dep_df_extra["measure_used"][row]
+            assert (
+                expected_max == dep_df_extra["measure_used"][row] or
+                both_dep_df[col_1][col_2]["pearson"] == both_dep_df[col_1][col_2]["mutual"]
+            )
     else:
         assert "measure_used" not in dep_df_extra.columns
 
@@ -358,10 +378,10 @@ def test_dependence_min_shared(time_index_df, measure):
         logical_types={"strs": "categorical", "letters": "Categorical"}
     )
     for min_shared in (25, 4, 3):
-        dep_df = time_index_df.ww.dependence(measure=measure, min_shared=min_shared)
+        dep_df = time_index_df.ww.dependence(measures=measure, min_shared=min_shared)
 
         if measure == "all":
-            measure_columns = ["mutual", "pearson", "max"]
+            measure_columns = ["pearson", "mutual", "max"]
         else:
             measure_columns = [measure]
 
@@ -372,20 +392,25 @@ def test_dependence_min_shared(time_index_df, measure):
                 assert not (dep_df[measurement].isna()).all()
                 assert (dep_df[measurement].isna()).any()
             elif min_shared == 3:
-                assert not (dep_df[measurement].isna()).all()
-                assert not (dep_df[measurement].isna()).any()
+                if measure == "all" and measurement == "pearson":
+                    assert dep_df[measurement].isna().sum() == 12
+                else:
+                    assert not (dep_df[measurement].isna()).all()
+                    assert not (dep_df[measurement].isna()).any()
 
 
 @pytest.mark.parametrize("measure", ["mutual", "pearson", "max", "all"])
 def test_dependence_callback(df_mi, measure):
+    breakpoint()
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
 
     mock_callback = MockCallback()
 
-    df_mi.ww.dependence(measure=measure, callback=mock_callback)
+    df_mi.ww.dependence(measures=measure, callback=mock_callback)
 
     # Should be 17 total calls
-    assert len(mock_callback.progress_history) == 17
+    # TODO: update test
+    assert len(mock_callback.progress_history) == 17  # X 3 X X
 
     assert mock_callback.unit == "calculations"
     # First call should be 1 of 26 calculations complete
@@ -410,7 +435,7 @@ def test_dependence_with_string_index(measure):
         }
     )
     df.ww.init(index="id", logical_types={"id": "unknown"})
-    dependence_df = df.ww.dependence(measure=measure)
+    dependence_df = df.ww.dependence(measures=measure)
 
     cols_used = set(np.unique(dependence_df[["column_1", "column_2"]].values))
     assert "id" not in cols_used
@@ -434,7 +459,7 @@ def test_pearson_dict(_get_dependence_dict, df_mi):
     assert _get_dependence_dict.called
     _get_dependence_dict.assert_called_with(
         dataframe=df_mi,
-        measure=["pearson"],
+        measures=["pearson"],
         num_bins=5,
         nrows=100,
         include_index=True,
@@ -486,7 +511,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi):
     assert _get_dependence_dict.called
     _get_dependence_dict.assert_called_with(
         dataframe=df_mi,
-        measure=["mutual"],
+        measures=["mutual"],
         num_bins=5,
         nrows=100,
         include_index=True,

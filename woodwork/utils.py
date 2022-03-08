@@ -3,6 +3,7 @@ import importlib
 import re
 from inspect import isclass
 from mimetypes import add_type, guess_type
+from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
@@ -346,7 +347,6 @@ def get_valid_mi_types():
     Returns:
         list(LogicalType): A list of the LogicalTypes that can be use to calculate mutual information
     """
-    # TODO: add deprecation warning in favor of get_valid_dependence_types
     valid_types = []
     for ltype in ww.type_system.registered_types:
         if "category" in ltype.standard_tags:
@@ -363,9 +363,9 @@ def get_valid_mi_types():
     return valid_types
 
 
-def get_valid_dependence_types():
+def get_valid_pearson_types():
     """
-    Generate a list of LogicalTypes that are valid for calculating dependence. Note that
+    Generate a list of LogicalTypes that are valid for calculating Pearson correlation. Note that
     index columns are not valid for calculating dependence, but their types may be
     returned by this function.
 
@@ -373,10 +373,16 @@ def get_valid_dependence_types():
         None
 
     Returns:
-        list(LogicalType): A list of the LogicalTypes that can be use to calculate dependence
+        list(LogicalType): A list of the LogicalTypes that can be use to calculate Pearson correlation
     """
-    return get_valid_mi_types()
+    valid_types = []
+    for ltype in ww.type_system.registered_types:
+        if "numeric" in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif ltype == ww.logical_types.Datetime:
+            valid_types.append(ltype)
 
+    return valid_types
 
 def _get_column_logical_type(series, logical_type, name):
     if logical_type:
@@ -548,6 +554,28 @@ def _update_progress(
         callback_function(progress_increment, new_progress, total, unit, elapsed_time)
 
         return new_progress
+
+class CallbackCaller():
+    def __init__(self, callback, unit, total, start_time=None, current_progress=0):
+        if start_time is not None:
+            self.start_time = start_time
+        else:
+            self.start_time = timer()
+        self.callback = callback
+        self.unit = unit
+        self.current_progress = current_progress
+        self.total = total
+
+    def update(self, progress_increment):
+        '''
+        Args:
+            progress_increment (int): change in progress since the last call
+        '''
+        if self.callback is not None:
+            elapsed_time = timer() - self.start_time
+            new_progress = self.current_progress + progress_increment
+            self.callback(progress_increment, new_progress, self.total, self.unit, elapsed_time)
+            self.current_progress = new_progress
 
 
 def _infer_datetime_format(dates, n=100):

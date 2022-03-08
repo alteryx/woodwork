@@ -915,7 +915,7 @@ class WoodworkTableAccessor:
         """
         return _get_dependence_dict(
             dataframe=self._dataframe,
-            measure=["mutual"],
+            measures=["mutual"],
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
@@ -1027,7 +1027,7 @@ class WoodworkTableAccessor:
         """
         return _get_dependence_dict(
             dataframe=self._dataframe,
-            measure=["pearson"],
+            measures=["pearson"],
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
@@ -1094,7 +1094,7 @@ class WoodworkTableAccessor:
     @_check_table_schema
     def dependence_dict(
         self,
-        measure="all",
+        measures="all",
         num_bins=10,
         nrows=None,
         include_index=False,
@@ -1110,7 +1110,7 @@ class WoodworkTableAccessor:
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
                 from which to calculate dependence.
-            measure (list or str): which dependence measures to calculate.
+            measures (list or str): which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
 
@@ -1154,7 +1154,7 @@ class WoodworkTableAccessor:
         """
         return _get_dependence_dict(
             dataframe=self._dataframe,
-            measure=measure,
+            measures=measures,
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
@@ -1166,7 +1166,7 @@ class WoodworkTableAccessor:
 
     def dependence(
         self,
-        measure="all",
+        measures="all",
         num_bins=10,
         nrows=None,
         include_index=False,
@@ -1182,7 +1182,7 @@ class WoodworkTableAccessor:
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
                 from which to calculate dependence.
-            measure (list or str): which dependence measures to calculate.
+            measures (list or str): which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
 
@@ -1227,7 +1227,7 @@ class WoodworkTableAccessor:
         """
         dep_dict = _get_dependence_dict(
             dataframe=self._dataframe,
-            measure=measure,
+            measures=measures,
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
