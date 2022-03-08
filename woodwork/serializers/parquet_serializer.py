@@ -8,6 +8,7 @@ from woodwork.utils import import_or_raise
 
 
 class ParquetSerializer(Serializer):
+    """Serialize a Woodwork table to disk as a parquet file."""
     format = "parquet"
 
     def serialize(self, dataframe, profile_name, **kwargs):

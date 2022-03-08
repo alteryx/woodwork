@@ -8,6 +8,7 @@ from woodwork.utils import import_or_raise
 
 
 class OrcSerializer(Serializer):
+    """Serialize a Woodwork table to disk as an orc file."""
     format = "orc"
 
     def serialize(self, dataframe, profile_name, **kwargs):
@@ -26,6 +27,7 @@ class OrcSerializer(Serializer):
 
 
 def save_orc_file(dataframe, filepath):
+    """Utility function to write dataframe to disk as orc file."""
     from pyarrow import Table, orc
 
     df = dataframe.copy()

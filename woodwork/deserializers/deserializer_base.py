@@ -33,7 +33,7 @@ class Deserializer:
         return dataframe
 
     def configure_deserializer(self):
-        """Get required info from typing information to read data and initialize Woodwork"""
+        """Extract info from typing information required to read data and initialize Woodwork"""
         _check_schema_version(self.typing_info["schema_version"])
         loading_info = self.typing_info["loading_info"]
         if not (_is_s3(self.path) or _is_url(self.path)):

@@ -34,6 +34,7 @@ class Serializer:
         self.kwargs = {}
 
     def serialize(self, dataframe, profile_name, **kwargs):
+        """Serialize data and typing information to disk."""
         self.dataframe = dataframe
         self.profile_name = profile_name
         self.typing_info = typing_info_to_dict(self.dataframe)
@@ -47,6 +48,7 @@ class Serializer:
             self.save_to_local_path()
 
     def save_to_local_path(self):
+        """Serialize data and typing information to a local directory."""
         if self.data_subdirectory:
             os.makedirs(
                 os.path.join(self.write_path, self.data_subdirectory), exist_ok=True
@@ -57,6 +59,7 @@ class Serializer:
         self.write_typing_info()
 
     def save_to_s3(self):
+        """Serialize data and typing information to S3."""
         with tempfile.TemporaryDirectory() as tmpdir:
             self.write_path = tmpdir
             self.save_to_local_path()
@@ -70,11 +73,13 @@ class Serializer:
             )
 
     def write_dataframe(self):
+        """Save dataframe to disk."""
         raise NotImplementedError(
             "Must define write_dataframe on Serializer subclass"
         )  # pragma: no cover
 
     def write_typing_info(self):
+        """Save Woodwork typing information JSON file to disk."""
         loading_info = {
             "location": self.location,
             "type": self.format,
@@ -91,6 +96,7 @@ class Serializer:
             )
 
     def _get_filename(self):
+        """Get the full filepath that should be used to save the data."""
         if self.filename is None:
             ww_name = self.dataframe.ww.name or "data"
             basename = ".".join([ww_name, self.format])
@@ -102,6 +108,7 @@ class Serializer:
         return os.path.join(self.write_path, self.location)
 
     def _create_archive(self):
+        """Create a tar archive of data and typing information."""
         file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
         file_path = os.path.join(self.write_path, file_name)
         tar = tarfile.open(str(file_path), "w")

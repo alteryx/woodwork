@@ -28,6 +28,8 @@ FORMAT_TO_DESERIALIZER = {
 def get_deserializer(
     path, filename, data_subdirectory, typing_info_filename, profile_name
 ):
+    """Determine the proper Deserializer class to use based on the specified parameters.
+    Initializes and returns the proper Deserializer object."""
     typing_info = read_table_typing_information(
         path, typing_info_filename, profile_name
     )
@@ -44,6 +46,7 @@ def read_table_typing_information(path, typing_info_filename, profile_name):
     Args:
         path (str): Location on disk, S3 path, or URL to read typing info file.
         typing_info_filename (str): Name of JSON file in which typing info is stored.
+        profile_name (str, bool): The AWS profile specified to access to S3.
 
     Returns:
         dict: Woodwork typing information dictionary

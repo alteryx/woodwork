@@ -13,7 +13,7 @@ def read_woodwork_table(
     """Read Woodwork table from disk, S3 path, or URL.
 
     Args:
-        path (str): Directory on disk, S3 path, or URL to read `woodwork_typing_info.json`.
+        path (str): Directory on disk, S3 path, or URL to read data and typing information.
         filename (str, optional): The name of the file used to store the data during serialization. If not specified, will be
             determined from the typing info file.
         data_subdirectory (str, optional): The subdirectory in which the data was stored during serialization. Defaults to "data".

@@ -5,6 +5,7 @@ from woodwork.serializers.serializer_base import Serializer
 
 
 class CSVSerializer(Serializer):
+    """Serialize a Woodwork table to disk as a CSV file."""
     format = "csv"
 
     def __init__(self, **kwargs):
