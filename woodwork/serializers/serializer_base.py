@@ -4,16 +4,17 @@ import os
 import tarfile
 import tempfile
 
-import pandas as pd
-
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serializer_utils import clean_latlong, save_orc_file
+from woodwork.utils import _is_s3, _is_url
+import warnings
+from itertools import zip_longest
+
+from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
+from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
-from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 SCHEMA_VERSION = "11.3.0"
-FORMATS = ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
+
 PYARROW_IMPORT_ERROR_MESSAGE = (
     f"The pyarrow library is required to serialize to {format}.\n"
     "Install via pip:\n"
@@ -117,159 +118,6 @@ class Serializer:
         )
         tar.close()
         return file_path
-
-
-class CSVSerializer(Serializer):
-    format = "csv"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.default_kwargs = {
-            "sep": ",",
-            "encoding": "utf-8",
-            "engine": "python",
-            "index": False,
-        }
-
-    def serialize(self, dataframe, profile_name, **kwargs):
-        if _is_koalas_dataframe(dataframe):
-            if self.filename is not None:
-                raise ValueError(
-                    "Writing a Koalas dataframe to csv with a filename specified is not supported"
-                )
-            self.default_kwargs["multiline"] = True
-            self.default_kwargs["ignoreLeadingWhitespace"] = False
-            self.default_kwargs["ignoreTrailingWhitespace"] = False
-        self.kwargs = {**self.default_kwargs, **kwargs}
-        return super().serialize(dataframe, profile_name, **kwargs)
-
-    def _get_filename(self):
-        if self.filename is None:
-            ww_name = self.dataframe.ww.name or "data"
-            if _is_dask_dataframe(self.dataframe):
-                basename = "{}-*.{}".format(ww_name, self.format)
-            else:
-                basename = ".".join([ww_name, self.format])
-        else:
-            basename = self.filename
-        self.location = basename
-        if self.data_subdirectory:
-            self.location = os.path.join(self.data_subdirectory, basename)
-        return os.path.join(self.write_path, self.location)
-
-    def write_dataframe(self):
-        csv_kwargs = self.kwargs.copy()
-        # engine kwarg not needed for writing, only reading
-        if "engine" in csv_kwargs.keys():
-            del csv_kwargs["engine"]
-        if _is_koalas_dataframe(self.dataframe):
-            dataframe = self.dataframe.ww.copy()
-            columns = list(dataframe.select_dtypes("object").columns)
-            dataframe[columns] = dataframe[columns].astype(str)
-            csv_kwargs["compression"] = str(csv_kwargs["compression"])
-        else:
-            dataframe = self.dataframe
-        file = self._get_filename()
-        dataframe.to_csv(file, **csv_kwargs)
-
-
-class ParquetSerializer(Serializer):
-    format = "parquet"
-
-    def serialize(self, dataframe, profile_name, **kwargs):
-        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
-        if self.filename is not None and _is_dask_dataframe(dataframe):
-            raise ValueError(
-                "Writing a Dask dataframe to parquet with a filename specified is not supported"
-            )
-        if self.filename is not None and _is_koalas_dataframe(dataframe):
-            raise ValueError(
-                "Writing a Koalas dataframe to parquet with a filename specified is not supported"
-            )
-        self.kwargs["engine"] = "pyarrow"
-        return super().serialize(dataframe, profile_name, **kwargs)
-
-    def write_dataframe(self):
-        file = self._get_filename()
-        dataframe = clean_latlong(self.dataframe)
-        dataframe.to_parquet(file, **self.kwargs)
-
-
-class FeatherSerializer(Serializer):
-    format = "feather"
-
-    def serialize(self, dataframe, profile_name, **kwargs):
-        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
-        return super().serialize(dataframe, profile_name, **kwargs)
-
-    def write_dataframe(self):
-        file = self._get_filename()
-        dataframe = clean_latlong(self.dataframe)
-        dataframe.to_feather(file, **self.kwargs)
-
-
-class ArrowSerializer(FeatherSerializer):
-    format = "arrow"
-
-
-class OrcSerializer(Serializer):
-    format = "orc"
-
-    def serialize(self, dataframe, profile_name, **kwargs):
-        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
-        # Serialization to orc relies on pyarrow.Table.from_pandas which doesn't work with Dask
-        if _is_dask_dataframe(dataframe):
-            msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
-            raise ValueError(msg)
-        self.kwargs["engine"] = "pyarrow"
-        return super().serialize(dataframe, profile_name, **kwargs)
-
-    def write_dataframe(self):
-        file = self._get_filename()
-        dataframe = clean_latlong(self.dataframe)
-        save_orc_file(dataframe, file)
-
-
-class PickleSerializer(Serializer):
-    format = "pickle"
-
-    def write_dataframe(self):
-        if not isinstance(self.dataframe, pd.DataFrame):
-            msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
-            raise ValueError(msg)
-
-        file = self._get_filename()
-        self.dataframe.to_pickle(file, **self.kwargs)
-
-
-# Dictionary mapping content types to the appropriate format specifier
-CONTENT_TYPE_TO_FORMAT = {
-    "text/csv": "csv",
-    "application/parquet": "parquet",
-    "application/arrow": "arrow",
-    "application/feather": "feather",
-    "application/orc": "orc",
-}
-
-# Dictionary used to get the corret serializer from a given format
-FORMAT_TO_SERIALIZER = {
-    CSVSerializer.format: CSVSerializer,
-    PickleSerializer.format: PickleSerializer,
-    ParquetSerializer.format: ParquetSerializer,
-    ArrowSerializer.format: ArrowSerializer,
-    FeatherSerializer.format: FeatherSerializer,
-    OrcSerializer.format: OrcSerializer,
-}
-
-
-def get_serializer(format=None):
-    """Get serializer class based on format"""
-    serializer = FORMAT_TO_SERIALIZER.get(format)
-    if serializer is None:
-        error = "must be one of the following formats: {}"
-        raise ValueError(error.format(", ".join(FORMAT_TO_SERIALIZER.keys())))
-
-    return serializer
 
 
 def typing_info_to_dict(dataframe):

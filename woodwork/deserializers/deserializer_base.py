@@ -1,17 +1,13 @@
 import os
 import tarfile
 import tempfile
-import warnings
-from itertools import zip_longest
 from pathlib import Path
 
 import pandas as pd
 
 import woodwork as ww
-from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
+# from woodwork.deserializers.utils import _check_schema_version
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.serializer_utils import read_table_typing_information
-from woodwork.serializers import SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
@@ -155,71 +151,13 @@ class Deserializer:
         return lib
 
 
-class CSVDeserializer(Deserializer):
-    format = "csv"
-
-    def read_from_local_path(self):
-        lib = self._get_library()
-        return lib.read_csv(self.read_path, dtype=self.column_dtypes, **self.kwargs)
+import warnings
+from itertools import zip_longest
 
 
-class PickleDeserializer(Deserializer):
-    format = "pickle"
+from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 
-    def read_from_local_path(self):
-        lib = self._get_library()
-        return lib.read_pickle(self.read_path, **self.kwargs)
-
-
-class ParquetDeserializer(Deserializer):
-    format = "parquet"
-
-    def read_from_local_path(self):
-        lib = self._get_library()
-        return lib.read_parquet(self.read_path, engine=self.kwargs["engine"])
-
-
-class FeatherDeserializer(Deserializer):
-    format = "feather"
-
-    def read_from_local_path(self):
-        lib = self._get_library()
-        return lib.read_feather(self.read_path)
-
-
-class ArrowDeserializer(FeatherDeserializer):
-    format = "arrow"
-
-
-class OrcDeserializer(Deserializer):
-    format = "orc"
-
-    def read_from_local_path(self):
-        lib = self._get_library()
-        return lib.read_orc(self.read_path)
-
-
-FORMAT_TO_DESERIALIZER = {
-    CSVDeserializer.format: CSVDeserializer,
-    PickleDeserializer.format: PickleDeserializer,
-    ParquetDeserializer.format: ParquetDeserializer,
-    ArrowDeserializer.format: ArrowDeserializer,
-    FeatherDeserializer.format: FeatherDeserializer,
-    OrcDeserializer.format: OrcDeserializer,
-}
-
-
-def get_deserializer(
-    path, filename, data_subdirectory, typing_info_filename, profile_name
-):
-    typing_info = read_table_typing_information(
-        path, typing_info_filename, profile_name
-    )
-    format = typing_info["loading_info"]["type"]
-
-    deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
-
-    return deserializer_cls(path, filename, data_subdirectory, typing_info)
+from woodwork.serializers.serializer_base import SCHEMA_VERSION
 
 
 def _check_schema_version(saved_version_str):

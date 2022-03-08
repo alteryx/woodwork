@@ -115,7 +115,7 @@ ColumnSchema
 Serialization
 =============
 
-.. currentmodule:: woodwork.serializers
+.. currentmodule:: woodwork.serialize
 .. autosummary::
     :toctree: generated/
     
@@ -129,12 +129,6 @@ Deserialization
     :toctree: generated/
 
     read_woodwork_table
-
-.. currentmodule:: woodwork.deserializers
-.. autosummary::
-    :toctree: generated/
-
-    get_deserializer
 
 Logical Types
 =============

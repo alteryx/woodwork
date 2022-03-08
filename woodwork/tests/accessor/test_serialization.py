@@ -8,14 +8,15 @@ import pytest
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
 from woodwork.deserialize import read_woodwork_table
-from woodwork.deserializers import _check_schema_version
+from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
     WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
-from woodwork.serializers import SCHEMA_VERSION, get_serializer
+from woodwork.serializers.serializer_base import SCHEMA_VERSION
+from woodwork.serializers import get_serializer
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"

@@ -1,4 +1,4 @@
-from woodwork.deserializers import get_deserializer
+from woodwork.deserializers.utils import get_deserializer
 
 
 def read_woodwork_table(
