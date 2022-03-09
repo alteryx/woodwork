@@ -15,9 +15,11 @@ Future Release
         * Add backport release support (:pr:`1321`)
     * Testing Changes
         * Limit max version for ``responses`` dependency (:pr:`1327`)
+        * Add Python 3.10 support (:pr:`1316`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
+
 
 Breaking Changes
 ++++++++++++++++
