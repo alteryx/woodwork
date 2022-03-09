@@ -103,9 +103,17 @@ def test_email_inference(emails):
 
 
 def test_email_inference_failure(bad_emails):
+    dtypes = ["object", "string"]
+    if _is_spark_series(bad_emails[0]):
+        dtypes = get_spark_dtypes(dtypes)
+
     for series in bad_emails:
-        inferred_type = ww.type_system.infer_logical_type(series)
-        assert not isinstance(inferred_type, EmailAddress)
+        if _is_spark_series(series) and isinstance(series.iloc[0], tuple):
+            continue
+
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert not isinstance(inferred_type, EmailAddress)
 
 
 def test_categorical_inference(categories):
