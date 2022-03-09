@@ -130,7 +130,7 @@ Woodwork has several other Python dependencies that are used only for specific m
 | smart_open        | 5.0.0       | Required to read/write to URLs and S3  |
 | pyarrow           | 4.0.1       | Required to serialize to parquet       |
 | dask[distributed] | 2021.10.0   | Required to use with Dask DataFrames   |
-| pyspark           | 3.2.1       | Required to use with Spark DataFrames |
+| pyspark           | 3.2.0       | Required to use with Spark DataFrames |
 
 
 # Development
