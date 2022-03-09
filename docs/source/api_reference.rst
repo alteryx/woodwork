@@ -115,7 +115,7 @@ ColumnSchema
 Serialization
 =============
 
-.. currentmodule:: woodwork.serialize
+.. currentmodule:: woodwork.serializers.serializer_base
 .. autosummary::
     :toctree: generated/
     
