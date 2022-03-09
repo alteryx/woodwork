@@ -25,7 +25,8 @@ Breaking Changes
 ++++++++++++++++
     * :pr:`1325`: The following serialization functions have been removed from the API:
       ``woodwork.serialize.write_dataframe``, ``woodwork.serialize.write_typing_info`` and
-      ``woodwork.serialize.write_woodwork_table``.
+      ``woodwork.serialize.write_woodwork_table``. Also, the function ``woodwork.serialize.typing_info_to_dict``
+      has been moved to ``woodwork.serializers.serializer_base.typing_info_to_dict``.
 
 v0.13.0 Feb 16, 2022
 ====================
