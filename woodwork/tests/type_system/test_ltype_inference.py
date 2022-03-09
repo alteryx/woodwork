@@ -108,7 +108,7 @@ def test_email_inference_failure(bad_emails):
         dtypes = get_spark_dtypes(dtypes)
 
     for series in bad_emails:
-        if _is_spark_series(series) and isinstance(series.iloc[0], tuple):
+        if _is_spark_series(series) and isinstance(series.iloc[0], ps.series.Row):
             continue
 
         for dtype in dtypes:
