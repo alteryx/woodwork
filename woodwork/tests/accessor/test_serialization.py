@@ -6,23 +6,23 @@ import boto3
 import pandas as pd
 import pytest
 
-import woodwork.deserialize as deserialize
-import woodwork.serialize as serialize
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.deserialize import read_woodwork_table
+from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
     WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
+from woodwork.serializers import get_serializer
+from woodwork.serializers.serializer_base import SCHEMA_VERSION
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_woodwork_table_schema_{}.tar".format(
-    serialize.SCHEMA_VERSION
-)
+TEST_FILE = "test_serialization_woodwork_table_schema_{}.tar".format(SCHEMA_VERSION)
 S3_URL = "s3://woodwork-static/" + TEST_FILE
 URL = "https://woodwork-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -83,7 +83,7 @@ def test_to_dictionary(sample_df):
     double_val = "float64"
 
     expected = {
-        "schema_version": serialize.SCHEMA_VERSION,
+        "schema_version": SCHEMA_VERSION,
         "name": "test_data",
         "index": "id",
         "time_index": None,
@@ -315,11 +315,9 @@ def test_unserializable_table(sample_df, tmpdir):
 
 
 def test_serialize_wrong_format(sample_df, tmpdir):
-    sample_df.ww.init()
-
     error = "must be one of the following formats: csv, pickle, parquet"
     with pytest.raises(ValueError, match=error):
-        serialize.write_woodwork_table(sample_df, str(tmpdir), format="test")
+        get_serializer(format="test")
 
 
 def test_to_csv(sample_df, tmpdir):
@@ -346,7 +344,7 @@ def test_to_csv(sample_df, tmpdir):
         },
     )
     sample_df.ww.to_disk(str(tmpdir), format="csv", encoding="utf-8", engine="python")
-    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_df = read_woodwork_table(str(tmpdir))
 
     pd.testing.assert_frame_equal(
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -365,7 +363,7 @@ def test_to_disk_with_whitespace(whitespace_df, tmpdir, format):
             df.ww.to_disk(str(tmpdir), format="pickle")
     else:
         df.ww.to_disk(str(tmpdir), format=format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
         assert deserialized_df.ww.schema == df.ww.schema
         pd.testing.assert_frame_equal(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -380,7 +378,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     no_standard_tags_df.ww.to_disk(
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
-    deserialized_no_tags_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_no_tags_df = read_woodwork_table(str(tmpdir))
 
     standard_tags_df = sample_df.copy()
     standard_tags_df.ww.init(use_standard_tags=True)
@@ -388,7 +386,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     standard_tags_df.ww.to_disk(
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
-    deserialized_tags_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_tags_df = read_woodwork_table(str(tmpdir))
 
     assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
 
@@ -403,13 +401,13 @@ def test_deserialize_handles_indexes(sample_df, tmpdir):
         time_index="signup_date",
     )
     sample_df.ww.to_disk(str(tmpdir), format="csv")
-    deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+    deserialized_df = read_woodwork_table(str(tmpdir))
     assert deserialized_df.ww.index == "id"
     assert deserialized_df.ww.time_index == "signup_date"
 
 
 @pytest.mark.parametrize(
-    "file_format", ["pickle", "parquet", "arrow", "feather", "orc"]
+    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
 )
 def test_to_disk(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
@@ -429,7 +427,135 @@ def test_to_disk(sample_df, tmpdir, file_format):
             sample_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         sample_df.ww.to_disk(str(tmpdir), format=file_format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
+        pd.testing.assert_frame_equal(
+            to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+            to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+        )
+        assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+@pytest.mark.parametrize(
+    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
+)
+def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
+    if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+
+    sample_df.ww.init(index="id")
+    error_msg = None
+    if file_format == "orc" and _is_dask_dataframe(sample_df):
+        error_msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
+        error_type = ValueError
+    elif file_format == "pickle" and not isinstance(sample_df, pd.DataFrame):
+        error_msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
+        error_type = ValueError
+    elif file_format == "parquet" and _is_dask_dataframe(sample_df):
+        error_msg = "Writing a Dask dataframe to parquet with a filename specified is not supported"
+        error_type = ValueError
+    elif file_format == "csv" and _is_koalas_dataframe(sample_df):
+        error_msg = "Writing a Koalas dataframe to csv with a filename specified is not supported"
+        error_type = ValueError
+    elif file_format == "parquet" and _is_koalas_dataframe(sample_df):
+        error_msg = "Writing a Koalas dataframe to parquet with a filename specified is not supported"
+        error_type = ValueError
+
+    data_filename = f"custom_data.{file_format}"
+    filename_to_check = data_filename
+    if _is_dask_dataframe(sample_df):
+        data_filename = f"custom_data-*.{file_format}"
+        filename_to_check = f"custom_data-0.{file_format}"
+
+    if error_msg:
+        with pytest.raises(error_type, match=error_msg):
+            sample_df.ww.to_disk(
+                path=str(tmpdir), format=file_format, filename=data_filename
+            )
+    else:
+        sample_df.ww.to_disk(
+            path=str(tmpdir), format=file_format, filename=data_filename
+        )
+        assert os.path.isfile(os.path.join(tmpdir, "data", filename_to_check))
+        deserialized_df = read_woodwork_table(path=str(tmpdir), filename=data_filename)
+        pd.testing.assert_frame_equal(
+            to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+            to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+        )
+        assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+@pytest.mark.parametrize(
+    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
+)
+def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
+    if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+
+    sample_df.ww.init(index="id")
+    error_msg = None
+    if file_format == "orc" and _is_dask_dataframe(sample_df):
+        error_msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
+        error_type = ValueError
+    elif file_format == "pickle" and not isinstance(sample_df, pd.DataFrame):
+        error_msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
+        error_type = ValueError
+
+    custom_typing_filename = "custom_typing_info.json"
+    if error_msg:
+        with pytest.raises(error_type, match=error_msg):
+            sample_df.ww.to_disk(
+                str(tmpdir),
+                format=file_format,
+                typing_info_filename=custom_typing_filename,
+            )
+    else:
+        sample_df.ww.to_disk(
+            str(tmpdir), format=file_format, typing_info_filename=custom_typing_filename
+        )
+        assert os.path.isfile(os.path.join(tmpdir, custom_typing_filename))
+        deserialized_df = read_woodwork_table(
+            str(tmpdir), typing_info_filename=custom_typing_filename
+        )
+        pd.testing.assert_frame_equal(
+            to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+            to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+        )
+        assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+@pytest.mark.parametrize(
+    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
+)
+@pytest.mark.parametrize("data_subdirectory", ["custom_data_directory", None])
+def test_to_disk_custom_data_subdirectory(
+    sample_df, tmpdir, file_format, data_subdirectory
+):
+    if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+
+    sample_df.ww.init(index="id")
+    error_msg = None
+    if file_format == "orc" and _is_dask_dataframe(sample_df):
+        error_msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
+        error_type = ValueError
+    elif file_format == "pickle" and not isinstance(sample_df, pd.DataFrame):
+        error_msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
+        error_type = ValueError
+
+    if error_msg:
+        with pytest.raises(error_type, match=error_msg):
+            sample_df.ww.to_disk(
+                str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
+            )
+    else:
+        sample_df.ww.to_disk(
+            str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
+        )
+        if data_subdirectory:
+            assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
+        deserialized_df = read_woodwork_table(
+            str(tmpdir), data_subdirectory=data_subdirectory
+        )
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -459,7 +585,7 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
             latlong_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         latlong_df.ww.to_disk(str(tmpdir), format=file_format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
 
         pd.testing.assert_frame_equal(
             to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
@@ -486,7 +612,7 @@ def test_categorical_dtype_serialization(serialize_df, tmpdir):
         df = serialize_df.copy()
         df.ww.init(index="id", logical_types=ltypes)
         df.ww.to_disk(str(tmpdir), format=format)
-        deserialized_df = deserialize.read_woodwork_table(str(tmpdir))
+        deserialized_df = read_woodwork_table(str(tmpdir))
         pd.testing.assert_frame_equal(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
             to_pandas(df, index=df.ww.index, sort_index=True),
@@ -538,9 +664,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket, profile_name):
     )
     make_public(s3_client, s3_bucket)
 
-    deserialized_df = deserialize.read_woodwork_table(
-        TEST_S3_URL, profile_name=profile_name
-    )
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -554,9 +678,7 @@ def test_serialize_s3_pickle(sample_df_pandas, s3_client, s3_bucket, profile_nam
     sample_df_pandas.ww.init()
     sample_df_pandas.ww.to_disk(TEST_S3_URL, format="pickle", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(
-        TEST_S3_URL, profile_name=profile_name
-    )
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index, sort_index=True),
@@ -572,9 +694,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket, profile_name):
     sample_df.ww.init()
     sample_df.ww.to_disk(TEST_S3_URL, format="parquet", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(
-        TEST_S3_URL, profile_name=profile_name
-    )
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -635,7 +755,7 @@ def test_s3_test_profile(sample_df, s3_client, s3_bucket, setup_test_profile):
         profile_name="test",
     )
     make_public(s3_client, s3_bucket)
-    deserialized_df = deserialize.read_woodwork_table(TEST_S3_URL, profile_name="test")
+    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name="test")
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index),
@@ -658,8 +778,7 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     with open(str(write_path.join("woodwork_typing_info.json")), "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
     compression = None
-    serialize.write_woodwork_table(
-        sample_df,
+    sample_df.ww.to_disk(
         path=str(write_path),
         index="1",
         sep="\t",
@@ -674,7 +793,7 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
 @pytest.mark.parametrize("profile_name", [None, False])
 def test_deserialize_url_csv(sample_df_pandas, profile_name):
     sample_df_pandas.ww.init(index="id")
-    deserialized_df = deserialize.read_woodwork_table(URL, profile_name=profile_name)
+    deserialized_df = read_woodwork_table(URL, profile_name=profile_name)
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index),
         to_pandas(deserialized_df, index=deserialized_df.ww.index),
@@ -684,7 +803,7 @@ def test_deserialize_url_csv(sample_df_pandas, profile_name):
 
 def test_deserialize_s3_csv(sample_df_pandas):
     sample_df_pandas.ww.init(index="id")
-    deserialized_df = deserialize.read_woodwork_table(S3_URL, profile_name=False)
+    deserialized_df = read_woodwork_table(S3_URL, profile_name=False)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df_pandas, index=sample_df_pandas.ww.index),
@@ -696,9 +815,9 @@ def test_deserialize_s3_csv(sample_df_pandas):
 @patch("woodwork.table_accessor._validate_accessor_params")
 def test_deserialize_validation_control(mock_validate_accessor_params):
     assert not mock_validate_accessor_params.called
-    deserialize.read_woodwork_table(URL)
+    read_woodwork_table(URL)
     assert not mock_validate_accessor_params.called
-    deserialize.read_woodwork_table(URL, validate=True)
+    read_woodwork_table(URL, validate=True)
     assert mock_validate_accessor_params.called
 
 
@@ -710,16 +829,16 @@ def test_check_later_schema_version():
                 "The schema version of the saved Woodwork table "
                 "%s is greater than the latest supported %s. "
                 "You may need to upgrade woodwork. Attempting to load Woodwork table ..."
-                % (version_to_check, serialize.SCHEMA_VERSION)
+                % (version_to_check, SCHEMA_VERSION)
             )
             with pytest.warns(UpgradeSchemaWarning, match=warning_text):
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
         else:
             with pytest.warns(None) as record:
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
             assert len(record) == 0
 
-    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split(".")]
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
     test_version(major + 1, minor, patch)
     test_version(major, minor + 1, patch)
@@ -738,13 +857,13 @@ def test_earlier_schema_version():
                 % (version_to_check)
             )
             with pytest.warns(OutdatedSchemaWarning, match=warning_text):
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
         else:
             with pytest.warns(None) as record:
-                deserialize._check_schema_version(version_to_check)
+                _check_schema_version(version_to_check)
             assert len(record) == 0
 
-    major, minor, patch = [int(s) for s in serialize.SCHEMA_VERSION.split(".")]
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)
