@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import profile
 import tarfile
 import tempfile
 
@@ -36,11 +37,10 @@ class Serializer:
     def serialize(self, dataframe, profile_name, **kwargs):
         """Serialize data and typing information to disk."""
         self.dataframe = dataframe
-        self.profile_name = profile_name
         self.typing_info = typing_info_to_dict(self.dataframe)
 
         if _is_s3(self.path):
-            self.save_to_s3()
+            self.save_to_s3(profile_name)
         elif _is_url(self.path):
             raise ValueError("Writing to URLs is not supported")
         else:
@@ -58,13 +58,13 @@ class Serializer:
         self.write_dataframe()
         self.write_typing_info()
 
-    def save_to_s3(self):
+    def save_to_s3(self, profile_name):
         """Serialize data and typing information to S3."""
         with tempfile.TemporaryDirectory() as tmpdir:
             self.write_path = tmpdir
             self.save_to_local_path()
             archive_file_path = self._create_archive()
-            transport_params = get_transport_params(self.profile_name)
+            transport_params = get_transport_params(profile_name)
             use_smartopen(
                 archive_file_path,
                 self.path,
