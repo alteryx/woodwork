@@ -23,10 +23,9 @@ class Deserializer:
 
     def deserialize(self, profile_name, validate):
         """Reconstruct Woodwork dataframe from saved data and typing information"""
-        self.profile_name = profile_name
         self.configure_deserializer()
         if _is_url(self.path) or _is_s3(self.path):
-            dataframe = self.read_from_s3()
+            dataframe = self.read_from_s3(profile_name)
         else:
             dataframe = self.read_from_local_path()
         dataframe.ww.init(**self.ww_init_dict, validate=validate)
@@ -103,7 +102,7 @@ class Deserializer:
             "column_origins": column_origins,
         }
 
-    def read_from_s3(self):
+    def read_from_s3(self, profile_name):
         """Read data from S3 into a dataframe"""
         with tempfile.TemporaryDirectory() as tmpdir:
             tar_filename = Path(self.path).name
@@ -111,7 +110,7 @@ class Deserializer:
             transport_params = None
 
             if _is_s3(self.path):
-                transport_params = get_transport_params(self.profile_name)
+                transport_params = get_transport_params(profile_name)
 
             use_smartopen(tar_filepath, self.path, transport_params)
             with tarfile.open(str(tar_filepath)) as tar:
