@@ -541,6 +541,11 @@ def _infer_datetime_format(dates, n=100):
         n (int): the maximum number of nonnull rows to sample from the series
     """
     first_n = dates.dropna().head(n)
+
+    ps = import_or_none("pyspark.pandas")
+    if ps and isinstance(first_n, ps.series.Series):
+        first_n = first_n.to_pandas()
+
     if len(first_n) == 0:
         return None
     try:
