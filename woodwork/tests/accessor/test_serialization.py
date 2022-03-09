@@ -6,7 +6,7 @@ import boto3
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.deserialize import read_woodwork_table
 from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
@@ -440,7 +440,7 @@ def test_to_disk(sample_df, tmpdir, file_format):
 )
 def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
-        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
 
     sample_df.ww.init(index="id")
     error_msg = None
@@ -453,11 +453,11 @@ def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
     elif file_format == "parquet" and _is_dask_dataframe(sample_df):
         error_msg = "Writing a Dask dataframe to parquet with a filename specified is not supported"
         error_type = ValueError
-    elif file_format == "csv" and _is_koalas_dataframe(sample_df):
-        error_msg = "Writing a Koalas dataframe to csv with a filename specified is not supported"
+    elif file_format == "csv" and _is_spark_dataframe(sample_df):
+        error_msg = "Writing a Spark dataframe to csv with a filename specified is not supported"
         error_type = ValueError
-    elif file_format == "parquet" and _is_koalas_dataframe(sample_df):
-        error_msg = "Writing a Koalas dataframe to parquet with a filename specified is not supported"
+    elif file_format == "parquet" and _is_spark_dataframe(sample_df):
+        error_msg = "Writing a Spark dataframe to parquet with a filename specified is not supported"
         error_type = ValueError
 
     data_filename = f"custom_data.{file_format}"
@@ -489,7 +489,7 @@ def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
 )
 def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
-        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
 
     sample_df.ww.init(index="id")
     error_msg = None
@@ -531,7 +531,7 @@ def test_to_disk_custom_data_subdirectory(
     sample_df, tmpdir, file_format, data_subdirectory
 ):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
-        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Koalas")
+        pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
 
     sample_df.ww.init(index="id")
     error_msg = None

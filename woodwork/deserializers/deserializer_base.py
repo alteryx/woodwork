@@ -82,7 +82,7 @@ class Deserializer:
                 else:
                     cat_object = pd.CategoricalDtype(pd.Series(cat_values))
                 col_type = cat_object
-            elif table_type == "koalas" and col_type == "object":
+            elif table_type == "spark" and col_type == "object":
                 col_type = "string"
             self.column_dtypes[col_name] = col_type
 
@@ -136,15 +136,15 @@ class Deserializer:
                 "conda install dask"
             )
             lib = import_or_raise("dask.dataframe", DASK_ERR_MSG)
-        elif table_type == "koalas":
-            KOALAS_ERR_MSG = (
-                "Cannot load Koalas DataFrame - unable to import Koalas.\n\n"
+        elif table_type == "spark":
+            SPARK_ERR_MSG = (
+                "Cannot load Spark DataFrame - unable to import Spark.\n\n"
                 "Please install with pip or conda:\n\n"
-                'python -m pip install "woodwork[koalas]"\n\n'
-                "conda install koalas\n\n"
+                'python -m pip install "woodwork[spark]"\n\n'
+                "conda install spark\n\n"
                 "conda install pyspark"
             )
-            lib = import_or_raise("databricks.koalas", KOALAS_ERR_MSG)
+            lib = import_or_raise("pyspark.pandas", SPARK_ERR_MSG)
             if "compression" in self.kwargs.keys():
                 self.kwargs["compression"] = str(self.kwargs["compression"])
         else:
