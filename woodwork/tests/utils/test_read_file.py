@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.serialize import save_orc_file
+from woodwork.serializers.orc_serializer import save_orc_file
 from woodwork.utils import _replace_nan_strings
 
 

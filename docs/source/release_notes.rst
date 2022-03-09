@@ -9,17 +9,25 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
         * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)
         * Add backport release support (:pr:`1321`)
     * Testing Changes
-        * Limit max version for ``responses`` dependency (:pr:`1327`)
+        * Upgrade moto dependency requirement (:pr:`1327`, :pr:`1332`)
         * Add Python 3.10 support (:pr:`1316`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
 
+
+Breaking Changes
+++++++++++++++++
+    * :pr:`1325`: The following serialization functions have been removed from the API:
+      ``woodwork.serialize.write_dataframe``, ``woodwork.serialize.write_typing_info`` and
+      ``woodwork.serialize.write_woodwork_table``. Also, the function ``woodwork.serialize.typing_info_to_dict``
+      has been moved to ``woodwork.serializers.serializer_base.typing_info_to_dict``.
 
 v0.13.0 Feb 16, 2022
 ====================

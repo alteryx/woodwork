@@ -115,14 +115,11 @@ ColumnSchema
 Serialization
 =============
 
-.. currentmodule:: woodwork.serialize
+.. currentmodule:: woodwork.serializers.serializer_base
 .. autosummary::
     :toctree: generated/
     
     typing_info_to_dict
-    write_dataframe
-    write_typing_info
-    write_woodwork_table
 
 Deserialization
 ===============
@@ -131,7 +128,6 @@ Deserialization
 .. autosummary::
     :toctree: generated/
 
-    read_table_typing_information
     read_woodwork_table
 
 Logical Types
