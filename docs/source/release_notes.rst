@@ -9,6 +9,7 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
         * Add backport release support (:pr:`1321`)
@@ -19,6 +20,13 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
 
+
+Breaking Changes
+++++++++++++++++
+    * :pr:`1325`: The following serialization functions have been removed from the API:
+      ``woodwork.serialize.write_dataframe``, ``woodwork.serialize.write_typing_info`` and
+      ``woodwork.serialize.write_woodwork_table``. Also, the function ``woodwork.serialize.typing_info_to_dict``
+      has been moved to ``woodwork.serializers.serializer_base.typing_info_to_dict``.
 
 v0.13.0 Feb 16, 2022
 ====================
