@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import profile
 import tarfile
 import tempfile
 
