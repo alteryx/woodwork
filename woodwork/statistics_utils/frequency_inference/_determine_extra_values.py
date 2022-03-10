@@ -6,6 +6,18 @@ import pandas as pd
 
 
 def _determine_extra_values(estimated, observed):
+    """Calculate Extra Values in time_series:
+
+    Args:
+        observed_ts (Series): The observed time_series.
+
+    Returns:
+        (list(RangeObject)): A list of RangeObject data objects. A RangeObject has the following properties:
+
+        - dt: an ISO 8610 formatted string of the first extra timestamp
+        - idx: first index of the extra timestamp. Index is relative to observed timeseries
+        - range: the number of sequential elements that are extra
+    """
     estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated})
     observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed})
 

@@ -5,6 +5,18 @@ import pandas as pd
 
 
 def _determine_missing_values(estimated, observed):
+    """Calculate Missing Values in time_series:
+
+    Args:
+        observed_ts (Series): The observed time_series.
+
+    Returns:
+        (list(RangeObject)): A list of RangeObject data objects. A RangeObject has the following properties:
+
+        - dt: an ISO 8610 formatted string of the first missing timestamp
+        - idx: first index of the missing timestamp. Index is relative to estimated timeseries
+        - range: the number of sequential elements that are missing
+    """
     estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated})
     observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed})
 

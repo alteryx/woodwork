@@ -4,9 +4,22 @@ from ._types import RangeObject
 import pandas as pd
 
 
-def _determine_duplicate_values(observed):
+def _determine_duplicate_values(observed_ts):
+    """Calculate Duplicate Values in time_series:
+
+    Args:
+        observed_ts (Series): The observed time_series.
+
+    Returns:
+        (list(RangeObject)): A list of RangeObject data objects. A RangeObject has the following properties:
+
+        - dt: an ISO 8610 formatted string of the duplicate timestamp
+        - idx: first index of duplicate timestamp. Index is relative to observed timeseries
+        - range: the number of sequential elements that are duplicated
+    """
+
     observed_df = (
-        pd.DataFrame({OBSERVED_COLUMN_NAME: observed}).reset_index(drop=True).diff()
+        pd.DataFrame({OBSERVED_COLUMN_NAME: observed_ts}).reset_index(drop=True).diff()
     )
 
     observed_dupes = observed_df[observed_df[OBSERVED_COLUMN_NAME] == pd.Timedelta(0)]
@@ -20,7 +33,7 @@ def _determine_duplicate_values(observed):
     for start_idx, end_idx in ranges:
         out.append(
             RangeObject(
-                observed[start_idx].isoformat(), start_idx, end_idx - start_idx + 1
+                observed_ts[start_idx].isoformat(), start_idx, end_idx - start_idx + 1
             )
         )
 
