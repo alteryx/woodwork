@@ -192,8 +192,6 @@ def _get_dependence_dict(
             col_names = mutual_columns
         elif measure == "pearson":
             col_names = pearson_columns
-        elif measure == "max":
-            break
         _calculate(callback_caller, data, col_names, results, measure)
 
     for (col_a, col_b), result in results.items():
