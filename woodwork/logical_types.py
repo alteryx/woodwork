@@ -519,10 +519,9 @@ class Ordinal(LogicalType):
     def __init__(self, order=None):
         self.order = order
 
-    def validate(self, series):
+    def _validate_order_values(self, series):
         """Make sure order values are properly defined and confirm the supplied series
         does not contain any values that are not in the specified order values"""
-        super().validate(series)
         if self.order is None:
             raise TypeError("Must use an Ordinal instance with order values defined")
         elif not isinstance(self.order, (list, tuple)):
@@ -541,13 +540,17 @@ class Ordinal(LogicalType):
 
     def transform(self, series):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
-        self.validate(series)
+        self._validate_order_values(series)
 
         typed_ser = super().transform(series)
         if pdtypes.is_categorical_dtype(typed_ser.dtype):
             typed_ser = typed_ser.cat.set_categories(self.order, ordered=True)
 
         return typed_ser
+
+    def validate(self, series):
+        super().validate(series)
+        self._validate_order_values(series)
 
 
 class PhoneNumber(LogicalType):
