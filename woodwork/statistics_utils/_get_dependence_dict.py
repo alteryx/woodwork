@@ -134,7 +134,7 @@ def _get_dependence_dict(
     data = data.dropna()
     # cast nullable type to non-nullable
     for col_name in data:
-        column = dataframe.ww.schema.columns[col_name]
+        column = dataframe.ww.columns[col_name]
         if isinstance(column.logical_type, IntegerNullable):
             cur_dtype = data[col_name].dtype
             data[col_name] = data[col_name].astype(cur_dtype.name.lower())
