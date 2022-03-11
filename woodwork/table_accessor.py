@@ -973,7 +973,6 @@ class WoodworkTableAccessor:
     @_check_table_schema
     def pearson_correlation_dict(
         self,
-        num_bins=10,
         nrows=None,
         include_index=False,
         callback=None,
@@ -987,8 +986,6 @@ class WoodworkTableAccessor:
         see which Logical Types are supported.
 
         Args:
-            num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
             nrows (int): The number of rows to sample for when determining correlation.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
@@ -1018,7 +1015,6 @@ class WoodworkTableAccessor:
         return _get_dependence_dict(
             dataframe=self._dataframe,
             measures=["pearson"],
-            num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
             callback=callback,
@@ -1029,7 +1025,6 @@ class WoodworkTableAccessor:
 
     def pearson_correlation(
         self,
-        num_bins=10,
         nrows=None,
         include_index=False,
         callback=None,
@@ -1042,8 +1037,6 @@ class WoodworkTableAccessor:
         see which Logical Types are supported.
 
         Args:
-            num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
             nrows (int): The number of rows to sample for when determining correlation.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
@@ -1071,7 +1064,6 @@ class WoodworkTableAccessor:
             Pearson values are between -1 and 1, with 0 meaning no correlation.
         """
         pearson_dict = self.pearson_correlation_dict(
-            num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
             callback=callback,
@@ -1110,7 +1102,7 @@ class WoodworkTableAccessor:
                 - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
             num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
+                numeric features into categorical. Pearson calculation does not use binning.
             nrows (int): The number of rows to sample for when determining dependence.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
@@ -1183,7 +1175,7 @@ class WoodworkTableAccessor:
                 - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
             num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
+                numeric features into categorical. Pearson calculation does not use binning.
             nrows (int): The number of rows to sample for when determining dependence.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.

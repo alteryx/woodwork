@@ -42,7 +42,7 @@ def _get_dependence_dict(
                 - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
         num_bins (int): Determines number of bins to use for converting
-            numeric features into categorical.
+            numeric features into categorical. Pearson calculation does not use binning.
         nrows (int): The number of rows to sample for when determining dependence.
             If specified, samples the desired number of rows from the data.
             Defaults to using all rows.

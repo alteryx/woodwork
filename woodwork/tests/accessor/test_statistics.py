@@ -454,7 +454,6 @@ def test_dependence_with_string_index(measure):
 def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.init()
     df_mi.ww.pearson_correlation_dict(
-        num_bins=5,
         nrows=100,
         include_index=True,
         callback=mock_callback,
@@ -466,7 +465,6 @@ def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     _get_dependence_dict.assert_called_with(
         dataframe=df_mi,
         measures=["pearson"],
-        num_bins=5,
         nrows=100,
         include_index=True,
         callback=mock_callback,
@@ -480,7 +478,6 @@ def test_pearson_method(df_mi, mock_callback):
     df_mi.ww.init()
     with patch.object(df_mi.ww, "pearson_correlation_dict") as pearson_dict_method:
         df_mi.ww.pearson_correlation(
-            num_bins=5,
             nrows=100,
             include_index=True,
             callback=mock_callback,
@@ -490,7 +487,6 @@ def test_pearson_method(df_mi, mock_callback):
         )
     assert pearson_dict_method.called
     pearson_dict_method.assert_called_with(
-        num_bins=5,
         nrows=100,
         include_index=True,
         callback=mock_callback,
