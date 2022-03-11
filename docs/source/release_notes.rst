@@ -15,6 +15,7 @@ Future Release
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
         * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)
         * Add backport release support (:pr:`1321`)
+        * Add `get_subset_schema` to API reference (:pr:`1335`)
     * Testing Changes
         * Upgrade moto dependency requirement (:pr:`1327`, :pr:`1332`)
         * Add Python 3.10 support (:pr:`1316`)

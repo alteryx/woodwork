@@ -554,11 +554,6 @@ class TableSchema(object):
 
         return cols_to_return
 
-    @property
-    def _get_subset_schema(self):
-        # removing this property might cause breaking changes in EvalML
-        return self.get_subset_schema
-
     def get_subset_schema(self, subset_cols):
         """Creates a new TableSchema with specified columns, retaining typing information.
 
