@@ -73,7 +73,8 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def validate(self, series, *args, **kwargs):
         """Validates that a logical type is consistent with the series dtype. Performs additional type
-        specific validation, as required."""
+        specific validation, as required. When the series' dtype does not match the logical types' required dtype,
+        raises a TypeValidationError."""
         valid_dtype = self._get_valid_dtype(type(series))
         if valid_dtype != str(series.dtype):
             raise TypeValidationError(
