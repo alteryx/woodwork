@@ -27,7 +27,8 @@ def _get_dependence_dict(
 ):
     """Calculates dependence measures between all pairs of columns in the DataFrame that
     support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-    Call woodwork.utils.get_valid_dependence_types for a complete list of supported Logical Types.
+    Call woodwork.utils.get_valid_mi_types and woodwork.utils.get_valid_pearson_types
+    for complete lists of supported Logical Types.
 
     Args:
         dataframe (pd.DataFrame): Data containing Woodwork typing information

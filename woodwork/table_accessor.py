@@ -983,8 +983,8 @@ class WoodworkTableAccessor:
     ):
         """
         Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
-        support correlation. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
-        correlation.
+        support correlation. Works with numeric data. Call woodwork.utils.get_valid_pearson_types to
+        see which Logical Types are supported.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1038,8 +1038,8 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
-        support correlation. Call woodwork.utils.get_valid_dependence_types to see which Logical Types support
-        correlation.
+        support correlation. Works with numeric data. Call woodwork.utils.get_valid_pearson_types to
+        see which Logical Types are supported.
 
         Args:
             num_bins (int): Determines number of bins to use for converting
@@ -1095,7 +1095,8 @@ class WoodworkTableAccessor:
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-        Call woodwork.utils.get_valid_dependence_types for a complete list of supported Logical Types.
+        Call woodwork.utils.get_valid_mi_types and woodwork.utils.get_valid_pearson_types
+        for complete lists of supported Logical Types.
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
@@ -1167,7 +1168,8 @@ class WoodworkTableAccessor:
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-        Call woodwork.utils.get_valid_dependence_types for a complete list of supported Logical Types.
+        Call woodwork.utils.get_valid_mi_types and woodwork.utils.get_valid_pearson_types
+        for complete lists of supported Logical Types.
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
