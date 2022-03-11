@@ -541,7 +541,7 @@ class Ordinal(LogicalType):
 
     def transform(self, series):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
-        self._validate_data(series)
+        self.validate(series)
 
         typed_ser = super().transform(series)
         if pdtypes.is_categorical_dtype(typed_ser.dtype):
