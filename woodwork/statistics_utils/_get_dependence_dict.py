@@ -9,7 +9,7 @@ from sklearn.metrics.cluster import adjusted_mutual_info_score
 from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
-from woodwork.exceptions import SparseDataWarning
+from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import IntegerNullable
 from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
 
@@ -240,9 +240,13 @@ def _get_valid_columns(dataframe, valid_types):
 
 
 def _validate_measures(measures):
-    # TODO: test empty measures list
     if not isinstance(measures, list):
+        if not isinstance(measures, str):
+            raise TypeError(f"Supplied measure {measures} is not a string")
         measures = [measures]
+
+    if len(measures) == 0:
+        raise ValueError("No measures supplied")
 
     calc_pearson = False
     calc_mutual = False
@@ -251,9 +255,9 @@ def _validate_measures(measures):
     for measure in measures:
         if measure == "all":
             if not measures == ["all"]:
-                warnings.warn(
+                warnings.warn(ParametersIgnoredWarning(
                     "additional measures to 'all' measure found; 'all' should be used alone"
-                )
+                ))
             measures = ["max", "pearson", "mutual"]
             calc_pearson = True
             calc_mutual = True

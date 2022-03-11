@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
+from woodwork.exceptions import ParametersIgnoredWarning
 from woodwork.logical_types import (
     URL,
     Age,
@@ -43,6 +44,7 @@ from woodwork.statistics_utils import (
     _get_recent_value_counts,
     _get_top_values_categorical,
 )
+from woodwork.statistics_utils._get_dependence_dict import _validate_measures
 from woodwork.tests.testing_utils import (
     _check_close,
     check_empty_box_plot_dict,
@@ -1670,3 +1672,44 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
             temporal_columns=["1d_skipped_one_freq", "ints"]
         )
+
+
+@pytest.mark.parametrize(("measures", "expected"), [
+    ("pearson", (["pearson"], ["pearson"], False)),
+    (["pearson"], (["pearson"], ["pearson"], False)),
+    ("mutual", (["mutual"], ["mutual"], False)),
+    (["mutual"], (["mutual"], ["mutual"], False)),
+    ("max", (["max"], ["pearson", "mutual"], True)),
+    (["max"], (["max"], ["pearson", "mutual"], True)),
+    ("all", (["max", "pearson", "mutual"], ["pearson", "mutual"], True)),
+    (["all"], (["max", "pearson", "mutual"], ["pearson", "mutual"], True)),
+    (["mutual", "pearson"], (["mutual", "pearson"], ["pearson", "mutual"], False)),
+    (["pearson", "max"], (["pearson", "max"], ["pearson", "mutual"], True)),
+    (["max", "pearson", "mutual"], (["max", "pearson", "mutual"], ["pearson", "mutual"], True))
+])
+def test_validate_measures_valid(measures, expected):
+    _measures, _calc_order, _calc_max = _validate_measures(measures)
+    assert _measures == expected[0]
+    assert _calc_order == expected[1]
+    assert _calc_max == expected[2]
+
+
+def test_validate_measures_warns():
+    warning = "additional measures to 'all' measure found; 'all' should be used alone"
+    with pytest.warns(ParametersIgnoredWarning, match=warning):
+        _measures, _calc_order, _calc_max = _validate_measures(["pearson", "all"])
+    assert _measures == ["max", "pearson", "mutual"]
+    assert _calc_order == ["pearson", "mutual"]
+    assert _calc_max == True
+
+
+def test_validate_measures_wrong_input_types():
+    msg = "Supplied measure 2 is not a string"
+    with pytest.raises(TypeError, match=msg):
+        _validate_measures(2)
+
+
+def test_validate_measures_empty():
+    msg = "No measures supplied"
+    with pytest.raises(ValueError, match=msg):
+        _validate_measures([])
