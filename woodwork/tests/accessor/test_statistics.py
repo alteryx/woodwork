@@ -1715,3 +1715,9 @@ def test_validate_measures_empty():
     msg = "No measures supplied"
     with pytest.raises(ValueError, match=msg):
         _validate_measures([])
+
+
+def test_validate_measures_bad_string():
+    msg = "Unrecognized dependence measure ruler"
+    with pytest.raises(ValueError, match=msg):
+        _validate_measures(["mutual", "ruler"])
