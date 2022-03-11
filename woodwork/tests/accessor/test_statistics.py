@@ -1702,7 +1702,7 @@ def test_validate_measures_warns():
         _measures, _calc_order, _calc_max = _validate_measures(["pearson", "all"])
     assert _measures == ["max", "pearson", "mutual"]
     assert _calc_order == ["pearson", "mutual"]
-    assert _calc_max == True
+    assert _calc_max
 
 
 def test_validate_measures_wrong_input_types():
