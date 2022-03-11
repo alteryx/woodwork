@@ -519,9 +519,10 @@ class Ordinal(LogicalType):
     def __init__(self, order=None):
         self.order = order
 
-    def _validate_data(self, series):
+    def validate(self, series):
         """Make sure order values are properly defined and confirm the supplied series
         does not contain any values that are not in the specified order values"""
+        super().validate(series)
         if self.order is None:
             raise TypeError("Must use an Ordinal instance with order values defined")
         elif not isinstance(self.order, (list, tuple)):
@@ -547,10 +548,6 @@ class Ordinal(LogicalType):
             typed_ser = typed_ser.cat.set_categories(self.order, ordered=True)
 
         return typed_ser
-
-    def validate(self, series):
-        super().validate(series)
-        self._validate_data(series)
 
 
 class PhoneNumber(LogicalType):
