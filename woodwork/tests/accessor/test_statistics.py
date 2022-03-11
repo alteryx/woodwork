@@ -1670,19 +1670,25 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
         )
 
 
-@pytest.mark.parametrize(("measures", "expected"), [
-    ("pearson", (["pearson"], ["pearson"], False)),
-    (["pearson"], (["pearson"], ["pearson"], False)),
-    ("mutual", (["mutual"], ["mutual"], False)),
-    (["mutual"], (["mutual"], ["mutual"], False)),
-    ("max", (["max"], ["pearson", "mutual"], True)),
-    (["max"], (["max"], ["pearson", "mutual"], True)),
-    ("all", (["max", "pearson", "mutual"], ["pearson", "mutual"], True)),
-    (["all"], (["max", "pearson", "mutual"], ["pearson", "mutual"], True)),
-    (["mutual", "pearson"], (["mutual", "pearson"], ["pearson", "mutual"], False)),
-    (["pearson", "max"], (["pearson", "max"], ["pearson", "mutual"], True)),
-    (["max", "pearson", "mutual"], (["max", "pearson", "mutual"], ["pearson", "mutual"], True))
-])
+@pytest.mark.parametrize(
+    ("measures", "expected"),
+    [
+        ("pearson", (["pearson"], ["pearson"], False)),
+        (["pearson"], (["pearson"], ["pearson"], False)),
+        ("mutual", (["mutual"], ["mutual"], False)),
+        (["mutual"], (["mutual"], ["mutual"], False)),
+        ("max", (["max"], ["pearson", "mutual"], True)),
+        (["max"], (["max"], ["pearson", "mutual"], True)),
+        ("all", (["max", "pearson", "mutual"], ["pearson", "mutual"], True)),
+        (["all"], (["max", "pearson", "mutual"], ["pearson", "mutual"], True)),
+        (["mutual", "pearson"], (["mutual", "pearson"], ["pearson", "mutual"], False)),
+        (["pearson", "max"], (["pearson", "max"], ["pearson", "mutual"], True)),
+        (
+            ["max", "pearson", "mutual"],
+            (["max", "pearson", "mutual"], ["pearson", "mutual"], True),
+        ),
+    ],
+)
 def test_validate_measures_valid(measures, expected):
     _measures, _calc_order, _calc_max = _validate_measures(measures)
     assert _measures == expected[0]

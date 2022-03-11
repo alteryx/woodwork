@@ -257,9 +257,11 @@ def _validate_measures(measures):
     for measure in measures:
         if measure == "all":
             if not measures == ["all"]:
-                warnings.warn(ParametersIgnoredWarning(
-                    "additional measures to 'all' measure found; 'all' should be used alone"
-                ))
+                warnings.warn(
+                    ParametersIgnoredWarning(
+                        "additional measures to 'all' measure found; 'all' should be used alone"
+                    )
+                )
             measures = ["max", "pearson", "mutual"]
             calc_pearson = True
             calc_mutual = True
