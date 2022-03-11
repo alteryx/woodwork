@@ -9,6 +9,7 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Calculate nunique for Unknown columns in `_get_describe_dict`  (:pr:`1322`)
         * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
