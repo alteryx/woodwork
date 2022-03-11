@@ -456,7 +456,8 @@ class LatLong(LogicalType):
 
         return super().transform(series)
 
-    def validate(self, series):
+    def validate(self, series, return_invalid_values=False):
+        # TODO: we'll want to actually handle return_invalid_values in the ordinal and latlong logical types.
         super().validate(series)
         if not _is_valid_latlong_series(series):
             raise TypeValidationError(
@@ -548,7 +549,8 @@ class Ordinal(LogicalType):
 
         return typed_ser
 
-    def validate(self, series):
+    def validate(self, series, return_invalid_values=False):
+        # TODO: we'll want to actually handle return_invalid_values in the ordinal and latlong logical types.
         super().validate(series)
         self._validate_order_values(series)
 
