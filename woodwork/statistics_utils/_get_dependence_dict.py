@@ -86,6 +86,7 @@ def _get_dependence_dict(
     if "mutual" in calc_order:
         mi_types = get_valid_mi_types()
         mutual_columns = _get_valid_columns(dataframe, mi_types)
+        # pearson columns are a subset of mutual columns
         valid_columns = mutual_columns
 
     index = dataframe.ww.index
