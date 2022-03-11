@@ -983,7 +983,7 @@ class WoodworkTableAccessor:
     ):
         """
         Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
-        support correlation. Works with numeric data. Call woodwork.utils.get_valid_pearson_types to
+        support correlation. Works with numeric and datetime data. Call woodwork.utils.get_valid_pearson_types to
         see which Logical Types are supported.
 
         Args:
@@ -1038,7 +1038,7 @@ class WoodworkTableAccessor:
         random_seed=0,
     ):
         """Calculates Pearson correlation coefficient between all pairs of columns in the DataFrame that
-        support correlation. Works with numeric data. Call woodwork.utils.get_valid_pearson_types to
+        support correlation. Works with numeric and datetime data. Call woodwork.utils.get_valid_pearson_types to
         see which Logical Types are supported.
 
         Args:
