@@ -380,6 +380,16 @@ def describe_df_pandas():
         np.nan,
     ]
     timedelta_data = datetime_data - pd.Timestamp("2020-01-01")
+    unknown_data = [
+        "unknown1",
+        "unknown5",
+        "unknown3",
+        np.nan,
+        "unknown3",
+        np.nan,
+        "unknown5",
+        "unknown5",
+    ]
 
     return pd.DataFrame(
         {
@@ -392,6 +402,7 @@ def describe_df_pandas():
             "natural_language_col": natural_language_data,
             "timedelta_col": timedelta_data,
             "latlong_col": latlong_data,
+            "unknown_col": unknown_data,
         }
     )
 

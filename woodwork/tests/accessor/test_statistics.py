@@ -820,9 +820,9 @@ def test_describe_callback(describe_df):
     assert mock_callback.unit == "calculations"
     # Spark df does not have timedelta column
     if _is_spark_dataframe(describe_df):
-        ncalls = 9
-    else:
         ncalls = 10
+    else:
+        ncalls = 11
 
     assert len(mock_callback.progress_history) == ncalls
 

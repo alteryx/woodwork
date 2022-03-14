@@ -159,7 +159,7 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
         f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before "
         "initializing or use the woodwork.init_series function to initialize."
     )
-    with pytest.raises(ValueError, match=error_message):
+    with pytest.raises(TypeValidationError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
 
 
@@ -686,7 +686,7 @@ def test_latlong_init_error_with_invalid_series(latlongs):
         "LatLong data. Try reformatting before initializing or use the "
         "woodwork.init_series function to initialize."
     )
-    with pytest.raises(ValueError, match=error_message):
+    with pytest.raises(TypeValidationError, match=error_message):
         series.ww.init(logical_type="LatLong")
 
 
@@ -857,19 +857,54 @@ def test_schema_property(sample_series):
     assert changed_schema != sample_series.ww._schema
 
 
-@patch("woodwork.column_accessor.WoodworkColumnAccessor._validate_logical_type")
-def test_validation_methods_called_init(mock_validate_logical_type, sample_series):
-    assert not mock_validate_logical_type.called
+@patch("woodwork.logical_types.LogicalType.validate")
+def test_validation_methods_called_init(mock_validate, sample_series):
+    assert not mock_validate.called
 
     not_validated = sample_series.copy()
     not_validated.ww.init(validate=False)
 
-    assert not mock_validate_logical_type.called
+    assert not mock_validate.called
 
     validated = sample_series.copy()
     validated.ww.init(validate=True)
 
-    assert mock_validate_logical_type.called
+    assert not mock_validate.called
+    assert validated.ww == not_validated.ww
+    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+
+
+@patch("woodwork.logical_types.LogicalType.validate")
+def test_ordinal_validation_methods_called_init(mock_validate, sample_series):
+    assert not mock_validate.called
+
+    not_validated = sample_series.copy()
+    not_validated.ww.init(logical_type=Ordinal(order=["a", "b", "c"]), validate=False)
+
+    assert not mock_validate.called
+
+    validated = sample_series.copy()
+    validated.ww.init(logical_type=Ordinal(order=["a", "b", "c"]), validate=True)
+
+    assert mock_validate.called
+    assert validated.ww == not_validated.ww
+    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+
+
+@patch("woodwork.logical_types.LogicalType.validate")
+def test_latlong_validation_methods_called_init(mock_validate, latlong_df_pandas):
+    assert not mock_validate.called
+
+    latlong_series = latlong_df_pandas["null_latitude"]
+    not_validated = latlong_series.copy()
+    not_validated.ww.init(LatLong, validate=False)
+
+    assert not mock_validate.called
+
+    validated = latlong_series.copy()
+    validated.ww.init(LatLong, validate=True)
+
+    assert mock_validate.called
     assert validated.ww == not_validated.ww
     pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
 

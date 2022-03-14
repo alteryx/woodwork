@@ -9,7 +9,7 @@ from ._get_recent_value_counts import _get_recent_value_counts
 from ._get_top_values_categorical import _get_top_values_categorical
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.logical_types import Datetime, LatLong
+from woodwork.logical_types import Datetime, LatLong, Unknown
 from woodwork.utils import _is_latlong_nan, _update_progress
 
 
@@ -62,6 +62,7 @@ def _get_describe_dict(
         "category": ["count", "nunique"],
         "numeric": ["count", "max", "min", "nunique", "mean", "std"],
         Datetime: ["count", "max", "min", "nunique", "mean"],
+        Unknown: ["count", "nunique"],
     }
     if include is not None:
         filtered_cols = dataframe.ww._filter_cols(include, col_names=True)
@@ -116,6 +117,8 @@ def _get_describe_dict(
             agg_stats = agg_stats_to_calculate["numeric"]
         elif column.is_datetime:
             agg_stats = agg_stats_to_calculate[Datetime]
+        elif column.is_unknown:
+            agg_stats = agg_stats_to_calculate[Unknown]
         else:
             agg_stats = ["count"]
         values = series.agg(agg_stats).to_dict()

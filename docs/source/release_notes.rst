@@ -9,11 +9,14 @@ Future Release
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
+        * Calculate nunique for Unknown columns in `_get_describe_dict`  (:pr:`1322`)
         * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
         * Replace Koalas with the pandas API on Spark (:pr:`1331`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)
         * Add backport release support (:pr:`1321`)
+        * Add `get_subset_schema` to API reference (:pr:`1335`)
     * Testing Changes
         * Upgrade moto dependency requirement (:pr:`1327`, :pr:`1332`)
         * Add Python 3.10 support (:pr:`1316`)
