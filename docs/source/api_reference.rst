@@ -209,6 +209,7 @@ General Utils
 
     concat_columns
     get_valid_mi_types
+    get_valid_pearson_types
     read_file
 
 .. currentmodule:: woodwork.accessor_utils
