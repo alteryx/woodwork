@@ -13,6 +13,7 @@ Future Release
         * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
         * Calculate nunique for Unknown columns in `_get_describe_dict`  (:pr:`1322`)
         * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
+        * Replace Koalas with the pandas API on Spark (:pr:`1331`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
         * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)

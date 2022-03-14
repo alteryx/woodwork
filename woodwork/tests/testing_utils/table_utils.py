@@ -4,7 +4,7 @@ import pandas as pd
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def validate_subset_schema(subset_schema, schema):
@@ -39,7 +39,7 @@ def to_pandas(df, index=None, sort_index=False):
     if dd and isinstance(df, (dd.DataFrame, dd.Series, dd.Index)):
         pd_df = df.compute()
 
-    if ks and isinstance(df, (ks.DataFrame, ks.Series, ks.Index)):
+    if ps and isinstance(df, (ps.DataFrame, ps.Series, ps.Index)):
         pd_df = df.to_pandas()
 
     if index:

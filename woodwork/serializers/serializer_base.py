@@ -4,7 +4,7 @@ import os
 import tarfile
 import tempfile
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
@@ -171,8 +171,8 @@ def typing_info_to_dict(dataframe):
 
     if _is_dask_dataframe(dataframe):
         table_type = "dask"
-    elif _is_koalas_dataframe(dataframe):
-        table_type = "koalas"
+    elif _is_spark_dataframe(dataframe):
+        table_type = "spark"
     else:
         table_type = "pandas"
 

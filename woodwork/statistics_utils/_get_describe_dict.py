@@ -8,7 +8,7 @@ from ._get_numeric_value_counts_in_range import _get_numeric_value_counts_in_ran
 from ._get_recent_value_counts import _get_recent_value_counts
 from ._get_top_values_categorical import _get_top_values_categorical
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import Datetime, LatLong, Unknown
 from woodwork.utils import CallbackCaller, _is_latlong_nan
 
@@ -76,7 +76,7 @@ def _get_describe_dict(
 
     if _is_dask_dataframe(dataframe):
         df = dataframe.compute()
-    elif _is_koalas_dataframe(dataframe):
+    elif _is_spark_dataframe(dataframe):
         df = dataframe.to_pandas()
 
         # Any LatLong columns will be using lists, which we must convert
@@ -135,7 +135,7 @@ def _get_describe_dict(
 
         mode = _get_mode(series)
         # The format of the mode should match its format in the DataFrame
-        if _is_koalas_dataframe(dataframe) and series.name in latlong_columns:
+        if _is_spark_dataframe(dataframe) and series.name in latlong_columns:
             mode = list(mode)
 
         if column.is_latlong:

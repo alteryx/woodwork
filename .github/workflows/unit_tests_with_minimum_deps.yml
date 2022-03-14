@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        libraries: ["core", "dask", "koalas"]
+        libraries: ["core", "dask", "spark"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -26,10 +26,10 @@ jobs:
         run: |
           python -m pip install -e . --no-dependencies
           python -m pip install -r woodwork/tests/requirement_files/minimum_test_requirements.txt
-      - if: ${{ matrix.libraries == 'koalas' }}
-        name: Install woodwork - minimum koalas, core requirements
+      - if: ${{ matrix.libraries == 'spark' }}
+        name: Install woodwork - minimum spark, core requirements
         run: |
-          python -m pip install -r woodwork/tests/requirement_files/minimum_koalas_requirements.txt
+          python -m pip install -r woodwork/tests/requirement_files/minimum_spark_requirements.txt
       - if: ${{ matrix.libraries == 'dask' }}
         name: Install woodwork - minimum dask, core requirements
         run: |

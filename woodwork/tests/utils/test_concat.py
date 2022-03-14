@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_koalas_dataframe
+from woodwork.accessor_utils import _is_spark_dataframe
 from woodwork.logical_types import Categorical, Double, Integer
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import concat_columns
@@ -394,7 +394,7 @@ def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
     df2 = sample_df.ww.loc[[1, 2, 3], ["signup_date", "email"]]
 
     if isinstance(sample_df, pd.DataFrame):
-        # Only pandas shows the dtype change because Dask and Koalas won't show until compute
+        # Only pandas shows the dtype change because Dask and Spark won't show until compute
         error = "Error converting datatype for id from type float64 to type int64. Please confirm the underlying data is consistent with logical type Integer."
         with pytest.raises(ww.exceptions.TypeConversionError, match=error):
             concat_columns([df1, df2])
@@ -508,10 +508,10 @@ def test_concat_cols_row_order(sample_df):
 
     assert sample_df.ww == combined_df.ww
 
-    # koalas does not preserve index order in the same way
-    if _is_koalas_dataframe(sample_df):
+    # spark does not preserve index order in the same way
+    if _is_spark_dataframe(sample_df):
         pd.testing.assert_index_equal(
-            to_pandas(combined_df.index), pd.Index([2, 0, 1, 3])
+            to_pandas(combined_df.index), pd.Index([0, 1, 2, 3])
         )
     else:
         pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))

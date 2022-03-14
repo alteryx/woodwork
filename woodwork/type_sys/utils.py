@@ -3,17 +3,17 @@ from datetime import datetime
 import pandas as pd
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.utils import import_or_none
 
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 dd = import_or_none("dask.dataframe")
 
 
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column."""
-    if _is_koalas_series(col):
+    if _is_spark_series(col):
         col = col.to_pandas()
 
     if col.dtype.name.find("datetime") > -1 or (
@@ -45,7 +45,7 @@ def col_is_datetime(col, datetime_format=None):
 def _is_numeric_series(series, logical_type):
     """Determines whether a series will be considered numeric
     for the purposes of determining if it can be a time_index."""
-    if _is_koalas_series(series):
+    if _is_spark_series(series):
         series = series.to_pandas()
     if _is_dask_series(series):
         series = series.get_partition(0).compute()

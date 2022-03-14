@@ -53,7 +53,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def test_camel_to_snake():
@@ -294,13 +294,13 @@ def test_reformat_to_latlong_errors(test_input, error_msg):
         ("<NA>", np.nan),
     ],
 )
-@pytest.mark.parametrize("is_koalas", [True, False])
-def test_reformat_to_latlong(test_input, expected, is_koalas):
+@pytest.mark.parametrize("is_spark", [True, False])
+def test_reformat_to_latlong(test_input, expected, is_spark):
     if isinstance(expected, (list, tuple)):
-        if is_koalas:
-            assert _reformat_to_latlong(test_input, is_koalas) == list(expected)
+        if is_spark:
+            assert _reformat_to_latlong(test_input, is_spark) == list(expected)
         else:
-            assert _reformat_to_latlong(test_input, is_koalas) == expected
+            assert _reformat_to_latlong(test_input, is_spark) == expected
     else:
         assert _reformat_to_latlong(test_input) is expected
 
@@ -385,8 +385,8 @@ def test_is_valid_latlong_value(test_input, expected):
         ((1.0, 2.0, 3.0), False),
     ],
 )
-def test_is_valid_latlong_value_koalas(test_input, expected):
-    assert _is_valid_latlong_value(test_input, is_koalas=True) == expected
+def test_is_valid_latlong_value_spark(test_input, expected):
+    assert _is_valid_latlong_value(test_input, is_spark=True) == expected
 
 
 def test_is_valid_latlong_series():
@@ -512,8 +512,8 @@ def test_infer_datetime_format_all_null():
         if dd:
             dd_series = dd.from_pandas(pd_series, npartitions=2)
             assert _infer_datetime_format(dd_series) is None
-        if ks:
-            ks_series = ks.from_pandas(pd_series)
+        if ps:
+            ks_series = ps.from_pandas(pd_series)
             assert _infer_datetime_format(ks_series) is None
 
 

@@ -8,7 +8,7 @@ from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import IntegerNullable
 from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
@@ -98,7 +98,7 @@ def _get_dependence_dict(
     # cut off data if necessary
     if _is_dask_dataframe(data):
         data = data.compute()
-    elif _is_koalas_dataframe(dataframe):
+    elif _is_spark_dataframe(dataframe):
         data = data.to_pandas()
     if nrows is not None and nrows < data.shape[0]:
         data = data.sample(nrows, random_state=random_seed)

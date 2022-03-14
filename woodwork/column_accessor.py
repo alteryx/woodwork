@@ -23,7 +23,7 @@ from woodwork.table_schema import TableSchema
 from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 class WoodworkColumnAccessor:
@@ -464,9 +464,9 @@ if dd:
         pass
 
 
-if ks:
-    from databricks.koalas.extensions import register_series_accessor
+if ps:
+    from pyspark.pandas.extensions import register_series_accessor
 
     @register_series_accessor("ww")
-    class KoalasColumnAccessor(WoodworkColumnAccessor):
+    class SparkColumnAccessor(WoodworkColumnAccessor):
         pass

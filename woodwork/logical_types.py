@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from woodwork.accessor_utils import _is_dask_series, _is_koalas_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -21,7 +21,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 class ClassNameDescriptor(object):
@@ -55,7 +55,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     @classmethod
     def _get_valid_dtype(cls, series_type):
         """Return the dtype that is considered valid for a series with the given logical_type"""
-        if ks and series_type == ks.Series and cls.backup_dtype:
+        if ps and series_type == ps.Series and cls.backup_dtype:
             return cls.backup_dtype
         else:
             return cls.primary_dtype
@@ -264,7 +264,9 @@ class Datetime(LogicalType):
     def transform(self, series):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
-        if new_dtype != str(series.dtype):
+        series_dtype = str(series.dtype)
+
+        if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
             )
@@ -274,9 +276,9 @@ class Datetime(LogicalType):
                     series, format=self.datetime_format, errors="coerce"
                 )
                 series.name = name
-            elif _is_koalas_series(series):
-                series = ks.Series(
-                    ks.to_datetime(
+            elif _is_spark_series(series):
+                series = ps.Series(
+                    ps.to_datetime(
                         series.to_numpy(), format=self.datetime_format, errors="coerce"
                     ),
                     name=series.name,
@@ -422,7 +424,7 @@ class LatLong(LogicalType):
 
     Note:
         LatLong values will be stored with the object dtype as a
-        tuple of floats (or a list of floats for Koalas DataFrames)
+        tuple of floats (or a list of floats for Spark DataFrames)
         and must contain only two values.
 
         Null latitude or longitude values will be stored as np.nan, and
@@ -440,17 +442,17 @@ class LatLong(LogicalType):
     primary_dtype = "object"
 
     def transform(self, series):
-        """Formats a series to be a tuple (or list for Koalas) of two floats."""
+        """Formats a series to be a tuple (or list for Spark) of two floats."""
         if _is_dask_series(series):
             name = series.name
             meta = (series, tuple([float, float]))
             series = series.apply(_reformat_to_latlong, meta=meta)
             series.name = name
-        elif _is_koalas_series(series):
+        elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
-                _reformat_to_latlong, is_koalas=True
+                _reformat_to_latlong, is_spark=True
             )
-            series = ks.from_pandas(formatted_series)
+            series = ps.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
 
@@ -669,13 +671,13 @@ def _regex_validate(regex_key, series, return_invalid_values):
     """Validates data values based on the logical type regex in the config."""
     regex = config.get_option(regex_key)
 
-    if _is_koalas_series(series):
+    if _is_spark_series(series):
 
         def match(x):
             if isinstance(x, str):
                 return bool(re.match(regex, x))
 
-        invalid = ~series.apply(match).astype("boolean")
+        invalid = series.apply(match).astype("boolean") == False  # noqa: E712
 
     else:
         invalid = ~series.str.match(regex).astype("boolean")

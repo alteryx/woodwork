@@ -216,7 +216,7 @@ def _is_url(string):
     return "http" in string
 
 
-def _reformat_to_latlong(latlong, is_koalas=False):
+def _reformat_to_latlong(latlong, is_spark=False):
     """
     Accepts 2-tuple like values, or a single NaN like value.
     NaN like values are replaced with np.nan.
@@ -249,7 +249,7 @@ def _reformat_to_latlong(latlong, is_koalas=False):
                 f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
             )
 
-        if is_koalas:
+        if is_spark:
             return [latitude, longitude]
         return (latitude, longitude)
 
@@ -284,24 +284,24 @@ def _is_valid_latlong_series(series):
     otherwise returns False"""
     if ww.accessor_utils._is_dask_series(series):
         series = series.get_partition(0).compute()
-    if ww.accessor_utils._is_koalas_series(series):
+    if ww.accessor_utils._is_spark_series(series):
         series = series.to_pandas()
-        is_koalas = True
+        is_spark = True
     else:
-        is_koalas = False
-    if series.apply(_is_valid_latlong_value, args=(is_koalas,)).all():
+        is_spark = False
+    if series.apply(_is_valid_latlong_value, args=(is_spark,)).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val, is_koalas=False):
+def _is_valid_latlong_value(val, is_spark=False):
     """Returns True if the value provided is a properly formatted LatLong value for a
-    pandas, Dask or Koalas Series, otherwise returns False."""
+    pandas, Dask or Spark Series, otherwise returns False."""
     if isinstance(val, (list, tuple)):
         if len(val) != 2:
             return False
 
-        if not isinstance(val, list if is_koalas else tuple):
+        if not isinstance(val, list if is_spark else tuple):
             return False
 
         latitude, longitude = val
@@ -310,7 +310,7 @@ def _is_valid_latlong_value(val, is_koalas=False):
     if isinstance(val, float):
         return np.isnan(val)
 
-    if is_koalas and val is None:
+    if is_spark and val is None:
         return True
 
     return False
@@ -497,13 +497,13 @@ def concat_columns(objs, validate_schema=True):
     # Perform concatenation with the correct library
     obj = objs[0]
     dd = import_or_none("dask.dataframe")
-    ks = import_or_none("databricks.koalas")
+    ps = import_or_none("pyspark.pandas")
 
     lib = pd
-    if ww.accessor_utils._is_koalas_dataframe(
+    if ww.accessor_utils._is_spark_dataframe(obj) or ww.accessor_utils._is_spark_series(
         obj
-    ) or ww.accessor_utils._is_koalas_series(obj):
-        lib = ks
+    ):
+        lib = ps
     elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
         obj
     ):
@@ -583,6 +583,11 @@ def _infer_datetime_format(dates, n=100):
         n (int): the maximum number of nonnull rows to sample from the series
     """
     first_n = dates.dropna().head(n)
+
+    ps = import_or_none("pyspark.pandas")
+    if ps and isinstance(first_n, ps.series.Series):
+        first_n = first_n.to_pandas()
+
     if len(first_n) == 0:
         return None
     try:

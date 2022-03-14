@@ -1,6 +1,6 @@
 import numpy as np
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 
 
 def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
@@ -9,7 +9,7 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
 
 
     Args:
-        dataframe (pd.DataFrame, dd.DataFrame, ks.DataFrame): Data from which to count values.
+        dataframe (pd.DataFrame, dd.DataFrame, ps.DataFrame): Data from which to count values.
         ascending (bool): Defines whether each list of values should be sorted most frequent
             to least frequent value (False), or least frequent to most frequent value (True).
             Defaults to False.
@@ -31,13 +31,13 @@ def _get_value_counts(dataframe, ascending=False, top_n=10, dropna=False):
     is_ks = False
     if _is_dask_dataframe(data):
         data = data.compute()
-    if _is_koalas_dataframe(data):
+    if _is_spark_dataframe(data):
         data = data.to_pandas()
         is_ks = True
 
     for col in valid_cols:
         if dropna and is_ks:
-            # Koalas categorical columns will have missing values replaced with the string 'None'
+            # Spark categorical columns will have missing values replaced with the string 'None'
             # Replace them with np.nan so dropna work
             datacol = data[col].replace(to_replace="None", value=np.nan)
         else:

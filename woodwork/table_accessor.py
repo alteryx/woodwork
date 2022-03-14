@@ -9,7 +9,7 @@ from woodwork.accessor_utils import (
     _check_table_schema,
     _is_dask_dataframe,
     _is_dataframe,
-    _is_koalas_dataframe,
+    _is_spark_dataframe,
     get_invalid_schema_message,
     init_series,
 )
@@ -36,7 +36,7 @@ from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
 from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 class WoodworkTableAccessor:
@@ -300,7 +300,7 @@ class WoodworkTableAccessor:
         return series
 
     def __setitem__(self, col_name, column):
-        series = tuple(pkg.Series for pkg in (pd, dd, ks) if pkg)
+        series = tuple(pkg.Series for pkg in (pd, dd, ps) if pkg)
         if not isinstance(column, series):
             raise ValueError("New column must be of Series type")
 
@@ -672,8 +672,8 @@ class WoodworkTableAccessor:
         )
 
     def _sort_columns(self, already_sorted):
-        if _is_dask_dataframe(self._dataframe) or _is_koalas_dataframe(self._dataframe):
-            already_sorted = True  # Skip sorting for Dask and Koalas input
+        if _is_dask_dataframe(self._dataframe) or _is_spark_dataframe(self._dataframe):
+            already_sorted = True  # Skip sorting for Dask and Spark input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
             if self._schema.index is None:
@@ -761,8 +761,8 @@ class WoodworkTableAccessor:
         if inplace:
             if _is_dask_dataframe(self._dataframe):
                 raise ValueError("Drop inplace not supported for Dask")
-            if _is_koalas_dataframe(self._dataframe):
-                raise ValueError("Drop inplace not supported for Koalas")
+            if _is_spark_dataframe(self._dataframe):
+                raise ValueError("Drop inplace not supported for Spark")
 
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
@@ -847,8 +847,8 @@ class WoodworkTableAccessor:
         if inplace:
             if _is_dask_dataframe(self._dataframe):
                 raise ValueError("Rename inplace not supported for Dask")
-            if _is_koalas_dataframe(self._dataframe):
-                raise ValueError("Rename inplace not supported for Koalas")
+            if _is_spark_dataframe(self._dataframe):
+                raise ValueError("Rename inplace not supported for Spark")
             self._dataframe.rename(columns=columns, inplace=True)
             self.init_with_full_schema(schema=new_schema)
             return
@@ -1359,7 +1359,7 @@ class WoodworkTableAccessor:
     def infer_temporal_frequencies(self, temporal_columns=None):
         """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
             in the DataFrame. Temporal columns are ones with the logical type Datetime or Timedelta.
-            Not supported for Dask and Koalas DataFrames.
+            Not supported for Dask and Spark DataFrames.
 
         Args:
             temporal_columns (list[str], optional): Columns for which frequencies should be inferred. Must be columns
@@ -1422,8 +1422,8 @@ class WoodworkTableAccessor:
             concat = pd.concat
             if _is_dask_dataframe(self._dataframe):
                 concat = dd.concat
-            if _is_koalas_dataframe(self._dataframe):
-                concat = ks.concat
+            if _is_spark_dataframe(self._dataframe):
+                concat = ps.concat
 
             return concat(invalid_values, axis=1)
 
@@ -1592,12 +1592,12 @@ if dd:
         pass
 
 
-if ks:
-    from databricks.koalas.extensions import register_dataframe_accessor
+if ps:
+    from pyspark.pandas.extensions import register_dataframe_accessor
 
     @register_dataframe_accessor("ww")
-    class KoalasTableAccessor(WoodworkTableAccessor):
+    class SparkTableAccessor(WoodworkTableAccessor):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            if not ks.get_option("compute.ops_on_diff_frames"):
-                ks.set_option("compute.ops_on_diff_frames", True)
+            if not ps.get_option("compute.ops_on_diff_frames"):
+                ps.set_option("compute.ops_on_diff_frames", True)
