@@ -15,11 +15,9 @@ def pd_to_dask(series):
     return dd.from_pandas(series, npartitions=2)
 
 
-def pd_to_koalas(series):
-    ks = pytest.importorskip(
-        "databricks.koalas", reason="Koalas not installed, skipping"
-    )
-    return ks.from_pandas(convert_tuples_to_lists(series))
+def pd_to_spark(series):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    return ps.from_pandas(convert_tuples_to_lists(series))
 
 
 def convert_tuples_to_lists(series):

@@ -8,7 +8,7 @@ import pytest
 from woodwork.accessor_utils import (
     _is_dask_series,
     _is_dataframe,
-    _is_koalas_series,
+    _is_spark_series,
     init_series,
 )
 from woodwork.column_accessor import WoodworkColumnAccessor
@@ -35,7 +35,7 @@ from woodwork.tests.testing_utils import is_property, is_public_method, to_panda
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def test_accessor_init(sample_series):
@@ -85,7 +85,7 @@ def test_accessor_init_with_schema_errors(sample_series):
     with pytest.raises(TypeError, match=error):
         head_series.ww.init(schema=int)
 
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         ltype_dtype = "string"
         new_dtype = "<U0"
     else:
@@ -148,7 +148,7 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         series_dtype = "<U0"
     else:
         series_dtype = "object"
@@ -315,8 +315,8 @@ def test_origin_error_on_update(sample_series):
 
 def test_accessor_repr(sample_series):
     sample_series.ww.init(use_standard_tags=False)
-    # Koalas doesn't support categorical
-    if _is_koalas_series(sample_series):
+    # Spark doesn't support categorical
+    if _is_spark_series(sample_series):
         dtype = "string"
     else:
         dtype = "category"
@@ -424,8 +424,8 @@ def test_set_logical_type_valid_dtype_change(sample_series):
 
     new_series = sample_series.ww.set_logical_type("NaturalLanguage")
 
-    if _is_koalas_series(sample_series):
-        # Koalas uses string dtype for Categorical
+    if _is_spark_series(sample_series):
+        # Spark uses string dtype for Categorical
         original_dtype = "string"
     else:
         original_dtype = "category"
@@ -442,9 +442,9 @@ def test_set_logical_type_invalid_dtype_change(sample_series):
         pytest.xfail(
             "Dask type conversion with astype does not fail until compute is called"
         )
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         pytest.xfail(
-            "Koalas allows this conversion, filling values it cannot convert with NaN "
+            "Spark allows this conversion, filling values it cannot convert with NaN "
             "and converting dtype to float."
         )
     sample_series.ww.init(logical_type="Categorical")
@@ -493,9 +493,9 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
 
 
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         pytest.xfail(
-            "Running replace on Koalas series changes series dtype to object, invalidating schema"
+            "Running replace on Spark series changes series dtype to object, invalidating schema"
         )
     sample_series.ww.init()
 
@@ -542,8 +542,8 @@ def test_series_methods_on_accessor_inplace(sample_series):
 def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
     sample_series.ww.init()
 
-    if _is_koalas_series(sample_series):
-        # Koalas uses `string` for Categorical, so must try a different conversion
+    if _is_spark_series(sample_series):
+        # Spark uses `string` for Categorical, so must try a different conversion
         original_type = "string"
         new_type = "Int64"
     else:
@@ -632,9 +632,9 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Koalas - ordinal data validation not compatible"
+            "Fails with Dask and Spark - ordinal data validation not compatible"
         )
 
     series = sample_series.copy()
@@ -651,9 +651,9 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Koalas - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported"
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
@@ -694,8 +694,8 @@ def test_latlong_formatting_with_init_series(latlongs):
     expected_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
     if _is_dask_series(latlongs[0]):
         expected_series = dd.from_pandas(expected_series, npartitions=2)
-    elif _is_koalas_series(latlongs[0]):
-        expected_series = ks.Series([[1.0, 2.0], [3.0, 4.0]])
+    elif _is_spark_series(latlongs[0]):
+        expected_series = ps.Series([[1.0, 2.0], [3.0, 4.0]])
 
     expected_series.ww.init(logical_type=LatLong)
     for series in latlongs:
@@ -1008,8 +1008,8 @@ def test_validate_logical_type(sample_df):
 
     invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string")
 
-    if _is_koalas_series(series):
-        invalid_row = ks.from_pandas(invalid_row)
+    if _is_spark_series(series):
+        invalid_row = ps.from_pandas(invalid_row)
 
     series = series.append(invalid_row)
     series = init_series(series, logical_type="EmailAddress")

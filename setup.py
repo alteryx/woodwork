@@ -8,7 +8,7 @@ with open(path.join(dirname, "README.md")) as f:
 
 extras_require = {
     "dask": open("dask-requirements.txt").readlines(),
-    "koalas": open("koalas-requirements.txt").readlines(),
+    "spark": open("spark-requirements.txt").readlines(),
     "update_checker": ["alteryx-open-src-update-checker >= 2.0.0"],
 }
 extras_require["complete"] = sorted(set(sum(extras_require.values(), [])))

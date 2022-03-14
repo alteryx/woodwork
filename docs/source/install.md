@@ -21,7 +21,7 @@ $ conda install -c conda-forge woodwork
 Woodwork allows users to install add-ons. Woodwork allows users to install add-ons individually or all at once:
 
 ```{hint}
-Be sure to install [Scala and Spark](#scala-and-spark) if you want to use Koalas
+Be sure to install [Scala and Spark](#scala-and-spark)
 ```
 
 ````{tab} PyPI
@@ -33,9 +33,9 @@ $ python -m pip install "woodwork[complete]"
 ```console
 $ python -m pip install "woodwork[dask]"
 ```
-```{tab} Koalas
+```{tab} Spark
 ```console
-$ python -m pip install "woodwork[koalas]"
+$ python -m pip install "woodwork[spark]"
 ```
 ```{tab} Update Checker
 ```console
@@ -45,15 +45,15 @@ $ python -m pip install "woodwork[update_checker]"
 ````{tab} Conda
 ```{tab} All Add-ons
 ```console
-$ conda install -c conda-forge dask koalas pyspark alteryx-open-src-update-checker
+$ conda install -c conda-forge dask pyspark alteryx-open-src-update-checker
 ```
 ```{tab} Dask
 ```console
 $ conda install -c conda-forge dask
 ```
-```{tab} Koalas
+```{tab} Spark
 ```console
-$ conda install -c conda-forge koalas pyspark
+$ conda install -c conda-forge pyspark
 ```
 ```{tab} Update Checker
 ```console
@@ -61,7 +61,7 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
 - **Dask**: Use Woodwork with Dask DataFrames
-- **Koalas**: Use Woodwork with Koalas DataFrames
+- **Spark**: Use Woodwork with Spark DataFrames
 - **Update Checker**: Receive automatic notifications of new Woodwork releases
 
 ## Source
@@ -130,8 +130,7 @@ Woodwork has several other Python dependencies that are used only for specific m
 | smart_open        | 5.0.0       | Required to read/write to URLs and S3  |
 | pyarrow           | 4.0.1       | Required to serialize to parquet       |
 | dask[distributed] | 2021.10.0   | Required to use with Dask DataFrames   |
-| koalas            | 1.8.0       | Required to use with Koalas DataFrames |
-| pyspark           | 3.0.0       | Required to use with Koalas DataFrames |
+| pyspark           | 3.2.0       | Required to use with Spark DataFrames |
 
 
 # Development

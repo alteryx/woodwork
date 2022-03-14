@@ -1,6 +1,6 @@
 import os
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.serializers.serializer_base import Serializer
 
 
@@ -19,10 +19,10 @@ class CSVSerializer(Serializer):
         }
 
     def serialize(self, dataframe, profile_name, **kwargs):
-        if _is_koalas_dataframe(dataframe):
+        if _is_spark_dataframe(dataframe):
             if self.filename is not None:
                 raise ValueError(
-                    "Writing a Koalas dataframe to csv with a filename specified is not supported"
+                    "Writing a Spark dataframe to csv with a filename specified is not supported"
                 )
             self.default_kwargs["multiline"] = True
             self.default_kwargs["ignoreLeadingWhitespace"] = False
@@ -49,7 +49,7 @@ class CSVSerializer(Serializer):
         # engine kwarg not needed for writing, only reading
         if "engine" in csv_kwargs.keys():
             del csv_kwargs["engine"]
-        if _is_koalas_dataframe(self.dataframe):
+        if _is_spark_dataframe(self.dataframe):
             dataframe = self.dataframe.ww.copy()
             columns = list(dataframe.select_dtypes("object").columns)
             dataframe[columns] = dataframe[columns].astype(str)

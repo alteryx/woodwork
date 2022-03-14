@@ -6,9 +6,9 @@ from woodwork.accessor_utils import (
     _is_dask_dataframe,
     _is_dask_series,
     _is_dataframe,
-    _is_koalas_dataframe,
-    _is_koalas_series,
     _is_series,
+    _is_spark_dataframe,
+    _is_spark_series,
     get_invalid_schema_message,
     init_series,
     is_schema_valid,
@@ -18,7 +18,7 @@ from woodwork.logical_types import Categorical, Datetime, LatLong, NaturalLangua
 
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         sample_series = sample_series.astype("str")
     else:
         sample_series = sample_series.astype("object")
@@ -82,7 +82,7 @@ def test_init_series_with_multidimensional_np_array():
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         sample_series = sample_series.astype("str")
     else:
         sample_series = sample_series.astype("object")
@@ -109,7 +109,7 @@ def test_init_series_with_latlong(latlong_df):
 
 
 def test_init_series_all_parameters(sample_series):
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         sample_series = sample_series.astype("str")
     else:
         sample_series = sample_series.astype("object")
@@ -141,9 +141,9 @@ def test_init_series_error_on_invalid_conversion(sample_series):
         pytest.xfail(
             "Dask type conversion with astype does not fail until compute is called"
         )
-    if _is_koalas_series(sample_series):
+    if _is_spark_series(sample_series):
         pytest.xfail(
-            "Koalas allows this conversion, filling values it cannot convert with NaN "
+            "Spark allows this conversion, filling values it cannot convert with NaN "
             "and converting dtype to float."
         )
 
@@ -215,14 +215,14 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
         == "dtype mismatch for column is_registered between DataFrame dtype, Int64, and BooleanNullable dtype, boolean"
     )
 
-    # Koalas backup dtypes make these checks not relevant
-    if not _is_koalas_dataframe(sample_df):
+    # Spark backup dtypes make these checks not relevant
+    if not _is_spark_dataframe(sample_df):
         incorrect_str_dtype_df = schema_df.ww.astype(
             {"full_name": "object"}
-        )  # wont work for koalas
+        )  # wont work for spark
         incorrect_categorical_dtype_df = schema_df.ww.astype(
             {"age": "string"}
-        )  # wont work for koalas
+        )  # wont work for spark
         assert (
             get_invalid_schema_message(incorrect_str_dtype_df, schema)
             == "dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string"
@@ -235,7 +235,7 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
 
 def test_get_invalid_schema_message_index_checks(sample_df):
     if not isinstance(sample_df, pd.DataFrame):
-        pytest.xfail("Index validation not performed for Dask or Koalas DataFrames")
+        pytest.xfail("Index validation not performed for Dask or Spark DataFrames")
 
     schema_df = sample_df.copy()
     schema_df.ww.init(
@@ -305,11 +305,11 @@ def test_is_dask_series(sample_series_dask):
     assert not _is_dask_series(pd.Series())
 
 
-def test_is_koalas_dataframe(sample_df_koalas):
-    assert _is_koalas_dataframe(sample_df_koalas)
+def test_is_spark_dataframe(sample_df_spark):
+    assert _is_spark_dataframe(sample_df_spark)
     assert not _is_dask_dataframe(pd.DataFrame())
 
 
-def test_is_koalas_series(sample_series_koalas):
-    assert _is_koalas_series(sample_series_koalas)
+def test_is_spark_series(sample_series_spark):
+    assert _is_spark_series(sample_series_spark)
     assert not _is_dask_series(pd.Series())

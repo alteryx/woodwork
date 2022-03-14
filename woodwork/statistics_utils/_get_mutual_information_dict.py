@@ -5,7 +5,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 from ._make_categorical_for_mutual_info import _make_categorical_for_mutual_info
 from ._replace_nans_for_mutual_info import _replace_nans_for_mutual_info
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_koalas_dataframe
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.utils import _update_progress, get_valid_mi_types
 
 
@@ -59,7 +59,7 @@ def _get_mutual_information_dict(
     data = dataframe.loc[:, valid_columns]
     if _is_dask_dataframe(data):
         data = data.compute()
-    if _is_koalas_dataframe(dataframe):
+    if _is_spark_dataframe(dataframe):
         data = data.to_pandas()
 
     # cut off data if necessary
