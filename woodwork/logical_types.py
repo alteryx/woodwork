@@ -14,6 +14,7 @@ from woodwork.exceptions import (
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
     _infer_datetime_format,
+    _is_valid_latlong_series,
     _reformat_to_latlong,
     camel_to_snake,
     import_or_none,
@@ -70,8 +71,15 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
                 raise TypeConversionError(series, new_dtype, type(self))
         return series
 
-    def validate(self, series, return_invalid_values=True):
-        return
+    def validate(self, series, *args, **kwargs):
+        """Validates that a logical type is consistent with the series dtype. Performs additional type
+        specific validation, as required. When the series' dtype does not match the logical types' required dtype,
+        raises a TypeValidationError."""
+        valid_dtype = self._get_valid_dtype(type(series))
+        if valid_dtype != str(series.dtype):
+            raise TypeValidationError(
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
+            )
 
 
 class Address(LogicalType):
@@ -448,6 +456,16 @@ class LatLong(LogicalType):
 
         return super().transform(series)
 
+    def validate(self, series, return_invalid_values=False):
+        # TODO: we'll want to actually handle return_invalid_values in the ordinal and latlong logical types.
+        super().validate(series)
+        if not _is_valid_latlong_series(series):
+            raise TypeValidationError(
+                "Cannot initialize Woodwork. Series does not contain properly formatted "
+                "LatLong data. Try reformatting before initializing or use the "
+                "woodwork.init_series function to initialize."
+            )
+
 
 class NaturalLanguage(LogicalType):
     """Represents Logical Types that contain text or characters representing
@@ -502,7 +520,7 @@ class Ordinal(LogicalType):
     def __init__(self, order=None):
         self.order = order
 
-    def _validate_data(self, series):
+    def _validate_order_values(self, series):
         """Make sure order values are properly defined and confirm the supplied series
         does not contain any values that are not in the specified order values"""
         if self.order is None:
@@ -523,13 +541,18 @@ class Ordinal(LogicalType):
 
     def transform(self, series):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
-        self._validate_data(series)
+        self._validate_order_values(series)
 
         typed_ser = super().transform(series)
         if pdtypes.is_categorical_dtype(typed_ser.dtype):
             typed_ser = typed_ser.cat.set_categories(self.order, ordered=True)
 
         return typed_ser
+
+    def validate(self, series, return_invalid_values=False):
+        # TODO: we'll want to actually handle return_invalid_values in the ordinal and latlong logical types.
+        super().validate(series)
+        self._validate_order_values(series)
 
 
 class PhoneNumber(LogicalType):

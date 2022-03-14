@@ -15,6 +15,7 @@ Future Release
         * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)
         * Add backport release support (:pr:`1321`)
         * Add `get_subset_schema` to API reference (:pr:`1335`)
     * Testing Changes

@@ -11,16 +11,16 @@ from woodwork.accessor_utils import (
     init_series,
 )
 from woodwork.column_schema import ColumnSchema
-from woodwork.exceptions import ParametersIgnoredWarning, TypingInfoMismatchWarning
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    TypeValidationError,
+    TypingInfoMismatchWarning,
+)
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
 from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
-from woodwork.utils import (
-    _get_column_logical_type,
-    _is_valid_latlong_series,
-    import_or_none,
-)
+from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")
@@ -99,7 +99,17 @@ class WoodworkColumnAccessor:
             )
 
             if validate:
-                self._validate_logical_type(logical_type)
+                if isinstance(logical_type, (Ordinal, LatLong)):
+                    logical_type.validate(self._series)
+                else:
+                    valid_dtype = logical_type._get_valid_dtype(type(self._series))
+                    if valid_dtype != str(self._series.dtype):
+                        raise TypeValidationError(
+                            f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
+                            f"incompatible with {logical_type} dtype. Try converting series "
+                            f"dtype to '{valid_dtype}' before initializing or use the "
+                            "woodwork.init_series function to initialize."
+                        )
 
             self._schema = ColumnSchema(
                 logical_type=logical_type,
@@ -305,28 +315,6 @@ class WoodworkColumnAccessor:
         # Directly return non-callable Series attributes
         return series_attr
 
-    def _validate_logical_type(self, logical_type):
-        """Validates that a logical type is consistent with the series dtype. Performs additional type
-        specific validation, as required."""
-        valid_dtype = logical_type._get_valid_dtype(type(self._series))
-        if valid_dtype != str(self._series.dtype):
-            raise ValueError(
-                f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
-                f"incompatible with {logical_type} dtype. Try converting series "
-                f"dtype to '{valid_dtype}' before initializing or use the "
-                "woodwork.init_series function to initialize."
-            )
-
-        if isinstance(logical_type, Ordinal):
-            logical_type._validate_data(self._series)
-        elif isinstance(logical_type, LatLong):
-            if not _is_valid_latlong_series(self._series):
-                raise ValueError(
-                    "Cannot initialize Woodwork. Series does not contain properly formatted "
-                    "LatLong data. Try reformatting before initializing or use the "
-                    "woodwork.init_series function to initialize."
-                )
-
     @_check_column_schema
     def add_semantic_tags(self, semantic_tags):
         """Add the specified semantic tags to the set of tags.
@@ -438,6 +426,8 @@ class WoodworkColumnAccessor:
     @_check_column_schema
     def validate_logical_type(self, return_invalid_values=False):
         """Validates series data based on the logical type.
+        If a column's dtype does not match its logical type's required dtype,
+        will raise a TypeValidationError even when return_invalid_indices is True.
 
         Args:
             return_invalid_values (bool): Whether or not to return invalid data values

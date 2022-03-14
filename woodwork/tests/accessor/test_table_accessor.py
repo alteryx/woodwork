@@ -2986,7 +2986,19 @@ def test_nan_index_error(sample_df_pandas):
 
 def test_validate_logical_types(sample_df):
     df = sample_df[["email", "url", "age"]]
-    df.ww.init(logical_types={"email": "EmailAddress"})
+    if isinstance(df, pd.DataFrame):
+        df["ordinal"] = [18, 33, 33, 57]
+        df["latlong"] = [(1, 2), (3, 4), (5, 6), (8, 9)]
+
+        df.ww.init(
+            logical_types={
+                "email": "EmailAddress",
+                "ordinal": Ordinal(order=[18, 44, 33, 57]),
+                "latlong": "Latlong",
+            }
+        )
+    else:
+        df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate_logical_types() is None
 
     invalid_df = pd.DataFrame(

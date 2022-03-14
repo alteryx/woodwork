@@ -1400,6 +1400,8 @@ class WoodworkTableAccessor:
     @_check_table_schema
     def validate_logical_types(self, return_invalid_values=False):
         """Validates the dataframe based on the logical types.
+        If a column's dtype does not match its logical type's required dtype,
+        will raise a TypeValidationError even when return_invalid_indices is True.
 
         Args:
             return_invalid_values (bool): Whether or not to return invalid data values
