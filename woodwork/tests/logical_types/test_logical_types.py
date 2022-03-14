@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_koalas_series
+from woodwork.accessor_utils import _is_koalas_series, init_series
 from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     URL,
@@ -141,6 +141,20 @@ def test_latlong_transform(latlong_df):
         pd.testing.assert_series_equal(actual, expected)
 
 
+def test_latlong_validate(latlong_df):
+    error_message = re.escape(
+        "Cannot initialize Woodwork. Series does not contain properly formatted "
+        "LatLong data. Try reformatting before initializing or use the "
+        "woodwork.init_series function to initialize."
+    )
+    latlong = LatLong()
+    series = latlong_df["tuple_ints"]
+    new_series = init_series(series, logical_type=LatLong)
+    latlong.validate(new_series)
+    with pytest.raises(TypeValidationError, match=error_message):
+        latlong.validate(series)
+
+
 def test_datetime_transform(datetimes):
     datetime = Datetime()
     for series in datetimes:
@@ -202,17 +216,45 @@ def test_ordinal_transform(sample_series):
         ordinal_incomplete_order.transform(sample_series)
 
 
+def test_ordinal_validate(sample_series):
+    series_type = str(type(sample_series))
+    dask = "dask" in series_type
+    koalas = "koalas" in series_type
+
+    if dask or koalas:
+        pytest.xfail(
+            "Fails with Dask and Koalas - ordinal data validation not supported"
+        )
+
+    ordinal_incomplete_order = Ordinal(order=["a", "b"])
+    error_msg = re.escape(
+        "Ordinal column sample_series contains values that are not "
+        "present in the order values provided: ['c']"
+    )
+
+    with pytest.raises(ValueError, match=error_msg):
+        ordinal_incomplete_order.validate(sample_series)
+
+    new_type = "string"
+    error_message = re.escape(
+        f"Series dtype '{new_type}' is incompatible with ordinal dtype."
+    )
+    with pytest.raises(TypeValidationError, match=error_message):
+        ordinal_incomplete_order.validate(sample_series.astype(new_type))
+
+
 def test_email_address_validate(sample_df):
-    series = sample_df["email"]
-    invalid_row = pd.Series({4: "bad_email"}, name="email")
+    email_address = EmailAddress()
+    dtype = email_address.primary_dtype
+    series = sample_df["email"].astype(dtype)
+    invalid_row = pd.Series({4: "bad_email"}, name="email").astype(dtype)
 
     if _is_koalas_series(series):
         invalid_row = ks.from_pandas(invalid_row)
 
-    email_address = EmailAddress()
     assert email_address.validate(series) is None
 
-    series = series.append(invalid_row)
+    series = series.append(invalid_row).astype(dtype)
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
 
@@ -220,21 +262,21 @@ def test_email_address_validate(sample_df):
         email_address.validate(series)
 
     actual = email_address.validate(series, return_invalid_values=True)
-    expected = pd.Series({4: "bad_email"}, name="email")
+    expected = pd.Series({4: "bad_email"}, name="email").astype(dtype)
     assert to_pandas(actual).equals(expected)
 
 
 def test_url_validate(sample_df):
-    series = sample_df["url"]
-    invalid_row = pd.Series({4: "bad_url"}, name="url")
-
+    logical_type = URL()
+    dtype = logical_type.primary_dtype
+    series = sample_df["url"].astype(dtype)
+    invalid_row = pd.Series({4: "bad_url"}, name="url").astype(dtype)
     if _is_koalas_series(series):
         invalid_row = ks.from_pandas(invalid_row)
 
-    logical_type = URL()
     assert logical_type.validate(series) is None
 
-    series = series.append(invalid_row)
+    series = series.append(invalid_row).astype(dtype)
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
 
@@ -242,7 +284,7 @@ def test_url_validate(sample_df):
         logical_type.validate(series)
 
     actual = logical_type.validate(series, return_invalid_values=True)
-    expected = pd.Series({4: "bad_url"}, name="url")
+    expected = pd.Series({4: "bad_url"}, name="url").astype(dtype)
     assert to_pandas(actual).equals(expected)
 
 
