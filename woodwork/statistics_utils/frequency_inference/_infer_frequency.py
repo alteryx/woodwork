@@ -8,6 +8,7 @@ from ._determine_nan_values import _determine_nan_values
 from ._determine_extra_values import _determine_extra_values
 from ._clean_timeseries import _clean_timeseries
 from ._types import InferDebug, DataCheckMessageCode
+from ._constants import WINDOW_LENGTH, FREQ_INFERENCE_THRESHOLD
 
 import pandas as pd
 
@@ -21,20 +22,39 @@ def inference_response(inferred_freq, debug_obj, debug):
     else:
         return inferred_freq
 
-def infer_frequency(observed_ts: pd.Series, debug=False):
+
+def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LENGTH, threshold=FREQ_INFERENCE_THRESHOLD):
     """Infer the frequency of a given Pandas Datetime Series.
 
     Args:
         series (pd.Series): data to use for histogram
+        debug (boolean): a flag to determine if debug object should be returned (explained below). 
+        window_length (int): the window length used to determine the most likely candidate frequence. Default is 15 
+        threshold (float): a value between 0 and 1. Given the number of windows that contain the most observed frequency (N), and total number of windows (T), 
+            if N/T > threshold, the most observed frequency is determined to be the most likely frequency, else None.
 
     Returns:
-        inferred_freq: a string
-        debug: a dictionary containing debug information if frequency cannot be inferred
+        inferred_freq (str): pandas offset alias string (D, M, Y, etc.) or None if no uniform frequency was present in the data.
+        debug (dict): a dictionary containing debug information if frequency cannot be inferred. This dictionary has the following properties:
+
+        - actual_range_start (str): a string representing the minimum Timestamp in the input observed timeseries according to ISO 8610.
+        - actual_range_end (str): a string representing the maximum Timestamp in the input observed timeseries according to ISO 8610.
+
+        - message (str): message describing any issues with the input Datetime series
+
+        - estimated_freq (str): None
+        - estimated_range_start (str): a string representing the minimum Timestamp in the output estimated timeseries according to ISO 8610.
+        - estimated_range_end (str): a string representing the maximum Timestamp in the output estimated timeseries according to ISO 8610.
+
+        - duplicate_values: list[RangeObject] = field(default_factory=list)
+        - missing_values: list[RangeObject] = field(default_factory=list)
+        - extra_values: list[RangeObject] = field(default_factory=list)
+        - nan_values: list[RangeObject] = field(default_factory=list)
     """
 
     pandas_inferred_freq = pd.infer_freq(observed_ts)
 
-    if pandas_inferred_freq:
+    if pandas_inferred_freq or debug is False:
         return inference_response(
             inferred_freq=pandas_inferred_freq,
             debug_obj=InferDebug(),
@@ -58,8 +78,6 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
 
     actual_range_start = observed_ts_clean.min().isoformat()
     actual_range_end = observed_ts_clean.max().isoformat()
-
-    print("DAVE", actual_range_start, actual_range_end)
 
     # Determine if series is long enough for inference
     if len(observed_ts_clean) < 3:
@@ -91,11 +109,9 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
         )
 
     # Generate Frequency Candidates
-    alias_dict = _generate_freq_candidates(observed_ts_clean)
+    alias_dict = _generate_freq_candidates(observed_ts_clean, window_length=window_length)
 
-    print(alias_dict)
-
-    most_likely_freq = _determine_most_likely_freq(alias_dict)
+    most_likely_freq = _determine_most_likely_freq(alias_dict, threshold=threshold)
 
     if most_likely_freq is None:
         return inference_response(
@@ -110,10 +126,12 @@ def infer_frequency(observed_ts: pd.Series, debug=False):
             debug=debug
         )
 
-    estimated_ts = _generate_estimated_timeseries(alias_dict[most_likely_freq])
+    most_likely_freq_alias_dict = alias_dict[most_likely_freq]
 
-    estimated_range_start = estimated_ts.min().isoformat()
-    estimated_range_end = estimated_ts.max().isoformat()
+    estimated_ts = _generate_estimated_timeseries(most_likely_freq_alias_dict)
+
+    estimated_range_start = most_likely_freq_alias_dict["min_dt"].isoformat()
+    estimated_range_end = most_likely_freq_alias_dict["max_dt"].isoformat()
 
     missing_values = _determine_missing_values(estimated_ts, observed_ts_clean)
     extra_values = _determine_extra_values(estimated_ts, observed_ts_clean)

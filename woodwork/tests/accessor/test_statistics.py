@@ -8,10 +8,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.tests.fixtures.datetime_freq import (
-    inferrable_freq_fixtures,
-    generate_pandas_inferrable,
-)
 
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
@@ -48,7 +44,6 @@ from woodwork.statistics_utils import (
     _get_top_values_categorical,
     _make_categorical_for_mutual_info,
     _replace_nans_for_mutual_info,
-    infer_frequency
 )
 from woodwork.tests.testing_utils import (
     check_empty_box_plot_dict,
@@ -1391,176 +1386,19 @@ def test_box_plot_optional_return_values(outliers_df):
     } == set(no_outliers_box_plot_info_with_optional.keys())
 
 
-def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
+@patch.object(
+    sys.modules["woodwork.statistics_utils._infer_temporal_frequencies"],
+    "infer_frequency"
+)
+def test_infer_temporal_frequencies(infer_frequency, datetime_freqs_df_pandas):
     # TODO: Add support for Dask and Koalas DataFrames
     datetime_freqs_df_pandas.ww.init()
 
-    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies()
-    assert len(frequency_dict) == len(datetime_freqs_df_pandas.columns) - 1
-    assert "ints" not in frequency_dict
+    datetime_freqs_df_pandas.ww.infer_temporal_frequencies()
 
-    expected_no_frequency = {
-        "same_date",
-        "1d_skipped_one_freq",
-        "3M_one_nan",
-        "3B_no_freq",
-    }
-    assert {
-        key for key, val in frequency_dict.items() if val is None
-    } == expected_no_frequency
+    assert infer_frequency.called
 
 
-@pytest.mark.parametrize("freq", ["H", "2D", "3W-FRI", "M", "B", "Q-NOV"])
-@pytest.mark.parametrize("error_range", [1,2,10])
-def test_inferable_temporal_frequencies_missing(freq, error_range):
-    # strip off first element, since it probably doesn't agree with freq
-    dates = (pd.date_range("2005-01-01", periods=1001, freq=freq)[1:]).to_series().reset_index(drop=True)
-
-    actual_range_start = dates.loc[0].isoformat()
-    actual_range_end = dates.loc[len(dates)-1].isoformat()
-
-    idx = len(dates) // 2
-
-    d = dates[idx].isoformat()
-
-    dates_observed = dates.drop(dates.loc[idx:idx+error_range-1].index)
-    dates_observed = dates_observed.reset_index(drop=True)
-
-    expected_debug_obj = {
-        'actual_range_start': actual_range_start,
-        'actual_range_end': actual_range_end,
-        'message': None,
-        'estimated_freq': freq,
-        'estimated_range_start': dates_observed.loc[0].isoformat(),
-        'estimated_range_end': dates_observed.loc[len(dates_observed)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [
-            {'dt': d, 'idx': idx, 'range': error_range},
-        ],
-        'extra_values': [],
-        'nan_values': []
-    }
-
-    inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=dates_observed,
-        debug=True
-    )
-
-    assert inferred_freq is None
-    assert actual_debug_obj == expected_debug_obj
-
-
-@pytest.mark.parametrize("freq", ["H", "2D", "3W-FRI", "M", "B", "Q-NOV"])
-@pytest.mark.parametrize("error_range", [1,2,10])
-def test_inferable_temporal_frequencies_duplicates(freq, error_range):
-    # strip off first element, since it probably doesn't agree with freq
-    dates = (pd.date_range("2005-01-01", periods=1001, freq=freq)[1:]).to_series().reset_index(drop=True)
-
-    actual_range_start = dates.loc[0].isoformat()
-    actual_range_end = dates.loc[len(dates)-1].isoformat()
-
-    idx = len(dates) // 2
-
-    d = dates[idx].isoformat()
-
-    dates_observed = pd.concat([dates[:idx+1], pd.Series(np.full((error_range,), dates[idx])), dates[idx+1:]])
-    dates_observed = dates_observed.reset_index(drop=True)
-
-    expected_debug_obj = {
-        'actual_range_start': actual_range_start,
-        'actual_range_end': actual_range_end,
-        'message': None,
-        'estimated_freq': freq,
-        'estimated_range_start': dates_observed.loc[0].isoformat(),
-        'estimated_range_end': dates_observed.loc[len(dates_observed)-1].isoformat(),
-        'duplicate_values': [
-            {'dt': d, 'idx': idx+1, 'range': error_range},
-        ],
-        'missing_values': [],
-        'extra_values': [],
-        'nan_values': []
-    }
-
-    inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=dates_observed,
-        debug=True
-    )
-
-    assert inferred_freq is None
-    assert actual_debug_obj == expected_debug_obj
-
-
-@pytest.mark.parametrize("freq", ["H", "2D", "3W-FRI", "M", "B", "Q-NOV"])
-@pytest.mark.parametrize("error_range", [1,2,10])
-def test_inferable_temporal_frequencies_extra(freq, error_range):
-    # strip off first element, since it probably doesn't agree with freq
-    dates = (pd.date_range("2005-01-01", periods=1001, freq=freq)[1:]).to_series().reset_index(drop=True)
-
-    actual_range_start = dates.loc[0].isoformat()
-    actual_range_end = dates.loc[len(dates)-1].isoformat()
-
-    idx = len(dates) // 2
-
-   
-    extra = (pd.date_range(dates[idx], periods=error_range+1, freq="N")[1:]).to_series()
-    d = extra[0].isoformat()
-    dates_observed = pd.concat([dates[:idx+1], extra, dates[idx+1:]])
-    dates_observed = dates_observed.reset_index(drop=True)
-
-    expected_debug_obj = {
-        'actual_range_start': actual_range_start,
-        'actual_range_end': actual_range_end,
-        'message': None,
-        'estimated_freq': freq,
-        'estimated_range_start': dates_observed.loc[0].isoformat(),
-        'estimated_range_end': dates_observed.loc[len(dates_observed)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [],
-        'extra_values': [ {'dt': d, 'idx': idx+1, 'range': error_range},],
-        'nan_values': []
-    }
-
-    inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=dates_observed,
-        debug=True
-    )
-
-    assert inferred_freq is None
-    assert actual_debug_obj == expected_debug_obj
-
-
-@pytest.mark.parametrize(
-    "case",
-    inferrable_freq_fixtures
-)
-def test_inferable_temporal_frequencies_cases(case):
-    input_series = case['dates']
-
-    expected_debug_obj = case["expected_debug_obj"]
-
-    inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=input_series,
-        debug=True
-    )
-
-    assert actual_debug_obj == expected_debug_obj
-
-
-@pytest.mark.parametrize(
-    "case",
-    generate_pandas_inferrable()
-)
-def test_pandas_inferable_temporal_frequencies(case):
-    input_series = case['dates']
-
-    expected_infer_freq = case["expected_infer_freq"]
-
-    inferred_freq = infer_frequency(
-        observed_ts=input_series,
-        debug=False
-    )
-
-    assert inferred_freq == expected_infer_freq
 
 # @pytest.mark.parametrize(
 #     "bad_case",
@@ -1576,32 +1414,32 @@ def test_pandas_inferable_temporal_frequencies(case):
 
 
 
-def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
-    datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
+# def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
+#     datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
 
-    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
-    )
-    assert len(frequency_dict) == 1
-    assert frequency_dict["2D_freq"] == "2D"
+#     frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+#         temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
+#     )
+#     assert len(frequency_dict) == 1
+#     assert frequency_dict["2D_freq"] == "2D"
 
-    empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[]
-    )
-    assert len(empty_frequency_dict) == 0
+#     empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+#         temporal_columns=[]
+#     )
+#     assert len(empty_frequency_dict) == 0
 
 
-def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
-    datetime_freqs_df_pandas.ww.init()
+# def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
+#     datetime_freqs_df_pandas.ww.init()
 
-    error = "Column not_present not found in dataframe."
-    with pytest.raises(ValueError, match=error):
-        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-            temporal_columns=["2D_freq", "not_present"]
-        )
+#     error = "Column not_present not found in dataframe."
+#     with pytest.raises(ValueError, match=error):
+#         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+#             temporal_columns=["2D_freq", "not_present"]
+#         )
 
-    error = "Cannot determine frequency for column ints with logical type Integer"
-    with pytest.raises(TypeError, match=error):
-        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-            temporal_columns=["1d_skipped_one_freq", "ints"]
-        )
+#     error = "Cannot determine frequency for column ints with logical type Integer"
+#     with pytest.raises(TypeError, match=error):
+#         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+#             temporal_columns=["1d_skipped_one_freq", "ints"]
+#         )

@@ -1083,7 +1083,7 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
     @_check_table_schema
-    def infer_temporal_frequencies(self, temporal_columns=None):
+    def infer_temporal_frequencies(self, temporal_columns=None, debug=False):
         """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
             in the DataFrame. Temporal columns are ones with the logical type Datetime or Timedelta.
             Not supported for Dask and Koalas DataFrames.
@@ -1092,6 +1092,8 @@ class WoodworkTableAccessor:
             temporal_columns (list[str], optional): Columns for which frequencies should be inferred. Must be columns
                 that are present in the DataFrame and are temporal in nature. Defaults to None. If not
                 specified, all temporal columns will have their frequencies inferred.
+            debug (boolean): A flag used to determine if more information should be returned for each temporal column if
+                no uniform frequency was found.
 
         Returns:
             (dict): A dictionary where each key is a temporal column from the DataFrame, and the
@@ -1121,7 +1123,7 @@ class WoodworkTableAccessor:
                     parameter when building the date range, but is not then inferrable.
         """
         return _infer_temporal_frequencies(
-            self._dataframe, temporal_columns=temporal_columns
+            self._dataframe, temporal_columns=temporal_columns, debug=debug
         )
 
     @_check_table_schema
