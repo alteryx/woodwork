@@ -219,11 +219,11 @@ def test_ordinal_transform(sample_series):
 def test_ordinal_validate(sample_series):
     series_type = str(type(sample_series))
     dask = "dask" in series_type
-    koalas = "koalas" in series_type
+    spark = "spark" in series_type
 
-    if dask or koalas:
+    if dask or spark:
         pytest.xfail(
-            "Fails with Dask and Koalas - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported"
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
