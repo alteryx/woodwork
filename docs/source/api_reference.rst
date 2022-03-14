@@ -85,6 +85,7 @@ TableSchema
     TableSchema
     TableSchema.add_semantic_tags
     TableSchema.index
+    TableSchema.get_subset_schema
     TableSchema.logical_types
     TableSchema.metadata
     TableSchema.rename
