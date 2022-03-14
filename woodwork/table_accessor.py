@@ -5,7 +5,6 @@ from typing import Dict, Iterable, List, Set, Union
 
 import pandas as pd
 
-import woodwork.serialize as serialize
 from woodwork.accessor_utils import (
     _check_table_schema,
     _is_dask_dataframe,
@@ -22,6 +21,8 @@ from woodwork.exceptions import (
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
+from woodwork.serializers.serializer_base import typing_info_to_dict
+from woodwork.serializers.utils import get_serializer
 from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_mutual_information_dict,
@@ -32,12 +33,7 @@ from woodwork.statistics_utils import (
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
-from woodwork.utils import (
-    _get_column_logical_type,
-    _parse_logical_type,
-    import_or_none,
-    import_or_raise,
-)
+from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ks = import_or_none("databricks.koalas")
@@ -628,11 +624,19 @@ class WoodworkTableAccessor:
         Returns:
             dict: Description of the typing information.
         """
-        return serialize.typing_info_to_dict(self._dataframe)
+        return typing_info_to_dict(self._dataframe)
 
     @_check_table_schema
     def to_disk(
-        self, path, format="csv", compression=None, profile_name=None, **kwargs
+        self,
+        path,
+        format="csv",
+        filename=None,
+        data_subdirectory="data",
+        typing_info_filename="woodwork_typing_info.json",
+        compression=None,
+        profile_name=None,
+        **kwargs,
     ):
         """Write Woodwork table to disk in the format specified by `format`, location specified by `path`.
         Path could be a local path or an S3 path.
@@ -644,38 +648,24 @@ class WoodworkTableAccessor:
 
 
         Args:
-            path (str) : Location on disk to write to (will be created as a directory)
-            format (str) : Format to use for writing Woodwork data. Defaults to csv. Possible values are: {'csv', 'pickle', 'parquet'}.
-            compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-            profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
-            kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
+            path (str): Location on disk to write to (will be created as a directory if it does not exist)
+            format (str, optional): Format to use for writing Woodwork data. Defaults to csv. Possible values are: {'csv', 'pickle', 'parquet'}.
+            filename (str, optional): Name to use for the saved data file. Will default to the name of the dataframe or "data" if not specified.
+            data_subdirectory (str, optional): Optional subdirectory to append to `path`. Will default to "data" if not specified.
+            typing_info_filename (str, optional): Optional filename to use for storing Woodwork typing information JSON data. Will default to "woodwork_typing_info.json" if not specified.
+            compression (str, optional): Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}. Defaults to None.
+            profile_name (str, optional): Name of AWS profile to use, False to use an anonymous profile, or None. Defaults to None.
+            kwargs (keywords, optional): Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
         """
-        if format == "csv":
-            default_csv_kwargs = {
-                "sep": ",",
-                "encoding": "utf-8",
-                "engine": "python",
-                "index": False,
-            }
-            if _is_koalas_dataframe(self._dataframe):
-                default_csv_kwargs["multiline"] = True
-                default_csv_kwargs["ignoreLeadingWhitespace"] = False
-                default_csv_kwargs["ignoreTrailingWhitespace"] = False
-            kwargs = {**default_csv_kwargs, **kwargs}
-        elif format in ["parquet", "orc"]:
-            import_error_message = (
-                f"The pyarrow library is required to serialize to {format}.\n"
-                "Install via pip:\n"
-                "    pip install pyarrow\n"
-                "Install via conda:\n"
-                "   conda install pyarrow -c conda-forge"
-            )
-            import_or_raise("pyarrow", import_error_message)
-            kwargs["engine"] = "pyarrow"
-        serialize.write_woodwork_table(
+        serializer_cls = get_serializer(format)
+        serializer = serializer_cls(
+            path=path,
+            filename=filename,
+            data_subdirectory=data_subdirectory,
+            typing_info_filename=typing_info_filename,
+        )
+        serializer.serialize(
             self._dataframe,
-            path,
-            format=format,
             compression=compression,
             profile_name=profile_name,
             **kwargs,
