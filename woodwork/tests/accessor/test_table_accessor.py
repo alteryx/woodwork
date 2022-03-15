@@ -1836,7 +1836,9 @@ def test_select_instantiated_ltype():
     new_df = df.ww.select(Datetime)
     assert len(new_df.columns) == 2
 
-    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
+    err_msg = (
+        "Invalid selector used in include: Datetime: %Y~%m~%d cannot be instantiated"
+    )
     with pytest.raises(TypeError, match=err_msg):
         df.ww.select(ymd_format)
 
@@ -2720,11 +2722,11 @@ def test_accessor_repr(small_df):
     small_df.ww.init()
 
     table_repr = repr(small_df.ww)
-    expected_repr = "                         Physical Type Logical Type Semantic Tag(s)\nColumn                                                             \nsample_datetime_series  datetime64[ns]     Datetime              []"
+    expected_repr = "                         Physical Type    Logical Type Semantic Tag(s)\nColumn                                                                \nsample_datetime_series  datetime64[ns]  Datetime: None              []"
     assert table_repr == expected_repr
 
     table_html_repr = small_df.ww._repr_html_()
-    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Physical Type</th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>datetime64[ns]</td>\n      <td>Datetime: None</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
     assert table_html_repr == expected_repr
 
 
