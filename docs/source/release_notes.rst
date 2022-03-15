@@ -7,10 +7,17 @@ Future Release
 ==============
     * Enhancements
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
+    * Changes
+        * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
+
+v0.14.0 Mar 15, 2022
+====================
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
-        * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
         * Calculate nunique for Unknown columns in `_get_describe_dict`  (:pr:`1322`)
         * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
         * Replace Koalas with the pandas API on Spark (:pr:`1331`)
@@ -25,7 +32,6 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
-
 
 Breaking Changes
 ++++++++++++++++
