@@ -42,6 +42,7 @@ def test_logical_repr():
 def test_instantiated_type_str():
     assert str(Categorical()) == "Categorical"
     assert str(Boolean()) == "Boolean"
+    assert str(Datetime(datetime_format="%Y-%m-%d")) == "Datetime: %Y-%m-%d"
 
 
 def test_ordinal_order_errors():
@@ -60,10 +61,12 @@ def test_ordinal_init_with_order():
     order = ["bronze", "silver", "gold"]
     ordinal_from_list = Ordinal(order=order)
     assert ordinal_from_list.order == order
+    assert str(ordinal_from_list) == "Ordinal: ['bronze', 'silver', 'gold']"
 
     order = ("bronze", "silver", "gold")
     ordinal_from_tuple = Ordinal(order=order)
     assert ordinal_from_tuple.order == order
+    assert str(ordinal_from_list) == "Ordinal: ['bronze', 'silver', 'gold']"
 
 
 def test_ordinal_transform_validates(ordinal_transform_series_pandas) -> None:
@@ -178,6 +181,7 @@ def test_datetime_inference_ambiguous_format():
     assert str(transformed.dtype) == "datetime64[ns]"
     assert transformed[2] is pd.NaT
     assert datetime.datetime_format == "%m/%d/%Y"
+    assert str(datetime) == "Datetime: %m/%d/%Y"
 
 
 def test_datetime_coerce_user_format():
@@ -194,6 +198,7 @@ def test_datetime_coerce_user_format():
     assert str(transformed.dtype) == "datetime64[ns]"
     assert transformed[2] is pd.NaT
     assert datetime.datetime_format == "%m/%d/%Y"
+    assert str(datetime) == "Datetime: %m/%d/%Y"
 
 
 def test_ordinal_transform(sample_series):

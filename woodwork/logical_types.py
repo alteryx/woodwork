@@ -298,6 +298,9 @@ class Datetime(LogicalType):
                         series, format=self.datetime_format, errors="coerce"
                     )
         return super().transform(series)
+    
+    def __str__(self):
+        return "{}: {}".format(str(self.__class__), self.datetime_format)
 
 
 class Double(LogicalType):
@@ -555,6 +558,9 @@ class Ordinal(LogicalType):
         # TODO: we'll want to actually handle return_invalid_values in the ordinal and latlong logical types.
         super().validate(series)
         self._validate_order_values(series)
+
+    def __str__(self):
+        return "{}: {}".format(self.__class__, self.order)
 
 
 class PhoneNumber(LogicalType):
