@@ -18,7 +18,7 @@ setup(
     author="Alteryx, Inc.",
     author_email="open_source_support@alteryx.com",
     license="BSD 3-clause",
-    version="0.13.0",
+    version="0.14.0",
     description="a two-dimensional data object with labeled axes and typing information",
     url="https://github.com/alteryx/woodwork/",
     project_urls={
