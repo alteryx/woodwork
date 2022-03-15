@@ -298,7 +298,7 @@ class Datetime(LogicalType):
                         series, format=self.datetime_format, errors="coerce"
                     )
         return super().transform(series)
-    
+
     def __str__(self):
         return "{}: {}".format(str(self.__class__), self.datetime_format)
 

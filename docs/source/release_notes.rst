@@ -7,7 +7,7 @@ Release Notes
    ==============
       * Enhancements
       * Fixes
-        * Updated ``__str__`` output for both ``Datetime`` and ``Ordinal`` logical types (:pr:``)
+        * Updated ``__str__`` output for both ``Datetime`` and ``Ordinal`` logical types (:pr:`1340`)
       * Changes
       * Documentation Changes
       * Testing Changes
