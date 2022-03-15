@@ -1,7 +1,8 @@
-from ._get_ranges import _get_ranges
-from ._constants import OBSERVED_COLUMN_NAME
-from ._types import RangeObject
 import pandas as pd
+
+from ._constants import OBSERVED_COLUMN_NAME
+from ._get_ranges import _get_ranges
+from ._types import RangeObject
 
 
 def _determine_duplicate_values(observed_ts):

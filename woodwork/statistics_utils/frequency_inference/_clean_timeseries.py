@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def _clean_timeseries(observed_ts: pd.Series) -> pd.Series:
     """Clean and Normalize time_series for subsequent processing. The following is performed on the time_series:
 

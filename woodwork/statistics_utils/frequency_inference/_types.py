@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -40,4 +41,6 @@ class DataCheckMessageCode(Enum):
 
     DATETIME_SERIES_IS_NOT_LONG_ENOUGH = "datetime_series_is_not_long_enough"
 
-    DATETIME_SERIES_FREQ_CANNOT_BE_ESTIMATED = "datetime_series_freq_cannot_be_estimated"
+    DATETIME_SERIES_FREQ_CANNOT_BE_ESTIMATED = (
+        "datetime_series_freq_cannot_be_estimated"
+    )

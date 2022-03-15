@@ -1,7 +1,8 @@
-from ._get_ranges import _get_ranges
-from ._constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
-from ._types import RangeObject
 import pandas as pd
+
+from ._constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
+from ._get_ranges import _get_ranges
+from ._types import RangeObject
 
 
 def _determine_missing_values(estimated, observed):

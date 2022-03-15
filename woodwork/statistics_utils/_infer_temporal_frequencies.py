@@ -1,9 +1,9 @@
-from ctypes import windll
-from turtle import window_width
-from woodwork.logical_types import Datetime, Timedelta
-
-from woodwork.statistics_utils.frequency_inference._infer_frequency import infer_frequency
 from woodwork.config import config
+from woodwork.logical_types import Datetime, Timedelta
+from woodwork.statistics_utils.frequency_inference._infer_frequency import (
+    infer_frequency,
+)
+
 
 def _infer_temporal_frequencies(dataframe, temporal_columns=None, debug=False):
     """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
@@ -42,9 +42,12 @@ def _infer_temporal_frequencies(dataframe, temporal_columns=None, debug=False):
     window_length = config.get_option("frequence_inference_window_length")
     threshold = config.get_option("frequence_inference_threshold")
 
-    return {col: infer_frequency(
-        observed_ts=dataframe[col], 
-        debug=debug, 
-        window_length=window_length,
-        threshold=threshold
-    ) for col in temporal_columns}
+    return {
+        col: infer_frequency(
+            observed_ts=dataframe[col],
+            debug=debug,
+            window_length=window_length,
+            threshold=threshold,
+        )
+        for col in temporal_columns
+    }

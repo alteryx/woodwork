@@ -1,7 +1,5 @@
 from ._get_ranges import _get_ranges
-from ._constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
 from ._types import RangeObject
-import pandas as pd
 
 
 def _determine_nan_values(observed):
@@ -27,12 +25,6 @@ def _determine_nan_values(observed):
     out = []
 
     for start_idx, end_idx in ranges:
-        out.append(
-            RangeObject(
-                dt = None,
-                idx = start_idx, 
-                range = end_idx - start_idx + 1
-            )
-        )
+        out.append(RangeObject(dt=None, idx=start_idx, range=end_idx - start_idx + 1))
 
     return out

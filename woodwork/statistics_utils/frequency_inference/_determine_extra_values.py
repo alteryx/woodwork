@@ -1,8 +1,8 @@
-from tracemalloc import start
-from ._get_ranges import _get_ranges
-from ._constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
-from ._types import RangeObject
 import pandas as pd
+
+from ._constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
+from ._get_ranges import _get_ranges
+from ._types import RangeObject
 
 
 def _determine_extra_values(estimated, observed):
@@ -39,7 +39,9 @@ def _determine_extra_values(estimated, observed):
     for start_idx, end_idx in ranges:
         out.append(
             RangeObject(
-                observed.iloc[start_idx].isoformat(), observed.index[start_idx], end_idx - start_idx + 1
+                observed.iloc[start_idx].isoformat(),
+                observed.index[start_idx],
+                end_idx - start_idx + 1,
             )
         )
 

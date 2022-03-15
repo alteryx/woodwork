@@ -1,6 +1,5 @@
-from lib2to3.pytree import convert
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 # https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases
 ALL_ALIASES = [
@@ -47,6 +46,7 @@ KNOWN_FREQ_ISSUES = {
 HEAD_RANGE_LEN = 100
 TAIL_RANGE_LEN = 100
 
+
 def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
     dates = [pd.Timestamp(d) for d in dates]
 
@@ -54,13 +54,20 @@ def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
     tail = pd.Series([])
 
     if pad_start > 0:
-        head = (pd.date_range(end=dates[0], periods=pad_start, freq=freq)[:-1]).to_series()
-   
-    if pad_end > 0:
-        tail = (pd.date_range(start=dates[-1], periods=pad_end, freq=freq)[1:]).to_series()
-    
+        head = (
+            pd.date_range(end=dates[0], periods=pad_start, freq=freq)[:-1]
+        ).to_series()
 
-    return pd.concat([head, pd.Series(dates), tail]).reset_index(drop=True).astype("datetime64[ns]")
+    if pad_end > 0:
+        tail = (
+            pd.date_range(start=dates[-1], periods=pad_end, freq=freq)[1:]
+        ).to_series()
+
+    return (
+        pd.concat([head, pd.Series(dates), tail])
+        .reset_index(drop=True)
+        .astype("datetime64[ns]")
+    )
 
 
 def generate_pandas_inferrable():
@@ -69,14 +76,23 @@ def generate_pandas_inferrable():
     output = []
     for alias_obj in ALL_ALIASES:
         for freq in alias_obj["alias"]:
-            pd_inferred_freq = KNOWN_FREQ_ISSUES[freq] if freq in KNOWN_FREQ_ISSUES else alias_obj["alias"][0]
+            pd_inferred_freq = (
+                KNOWN_FREQ_ISSUES[freq]
+                if freq in KNOWN_FREQ_ISSUES
+                else alias_obj["alias"][0]
+            )
             if pd_inferred_freq is not None:
-                output.append({
-                    "expected_infer_freq": pd_inferred_freq,
-                    "dates": pad_datetime_series(dates, freq=freq, pad_end=TAIL_RANGE_LEN)[1:]
-                })
-    
+                output.append(
+                    {
+                        "expected_infer_freq": pd_inferred_freq,
+                        "dates": pad_datetime_series(
+                            dates, freq=freq, pad_end=TAIL_RANGE_LEN
+                        )[1:],
+                    }
+                )
+
     return output
+
 
 def case0():
     """
@@ -87,31 +103,33 @@ def case0():
         "00:00:00",
         "01:00:00",
         "02:00:00",
-        "04:00:00", # <-- missing index is here
+        "04:00:00",  # <-- missing index is here
         "05:00:00",
     ]
 
     dates = [f"2005-01-01T{d}Z" for d in dates]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 1}],
-        'extra_values': [],
-        'nan_values': []
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [],
+        "missing_values": [
+            {"dt": "2005-01-01T03:00:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 1}
+        ],
+        "extra_values": [],
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
+
 
 def case1():
     """
@@ -123,32 +141,34 @@ def case1():
         "01:00:00",
         "02:00:00",
         "03:00:00",
-        "03:00:00", # <-- duplicate index starts here
+        "03:00:00",  # <-- duplicate index starts here
         "03:00:00",
         "04:00:00",
         "05:00:00",
     ]
     dates = [f"2005-01-01T{d}Z" for d in dates]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 2}],
-        'missing_values': [],
-        'extra_values': [],
-        'nan_values': []
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [
+            {"dt": "2005-01-01T03:00:00", "idx": (HEAD_RANGE_LEN - 1) + 4, "range": 2}
+        ],
+        "missing_values": [],
+        "extra_values": [],
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
+
 
 def case2():
     """
@@ -160,31 +180,33 @@ def case2():
         "01:00:00",
         "02:00:00",
         "03:00:00",
-        "03:10:00", # <-- extra index is here
+        "03:10:00",  # <-- extra index is here
         "04:00:00",
         "05:00:00",
     ]
     dates = [f"2005-01-01T{d}Z" for d in dates]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [],
-        'extra_values': [{'dt': '2005-01-01T03:10:00', 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 1}],
-        'nan_values': []
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [],
+        "missing_values": [],
+        "extra_values": [
+            {"dt": "2005-01-01T03:10:00", "idx": (HEAD_RANGE_LEN - 1) + 4, "range": 1}
+        ],
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
+
 
 def case3():
     """
@@ -195,31 +217,35 @@ def case3():
         "00:00:00",
         "01:00:00",
         "02:00:00",
-        "03:10:00", # <-- missing index and extra index is here
+        "03:10:00",  # <-- missing index and extra index is here
         "04:00:00",
         "05:00:00",
     ]
     dates = [f"2005-01-01T{d}Z" for d in dates]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [{'dt': '2005-01-01T03:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 1}],
-        'extra_values': [{'dt': '2005-01-01T03:10:00', 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 1}],
-        'nan_values': []
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [],
+        "missing_values": [
+            {"dt": "2005-01-01T03:00:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 1}
+        ],
+        "extra_values": [
+            {"dt": "2005-01-01T03:10:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 1}
+        ],
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
+
 
 def case4():
     """
@@ -236,28 +262,30 @@ def case4():
         "05:00:00",
     ]
     dates = [f"2005-01-01T{d}Z" for d in dates]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [{'dt': '2005-01-01T02:00:00', 'idx': (HEAD_RANGE_LEN - 1) + 2, 'range': 2}],
-        'extra_values': [
-            {'dt': '2005-01-01T01:30:00', 'idx': (HEAD_RANGE_LEN - 1) + 2, 'range': 3},
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [],
+        "missing_values": [
+            {"dt": "2005-01-01T02:00:00", "idx": (HEAD_RANGE_LEN - 1) + 2, "range": 2}
         ],
-        'nan_values': []
+        "extra_values": [
+            {"dt": "2005-01-01T01:30:00", "idx": (HEAD_RANGE_LEN - 1) + 2, "range": 3},
+        ],
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
+
 
 def case5():
     """
@@ -270,24 +298,22 @@ def case5():
     dates = head_range.append(tail_range)
 
     expected_debug_obj = {
-        'actual_range_start': dates[0].isoformat(),
-        'actual_range_end': dates[-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': tail_range[0].isoformat(),
-        'estimated_range_end': dates[-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [],
-        'extra_values': [
-            {'dt': '2004-12-31T23:50:00', 'idx': 0, 'range': 1},
+        "actual_range_start": dates[0].isoformat(),
+        "actual_range_end": dates[-1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": tail_range[0].isoformat(),
+        "estimated_range_end": dates[-1].isoformat(),
+        "duplicate_values": [],
+        "missing_values": [],
+        "extra_values": [
+            {"dt": "2004-12-31T23:50:00", "idx": 0, "range": 1},
         ],
-        'nan_values': []
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates.to_series(),
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates.to_series(), "expected_debug_obj": expected_debug_obj}
+
 
 def case6():
     """
@@ -299,33 +325,32 @@ def case6():
         "2005-01-01T01:00:00.000Z",
         "2005-01-01T02:00:00.000Z",
         "2005-01-01T03:00:00.000Z",
-        np.nan,                        
-        np.nan,                         
-        "2005-01-01T04:00:00.000Z",   
+        np.nan,
+        np.nan,
+        "2005-01-01T04:00:00.000Z",
         "2005-01-01T05:00:00.000Z",
     ]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [],
-        'missing_values': [],
-        'extra_values': [],
-        'nan_values': [
-             {'dt': None, 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 2},
-        ]
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [],
+        "missing_values": [],
+        "extra_values": [],
+        "nan_values": [
+            {"dt": None, "idx": (HEAD_RANGE_LEN - 1) + 4, "range": 2},
+        ],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
 
 
 def case7():
@@ -340,35 +365,32 @@ def case7():
         "2005-01-01T02:00:00.000Z",
         "2005-01-01T02:00:00.000Z",
         "2005-01-01T03:00:00.000Z",
-        np.nan,                        
-        np.nan,                         
-        "2005-01-01T04:00:00.000Z",   
+        np.nan,
+        np.nan,
+        "2005-01-01T04:00:00.000Z",
         "2005-01-01T05:00:00.000Z",
     ]
-    
+
     dates = pad_datetime_series(dates, freq="H", pad_start=0, pad_end=TAIL_RANGE_LEN)
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [
-            {'dt': "2005-01-01T02:00:00", 'idx': 3, 'range': 2},
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [
+            {"dt": "2005-01-01T02:00:00", "idx": 3, "range": 2},
         ],
-        'missing_values': [],
-        'extra_values': [],
-        'nan_values': [
-             {'dt': None, 'idx': 6, 'range': 2},
-        ]
+        "missing_values": [],
+        "extra_values": [],
+        "nan_values": [
+            {"dt": None, "idx": 6, "range": 2},
+        ],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
 
 
 def case8():
@@ -384,33 +406,32 @@ def case8():
         "2005-01-01T02:00:00.000Z",
         "2005-01-01T03:00:00.000Z",
         "2005-01-01T03:10:00.000Z",
-        "2005-01-01T04:00:00.000Z",   
+        "2005-01-01T04:00:00.000Z",
         "2005-01-01T05:00:00.000Z",
     ]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [
-            {'dt': "2005-01-01T02:00:00", 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 2},
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [
+            {"dt": "2005-01-01T02:00:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 2},
         ],
-        'missing_values': [],
-        'extra_values': [
-            {'dt': "2005-01-01T03:10:00", 'idx': (HEAD_RANGE_LEN - 1) + 6, 'range': 1},
+        "missing_values": [],
+        "extra_values": [
+            {"dt": "2005-01-01T03:10:00", "idx": (HEAD_RANGE_LEN - 1) + 6, "range": 1},
         ],
-        'nan_values': []
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
 
 
 def case9():
@@ -427,30 +448,29 @@ def case9():
         "2005-01-01T03:00:00.000Z",
         "2005-01-01T05:00:00.000Z",
     ]
-    
-    dates = pad_datetime_series(dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN)
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
 
     expected_debug_obj = {
-        'actual_range_start': dates.loc[0].isoformat(),
-        'actual_range_end': dates.loc[len(dates)-1].isoformat(),
-        'message': None,
-        'estimated_freq': 'H',
-        'estimated_range_start': dates.loc[0].isoformat(),
-        'estimated_range_end': dates.loc[len(dates)-1].isoformat(),
-        'duplicate_values': [
-            {'dt': "2005-01-01T02:00:00", 'idx': (HEAD_RANGE_LEN - 1) + 3, 'range': 2},
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [
+            {"dt": "2005-01-01T02:00:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 2},
         ],
-        'missing_values': [
-            {'dt': "2005-01-01T04:00:00", 'idx': (HEAD_RANGE_LEN - 1) + 4, 'range': 1},
+        "missing_values": [
+            {"dt": "2005-01-01T04:00:00", "idx": (HEAD_RANGE_LEN - 1) + 4, "range": 1},
         ],
-        'extra_values': [],
-        'nan_values': []
+        "extra_values": [],
+        "nan_values": [],
     }
 
-    return {
-        "dates": dates,
-        "expected_debug_obj": expected_debug_obj
-    }
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
 
 
 inferrable_freq_fixtures = [

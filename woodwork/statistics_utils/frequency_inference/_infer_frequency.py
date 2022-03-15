@@ -1,36 +1,39 @@
 import dataclasses
-from ._generate_freq_candidates import _generate_freq_candidates
-from ._determine_most_likely_freq import _determine_most_likely_freq
-from ._generate_estimated_timeseries import _generate_estimated_timeseries
-from ._determine_missing_values import _determine_missing_values
-from ._determine_duplicate_values import _determine_duplicate_values
-from ._determine_nan_values import _determine_nan_values
-from ._determine_extra_values import _determine_extra_values
-from ._clean_timeseries import _clean_timeseries
-from ._types import InferDebug, DataCheckMessageCode
-from ._constants import WINDOW_LENGTH, FREQ_INFERENCE_THRESHOLD
 
 import pandas as pd
+
+from ._clean_timeseries import _clean_timeseries
+from ._constants import FREQ_INFERENCE_THRESHOLD, WINDOW_LENGTH
+from ._determine_duplicate_values import _determine_duplicate_values
+from ._determine_extra_values import _determine_extra_values
+from ._determine_missing_values import _determine_missing_values
+from ._determine_most_likely_freq import _determine_most_likely_freq
+from ._determine_nan_values import _determine_nan_values
+from ._generate_estimated_timeseries import _generate_estimated_timeseries
+from ._generate_freq_candidates import _generate_freq_candidates
+from ._types import DataCheckMessageCode, InferDebug
 
 
 def inference_response(inferred_freq, debug_obj, debug):
     if debug:
-        return (
-            inferred_freq,
-            dataclasses.asdict(debug_obj)
-        )
+        return (inferred_freq, dataclasses.asdict(debug_obj))
     else:
         return inferred_freq
 
 
-def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LENGTH, threshold=FREQ_INFERENCE_THRESHOLD):
+def infer_frequency(
+    observed_ts: pd.Series,
+    debug=False,
+    window_length=WINDOW_LENGTH,
+    threshold=FREQ_INFERENCE_THRESHOLD,
+):
     """Infer the frequency of a given Pandas Datetime Series.
 
     Args:
         series (pd.Series): data to use for histogram
-        debug (boolean): a flag to determine if debug object should be returned (explained below). 
-        window_length (int): the window length used to determine the most likely candidate frequence. Default is 15 
-        threshold (float): a value between 0 and 1. Given the number of windows that contain the most observed frequency (N), and total number of windows (T), 
+        debug (boolean): a flag to determine if debug object should be returned (explained below).
+        window_length (int): the window length used to determine the most likely candidate frequence. Default is 15
+        threshold (float): a value between 0 and 1. Given the number of windows that contain the most observed frequency (N), and total number of windows (T),
             if N/T > threshold, the most observed frequency is determined to be the most likely frequency, else None.
 
     Returns:
@@ -56,9 +59,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
 
     if pandas_inferred_freq or debug is False:
         return inference_response(
-            inferred_freq=pandas_inferred_freq,
-            debug_obj=InferDebug(),
-            debug=debug
+            inferred_freq=pandas_inferred_freq, debug_obj=InferDebug(), debug=debug
         )
 
     # clean observed timeseries from duplicates and NaTs
@@ -69,7 +70,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
         return inference_response(
             inferred_freq=None,
             debug_obj=InferDebug(
-                message = DataCheckMessageCode.DATETIME_SERIES_IS_EMPTY,
+                message=DataCheckMessageCode.DATETIME_SERIES_IS_EMPTY,
             ),
         )
 
@@ -86,11 +87,11 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
             debug_obj=InferDebug(
                 actual_range_start=actual_range_start,
                 actual_range_end=actual_range_end,
-                message = DataCheckMessageCode.DATETIME_SERIES_IS_NOT_LONG_ENOUGH,
+                message=DataCheckMessageCode.DATETIME_SERIES_IS_NOT_LONG_ENOUGH,
                 duplicate_values=duplicate_values,
-                nan_values=nan_values
+                nan_values=nan_values,
             ),
-            debug=debug
+            debug=debug,
         )
 
     # Determine if series if Monotonic
@@ -101,15 +102,17 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
             debug_obj=InferDebug(
                 actual_range_start,
                 actual_range_end,
-                message = DataCheckMessageCode.DATETIME_SERIES_IS_NOT_MONOTONIC,
+                message=DataCheckMessageCode.DATETIME_SERIES_IS_NOT_MONOTONIC,
                 duplicate_values=duplicate_values,
-                nan_values=nan_values
+                nan_values=nan_values,
             ),
-            debug=debug
+            debug=debug,
         )
 
     # Generate Frequency Candidates
-    alias_dict = _generate_freq_candidates(observed_ts_clean, window_length=window_length)
+    alias_dict = _generate_freq_candidates(
+        observed_ts_clean, window_length=window_length
+    )
 
     most_likely_freq = _determine_most_likely_freq(alias_dict, threshold=threshold)
 
@@ -121,9 +124,9 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
                 actual_range_end,
                 DataCheckMessageCode.DATETIME_SERIES_FREQ_CANNOT_BE_ESTIMATED,
                 duplicate_values=duplicate_values,
-                nan_values=nan_values
+                nan_values=nan_values,
             ),
-            debug=debug
+            debug=debug,
         )
 
     most_likely_freq_alias_dict = alias_dict[most_likely_freq]
@@ -135,7 +138,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
 
     missing_values = _determine_missing_values(estimated_ts, observed_ts_clean)
     extra_values = _determine_extra_values(estimated_ts, observed_ts_clean)
- 
+
     return inference_response(
         inferred_freq=None,
         debug_obj=InferDebug(
@@ -147,7 +150,7 @@ def infer_frequency(observed_ts: pd.Series, debug=False, window_length=WINDOW_LE
             missing_values=missing_values,
             duplicate_values=duplicate_values,
             extra_values=extra_values,
-            nan_values=nan_values
+            nan_values=nan_values,
         ),
-        debug=debug
+        debug=debug,
     )

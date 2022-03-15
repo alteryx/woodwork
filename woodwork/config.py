@@ -1,5 +1,8 @@
 import contextlib
-from woodwork.statistics_utils.frequency_inference import _constants as FREQUENCY_INFERENCE_CONSTANTS
+
+from woodwork.statistics_utils.frequency_inference import (
+    _constants as FREQUENCY_INFERENCE_CONSTANTS,
+)
 
 CONFIG_DEFAULTS = {
     "categorical_threshold": 0.2,
@@ -20,7 +23,7 @@ CONFIG_DEFAULTS = {
     ),
     "nan_values": ["", "None", "nan", "NaN", "<NA>", "null"],
     "frequence_inference_window_length": FREQUENCY_INFERENCE_CONSTANTS.WINDOW_LENGTH,
-    "frequence_inference_threshold": FREQUENCY_INFERENCE_CONSTANTS.FREQ_INFERENCE_THRESHOLD
+    "frequence_inference_threshold": FREQUENCY_INFERENCE_CONSTANTS.FREQ_INFERENCE_THRESHOLD,
 }
 
 

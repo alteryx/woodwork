@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-
 from woodwork.accessor_utils import _is_koalas_dataframe, init_series
 from woodwork.logical_types import (
     URL,
@@ -1388,7 +1387,7 @@ def test_box_plot_optional_return_values(outliers_df):
 
 @patch.object(
     sys.modules["woodwork.statistics_utils._infer_temporal_frequencies"],
-    "infer_frequency"
+    "infer_frequency",
 )
 def test_infer_temporal_frequencies(infer_frequency, datetime_freqs_df_pandas):
     # TODO: Add support for Dask and Koalas DataFrames
@@ -1397,7 +1396,6 @@ def test_infer_temporal_frequencies(infer_frequency, datetime_freqs_df_pandas):
     datetime_freqs_df_pandas.ww.infer_temporal_frequencies()
 
     assert infer_frequency.called
-
 
 
 # @pytest.mark.parametrize(
@@ -1411,7 +1409,6 @@ def test_infer_temporal_frequencies(infer_frequency, datetime_freqs_df_pandas):
 #     estimated_freq = infer_freq_v2(data)
 
 #     assert estimated_freq in actual_freqs
-
 
 
 # def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
