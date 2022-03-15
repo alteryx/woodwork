@@ -5,15 +5,15 @@ Release Notes
 
 .. Future Release
    ==============
-      * Enhancements
-      * Fixes
+    * Enhancements
+    * Fixes
         * Updated ``__str__`` output for both ``Datetime`` and ``Ordinal`` logical types (:pr:`1340`)
-      * Changes
-      * Documentation Changes
-      * Testing Changes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
-:user:`bchen1116`
+    :user:`bchen1116`
 
 v0.14.0 Mar 15, 2022
 ====================
