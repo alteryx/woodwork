@@ -3,9 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
-    * Enhancements
+.. Future Release
+   ==============
+      * Enhancements
+      * Fixes
+      * Changes
+      * Documentation Changes
+      * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.14.0 Mar 15, 2022
+====================
     * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
@@ -23,7 +32,6 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
-
 
 Breaking Changes
 ++++++++++++++++
