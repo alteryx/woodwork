@@ -18,4 +18,4 @@ pandoc==1.1.0
 ipykernel==6.4.2
 click>=7.1.2
 -r dask-requirements.txt
--r koalas-requirements.txt
+-r spark-requirements.txt

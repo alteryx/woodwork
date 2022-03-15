@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_koalas_series
+from woodwork.accessor_utils import _is_spark_series
 from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
@@ -25,7 +25,7 @@ from woodwork.type_sys.type_system import (
 )
 from woodwork.utils import import_or_none
 
-UNSUPPORTED_KOALAS_DTYPES = [
+UNSUPPORTED_SPARK_DTYPES = [
     "int32",
     "intp",
     "uint8",
@@ -38,17 +38,17 @@ UNSUPPORTED_KOALAS_DTYPES = [
     "category",
 ]
 
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
-def get_koalas_dtypes(dtypes):
-    return [dtype for dtype in dtypes if dtype not in UNSUPPORTED_KOALAS_DTYPES]
+def get_spark_dtypes(dtypes):
+    return [dtype for dtype in dtypes if dtype not in UNSUPPORTED_SPARK_DTYPES]
 
 
 def test_integer_inference(integers):
     dtypes = ["int8", "int16", "int32", "int64", "intp", "int", "Int64"]
-    if _is_koalas_series(integers[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(integers[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in integers:
         for dtype in dtypes:
@@ -58,8 +58,8 @@ def test_integer_inference(integers):
 
 def test_double_inference(doubles):
     dtypes = ["float", "float32", "float64", "float_"]
-    if _is_koalas_series(doubles[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(doubles[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in doubles:
         for dtype in dtypes:
@@ -82,8 +82,8 @@ def test_boolean_inference(bools):
 
 def test_datetime_inference(datetimes):
     dtypes = ["object", "string", "datetime64[ns]"]
-    if _is_koalas_series(datetimes[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(datetimes[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in datetimes:
         for dtype in dtypes:
@@ -93,8 +93,8 @@ def test_datetime_inference(datetimes):
 
 def test_email_inference(emails):
     dtypes = ["object", "string"]
-    if _is_koalas_series(emails[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(emails[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in emails:
         for dtype in dtypes:
@@ -104,10 +104,13 @@ def test_email_inference(emails):
 
 def test_email_inference_failure(bad_emails):
     dtypes = ["object", "string"]
-    if _is_koalas_series(bad_emails[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(bad_emails[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in bad_emails:
+        if _is_spark_series(series) and isinstance(series.iloc[0], ps.series.Row):
+            continue
+
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert not isinstance(inferred_type, EmailAddress)
@@ -115,8 +118,8 @@ def test_email_inference_failure(bad_emails):
 
 def test_categorical_inference(categories):
     dtypes = ["object", "string", "category"]
-    if _is_koalas_series(categories[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(categories[0]):
+        dtypes = get_spark_dtypes(dtypes)
     for series in categories:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
@@ -125,8 +128,8 @@ def test_categorical_inference(categories):
 
 def test_natural_language_inference(natural_language):
     dtypes = ["object", "string"]
-    if _is_koalas_series(natural_language[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(natural_language[0]):
+        dtypes = get_spark_dtypes(dtypes)
     for series in natural_language:
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
@@ -190,8 +193,8 @@ def test_categorical_inference_based_on_dtype(categories_dtype):
 def test_categorical_integers_inference(integers):
     with ww.config.with_options(numeric_categorical_threshold=0.5):
         dtypes = ["int8", "int16", "int32", "int64", "intp", "int", "Int64"]
-        if _is_koalas_series(integers[0]):
-            dtypes = get_koalas_dtypes(dtypes)
+        if _is_spark_series(integers[0]):
+            dtypes = get_spark_dtypes(dtypes)
         for series in integers:
             for dtype in dtypes:
                 inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
@@ -201,8 +204,8 @@ def test_categorical_integers_inference(integers):
 def test_categorical_double_inference(doubles):
     with ww.config.with_options(numeric_categorical_threshold=0.5):
         dtypes = ["float", "float32", "float64", "float_"]
-        if _is_koalas_series(doubles[0]):
-            dtypes = get_koalas_dtypes(dtypes)
+        if _is_spark_series(doubles[0]):
+            dtypes = get_spark_dtypes(dtypes)
         for series in doubles:
             for dtype in dtypes:
                 inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
@@ -219,8 +222,8 @@ def test_timedelta_inference(timedeltas):
 
 def test_unknown_inference(strings):
     dtypes = ["object", "string"]
-    if _is_koalas_series(strings[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(strings[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in strings:
         for dtype in dtypes:
@@ -230,8 +233,8 @@ def test_unknown_inference(strings):
 
 def test_unknown_inference_all_null(nulls):
     dtypes = ["object", "string", "category", "datetime64[ns]"]
-    if _is_koalas_series(nulls[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(nulls[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in nulls:
         for dtype in dtypes:
@@ -263,8 +266,8 @@ def test_updated_ltype_inference(integers, type_sys):
     type_sys.add_type(Integer, inference_function=inference_fn)
 
     dtypes = ["int8", "int16", "int32", "int64", "intp", "int", "Int64"]
-    if _is_koalas_series(integers[0]):
-        dtypes = get_koalas_dtypes(dtypes)
+    if _is_spark_series(integers[0]):
+        dtypes = get_spark_dtypes(dtypes)
 
     for series in integers:
         for dtype in dtypes:

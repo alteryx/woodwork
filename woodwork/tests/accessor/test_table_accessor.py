@@ -10,8 +10,8 @@ import woodwork as ww
 from woodwork.accessor_utils import (
     _is_dask_dataframe,
     _is_dask_series,
-    _is_koalas_dataframe,
-    _is_koalas_series,
+    _is_spark_dataframe,
+    _is_spark_series,
     init_series,
 )
 from woodwork.exceptions import (
@@ -70,7 +70,7 @@ from woodwork.tests.testing_utils.table_utils import assert_schema_equal
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def test_check_index_errors(sample_df):
@@ -113,8 +113,8 @@ def test_check_time_index_errors(sample_df):
 
 
 def test_check_unique_column_names_errors(sample_df):
-    if _is_koalas_dataframe(sample_df):
-        pytest.skip("Koalas enforces unique column names")
+    if _is_spark_dataframe(sample_df):
+        pytest.skip("Spark enforces unique column names")
     duplicate_cols_df = sample_df.copy()
     if _is_dask_dataframe(sample_df):
         duplicate_cols_df = dd.concat(
@@ -256,7 +256,7 @@ def test_accessor_physical_types_property(sample_df):
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
     for k, v in sample_df.ww.physical_types.items():
         logical_type = sample_df.ww.columns[k].logical_type
-        if _is_koalas_dataframe(sample_df) and logical_type.backup_dtype is not None:
+        if _is_spark_dataframe(sample_df) and logical_type.backup_dtype is not None:
             assert v == logical_type.backup_dtype
         else:
             assert v == logical_type.primary_dtype
@@ -869,7 +869,7 @@ def test_sets_object_dtype_on_init(latlong_df):
         assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
-        if _is_koalas_dataframe(latlong_df):
+        if _is_spark_dataframe(latlong_df):
             expected_val = [3, 4]
         assert df_pandas.iloc[-1] == expected_val
 
@@ -1043,8 +1043,8 @@ def test_invalid_dtype_casting():
 def test_underlying_index_set_no_index_on_init(sample_df):
     if _is_dask_dataframe(sample_df):
         pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_koalas_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Koalas input")
+    if _is_spark_dataframe(sample_df):
+        pytest.xfail("Setting underlying index is not supported with Spark input")
 
     input_index = pd.Int64Index([99, 88, 77, 66])
 
@@ -1064,8 +1064,8 @@ def test_underlying_index_set_no_index_on_init(sample_df):
 def test_underlying_index_set(sample_df):
     if _is_dask_dataframe(sample_df):
         pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_koalas_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Koalas input")
+    if _is_spark_dataframe(sample_df):
+        pytest.xfail("Setting underlying index is not supported with Spark input")
 
     # Sets underlying index at init
     schema_df = sample_df.copy()
@@ -1092,8 +1092,8 @@ def test_underlying_index_set(sample_df):
 def test_underlying_index_reset(sample_df):
     if _is_dask_dataframe(sample_df):
         pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_koalas_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Koalas input")
+    if _is_spark_dataframe(sample_df):
+        pytest.xfail("Setting underlying index is not supported with Spark input")
 
     specified_index = pd.Index
     unspecified_index = pd.RangeIndex
@@ -1126,8 +1126,8 @@ def test_underlying_index_reset(sample_df):
 def test_underlying_index_unchanged_after_updates(sample_df):
     if _is_dask_dataframe(sample_df):
         pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_koalas_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Koalas input")
+    if _is_spark_dataframe(sample_df):
+        pytest.xfail("Setting underlying index is not supported with Spark input")
 
     sample_df.ww.init(index="full_name")
     assert "full_name" in sample_df
@@ -1187,8 +1187,8 @@ def test_underlying_index_unchanged_after_updates(sample_df):
 def test_accessor_already_sorted(sample_unsorted_df):
     if _is_dask_dataframe(sample_unsorted_df):
         pytest.xfail("Sorting dataframe is not supported with Dask input")
-    if _is_koalas_dataframe(sample_unsorted_df):
-        pytest.xfail("Sorting dataframe is not supported with Koalas input")
+    if _is_spark_dataframe(sample_unsorted_df):
+        pytest.xfail("Sorting dataframe is not supported with Spark input")
 
     schema_df = sample_unsorted_df.copy()
     schema_df.ww.init(name="schema", index="id", time_index="signup_date")
@@ -1226,9 +1226,9 @@ def test_accessor_already_sorted(sample_unsorted_df):
 
 
 def test_ordinal_with_order(sample_series):
-    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Koalas - ordinal data validation not compatible"
+            "Fails with Dask and Spark - ordinal data validation not compatible"
         )
 
     ordinal_with_order = Ordinal(order=["a", "b", "c"])
@@ -1249,9 +1249,9 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if _is_koalas_series(sample_series) or _is_dask_series(sample_series):
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Koalas - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported"
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
@@ -1439,10 +1439,10 @@ def test_dataframe_methods_on_accessor_to_pandas(sample_df):
 
     if _is_dask_dataframe(sample_df):
         pd_df = sample_df.ww.compute()
-    elif _is_koalas_dataframe(sample_df):
+    elif _is_spark_dataframe(sample_df):
         pd_df = sample_df.ww.to_pandas()
         pytest.skip(
-            "Bug #1071: Woodwork not initialized after to_pandas call with Koalas categorical column"
+            "Bug #1071: Woodwork not initialized after to_pandas call with Spark categorical column"
         )
     assert isinstance(pd_df, pd.DataFrame)
     assert pd_df.ww.index == "id"
@@ -1873,8 +1873,8 @@ def test_select_return_schema(sample_df):
     ],
 )
 def test_select_retains_column_order(ww_type, pandas_type, sample_df):
-    if _is_koalas_dataframe(sample_df) and pandas_type in ["category", "string"]:
-        pytest.skip("Koalas stores categories as strings")
+    if _is_spark_dataframe(sample_df) and pandas_type in ["category", "string"]:
+        pytest.skip("Spark stores categories as strings")
     sample_df.ww.init()
 
     ww_schema_column_order = [
@@ -1909,19 +1909,19 @@ def test_accessor_set_index(sample_df):
     sample_df.ww.set_index("id")
     assert sample_df.ww.index == "id"
     if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Koalas
+        # underlying index not set for Dask/Spark
         assert (sample_df.index == sample_df["id"]).all()
 
     sample_df.ww.set_index("full_name")
     assert sample_df.ww.index == "full_name"
     if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Koalas
+        # underlying index not set for Dask/Spark
         assert (sample_df.index == sample_df["full_name"]).all()
 
     sample_df.ww.set_index(None)
     assert sample_df.ww.index is None
     if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Koalas
+        # underlying index not set for Dask/Spark
         # Check that underlying index doesn't get reset when Woodwork index is removed
         assert (sample_df.index == sample_df["full_name"]).all()
 
@@ -1934,7 +1934,7 @@ def test_accessor_set_index_errors(sample_df):
         sample_df.ww.set_index("testing")
 
     if isinstance(sample_df, pd.DataFrame):
-        # Index uniqueness not validate for Dask/Koalas
+        # Index uniqueness not validate for Dask/Spark
         error = "Index column must be unique"
         with pytest.raises(LookupError, match=error):
             sample_df.ww.set_index("age")
@@ -1975,7 +1975,7 @@ def test_set_types_errors(sample_df):
 
     if isinstance(sample_df, pd.DataFrame):
         # Dask does not error on invalid type conversion until compute
-        # Koalas does conversion and fills values with NaN
+        # Spark does conversion and fills values with NaN
         error = (
             "Error converting datatype for email from type string "
             "to type float64. Please confirm the underlying data is consistent with "
@@ -2104,8 +2104,8 @@ def test_accessor_drop_inplace(sample_df):
         error = "Drop inplace not supported for Dask"
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.drop(["is_registered"], inplace=True)
-    elif _is_koalas_dataframe(sample_df):
-        error = "Drop inplace not supported for Koalas"
+    elif _is_spark_dataframe(sample_df):
+        error = "Drop inplace not supported for Spark"
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.drop(["is_registered"], inplace=True)
     else:
@@ -2219,8 +2219,8 @@ def test_accessor_rename_inplace(sample_df):
         error = "Rename inplace not supported for Dask"
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.rename({"age": "birthday"}, inplace=True)
-    elif _is_koalas_dataframe(sample_df):
-        error = "Rename inplace not supported for Koalas"
+    elif _is_spark_dataframe(sample_df):
+        error = "Rename inplace not supported for Spark"
         with pytest.raises(ValueError, match=error):
             inplace_df.ww.rename({"age": "birthday"}, inplace=True)
 
@@ -2276,7 +2276,7 @@ def test_accessor_rename_indices(sample_df):
     assert "renamed_time_index" in renamed_df.columns
 
     if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Koalas
+        # underlying index not set for Dask/Spark
         assert all(renamed_df.index == renamed_df["renamed_index"])
 
     assert renamed_df.ww.index == "renamed_index"
@@ -2305,11 +2305,11 @@ def test_accessor_schema_properties(sample_df):
             setattr(sample_df.ww, schema_property, "new_value")
 
 
-def test_sets_koalas_option_on_init(sample_df_koalas):
-    if ks:
-        ks.set_option("compute.ops_on_diff_frames", False)
-        sample_df_koalas.ww.init()
-        assert ks.get_option("compute.ops_on_diff_frames") is True
+def test_sets_spark_option_on_init(sample_df_spark):
+    if ps:
+        ps.set_option("compute.ops_on_diff_frames", False)
+        sample_df_spark.ww.init()
+        assert ps.get_option("compute.ops_on_diff_frames") is True
 
 
 def test_setitem_invalid_input(sample_df):
@@ -2395,8 +2395,8 @@ def test_setitem_different_name(sample_df):
     df.ww.init()
 
     new_series = pd.Series([1, 2, 3, 4], name="wrong", dtype="float")
-    if _is_koalas_dataframe(sample_df):
-        new_series = ks.Series(new_series)
+    if _is_spark_dataframe(sample_df):
+        new_series = ps.Series(new_series)
 
     # Assign series with name `wrong` to existing column with name `id`
     df.ww["id"] = new_series
@@ -2406,8 +2406,8 @@ def test_setitem_different_name(sample_df):
     assert "wrong" not in df.columns
 
     new_series2 = pd.Series([1, 2, 3, 4], name="wrong2", dtype="float")
-    if _is_koalas_dataframe(sample_df):
-        new_series2 = ks.Series(new_series2)
+    if _is_spark_dataframe(sample_df):
+        new_series2 = ps.Series(new_series2)
 
     # Assign series with name `wrong2` to new column with name `new_col`
     df.ww["new_col"] = new_series2
@@ -2422,8 +2422,8 @@ def test_setitem_new_column(sample_df):
     df.ww.init(use_standard_tags=False)
 
     new_series = pd.Series([1, 2, 3, 4])
-    if _is_koalas_dataframe(sample_df):
-        new_series = ks.Series(new_series)
+    if _is_spark_dataframe(sample_df):
+        new_series = ps.Series(new_series)
     dtype = "int64"
 
     df.ww["test_col2"] = new_series
@@ -2436,8 +2436,8 @@ def test_setitem_new_column(sample_df):
     assert df.ww["test_col2"].dtype == dtype
 
     new_series = pd.Series([1, 2, 3], dtype="float")
-    if _is_koalas_dataframe(sample_df):
-        new_series = ks.Series(new_series)
+    if _is_spark_dataframe(sample_df):
+        new_series = ps.Series(new_series)
 
     new_series = init_series(
         new_series,
@@ -2459,9 +2459,9 @@ def test_setitem_new_column(sample_df):
     df.ww.init(use_standard_tags=True)
 
     new_series = pd.Series(["new", "column", "inserted"], name="test_col")
-    if _is_koalas_dataframe(sample_df):
+    if _is_spark_dataframe(sample_df):
         dtype = "string"
-        new_series = ks.Series(new_series)
+        new_series = ps.Series(new_series)
     else:
         dtype = "category"
 
@@ -2482,8 +2482,8 @@ def test_setitem_overwrite_column(sample_df):
     # Change to column no change in types
     original_col = df.ww["age"]
     new_series = pd.Series([1, 2, 3, None], dtype="Int64")
-    if _is_koalas_dataframe(sample_df):
-        new_series = ks.Series(new_series)
+    if _is_spark_dataframe(sample_df):
+        new_series = ps.Series(new_series)
 
     dtype = "Int64"
     new_series = init_series(new_series, use_standard_tags=True)
@@ -2499,8 +2499,8 @@ def test_setitem_overwrite_column(sample_df):
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = df["full_name"]
     new_series = pd.Series([0, 1, 2], dtype="float")
-    if _is_koalas_dataframe(sample_df):
-        new_series = ks.Series(new_series)
+    if _is_spark_dataframe(sample_df):
+        new_series = ps.Series(new_series)
 
     new_series = init_series(
         new_series,
@@ -2523,8 +2523,8 @@ def test_setitem_overwrite_column(sample_df):
 
     original_col = df["full_name"]
     new_series = pd.Series([0, 1, 2], dtype="float")
-    if _is_koalas_dataframe(sample_df):
-        new_series = ks.Series(new_series)
+    if _is_spark_dataframe(sample_df):
+        new_series = ps.Series(new_series)
 
     new_series = init_series(
         new_series,
@@ -2677,7 +2677,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
         name: ltype.primary_dtype
         for name, ltype in sample_inferred_logical_types.items()
     }
-    if _is_koalas_dataframe(sample_df):
+    if _is_spark_dataframe(sample_df):
         correct_physical_types["categorical"] = "string"
     correct_physical_types = pd.Series(
         list(correct_physical_types.values()), index=list(correct_physical_types.keys())
@@ -2784,8 +2784,8 @@ def test_validation_methods_called(mock_validate_accessor_params, sample_df):
 
 
 def test_maintains_set_logical_type(sample_df):
-    if _is_koalas_dataframe(sample_df):
-        pytest.xfail("Koalas changed dtype on fillna which invalidates schema")
+    if _is_spark_dataframe(sample_df):
+        pytest.xfail("Spark changed dtype on fillna which invalidates schema")
     sample_df.ww.init(logical_types={"age": "IntegerNullable"})
     assert isinstance(sample_df.ww.logical_types["age"], IntegerNullable)
     new_df = sample_df.ww.fillna({"age": -1})
@@ -2986,7 +2986,19 @@ def test_nan_index_error(sample_df_pandas):
 
 def test_validate_logical_types(sample_df):
     df = sample_df[["email", "url", "age"]]
-    df.ww.init(logical_types={"email": "EmailAddress"})
+    if isinstance(df, pd.DataFrame):
+        df["ordinal"] = [18, 33, 33, 57]
+        df["latlong"] = [(1, 2), (3, 4), (5, 6), (8, 9)]
+
+        df.ww.init(
+            logical_types={
+                "email": "EmailAddress",
+                "ordinal": Ordinal(order=[18, 44, 33, 57]),
+                "latlong": "Latlong",
+            }
+        )
+    else:
+        df.ww.init(logical_types={"email": "EmailAddress"})
     assert df.ww.validate_logical_types() is None
 
     invalid_df = pd.DataFrame(
@@ -2997,8 +3009,8 @@ def test_validate_logical_types(sample_df):
         }
     )
 
-    if _is_koalas_dataframe(df):
-        invalid_df = ks.from_pandas(invalid_df)
+    if _is_spark_dataframe(df):
+        invalid_df = ps.from_pandas(invalid_df)
     df = df.append(invalid_df)
 
     df.ww.init(

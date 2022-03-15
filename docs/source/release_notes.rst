@@ -8,12 +8,24 @@ Future Release
     * Enhancements
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`dvreed77`
+
+v0.14.0 Mar 15, 2022
+====================
+    * Fixes
         * Preserve custom semantic tags when changing column logical type (:pr:`1300`)
     * Changes
         * Calculate nunique for Unknown columns in `_get_describe_dict`  (:pr:`1322`)
         * Refactor serialization and deserialization for improved modularity (:pr:`1325`)
+        * Replace Koalas with the pandas API on Spark (:pr:`1331`)
     * Documentation Changes
         * Update copy and paste button to remove syntax signs (:pr:`1313`)
+        * Move LatLong and Ordinal logical type validation logic to LogicalType.validate methods (:pr:`1315`)
         * Add backport release support (:pr:`1321`)
         * Add `get_subset_schema` to API reference (:pr:`1335`)
     * Testing Changes
@@ -22,7 +34,6 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`mingdavidqi`
-
 
 Breaking Changes
 ++++++++++++++++

@@ -1,0 +1,2 @@
+pyspark>=3.2.0
+pandas<1.4.0

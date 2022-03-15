@@ -7,7 +7,7 @@ from woodwork.exceptions import WoodworkNotInitError
 from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
-ks = import_or_none("databricks.koalas")
+ps = import_or_none("pyspark.pandas")
 
 
 def init_series(
@@ -24,7 +24,7 @@ def init_series(
     to match the dtype associated with the LogicalType.
 
     Args:
-        series (pd.Series, dd.Series, ks.Series, numpy.ndarray or pd.api.extensions.ExtensionArray):
+        series (pd.Series, dd.Series, ps.Series, numpy.ndarray or pd.api.extensions.ExtensionArray):
             The original series from which to create the Woodwork initialized series.
         logical_type (LogicalType or str, optional): The logical type that should be assigned
             to the series. If no value is provided, the LogicalType for the series will
@@ -75,7 +75,7 @@ def _is_series(data):
         return True
     elif _is_dask_series(data):
         return True
-    elif _is_koalas_series(data):
+    elif _is_spark_series(data):
         return True
     return False
 
@@ -85,7 +85,7 @@ def _is_dataframe(data):
         return True
     elif _is_dask_dataframe(data):
         return True
-    elif _is_koalas_dataframe(data):
+    elif _is_spark_dataframe(data):
         return True
     return False
 
@@ -127,7 +127,7 @@ def get_invalid_schema_message(dataframe, schema):
                 f"{df_dtype}, and {logical_types[name]} dtype, {valid_dtype}"
             )
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
-        # Index validation not performed for Dask/Koalas
+        # Index validation not performed for Dask/Spark
         if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(
             pd.Series(dataframe[schema.index].values)
         ):
@@ -167,14 +167,14 @@ def _is_dask_dataframe(data):
     return False
 
 
-def _is_koalas_dataframe(data):
-    if ks and isinstance(data, ks.DataFrame):
+def _is_spark_dataframe(data):
+    if ps and isinstance(data, ps.DataFrame):
         return True
     return False
 
 
-def _is_koalas_series(data):
-    if ks and isinstance(data, ks.Series):
+def _is_spark_series(data):
+    if ps and isinstance(data, ps.Series):
         return True
     return False
 

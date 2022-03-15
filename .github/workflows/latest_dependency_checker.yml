@@ -28,16 +28,16 @@ jobs:
         python -m pip install -r test-requirements.txt
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_core_dependencies.txt
         cat woodwork/tests/requirement_files/latest_core_dependencies.txt
-    - name: Update latest koalas dependencies
+    - name: Update latest spark dependencies
       run: |
-        python -m virtualenv venv_koalas
-        source venv_koalas/bin/activate
+        python -m virtualenv venv_spark
+        source venv_spark/bin/activate
         python -m pip install --upgrade pip
         python -m pip install -e .
+        python -m pip install -r spark-requirements.txt
         python -m pip install -r test-requirements.txt
-        python -m pip install -r koalas-requirements.txt
-        make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_koalas_dependencies.txt
-        cat woodwork/tests/requirement_files/latest_koalas_dependencies.txt
+        make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_spark_dependencies.txt
+        cat woodwork/tests/requirement_files/latest_spark_dependencies.txt
     - name: Update latest dask dependencies
       run: |
         python -m virtualenv venv_dask
