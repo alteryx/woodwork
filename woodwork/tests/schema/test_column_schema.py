@@ -472,7 +472,7 @@ def test_schema_shallow_equality():
 def test_schema_repr():
     assert (
         repr(ColumnSchema(logical_type=Datetime, semantic_tags="time_index"))
-        == "<ColumnSchema (Logical Type = Datetime: None) (Semantic Tags = ['time_index'])>"
+        == "<ColumnSchema (Logical Type = Datetime) (Semantic Tags = ['time_index'])>"
     )
     assert (
         repr(ColumnSchema(logical_type=Integer))

@@ -97,11 +97,11 @@ def test_schema_repr(small_df):
     )
 
     schema_repr = repr(schema)
-    expected_repr = "                          Logical Type Semantic Tag(s)\nColumn                                                \nsample_datetime_series  Datetime: None              []"
+    expected_repr = "                       Logical Type Semantic Tag(s)\nColumn                                             \nsample_datetime_series     Datetime              []"
     assert schema_repr == expected_repr
 
     schema_html_repr = schema._repr_html_()
-    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>Datetime: None</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
+    expected_repr = '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">\n      <th></th>\n      <th>Logical Type</th>\n      <th>Semantic Tag(s)</th>\n    </tr>\n    <tr>\n      <th>Column</th>\n      <th></th>\n      <th></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>sample_datetime_series</th>\n      <td>Datetime</td>\n      <td>[]</td>\n    </tr>\n  </tbody>\n</table>'
     assert schema_html_repr == expected_repr
 
 
@@ -428,7 +428,7 @@ def test_filter_schema_errors(sample_column_names, sample_inferred_logical_types
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(include=["boolean", "index", Double, {}], col_names=True)
 
-    err_msg = "Invalid selector used in include: Datetime: None cannot be instantiated"
+    err_msg = "Invalid selector used in include: Datetime cannot be instantiated"
     with pytest.raises(TypeError, match=err_msg):
         schema._filter_cols(Datetime())
 

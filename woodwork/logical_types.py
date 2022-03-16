@@ -299,9 +299,6 @@ class Datetime(LogicalType):
                     )
         return super().transform(series)
 
-    def __str__(self):
-        return "{}: {}".format(str(self.__class__), self.datetime_format)
-
 
 class Double(LogicalType):
     """Represents Logical Types that contain positive and negative numbers, some of
