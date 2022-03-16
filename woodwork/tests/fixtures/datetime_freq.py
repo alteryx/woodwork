@@ -473,7 +473,7 @@ def case9():
     return {"dates": dates, "expected_debug_obj": expected_debug_obj}
 
 
-def case10(): 
+def case10():
     dates = [
         "2005-01-01T01:00:00.000Z",
         "2005-01-01T01:00:00.000Z",
@@ -484,7 +484,7 @@ def case10():
         "2005-01-01T06:00:00.000Z",
         "2005-01-01T06:20:00.000Z",
         "2005-01-01T07:00:00.000Z",
-        "2005-01-01T08:00:00.000Z"
+        "2005-01-01T08:00:00.000Z",
     ]
 
     dates = pad_datetime_series(
@@ -509,7 +509,6 @@ def case10():
     }
 
     return {"dates": dates, "expected_debug_obj": expected_debug_obj}
-
 
 
 inferrable_freq_fixtures = [
