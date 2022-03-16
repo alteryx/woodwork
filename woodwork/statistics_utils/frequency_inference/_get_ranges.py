@@ -1,8 +1,19 @@
 def _get_ranges(idx_series):
-    """Generates ranges of contiguous values:
+    """Generates ranges of contiguous values.
+
+    For example, if input idx_series = [10,11,15,19,20,21,22,23,24,30].
+
+    The output ranges would be:
+
+    [
+        (10, 11),
+        (15, 15),
+        (19, 24),
+        (30, 30)
+    ]
 
     Args:
-        alias_dict (dict): The alias dictionary has the following properties:
+        idx_series (pd.Series): a pandas integer index
 
         - alias: the pandas frequency alias
         - min_dt: the minimum timestamp for this alias

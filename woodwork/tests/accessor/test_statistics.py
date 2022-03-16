@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
+from woodwork.config import config
 from woodwork.logical_types import (
     URL,
     Age,
@@ -1389,54 +1390,68 @@ def test_box_plot_optional_return_values(outliers_df):
     sys.modules["woodwork.statistics_utils._infer_temporal_frequencies"],
     "infer_frequency",
 )
-def test_infer_temporal_frequencies(infer_frequency, datetime_freqs_df_pandas):
+@pytest.mark.parametrize(
+    "expected_call_args",
+    [{}, {"debug": True}, {"temporal_columns": ["2D_freq", "3M_freq"]}],
+)
+def test_infer_temporal_frequencies(
+    infer_frequency, expected_call_args, datetime_freqs_df_pandas
+):
+
     # TODO: Add support for Dask and Koalas DataFrames
     datetime_freqs_df_pandas.ww.init()
 
-    datetime_freqs_df_pandas.ww.infer_temporal_frequencies()
+    datetime_freqs_df_pandas.ww.infer_temporal_frequencies(**expected_call_args)
+
+    expected_call_count = (
+        len(expected_call_args["temporal_columns"])
+        if "temporal_columns" in expected_call_args
+        else 7
+    )
 
     assert infer_frequency.called
+    assert infer_frequency.call_count == expected_call_count
+
+    actual_call_args = infer_frequency.call_args.kwargs
+
+    window_length = config.get_option("frequence_inference_window_length")
+    threshold = config.get_option("frequence_inference_threshold")
+
+    expected_debug_flag = (
+        expected_call_args["debug"] if "debug" in expected_call_args else False
+    )
+
+    assert actual_call_args["debug"] == expected_debug_flag
+    assert actual_call_args["window_length"] == window_length
+    assert actual_call_args["threshold"] == threshold
 
 
-# @pytest.mark.parametrize(
-#     "bad_case",
-#     bad_dt_freq_fixtures
-# )
-# def test_infer_temporal_frequencies_v2_bad(bad_case):
-#     data = bad_case['data'].to_series()
+def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
+    datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
 
-#     actual_freqs = bad_case['actual_freq']
-#     estimated_freq = infer_freq_v2(data)
+    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+        temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
+    )
+    assert len(frequency_dict) == 1
+    assert frequency_dict["2D_freq"] == "2D"
 
-#     assert estimated_freq in actual_freqs
-
-
-# def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
-#     datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
-
-#     frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-#         temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
-#     )
-#     assert len(frequency_dict) == 1
-#     assert frequency_dict["2D_freq"] == "2D"
-
-#     empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-#         temporal_columns=[]
-#     )
-#     assert len(empty_frequency_dict) == 0
+    empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+        temporal_columns=[]
+    )
+    assert len(empty_frequency_dict) == 0
 
 
-# def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
-#     datetime_freqs_df_pandas.ww.init()
+def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
+    datetime_freqs_df_pandas.ww.init()
 
-#     error = "Column not_present not found in dataframe."
-#     with pytest.raises(ValueError, match=error):
-#         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-#             temporal_columns=["2D_freq", "not_present"]
-#         )
+    error = "Column not_present not found in dataframe."
+    with pytest.raises(ValueError, match=error):
+        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+            temporal_columns=["2D_freq", "not_present"]
+        )
 
-#     error = "Cannot determine frequency for column ints with logical type Integer"
-#     with pytest.raises(TypeError, match=error):
-#         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-#             temporal_columns=["1d_skipped_one_freq", "ints"]
-#         )
+    error = "Cannot determine frequency for column ints with logical type Integer"
+    with pytest.raises(TypeError, match=error):
+        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+            temporal_columns=["1d_skipped_one_freq", "ints"]
+        )
