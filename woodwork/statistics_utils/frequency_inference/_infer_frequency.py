@@ -40,14 +40,14 @@ def infer_frequency(
         inferred_freq (str): pandas offset alias string (D, M, Y, etc.) or None if no uniform frequency was present in the data.
         debug (dict): a dictionary containing debug information if frequency cannot be inferred. This dictionary has the following properties:
 
-        - actual_range_start (str): a string representing the minimum Timestamp in the input observed timeseries according to ISO 8610.
-        - actual_range_end (str): a string representing the maximum Timestamp in the input observed timeseries according to ISO 8610.
+        - actual_range_start (str): a string representing the minimum Timestamp in the input observed timeseries according to ISO 8601.
+        - actual_range_end (str): a string representing the maximum Timestamp in the input observed timeseries according to ISO 8601.
 
         - message (str): message describing any issues with the input Datetime series
 
         - estimated_freq (str): None
-        - estimated_range_start (str): a string representing the minimum Timestamp in the output estimated timeseries according to ISO 8610.
-        - estimated_range_end (str): a string representing the maximum Timestamp in the output estimated timeseries according to ISO 8610.
+        - estimated_range_start (str): a string representing the minimum Timestamp in the output estimated timeseries according to ISO 8601.
+        - estimated_range_end (str): a string representing the maximum Timestamp in the output estimated timeseries according to ISO 8601.
 
         - duplicate_values: list[RangeObject] = field(default_factory=list)
         - missing_values: list[RangeObject] = field(default_factory=list)

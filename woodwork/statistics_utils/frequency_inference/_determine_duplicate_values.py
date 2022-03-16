@@ -14,7 +14,7 @@ def _determine_duplicate_values(observed_ts):
     Returns:
         (list(RangeObject)): A list of RangeObject data objects. A RangeObject has the following properties:
 
-        - dt: an ISO 8610 formatted string of the duplicate timestamp
+        - dt: an ISO 8601 formatted string of the duplicate timestamp
         - idx: first index of duplicate timestamp. Index is relative to observed timeseries
         - range: the number of sequential elements that are duplicated
     """

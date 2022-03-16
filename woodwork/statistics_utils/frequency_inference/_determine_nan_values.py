@@ -11,7 +11,7 @@ def _determine_nan_values(observed):
     Returns:
         (list(RangeObject)): A list of RangeObject data objects. A RangeObject has the following properties:
 
-        - dt: an ISO 8610 formatted string of the first NaN timestamp
+        - dt: an ISO 8601 formatted string of the first NaN timestamp
         - idx: first index of the NaN timestamp. Index is relative to estimated timeseries
         - range: the number of sequential elements that are NaN
     """

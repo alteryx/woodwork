@@ -14,7 +14,7 @@ def _determine_missing_values(estimated, observed):
     Returns:
         (list(RangeObject)): A list of RangeObject data objects. A RangeObject has the following properties:
 
-        - dt: an ISO 8610 formatted string of the first missing timestamp
+        - dt: an ISO 8601 formatted string of the first missing timestamp
         - idx: first index of the missing timestamp. Index is relative to estimated timeseries
         - range: the number of sequential elements that are missing
     """
