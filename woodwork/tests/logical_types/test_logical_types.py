@@ -60,10 +60,12 @@ def test_ordinal_init_with_order():
     order = ["bronze", "silver", "gold"]
     ordinal_from_list = Ordinal(order=order)
     assert ordinal_from_list.order == order
+    assert str(ordinal_from_list) == "Ordinal: ['bronze', 'silver', 'gold']"
 
     order = ("bronze", "silver", "gold")
     ordinal_from_tuple = Ordinal(order=order)
     assert ordinal_from_tuple.order == order
+    assert str(ordinal_from_list) == "Ordinal: ['bronze', 'silver', 'gold']"
 
 
 def test_ordinal_transform_validates(ordinal_transform_series_pandas) -> None:

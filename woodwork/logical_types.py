@@ -556,6 +556,9 @@ class Ordinal(LogicalType):
         super().validate(series)
         self._validate_order_values(series)
 
+    def __str__(self):
+        return "{}: {}".format(self.__class__, self.order)
+
 
 class PhoneNumber(LogicalType):
     """Represents Logical Types that contain numeric digits and characters
