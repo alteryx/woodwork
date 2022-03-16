@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.deserialize import read_woodwork_table
+from woodwork.deserialize import get_deserializer, read_woodwork_table
 from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
@@ -868,3 +868,27 @@ def test_earlier_schema_version():
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)
     test_version(major, minor, patch - 1, raises=False)
+
+
+def test_csv_pyarrow_engine(sample_df_pandas, tmpdir):
+    c_path = os.path.join(str(tmpdir), "c")
+    pyarrow_path = os.path.join(str(tmpdir), "pyarrow")
+    sample_df_pandas = sample_df_pandas.select_dtypes("int")
+    sample_df_pandas.ww.init()
+    sample_df_pandas.ww.to_disk(pyarrow_path, format="csv")
+
+    kwargs = dict(
+        filename=None,
+        profile_name=None,
+        data_subdirectory="data",
+        typing_info_filename="woodwork_typing_info.json",
+    )
+
+    deserilizer = get_deserializer(pyarrow_path, **kwargs)
+    deserilizer.deserialize(profile_name=None, validate=False)
+    assert deserilizer.kwargs["engine"] == "pyarrow"
+
+    sample_df_pandas.ww.to_disk(c_path, format="csv", engine="c")
+    deserilizer = get_deserializer(c_path, **kwargs)
+    deserilizer.deserialize(profile_name=None, validate=False)
+    assert deserilizer.kwargs["engine"] == "c"
