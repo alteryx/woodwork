@@ -7,11 +7,15 @@ Future Release
 ==============
     * Enhancements
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
+    * Fixes
+        * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
         * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
+    * Documentation Changes
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`bchen1116`, :user:`rwedge`
 
 v0.14.0 Mar 15, 2022
 ====================
