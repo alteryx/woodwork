@@ -33,7 +33,7 @@ def _get_dependence_dict(
     Args:
         dataframe (pd.DataFrame): Data containing Woodwork typing information
             from which to calculate dependence.
-        measures (list or str): which dependence measures to calculate.
+        measures (list or str): Which dependence measures to calculate.
             A list of measures can be provided to calculate multiple
             measures at once.  Valid measure strings:
 
@@ -41,8 +41,9 @@ def _get_dependence_dict(
                 - "mutual": calculates the mutual information between columns
                 - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
-        num_bins (int): Determines number of bins to use for converting
-            numeric features into categorical. Pearson calculation does not use binning.
+        num_bins (int): Determines number of bins to use for converting numeric
+            features into categorical.  Default to 10. Pearson calculation does
+            not use binning.
         nrows (int): The number of rows to sample for when determining dependence.
             If specified, samples the desired number of rows from the data.
             Defaults to using all rows.
@@ -56,16 +57,16 @@ def _get_dependence_dict(
             - total (int): the total number of calculations to do
             - unit (str): unit of measurement for progress/total
             - time_elapsed (float): total time in seconds elapsed since start of call
-        extra_stats (bool):  if True, additional column "shared_rows"
+        extra_stats (bool):  If True, additional column "shared_rows"
             recording the number of shared non-null rows for a column
             pair will be included with the dataframe.  If the "max"
             measure is being used, a "measure_used" column will be added
             that records whether Pearson or mutual information was the
-            maximum dependence for a particular row.
-        min_shared (int): the number of shared non-null rows needed to
+            maximum dependence for a particular row. Defaults to False.
+        min_shared (int): The number of shared non-null rows needed to
             calculate.  Less rows than this will be considered too sparse
             to measure accurately and will return a NaN value. Must be
-            non-negative.
+            non-negative. Defaults to 25.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,

@@ -875,7 +875,7 @@ class WoodworkTableAccessor:
 
         Args:
             num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
+                numeric features into categorical. Defaults to 10.
             nrows (int): The number of rows to sample for when determining mutual info.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
@@ -883,19 +883,19 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            extra_stats (bool):  if True, additional column "shared_rows"
+            extra_stats (bool):  If True, additional column "shared_rows"
                 recording the number of shared non-null rows for a column
-                pair will be included with the dataframe.
-            min_shared (int): the number of shared non-null rows needed to
-                calculate.  Less rows than this will be considered too sparse
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
-                non-negative.
+                non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -931,7 +931,7 @@ class WoodworkTableAccessor:
 
         Args:
             num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical.
+                numeric features into categorical. Defaults to 10.
             nrows (int): The number of rows to sample for when determining mutual info.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
@@ -939,19 +939,19 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            extra_stats (bool):  if True, additional column "shared_rows"
+            extra_stats (bool):  If True, additional column "shared_rows"
                 recording the number of shared non-null rows for a column
-                pair will be included with the dataframe.
-            min_shared (int): the number of shared non-null rows needed to
-                calculate.  Less rows than this will be considered too sparse
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
-                non-negative.
+                non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
@@ -993,19 +993,19 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for correlation calculations.
                 If False, the index column will not have the Pearson correlation calculated for it.
                 Defaults to False.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            extra_stats (bool):  if True, additional column "shared_rows"
+            extra_stats (bool):  If True, additional column "shared_rows"
                 recording the number of shared non-null rows for a column
-                pair will be included with the dataframe.
-            min_shared (int): the number of shared non-null rows needed to
-                calculate.  Less rows than this will be considered too sparse
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
-                non-negative.
+                non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -1044,19 +1044,19 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for correlation calculations.
                 If False, the index column will not have the Pearson correlation calculated for it.
                 Defaults to False.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            extra_stats (bool):  if True, additional column "shared_rows"
+            extra_stats (bool):  If True, additional column "shared_rows"
                 recording the number of shared non-null rows for a column
-                pair will be included with the dataframe.
-            min_shared (int): the number of shared non-null rows needed to
-                calculate.  Less rows than this will be considered too sparse
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
-                non-negative.
+                non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             pd.DataFrame: A DataFrame containing Pearson correlation coefficients with columns `column_1`,
@@ -1093,7 +1093,7 @@ class WoodworkTableAccessor:
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
                 from which to calculate dependence.
-            measures (list or str): which dependence measures to calculate.
+            measures (list or str): Which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
 
@@ -1102,30 +1102,31 @@ class WoodworkTableAccessor:
                 - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
             num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical. Pearson calculation does not use binning.
+                numeric features into categorical. Defaults to 10. Pearson
+                calculation does not use binning.
             nrows (int): The number of rows to sample for when determining dependence.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for measuring dependence.
                 If False, the index column will not be considered. Defaults to False.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
 
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            extra_stats (bool):  if True, additional column "shared_rows"
+            extra_stats (bool):  If True, additional column "shared_rows"
                 recording the number of shared non-null rows for a column
-                pair will be included with the dataframe.  If the "max"
-                measure is being used, a "measure_used" column will be added
-                that records whether Pearson or mutual information was the
+                pair will be included with the dataframe. Defaults to False. If
+                the "max" measure is being used, a "measure_used" column will be
+                added that records whether Pearson or mutual information was the
                 maximum dependence for a particular row.
-            min_shared (int): the number of shared non-null rows needed to
-                calculate.  Less rows than this will be considered too sparse
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
-                non-negative.
+                non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -1166,7 +1167,7 @@ class WoodworkTableAccessor:
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
                 from which to calculate dependence.
-            measures (list or str): which dependence measures to calculate.
+            measures (list or str): Which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
 
@@ -1175,30 +1176,31 @@ class WoodworkTableAccessor:
                 - "max":  max(abs(pearson), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual", and "max"
             num_bins (int): Determines number of bins to use for converting
-                numeric features into categorical. Pearson calculation does not use binning.
+                numeric features into categorical. Defaults to 10. Pearson
+                calculation does not use binning.
             nrows (int): The number of rows to sample for when determining dependence.
                 If specified, samples the desired number of rows from the data.
                 Defaults to using all rows.
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for measuring dependence.
                 If False, the index column will not be considered. Defaults to False.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
 
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            extra_stats (bool):  if True, additional column "shared_rows"
+            extra_stats (bool):  If True, additional column "shared_rows"
                 recording the number of shared non-null rows for a column
-                pair will be included with the dataframe.  If the "max"
-                measure is being used, a "measure_used" column will be added
-                that records whether Pearson or mutual information was the
+                pair will be included with the dataframe. Defaults to False. If
+                the "max" measure is being used, a "measure_used" column will be
+                added that records whether Pearson or mutual information was the
                 maximum dependence for a particular row.
-            min_shared (int): the number of shared non-null rows needed to
-                calculate.  Less rows than this will be considered too sparse
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
                 to measure accurately and will return a NaN value. Must be
-                non-negative.
+                non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             pd.DataFrame: A DataFrame with the columns `column_1`,
@@ -1255,7 +1257,7 @@ class WoodworkTableAccessor:
                 combining any of the three. It follows the most broad specification. Favors logical types
                 then semantic tag then column name. If no matching columns are found, an empty DataFrame
                 will be returned.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
 
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
@@ -1299,7 +1301,7 @@ class WoodworkTableAccessor:
                 combining any of the three. It follows the most broad specification. Favors logical types
                 then semantic tag then column name. If no matching columns are found, an empty DataFrame
                 will be returned.
-            callback (callable, optional): function to be called with incremental updates. Has the following parameters:
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
 
                 - update (int): change in progress since last call
                 - progress (int): the progress so far in the calculations
