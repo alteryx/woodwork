@@ -1111,6 +1111,7 @@ class WoodworkTableAccessor:
                     One example of this can be seen when using the business day offset alias ``B``
                     ``pd.date_range(start="2020-01-01", freq="4b", periods=10)``, which is a valid ``freq``
                     parameter when building the date range, but is not then inferrable.
+                    
             The algorithm used to infer frequency on noisy data can configured (see https://woodwork.alteryx.com/en/stable/guides/setting_config_options.html#Available-Config-Settings)
 
         """
