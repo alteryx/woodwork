@@ -635,6 +635,49 @@ def case10():
     return {"dates": dates, "expected_debug_obj": expected_debug_obj}
 
 
+def case11():
+    """
+    Multiple Ranges
+    """
+    dates = [
+        "2005-01-01T01:00:00.000Z",
+        "2005-01-01T01:00:00.000Z",
+        "2005-01-01T01:00:00.000Z",
+        "2005-01-01T02:00:00.000Z",
+        "2005-01-01T03:00:00.000Z",
+        "2005-01-01T04:00:00.000Z",
+        "2005-01-01T05:00:00.000Z",
+        "2005-01-01T06:00:00.000Z",
+        "2005-01-01T06:00:00.000Z",
+        "2005-01-01T06:00:00.000Z",
+        "2005-01-01T06:00:00.000Z",
+        "2005-01-01T07:00:00.000Z",
+        "2005-01-01T08:00:00.000Z",
+    ]
+
+    dates = pad_datetime_series(
+        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN
+    )
+
+    expected_debug_obj = {
+        "actual_range_start": dates.loc[0].isoformat(),
+        "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "message": None,
+        "estimated_freq": "H",
+        "estimated_range_start": dates.loc[0].isoformat(),
+        "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
+        "duplicate_values": [
+            {"dt": "2005-01-01T01:00:00", "idx": (HEAD_RANGE_LEN - 1) + 1, "range": 2},
+            {"dt": "2005-01-01T06:00:00", "idx": (HEAD_RANGE_LEN - 1) + 8, "range": 3},
+        ],
+        "missing_values": [],
+        "extra_values": [],
+        "nan_values": [],
+    }
+
+    return {"dates": dates, "expected_debug_obj": expected_debug_obj}
+
+
 inferrable_freq_fixtures = [
     case0(),
     case1(),
@@ -647,4 +690,5 @@ inferrable_freq_fixtures = [
     case8(),
     case9(),
     case10(),
+    case11(),
 ]
