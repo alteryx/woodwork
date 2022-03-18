@@ -66,7 +66,7 @@ def infer_frequency(
 
     pandas_inferred_freq = pd.infer_freq(observed_ts)
 
-    if pandas_inferred_freq or debug is False:
+    if pandas_inferred_freq or not debug:
         return inference_response(
             inferred_freq=pandas_inferred_freq, debug_obj=InferDebug(), debug=debug
         )
