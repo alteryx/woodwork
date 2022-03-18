@@ -32,7 +32,8 @@ def infer_frequency(
     Args:
         series (pd.Series): data to use for histogram
         debug (boolean): a flag to determine if debug object should be returned (explained below).
-        window_length (int): the window length used to determine the most likely candidate frequence. Default is 15
+        window_length (int): the window length used to determine the most likely candidate frequence. Default is 15. If the timeseries is noisy
+            and needs to inferred, the minimum length of the input timeseries needs to be greater than this window.
         threshold (float): a value between 0 and 1. Given the number of windows that contain the most observed frequency (N), and total number of windows (T),
             if N/T > threshold, the most observed frequency is determined to be the most likely frequency, else None.
 
