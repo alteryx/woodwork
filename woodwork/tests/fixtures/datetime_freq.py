@@ -499,12 +499,14 @@ def case10():
         "estimated_range_start": dates.loc[0].isoformat(),
         "estimated_range_end": dates.loc[len(dates) - 1].isoformat(),
         "duplicate_values": [
-            {"dt": "2005-01-01T02:00:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 2},
+            {"dt": "2005-01-01T01:00:00", "idx": (HEAD_RANGE_LEN - 1) + 1, "range": 2},
         ],
         "missing_values": [
-            {"dt": "2005-01-01T04:00:00", "idx": (HEAD_RANGE_LEN - 1) + 4, "range": 1},
+            {"dt": "2005-01-01T04:00:00", "idx": (HEAD_RANGE_LEN - 1) + 3, "range": 1},
         ],
-        "extra_values": [],
+        "extra_values": [
+            {"dt": "2005-01-01T06:20:00", "idx": (HEAD_RANGE_LEN - 1) + 7, "range": 1},
+        ],
         "nan_values": [],
     }
 
