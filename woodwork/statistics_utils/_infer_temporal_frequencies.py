@@ -15,7 +15,7 @@ def _infer_temporal_frequencies(dataframe, temporal_columns=None, debug=False):
             that are present in the DataFrame and are temporal in nature. Defaults to None. If not
             specified, all temporal columns will have their frequencies inferred.
         debug (boolean): A flag used to determine if more information should be returned for each temporal column if
-                no uniform frequency was found. If True, a tuple is returned for each temporal column. 
+                no uniform frequency was found. If True, a tuple is returned for each temporal column.
     Returns:
         (dict): A dictionary where each key is a temporal column from the DataFrame, and the
             value is its observation frequency represented as a pandas offset alias string (D, M, Y, etc.)

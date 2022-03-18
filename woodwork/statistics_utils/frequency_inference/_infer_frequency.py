@@ -81,6 +81,7 @@ def infer_frequency(
             debug_obj=InferDebug(
                 message=DataCheckMessageCode.DATETIME_SERIES_IS_EMPTY,
             ),
+            debug=debug,
         )
 
     nan_values = _determine_nan_values(observed_ts)
@@ -90,7 +91,7 @@ def infer_frequency(
     actual_range_end = observed_ts_clean.max().isoformat()
 
     # Determine if series is long enough for inference
-    if len(observed_ts_clean) < 3:
+    if len(observed_ts_clean) < window_length:
         return inference_response(
             inferred_freq=None,
             debug_obj=InferDebug(

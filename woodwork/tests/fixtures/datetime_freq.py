@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from woodwork.statistics_utils.frequency_inference._types import DataCheckMessageCode
+
 # https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases
 ALL_ALIASES = [
     {"alias": ["B"], "desc": "business day frequency"},
@@ -34,13 +36,11 @@ ALL_ALIASES = [
 
 # These keys are inferred to these values by pandas
 KNOWN_FREQ_ISSUES = {
-    # "B": "D",
     "C": "B",
     "SM": None,
     "CBM": "BM",
     "SMS": None,
     "CBMS": "BMS",
-    # "BH": "H",
 }
 
 HEAD_RANGE_LEN = 100
@@ -92,6 +92,128 @@ def generate_pandas_inferrable():
                 )
 
     return output
+
+
+def generate_infer_error_messages():
+    cases = []
+    dt1 = pd.date_range(end="2005-01-01", freq="H", periods=10)
+    dt2 = pd.date_range(start=dt1[-1], freq="M", periods=10)[1:]
+    dt3 = pd.date_range(start=dt2[-1], freq="D", periods=10)[1:]
+
+    dates = dt1.append(dt2).append(dt3).to_series().reset_index(drop=True)
+
+    cases.append(
+        {
+            "dates": dates,
+            "expected_debug_obj": {
+                "actual_range_start": dates.loc[0].isoformat(),
+                "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+                "message": DataCheckMessageCode.DATETIME_SERIES_FREQ_CANNOT_BE_ESTIMATED,
+                "estimated_freq": None,
+                "estimated_range_start": None,
+                "estimated_range_end": None,
+                "duplicate_values": [],
+                "missing_values": [],
+                "extra_values": [],
+                "nan_values": [],
+            },
+        }
+    )
+
+    dt1 = pd.date_range(end="2005-01-01 10:00:00", freq="H", periods=5)
+    dt2 = pd.date_range(start="2005-01-01 13:00:00", freq="H", periods=5)
+
+    dates = dt1.append(dt2).to_series().reset_index(drop=True)
+
+    cases.append(
+        {
+            "dates": dates,
+            "expected_debug_obj": {
+                "actual_range_start": dates.loc[0].isoformat(),
+                "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+                "message": DataCheckMessageCode.DATETIME_SERIES_IS_NOT_LONG_ENOUGH,
+                "estimated_freq": None,
+                "estimated_range_start": None,
+                "estimated_range_end": None,
+                "duplicate_values": [],
+                "missing_values": [],
+                "extra_values": [],
+                "nan_values": [],
+            },
+        }
+    )
+
+    dt1 = pd.date_range(start="2005-01-01 10:00:00", freq="H", periods=50)
+    dt2 = pd.date_range(end="2005-01-01 8:00:00", freq="H", periods=50)
+
+    dates = dt1.append(dt2).to_series().reset_index(drop=True)
+
+    cases.append(
+        {
+            "dates": dates,
+            "expected_debug_obj": {
+                "actual_range_start": dates.min().isoformat(),
+                "actual_range_end": dates.max().isoformat(),
+                "message": DataCheckMessageCode.DATETIME_SERIES_IS_NOT_MONOTONIC,
+                "estimated_freq": None,
+                "estimated_range_start": None,
+                "estimated_range_end": None,
+                "duplicate_values": [],
+                "missing_values": [],
+                "extra_values": [],
+                "nan_values": [],
+            },
+        }
+    )
+
+    dates = pd.Series(
+        [pd.Timestamp(np.nan), pd.Timestamp(np.nan), pd.Timestamp(np.nan)]
+    )
+
+    dates = dates.reset_index(drop=True).astype("datetime64[ns]")
+
+    cases.append(
+        {
+            "dates": dates,
+            "expected_debug_obj": {
+                "actual_range_start": None,
+                "actual_range_end": None,
+                "message": DataCheckMessageCode.DATETIME_SERIES_IS_EMPTY,
+                "estimated_freq": None,
+                "estimated_range_start": None,
+                "estimated_range_end": None,
+                "duplicate_values": [],
+                "missing_values": [],
+                "extra_values": [],
+                "nan_values": [],
+            },
+        }
+    )
+
+    dt1 = pd.date_range(end="2005-01-01 10:00:00", freq="H", periods=30)
+    dt2 = pd.date_range(start="2005-01-01 13:00:00", freq="H", periods=30)
+
+    dates = dt1.append(dt2).to_series().reset_index(drop=True)
+
+    cases.append(
+        {
+            "dates": dates,
+            "expected_debug_obj": {
+                "actual_range_start": dates.loc[0].isoformat(),
+                "actual_range_end": dates.loc[len(dates) - 1].isoformat(),
+                "message": DataCheckMessageCode.DATETIME_SERIES_FREQ_CANNOT_BE_ESTIMATED,
+                "estimated_freq": None,
+                "estimated_range_start": None,
+                "estimated_range_end": None,
+                "duplicate_values": [],
+                "missing_values": [],
+                "extra_values": [],
+                "nan_values": [],
+            },
+        }
+    )
+
+    return cases
 
 
 def case0():

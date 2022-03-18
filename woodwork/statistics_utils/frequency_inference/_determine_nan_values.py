@@ -22,9 +22,8 @@ def _determine_nan_values(observed):
         return []
 
     ranges = _get_ranges(observed_null.index)
-    out = []
 
-    for start_idx, end_idx in ranges:
-        out.append(RangeObject(dt=None, idx=start_idx, range=end_idx - start_idx + 1))
-
-    return out
+    return [
+        RangeObject(dt=None, idx=start_idx, range=end_idx - start_idx + 1)
+        for start_idx, end_idx in ranges
+    ]

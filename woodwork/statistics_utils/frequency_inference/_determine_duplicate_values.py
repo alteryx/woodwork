@@ -29,13 +29,12 @@ def _determine_duplicate_values(observed_ts):
         return []
 
     ranges = _get_ranges(observed_dupes.index)
-    out = []
 
-    for start_idx, end_idx in ranges:
-        out.append(
-            RangeObject(
-                observed_ts[start_idx].isoformat(), start_idx, end_idx - start_idx + 1
-            )
+    return [
+        RangeObject(
+            dt=observed_ts[start_idx].isoformat(),
+            idx=int(start_idx),
+            range=int(end_idx - start_idx + 1),
         )
-
-    return out
+        for start_idx, end_idx in ranges
+    ]

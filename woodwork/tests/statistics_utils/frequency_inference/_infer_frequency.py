@@ -4,6 +4,7 @@ import pytest
 
 from woodwork.statistics_utils import infer_frequency
 from woodwork.tests.fixtures.datetime_freq import (
+    generate_infer_error_messages,
     generate_pandas_inferrable,
     inferrable_freq_fixtures,
 )
@@ -169,3 +170,17 @@ def test_pandas_inferable_temporal_frequencies(case):
     inferred_freq = infer_frequency(observed_ts=input_series, debug=False)
 
     assert inferred_freq == expected_infer_freq
+
+
+@pytest.mark.parametrize("case", generate_infer_error_messages())
+def test_error_messages(case):
+    input_series = case["dates"]
+
+    expected_debug_obj = case["expected_debug_obj"]
+
+    inferred_freq, actual_debug_obj = infer_frequency(
+        observed_ts=input_series, debug=True
+    )
+
+    assert inferred_freq is None
+    assert actual_debug_obj == expected_debug_obj

@@ -5,10 +5,11 @@ from ._get_ranges import _get_ranges
 from ._types import RangeObject
 
 
-def _determine_missing_values(estimated, observed):
+def _determine_missing_values(estimated_ts, observed_ts):
     """Calculate Missing Values in time_series:
 
     Args:
+        estimated_ts (Series): The estimated time_series.
         observed_ts (Series): The observed time_series.
 
     Returns:
@@ -18,8 +19,8 @@ def _determine_missing_values(estimated, observed):
         - idx: first index of the missing timestamp. Index is relative to estimated timeseries
         - range: the number of sequential elements that are missing
     """
-    estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated})
-    observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed})
+    estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated_ts})
+    observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed_ts})
 
     merged_df = estimated_df.merge(
         observed_df,
@@ -33,15 +34,12 @@ def _determine_missing_values(estimated, observed):
     if len(observed_null) == 0:
         return []
     ranges = _get_ranges(observed_null.index)
-    out = []
 
-    for start_idx, end_idx in ranges:
-        out.append(
-            RangeObject(
-                estimated[start_idx].isoformat(),
-                int(start_idx),
-                int(end_idx - start_idx + 1),
-            )
+    return [
+        RangeObject(
+            dt=estimated_ts[start_idx].isoformat(),
+            idx=int(start_idx),
+            range=int(end_idx - start_idx + 1),
         )
-
-    return out
+        for start_idx, end_idx in ranges
+    ]

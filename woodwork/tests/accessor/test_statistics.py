@@ -1398,7 +1398,7 @@ def test_infer_temporal_frequencies(
     infer_frequency, expected_call_args, datetime_freqs_df_pandas
 ):
 
-    # TODO: Add support for Dask and Koalas DataFrames
+    # TODO: Add support for Dask and Spark DataFrames
     datetime_freqs_df_pandas.ww.init()
 
     datetime_freqs_df_pandas.ww.infer_temporal_frequencies(**expected_call_args)

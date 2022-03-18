@@ -5,10 +5,11 @@ from ._get_ranges import _get_ranges
 from ._types import RangeObject
 
 
-def _determine_extra_values(estimated, observed):
+def _determine_extra_values(estimated_ts, observed_ts):
     """Calculate Extra Values in time_series:
 
     Args:
+        estimated_ts (Series): The estimated time_series.
         observed_ts (Series): The observed time_series.
 
     Returns:
@@ -18,8 +19,8 @@ def _determine_extra_values(estimated, observed):
         - idx: first index of the extra timestamp. Index is relative to observed timeseries
         - range: the number of sequential elements that are extra
     """
-    estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated})
-    observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed})
+    estimated_df = pd.DataFrame({ESTIMATED_COLUMN_NAME: estimated_ts})
+    observed_df = pd.DataFrame({OBSERVED_COLUMN_NAME: observed_ts})
 
     merged_df = estimated_df.merge(
         observed_df,
@@ -34,15 +35,12 @@ def _determine_extra_values(estimated, observed):
         return []
 
     ranges = _get_ranges(estimated_null.index)
-    out = []
 
-    for start_idx, end_idx in ranges:
-        out.append(
-            RangeObject(
-                observed.iloc[start_idx].isoformat(),
-                observed.index[start_idx],
-                end_idx - start_idx + 1,
-            )
+    return [
+        RangeObject(
+            dt=observed_ts.iloc[start_idx].isoformat(),
+            idx=observed_ts.index[start_idx],
+            range=end_idx - start_idx + 1,
         )
-
-    return out
+        for start_idx, end_idx in ranges
+    ]
