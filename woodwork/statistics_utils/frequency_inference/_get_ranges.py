@@ -15,12 +15,8 @@ def _get_ranges(idx_series):
     Args:
         idx_series (pd.Series): a pandas integer index
 
-        - alias: the pandas frequency alias
-        - min_dt: the minimum timestamp for this alias
-        - max_dt: the maximum timestamp for this alias
-
     Returns:
-        (DatetimeIndex): The estimated datetime index
+        (List(tuple)): a list of tuples, where the tuple is the (starting value, ending value) inclusive
     """
     start_idx = idx_series[0]
     last_idx = idx_series[0]
