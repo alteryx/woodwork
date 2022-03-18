@@ -1412,7 +1412,7 @@ def test_infer_temporal_frequencies(
     assert infer_frequency.called
     assert infer_frequency.call_count == expected_call_count
 
-    actual_call_args = infer_frequency.call_args.kwargs
+    actual_call_args = infer_frequency.call_args[1]
 
     window_length = config.get_option("frequence_inference_window_length")
     threshold = config.get_option("frequence_inference_threshold")
