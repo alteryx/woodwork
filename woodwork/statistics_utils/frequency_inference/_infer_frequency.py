@@ -49,10 +49,18 @@ def infer_frequency(
         - estimated_range_start (str): a string representing the minimum Timestamp in the output estimated timeseries according to ISO 8601.
         - estimated_range_end (str): a string representing the maximum Timestamp in the output estimated timeseries according to ISO 8601.
 
-        - duplicate_values: list[RangeObject] = field(default_factory=list)
-        - missing_values: list[RangeObject] = field(default_factory=list)
-        - extra_values: list[RangeObject] = field(default_factory=list)
-        - nan_values: list[RangeObject] = field(default_factory=list)
+        - duplicate_values (list(RangeObject)): a list of RangeObjects of Duplicate timestamps
+        - missing_values (list(RangeObject)): a list of RangeObjects of Missing timestamps
+        - extra_values (list(RangeObject)): a list of RangeObjects of Extra timestamps
+        - nan_values (list(RangeObject)): a list of RangeObjects of NaN timestamps
+
+        A range object contains the following information:
+
+        - dt: an ISO 8601 formatted string of the first timestamp in this range
+        - idx: the index of the first timestamp in this range
+            - for duplicates and extra values, the idx is in reference to the observed data
+            - for missing values, the idx is in reference to the estimated data.
+        - range: the length of this range.
     """
 
     pandas_inferred_freq = pd.infer_freq(observed_ts)

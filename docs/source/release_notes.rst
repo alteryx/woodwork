@@ -15,7 +15,6 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`dvreed77`, :user:`bchen1116`
->>>>>>> origin/main
 
 v0.14.0 Mar 15, 2022
 ====================
