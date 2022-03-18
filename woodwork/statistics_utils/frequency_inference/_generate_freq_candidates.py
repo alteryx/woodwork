@@ -4,7 +4,7 @@ from ._constants import NON_INFERABLE_FREQ, WINDOW_LENGTH
 
 
 def _generate_freq_candidates(time_series, window_length=WINDOW_LENGTH):
-    """Calculate a set of candidate frequecies for incoming time_series
+    """Calculate a set of candidate frequencies for incoming time_series
 
     Args:
         time_series (Series): The time_series for which candidate frequencies will be calculated.
