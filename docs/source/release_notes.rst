@@ -9,7 +9,7 @@ Release Notes
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
-        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:``)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1346`)
     * Documentation Changes
     * Testing Changes
 
