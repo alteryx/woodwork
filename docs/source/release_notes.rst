@@ -13,9 +13,10 @@ Future Release
         * Updated lint check to only run on Python 3.10 (:pr:`1345`)
     * Documentation Changes
     * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1973`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`bchen1116`
+    :user:`dvreed77`, :user:`bchen1116`, :user:`thehomebrewnerd`
 
 v0.14.0 Mar 15, 2022
 ====================
