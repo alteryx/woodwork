@@ -30,6 +30,5 @@ jobs:
           python -m pip install -e .[dask]
           python -m pip install -e .[spark]
           python -m pip install -e .[dev]
-          python -m pip install -e .[test]
       - name: Run lint test
         run: make lint
