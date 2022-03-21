@@ -29,7 +29,7 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install -e .
-          python -m pip install -r .[dev]
+          python -m pip install -e .[dev]
       - name: Build docs
         run: |
           make -C docs/ html
