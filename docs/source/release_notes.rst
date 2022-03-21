@@ -10,6 +10,7 @@ Future Release
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
+        * Updated lint check to only run on Python 3.10 (:pr:`1345`)
     * Documentation Changes
     * Testing Changes
 
