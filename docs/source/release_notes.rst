@@ -3,10 +3,11 @@
 Release Notes
 -------------
 
-.. Future Release
-   ==============
+Future Release
+==============
     * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
+        * Added Datetime Frequency Inference V2 (:pr:`1281`)
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
@@ -14,8 +15,8 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-    :user:`bchen1116`
+    Thanks to the following people for contributing to this release:
+    :user:`dvreed77`, :user:`bchen1116`
 
 v0.14.0 Mar 15, 2022
 ====================

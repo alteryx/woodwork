@@ -1073,7 +1073,7 @@ class WoodworkTableAccessor:
         return _get_value_counts(self._dataframe, ascending, top_n, dropna)
 
     @_check_table_schema
-    def infer_temporal_frequencies(self, temporal_columns=None):
+    def infer_temporal_frequencies(self, temporal_columns=None, debug=False):
         """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
             in the DataFrame. Temporal columns are ones with the logical type Datetime or Timedelta.
             Not supported for Dask and Spark DataFrames.
@@ -1082,6 +1082,8 @@ class WoodworkTableAccessor:
             temporal_columns (list[str], optional): Columns for which frequencies should be inferred. Must be columns
                 that are present in the DataFrame and are temporal in nature. Defaults to None. If not
                 specified, all temporal columns will have their frequencies inferred.
+            debug (boolean): A flag used to determine if more information should be returned for each temporal column if
+                no uniform frequency was found.
 
         Returns:
             (dict): A dictionary where each key is a temporal column from the DataFrame, and the
@@ -1109,9 +1111,12 @@ class WoodworkTableAccessor:
                     One example of this can be seen when using the business day offset alias ``B``
                     ``pd.date_range(start="2020-01-01", freq="4b", periods=10)``, which is a valid ``freq``
                     parameter when building the date range, but is not then inferrable.
+
+            The algorithm used to infer frequency on noisy data can configured (see https://woodwork.alteryx.com/en/stable/guides/setting_config_options.html#Available-Config-Settings)
+
         """
         return _infer_temporal_frequencies(
-            self._dataframe, temporal_columns=temporal_columns
+            self._dataframe, temporal_columns=temporal_columns, debug=debug
         )
 
     @_check_table_schema
