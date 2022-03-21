@@ -6,16 +6,19 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added Datetime Frequency Inference V2 (:pr:`1281`)
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
+        * Updated lint check to only run on Python 3.10 (:pr:`1345`)
         * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
     * Documentation Changes
     * Testing Changes
+        * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1351`)
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`rwedge`
+    :user:`dvreed77`, :user:`bchen1116`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.14.0 Mar 15, 2022
 ====================

@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
+from woodwork.config import config
 from woodwork.exceptions import ParametersIgnoredWarning
 from woodwork.logical_types import (
     URL,
@@ -1620,23 +1621,44 @@ def test_box_plot_optional_return_values(outliers_df):
     } == set(no_outliers_box_plot_info_with_optional.keys())
 
 
-def test_infer_temporal_frequencies(datetime_freqs_df_pandas):
+@patch.object(
+    sys.modules["woodwork.statistics_utils._infer_temporal_frequencies"],
+    "infer_frequency",
+)
+@pytest.mark.parametrize(
+    "expected_call_args",
+    [{}, {"debug": True}, {"temporal_columns": ["2D_freq", "3M_freq"]}],
+)
+def test_infer_temporal_frequencies(
+    infer_frequency, expected_call_args, datetime_freqs_df_pandas
+):
+
     # TODO: Add support for Dask and Spark DataFrames
     datetime_freqs_df_pandas.ww.init()
 
-    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies()
-    assert len(frequency_dict) == len(datetime_freqs_df_pandas.columns) - 1
-    assert "ints" not in frequency_dict
+    datetime_freqs_df_pandas.ww.infer_temporal_frequencies(**expected_call_args)
 
-    expected_no_frequency = {
-        "same_date",
-        "1d_skipped_one_freq",
-        "3M_one_nan",
-        "3B_no_freq",
-    }
-    assert {
-        key for key, val in frequency_dict.items() if val is None
-    } == expected_no_frequency
+    expected_call_count = (
+        len(expected_call_args["temporal_columns"])
+        if "temporal_columns" in expected_call_args
+        else 7
+    )
+
+    assert infer_frequency.called
+    assert infer_frequency.call_count == expected_call_count
+
+    actual_call_args = infer_frequency.call_args[1]
+
+    window_length = config.get_option("frequence_inference_window_length")
+    threshold = config.get_option("frequence_inference_threshold")
+
+    expected_debug_flag = (
+        expected_call_args["debug"] if "debug" in expected_call_args else False
+    )
+
+    assert actual_call_args["debug"] == expected_debug_flag
+    assert actual_call_args["window_length"] == window_length
+    assert actual_call_args["threshold"] == threshold
 
 
 def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):

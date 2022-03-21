@@ -18,6 +18,8 @@ CONFIG_DEFAULTS = {
 """.splitlines()
     ),
     "nan_values": ["", "None", "nan", "NaN", "<NA>", "null"],
+    "frequence_inference_window_length": 15,
+    "frequence_inference_threshold": 0.9,
 }
 
 

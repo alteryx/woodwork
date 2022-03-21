@@ -222,6 +222,17 @@ General Utils
     init_series
     is_schema_valid
 
+Statistics Utils
+~~~~~~~~~~~~~~~~
+
+.. currentmodule:: woodwork.statistics_utils
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    infer_frequency
+
 Demo Data
 =========
 
