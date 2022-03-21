@@ -6,7 +6,6 @@ from woodwork.logical_types import (
     Boolean,
     Categorical,
     CountryCode,
-    CurrencyCode,
     Datetime,
     Double,
     Integer,
