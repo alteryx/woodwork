@@ -3,19 +3,19 @@
 Release Notes
 -------------
 
-.. Future Release
-   ==============
-    * Enhancements
-    * Fixes
-        * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
-    * Changes
-        * Updated lint check to only run on Python 3.10 (:pr:`1345`)
-        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1346`)
-    * Documentation Changes
-    * Testing Changes
+Future Release
+==============
+* Enhancements
+* Fixes
+    * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
+* Changes
+    * Updated lint check to only run on Python 3.10 (:pr:`1345`)
+    * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1346`)
+* Documentation Changes
+* Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`jeff-hernandez`
+Thanks to the following people for contributing to this release:
+:user:`bchen1116`, :user:`jeff-hernandez`
 
 v0.14.0 Mar 15, 2022
 ====================
