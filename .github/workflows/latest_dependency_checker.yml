@@ -25,7 +25,7 @@ jobs:
         source venv_core/bin/activate
         python -m pip install --upgrade pip
         python -m pip install -e .
-        python -m pip install -r test-requirements.txt
+        python -m pip install .[test]
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_core_dependencies.txt
         cat woodwork/tests/requirement_files/latest_core_dependencies.txt
     - name: Update latest spark dependencies
@@ -34,8 +34,8 @@ jobs:
         source venv_spark/bin/activate
         python -m pip install --upgrade pip
         python -m pip install -e .
-        python -m pip install -r spark-requirements.txt
-        python -m pip install -r test-requirements.txt
+        python -m pip install .[spark]
+        python -m pip install .[test]
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_spark_dependencies.txt
         cat woodwork/tests/requirement_files/latest_spark_dependencies.txt
     - name: Update latest dask dependencies
@@ -44,8 +44,8 @@ jobs:
         source venv_dask/bin/activate
         python -m pip install --upgrade pip
         python -m pip install -e .
-        python -m pip install -r test-requirements.txt
-        python -m pip install -r dask-requirements.txt
+        python -m pip install .[test]
+        python -m pip install .[dask]
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_dask_dependencies.txt
         cat woodwork/tests/requirement_files/latest_dask_dependencies.txt
     - name: Create Pull Request

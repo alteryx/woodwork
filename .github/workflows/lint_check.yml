@@ -29,7 +29,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .[dask]
           python -m pip install -e .[spark]
-          python -m pip install -r dev-requirements.txt
-          python -m pip install -r test-requirements.txt
+          python -m pip install -r .[dev]
+          python -m pip install -r .[test]
       - name: Run lint test
         run: make lint

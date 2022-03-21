@@ -31,15 +31,15 @@ testcoverage:
 installdeps:
 	pip install --upgrade pip
 	pip install -e .
-	pip install -r dev-requirements.txt
+	pip install -e .[dev]
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -r test-requirements.txt
+	pip install -e .[test]
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install -r dev-requirements.txt
+	pip install -e .[dev]
 
 .PHONY: checkdeps
 checkdeps:
