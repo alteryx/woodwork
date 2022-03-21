@@ -9,5 +9,6 @@ from ._get_top_values_categorical import _get_top_values_categorical
 from ._get_valid_mi_columns import _get_valid_mi_columns
 from ._get_value_counts import _get_value_counts
 from ._infer_temporal_frequencies import _infer_temporal_frequencies
+from .frequency_inference._infer_frequency import infer_frequency
 from ._make_categorical_for_mutual_info import _make_categorical_for_mutual_info
 from ._replace_nans_for_mutual_info import _replace_nans_for_mutual_info
