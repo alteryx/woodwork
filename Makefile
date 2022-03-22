@@ -31,24 +31,32 @@ testcoverage:
 installdeps:
 	pip install --upgrade pip
 	pip install -e .
-	pip install -r dev-requirements.txt
+	pip install -e ".[dev]"
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -r test-requirements.txt
+	pip install -e ".[test]"
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install -r dev-requirements.txt
+	pip install -e ".[dev]"
 
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark')
 	pip freeze | grep -v "woodwork.git" | grep -E $(allow_list) > $(OUTPUT_FILEPATH)
 
+.PHONY: upgradepip
+upgradepip:
+	python -m pip install --upgrade pip
+
+.PHONY: upgradebuild
+upgradebuild:
+	python -m pip install --upgrade build
+
 .PHONY: package_woodwork
-package_woodwork:
-	python setup.py sdist
-	$(eval DT_VERSION=$(shell python setup.py --version))
+package_woodwork: upgradepip upgradebuild
+	python -m build
+	$(eval DT_VERSION := $(shell grep '__version__\s=' woodwork/version.py | grep -o '[^ ]*$$'))
 	tar -zxvf "dist/woodwork-${DT_VERSION}.tar.gz"
 	mv "woodwork-${DT_VERSION}" unpacked_sdist
