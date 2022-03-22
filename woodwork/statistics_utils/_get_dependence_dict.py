@@ -1,5 +1,7 @@
+import itertools
 import warnings
 from collections import defaultdict
+from math import factorial
 from timeit import default_timer as timer
 
 import numpy as np
@@ -128,8 +130,14 @@ def _get_dependence_dict(
 
     # Setup for progress callback and make initial call
     # Assume 1 unit for preprocessing, n for handling null, m for make categorical
-    # (p*p+p)/2 for pearson and (m*m+m)/2 for mutual
-    total_loops = 1 + n + m + (p * p + p) / 2 + (m * m + m) / 2
+    # p! / 2 / (p-2)! for pearson and m! / 2 / (m-2)! for mutual
+    # per https://docs.python.org/3/library/itertools.html#itertools.combinations
+    def _num_calc_steps(n):
+        if n < 2:
+            return 0
+        return factorial(n) / 2 / factorial(n - 2)
+
+    total_loops = 1 + n + m + _num_calc_steps(p) + _num_calc_steps(m)
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
 
@@ -149,52 +157,49 @@ def _get_dependence_dict(
     results = defaultdict(dict)
 
     def _calculate(callback_caller, data, col_names, results, measure):
-        # TODO: itertools?
-        for i, a_col in enumerate(col_names):
-            for j in range(i, len(col_names)):
-                b_col = col_names[j]
-                if not a_col == b_col:
-                    result = results[(a_col, b_col)]
-                    # check if result already has keys, meaning _calculate has been
-                    # called previously and some computation can be skipped
-                    if "column_1" in result:
-                        num_intersect = result["shared_rows"]
-                    else:
-                        result["column_1"] = a_col
-                        result["column_2"] = b_col
-                        num_intersect = (notna_mask[a_col] & notna_mask[b_col]).sum()
-                        result["shared_rows"] = num_intersect
+        column_pairs = itertools.combinations(col_names, 2)
+        for a_col, b_col in column_pairs:
+            result = results[(a_col, b_col)]
+            # check if result already has keys, meaning _calculate has been
+            # called previously and some computation can be skipped
+            if "column_1" in result:
+                num_intersect = result["shared_rows"]
+            else:
+                result["column_1"] = a_col
+                result["column_2"] = b_col
+                num_intersect = (notna_mask[a_col] & notna_mask[b_col]).sum()
+                result["shared_rows"] = num_intersect
 
-                    too_sparse = num_intersect < min_shared
-                    if too_sparse:
-                        # TODO: reword since Pearson can return NaN naturally
-                        warnings.warn(
-                            "One or more values in the returned matrix are NaN. A "
-                            "NaN value indicates there were not enough rows where "
-                            "both columns had non-null data",
-                            SparseDataWarning,
-                        )
-                        result[measure] = np.nan
-                    else:
-                        if "num_union" in result:
-                            num_union = result["num_union"]
-                        else:
-                            num_union = (notna_mask[a_col] | notna_mask[b_col]).sum()
-                            result["num_union"] = num_union
-                        intersect = notna_mask[a_col] & notna_mask[b_col]
-                        if measure == "mutual":
-                            score = adjusted_mutual_info_score(
-                                data[a_col][intersect], data[b_col][intersect]
-                            )
-                        elif measure == "pearson":
-                            score = np.corrcoef(
-                                data[a_col][intersect], data[b_col][intersect]
-                            )[0, 1]
+            too_sparse = num_intersect < min_shared
+            if too_sparse:
+                # TODO: reword since Pearson can return NaN naturally
+                warnings.warn(
+                    "One or more values in the returned matrix are NaN. A "
+                    "NaN value indicates there were not enough rows where "
+                    "both columns had non-null data",
+                    SparseDataWarning,
+                )
+                result[measure] = np.nan
+            else:
+                if "num_union" in result:
+                    num_union = result["num_union"]
+                else:
+                    num_union = (notna_mask[a_col] | notna_mask[b_col]).sum()
+                    result["num_union"] = num_union
+                intersect = notna_mask[a_col] & notna_mask[b_col]
+                if measure == "mutual":
+                    score = adjusted_mutual_info_score(
+                        data[a_col][intersect], data[b_col][intersect]
+                    )
+                elif measure == "pearson":
+                    score = np.corrcoef(data[a_col][intersect], data[b_col][intersect])[
+                        0, 1
+                    ]
 
-                        score = score * num_intersect / num_union
-                        result[measure] = score
-                # increment progress in either case
-                callback_caller.update(1)
+                score = score * num_intersect / num_union
+                result[measure] = score
+            # increment progress in either case
+            callback_caller.update(1)
 
     for measure in calc_order:
         if measure == "mutual":

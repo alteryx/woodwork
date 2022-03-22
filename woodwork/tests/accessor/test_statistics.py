@@ -406,10 +406,10 @@ def test_dependence_min_shared(time_index_df, measure):
 @pytest.mark.parametrize(
     "measure, expected",
     [
-        ("mutual", (24, 7, 34)),
-        ("pearson", (8, 4, 10)),
-        ("max", (30, 7, 40)),
-        ("all", (30, 7, 40)),
+        ("mutual", (18, 7, 28)),
+        ("pearson", (5, 4, 7)),
+        ("max", (21, 7, 31)),
+        ("all", (21, 7, 31)),
     ],
 )
 def test_dependence_callback(df_mi, measure, expected, mock_callback):
