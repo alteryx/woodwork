@@ -33,6 +33,7 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     CountryCode,
+    CurrencyCode,
     Datetime,
     Double,
     EmailAddress,
@@ -838,6 +839,7 @@ def test_sets_category_dtype_on_init():
     logical_types = [
         Categorical,
         CountryCode,
+        CurrencyCode,
         Ordinal(order=["a", "b", "c"]),
         PostalCode,
         SubRegionCode,

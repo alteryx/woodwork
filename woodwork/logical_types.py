@@ -241,6 +241,21 @@ class CountryCode(LogicalType):
     standard_tags = {"category"}
 
 
+class CurrencyCode(LogicalType):
+    """Represents Logical Types that use the ISO-4217 internation standard currency code to represent currencies.
+
+    Examples:
+        .. code-block:: python
+
+            ["GBP", "JPY", "USD"]
+            ["SAR", "EUR", "CZK"]
+    """
+
+    primary_dtype = "category"
+    backup_dtype = "string"
+    standard_tags = {"category"}
+
+
 class Datetime(LogicalType):
     """Represents Logical Types that contain date and time information.
 

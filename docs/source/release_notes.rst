@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added ``CurrencyCode`` to logical types (:pr:`1348`)
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
     * Fixes
