@@ -643,16 +643,16 @@ class WoodworkTableAccessor:
         If writing to S3 a tar archive of files will be written.
 
         Note:
-            As the engine `fastparquet` cannot handle nullable pandas dtypes, `pyarrow` will be used
-            for serialization to parquet.
-
+            When serializing to parquet, Woodwork typing information will be store in the parquet file metadata,
+            and not in a separate typing info JSON file. Any value provided for `typing_info_filename` will be ignored.
 
         Args:
             path (str): Location on disk to write to (will be created as a directory if it does not exist)
             format (str, optional): Format to use for writing Woodwork data. Defaults to csv. Possible values are: {'csv', 'pickle', 'parquet'}.
             filename (str, optional): Name to use for the saved data file. Will default to the name of the dataframe or "data" if not specified.
             data_subdirectory (str, optional): Optional subdirectory to append to `path`. Will default to "data" if not specified.
-            typing_info_filename (str, optional): Optional filename to use for storing Woodwork typing information JSON data. Will default to "woodwork_typing_info.json" if not specified.
+            typing_info_filename (str, optional): Optional filename to use for storing Woodwork typing information JSON data.
+                Will default to "woodwork_typing_info.json" if not specified. Will be ignored if serializing to parquet.
             compression (str, optional): Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}. Defaults to None.
             profile_name (str, optional): Name of AWS profile to use, False to use an anonymous profile, or None. Defaults to None.
             kwargs (keywords, optional): Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.

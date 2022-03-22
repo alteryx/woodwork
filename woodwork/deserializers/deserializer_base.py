@@ -39,7 +39,9 @@ class Deserializer:
             path = self.typing_info["path"]
             self.read_path = os.path.join(path, loading_info["location"])
         self.kwargs = loading_info.get("params", {})
+        self._set_init_dict(loading_info)
 
+    def _set_init_dict(self, loading_info):
         logical_types = {}
         semantic_tags = {}
         column_descriptions = {}

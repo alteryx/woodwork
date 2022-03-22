@@ -365,7 +365,15 @@ def test_to_disk_with_whitespace(whitespace_df, tmpdir, format):
             df.ww.to_disk(str(tmpdir), format="pickle")
     else:
         df.ww.to_disk(str(tmpdir), format=format)
-        deserialized_df = read_woodwork_table(str(tmpdir))
+        if format == "parquet":
+            deserialized_df = read_woodwork_table(
+                path=str(tmpdir),
+                filename="data.parquet",
+                data_subdirectory="data",
+                typing_info_filename=None,
+            )
+        else:
+            deserialized_df = read_woodwork_table(str(tmpdir))
         assert deserialized_df.ww.schema == df.ww.schema
         pd.testing.assert_frame_equal(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -431,7 +439,15 @@ def test_to_disk(sample_df, tmpdir, file_format):
             sample_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         sample_df.ww.to_disk(str(tmpdir), format=file_format)
-        deserialized_df = read_woodwork_table(str(tmpdir))
+        if file_format == "parquet":
+            deserialized_df = read_woodwork_table(
+                path=str(tmpdir),
+                filename="data.parquet",
+                data_subdirectory="data",
+                typing_info_filename=None,
+            )
+        else:
+            deserialized_df = read_woodwork_table(str(tmpdir))
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -480,7 +496,15 @@ def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
             path=str(tmpdir), format=file_format, filename=data_filename
         )
         assert os.path.isfile(os.path.join(tmpdir, "data", filename_to_check))
-        deserialized_df = read_woodwork_table(path=str(tmpdir), filename=data_filename)
+        if file_format == "parquet":
+            typing_info_filename = None
+        else:
+            typing_info_filename = "woodwork_typing_info.json"
+        deserialized_df = read_woodwork_table(
+            path=str(tmpdir),
+            filename=data_filename,
+            typing_info_filename=typing_info_filename,
+        )
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -488,9 +512,7 @@ def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
         assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-@pytest.mark.parametrize(
-    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"]
-)
+@pytest.mark.parametrize("file_format", ["csv", "pickle", "arrow", "feather", "orc"])
 def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
         pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
@@ -559,8 +581,17 @@ def test_to_disk_custom_data_subdirectory(
         )
         if data_subdirectory:
             assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
+        if file_format == "parquet":
+            typing_info_filename = None
+            filename = "data.parquet"
+        else:
+            typing_info_filename = "woodwork_typing_info.json"
+            filename = None
         deserialized_df = read_woodwork_table(
-            str(tmpdir), data_subdirectory=data_subdirectory
+            str(tmpdir),
+            filename=filename,
+            data_subdirectory=data_subdirectory,
+            typing_info_filename=typing_info_filename,
         )
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -592,7 +623,15 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
             latlong_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         latlong_df.ww.to_disk(str(tmpdir), format=file_format)
-        deserialized_df = read_woodwork_table(str(tmpdir))
+        if file_format == "parquet":
+            typing_info_filename = None
+            filename = "data.parquet"
+        else:
+            typing_info_filename = "woodwork_typing_info.json"
+            filename = None
+        deserialized_df = read_woodwork_table(
+            str(tmpdir), filename=filename, typing_info_filename=typing_info_filename
+        )
 
         pd.testing.assert_frame_equal(
             to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
@@ -702,7 +741,7 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket, profile_name):
     sample_df.ww.init()
     sample_df.ww.to_disk(TEST_S3_URL, format="parquet", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
-    deserialized_df = read_woodwork_table(TEST_S3_URL, profile_name=profile_name)
+    deserialized_df = read_woodwork_table(TEST_S3_URL, filename="data.parquet", typing_info_filename=None, profile_name=profile_name)
 
     pd.testing.assert_frame_equal(
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),

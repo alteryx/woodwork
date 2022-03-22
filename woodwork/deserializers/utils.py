@@ -30,10 +30,16 @@ def get_deserializer(
 ):
     """Determine the proper Deserializer class to use based on the specified parameters.
     Initializes and returns the proper Deserializer object."""
-    typing_info = read_table_typing_information(
-        path, typing_info_filename, profile_name
-    )
-    format = typing_info["loading_info"]["type"]
+    if typing_info_filename is not None:
+        # Get format from typing info file
+        typing_info = read_table_typing_information(
+            path, typing_info_filename, profile_name
+        )
+        format = typing_info["loading_info"]["type"]
+    else:
+        # Get format from filename suffix
+        format = Path(filename).suffix[1:]
+        typing_info = None
 
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
 
