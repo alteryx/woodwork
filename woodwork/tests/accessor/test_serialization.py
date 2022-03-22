@@ -5,6 +5,7 @@ from unittest.mock import patch
 import boto3
 import pandas as pd
 import pytest
+import shutil
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.deserialize import read_woodwork_table
@@ -379,6 +380,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
     deserialized_no_tags_df = read_woodwork_table(str(tmpdir))
+    shutil.rmtree(str(tmpdir))
 
     standard_tags_df = sample_df.copy()
     standard_tags_df.ww.init(use_standard_tags=True)
@@ -387,6 +389,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
     deserialized_tags_df = read_woodwork_table(str(tmpdir))
+    shutil.rmtree(str(tmpdir))
 
     assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
 
@@ -547,6 +550,8 @@ def test_to_disk_custom_data_subdirectory(
             sample_df.ww.to_disk(
                 str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
             )
+        shutil.rmtree(str(tmpdir))
+
     else:
         sample_df.ww.to_disk(
             str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
@@ -561,6 +566,7 @@ def test_to_disk_custom_data_subdirectory(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
         )
         assert sample_df.ww.schema == deserialized_df.ww.schema
+        shutil.rmtree(str(tmpdir))
 
 
 @pytest.mark.parametrize(

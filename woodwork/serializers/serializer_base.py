@@ -53,7 +53,7 @@ class Serializer:
                 os.path.join(self.write_path, self.data_subdirectory), exist_ok=False
             )
         else:
-            os.makedirs(self.write_path, exist_ok=False)
+            os.makedirs(self.write_path, exist_ok=True)
         self.write_dataframe()
         self.write_typing_info()
 
@@ -108,7 +108,11 @@ class Serializer:
         self.location = basename
         if self.data_subdirectory:
             self.location = os.path.join(self.data_subdirectory, basename)
-        return os.path.join(self.write_path, self.location)
+        location =  os.path.join(self.write_path, self.location)
+        if os.path.exists(location):
+            raise FileExistsError(location)
+        return location
+
 
     def _create_archive(self):
         """Create a tar archive of data and typing information."""
