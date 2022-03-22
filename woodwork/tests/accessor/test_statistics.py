@@ -451,6 +451,43 @@ def test_dependence_with_string_index(measure):
     assert "col2" in cols_used
 
 
+def test_dependence_dropna():
+    # if regular dropna used, all data will be dropped
+    df = pd.DataFrame(
+        data={
+            "test": [np.nan, 1, 2, 3],
+            "case": [0, np.nan, 0, 0],
+            "for": [0, 0, np.nan, 0],
+            "dropna": [0, 1, 2, np.nan],
+        }
+    )
+    df.ww.init(logical_types={col: Categorical for col in df})
+    mi_df = df.ww.mutual_information(min_shared=2)
+
+    expected_df = pd.DataFrame(
+        {
+            "column_1": {
+                0: "case",
+                1: "test",
+                2: "test",
+                3: "test",
+                4: "case",
+                5: "for",
+            },
+            "column_2": {
+                0: "for",
+                1: "case",
+                2: "for",
+                3: "dropna",
+                4: "dropna",
+                5: "dropna",
+            },
+            "mutual": {0: 0.5, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0},
+        }
+    )
+    assert mi_df.equals(expected_df)
+
+
 @patch("woodwork.table_accessor._get_dependence_dict")
 def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.init()
