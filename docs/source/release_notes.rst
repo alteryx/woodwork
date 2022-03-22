@@ -13,12 +13,13 @@ Future Release
     * Changes
         * Updated lint check to only run on Python 3.10 (:pr:`1345`)
         * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
+        * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1346`)
     * Documentation Changes
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1351`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`bchen1116`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`bchen1116`, :user:`jeff-hernandez`, :user:`rwedge`, user:`thehomebrewnerd`
 
 v0.14.0 Mar 15, 2022
 ====================
