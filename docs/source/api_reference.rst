@@ -146,6 +146,7 @@ Logical Types
     BooleanNullable
     Categorical
     CountryCode
+    CurrencyCode
     Datetime
     Double
     EmailAddress

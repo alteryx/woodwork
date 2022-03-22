@@ -26,6 +26,7 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     CountryCode,
+    CurrencyCode,
     Datetime,
     Double,
     EmailAddress,
@@ -54,6 +55,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     BooleanNullable: boolean_nullable_func,
     Categorical: categorical_func,
     CountryCode: None,
+    CurrencyCode: None,
     Datetime: datetime_func,
     Double: double_func,
     EmailAddress: email_address_func,
@@ -77,6 +79,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
 DEFAULT_RELATIONSHIPS = [
     (BooleanNullable, Boolean),
     (Categorical, CountryCode),
+    (Categorical, CurrencyCode),
     (Categorical, Ordinal),
     (Categorical, PostalCode),
     (Categorical, SubRegionCode),
