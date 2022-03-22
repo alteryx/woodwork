@@ -15,7 +15,7 @@ def _bin_numeric_cols_into_categories(schema, data, num_bins):
         pd.DataFrame: data with values transformed and binned into numeric categorical values
     """
 
-    for col_name in data.columns:
+    for col_name in data.keys():
         column = schema.columns[col_name]
         if column.is_numeric or column.is_datetime:
             # bin numeric features to make categories

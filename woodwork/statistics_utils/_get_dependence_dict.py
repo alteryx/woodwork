@@ -133,7 +133,9 @@ def _get_dependence_dict(
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
 
-    data = data.dropna()
+    # split dataframe into dict of series so we can drop nulls on a per-column basis
+    data = {col: data[col].dropna() for col in data}
+
     # cast nullable type to non-nullable
     for col_name in data:
         column = dataframe.ww.columns[col_name]
@@ -147,11 +149,14 @@ def _get_dependence_dict(
     results = defaultdict(dict)
 
     def _calculate(callback_caller, data, col_names, results, measure):
+        # TODO: itertools?
         for i, a_col in enumerate(col_names):
             for j in range(i, len(col_names)):
                 b_col = col_names[j]
                 if not a_col == b_col:
                     result = results[(a_col, b_col)]
+                    # check if result already has keys, meaning _calculate has been
+                    # called previously and some computation can be skipped
                     if "column_1" in result:
                         num_intersect = result["shared_rows"]
                     else:
@@ -176,10 +181,15 @@ def _get_dependence_dict(
                         else:
                             num_union = (notna_mask[a_col] | notna_mask[b_col]).sum()
                             result["num_union"] = num_union
+                        intersect = notna_mask[a_col] & notna_mask[b_col]
                         if measure == "mutual":
-                            score = adjusted_mutual_info_score(data[a_col], data[b_col])
+                            score = adjusted_mutual_info_score(
+                                data[a_col][intersect], data[b_col][intersect]
+                            )
                         elif measure == "pearson":
-                            score = np.corrcoef(data[a_col], data[b_col])[0, 1]
+                            score = np.corrcoef(
+                                data[a_col][intersect], data[b_col][intersect]
+                            )[0, 1]
 
                         score = score * num_intersect / num_union
                         result[measure] = score
