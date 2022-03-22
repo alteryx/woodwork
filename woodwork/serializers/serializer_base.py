@@ -50,10 +50,10 @@ class Serializer:
         """Serialize data and typing information to a local directory."""
         if self.data_subdirectory:
             os.makedirs(
-                os.path.join(self.write_path, self.data_subdirectory), exist_ok=True
+                os.path.join(self.write_path, self.data_subdirectory), exist_ok=False
             )
         else:
-            os.makedirs(self.write_path, exist_ok=True)
+            os.makedirs(self.write_path, exist_ok=False)
         self.write_dataframe()
         self.write_typing_info()
 
@@ -85,8 +85,12 @@ class Serializer:
             "params": self.kwargs,
         }
         self.typing_info["loading_info"].update(loading_info)
+        file = os.path.join(self.write_path, self.typing_info_filename)
+
+        if os.path.exists(file):
+            raise FileExistsError(file)
+
         try:
-            file = os.path.join(self.write_path, self.typing_info_filename)
             with open(file, "w") as file:
                 json.dump(self.typing_info, file)
         except TypeError:
