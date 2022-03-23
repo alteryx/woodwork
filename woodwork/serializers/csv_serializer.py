@@ -1,5 +1,5 @@
-import os
 import glob
+import os
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.serializers.serializer_base import Serializer

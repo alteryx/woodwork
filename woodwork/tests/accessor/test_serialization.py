@@ -791,7 +791,7 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
         sep="\t",
         encoding="utf-8",
         compression=compression,
-        typing_info_filename="woodwork_typing_info_2.json"
+        typing_info_filename="woodwork_typing_info_2.json",
     )
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join("woodwork_typing_info.json")), "r") as f:
@@ -881,7 +881,9 @@ def test_earlier_schema_version():
 
 @pytest.mark.parametrize("format", ["csv", "parquet", "pickle"])
 def test_overwrite_error(sample_df, tmpdir, format):
-    if (_is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df)) and format == "pickle":
+    if format == "pickle" and (
+        _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df)
+    ):
         pytest.skip("Cannot pickle dask and spark dataframes")
 
     folder_1 = str(tmpdir.join("folder_1"))
@@ -890,15 +892,20 @@ def test_overwrite_error(sample_df, tmpdir, format):
     sample_df.ww.init()
 
     sample_df.ww.to_disk(folder_1, format=format)
-    with pytest.raises(FileExistsError, match='folder_1/data'):
+    with pytest.raises(FileExistsError, match="folder_1/data"):
         sample_df.ww.to_disk(folder_1, format=format)
 
     sample_df.ww.to_disk(folder_2, data_subdirectory=None, format=format)
-    with pytest.raises(FileExistsError, match='folder_2/woodwork_typing_info.json'):
+    with pytest.raises(FileExistsError, match="folder_2/woodwork_typing_info.json"):
         sample_df.ww.to_disk(folder_2, format=format)
 
     sample_df.ww.to_disk(folder_3, data_subdirectory=None, format=format)
-    with pytest.raises(FileExistsError, match=f'folder_3/data.*{format}'):
-        sample_df.ww.to_disk(folder_3, typing_info_filename='new_typing_info', data_subdirectory=None, format=format)
+    with pytest.raises(FileExistsError, match=f"folder_3/data.*{format}"):
+        sample_df.ww.to_disk(
+            folder_3,
+            format=format,
+            typing_info_filename="new_typing_info",
+            data_subdirectory=None,
+        )
 
     shutil.rmtree(str(tmpdir))
