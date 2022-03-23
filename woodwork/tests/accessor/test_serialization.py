@@ -877,3 +877,28 @@ def test_earlier_schema_version():
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)
     test_version(major, minor, patch - 1, raises=False)
+
+
+@pytest.mark.parametrize("format", ["csv", "parquet", "pickle"])
+def test_overwrite_error(sample_df, tmpdir, format):
+    if (_is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df)) and format == "pickle":
+        pytest.skip("Cannot pickle dask and spark dataframes")
+
+    folder_1 = str(tmpdir.join("folder_1"))
+    folder_2 = str(tmpdir.join("folder_2"))
+    folder_3 = str(tmpdir.join("folder_3"))
+    sample_df.ww.init()
+
+    sample_df.ww.to_disk(folder_1, format=format)
+    with pytest.raises(FileExistsError, match='folder_1/data'):
+        sample_df.ww.to_disk(folder_1, format=format)
+
+    sample_df.ww.to_disk(folder_2, data_subdirectory=None, format=format)
+    with pytest.raises(FileExistsError, match='folder_2/woodwork_typing_info.json'):
+        sample_df.ww.to_disk(folder_2, format=format)
+
+    sample_df.ww.to_disk(folder_3, data_subdirectory=None, format=format)
+    with pytest.raises(FileExistsError, match=f'folder_3/data.*{format}'):
+        sample_df.ww.to_disk(folder_3, typing_info_filename='new_typing_info', data_subdirectory=None, format=format)
+
+    shutil.rmtree(str(tmpdir))
