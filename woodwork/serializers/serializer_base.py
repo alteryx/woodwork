@@ -108,11 +108,10 @@ class Serializer:
         self.location = basename
         if self.data_subdirectory:
             self.location = os.path.join(self.data_subdirectory, basename)
-        location =  os.path.join(self.write_path, self.location)
+        location = os.path.join(self.write_path, self.location)
         if os.path.exists(location):
             raise FileExistsError(location)
         return location
-
 
     def _create_archive(self):
         """Create a tar archive of data and typing information."""

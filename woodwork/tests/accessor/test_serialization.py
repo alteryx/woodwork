@@ -1,11 +1,11 @@
 import json
 import os
+import shutil
 from unittest.mock import patch
 
 import boto3
 import pandas as pd
 import pytest
-import shutil
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.deserialize import read_woodwork_table
