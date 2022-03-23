@@ -624,6 +624,7 @@ def test_categorical_dtype_serialization(serialize_df, tmpdir):
             to_pandas(df, index=df.ww.index, sort_index=True),
         )
         assert deserialized_df.ww.schema == df.ww.schema
+        shutil.rmtree(str(tmpdir))
 
 
 @pytest.fixture
@@ -790,10 +791,12 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
         sep="\t",
         encoding="utf-8",
         compression=compression,
+        typing_info_filename="woodwork_typing_info_2.json"
     )
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join("woodwork_typing_info.json")), "r") as f:
-        assert "__SAMPLE_TEXT__" not in json.load(f)
+        assert "__SAMPLE_TEXT__" in json.load(f)
+    shutil.rmtree(str(tmpdir))
 
 
 @pytest.mark.parametrize("profile_name", [None, False])
