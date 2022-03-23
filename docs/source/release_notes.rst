@@ -13,7 +13,7 @@ Future Release
     * Changes
         * Updated lint check to only run on Python 3.10 (:pr:`1345`)
         * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1346`)
-        * Raise error if files already exist (:pr:``)
+        * Raise error if files already exist (:pr:`1356`)
     * Documentation Changes
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1351`)
