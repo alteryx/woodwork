@@ -97,13 +97,13 @@ def test_ordinal_transform_spark(ordinal_transform_series_spark) -> None:
     typ = Ordinal(order=order)
     ser_ = typ.transform(ordinal_transform_series_spark)
 
-    assert ser_.dtype == pd.StringDtype()
+    assert ser_.dtype == pd.StringDtype("pyarrow")
 
 
 def test_get_valid_dtype(sample_series):
     valid_dtype = Categorical._get_valid_dtype(type(sample_series))
     if _is_spark_series(sample_series):
-        assert valid_dtype == "string"
+        assert valid_dtype == "string[pyarrow]"
     else:
         assert valid_dtype == "category"
 

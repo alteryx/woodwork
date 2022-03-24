@@ -103,7 +103,9 @@ class WoodworkColumnAccessor:
                     logical_type.validate(self._series)
                 else:
                     valid_dtype = logical_type._get_valid_dtype(type(self._series))
-                    if valid_dtype != str(self._series.dtype):
+                    if valid_dtype != str(self._series.dtype) and not all(
+                        ["string" in valid_dtype, "string" in str(self._series.dtype)]
+                    ):
                         raise TypeValidationError(
                             f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                             f"incompatible with {logical_type} dtype. Try converting series "
@@ -446,7 +448,9 @@ def _validate_schema(schema, series):
         raise TypeError("Provided schema must be a Woodwork.ColumnSchema object.")
 
     valid_dtype = schema.logical_type._get_valid_dtype(type(series))
-    if str(series.dtype) != valid_dtype:
+    if str(series.dtype) != valid_dtype and not all(
+        ["string" in valid_dtype, "string" in str(series.dtype)]
+    ):
         raise ValueError(
             f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}"
         )
