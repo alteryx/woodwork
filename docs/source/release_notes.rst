@@ -3,7 +3,17 @@
 Release Notes
 -------------
 
-Future Release
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.15.0 Mar 24, 2022
 ==============
     * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
@@ -19,7 +29,7 @@ Future Release
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1351`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`bchen1116`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`bchen1116`, :user:`dvreed77`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
 
 v0.14.0 Mar 15, 2022
 ====================
