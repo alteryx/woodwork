@@ -28,9 +28,7 @@ testcoverage:
 	pytest woodwork/ --cov=woodwork
 
 .PHONY: installdeps
-installdeps:
-	pip install --upgrade pip
-	pip install -e .
+installdeps: upgradepip
 	pip install -e ".[dev]"
 
 .PHONY: installdeps-test
