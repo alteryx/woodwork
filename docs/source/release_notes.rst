@@ -8,7 +8,7 @@ Future Release
     * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
-        * Added type inference for phone numbers (:pr:``)
+        * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
@@ -19,7 +19,7 @@ Future Release
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1351`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`bchen1116`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`dvreed77`, :user:`bchen1116`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`, :user:`ParthivNaresh`
 
 v0.14.0 Mar 15, 2022
 ====================
