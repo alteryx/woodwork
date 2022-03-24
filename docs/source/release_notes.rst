@@ -14,7 +14,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v0.15.0 Mar 24, 2022
-==============
+====================
     * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
