@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
+        * Added type inference for phone numbers (:pr:``)
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes

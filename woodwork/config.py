@@ -17,6 +17,7 @@ CONFIG_DEFAULTS = {
 [0-9]){0,1}[0-9]))
 """.splitlines()
     ),
+    "phone_inference_regex": r"(?:\+?1[-.\s●]?)?\(?([2-9][0-8][0-9])\)?[-\.\s●]?([2-9][0-9]{2})[-\.\s●]?([0-9]{4})$",
     "nan_values": ["", "None", "nan", "NaN", "<NA>", "null"],
     "frequence_inference_window_length": 15,
     "frequence_inference_threshold": 0.9,
