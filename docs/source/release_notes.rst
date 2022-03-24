@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
+        * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
     * Fixes
         * Updated ``__str__`` output for ``Ordinal`` logical types (:pr:`1340`)
     * Changes
