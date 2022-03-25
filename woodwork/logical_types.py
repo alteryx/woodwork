@@ -591,6 +591,7 @@ class PhoneNumber(LogicalType):
 
     def validate(self, series, return_invalid_values=False):
         """Validates PhoneNumber values based on the regex in the config.
+        By default, this validates US/Canada-based phone numbers.
 
         Args:
             series (Series): Series of phone number values
