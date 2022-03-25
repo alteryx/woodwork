@@ -31,14 +31,6 @@ testcoverage:
 installdeps: upgradepip
 	pip install -e ".[dev]"
 
-.PHONY: installdeps-test
-installdeps-test:
-	pip install -e ".[test]"
-
-.PHONY: installdeps-dev
-installdeps-dev:
-	pip install -e ".[dev]"
-
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark')
