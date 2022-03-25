@@ -8,6 +8,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Allow attr version in setup.cfg (:pr:`1361`)
     * Documentation Changes
     * Testing Changes
 
