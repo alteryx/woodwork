@@ -26,7 +26,7 @@ If you'd like to create a development release, which won't be deployed to pypi a
 
 #### Bump version number
 
-1. Bump `__version__` in `setup.py`, `woodwork/version.py`, and `woodwork/tests/test_version.py`.
+1. Bump `__version__` in `woodwork/version.py`, and `woodwork/tests/test_version.py`.
 
 #### Update Release Notes
 
