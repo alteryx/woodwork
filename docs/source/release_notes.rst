@@ -9,6 +9,7 @@ Future Release
         * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
     * Changes
+        * Allow attr version in setup.cfg (:pr:`1361`)
     * Documentation Changes
     * Testing Changes
 

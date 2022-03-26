@@ -8,12 +8,13 @@ on:
 name: Install Test
 jobs:
   install_ww_complete:
-    name: ${{ matrix.python_version }} install woodwork complete
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }} - ${{ matrix.python_version }} install woodwork complete
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
         python_version: ["3.7", "3.8", "3.9", "3.10"]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -26,7 +27,6 @@ jobs:
       - name: Install complete version of woodwork
         run: |
           pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
           python -m pip install unpacked_sdist/[complete]
       - name: Test by importing packages
         run: |
