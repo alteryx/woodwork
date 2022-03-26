@@ -319,11 +319,15 @@ def test_age_validate(sample_df, logical_type):
     assert to_pandas(actual).equals(to_pandas(invalid_row))
 
 
-def test_phone_number_validate(sample_df):
+def test_phone_number_validate(sample_df_phone_numbers):
     phone_number = PhoneNumber()
     dtype = phone_number.primary_dtype
-    series = sample_df["phone_number"].astype(dtype)
-    invalid_row = pd.Series({4: "bad_phone"}, name="phone_number").astype(dtype)
+    series = sample_df_phone_numbers["phone_number"].astype(dtype)
+    # Current inference function does not match lack of area code, invalid US phone number
+    invalid_row = pd.Series(
+        {17: "252 9384", 18: "+1 194 129 1991", 19: "+001 236 248 8482"},
+        name="phone_number",
+    ).astype(dtype)
 
     if _is_spark_series(series):
         invalid_row = ps.from_pandas(invalid_row)
@@ -338,5 +342,8 @@ def test_phone_number_validate(sample_df):
         phone_number.validate(series)
 
     actual = phone_number.validate(series, return_invalid_values=True)
-    expected = pd.Series({4: "bad_phone"}, name="phone_number").astype(dtype)
+    expected = pd.Series(
+        {17: "252 9384", 18: "+1 194 129 1991", 19: "+001 236 248 8482"},
+        name="phone_number",
+    ).astype(dtype)
     assert to_pandas(actual).equals(expected)
