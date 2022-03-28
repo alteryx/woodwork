@@ -763,7 +763,7 @@ def test_accessor_shallow_equality(sample_series):
     schema = metadata_col.ww.schema
     diff_data_col = metadata_col.replace(to_replace="a", value="1")
     # dtype gets changed to object in replace
-    diff_data_col = diff_data_col.astype("string")
+    diff_data_col = diff_data_col.astype("string[pyarrow]")
 
     diff_data_col.ww.init(schema=schema)
     same_data_col = metadata_col.ww.copy()

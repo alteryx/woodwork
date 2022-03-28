@@ -76,8 +76,8 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         specific validation, as required. When the series' dtype does not match the logical types' required dtype,
         raises a TypeValidationError."""
         valid_dtype = self._get_valid_dtype(type(series))
-        if valid_dtype != str(series.dtype) and not all(
-            ["string" in valid_dtype, "string" in str(series.dtype)]
+        if valid_dtype != str(series.dtype) and not (
+            "string" in valid_dtype and "string" in str(series.dtype)
         ):
             raise TypeValidationError(
                 f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
