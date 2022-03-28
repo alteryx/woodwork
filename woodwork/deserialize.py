@@ -1,6 +1,29 @@
 from woodwork.deserializers.utils import get_deserializer
 
 
+def from_disk(
+    path,
+    filename=None,
+    data_subdirectory="data",
+    typing_info_filename="woodwork_typing_info.json",
+    profile_name=None,
+    validate=False,
+    **kwargs,
+):
+    """Convenience function to call `read_woodwork_table`."""
+    deserialized_df = read_woodwork_table(
+        path,
+        filename=filename,
+        data_subdirectory=data_subdirectory,
+        typing_info_filename=typing_info_filename,
+        profile_name=profile_name,
+        validate=validate,
+        **kwargs,
+    )
+
+    return deserialized_df
+
+
 def read_woodwork_table(
     path,
     filename=None,
