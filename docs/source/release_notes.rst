@@ -8,14 +8,14 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Added ``from_disk`` as a convenience function to deserialize a WW table (:pr:``)
+        * Added ``from_disk`` as a convenience function to deserialize a WW table (:pr:`1363`)
         * Allow attr version in setup.cfg (:pr:`1361`)
     * Documentation Changes
         * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user: `ParthivNaresh`
+    :user:`gsheni`, :user:`rwedge`, :user:`ParthivNaresh`
 
 v0.15.0 Mar 24, 2022
 ====================

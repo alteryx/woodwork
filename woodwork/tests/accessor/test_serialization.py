@@ -553,9 +553,7 @@ def test_to_disk_custom_data_subdirectory(
         )
         if data_subdirectory:
             assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
-        deserialized_df = from_disk(
-            str(tmpdir), data_subdirectory=data_subdirectory
-        )
+        deserialized_df = from_disk(str(tmpdir), data_subdirectory=data_subdirectory)
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
