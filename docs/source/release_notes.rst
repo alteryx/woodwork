@@ -3,16 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
         * Allow attr version in setup.cfg (:pr:`1361`)
     * Documentation Changes
+        * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`
 
 v0.15.0 Mar 24, 2022
 ====================
