@@ -905,7 +905,7 @@ class WoodworkTableAccessor:
         """
         return _get_dependence_dict(
             dataframe=self._dataframe,
-            measures=["mutual"],
+            measures=["mutual_info"],
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
@@ -1098,9 +1098,9 @@ class WoodworkTableAccessor:
                 measures at once.  Valid measure strings:
 
                 - "pearson": calculates the Pearson correlation coefficient
-                - "mutual": calculates the mutual information between columns
+                - "mutual_info": calculates the mutual information between columns
                 - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual", and "max"
+                - "all": includes columns for "pearson", "mutual_info", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
                 calculation does not use binning.
@@ -1172,9 +1172,9 @@ class WoodworkTableAccessor:
                 measures at once.  Valid measure strings:
 
                 - "pearson": calculates the Pearson correlation coefficient
-                - "mutual": calculates the mutual information between columns
+                - "mutual_info": calculates the mutual information between columns
                 - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual", and "max"
+                - "all": includes columns for "pearson", "mutual_info", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
                 calculation does not use binning.

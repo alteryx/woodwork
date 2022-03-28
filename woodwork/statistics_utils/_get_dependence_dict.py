@@ -40,9 +40,9 @@ def _get_dependence_dict(
             measures at once.  Valid measure strings:
 
                 - "pearson": calculates the Pearson correlation coefficient
-                - "mutual": calculates the mutual information between columns
+                - "mutual_info": calculates the mutual information between columns
                 - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual", and "max"
+                - "all": includes columns for "pearson", "mutual_info", and "max"
         num_bins (int): Determines number of bins to use for converting numeric
             features into categorical.  Default to 10. Pearson calculation does
             not use binning.
@@ -87,7 +87,7 @@ def _get_dependence_dict(
         pearson_types = get_valid_pearson_types()
         pearson_columns = _get_valid_columns(dataframe, pearson_types)
         valid_columns = pearson_columns
-    if "mutual" in calc_order:
+    if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
         mutual_columns = _get_valid_columns(dataframe, mi_types)
         # pearson columns are a subset of mutual columns
@@ -120,7 +120,7 @@ def _get_dependence_dict(
         p = len(pearson_columns)
     else:
         p = 0
-    if "mutual" in calc_order:
+    if "mutual_info" in calc_order:
         mutual_columns = [col for col in mutual_columns if col in not_null_col_set]
         m = len(mutual_columns)
         n = m
@@ -187,7 +187,7 @@ def _get_dependence_dict(
                     num_union = (notna_mask[a_col] | notna_mask[b_col]).sum()
                     result["num_union"] = num_union
                 intersect = notna_mask[a_col] & notna_mask[b_col]
-                if measure == "mutual":
+                if measure == "mutual_info":
                     score = adjusted_mutual_info_score(
                         data[a_col][intersect], data[b_col][intersect]
                     )
@@ -202,7 +202,7 @@ def _get_dependence_dict(
             callback_caller.update(1)
 
     for measure in calc_order:
-        if measure == "mutual":
+        if measure == "mutual_info":
             data = _bin_numeric_cols_into_categories(
                 dataframe.ww.schema, data, num_bins
             )
@@ -216,18 +216,18 @@ def _get_dependence_dict(
         if calc_max:
             if "pearson" in result:
                 score = pd.Series(
-                    [result["mutual"], abs(result["pearson"])],
-                    index=["mutual", "pearson"],
+                    [result["mutual_info"], abs(result["pearson"])],
+                    index=["mutual_info", "pearson"],
                 )
                 result["max"] = score.max()
                 if extra_stats:
                     result["measure_used"] = score.idxmax()
             else:
-                result["max"] = result["mutual"]
+                result["max"] = result["mutual_info"]
                 if extra_stats:
-                    result["measure_used"] = "mutual"
+                    result["measure_used"] = "mutual_info"
             if measures == ["max"]:
-                del result["mutual"]
+                del result["mutual_info"]
                 if "pearson" in result:
                     del result["pearson"]
         if "num_union" in result:
@@ -278,14 +278,14 @@ def _validate_measures(measures):
                         "additional measures to 'all' measure found; 'all' should be used alone"
                     )
                 )
-            measures = ["max", "pearson", "mutual"]
+            measures = ["max", "pearson", "mutual_info"]
             calc_pearson = True
             calc_mutual = True
             calc_max = True
             break
         elif measure == "pearson":
             calc_pearson = True
-        elif measure == "mutual":
+        elif measure == "mutual_info":
             calc_mutual = True
         elif measure == "max":
             calc_pearson = True
@@ -297,6 +297,6 @@ def _validate_measures(measures):
     if calc_pearson:
         calc_order.append("pearson")
     if calc_mutual:
-        calc_order.append("mutual")
+        calc_order.append("mutual_info")
 
     return measures, calc_order, calc_max
