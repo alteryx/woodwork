@@ -6,6 +6,19 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+    * Fixes
+    * Changes
+        * Allow attr version in setup.cfg (:pr:`1361`)
+    * Documentation Changes
+        * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`
+
+v0.15.0 Mar 24, 2022
+====================
+    * Enhancements
         * Added ``CurrencyCode`` to logical types (:pr:`1348`)
         * Added Datetime Frequency Inference V2 (:pr:`1281`)
     * Fixes
@@ -15,11 +28,12 @@ Future Release
         * Transition to use pyproject.toml and setup.cfg (moving away from setup.py) (:pr:`1346`)
         * Raise error if files already exist (:pr:`1356`)
     * Documentation Changes
+        * Update release.md with correct version updating info (:pr:`1358`)
     * Testing Changes
         * Updated scheduled workflows to only run on Alteryx owned repos (:pr:`1351`)
 
     Thanks to the following people for contributing to this release:
-    :user:`dvreed77`, :user:`bchen1116`, :user:`jeff-hernandez`, :user:`thehomebrewnerd`
+    :user:`bchen1116`, :user:`dvreed77`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
 
 v0.14.0 Mar 15, 2022
 ====================
