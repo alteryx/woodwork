@@ -893,23 +893,16 @@ def test_overwrite_error(sample_df, tmpdir, format):
 
     folder_1 = str(tmpdir.join("folder_1"))
     folder_2 = str(tmpdir.join("folder_2"))
-    folder_3 = str(tmpdir.join("folder_3"))
     sample_df.ww.init()
 
-    sample_df.ww.to_disk(folder_1, format=format)
-    with pytest.raises(
-        WoodworkFileExistsError, match="Data subdirectory already exists"
-    ):
+    sample_df.ww.to_disk(folder_1, data_subdirectory=None, format=format)
+    with pytest.raises(WoodworkFileExistsError, match="Typing info already exists"):
         sample_df.ww.to_disk(folder_1, format=format)
 
     sample_df.ww.to_disk(folder_2, data_subdirectory=None, format=format)
-    with pytest.raises(WoodworkFileExistsError, match="Typing info already exists"):
-        sample_df.ww.to_disk(folder_2, format=format)
-
-    sample_df.ww.to_disk(folder_3, data_subdirectory=None, format=format)
     with pytest.raises(WoodworkFileExistsError, match="Data file already exists"):
         sample_df.ww.to_disk(
-            folder_3,
+            folder_2,
             format=format,
             typing_info_filename="new_typing_info",
             data_subdirectory=None,

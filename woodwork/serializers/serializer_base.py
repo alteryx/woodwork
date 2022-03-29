@@ -51,13 +51,7 @@ class Serializer:
         """Serialize data and typing information to a local directory."""
         if self.data_subdirectory:
             location = os.path.join(self.write_path, self.data_subdirectory)
-
-            if os.path.exists(location):
-                message = f"Data subdirectory already exists at '{location}'. "
-                message += "Please remove or use a different filename."
-                raise WoodworkFileExistsError(message)
-
-            os.makedirs(location, exist_ok=False)
+            os.makedirs(location, exist_ok=True)
         else:
             os.makedirs(self.write_path, exist_ok=True)
         self.write_dataframe()
