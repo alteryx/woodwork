@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pandas as pd
 
 import woodwork as ww
@@ -16,30 +14,24 @@ def col_is_datetime(col, datetime_format=None):
     if _is_spark_series(col):
         col = col.to_pandas()
 
-    if col.dtype.name.find("datetime") > -1 or (
-        len(col) and isinstance(col.head(1), datetime)
-    ):
+    if pd.api.types.is_datetime64_any_dtype(col):
         return True
 
-    # if it can be cast to numeric, it's not a datetime
-    try:
-        pd.to_numeric(col, errors="raise")
-    except (ValueError, TypeError):
-        # finally, try to cast to datetime
-        if col.dtype.name.find("str") > -1 or col.dtype.name.find("object") > -1:
-            try:
-                pd.to_datetime(
-                    col,
-                    errors="raise",
-                    format=datetime_format,
-                    infer_datetime_format=True,
-                )
-            except Exception:
-                return False
-            else:
-                return True
+    col = col.dropna()
+    if col.empty:
+        return False
 
-    return False
+    try:
+        pd.to_datetime(
+            col.astype(str),
+            errors="raise",
+            format=datetime_format,
+            infer_datetime_format=True,
+        )
+        return True
+
+    except Exception:
+        return False
 
 
 def _is_numeric_series(series, logical_type):
