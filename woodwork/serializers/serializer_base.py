@@ -5,11 +5,11 @@ import tarfile
 import tempfile
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.exceptions import WoodworkFileExistsError
 from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url
-from woodwork.exceptions import WoodworkFileExistsError
 
 SCHEMA_VERSION = "11.3.0"
 

@@ -13,8 +13,8 @@ from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
-    WoodworkNotInitError,
     WoodworkFileExistsError,
+    WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
 from woodwork.serializers import get_serializer
@@ -893,7 +893,9 @@ def test_overwrite_error(sample_df, tmpdir, format):
     sample_df.ww.init()
 
     sample_df.ww.to_disk(folder_1, format=format)
-    with pytest.raises(WoodworkFileExistsError, match="Data subdirectory already exists"):
+    with pytest.raises(
+        WoodworkFileExistsError, match="Data subdirectory already exists"
+    ):
         sample_df.ww.to_disk(folder_1, format=format)
 
     sample_df.ww.to_disk(folder_2, data_subdirectory=None, format=format)
