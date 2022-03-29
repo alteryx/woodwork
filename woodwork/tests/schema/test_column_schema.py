@@ -11,10 +11,7 @@ from woodwork.column_schema import (
     _validate_metadata,
     _validate_origin,
 )
-from woodwork.exceptions import (
-    DuplicateTagsWarning,
-    StandardTagsChangedWarning,
-)
+from woodwork.exceptions import DuplicateTagsWarning, StandardTagsChangedWarning
 from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
