@@ -1,5 +1,5 @@
 import pandas as pd
-import pandas.api.types as pdtypes
+from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork.logical_types import Categorical, Double, LogicalType

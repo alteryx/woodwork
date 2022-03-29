@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.deserialize import read_woodwork_table, from_disk
+from woodwork.deserialize import from_disk, read_woodwork_table
 from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
@@ -553,7 +553,9 @@ def test_to_disk_custom_data_subdirectory(
         )
         if data_subdirectory:
             assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
-        deserialized_df = read_woodwork_table(str(tmpdir), data_subdirectory=data_subdirectory)
+        deserialized_df = read_woodwork_table(
+            str(tmpdir), data_subdirectory=data_subdirectory
+        )
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
@@ -882,7 +884,7 @@ def test_from_disk(mock_read_woodwork_table, tmpdir, sample_df):
         "data_subdirectory": "data",
         "typing_info_filename": "woodwork_typing_info_random.json",
         "profile_name": None,
-        "validate": True
+        "validate": True,
     }
 
     _ = from_disk(str(tmpdir), **expected_params)

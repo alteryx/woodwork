@@ -2,7 +2,9 @@ from timeit import default_timer as timer
 
 from sklearn.metrics.cluster import normalized_mutual_info_score
 
-from ._make_categorical_for_mutual_info import _make_categorical_for_mutual_info
+from ._make_categorical_for_mutual_info import (
+    _make_categorical_for_mutual_info,
+)
 from ._replace_nans_for_mutual_info import _replace_nans_for_mutual_info
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe

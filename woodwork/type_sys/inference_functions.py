@@ -1,9 +1,9 @@
-import importlib.resources as pkg_resources
+from importlib import resources as pkg_resources
 from typing import Any, Callable, Iterable, Union
 
 import numpy as np
 import pandas as pd
-import pandas.api.types as pdtypes
+from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork import data
