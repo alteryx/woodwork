@@ -546,7 +546,7 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
 
     if _is_spark_series(sample_series):
         # Spark uses `string` for Categorical, so must try a different conversion
-        original_type = "string[pyarrow]"
+        original_type = r"string\[pyarrow\]"
         new_type = "Int64"
     else:
         original_type = "category"

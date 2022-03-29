@@ -63,9 +63,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def transform(self, series):
         """Converts the series dtype to match the logical type's if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
-        if new_dtype != str(series.dtype) and not (
-            "string" in new_dtype and "string" in str(series.dtype)
-        ):
+        if new_dtype != str(series.dtype) and new_dtype != series.dtype:
             # Update the underlying series
             try:
                 series = series.astype(new_dtype)
