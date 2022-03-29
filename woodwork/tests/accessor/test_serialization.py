@@ -14,6 +14,7 @@ from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
     WoodworkNotInitError,
+    WoodworkFileExistsError,
 )
 from woodwork.logical_types import Categorical, Ordinal
 from woodwork.serializers import get_serializer
@@ -892,15 +893,15 @@ def test_overwrite_error(sample_df, tmpdir, format):
     sample_df.ww.init()
 
     sample_df.ww.to_disk(folder_1, format=format)
-    with pytest.raises(FileExistsError, match="folder_1/data"):
+    with pytest.raises(WoodworkFileExistsError, match="Data subdirectory already exists"):
         sample_df.ww.to_disk(folder_1, format=format)
 
     sample_df.ww.to_disk(folder_2, data_subdirectory=None, format=format)
-    with pytest.raises(FileExistsError, match="folder_2/woodwork_typing_info.json"):
+    with pytest.raises(WoodworkFileExistsError, match="Typing info already exists"):
         sample_df.ww.to_disk(folder_2, format=format)
 
     sample_df.ww.to_disk(folder_3, data_subdirectory=None, format=format)
-    with pytest.raises(FileExistsError, match=f"folder_3/data.*{format}"):
+    with pytest.raises(WoodworkFileExistsError, match="Data file already exists"):
         sample_df.ww.to_disk(
             folder_3,
             format=format,

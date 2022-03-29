@@ -3,6 +3,7 @@ import os
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.serializers.serializer_base import Serializer
+from woodwork.exceptions import WoodworkFileExistsError
 
 
 class CSVSerializer(Serializer):
@@ -45,7 +46,9 @@ class CSVSerializer(Serializer):
             self.location = os.path.join(self.data_subdirectory, basename)
         location = os.path.join(self.write_path, self.location)
         if os.path.exists(location) or glob.glob(location):
-            raise FileExistsError(location)
+            message = f"Data file already exists at '{location}'."
+            message += "Please remove or use a different filename."
+            raise WoodworkFileExistsError(message)
         return location
 
     def write_dataframe(self):

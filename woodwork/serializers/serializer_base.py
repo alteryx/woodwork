@@ -9,6 +9,7 @@ from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url
+from woodwork.exceptions import WoodworkFileExistsError
 
 SCHEMA_VERSION = "11.3.0"
 
@@ -49,9 +50,14 @@ class Serializer:
     def save_to_local_path(self):
         """Serialize data and typing information to a local directory."""
         if self.data_subdirectory:
-            os.makedirs(
-                os.path.join(self.write_path, self.data_subdirectory), exist_ok=False
-            )
+            location = os.path.join(self.write_path, self.data_subdirectory)
+
+            if os.path.exists(location):
+                message = f"Data subdirectory already exists at '{location}'. "
+                message += "Please remove or use a different filename."
+                raise WoodworkFileExistsError(message)
+
+            os.makedirs(location, exist_ok=False)
         else:
             os.makedirs(self.write_path, exist_ok=True)
         self.write_dataframe()
@@ -88,7 +94,9 @@ class Serializer:
         file = os.path.join(self.write_path, self.typing_info_filename)
 
         if os.path.exists(file):
-            raise FileExistsError(file)
+            message = f"Typing info already exists at '{file}'. "
+            message += "Please remove or use a different filename."
+            raise WoodworkFileExistsError(message)
 
         try:
             with open(file, "w") as file:
@@ -110,7 +118,9 @@ class Serializer:
             self.location = os.path.join(self.data_subdirectory, basename)
         location = os.path.join(self.write_path, self.location)
         if os.path.exists(location):
-            raise FileExistsError(location)
+            message = f"Data file already exists at '{location}'. "
+            message += "Please remove or use a different filename."
+            raise WoodworkFileExistsError(message)
         return location
 
     def _create_archive(self):
