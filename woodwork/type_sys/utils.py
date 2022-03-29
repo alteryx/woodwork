@@ -18,7 +18,7 @@ def col_is_datetime(col, datetime_format=None):
         return True
 
     col = col.dropna()
-    if col.empty:
+    if len(col) == 0:
         return False
 
     try:
