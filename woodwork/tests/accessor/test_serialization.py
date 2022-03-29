@@ -127,7 +127,7 @@ def test_to_dictionary(sample_df):
                 "name": "phone_number",
                 "ordinal": 3,
                 "use_standard_tags": True,
-                "logical_type": {"parameters": {}, "type": "Unknown"},
+                "logical_type": {"parameters": {}, "type": "PhoneNumber"},
                 "physical_type": {"type": string_val},
                 "semantic_tags": [],
                 "description": None,
