@@ -783,20 +783,24 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     sample_df.ww.init()
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
-    with open(str(write_path.join("woodwork_typing_info.json")), "w") as f:
+    sample_text = str(test_dir.join("sample_text.json"))
+
+    with open(sample_text, "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
-    compression = None
+
     sample_df.ww.to_disk(
         path=str(write_path),
         index="1",
         sep="\t",
+        compression=None,
         encoding="utf-8",
-        compression=compression,
         typing_info_filename="woodwork_typing_info_2.json",
     )
-    assert os.path.exists(str(test_dir))
-    with open(str(write_path.join("woodwork_typing_info.json")), "r") as f:
+
+    assert os.path.exists(sample_text)
+    with open(sample_text, "r") as f:
         assert "__SAMPLE_TEXT__" in json.load(f)
+
     shutil.rmtree(str(tmpdir))
 
 
