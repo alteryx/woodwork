@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Allow attr version in setup.cfg (:pr:`1361`)
-        * Improve exception handling in `col_is_datetime` (:pr:`1365`)
+        * Improve exception handling in ``col_is_datetime`` (:pr:`1365`)
     * Documentation Changes
         * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
     * Testing Changes
