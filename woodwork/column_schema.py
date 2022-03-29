@@ -2,17 +2,8 @@ import warnings
 from inspect import isclass
 
 import woodwork as ww
-from woodwork.exceptions import (
-    DuplicateTagsWarning,
-    StandardTagsChangedWarning,
-)
-from woodwork.logical_types import (
-    Boolean,
-    BooleanNullable,
-    Datetime,
-    LatLong,
-    Unknown,
-)
+from woodwork.exceptions import DuplicateTagsWarning, StandardTagsChangedWarning
+from woodwork.logical_types import Boolean, BooleanNullable, Datetime, LatLong, Unknown
 from woodwork.utils import _convert_input_to_set
 
 
