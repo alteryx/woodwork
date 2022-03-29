@@ -594,8 +594,8 @@ class PhoneNumber(LogicalType):
         By default, this validates US/Canada-based phone numbers.
 
         Args:
-            series (Series): Series of phone number values
-            return_invalid_values (bool): Whether or not to return invalid phone numbers
+            series (Series): Series of phone number values.
+            return_invalid_values (bool): Whether or not to return invalid phone numbers.
 
         Returns:
             Series: If return_invalid_values is True, returns invalid phone numbers.

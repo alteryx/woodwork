@@ -348,14 +348,14 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
     series = sample_df_phone_numbers["phone_number"].astype(dtype)
     # Current inference function does not match lack of area code
     invalid_row = pd.Series(
-        {17: "252 9384", 18: "+1 194 129 1991", 19: "+001 236 248 8482"},
+        {17: "252 9384", 18: "+1 194 129 1991", 19: "+01 236 248 8482"},
         name="phone_number",
     ).astype(dtype)
 
     series = series.append(invalid_row).astype(dtype)
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series(
-        {17: "252 9384", 18: "+1 194 129 1991", 19: "+001 236 248 8482"},
+        {17: "252 9384", 18: "+1 194 129 1991", 19: "+01 236 248 8482"},
         name="phone_number",
     ).astype(dtype)
     assert to_pandas(actual).equals(expected)
