@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
     * Fixes
     * Changes
         * Allow attr version in setup.cfg (:pr:`1361`)
@@ -14,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`bchen1116`
 
 v0.15.0 Mar 24, 2022
 ====================
