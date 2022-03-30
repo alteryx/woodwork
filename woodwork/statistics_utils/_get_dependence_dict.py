@@ -135,7 +135,7 @@ def _get_dependence_dict(
     def _num_calc_steps(n):
         if n < 2:
             return 0
-        return factorial(n) / 2 / factorial(n - 2)
+        return factorial(n) / factorial(n - 2) / 2
 
     total_loops = 1 + n + m + _num_calc_steps(p) + _num_calc_steps(m)
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
