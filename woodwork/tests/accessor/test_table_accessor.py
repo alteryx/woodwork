@@ -2652,8 +2652,9 @@ def test_maintain_column_order_disordered_schema(sample_df):
     column_order = list(sample_df.columns)
 
     scramble_df = sample_df.ww.copy()
-    id_col = scramble_df.ww.columns.pop("id")
-    scramble_df.ww.columns["id"] = id_col
+    table_schema = scramble_df.ww.columns
+    id_col = table_schema.pop("id")
+    table_schema["id"] = id_col
     assert list(scramble_df.ww.columns.keys()) != column_order
 
     assert scramble_df.ww.schema == sample_df.ww.schema
