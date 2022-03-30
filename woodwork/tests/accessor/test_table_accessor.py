@@ -1848,7 +1848,7 @@ def test_select_return_schema(sample_df):
     # Multiple column matches
     df_schema = sample_df.ww.select(include="Unknown", return_schema=True)
     assert isinstance(df_schema, TableSchema)
-    assert len(df_schema.columns) == 2
+    assert len(df_schema.columns) == 1
     assert df_schema == sample_df.ww.select(include="Unknown").ww.schema
 
     # Single column match
@@ -1856,9 +1856,8 @@ def test_select_return_schema(sample_df):
     assert isinstance(single_schema, TableSchema)
     assert len(single_schema.columns) == 1
     assert single_schema == sample_df.ww.select(include="BooleanNullable").ww.schema
-
     # No matches
-    empty_schema = sample_df.ww.select(include="PhoneNumber", return_schema=True)
+    empty_schema = sample_df.ww.select(include="LatLong", return_schema=True)
     assert isinstance(empty_schema, TableSchema)
     assert len(empty_schema.columns) == 0
 
@@ -1869,7 +1868,7 @@ def test_select_return_schema(sample_df):
         (["Integer", "IntegerNullable"], "int"),
         (["Double"], "float"),
         (["Datetime"], "datetime"),
-        (["Unknown", "EmailAddress", "URL", "IPAddress"], "string"),
+        (["Unknown", "EmailAddress", "PhoneNumber", "URL", "IPAddress"], "string"),
         (["Categorical"], "category"),
         (["Boolean", "BooleanNullable"], "boolean"),
     ],
@@ -2571,6 +2570,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
         [
             Unknown,
             EmailAddress,
+            PhoneNumber,
             Integer,
             IntegerNullable,
             Boolean,

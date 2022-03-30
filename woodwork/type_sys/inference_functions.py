@@ -1,9 +1,9 @@
-import importlib.resources as pkg_resources
+from importlib import resources as pkg_resources
 from typing import Any, Callable, Iterable, Union
 
 import numpy as np
 import pandas as pd
-import pandas.api.types as pdtypes
+from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork import data
@@ -139,6 +139,9 @@ class InferWithRegex:
 
 email_address_func = InferWithRegex(
     lambda: ww.config.get_option("email_inference_regex")
+)
+phone_number_func = InferWithRegex(
+    lambda: ww.config.get_option("phone_inference_regex")
 )
 url_func = InferWithRegex(lambda: ww.config.get_option("url_inference_regex"))
 ip_address_func = InferWithRegex(

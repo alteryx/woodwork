@@ -129,6 +129,7 @@ Deserialization
 .. autosummary::
     :toctree: generated/
 
+    from_disk
     read_woodwork_table
 
 Logical Types
