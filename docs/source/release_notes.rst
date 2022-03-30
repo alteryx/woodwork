@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
     * Changes
         * Added ``from_disk`` as a convenience function to deserialize a WW table (:pr:`1363`)
