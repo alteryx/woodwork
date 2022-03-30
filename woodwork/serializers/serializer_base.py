@@ -10,7 +10,7 @@ from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url
 
-SCHEMA_VERSION = "11.3.0"
+SCHEMA_VERSION = "12.0.0"
 
 PYARROW_IMPORT_ERROR_MESSAGE = (
     f"The pyarrow library is required to serialize to {format}.\n"

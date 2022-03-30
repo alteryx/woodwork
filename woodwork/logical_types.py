@@ -2,7 +2,7 @@ import re
 import warnings
 
 import pandas as pd
-import pandas.api.types as pdtypes
+from pandas.api import types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.config import config
@@ -577,7 +577,7 @@ class Ordinal(LogicalType):
 
 class PhoneNumber(LogicalType):
     """Represents Logical Types that contain numeric digits and characters
-    representing a phone number
+    representing a phone number.
 
     Examples:
         .. code-block:: python
@@ -588,6 +588,19 @@ class PhoneNumber(LogicalType):
     """
 
     primary_dtype = "string"
+
+    def validate(self, series, return_invalid_values=False):
+        """Validates PhoneNumber values based on the regex in the config.
+        By default, this validates US/Canada-based phone numbers.
+
+        Args:
+            series (Series): Series of phone number values.
+            return_invalid_values (bool): Whether or not to return invalid phone numbers.
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid phone numbers.
+        """
+        return _regex_validate("phone_inference_regex", series, return_invalid_values)
 
 
 class SubRegionCode(LogicalType):
@@ -712,6 +725,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
             type_string = {
                 "url_inference_regex": "url",
                 "email_inference_regex": "email address",
+                "phone_inference_regex": "phone number",
             }[regex_key]
 
             info = f"Series {series.name} contains invalid {type_string} values. "
