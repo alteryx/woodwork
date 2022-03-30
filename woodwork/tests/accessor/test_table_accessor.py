@@ -16,6 +16,7 @@ from woodwork.accessor_utils import (
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
@@ -3060,3 +3061,30 @@ def test_validate_logical_types_call(sample_df):
             assert not validate_method.called
             assert sample_df.ww.validate_logical_types() is None
             assert validate_method.called
+
+
+@pytest.mark.parametrize(
+    "dict_info,expected_str",
+    [
+        ({"new": pd.Series([True, False, True], dtype="boolean")}, "['new']"),
+        (
+            {
+                "new": pd.Series([True, False, True], dtype="boolean"),
+                "another": pd.Series(["no", "maybe", "yes"]),
+            },
+            "['another', 'new']",
+        ),
+    ],
+)
+def test_new_column(dict_info, expected_str):
+    df = pd.DataFrame({"id": [0, 1, 2], "val": [10, 20, 30]})
+    df.ww.init()
+    for col_name, series in dict_info.items():
+        df[col_name] = series
+    message = re.escape(
+        "Column(s) "
+        + expected_str
+        + " not found in Woodwork schema. Please initialize with DataFrame.ww.init"
+    )
+    with pytest.raises(ColumnNotPresentInSchemaError, match=message):
+        repr(df.ww)
