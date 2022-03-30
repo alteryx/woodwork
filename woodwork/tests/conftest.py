@@ -50,33 +50,24 @@ def sample_df_pandas():
     return pd.DataFrame(
         {
             "id": range(4),
-            "full_name": pd.Series(
-                [
-                    "Mr. John Doe",
-                    "Doe, Mrs. Jane",
-                    "James Brown",
-                    "Ms. Paige Turner",
-                ],
-                dtype="string[pyarrow]",
-            ),
-            "email": pd.Series(
-                [
-                    "john.smith@example.com",
-                    np.nan,
-                    "team@featuretools.com",
-                    "junk@example.com",
-                ],
-                dtype="string[pyarrow]",
-            ),
-            "phone_number": pd.Series(
-                [
-                    "5555555555",
-                    "555-555-5555",
-                    "1-(555)-555-5555",
-                    "555-555-5555",
-                ],
-                dtype="string[pyarrow]",
-            ),
+            "full_name": [
+                "Mr. John Doe",
+                "Doe, Mrs. Jane",
+                "James Brown",
+                "Ms. Paige Turner",
+            ],
+            "email": [
+                "john.smith@example.com",
+                np.nan,
+                "team@featuretools.com",
+                "junk@example.com",
+            ],
+            "phone_number": [
+                "5555555555",
+                "555-555-5555",
+                "1-(555)-555-5555",
+                "555-555-5555",
+            ],
             "age": pd.Series([pd.NA, 33, 33, 57], dtype="Int64"),
             "signup_date": [pd.to_datetime("2020-09-01")] * 4,
             "is_registered": pd.Series([pd.NA, False, True, True], dtype="boolean"),
@@ -87,24 +78,18 @@ def sample_df_pandas():
             "boolean": [True, False, False, True],
             "categorical": pd.Series(["a", "b", "c", "a"], dtype="category"),
             "datetime_with_NaT": [pd.to_datetime("2020-09-01")] * 3 + [pd.NaT],
-            "url": pd.Series(
-                [
-                    "https://github.com/alteryx/woodwork",
-                    "https://twitter.com/AlteryxOSS",
-                    np.nan,
-                    "http://google.com",
-                ],
-                dtype="string[pyarrow]",
-            ),
-            "ip_address": pd.Series(
-                [
-                    "172.16.254.1",
-                    "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-                    "1762:0:0:0:0:B03:1:AF18",
-                    np.nan,
-                ],
-                dtype="string[pyarrow]",
-            ),
+            "url": [
+                "https://github.com/alteryx/woodwork",
+                "https://twitter.com/AlteryxOSS",
+                np.nan,
+                "http://google.com",
+            ],
+            "ip_address": [
+                "172.16.254.1",
+                "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+                "1762:0:0:0:0:B03:1:AF18",
+                np.nan,
+            ],
         }
     )
 
