@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
     * Changes
         * Allow attr version in setup.cfg (:pr:`1361`)
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`ParthivNaresh`
 
 v0.15.0 Mar 24, 2022
 ====================
