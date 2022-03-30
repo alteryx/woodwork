@@ -3043,7 +3043,6 @@ def test_validate_logical_types(sample_df):
         }
     )
     if _is_spark_dataframe(df):
-        # pyspark currently uses pandas 1.3.5, which doesn't support `string[pyarrow]`
         expected = expected.astype(
             {
                 "url": "string",
