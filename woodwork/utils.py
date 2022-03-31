@@ -579,3 +579,16 @@ def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = replaced_series
 
     return df
+
+
+def check_data_type_equality(first: str, second: str) -> bool:
+    """Returns whether or not the data types are considered equivalent.
+
+    Args:
+        first (string): The string of the first data type to compare.
+        second (string): The string of the second data type to compare.
+
+    Returns:
+        bool: Whether or not the two types are considered equivalent.
+    """
+    return first == second or ("string" in first and "string" in second)
