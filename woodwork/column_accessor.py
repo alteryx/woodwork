@@ -22,7 +22,7 @@ from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
 from woodwork.utils import (
     _get_column_logical_type,
-    check_data_type_equality,
+    _check_data_type_equality,
     import_or_none,
 )
 
@@ -107,7 +107,7 @@ class WoodworkColumnAccessor:
                     logical_type.validate(self._series)
                 else:
                     valid_dtype = logical_type._get_valid_dtype(type(self._series))
-                    if not check_data_type_equality(
+                    if not _check_data_type_equality(
                         valid_dtype, str(self._series.dtype)
                     ):
                         raise TypeValidationError(
@@ -286,7 +286,7 @@ class WoodworkColumnAccessor:
                     valid_dtype = self._schema.logical_type._get_valid_dtype(
                         type(result)
                     )
-                    if check_data_type_equality(str(result.dtype), valid_dtype):
+                    if _check_data_type_equality(str(result.dtype), valid_dtype):
                         result.ww.init(schema=self.schema, validate=False)
                     else:
                         invalid_schema_message = (
@@ -452,7 +452,7 @@ def _validate_schema(schema, series):
         raise TypeError("Provided schema must be a Woodwork.ColumnSchema object.")
 
     valid_dtype = schema.logical_type._get_valid_dtype(type(series))
-    if not check_data_type_equality(str(series.dtype), valid_dtype):
+    if not _check_data_type_equality(str(series.dtype), valid_dtype):
         raise ValueError(
             f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}"
         )

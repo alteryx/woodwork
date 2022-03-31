@@ -17,7 +17,7 @@ from woodwork.utils import (
     _is_valid_latlong_series,
     _reformat_to_latlong,
     camel_to_snake,
-    check_data_type_equality,
+    _check_data_type_equality,
     import_or_none,
 )
 
@@ -77,7 +77,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         specific validation, as required. When the series' dtype does not match the logical types' required dtype,
         raises a TypeValidationError."""
         valid_dtype = self._get_valid_dtype(type(series))
-        if not check_data_type_equality(valid_dtype, str(series.dtype)):
+        if not _check_data_type_equality(valid_dtype, str(series.dtype)):
             raise TypeValidationError(
                 f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
             )
