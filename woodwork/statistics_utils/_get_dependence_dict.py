@@ -1,7 +1,6 @@
 import itertools
 import warnings
 from collections import defaultdict
-from math import factorial
 from timeit import default_timer as timer
 
 import numpy as np
@@ -130,12 +129,9 @@ def _get_dependence_dict(
 
     # Setup for progress callback and make initial call
     # Assume 1 unit for preprocessing, n for handling null, m for make categorical
-    # p! / 2 / (p-2)! for pearson and m! / 2 / (m-2)! for mutual
-    # per https://docs.python.org/3/library/itertools.html#itertools.combinations
+    # combinations in a loop is n! / 2 / (n - 2)! which reduces to (n) (n - 1) / 2
     def _num_calc_steps(n):
-        if n < 2:
-            return 0
-        return factorial(n) / factorial(n - 2) / 2
+        return (n * n - n) / 2
 
     total_loops = 1 + n + m + _num_calc_steps(p) + _num_calc_steps(m)
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
