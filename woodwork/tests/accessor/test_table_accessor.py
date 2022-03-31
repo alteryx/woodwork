@@ -16,6 +16,7 @@ from woodwork.accessor_utils import (
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
@@ -2651,8 +2652,9 @@ def test_maintain_column_order_disordered_schema(sample_df):
     column_order = list(sample_df.columns)
 
     scramble_df = sample_df.ww.copy()
-    id_col = scramble_df.ww.columns.pop("id")
-    scramble_df.ww.columns["id"] = id_col
+    table_schema = scramble_df.ww.columns
+    id_col = table_schema.pop("id")
+    table_schema["id"] = id_col
     assert list(scramble_df.ww.columns.keys()) != column_order
 
     assert scramble_df.ww.schema == sample_df.ww.schema
@@ -3066,3 +3068,30 @@ def test_validate_logical_types_call(sample_df):
             assert not validate_method.called
             assert sample_df.ww.validate_logical_types() is None
             assert validate_method.called
+
+
+@pytest.mark.parametrize(
+    "dict_info,expected_str",
+    [
+        ({"new": pd.Series([True, False, True], dtype="boolean")}, "['new']"),
+        (
+            {
+                "new": pd.Series([True, False, True], dtype="boolean"),
+                "another": pd.Series(["no", "maybe", "yes"]),
+            },
+            "['another', 'new']",
+        ),
+    ],
+)
+def test_column_initialized_outside_woodwork_error(dict_info, expected_str):
+    df = pd.DataFrame({"id": [0, 1, 2], "val": [10, 20, 30]})
+    df.ww.init()
+    for col_name, series in dict_info.items():
+        df[col_name] = series
+    message = re.escape(
+        "Column(s) "
+        + expected_str
+        + " not found in Woodwork schema. Please initialize with DataFrame.ww.init"
+    )
+    with pytest.raises(ColumnNotPresentInSchemaError, match=message):
+        repr(df.ww)
