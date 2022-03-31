@@ -3077,7 +3077,7 @@ def test_validate_logical_types_call(sample_df):
         ),
     ],
 )
-def test_new_column(dict_info, expected_str):
+def test_column_initialized_outside_woodwork_error(dict_info, expected_str):
     df = pd.DataFrame({"id": [0, 1, 2], "val": [10, 20, 30]})
     df.ww.init()
     for col_name, series in dict_info.items():

@@ -207,7 +207,7 @@ def _check_table_schema(method):
             )
             raise WoodworkNotInitError(msg)
         diff_cols = set(self._dataframe.columns).difference(
-            set(self._schema.logical_types.keys())
+            set(self._schema.columns.keys())
         )
         if diff_cols:
             raise ColumnNotPresentInSchemaError(sorted(list(diff_cols)))
