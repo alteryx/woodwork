@@ -3,7 +3,7 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 
-from woodwork.exceptions import WoodworkNotInitError
+from woodwork.exceptions import ColumnNotPresentInSchemaError, WoodworkNotInitError
 from woodwork.utils import (
     _get_column_logical_type,
     _check_data_type_equality,
@@ -210,6 +210,11 @@ def _check_table_schema(method):
                 "calling DataFrame.ww.init"
             )
             raise WoodworkNotInitError(msg)
+        diff_cols = set(self._dataframe.columns).difference(
+            set(self._schema.columns.keys())
+        )
+        if diff_cols:
+            raise ColumnNotPresentInSchemaError(sorted(list(diff_cols)))
         return method(self, *args, **kwargs)
 
     return wrapper
