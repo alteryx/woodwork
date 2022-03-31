@@ -1739,8 +1739,14 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
         ("max", (["max"], ["pearson", "mutual_info"], True)),
         (["max"], (["max"], ["pearson", "mutual_info"], True)),
         ("all", (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True)),
-        (["all"], (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True)),
-        (["mutual_info", "pearson"], (["mutual_info", "pearson"], ["pearson", "mutual_info"], False)),
+        (
+            ["all"],
+            (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True),
+        ),
+        (
+            ["mutual_info", "pearson"],
+            (["mutual_info", "pearson"], ["pearson", "mutual_info"], False),
+        ),
         (["pearson", "max"], (["pearson", "max"], ["pearson", "mutual_info"], True)),
         (
             ["max", "pearson", "mutual_info"],
