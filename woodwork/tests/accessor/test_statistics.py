@@ -299,7 +299,7 @@ def test_dependence_sort(df_mi, measure):
         next = dep_df[measure].iloc[i + 1]
         if not np.isnan(current):
             if not np.isnan(next):
-                assert current >= next
+                assert abs(current) >= abs(next)
         else:
             assert np.isnan(next)
 

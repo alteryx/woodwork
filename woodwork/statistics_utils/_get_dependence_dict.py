@@ -208,21 +208,30 @@ def _get_dependence_dict(
             col_names = pearson_columns
         _calculate(callback_caller, data, col_names, results, measure)
 
-    for (col_a, col_b), result in results.items():
+    for result in results.values():
         if calc_max:
             if "pearson" in result:
                 score = pd.Series(
                     [result["mutual_info"], abs(result["pearson"])],
                     index=["mutual_info", "pearson"],
                 )
-                result["max"] = score.max()
+                # to keep sign, get measure of max from index value
+                measure_used = score.idxmax()
+                # if all measures were nan, measure_used will be nan (float)
+                if isinstance(measure_used, float):
+                    result["max"] = np.nan
+                    if extra_stats:
+                        measure_used = "none"
+                else:
+                    result["max"] = result[measure_used]
                 if extra_stats:
-                    result["measure_used"] = score.idxmax()
+                    result["measure_used"] = measure_used
             else:
                 result["max"] = result["mutual_info"]
                 if extra_stats:
                     result["measure_used"] = "mutual_info"
             if measures == ["max"]:
+                # remove results not expected in returned dictionary
                 del result["mutual_info"]
                 if "pearson" in result:
                     del result["pearson"]
@@ -234,9 +243,9 @@ def _get_dependence_dict(
     results = list(results.values())
 
     def sort_key(result):
-        key = result[measures[0]]
+        key = abs(result[measures[0]])
         if np.isnan(key):
-            key = -2
+            key = -1
         return key
 
     results.sort(key=sort_key, reverse=True)
