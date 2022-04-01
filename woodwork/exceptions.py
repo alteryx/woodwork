@@ -68,6 +68,13 @@ class ColumnNotPresentError(KeyError):
             return super().__init__(f"Column(s) '{column}' not found in DataFrame")
 
 
+class ColumnNotPresentInSchemaError(KeyError):
+    def __init__(self, column):
+        return super().__init__(
+            f"Column(s) {column} not found in Woodwork schema. Please initialize with DataFrame.ww.init"
+        )
+
+
 class WoodworkNotInitError(AttributeError):
     pass
 

@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.deserialize import read_woodwork_table
+from woodwork.deserialize import from_disk, read_woodwork_table
 from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
@@ -909,3 +909,24 @@ def test_overwrite_error(sample_df, tmpdir, format):
         )
 
     shutil.rmtree(str(tmpdir))
+
+
+@patch("woodwork.deserialize.read_woodwork_table")
+def test_from_disk(mock_read_woodwork_table, tmpdir, sample_df):
+    sample_df.ww.init(
+        name="test_data",
+        index="id",
+        time_index="signup_date",
+    )
+    sample_df.ww.to_disk(str(tmpdir), format="csv")
+
+    expected_params = {
+        "filename": "some_name",
+        "data_subdirectory": "data",
+        "typing_info_filename": "woodwork_typing_info_random.json",
+        "profile_name": None,
+        "validate": True,
+    }
+
+    _ = from_disk(str(tmpdir), **expected_params)
+    mock_read_woodwork_table.assert_called_once_with(str(tmpdir), **expected_params)

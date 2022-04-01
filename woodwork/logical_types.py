@@ -2,7 +2,7 @@ import re
 import warnings
 
 import pandas as pd
-import pandas.api.types as pdtypes
+from pandas.api import types as pdtypes
 
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.config import config
