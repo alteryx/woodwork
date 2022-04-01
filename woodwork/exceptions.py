@@ -85,3 +85,7 @@ class WoodworkNotInitWarning(UserWarning):
 
 class TypeValidationError(Exception):
     pass
+
+
+class WoodworkFileExistsError(FileExistsError):
+    pass
