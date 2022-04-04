@@ -10,6 +10,7 @@ Future Release
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
         * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
+        * Cap pandas at 1.4.1 (:pr:`1373`)
     * Changes
         * Added ``from_disk`` as a convenience function to deserialize a WW table (:pr:`1363`)
         * Allow attr version in setup.cfg (:pr:`1361`)
