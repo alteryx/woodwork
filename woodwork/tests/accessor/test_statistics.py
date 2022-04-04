@@ -953,6 +953,7 @@ def test_value_counts(categorical_df):
         {"value": 1, "count": 2},
         {"value": 3, "count": 1},
     ]
+    nan = np.nan
     # Spark converts numeric categories to strings, so we need to update the expected values for this
     # Spark will result in `None` instead of `np.nan` in categorical columns
     if _is_spark_dataframe(categorical_df):
@@ -962,15 +963,16 @@ def test_value_counts(categorical_df):
                 {k: (str(v) if k == "value" else v) for k, v in items.items()}
             )
         expected_cat1 = updated_results
+        nan = pd.NA
 
     assert val_cts["categories1"] == expected_cat1
     assert val_cts["categories2"] == [
-        {"value": np.nan, "count": 6},
+        {"value": nan, "count": 6},
         {"value": "test", "count": 3},
         {"value": "test2", "count": 1},
     ]
     assert val_cts["categories3"] == [
-        {"value": np.nan, "count": 7},
+        {"value": nan, "count": 7},
         {"value": "test", "count": 3},
     ]
 
