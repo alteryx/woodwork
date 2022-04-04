@@ -282,6 +282,10 @@ class Datetime(LogicalType):
         new_dtype = self._get_valid_dtype(type(series))
         series_dtype = str(series.dtype)
 
+        if hasattr(series.dtype, 'tz') and series.dtype.tz:
+            self.timezone = str(series.dtype.tz)
+            series = series.dt.tz_localize(None)
+
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
@@ -314,9 +318,6 @@ class Datetime(LogicalType):
                         series, format=self.datetime_format, errors="coerce"
                     )
 
-        if hasattr(series.dtype, 'tz') and series.dt.tz:
-            self.timezone = str(series.dt.tz)
-            series = series.dt.tz_localize(None)
         return super().transform(series)
 
 
