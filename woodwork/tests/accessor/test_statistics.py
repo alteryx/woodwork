@@ -953,7 +953,6 @@ def test_value_counts(categorical_df):
         {"value": 1, "count": 2},
         {"value": 3, "count": 1},
     ]
-
     # Spark converts numeric categories to strings, so we need to update the expected values for this
     # Spark will result in `None` instead of `np.nan` in categorical columns
     if _is_spark_dataframe(categorical_df):
