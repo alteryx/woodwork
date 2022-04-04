@@ -13,11 +13,11 @@ from woodwork.exceptions import (
 )
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
+    _check_data_type_equality,
     _infer_datetime_format,
     _is_valid_latlong_series,
     _reformat_to_latlong,
     camel_to_snake,
-    _check_data_type_equality,
     import_or_none,
 )
 

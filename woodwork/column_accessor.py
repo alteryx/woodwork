@@ -21,8 +21,8 @@ from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
 from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
 from woodwork.utils import (
-    _get_column_logical_type,
     _check_data_type_equality,
+    _get_column_logical_type,
     import_or_none,
 )
 

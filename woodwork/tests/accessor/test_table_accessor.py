@@ -3037,24 +3037,9 @@ def test_validate_logical_types(sample_df):
             "email_2": {4: pd.NA, 5: "bad_email"},
         }
     )
-    expected = expected.astype(
-        {
-            "url": "string[pyarrow]",
-            "email": "string[pyarrow]",
-            "email_2": "string[pyarrow]",
-        }
-    )
-    if _is_spark_dataframe(df):
-        expected = expected.astype(
-            {
-                "url": "string",
-                "email": "string",
-                "email_2": "string",
-            }
-        )
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
-    assert actual.equals(expected)
+    pd.testing.assert_frame_equal(actual, expected, check_dtype=False)
 
 
 def test_validate_logical_types_call(sample_df):
