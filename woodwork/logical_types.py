@@ -273,8 +273,9 @@ class Datetime(LogicalType):
     primary_dtype = "datetime64[ns]"
     datetime_format = None
 
-    def __init__(self, datetime_format=None):
+    def __init__(self, datetime_format=None, timezone=None):
         self.datetime_format = datetime_format
+        self.timezone = None
 
     def transform(self, series):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
@@ -312,6 +313,10 @@ class Datetime(LogicalType):
                     series = pd.to_datetime(
                         series, format=self.datetime_format, errors="coerce"
                     )
+
+        if hasattr(series.dtype, 'tz') and series.dt.tz:
+            self.timezone = str(series.dt.tz)
+            series = series.dt.tz_localize(None)
         return super().transform(series)
 
 
