@@ -727,9 +727,41 @@ def test_float_dtype_inference_on_init():
 
 def test_datetime_timezones(timezones_df):
     timezones_df.ww.init()
-    expected = [None, 'UTC', 'US/Eastern', None, None, None]
-    actual = [lt.timezone for lt in timezones_df.ww.logical_types.values()]
-    assert actual == expected
+    actual_timezones = [lt.timezone for lt in timezones_df.ww.logical_types.values()]
+    expected_timezones = [None, "UTC", "US/Eastern", None, "UTC", "UTC"]
+    assert actual_timezones == expected_timezones
+
+    expected_df = pd.DataFrame(
+        data=[
+            [
+                "2022-01-01 00:00:00",
+                "2022-01-01 00:00:00",
+                "2022-01-01 00:00:00",
+                "2022-01-01 00:00:00",
+                "2022-01-01 00:00:00",
+                "2022-01-01 05:00:00",
+            ],
+            [
+                "2022-01-02 00:00:00",
+                "2022-01-02 00:00:00",
+                "2022-01-02 00:00:00",
+                "2022-01-02 00:00:00",
+                "2022-01-02 00:00:00",
+                "2022-01-02 05:00:00",
+            ],
+            ["NaT", "NaT", "NaT", "NaT", "NaT", "NaT"],
+        ],
+        columns=[
+            "default_1",
+            "utc_1",
+            "eastern_1",
+            "default_2",
+            "utc_2",
+            "eastern_2",
+        ],
+    ).astype("datetime64[ns]")
+    actual_df = to_pandas(timezones_df)
+    pd.testing.assert_frame_equal(actual_df, expected_df)
 
 
 def test_datetime_dtype_inference_on_init():

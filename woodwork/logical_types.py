@@ -279,11 +279,10 @@ class Datetime(LogicalType):
 
     def _remove_timezone(self, series):
         """Removes timezone from series and stores in logical type."""
-        if hasattr(series.dtype, 'tz') and series.dtype.tz:
+        if hasattr(series.dtype, "tz") and series.dtype.tz:
             self.timezone = str(series.dtype.tz)
             series = series.dt.tz_localize(None)
         return series
-
 
     def transform(self, series):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
@@ -295,10 +294,11 @@ class Datetime(LogicalType):
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
             )
+            utc = self.datetime_format.endswith("%z")
             if _is_dask_series(series):
                 name = series.name
                 series = dd.to_datetime(
-                    series, format=self.datetime_format, errors="coerce"
+                    series, format=self.datetime_format, errors="coerce", utc=utc
                 )
                 series.name = name
             elif _is_spark_series(series):
@@ -310,7 +310,9 @@ class Datetime(LogicalType):
                 )
             else:
                 try:
-                    series = pd.to_datetime(series, format=self.datetime_format)
+                    series = pd.to_datetime(
+                        series, format=self.datetime_format, utc=utc
+                    )
                 except (TypeError, ValueError):
                     warnings.warn(
                         f"Some rows in series '{series.name}' are incompatible with datetime format "
@@ -323,6 +325,7 @@ class Datetime(LogicalType):
                         series, format=self.datetime_format, errors="coerce"
                     )
 
+        series = self._remove_timezone(series)
         return super().transform(series)
 
 
