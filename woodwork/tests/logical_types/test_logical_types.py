@@ -359,3 +359,12 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
         name="phone_number",
     ).astype(dtype)
     assert to_pandas(actual).equals(expected)
+
+
+def test_string_dtype_validate(sample_df):
+    logical_type = URL()
+    dtype = "string"
+    series = sample_df["url"].astype(dtype)
+    assert logical_type.validate(series) is None
+    lt = logical_type.transform(series)
+    assert lt.dtype == "string[pyarrow]"
