@@ -914,3 +914,33 @@ def outliers_df_spark(outliers_df_pandas):
 @pytest.fixture(params=["outliers_df_pandas", "outliers_df_dask", "outliers_df_spark"])
 def outliers_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def timezones_df_pandas():
+    return pd.DataFrame(
+        {
+            "default": pd.Series(['2022-01-01', '2022-01-02', 'NaT'], dtype=object),
+            "utc_1": pd.Series(['2022-01-01', '2022-01-02', 'NaT'], dtype='datetime64[ns, UTC]'),
+            "eastern_1": pd.Series(['2022-01-01', '2022-01-02', 'NaT'], dtype='datetime64[ns, US/Eastern]'),
+            "utc_2": pd.Series(['2022-01-01T00:00:00+00:00', '2022-01-02T00:00:00+00:00', 'NaT'], dtype=object),
+            "eastern_2": pd.Series(['2022-01-01 00:00:00-05:00', '2022-01-02 00:00:00-05:00', 'NaT'], dtype=object),
+        }
+    )
+    
+
+@pytest.fixture()
+def timezones_df_dask(timezones_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(timezones_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def timezones_df_spark(timezones_df_pandas):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    return ps.from_pandas(timezones_df_pandas)
+
+
+@pytest.fixture(params=["timezones_df_pandas", "timezones_df_dask", "timezones_df_spark"])
+def timezones_df(request):
+    return request.getfixturevalue(request.param)

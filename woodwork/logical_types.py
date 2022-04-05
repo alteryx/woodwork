@@ -277,14 +277,18 @@ class Datetime(LogicalType):
         self.datetime_format = datetime_format
         self.timezone = None
 
-    def transform(self, series):
-        """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
-        new_dtype = self._get_valid_dtype(type(series))
-        series_dtype = str(series.dtype)
-
+    def _remove_timezone(self, series):
         if hasattr(series.dtype, 'tz') and series.dtype.tz:
             self.timezone = str(series.dtype.tz)
             series = series.dt.tz_localize(None)
+        return series
+
+
+    def transform(self, series):
+        """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
+        new_dtype = self._get_valid_dtype(type(series))
+        series = self._remove_timezone(series)
+        series_dtype = str(series.dtype)
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
@@ -318,6 +322,7 @@ class Datetime(LogicalType):
                         series, format=self.datetime_format, errors="coerce"
                     )
 
+        # series = self._remove_timezone(series)
         return super().transform(series)
 
 

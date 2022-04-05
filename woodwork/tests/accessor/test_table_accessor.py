@@ -725,6 +725,13 @@ def test_float_dtype_inference_on_init():
     assert df["floats_nan_specified"].dtype == "float64"
 
 
+def test_datetime_timezones(timezones_df):
+    timezones_df.ww.init()
+    expected = [None, 'UTC', 'US/Eastern', None, None]
+    actual = [lt.timezone for lt in timezones_df.ww.logical_types.values()]
+    assert actual == expected
+
+
 def test_datetime_dtype_inference_on_init():
     df = pd.DataFrame(
         {
