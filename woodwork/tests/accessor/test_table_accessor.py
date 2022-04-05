@@ -727,7 +727,7 @@ def test_float_dtype_inference_on_init():
 
 def test_datetime_timezones(timezones_df):
     timezones_df.ww.init()
-    expected = [None, 'UTC', 'US/Eastern', None, None]
+    expected = [None, 'UTC', 'US/Eastern', None, None, None]
     actual = [lt.timezone for lt in timezones_df.ww.logical_types.values()]
     assert actual == expected
 

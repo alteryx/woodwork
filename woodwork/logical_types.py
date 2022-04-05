@@ -278,6 +278,7 @@ class Datetime(LogicalType):
         self.timezone = None
 
     def _remove_timezone(self, series):
+        """Removes timezone from series and stores in logical type."""
         if hasattr(series.dtype, 'tz') and series.dtype.tz:
             self.timezone = str(series.dtype.tz)
             series = series.dt.tz_localize(None)
@@ -322,7 +323,6 @@ class Datetime(LogicalType):
                         series, format=self.datetime_format, errors="coerce"
                     )
 
-        # series = self._remove_timezone(series)
         return super().transform(series)
 
 
