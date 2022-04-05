@@ -83,7 +83,7 @@ class Deserializer:
                     cat_object = pd.CategoricalDtype(pd.Series(cat_values))
                 col_type = cat_object
             elif table_type == "spark" and col_type == "object":
-                col_type = "string"
+                col_type = "string[pyarrow]"
             self.column_dtypes[col_name] = col_type
 
         if "index" in self.kwargs.keys():
