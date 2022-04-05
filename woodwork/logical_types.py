@@ -294,7 +294,7 @@ class Datetime(LogicalType):
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
             )
-            utc = self.datetime_format.endswith("%z")
+            utc = self.datetime_format and self.datetime_format.endswith("%z")
             if _is_dask_series(series):
                 name = series.name
                 series = dd.to_datetime(
