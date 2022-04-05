@@ -21,7 +21,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`, :user:`bchen1116`
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.15.0 Mar 24, 2022
 ====================
