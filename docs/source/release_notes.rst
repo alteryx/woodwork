@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
         * Added type inference for phone numbers (:pr:`1357`)
     * Fixes

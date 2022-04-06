@@ -568,7 +568,7 @@ def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
             # All replace calls below fail with boolean dtype
             # but boolean cols cannot contain strings to begin with.
             continue
-        elif str(dtype) == "string":
+        elif "string" in str(dtype):
             # Must use pd.NA as replacement value for string dtype
             replace_val = pd.NA
 
@@ -579,3 +579,16 @@ def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = replaced_series
 
     return df
+
+
+def _check_data_type_equality(first: str, second: str) -> bool:
+    """Returns whether or not the data types are considered equivalent.
+
+    Args:
+        first (string): The string of the first data type to compare.
+        second (string): The string of the second data type to compare.
+
+    Returns:
+        bool: Whether or not the two types are considered equivalent.
+    """
+    return first == second or ("string" in first and "string" in second)
