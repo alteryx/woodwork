@@ -276,7 +276,7 @@ class Datetime(LogicalType):
 
     def __init__(self, datetime_format=None, timezone=None):
         self.datetime_format = datetime_format
-        self.timezone = None
+        self.timezone = timezone
 
     def _remove_timezone(self, series):
         """Removes timezone from series and stores in logical type."""
