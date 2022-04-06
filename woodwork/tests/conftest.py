@@ -109,6 +109,34 @@ def sample_df_spark(sample_df_pandas):
 
 
 @pytest.fixture()
+def sample_df_phone_numbers():
+    return pd.DataFrame(
+        {
+            "phone_number": [
+                "2002007865",
+                "311-311-3156",
+                "422.422.0461",
+                "533 533 8122",
+                "644●644●7865",
+                "(755) 755 7109",
+                "(866) 866-0182",
+                "+1 (977) 977 1779",
+                "+1(288)-288-7772",
+                "+1 399 399 2933",
+                "+1-400-400-1109",
+                "+1.511.511.2289",
+                "+16226229222",
+                "17336330019",
+                "1.844.744.1842",
+                "1●955●855●9272",
+                "1 266 966 2283",
+                "+001 236 248 8482",
+            ]
+        }
+    )
+
+
+@pytest.fixture()
 def datetime_freqs_df_pandas():
     return pd.DataFrame(
         {
@@ -763,7 +791,7 @@ def sample_inferred_logical_types():
         "id": Integer,
         "full_name": Unknown,
         "email": EmailAddress,
-        "phone_number": Unknown,
+        "phone_number": PhoneNumber,
         "age": IntegerNullable,
         "signup_date": Datetime,
         "is_registered": BooleanNullable,

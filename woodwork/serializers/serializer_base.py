@@ -5,12 +5,13 @@ import tarfile
 import tempfile
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.exceptions import WoodworkFileExistsError
 from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url
 
-SCHEMA_VERSION = "11.3.0"
+SCHEMA_VERSION = "12.0.0"
 
 PYARROW_IMPORT_ERROR_MESSAGE = (
     f"The pyarrow library is required to serialize to {format}.\n"
@@ -49,9 +50,8 @@ class Serializer:
     def save_to_local_path(self):
         """Serialize data and typing information to a local directory."""
         if self.data_subdirectory:
-            os.makedirs(
-                os.path.join(self.write_path, self.data_subdirectory), exist_ok=True
-            )
+            location = os.path.join(self.write_path, self.data_subdirectory)
+            os.makedirs(location, exist_ok=True)
         else:
             os.makedirs(self.write_path, exist_ok=True)
         self.write_dataframe()
@@ -85,8 +85,14 @@ class Serializer:
             "params": self.kwargs,
         }
         self.typing_info["loading_info"].update(loading_info)
+        file = os.path.join(self.write_path, self.typing_info_filename)
+
+        if os.path.exists(file):
+            message = f"Typing info already exists at '{file}'. "
+            message += "Please remove or use a different filename."
+            raise WoodworkFileExistsError(message)
+
         try:
-            file = os.path.join(self.write_path, self.typing_info_filename)
             with open(file, "w") as file:
                 json.dump(self.typing_info, file)
         except TypeError:
@@ -104,7 +110,12 @@ class Serializer:
         self.location = basename
         if self.data_subdirectory:
             self.location = os.path.join(self.data_subdirectory, basename)
-        return os.path.join(self.write_path, self.location)
+        location = os.path.join(self.write_path, self.location)
+        if os.path.exists(location):
+            message = f"Data file already exists at '{location}'. "
+            message += "Please remove or use a different filename."
+            raise WoodworkFileExistsError(message)
+        return location
 
     def _create_archive(self):
         """Create a tar archive of data and typing information."""

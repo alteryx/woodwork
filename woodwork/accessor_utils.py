@@ -3,8 +3,12 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 
-from woodwork.exceptions import WoodworkNotInitError
-from woodwork.utils import _get_column_logical_type, import_or_none
+from woodwork.exceptions import ColumnNotPresentInSchemaError, WoodworkNotInitError
+from woodwork.utils import (
+    _check_data_type_equality,
+    _get_column_logical_type,
+    import_or_none,
+)
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
@@ -121,7 +125,7 @@ def get_invalid_schema_message(dataframe, schema):
     for name in dataframe.columns:
         df_dtype = dataframe[name].dtype
         valid_dtype = logical_types[name]._get_valid_dtype(type(dataframe[name]))
-        if str(df_dtype) != valid_dtype:
+        if not _check_data_type_equality(str(df_dtype), valid_dtype):
             return (
                 f"dtype mismatch for column {name} between DataFrame dtype, "
                 f"{df_dtype}, and {logical_types[name]} dtype, {valid_dtype}"
@@ -206,6 +210,11 @@ def _check_table_schema(method):
                 "calling DataFrame.ww.init"
             )
             raise WoodworkNotInitError(msg)
+        diff_cols = set(self._dataframe.columns).difference(
+            set(self._schema.columns.keys())
+        )
+        if diff_cols:
+            raise ColumnNotPresentInSchemaError(sorted(list(diff_cols)))
         return method(self, *args, **kwargs)
 
     return wrapper

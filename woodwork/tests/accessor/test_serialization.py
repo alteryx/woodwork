@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from unittest.mock import patch
 
 import boto3
@@ -7,11 +8,12 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.deserialize import read_woodwork_table
+from woodwork.deserialize import from_disk, read_woodwork_table
 from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
     UpgradeSchemaWarning,
+    WoodworkFileExistsError,
     WoodworkNotInitError,
 )
 from woodwork.logical_types import Categorical, Ordinal
@@ -125,7 +127,7 @@ def test_to_dictionary(sample_df):
                 "name": "phone_number",
                 "ordinal": 3,
                 "use_standard_tags": True,
-                "logical_type": {"parameters": {}, "type": "Unknown"},
+                "logical_type": {"parameters": {}, "type": "PhoneNumber"},
                 "physical_type": {"type": string_val},
                 "semantic_tags": [],
                 "description": None,
@@ -379,6 +381,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
     deserialized_no_tags_df = read_woodwork_table(str(tmpdir))
+    shutil.rmtree(str(tmpdir))
 
     standard_tags_df = sample_df.copy()
     standard_tags_df.ww.init(use_standard_tags=True)
@@ -387,6 +390,7 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
         str(tmpdir), format="csv", encoding="utf-8", engine="python"
     )
     deserialized_tags_df = read_woodwork_table(str(tmpdir))
+    shutil.rmtree(str(tmpdir))
 
     assert no_standard_tags_df.ww.schema != standard_tags_df.ww.schema
 
@@ -547,6 +551,8 @@ def test_to_disk_custom_data_subdirectory(
             sample_df.ww.to_disk(
                 str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
             )
+        shutil.rmtree(str(tmpdir))
+
     else:
         sample_df.ww.to_disk(
             str(tmpdir), format=file_format, data_subdirectory=data_subdirectory
@@ -561,6 +567,7 @@ def test_to_disk_custom_data_subdirectory(
             to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
         )
         assert sample_df.ww.schema == deserialized_df.ww.schema
+        shutil.rmtree(str(tmpdir))
 
 
 @pytest.mark.parametrize(
@@ -618,6 +625,7 @@ def test_categorical_dtype_serialization(serialize_df, tmpdir):
             to_pandas(df, index=df.ww.index, sort_index=True),
         )
         assert deserialized_df.ww.schema == df.ww.schema
+        shutil.rmtree(str(tmpdir))
 
 
 @pytest.fixture
@@ -775,19 +783,25 @@ def test_serialize_subdirs_not_removed(sample_df, tmpdir):
     sample_df.ww.init()
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
-    with open(str(write_path.join("woodwork_typing_info.json")), "w") as f:
+    sample_text = str(test_dir.join("sample_text.json"))
+
+    with open(sample_text, "w") as f:
         json.dump("__SAMPLE_TEXT__", f)
-    compression = None
+
     sample_df.ww.to_disk(
         path=str(write_path),
         index="1",
         sep="\t",
+        compression=None,
         encoding="utf-8",
-        compression=compression,
+        typing_info_filename="woodwork_typing_info_2.json",
     )
-    assert os.path.exists(str(test_dir))
-    with open(str(write_path.join("woodwork_typing_info.json")), "r") as f:
-        assert "__SAMPLE_TEXT__" not in json.load(f)
+
+    assert os.path.exists(sample_text)
+    with open(sample_text, "r") as f:
+        assert "__SAMPLE_TEXT__" in json.load(f)
+
+    shutil.rmtree(str(tmpdir))
 
 
 @pytest.mark.parametrize("profile_name", [None, False])
@@ -868,3 +882,51 @@ def test_earlier_schema_version():
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)
     test_version(major, minor, patch - 1, raises=False)
+
+
+@pytest.mark.parametrize("format", ["csv", "parquet", "pickle"])
+def test_overwrite_error(sample_df, tmpdir, format):
+    if format == "pickle" and (
+        _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df)
+    ):
+        pytest.skip("Cannot pickle dask and spark dataframes")
+
+    folder_1 = str(tmpdir.join("folder_1"))
+    folder_2 = str(tmpdir.join("folder_2"))
+    sample_df.ww.init()
+
+    sample_df.ww.to_disk(folder_1, data_subdirectory=None, format=format)
+    with pytest.raises(WoodworkFileExistsError, match="Typing info already exists"):
+        sample_df.ww.to_disk(folder_1, format=format)
+
+    sample_df.ww.to_disk(folder_2, data_subdirectory=None, format=format)
+    with pytest.raises(WoodworkFileExistsError, match="Data file already exists"):
+        sample_df.ww.to_disk(
+            folder_2,
+            format=format,
+            typing_info_filename="new_typing_info",
+            data_subdirectory=None,
+        )
+
+    shutil.rmtree(str(tmpdir))
+
+
+@patch("woodwork.deserialize.read_woodwork_table")
+def test_from_disk(mock_read_woodwork_table, tmpdir, sample_df):
+    sample_df.ww.init(
+        name="test_data",
+        index="id",
+        time_index="signup_date",
+    )
+    sample_df.ww.to_disk(str(tmpdir), format="csv")
+
+    expected_params = {
+        "filename": "some_name",
+        "data_subdirectory": "data",
+        "typing_info_filename": "woodwork_typing_info_random.json",
+        "profile_name": None,
+        "validate": True,
+    }
+
+    _ = from_disk(str(tmpdir), **expected_params)
+    mock_read_woodwork_table.assert_called_once_with(str(tmpdir), **expected_params)

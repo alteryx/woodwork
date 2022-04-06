@@ -7,14 +7,23 @@ Future Release
 ==============
     * Enhancements
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
+        * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
+        * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
+        * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
+        * Cap pandas at 1.4.1 (:pr:`1373`)
     * Changes
         * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
+        * Added ``from_disk`` as a convenience function to deserialize a WW table (:pr:`1363`)
+        * Allow attr version in setup.cfg (:pr:`1361`)
+        * Raise error if files already exist during serialization (:pr:`1356`)
     * Documentation Changes
+        * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
+        * Add M1 installation instructions to docs and contributing guide (:pr:`1367`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`, :user:`bchen1116`
 
 v0.15.0 Mar 24, 2022
 ====================

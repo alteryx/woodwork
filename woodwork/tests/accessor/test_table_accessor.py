@@ -16,6 +16,7 @@ from woodwork.accessor_utils import (
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
+    ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypeConversionError,
@@ -1848,7 +1849,7 @@ def test_select_return_schema(sample_df):
     # Multiple column matches
     df_schema = sample_df.ww.select(include="Unknown", return_schema=True)
     assert isinstance(df_schema, TableSchema)
-    assert len(df_schema.columns) == 2
+    assert len(df_schema.columns) == 1
     assert df_schema == sample_df.ww.select(include="Unknown").ww.schema
 
     # Single column match
@@ -1856,9 +1857,8 @@ def test_select_return_schema(sample_df):
     assert isinstance(single_schema, TableSchema)
     assert len(single_schema.columns) == 1
     assert single_schema == sample_df.ww.select(include="BooleanNullable").ww.schema
-
     # No matches
-    empty_schema = sample_df.ww.select(include="PhoneNumber", return_schema=True)
+    empty_schema = sample_df.ww.select(include="LatLong", return_schema=True)
     assert isinstance(empty_schema, TableSchema)
     assert len(empty_schema.columns) == 0
 
@@ -1869,7 +1869,7 @@ def test_select_return_schema(sample_df):
         (["Integer", "IntegerNullable"], "int"),
         (["Double"], "float"),
         (["Datetime"], "datetime"),
-        (["Unknown", "EmailAddress", "URL", "IPAddress"], "string"),
+        (["Unknown", "EmailAddress", "PhoneNumber", "URL", "IPAddress"], "string"),
         (["Categorical"], "category"),
         (["Boolean", "BooleanNullable"], "boolean"),
     ],
@@ -2571,6 +2571,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
         [
             Unknown,
             EmailAddress,
+            PhoneNumber,
             Integer,
             IntegerNullable,
             Boolean,
@@ -2651,8 +2652,9 @@ def test_maintain_column_order_disordered_schema(sample_df):
     column_order = list(sample_df.columns)
 
     scramble_df = sample_df.ww.copy()
-    id_col = scramble_df.ww.columns.pop("id")
-    scramble_df.ww.columns["id"] = id_col
+    table_schema = scramble_df.ww.columns
+    id_col = table_schema.pop("id")
+    table_schema["id"] = id_col
     assert list(scramble_df.ww.columns.keys()) != column_order
 
     assert scramble_df.ww.schema == sample_df.ww.schema
@@ -2680,7 +2682,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
         for name, ltype in sample_inferred_logical_types.items()
     }
     if _is_spark_dataframe(sample_df):
-        correct_physical_types["categorical"] = "string"
+        correct_physical_types["categorical"] = "string[pyarrow]"
     correct_physical_types = pd.Series(
         list(correct_physical_types.values()), index=list(correct_physical_types.keys())
     )
@@ -3035,18 +3037,9 @@ def test_validate_logical_types(sample_df):
             "email_2": {4: pd.NA, 5: "bad_email"},
         }
     )
-
-    expected = expected.astype(
-        {
-            "url": "string",
-            "email": "string",
-            "email_2": "string",
-        }
-    )
-
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
-    assert actual.equals(expected)
+    pd.testing.assert_frame_equal(actual, expected, check_dtype=False)
 
 
 def test_validate_logical_types_call(sample_df):
@@ -3060,3 +3053,30 @@ def test_validate_logical_types_call(sample_df):
             assert not validate_method.called
             assert sample_df.ww.validate_logical_types() is None
             assert validate_method.called
+
+
+@pytest.mark.parametrize(
+    "dict_info,expected_str",
+    [
+        ({"new": pd.Series([True, False, True], dtype="boolean")}, "['new']"),
+        (
+            {
+                "new": pd.Series([True, False, True], dtype="boolean"),
+                "another": pd.Series(["no", "maybe", "yes"]),
+            },
+            "['another', 'new']",
+        ),
+    ],
+)
+def test_column_initialized_outside_woodwork_error(dict_info, expected_str):
+    df = pd.DataFrame({"id": [0, 1, 2], "val": [10, 20, 30]})
+    df.ww.init()
+    for col_name, series in dict_info.items():
+        df[col_name] = series
+    message = re.escape(
+        "Column(s) "
+        + expected_str
+        + " not found in Woodwork schema. Please initialize with DataFrame.ww.init"
+    )
+    with pytest.raises(ColumnNotPresentInSchemaError, match=message):
+        repr(df.ww)

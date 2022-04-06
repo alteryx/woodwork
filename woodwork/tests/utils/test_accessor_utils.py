@@ -225,7 +225,7 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
         )  # wont work for spark
         assert (
             get_invalid_schema_message(incorrect_str_dtype_df, schema)
-            == "dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string"
+            == "dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string[pyarrow]"
         )
         assert (
             get_invalid_schema_message(incorrect_categorical_dtype_df, schema)
