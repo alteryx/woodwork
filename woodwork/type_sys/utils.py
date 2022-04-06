@@ -33,7 +33,7 @@ def col_is_datetime(col, datetime_format=None):
         )
         return True
 
-    except (ParserError, ValueError):
+    except (ParserError, ValueError, OverflowError, TypeError):
         return False
 
 
