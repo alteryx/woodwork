@@ -210,31 +210,32 @@ def _get_dependence_dict(
 
     for result in results.values():
         if calc_max:
+            # if pearson was not measured, mutual info must be max
             if "pearson" in result:
                 score = pd.Series(
                     [result["mutual_info"], abs(result["pearson"])],
                     index=["mutual_info", "pearson"],
                 )
-                # to keep sign, get measure of max from index value
+                # to keep sign, get name of max score and use original value
                 measure_used = score.idxmax()
-                # if all measures were nan, measure_used will be nan (float)
-                if isinstance(measure_used, float):
-                    result["max"] = np.nan
-                    if extra_stats:
-                        measure_used = "none"
-                else:
-                    result["max"] = result[measure_used]
-                if extra_stats:
-                    result["measure_used"] = measure_used
             else:
-                result["max"] = result["mutual_info"]
-                if extra_stats:
-                    result["measure_used"] = "mutual_info"
+                measure_used = "mutual_info"
+
+            # if all measures were nan, measure_used will be nan (float)
+            result["max"] = result.get(measure_used, np.nan)
+
+            if extra_stats:
+                if result["shared_rows"] < min_shared:
+                    result["measure_used"] = "too sparse"
+                else:
+                    result["measure_used"] = measure_used
+
             if measures == ["max"]:
                 # remove results not expected in returned dictionary
                 del result["mutual_info"]
                 if "pearson" in result:
                     del result["pearson"]
+
         if "num_union" in result:
             del result["num_union"]
         if not extra_stats:

@@ -277,6 +277,12 @@ def test_dependence_on_index(sample_df, measure):
     assert "id" in dep_df["column_1"].values or "id" in dep_df["column_2"].values
 
 
+def test_max_is_nan_extra_stats(sample_df):
+    sample_df.ww.init(index="id")
+    dep_df = sample_df.ww.dependence(measures="max", min_shared=3, extra_stats=True)
+    assert pd.isnull(dep_df["max"][dep_df.index[-1]])
+
+
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_returns_empty_df_properly(sample_df, measure):
     schema_df = sample_df[["id", "age"]]
