@@ -1,4 +1,5 @@
 import pandas as pd
+from dateutil.parser import ParserError
 
 import woodwork as ww
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
@@ -21,16 +22,18 @@ def col_is_datetime(col, datetime_format=None):
     if len(col) == 0:
         return False
 
+    col = col.astype(str)
+
     try:
         pd.to_datetime(
-            col.astype(str),
+            col,
             errors="raise",
             format=datetime_format,
             infer_datetime_format=True,
         )
         return True
 
-    except Exception:
+    except (ParserError, ValueError):
         return False
 
 
