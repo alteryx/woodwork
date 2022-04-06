@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
+        * Stores timezones in Datetime logical type (:pr:`1376`)
         * Added type inference for phone numbers (:pr:`1357`)
     * Fixes
         * Cap pandas at 1.4.1 (:pr:`1373`)
