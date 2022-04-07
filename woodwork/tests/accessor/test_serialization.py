@@ -624,6 +624,29 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
         assert latlong_df.ww.schema == deserialized_df.ww.schema
 
 
+def test_to_disk_parquet_no_file_extension(sample_df, tmpdir):
+    sample_df.ww.init(index="id")
+    sample_df.ww.to_disk(str(tmpdir), filename="parquet_data", format="parquet")
+
+    error_msg = "Could not determine format. Please specify filename and/or format."
+    # Without specifying format, WW doens't know what type of file this is
+    with pytest.raises(ValueError, match=error_msg):
+        deserialized_df = read_woodwork_table(
+            str(tmpdir),
+            filename="parquet_data",
+        )
+
+    deserialized_df = read_woodwork_table(
+        str(tmpdir),
+        filename="parquet_data",
+        format="parquet",
+    )
+    pd.testing.assert_frame_equal(
+        to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+        to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+    )
+
+
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
     ltypes = {
         "cat_int": Categorical,
