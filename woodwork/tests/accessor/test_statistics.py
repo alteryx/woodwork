@@ -10,7 +10,7 @@ import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
 from woodwork.config import config
-from woodwork.exceptions import ParametersIgnoredWarning
+from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
     URL,
     Age,
@@ -407,6 +407,22 @@ def test_dependence_min_shared(time_index_df, measure):
                 else:
                     assert not (dep_df[measurement].isna()).all()
                     assert not (dep_df[measurement].isna()).any()
+
+
+@pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
+def test_dependence_min_shared_warns(time_index_df, measure):
+    time_index_df.ww.init(
+        logical_types={"strs": "categorical", "letters": "Categorical"}
+    )
+
+    msg = (
+        "One or more pairs of columns did not share enough rows of non-null "
+        "data to measure the relationship.  The measurement for these columns "
+        "will be NaN.  Use 'extra_stats=True' to get the shared rows for each "
+        "pair of columns."
+    )
+    with pytest.warns(SparseDataWarning, match=msg):
+        time_index_df.ww.dependence(measures=measure, min_shared=25)
 
 
 @pytest.mark.parametrize(

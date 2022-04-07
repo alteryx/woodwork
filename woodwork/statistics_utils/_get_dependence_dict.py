@@ -168,11 +168,11 @@ def _get_dependence_dict(
 
             too_sparse = num_intersect < min_shared
             if too_sparse:
-                # TODO: reword since Pearson can return NaN naturally
                 warnings.warn(
-                    "One or more values in the returned matrix are NaN. A "
-                    "NaN value indicates there were not enough rows where "
-                    "both columns had non-null data",
+                    "One or more pairs of columns did not share enough rows of "
+                    "non-null data to measure the relationship.  The measurement"
+                    " for these columns will be NaN.  Use 'extra_stats=True' to "
+                    "get the shared rows for each pair of columns.",
                     SparseDataWarning,
                 )
                 result[measure] = np.nan
