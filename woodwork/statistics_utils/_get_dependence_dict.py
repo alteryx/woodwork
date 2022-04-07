@@ -113,19 +113,16 @@ def _get_dependence_dict(
 
     # p: number of pearson columns
     # m: number of mutual columns
-    # n: max column size
+    # n: max number of columns
+    p = 0
+    m = 0
     if "pearson" in calc_order:
         pearson_columns = [col for col in pearson_columns if col in not_null_col_set]
         p = len(pearson_columns)
-    else:
-        p = 0
     if "mutual_info" in calc_order:
         mutual_columns = [col for col in mutual_columns if col in not_null_col_set]
         m = len(mutual_columns)
-        n = m
-    else:
-        m = 0
-        n = p
+    n = max(m, p)
 
     # Setup for progress callback and make initial call
     # Assume 1 unit for preprocessing, n for handling null, m for make categorical
@@ -140,12 +137,13 @@ def _get_dependence_dict(
     # split dataframe into dict of series so we can drop nulls on a per-column basis
     data = {col: data[col].dropna() for col in data}
 
-    # cast nullable type to non-nullable
+    # cast nullable type to non-nullable (needed for both pearson and mutual)
     for col_name in data:
         column = dataframe.ww.columns[col_name]
         if isinstance(column.logical_type, IntegerNullable):
             cur_dtype = data[col_name].dtype
-            data[col_name] = data[col_name].astype(cur_dtype.name.lower())
+            new_dtype = cur_dtype.name.lower()  # e.g. Int64 -> int64
+            data[col_name] = data[col_name].astype(new_dtype)
         if column.is_datetime:
             data[col_name] = data[col_name].view("int64")
     callback_caller.update(n)
