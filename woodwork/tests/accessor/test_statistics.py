@@ -90,23 +90,18 @@ def test_accessor_bin_numeric_cols_into_categories():
         }
     )
     df.ww.init()
-    formatted_num_bins_df = _bin_numeric_cols_into_categories(
-        df.ww.schema, df.copy(), num_bins=4
-    )
+    data = {column: df[column] for column in df.copy()}
+    _bin_numeric_cols_into_categories(df.ww.schema, data, num_bins=4)
 
-    assert isinstance(formatted_num_bins_df, pd.DataFrame)
+    assert isinstance(data, dict)
 
-    assert formatted_num_bins_df["ints1"].equals(pd.Series([0, 1, 3, 1], dtype="int8"))
-    assert formatted_num_bins_df["ints2"].equals(pd.Series([0, 1, 0, 1], dtype="int8"))
-    assert formatted_num_bins_df["ints3"].equals(pd.Series([0, 1, 3, 1], dtype="int8"))
-    assert formatted_num_bins_df["bools"].equals(pd.Series([1, 0, 1, 0], dtype="int8"))
-    assert formatted_num_bins_df["booleans"].equals(
-        pd.Series([1, 0, 1, 0], dtype="int8")
-    )
-    assert formatted_num_bins_df["categories"].equals(
-        pd.Series([0, 1, 1, 0], dtype="int8")
-    )
-    assert formatted_num_bins_df["dates"].equals(pd.Series([2, 1, 3, 0], dtype="int8"))
+    assert data["ints1"].equals(pd.Series([0, 1, 3, 1], dtype="int8"))
+    assert data["ints2"].equals(pd.Series([0, 1, 0, 1], dtype="int8"))
+    assert data["ints3"].equals(pd.Series([0, 1, 3, 1], dtype="int8"))
+    assert data["bools"].equals(pd.Series([1, 0, 1, 0], dtype="int8"))
+    assert data["booleans"].equals(pd.Series([1, 0, 1, 0], dtype="int8"))
+    assert data["categories"].equals(pd.Series([0, 1, 1, 0], dtype="int8"))
+    assert data["dates"].equals(pd.Series([2, 1, 3, 0], dtype="int8"))
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])

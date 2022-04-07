@@ -199,9 +199,7 @@ def _get_dependence_dict(
 
     for measure in calc_order:
         if measure == "mutual_info":
-            data = _bin_numeric_cols_into_categories(
-                dataframe.ww.schema, data, num_bins
-            )
+            _bin_numeric_cols_into_categories(dataframe.ww.schema, data, num_bins)
             callback_caller.update(n)
             col_names = mutual_columns
         elif measure == "pearson":

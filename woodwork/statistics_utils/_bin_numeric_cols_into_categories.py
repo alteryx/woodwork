@@ -7,14 +7,11 @@ def _bin_numeric_cols_into_categories(schema, data, num_bins):
 
     Args:
         schema (woodwork.TableSchema): Woodwork typing info for the data
-        data (pd.DataFrame): dataframe to use for calculating dependence
+        data (dict[pd.Series]): dictionary of Pandas series to use for
+            calculating dependence
         num_bins (int): Determines number of bins to use for converting
             numeric features into categorical.
-
-    Returns:
-        pd.DataFrame: data with values transformed and binned into numeric categorical values
     """
-
     for col_name in data.keys():
         column = schema.columns[col_name]
         if column.is_numeric or column.is_datetime:
@@ -25,4 +22,3 @@ def _bin_numeric_cols_into_categories(schema, data, num_bins):
         if str(new_col.dtype) != "category":
             new_col = new_col.astype("category")
         data[col_name] = new_col.cat.codes
-    return data
