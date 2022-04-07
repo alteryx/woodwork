@@ -647,6 +647,21 @@ def test_to_disk_parquet_no_file_extension(sample_df, tmpdir):
     )
 
 
+def test_to_disk_parquet_typing_info_file_is_none(sample_df, tmpdir):
+    sample_df.ww.init(index="id")
+    sample_df.ww.to_disk(str(tmpdir), format="parquet")
+
+    deserialized_df = read_woodwork_table(
+        str(tmpdir),
+        filename="data.parquet",
+        typing_info_filename=None,
+    )
+    pd.testing.assert_frame_equal(
+        to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
+        to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+    )
+
+
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
     ltypes = {
         "cat_int": Categorical,
