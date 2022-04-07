@@ -323,7 +323,10 @@ class Datetime(LogicalType):
                         TypeConversionWarning,
                     )
                     series = pd.to_datetime(
-                        series, format=self.datetime_format, errors="coerce"
+                        series,
+                        format=self.datetime_format,
+                        errors="coerce",
+                        utc=utc,
                     )
 
         series = self._remove_timezone(series)
