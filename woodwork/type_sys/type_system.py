@@ -12,6 +12,7 @@ from .inference_functions import (
     ip_address_func,
     natural_language_func,
     phone_number_func,
+    postal_code_func,
     timedelta_func,
     url_func,
 )
@@ -69,7 +70,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     NaturalLanguage: natural_language_func,
     Ordinal: None,
     PhoneNumber: phone_number_func,
-    PostalCode: None,
+    PostalCode: postal_code_func,
     SubRegionCode: None,
     Timedelta: timedelta_func,
     URL: url_func,

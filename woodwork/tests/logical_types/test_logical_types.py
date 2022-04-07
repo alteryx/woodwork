@@ -17,6 +17,7 @@ from woodwork.logical_types import (
     LatLong,
     Ordinal,
     PhoneNumber,
+    PostalCode,
 )
 from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -368,3 +369,27 @@ def test_string_dtype_validate(sample_df):
     assert logical_type.validate(series) is None
     lt = logical_type.transform(series)
     assert lt.dtype == "string[pyarrow]"
+
+
+def test_postal_code_validate_complex(sample_df_postal_code):
+    pc = PostalCode()
+    series = sample_df_postal_code["postal_code"]
+    invalid_types = pd.Series(
+        [
+            "1234",
+            "123455",
+            "123456789",
+            "1234-65433",
+            "K1A0B1",  # Canadian formatting
+            "K1A 0B1",
+            "K1A-0B1",
+            "DT1 1AE",  # UK formatting
+            "DT1-1AE",
+            "DT11AE",
+        ]
+    )
+    actual = pc.validate(series, return_invalid_values=True)
+    assert not len(actual)
+    series = series.append(invalid_types)
+    actual = pc.validate(series, return_invalid_values=True)
+    pd.testing.assert_series_equal(actual, invalid_types)

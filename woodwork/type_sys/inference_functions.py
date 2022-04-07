@@ -143,6 +143,9 @@ email_address_func = InferWithRegex(
 phone_number_func = InferWithRegex(
     lambda: ww.config.get_option("phone_inference_regex")
 )
+postal_code_func = InferWithRegex(
+    lambda: ww.config.get_option("postal_code_inference_regex")
+)
 url_func = InferWithRegex(lambda: ww.config.get_option("url_inference_regex"))
 ip_address_func = InferWithRegex(
     lambda: (

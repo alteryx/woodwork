@@ -9,6 +9,7 @@ Future Release
         * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
         * Added type inference for phone numbers (:pr:`1357`)
+        * Added type inference for zip code (:pr:``)
     * Fixes
         * Cap pandas at 1.4.1 (:pr:`1373`)
     * Changes
