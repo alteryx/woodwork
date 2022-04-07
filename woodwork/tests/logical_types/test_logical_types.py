@@ -371,6 +371,25 @@ def test_string_dtype_validate(sample_df):
     assert lt.dtype == "string[pyarrow]"
 
 
+def test_postal_code_validate(sample_df_postal_code):
+    pc = PostalCode()
+    series = sample_df_postal_code["postal_code"]
+    invalid_types = pd.Series(
+        [
+            "hello",
+            "HELLO",
+            "51342-HEL0",
+        ]
+    )
+    series = series.append(invalid_types)
+    series.name = "postal_code"
+    match = "Series postal_code contains invalid postal code values. "
+    match += "The postal_code_inference_regex can be changed in the config if needed."
+
+    with pytest.raises(TypeValidationError, match=match):
+        pc.validate(series)
+
+
 def test_postal_code_validate_complex(sample_df_postal_code):
     pc = PostalCode()
     series = sample_df_postal_code["postal_code"]
