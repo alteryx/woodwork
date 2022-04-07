@@ -456,7 +456,6 @@ def test_col_is_datetime():
         pd.Series(["a", "b", "c"]),
         pd.Series([pd.NA, "b", "c"]),
         pd.Series([pd.NA, pd.NA, pd.NA]),
-        pd.Series(["12/01/2022", pd.NA, pd.NA]),
     ]
 
     expected_values = [
@@ -471,7 +470,6 @@ def test_col_is_datetime():
         False,
         False,
         False,
-        True,
     ]
 
     for input, expected in list(zip(inputs, expected_values)):
