@@ -1,9 +1,13 @@
 import json
 import os
+import tarfile
+import tempfile
+from pathlib import Path
 
 import pyarrow as pa
 
 from woodwork.deserializers.deserializer_base import Deserializer, _check_schema_version
+from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.utils import _is_s3, _is_url
 
 
@@ -35,3 +39,27 @@ class ParquetDeserializer(Deserializer):
         self.configure_deserializer()
         lib = self._get_library()
         return lib.read_parquet(self.read_path, engine=self.kwargs["engine"])
+
+    def read_from_s3(self, profile_name):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tar_filename = Path(self.path).name
+            tar_filepath = os.path.join(tmpdir, tar_filename)
+            transport_params = None
+
+            if _is_s3(self.path):
+                transport_params = get_transport_params(profile_name)
+
+            use_smartopen(tar_filepath, self.path, transport_params)
+            with tarfile.open(str(tar_filepath)) as tar:
+                tar.extractall(path=tmpdir)
+
+            if self.data_subdirectory is not None:
+                self.read_path = os.path.join(
+                    tmpdir, self.data_subdirectory, self.filename
+                )
+            else:
+                self.read_path = os.path.join(
+                    tmpdir, self.data_subdirectory, self.filename
+                )
+
+            return self.read_from_local_path()

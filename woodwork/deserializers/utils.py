@@ -26,22 +26,36 @@ FORMAT_TO_DESERIALIZER = {
 
 
 def get_deserializer(
-    path, filename, data_subdirectory, typing_info_filename, profile_name
+    path,
+    filename,
+    data_subdirectory,
+    typing_info_filename,
+    profile_name,
+    format,
 ):
     """Determine the proper Deserializer class to use based on the specified parameters.
     Initializes and returns the proper Deserializer object."""
-    if typing_info_filename is not None:
-        # Get format from typing info file
-        typing_info = read_table_typing_information(
-            path, typing_info_filename, profile_name
-        )
-        format = typing_info["loading_info"]["type"]
+    if typing_info_filename:
+        try:
+            typing_info = read_table_typing_information(
+                path, typing_info_filename, profile_name
+            )
+        except FileNotFoundError:
+            typing_info = None
     else:
-        # Get format from filename suffix
-        format = Path(filename).suffix[1:]
         typing_info = None
 
+    if typing_info:
+        format = typing_info["loading_info"]["type"]
+    elif format is None and filename is not None:
+        # Try to get format from filename suffix
+        format = Path(filename).suffix[1:]
+
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
+    if deserializer_cls is None:
+        raise ValueError(
+            "Could not determine format. Please specify filename and/or format."
+        )
 
     return deserializer_cls(path, filename, data_subdirectory, typing_info)
 
