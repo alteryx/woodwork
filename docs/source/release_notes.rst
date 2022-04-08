@@ -10,6 +10,7 @@ Future Release
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
         * Stores timezones in Datetime logical type (:pr:`1376`)
         * Added type inference for phone numbers (:pr:`1357`)
+        * Added type inference for zip code (:pr:`1378`)
     * Fixes
         * Cap pandas at 1.4.1 (:pr:`1373`)
     * Changes

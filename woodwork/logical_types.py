@@ -688,12 +688,26 @@ class PostalCode(LogicalType):
 
             ["90210"
              "60018-0123",
-             "SW1A"]
+             "10010"]
     """
 
     primary_dtype = "category"
     backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
+
+    def validate(self, series, return_invalid_values=False):
+        """Validates PostalCode values based on the regex in the config. Currently only validates US Postal codes.
+
+        Args:
+            series (Series): Series of PostalCode values.
+            return_invalid_values (bool): Whether or not to return invalid PostalCodes.
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid PostalCodes.
+        """
+        return _regex_validate(
+            "postal_code_inference_regex", series, return_invalid_values
+        )
 
 
 _NULLABLE_PHYSICAL_TYPES = {
@@ -744,6 +758,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
                 "url_inference_regex": "url",
                 "email_inference_regex": "email address",
                 "phone_inference_regex": "phone number",
+                "postal_code_inference_regex": "postal code",
             }[regex_key]
 
             info = f"Series {series.name} contains invalid {type_string} values. "

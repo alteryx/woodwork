@@ -18,6 +18,7 @@ CONFIG_DEFAULTS = {
 """.splitlines()
     ),
     "phone_inference_regex": r"(?:\+?(0{2})?1[-.\s●]?)?\(?([2-9][0-9]{2})\)?[-\.\s●]?([2-9][0-9]{2})[-\.\s●]?([0-9]{4})$",
+    "postal_code_inference_regex": r"^[0-9]{5}(?:-[0-9]{4})?$",
     "nan_values": ["", "None", "nan", "NaN", "<NA>", "null"],
     "frequence_inference_window_length": 15,
     "frequence_inference_threshold": 0.9,
