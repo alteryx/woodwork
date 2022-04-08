@@ -137,6 +137,20 @@ def sample_df_phone_numbers():
 
 
 @pytest.fixture()
+def sample_df_postal_code():
+    return pd.DataFrame(
+        {
+            "postal_code": [
+                "20020",
+                "07865",
+                "12345-6789",
+                "11111-1111",
+            ]
+        }
+    )
+
+
+@pytest.fixture()
 def datetime_freqs_df_pandas():
     return pd.DataFrame(
         {
