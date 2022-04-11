@@ -216,11 +216,13 @@ def test_get_ltype_params():
     assert params_class == {}
 
     params_null = _get_specified_ltype_params(Datetime())
-    assert params_null == {"datetime_format": None}
+    assert params_null == {"datetime_format": None, "timezone": None}
 
     ymd = "%Y-%m-%d"
-    params_value = _get_specified_ltype_params(Datetime(datetime_format=ymd))
-    assert params_value == {"datetime_format": ymd}
+    params_value = _get_specified_ltype_params(
+        Datetime(datetime_format=ymd, timezone="UTC")
+    )
+    assert params_value == {"datetime_format": ymd, "timezone": "UTC"}
 
 
 def test_import_or_raise():

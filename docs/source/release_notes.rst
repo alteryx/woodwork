@@ -9,6 +9,7 @@ Future Release
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
         * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
+        * Stores timezones in Datetime logical type (:pr:`1376`)
         * Added type inference for phone numbers (:pr:`1357`)
         * Added type inference for zip code (:pr:`1378`)
     * Fixes
