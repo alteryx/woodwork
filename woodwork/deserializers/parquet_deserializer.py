@@ -57,9 +57,7 @@ class ParquetDeserializer(Deserializer):
             with tarfile.open(str(tar_filepath)) as tar:
                 tar.extractall(path=tmpdir)
 
-            self.read_path = os.path.join(
-                tmpdir, self.data_subdirectory, self.filename
-            )
+            self.read_path = os.path.join(tmpdir, self.data_subdirectory, self.filename)
 
             return self.read_from_local_path()
 
