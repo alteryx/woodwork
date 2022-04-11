@@ -57,14 +57,9 @@ class ParquetDeserializer(Deserializer):
             with tarfile.open(str(tar_filepath)) as tar:
                 tar.extractall(path=tmpdir)
 
-            if self.data_subdirectory is not None:
-                self.read_path = os.path.join(
-                    tmpdir, self.data_subdirectory, self.filename
-                )
-            else:
-                self.read_path = os.path.join(
-                    tmpdir, self.data_subdirectory, self.filename
-                )
+            self.read_path = os.path.join(
+                tmpdir, self.data_subdirectory, self.filename
+            )
 
             return self.read_from_local_path()
 
