@@ -9,13 +9,13 @@ on:
 name: Unit Tests - Latest Dependencies
 jobs:
   unit_latest_tests:
-    name: ${{ matrix.python_version }} unit tests ${{ matrix.libraries }}
+    name: ${{ matrix.python_version }} ${{ matrix.directories }} unit tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
         python_version: ["3.7", "3.8", "3.9", "3.10"]
-        directories: ["everything_else", "accessor"]
+        directories: ["everything_else", "serialization"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -49,7 +49,7 @@ jobs:
         name: Run Accessor Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest woodwork/tests/accessor/ -n 2 --durations 0
+          pytest woodwork/tests/accessor/test_serialization.py -n 2 --durations 0
         env:
           PYARROW_IGNORE_TIMEZONE: 1
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
@@ -57,7 +57,7 @@ jobs:
         name: Run all other Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/ --durations 0
+          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --durations 0
         env:
           PYARROW_IGNORE_TIMEZONE: 1
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
@@ -68,7 +68,7 @@ jobs:
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest woodwork/tests/accessor/ -n 2 --cov=woodwork --cov-config=../.coveragerc
+          pytest woodwork/tests/accessor/test_serialization.py -n 2 --cov=woodwork --cov-config=../.coveragerc
         env:
           PYARROW_IGNORE_TIMEZONE: 1
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
@@ -79,7 +79,7 @@ jobs:
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/ --cov=woodwork --cov-config=../.coveragerc
+          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --cov=woodwork --cov-config=../.coveragerc
         env:
           PYARROW_IGNORE_TIMEZONE: 1
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
