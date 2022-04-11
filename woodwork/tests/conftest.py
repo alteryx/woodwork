@@ -1029,3 +1029,48 @@ def outliers_df_spark(outliers_df_pandas):
 )
 def outliers_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def timezones_df_pandas():
+    dtypes = {
+        "default_1": "datetime64[ns]",
+        "utc_1": "datetime64[ns, UTC]",
+        "eastern_1": "datetime64[ns, US/Eastern]",
+        "default_2": "object",
+        "utc_2": "object",
+        "eastern_2": "object",
+    }
+    return pd.DataFrame(
+        data=[
+            [
+                "2022-01-01",
+                "2022-01-01 00:00:00+00:00",
+                "2022-01-01 00:00:00-05:00",
+                "2022-01-01",
+                "2022-01-01T00:00:00+00:00",
+                "2022-01-01 00:00:00-05:00",
+            ],
+            [
+                "2022-01-02",
+                "2022-01-02 00:00:00+00:00",
+                "2022-01-02 00:00:00-05:00",
+                "2022-01-02",
+                "2022-01-02T00:00:00+00:00",
+                "2022-01-02 00:00:00-05:00",
+            ],
+            ["NaT", "NaT", "NaT", "NaT", "NaT", "NaT"],
+        ],
+        columns=["default_1", "utc_1", "eastern_1", "default_2", "utc_2", "eastern_2"],
+    ).astype(dtypes)
+
+
+@pytest.fixture()
+def timezones_df_dask(timezones_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(timezones_df_pandas, npartitions=2)
+
+
+@pytest.fixture(params=["timezones_df_pandas", "timezones_df_dask"])
+def timezones_df(request):
+    return request.getfixturevalue(request.param)
