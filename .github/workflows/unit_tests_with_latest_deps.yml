@@ -45,7 +45,7 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install unpacked_sdist/[spark]
           python -m pip install unpacked_sdist/[dask]
-      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'accessor' }}
+      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'serialization' }}
         name: Run Accessor Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
@@ -61,7 +61,7 @@ jobs:
         env:
           PYARROW_IGNORE_TIMEZONE: 1
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
-      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'accessor' }}
+      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'serialization' }}
         name: Run Accessor Unit Tests with code coverage
         run: |
           python -m pip install "$(cat setup.cfg | grep codecov)"
