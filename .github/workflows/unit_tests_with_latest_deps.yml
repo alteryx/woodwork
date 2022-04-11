@@ -26,6 +26,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 2
       - name: Build woodwork package
         run: make package_woodwork
       - name: Set up pip
@@ -52,6 +53,7 @@ jobs:
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
+          ls
           make test
         env:
           PYARROW_IGNORE_TIMEZONE: 1
