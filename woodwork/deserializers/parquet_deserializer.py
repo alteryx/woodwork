@@ -71,5 +71,11 @@ class ParquetDeserializer(Deserializer):
     def _config_if_dask_or_spark(self):
         self.metadata_path = self.read_path
         if os.path.isdir(self.read_path):
-            if "part.0.parquet" in os.listdir(self.read_path):
+            files = os.listdir(self.read_path)
+            if "part.0.parquet" in files:
                 self.metadata_path = os.path.join(self.read_path, "part.0.parquet")
+            elif any(["snappy.parquet" in f for f in files]):
+                parquet_files = sorted(
+                    [f for f in files if Path(f).suffix == ".parquet"]
+                )
+                self.metadata_path = os.path.join(self.read_path, parquet_files[0])

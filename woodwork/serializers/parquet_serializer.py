@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -37,7 +38,7 @@ class ParquetSerializer(Serializer):
         return super().serialize(dataframe, profile_name, **kwargs)
 
     def write_dataframe(self):
-        if _is_dask_dataframe(self.dataframe):
+        if _is_dask_dataframe(self.dataframe) or _is_spark_dataframe(self.dataframe):
             pass
         else:
             dataframe = clean_latlong(self.dataframe)
@@ -54,6 +55,8 @@ class ParquetSerializer(Serializer):
             combined_meta = {
                 "ww_meta".encode(): json.dumps(self.typing_info).encode(),
             }
+        elif _is_spark_dataframe(self.dataframe):
+            combined_meta = {}
         else:
             table_metadata = self.table.schema.metadata
             combined_meta = {
@@ -64,16 +67,40 @@ class ParquetSerializer(Serializer):
 
     def _save_parquet_table_to_disk(self, metadata):
         if _is_dask_dataframe(self.dataframe):
-            dataframe = clean_latlong(self.dataframe)
-            path = self.path
-            if self.data_subdirectory is not None:
-                path = os.path.join(path, self.data_subdirectory)
-            if os.path.exists(os.path.join(path, "part.0.parquet")):
-                message = f"Data file already exists at '{path}'. "
-                message += "Please remove or use a different directory."
-                raise WoodworkFileExistsError(message)
+            path, dataframe = self._setup_for_dask_and_spark()
             dataframe.to_parquet(path, custom_metadata=metadata)
+        elif _is_spark_dataframe(self.dataframe):
+            path, dataframe = self._setup_for_dask_and_spark()
+            dataframe.to_parquet(path)
+            files = os.listdir(path)
+
+            # Update first parquet file to save WW metadata
+            parquet_files = sorted([f for f in files if Path(f).suffix == ".parquet"])
+            update_file = os.path.join(path, parquet_files[0])
+            table = pq.read_table(update_file)
+            table_metadata = table.schema.metadata
+            combined_meta = {
+                "ww_meta".encode(): json.dumps(self.typing_info).encode(),
+                **table_metadata,
+            }
+            table = table.replace_schema_metadata(combined_meta)
+            pq.write_table(table, update_file)
+
+            # Remove checksum files which prevent deserialization if present due to updated parquet header
+            crc_files = [f for f in files if Path(f).suffix == ".crc"]
+            for file in crc_files:
+                os.remove(os.path.join(path, file))
         else:
             file = self._get_filename()
             self.table = self.table.replace_schema_metadata(metadata)
             pq.write_table(self.table, file)
+
+    def _setup_for_dask_and_spark(self):
+        path = self.path
+        if self.data_subdirectory is not None:
+            path = os.path.join(path, self.data_subdirectory)
+        if any([Path(f).suffix == ".parquet" for f in os.listdir(path)]):
+            message = f"Data file already exists at '{path}'. "
+            message += "Please remove or use a different directory."
+            raise WoodworkFileExistsError(message)
+        return path, clean_latlong(self.dataframe)

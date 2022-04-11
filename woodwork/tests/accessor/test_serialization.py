@@ -368,7 +368,7 @@ def test_to_disk_with_whitespace(whitespace_df, tmpdir, format):
         if format == "parquet":
             filename = "data.parquet"
             format = None
-            if _is_dask_dataframe(whitespace_df):
+            if _is_dask_dataframe(whitespace_df) or _is_spark_dataframe(whitespace_df):
                 filename = None
                 format = "parquet"
             deserialized_df = read_woodwork_table(
@@ -446,7 +446,7 @@ def test_to_disk(sample_df, tmpdir, file_format):
         if file_format == "parquet":
             filename = "data.parquet"
             format = None
-            if _is_dask_dataframe(sample_df):
+            if _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df):
                 filename = None
                 format = "parquet"
             deserialized_df = read_woodwork_table(
@@ -585,7 +585,7 @@ def test_to_disk_custom_data_subdirectory(
         if data_subdirectory:
             assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
         if file_format == "parquet":
-            if _is_dask_dataframe(sample_df):
+            if _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df):
                 filename = None
                 format = "parquet"
             else:
@@ -631,7 +631,7 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
     else:
         latlong_df.ww.to_disk(str(tmpdir), format=file_format)
         if file_format == "parquet":
-            if _is_dask_dataframe(latlong_df):
+            if _is_dask_dataframe(latlong_df) or _is_spark_dataframe(latlong_df):
                 filename = None
                 format = "parquet"
             else:
@@ -652,9 +652,9 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
 
 
 def test_to_disk_parquet_no_file_extension(sample_df, tmpdir):
-    if _is_dask_dataframe(sample_df):
+    if _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df):
         pytest.skip(
-            "Specifying filename for writing Dask DataFrame to parquet is not supported."
+            "Specifying filename for writing Dask or Spark DataFrames to parquet is not supported."
         )
     sample_df.ww.init(index="id")
     sample_df.ww.to_disk(str(tmpdir), filename="parquet_data", format="parquet")
@@ -684,7 +684,7 @@ def test_to_disk_parquet_typing_info_file_is_none(sample_df, tmpdir):
 
     filename = "data.parquet"
     format = None
-    if _is_dask_dataframe(sample_df):
+    if _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df):
         filename = None
         format = "parquet"
     deserialized_df = read_woodwork_table(
@@ -990,8 +990,7 @@ def test_overwrite_error(sample_df, tmpdir, format):
         _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df)
     ):
         pytest.skip("Cannot pickle dask and spark dataframes")
-    # if format == "parquet" and _is_dask_dataframe(sample_df):
-    #     pytest.skip("Specifying filename for writing Dask DataFrame to parquet is not supported.")
+
     folder_1 = str(tmpdir.join("folder_1"))
     folder_2 = str(tmpdir.join("folder_2"))
     sample_df.ww.init()
