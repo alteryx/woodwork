@@ -21,6 +21,7 @@ Future Release
         * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
         * Add M1 installation instructions to docs and contributing guide (:pr:`1367`)
     * Testing Changes
+        * Enabled parallel testing for spark, dask, and pandas :pr:`1379`
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`, :user:`thehomebrewnerd`

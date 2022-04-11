@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_spark_series, init_series, _is_dask_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series, init_series
 from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     URL,

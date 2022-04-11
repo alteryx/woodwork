@@ -318,7 +318,7 @@ def ordinal_transform_series_spark(ordinal_transform_series_pandas):
     params=[
         pytest.param("ordinal_transform_series_pandas", marks=pytest.mark.pandas_test),
         pytest.param("ordinal_transform_series_dask", marks=pytest.mark.dask_test),
-        pytest.param("ordinal_transform_series_spark", marks=pytest.mark.spark_test)
+        pytest.param("ordinal_transform_series_spark", marks=pytest.mark.spark_test),
     ]
 )
 def ordinal_transform_series(request):
@@ -355,7 +355,7 @@ def time_index_df_spark(time_index_df_pandas):
     params=[
         pytest.param("time_index_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("time_index_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("time_index_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("time_index_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def time_index_df(request):
@@ -496,7 +496,7 @@ def describe_df_spark(describe_df_pandas):
     params=[
         pytest.param("describe_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("describe_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("describe_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("describe_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def describe_df(request):
@@ -540,7 +540,7 @@ def df_same_mi_spark(df_same_mi_pandas):
     params=[
         pytest.param("df_same_mi_pandas", marks=pytest.mark.pandas_test),
         pytest.param("df_same_mi_dask", marks=pytest.mark.dask_test),
-        pytest.param("df_same_mi_spark", marks=pytest.mark.spark_test)
+        pytest.param("df_same_mi_spark", marks=pytest.mark.spark_test),
     ]
 )
 def df_same_mi(request):
@@ -578,7 +578,7 @@ def df_mi_spark(df_mi_pandas):
     params=[
         pytest.param("df_mi_pandas", marks=pytest.mark.pandas_test),
         pytest.param("df_mi_dask", marks=pytest.mark.dask_test),
-        pytest.param("df_mi_spark", marks=pytest.mark.spark_test)
+        pytest.param("df_mi_spark", marks=pytest.mark.spark_test),
     ]
 )
 def df_mi(request):
@@ -615,7 +615,7 @@ def df_mi_unique_spark(df_mi_unique_pandas):
     params=[
         pytest.param("df_mi_unique_pandas", marks=pytest.mark.pandas_test),
         pytest.param("df_mi_unique_dask", marks=pytest.mark.dask_test),
-        pytest.param("df_mi_unique_spark", marks=pytest.mark.spark_test)
+        pytest.param("df_mi_unique_spark", marks=pytest.mark.spark_test),
     ]
 )
 def df_mi_unique(request):
@@ -651,7 +651,7 @@ def categorical_df_spark(categorical_df_pandas):
     params=[
         pytest.param("categorical_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("categorical_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("categorical_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("categorical_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def categorical_df(request):
@@ -673,7 +673,7 @@ def empty_df_dask(empty_df_pandas):
 @pytest.fixture(
     params=[
         pytest.param("empty_df_pandas", marks=pytest.mark.pandas_test),
-        pytest.param("empty_df_dask", marks=pytest.mark.dask_test)
+        pytest.param("empty_df_dask", marks=pytest.mark.dask_test),
     ]
 )
 def empty_df(request):
@@ -706,7 +706,7 @@ def small_df_spark(small_df_pandas):
     params=[
         pytest.param("small_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("small_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("small_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("small_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def small_df(request):
@@ -750,7 +750,7 @@ def latlong_df_spark(latlong_df_pandas):
     params=[
         pytest.param("latlong_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("latlong_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("latlong_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("latlong_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def latlong_df(request):
@@ -790,7 +790,7 @@ def spark_latlongs(pandas_latlongs):
     params=[
         pytest.param("pandas_latlongs", marks=pytest.mark.pandas_test),
         pytest.param("dask_latlongs", marks=pytest.mark.dask_test),
-        pytest.param("spark_latlongs", marks=pytest.mark.spark_test)
+        pytest.param("spark_latlongs", marks=pytest.mark.spark_test),
     ]
 )
 def latlongs(request):
@@ -830,7 +830,7 @@ def whitespace_df_spark(whitespace_df_pandas):
     params=[
         pytest.param("whitespace_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("whitespace_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("whitespace_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("whitespace_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def whitespace_df(request):
@@ -867,7 +867,7 @@ def falsy_names_df_spark(falsy_names_df_pandas):
     params=[
         pytest.param("falsy_names_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("falsy_names_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("falsy_names_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("falsy_names_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def falsy_names_df(request):
@@ -875,9 +875,7 @@ def falsy_names_df(request):
 
 
 @pytest.fixture(
-    params=[
-        pytest.param("sample_column_names_pandas", marks=pytest.mark.pandas_test)
-    ]
+    params=[pytest.param("sample_column_names_pandas", marks=pytest.mark.pandas_test)]
 )
 def sample_column_names(sample_df_pandas):
     return sample_df_pandas.columns.to_list()
@@ -959,7 +957,7 @@ def serialize_df_spark(serialize_df_pandas):
     params=[
         pytest.param("serialize_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("serialize_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("serialize_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("serialize_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def serialize_df(request):
@@ -988,7 +986,7 @@ def spark_datetimes(pandas_datetimes):
     params=[
         pytest.param("pandas_datetimes", marks=pytest.mark.pandas_test),
         pytest.param("dask_datetimes", marks=pytest.mark.dask_test),
-        pytest.param("spark_datetimes", marks=pytest.mark.spark_test)
+        pytest.param("spark_datetimes", marks=pytest.mark.spark_test),
     ]
 )
 def datetimes(request):
@@ -1024,7 +1022,7 @@ def outliers_df_spark(outliers_df_pandas):
     params=[
         pytest.param("outliers_df_pandas", marks=pytest.mark.pandas_test),
         pytest.param("outliers_df_dask", marks=pytest.mark.dask_test),
-        pytest.param("outliers_df_spark", marks=pytest.mark.spark_test)
+        pytest.param("outliers_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def outliers_df(request):
