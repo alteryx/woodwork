@@ -22,13 +22,17 @@ class ParquetDeserializer(Deserializer):
         else:
             if self.data_subdirectory:
                 self.path = os.path.join(self.path, self.data_subdirectory)
-            self.read_path = os.path.join(self.path, self.filename)
+            self.read_path = self.path
+            if self.filename:
+                self.read_path = os.path.join(self.path, self.filename)
+
             dataframe = self.read_from_local_path()
         dataframe.ww.init(**self.ww_init_dict, validate=validate)
         return dataframe
 
     def configure_deserializer(self):
-        file_metadata = pa.parquet.read_metadata(self.read_path)
+        self._config_if_dask_or_spark()
+        file_metadata = pa.parquet.read_metadata(self.metadata_path)
         self.typing_info = json.loads(file_metadata.metadata[b"ww_meta"])
         _check_schema_version(self.typing_info["schema_version"])
         loading_info = self.typing_info["loading_info"]
@@ -63,3 +67,9 @@ class ParquetDeserializer(Deserializer):
                 )
 
             return self.read_from_local_path()
+
+    def _config_if_dask_or_spark(self):
+        self.metadata_path = self.read_path
+        if os.path.isdir(self.read_path):
+            if "part.0.parquet" in os.listdir(self.read_path):
+                self.metadata_path = os.path.join(self.read_path, "part.0.parquet")

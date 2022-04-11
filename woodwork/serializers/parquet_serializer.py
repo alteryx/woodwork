@@ -1,9 +1,11 @@
 import json
+import os
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.exceptions import WoodworkFileExistsError
 from woodwork.serializers.serializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE,
     Serializer,
@@ -35,8 +37,11 @@ class ParquetSerializer(Serializer):
         return super().serialize(dataframe, profile_name, **kwargs)
 
     def write_dataframe(self):
-        dataframe = clean_latlong(self.dataframe)
-        self.table = pa.Table.from_pandas(dataframe)
+        if _is_dask_dataframe(self.dataframe):
+            pass
+        else:
+            dataframe = clean_latlong(self.dataframe)
+            self.table = pa.Table.from_pandas(dataframe)
 
     def write_typing_info(self):
         loading_info = {
@@ -45,14 +50,30 @@ class ParquetSerializer(Serializer):
             "params": self.kwargs,
         }
         self.typing_info["loading_info"].update(loading_info)
-        table_metadata = self.table.schema.metadata
-        combined_meta = {
-            "ww_meta".encode(): json.dumps(self.typing_info).encode(),
-            **table_metadata,
-        }
+        if _is_dask_dataframe(self.dataframe):
+            combined_meta = {
+                "ww_meta".encode(): json.dumps(self.typing_info).encode(),
+            }
+        else:
+            table_metadata = self.table.schema.metadata
+            combined_meta = {
+                "ww_meta".encode(): json.dumps(self.typing_info).encode(),
+                **table_metadata,
+            }
         self._save_parquet_table_to_disk(combined_meta)
 
-    def _save_parquet_table_to_disk(self, new_metadata):
-        file = self._get_filename()
-        self.table = self.table.replace_schema_metadata(new_metadata)
-        pq.write_table(self.table, file)
+    def _save_parquet_table_to_disk(self, metadata):
+        if _is_dask_dataframe(self.dataframe):
+            dataframe = clean_latlong(self.dataframe)
+            path = self.path
+            if self.data_subdirectory is not None:
+                path = os.path.join(path, self.data_subdirectory)
+            if os.path.exists(os.path.join(path, "part.0.parquet")):
+                message = f"Data file already exists at '{path}'. "
+                message += "Please remove or use a different directory."
+                raise WoodworkFileExistsError(message)
+            dataframe.to_parquet(path, custom_metadata=metadata)
+        else:
+            file = self._get_filename()
+            self.table = self.table.replace_schema_metadata(metadata)
+            pq.write_table(self.table, file)
