@@ -274,22 +274,32 @@ class Datetime(LogicalType):
     primary_dtype = "datetime64[ns]"
     datetime_format = None
 
-    def __init__(self, datetime_format=None):
+    def __init__(self, datetime_format=None, timezone=None):
         self.datetime_format = datetime_format
+        self.timezone = timezone
+
+    def _remove_timezone(self, series):
+        """Removes timezone from series and stores in logical type."""
+        if hasattr(series.dtype, "tz") and series.dtype.tz:
+            self.timezone = str(series.dtype.tz)
+            series = series.dt.tz_localize(None)
+        return series
 
     def transform(self, series):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
+        series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
                 series
             )
+            utc = self.datetime_format and self.datetime_format.endswith("%z")
             if _is_dask_series(series):
                 name = series.name
                 series = dd.to_datetime(
-                    series, format=self.datetime_format, errors="coerce"
+                    series, format=self.datetime_format, errors="coerce", utc=utc
                 )
                 series.name = name
             elif _is_spark_series(series):
@@ -301,7 +311,9 @@ class Datetime(LogicalType):
                 )
             else:
                 try:
-                    series = pd.to_datetime(series, format=self.datetime_format)
+                    series = pd.to_datetime(
+                        series, format=self.datetime_format, utc=utc
+                    )
                 except (TypeError, ValueError):
                     warnings.warn(
                         f"Some rows in series '{series.name}' are incompatible with datetime format "
@@ -311,8 +323,13 @@ class Datetime(LogicalType):
                         TypeConversionWarning,
                     )
                     series = pd.to_datetime(
-                        series, format=self.datetime_format, errors="coerce"
+                        series,
+                        format=self.datetime_format,
+                        errors="coerce",
+                        utc=utc,
                     )
+
+        series = self._remove_timezone(series)
         return super().transform(series)
 
 
@@ -671,12 +688,26 @@ class PostalCode(LogicalType):
 
             ["90210"
              "60018-0123",
-             "SW1A"]
+             "10010"]
     """
 
     primary_dtype = "category"
     backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
+
+    def validate(self, series, return_invalid_values=False):
+        """Validates PostalCode values based on the regex in the config. Currently only validates US Postal codes.
+
+        Args:
+            series (Series): Series of PostalCode values.
+            return_invalid_values (bool): Whether or not to return invalid PostalCodes.
+
+        Returns:
+            Series: If return_invalid_values is True, returns invalid PostalCodes.
+        """
+        return _regex_validate(
+            "postal_code_inference_regex", series, return_invalid_values
+        )
 
 
 _NULLABLE_PHYSICAL_TYPES = {
@@ -727,6 +758,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
                 "url_inference_regex": "url",
                 "email_inference_regex": "email address",
                 "phone_inference_regex": "phone number",
+                "postal_code_inference_regex": "postal code",
             }[regex_key]
 
             info = f"Series {series.name} contains invalid {type_string} values. "
