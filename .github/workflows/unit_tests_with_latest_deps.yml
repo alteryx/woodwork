@@ -52,7 +52,7 @@ jobs:
         name: Run unit tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest woodwork/ -n 2
+          make test
         env:
           PYARROW_IGNORE_TIMEZONE: 1
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False

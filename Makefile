@@ -21,7 +21,11 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest woodwork/
+	pytest woodwork/ -n 2 --durations 0
+
+.PHONY: test-logical-types
+test-logical-types:
+	pytest woodwork/tests/logical_types/ --durations 0
 
 .PHONY: testcoverage
 testcoverage:
