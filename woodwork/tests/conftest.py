@@ -40,7 +40,13 @@ def spark_session():
         return spark
 
 
-@pytest.fixture(params=["sample_df_pandas", "sample_df_dask", "sample_df_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("sample_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("sample_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("sample_df_spark", marks=pytest.mark.spark_test),
+    ]
+)
 def sample_df(request):
     return request.getfixturevalue(request.param)
 
@@ -178,9 +184,9 @@ def datetime_freqs_df_pandas():
 
 @pytest.fixture(
     params=[
-        "sample_unsorted_df_pandas",
-        "sample_unsorted_df_dask",
-        "sample_unsorted_df_spark",
+        pytest.param("sample_unsorted_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("sample_unsorted_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("sample_unsorted_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def sample_unsorted_df(request):
@@ -232,7 +238,11 @@ def sample_unsorted_df_spark(sample_unsorted_df_pandas):
 
 
 @pytest.fixture(
-    params=["sample_series_pandas", "sample_series_dask", "sample_series_spark"]
+    params=[
+        pytest.param("sample_series_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("sample_series_dask", marks=pytest.mark.dask_test),
+        pytest.param("sample_series_spark", marks=pytest.mark.spark_test),
+    ]
 )
 def sample_series(request):
     return request.getfixturevalue(request.param)
@@ -259,9 +269,9 @@ def sample_series_spark(sample_series_pandas):
 
 @pytest.fixture(
     params=[
-        "sample_datetime_series_pandas",
-        "sample_datetime_series_dask",
-        "sample_datetime_series_spark",
+        pytest.param("sample_datetime_series_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("sample_datetime_series_dask", marks=pytest.mark.dask_test),
+        pytest.param("sample_datetime_series_spark", marks=pytest.mark.spark_test),
     ]
 )
 def sample_datetime_series(request):
@@ -304,6 +314,17 @@ def ordinal_transform_series_spark(ordinal_transform_series_pandas):
     return ps.from_pandas(ordinal_transform_series_pandas)
 
 
+@pytest.fixture(
+    params=[
+        pytest.param("ordinal_transform_series_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("ordinal_transform_series_dask", marks=pytest.mark.dask_test),
+        pytest.param("ordinal_transform_series_spark", marks=pytest.mark.spark_test)
+    ]
+)
+def ordinal_transform_series(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture()
 def time_index_df_pandas():
     return pd.DataFrame(
@@ -331,7 +352,11 @@ def time_index_df_spark(time_index_df_pandas):
 
 
 @pytest.fixture(
-    params=["time_index_df_pandas", "time_index_df_dask", "time_index_df_spark"]
+    params=[
+        pytest.param("time_index_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("time_index_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("time_index_df_spark", marks=pytest.mark.spark_test)
+    ]
 )
 def time_index_df(request):
     return request.getfixturevalue(request.param)
@@ -362,9 +387,9 @@ def numeric_time_index_df_spark(numeric_time_index_df_pandas):
 
 @pytest.fixture(
     params=[
-        "numeric_time_index_df_pandas",
-        "numeric_time_index_df_dask",
-        "numeric_time_index_df_spark",
+        pytest.param("numeric_time_index_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("numeric_time_index_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("numeric_time_index_df_spark", marks=pytest.mark.spark_test),
     ]
 )
 def numeric_time_index_df(request):
@@ -467,7 +492,13 @@ def describe_df_spark(describe_df_pandas):
     )
 
 
-@pytest.fixture(params=["describe_df_pandas", "describe_df_dask", "describe_df_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("describe_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("describe_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("describe_df_spark", marks=pytest.mark.spark_test)
+    ]
+)
 def describe_df(request):
     return request.getfixturevalue(request.param)
 
@@ -505,7 +536,13 @@ def df_same_mi_spark(df_same_mi_pandas):
     return ps.from_pandas(df_same_mi_pandas)
 
 
-@pytest.fixture(params=["df_same_mi_pandas", "df_same_mi_dask", "df_same_mi_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("df_same_mi_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("df_same_mi_dask", marks=pytest.mark.dask_test),
+        pytest.param("df_same_mi_spark", marks=pytest.mark.spark_test)
+    ]
+)
 def df_same_mi(request):
     return request.getfixturevalue(request.param)
 
@@ -537,7 +574,13 @@ def df_mi_spark(df_mi_pandas):
     return ps.from_pandas(df_mi_pandas)
 
 
-@pytest.fixture(params=["df_mi_pandas", "df_mi_dask", "df_mi_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("df_mi_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("df_mi_dask", marks=pytest.mark.dask_test),
+        pytest.param("df_mi_spark", marks=pytest.mark.spark_test)
+    ]
+)
 def df_mi(request):
     return request.getfixturevalue(request.param)
 
@@ -569,7 +612,11 @@ def df_mi_unique_spark(df_mi_unique_pandas):
 
 
 @pytest.fixture(
-    params=["df_mi_unique_pandas", "df_mi_unique_dask", "df_mi_unique_spark"]
+    params=[
+        pytest.param("df_mi_unique_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("df_mi_unique_dask", marks=pytest.mark.dask_test),
+        pytest.param("df_mi_unique_spark", marks=pytest.mark.spark_test)
+    ]
 )
 def df_mi_unique(request):
     return request.getfixturevalue(request.param)
@@ -601,7 +648,11 @@ def categorical_df_spark(categorical_df_pandas):
 
 
 @pytest.fixture(
-    params=["categorical_df_pandas", "categorical_df_dask", "categorical_df_spark"]
+    params=[
+        pytest.param("categorical_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("categorical_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("categorical_df_spark", marks=pytest.mark.spark_test)
+    ]
 )
 def categorical_df(request):
     return request.getfixturevalue(request.param)
@@ -619,7 +670,12 @@ def empty_df_dask(empty_df_pandas):
 
 
 # Cannot have an empty Spark DataFrame
-@pytest.fixture(params=["empty_df_pandas", "empty_df_dask"])
+@pytest.fixture(
+    params=[
+        pytest.param("empty_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("empty_df_dask", marks=pytest.mark.dask_test)
+    ]
+)
 def empty_df(request):
     return request.getfixturevalue(request.param)
 
@@ -646,7 +702,13 @@ def small_df_spark(small_df_pandas):
     return ps.from_pandas(df)
 
 
-@pytest.fixture(params=["small_df_pandas", "small_df_dask", "small_df_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("small_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("small_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("small_df_spark", marks=pytest.mark.spark_test)
+    ]
+)
 def small_df(request):
     return request.getfixturevalue(request.param)
 
@@ -684,12 +746,17 @@ def latlong_df_spark(latlong_df_pandas):
     )
 
 
-@pytest.fixture(params=["latlong_df_pandas", "latlong_df_dask", "latlong_df_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("latlong_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("latlong_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("latlong_df_spark", marks=pytest.mark.spark_test)
+    ]
+)
 def latlong_df(request):
     return request.getfixturevalue(request.param)
 
 
-# LatLong Fixtures for testing access to latlong values
 @pytest.fixture
 def pandas_latlongs():
     return [
@@ -719,7 +786,13 @@ def spark_latlongs(pandas_latlongs):
     ]
 
 
-@pytest.fixture(params=["pandas_latlongs", "dask_latlongs", "spark_latlongs"])
+@pytest.fixture(
+    params=[
+        pytest.param("pandas_latlongs", marks=pytest.mark.pandas_test),
+        pytest.param("dask_latlongs", marks=pytest.mark.dask_test),
+        pytest.param("spark_latlongs", marks=pytest.mark.spark_test)
+    ]
+)
 def latlongs(request):
     return request.getfixturevalue(request.param)
 
@@ -754,7 +827,11 @@ def whitespace_df_spark(whitespace_df_pandas):
 
 
 @pytest.fixture(
-    params=["whitespace_df_pandas", "whitespace_df_dask", "whitespace_df_spark"]
+    params=[
+        pytest.param("whitespace_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("whitespace_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("whitespace_df_spark", marks=pytest.mark.spark_test)
+    ]
 )
 def whitespace_df(request):
     return request.getfixturevalue(request.param)
@@ -787,13 +864,21 @@ def falsy_names_df_spark(falsy_names_df_pandas):
 
 
 @pytest.fixture(
-    params=["falsy_names_df_pandas", "falsy_names_df_dask", "falsy_names_df_spark"]
+    params=[
+        pytest.param("falsy_names_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("falsy_names_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("falsy_names_df_spark", marks=pytest.mark.spark_test)
+    ]
 )
 def falsy_names_df(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture()
+@pytest.fixture(
+    params=[
+        pytest.param("sample_column_names_pandas", marks=pytest.mark.pandas_test)
+    ]
+)
 def sample_column_names(sample_df_pandas):
     return sample_df_pandas.columns.to_list()
 
@@ -871,7 +956,11 @@ def serialize_df_spark(serialize_df_pandas):
 
 
 @pytest.fixture(
-    params=["serialize_df_pandas", "serialize_df_dask", "serialize_df_spark"]
+    params=[
+        pytest.param("serialize_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("serialize_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("serialize_df_spark", marks=pytest.mark.spark_test)
+    ]
 )
 def serialize_df(request):
     return request.getfixturevalue(request.param)
@@ -895,7 +984,13 @@ def spark_datetimes(pandas_datetimes):
     return [pd_to_spark(series) for series in pandas_datetimes]
 
 
-@pytest.fixture(params=["pandas_datetimes", "dask_datetimes", "spark_datetimes"])
+@pytest.fixture(
+    params=[
+        pytest.param("pandas_datetimes", marks=pytest.mark.pandas_test),
+        pytest.param("dask_datetimes", marks=pytest.mark.dask_test),
+        pytest.param("spark_datetimes", marks=pytest.mark.spark_test)
+    ]
+)
 def datetimes(request):
     return request.getfixturevalue(request.param)
 
@@ -925,6 +1020,12 @@ def outliers_df_spark(outliers_df_pandas):
     return ps.from_pandas(outliers_df_pandas)
 
 
-@pytest.fixture(params=["outliers_df_pandas", "outliers_df_dask", "outliers_df_spark"])
+@pytest.fixture(
+    params=[
+        pytest.param("outliers_df_pandas", marks=pytest.mark.pandas_test),
+        pytest.param("outliers_df_dask", marks=pytest.mark.dask_test),
+        pytest.param("outliers_df_spark", marks=pytest.mark.spark_test)
+    ]
+)
 def outliers_df(request):
     return request.getfixturevalue(request.param)

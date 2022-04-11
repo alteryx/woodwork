@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_spark_series, init_series
+from woodwork.accessor_utils import _is_spark_series, init_series, _is_dask_series
 from woodwork.exceptions import TypeConversionWarning, TypeValidationError
 from woodwork.logical_types import (
     URL,
@@ -74,32 +74,6 @@ def test_ordinal_transform_validates(ordinal_transform_series_pandas) -> None:
     typ = Ordinal(order=None)
     with pytest.raises(TypeError, match=r"order values defined"):
         typ.transform(ordinal_transform_series_pandas)
-
-
-def test_ordinal_transform_pandas(ordinal_transform_series_pandas) -> None:
-    order = [2, 1, 3]
-    typ = Ordinal(order=order)
-    ser_ = typ.transform(ordinal_transform_series_pandas)
-
-    assert ser_.dtype == "category"
-    pd.testing.assert_index_equal(ser_.cat.categories, pd.Int64Index(order))
-
-
-def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
-    order = [2, 1, 3]
-    typ = Ordinal(order=order)
-    ser_ = typ.transform(ordinal_transform_series_dask).compute()
-
-    assert ser_.dtype == "category"
-    pd.testing.assert_index_equal(ser_.cat.categories, pd.Int64Index(order))
-
-
-def test_ordinal_transform_spark(ordinal_transform_series_spark) -> None:
-    order = [2, 1, 3]
-    typ = Ordinal(order=order)
-    ser_ = typ.transform(ordinal_transform_series_spark)
-
-    assert ser_.dtype == pd.StringDtype("pyarrow")
 
 
 def test_get_valid_dtype(sample_series):

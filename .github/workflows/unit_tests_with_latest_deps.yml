@@ -14,6 +14,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        include:
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-automl'
         python_version: ["3.7", "3.8", "3.9", "3.10"]
         libraries: ["core", "dask", "spark"]
     steps:

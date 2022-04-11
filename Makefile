@@ -23,6 +23,18 @@ lint-fix:
 test:
 	pytest woodwork/
 
+.PHONY: test_pandas
+test_pandas:
+	pytest woodwork/ -v -m pandas_test
+
+.PHONY: test_spark
+test_spark:
+	pytest woodwork/ -v -m spark_test
+
+.PHONY: test_dask
+test_dask:
+	pytest woodwork/ -v -m dask_test
+
 .PHONY: testcoverage
 testcoverage:
 	pytest woodwork/ --cov=woodwork
