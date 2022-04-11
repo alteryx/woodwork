@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -38,9 +39,8 @@ class ParquetSerializer(Serializer):
         return super().serialize(dataframe, profile_name, **kwargs)
 
     def write_dataframe(self):
-        if _is_dask_dataframe(self.dataframe) or _is_spark_dataframe(self.dataframe):
-            pass
-        else:
+        # Create a pyarrow table for pandas, skip for Dask/Spark
+        if isinstance(self.dataframe, pd.DataFrame):
             dataframe = clean_latlong(self.dataframe)
             self.table = pa.Table.from_pandas(dataframe)
 
@@ -51,19 +51,20 @@ class ParquetSerializer(Serializer):
             "params": self.kwargs,
         }
         self.typing_info["loading_info"].update(loading_info)
-        if _is_dask_dataframe(self.dataframe):
-            combined_meta = {
+        # For Dask and Spark we only get the WW metadata because we haven't created
+        # the pyarrow table yet, but for pandas we combine the existing parquet
+        # metadata with the WW metadata.
+        if _is_dask_dataframe(self.dataframe) or _is_spark_dataframe(self.dataframe):
+            metadata = {
                 "ww_meta".encode(): json.dumps(self.typing_info).encode(),
             }
-        elif _is_spark_dataframe(self.dataframe):
-            combined_meta = {}
         else:
             table_metadata = self.table.schema.metadata
-            combined_meta = {
+            metadata = {
                 "ww_meta".encode(): json.dumps(self.typing_info).encode(),
                 **table_metadata,
             }
-        self._save_parquet_table_to_disk(combined_meta)
+        self._save_parquet_table_to_disk(metadata)
 
     def _save_parquet_table_to_disk(self, metadata):
         if _is_dask_dataframe(self.dataframe):
@@ -80,7 +81,7 @@ class ParquetSerializer(Serializer):
             table = pq.read_table(update_file)
             table_metadata = table.schema.metadata
             combined_meta = {
-                "ww_meta".encode(): json.dumps(self.typing_info).encode(),
+                **metadata,
                 **table_metadata,
             }
             table = table.replace_schema_metadata(combined_meta)

@@ -35,15 +35,14 @@ def get_deserializer(
 ):
     """Determine the proper Deserializer class to use based on the specified parameters.
     Initializes and returns the proper Deserializer object."""
+    typing_info = None
     if typing_info_filename:
         try:
             typing_info = read_table_typing_information(
                 path, typing_info_filename, profile_name
             )
         except FileNotFoundError:
-            typing_info = None
-    else:
-        typing_info = None
+            pass
 
     if typing_info:
         format = typing_info["loading_info"]["type"]

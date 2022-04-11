@@ -584,16 +584,14 @@ def test_to_disk_custom_data_subdirectory(
         )
         if data_subdirectory:
             assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
+        filename = None
+        format = None
         if file_format == "parquet":
             if _is_dask_dataframe(sample_df) or _is_spark_dataframe(sample_df):
-                filename = None
                 format = "parquet"
             else:
                 filename = "data.parquet"
-                format = None
-        else:
-            filename = None
-            format = None
+
         deserialized_df = read_woodwork_table(
             str(tmpdir),
             filename=filename,
@@ -630,16 +628,14 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
             latlong_df.ww.to_disk(str(tmpdir), format=file_format)
     else:
         latlong_df.ww.to_disk(str(tmpdir), format=file_format)
+        filename = None
+        format = None
         if file_format == "parquet":
             if _is_dask_dataframe(latlong_df) or _is_spark_dataframe(latlong_df):
-                filename = None
                 format = "parquet"
             else:
                 filename = "data.parquet"
-                format = None
-        else:
-            filename = None
-            format = None
+
         deserialized_df = read_woodwork_table(
             str(tmpdir), filename=filename, format=format
         )

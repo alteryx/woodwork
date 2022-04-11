@@ -31,7 +31,7 @@ class ParquetDeserializer(Deserializer):
         return dataframe
 
     def configure_deserializer(self):
-        self._config_if_dask_or_spark()
+        self._set_metadata_path()
         file_metadata = pa.parquet.read_metadata(self.metadata_path)
         self.typing_info = json.loads(file_metadata.metadata[b"ww_meta"])
         _check_schema_version(self.typing_info["schema_version"])
@@ -61,13 +61,18 @@ class ParquetDeserializer(Deserializer):
 
             return self.read_from_local_path()
 
-    def _config_if_dask_or_spark(self):
+    def _set_metadata_path(self):
+        # If we are reading a single pandas file, we get the metadata from the file.
+        # If we are reading into Dask/Spark we need to get the metadata from the
+        # first file that was serialized.
         self.metadata_path = self.read_path
         if os.path.isdir(self.read_path):
             files = os.listdir(self.read_path)
             if "part.0.parquet" in files:
+                # Dask will serialize with "part.*.parquet" file names
                 self.metadata_path = os.path.join(self.read_path, "part.0.parquet")
             elif any(["snappy.parquet" in f for f in files]):
+                # Spark will serialize files with a unique hash but with the ".snappy.parquet" extension
                 parquet_files = sorted(
                     [f for f in files if Path(f).suffix == ".parquet"]
                 )

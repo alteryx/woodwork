@@ -643,7 +643,7 @@ class WoodworkTableAccessor:
         If writing to S3 a tar archive of files will be written.
 
         Note:
-            When serializing to parquet, Woodwork typing information will be store in the parquet file metadata,
+            When serializing to parquet, Woodwork typing information will be stored in the parquet file metadata,
             and not in a separate typing info JSON file. Any value provided for `typing_info_filename` will be ignored.
 
         Args:
