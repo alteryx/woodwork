@@ -153,7 +153,7 @@ def test_to_dictionary(sample_df):
                 "ordinal": 5,
                 "use_standard_tags": True,
                 "logical_type": {
-                    "parameters": {"datetime_format": None},
+                    "parameters": {"datetime_format": None, "timezone": None},
                     "type": "Datetime",
                 },
                 "physical_type": {"type": "datetime64[ns]"},
@@ -244,7 +244,7 @@ def test_to_dictionary(sample_df):
                 "ordinal": 13,
                 "use_standard_tags": True,
                 "logical_type": {
-                    "parameters": {"datetime_format": None},
+                    "parameters": {"datetime_format": None, "timezone": None},
                     "type": "Datetime",
                 },
                 "physical_type": {"type": "datetime64[ns]"},
