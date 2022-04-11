@@ -1,17 +1,17 @@
-import itertools
-import warnings
 from collections import defaultdict
 from timeit import default_timer as timer
 
 import numpy as np
-import pandas as pd
-from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
+from ._calculate_dependence_measure import _calculate_dependence_measure
+from ._calculate_max_dependence_for_pair import _calculate_max_dependence_for_pair
+from ._cast_nullable_int_and_datetime_to_int import (
+    _cast_nullable_int_and_datetime_to_int,
+)
+from ._parse_measures import _parse_measures
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
-from woodwork.logical_types import IntegerNullable
 from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
 
 
@@ -79,10 +79,12 @@ def _get_dependence_dict(
     """
     start_time = timer()
 
-    measures, calc_order, calc_max = _validate_measures(measures)
+    returned_measures, calc_order, calc_max = _parse_measures(measures)
 
     unit = "calculations"
-    if calc_order[0] == "pearson":
+
+    # get valid columns for dependence calculations
+    if "pearson" in calc_order:
         pearson_types = get_valid_pearson_types()
         pearson_columns = _get_valid_columns(dataframe, pearson_types)
         valid_columns = pearson_columns
@@ -111,11 +113,8 @@ def _get_dependence_dict(
     if not_null_col_set != set(valid_columns):
         data = data.loc[:, not_null_cols]
 
-    # p: number of pearson columns
-    # m: number of mutual columns
-    # n: max number of columns
-    p = 0
-    m = 0
+    p = 0  # number of pearson columns
+    m = 0  # number of mutual columns
     if "pearson" in calc_order:
         pearson_columns = [col for col in pearson_columns if col in not_null_col_set]
         p = len(pearson_columns)
@@ -124,12 +123,11 @@ def _get_dependence_dict(
         m = len(mutual_columns)
     n = max(m, p)
 
-    # Setup for progress callback and make initial call
-    # Assume 1 unit for preprocessing, n for handling null, m for make categorical
     # combinations in a loop is n! / 2 / (n - 2)! which reduces to (n) (n - 1) / 2
     def _num_calc_steps(n):
         return (n * n - n) / 2
 
+    # Assume 1 unit for preprocessing, n for handling nulls, m for binning numerics
     total_loops = 1 + n + m + _num_calc_steps(p) + _num_calc_steps(m)
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
@@ -138,62 +136,10 @@ def _get_dependence_dict(
     data = {col: data[col].dropna() for col in data}
 
     # cast nullable type to non-nullable (needed for both pearson and mutual)
-    for col_name in data:
-        column = dataframe.ww.columns[col_name]
-        if isinstance(column.logical_type, IntegerNullable):
-            cur_dtype = data[col_name].dtype
-            new_dtype = cur_dtype.name.lower()  # e.g. Int64 -> int64
-            data[col_name] = data[col_name].astype(new_dtype)
-        if column.is_datetime:
-            data[col_name] = data[col_name].view("int64")
+    _cast_nullable_int_and_datetime_to_int(data, dataframe.ww.columns)
     callback_caller.update(n)
 
     results = defaultdict(dict)
-
-    def _calculate(callback_caller, data, col_names, results, measure):
-        column_pairs = itertools.combinations(col_names, 2)
-        for a_col, b_col in column_pairs:
-            result = results[(a_col, b_col)]
-            # check if result already has keys, meaning _calculate has been
-            # called previously and some computation can be skipped
-            if "column_1" in result:
-                num_intersect = result["shared_rows"]
-            else:
-                result["column_1"] = a_col
-                result["column_2"] = b_col
-                num_intersect = (notna_mask[a_col] & notna_mask[b_col]).sum()
-                result["shared_rows"] = num_intersect
-
-            too_sparse = num_intersect < min_shared
-            if too_sparse:
-                warnings.warn(
-                    "One or more pairs of columns did not share enough rows of "
-                    "non-null data to measure the relationship.  The measurement"
-                    " for these columns will be NaN.  Use 'extra_stats=True' to "
-                    "get the shared rows for each pair of columns.",
-                    SparseDataWarning,
-                )
-                result[measure] = np.nan
-            else:
-                if "num_union" in result:
-                    num_union = result["num_union"]
-                else:
-                    num_union = (notna_mask[a_col] | notna_mask[b_col]).sum()
-                    result["num_union"] = num_union
-                intersect = notna_mask[a_col] & notna_mask[b_col]
-                if measure == "mutual_info":
-                    score = adjusted_mutual_info_score(
-                        data[a_col][intersect], data[b_col][intersect]
-                    )
-                elif measure == "pearson":
-                    score = np.corrcoef(data[a_col][intersect], data[b_col][intersect])[
-                        0, 1
-                    ]
-
-                score = score * num_intersect / num_union
-                result[measure] = score
-            # increment progress in either case
-            callback_caller.update(1)
 
     for measure in calc_order:
         if measure == "mutual_info":
@@ -202,36 +148,32 @@ def _get_dependence_dict(
             col_names = mutual_columns
         elif measure == "pearson":
             col_names = pearson_columns
-        _calculate(callback_caller, data, col_names, results, measure)
+
+        _calculate_dependence_measure(
+            measure=measure,
+            data=data,
+            results=results,
+            callback_caller=callback_caller,
+            notna_mask=notna_mask,
+            min_shared=min_shared,
+            col_names=col_names,
+        )
 
     for result in results.values():
         if calc_max:
-            # if pearson was not measured, mutual info must be max
-            if "pearson" in result:
-                score = pd.Series(
-                    [result["mutual_info"], abs(result["pearson"])],
-                    index=["mutual_info", "pearson"],
-                )
-                # to keep sign, get name of max score and use original value
-                measure_used = score.idxmax()
-            else:
-                measure_used = "mutual_info"
-
-            # if all measures were nan, measure_used will be nan (float)
-            result["max"] = result.get(measure_used, np.nan)
-
-            if extra_stats:
-                if result["shared_rows"] < min_shared:
-                    result["measure_used"] = "too sparse"
-                else:
-                    result["measure_used"] = measure_used
-
-            if measures == ["max"]:
-                # remove results not expected in returned dictionary
+            _calculate_max_dependence_for_pair(
+                result=result,
+                returned_measures=returned_measures,
+                min_shared=min_shared,
+                extra_stats=extra_stats,
+            )
+            if returned_measures == ["max"]:
+                # remove measurements not expected in returned dictionary
                 del result["mutual_info"]
                 if "pearson" in result:
                     del result["pearson"]
 
+        # Remove cached info not expected in result by user
         if "num_union" in result:
             del result["num_union"]
         if not extra_stats:
@@ -240,7 +182,7 @@ def _get_dependence_dict(
     results = list(results.values())
 
     def sort_key(result):
-        key = abs(result[measures[0]])
+        key = abs(result[returned_measures[0]])
         if np.isnan(key):
             key = -1
         return key
@@ -257,48 +199,3 @@ def _get_valid_columns(dataframe, valid_types):
         if type(col.logical_type) in valid_types
     ]
     return valid_columns
-
-
-def _validate_measures(measures):
-    if not isinstance(measures, list):
-        if not isinstance(measures, str):
-            raise TypeError(f"Supplied measure {measures} is not a string")
-        measures = [measures]
-
-    if len(measures) == 0:
-        raise ValueError("No measures supplied")
-
-    calc_pearson = False
-    calc_mutual = False
-    calc_max = False
-    calc_order = []
-    for measure in measures:
-        if measure == "all":
-            if not measures == ["all"]:
-                warnings.warn(
-                    ParametersIgnoredWarning(
-                        "additional measures to 'all' measure found; 'all' should be used alone"
-                    )
-                )
-            measures = ["max", "pearson", "mutual_info"]
-            calc_pearson = True
-            calc_mutual = True
-            calc_max = True
-            break
-        elif measure == "pearson":
-            calc_pearson = True
-        elif measure == "mutual_info":
-            calc_mutual = True
-        elif measure == "max":
-            calc_pearson = True
-            calc_mutual = True
-            calc_max = True
-        else:
-            raise ValueError("Unrecognized dependence measure %s" % measure)
-
-    if calc_pearson:
-        calc_order.append("pearson")
-    if calc_mutual:
-        calc_order.append("mutual_info")
-
-    return measures, calc_order, calc_max

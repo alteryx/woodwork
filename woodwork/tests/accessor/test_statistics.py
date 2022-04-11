@@ -45,7 +45,7 @@ from woodwork.statistics_utils import (
     _get_recent_value_counts,
     _get_top_values_categorical,
 )
-from woodwork.statistics_utils._get_dependence_dict import _validate_measures
+from woodwork.statistics_utils._parse_measures import _parse_measures
 from woodwork.tests.testing_utils import (
     _check_close,
     check_empty_box_plot_dict,
@@ -1773,35 +1773,35 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
         ),
     ],
 )
-def test_validate_measures_valid(measures, expected):
-    _measures, _calc_order, _calc_max = _validate_measures(measures)
+def test_parse_measures_valid(measures, expected):
+    _measures, _calc_order, _calc_max = _parse_measures(measures)
     assert _measures == expected[0]
     assert _calc_order == expected[1]
     assert _calc_max == expected[2]
 
 
-def test_validate_measures_warns():
+def test_parse_measures_warns():
     warning = "additional measures to 'all' measure found; 'all' should be used alone"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
-        _measures, _calc_order, _calc_max = _validate_measures(["pearson", "all"])
+        _measures, _calc_order, _calc_max = _parse_measures(["pearson", "all"])
     assert _measures == ["max", "pearson", "mutual_info"]
     assert _calc_order == ["pearson", "mutual_info"]
     assert _calc_max
 
 
-def test_validate_measures_wrong_input_types():
+def test_parse_measures_wrong_input_types():
     msg = "Supplied measure 2 is not a string"
     with pytest.raises(TypeError, match=msg):
-        _validate_measures(2)
+        _parse_measures(2)
 
 
-def test_validate_measures_empty():
+def test_parse_measures_empty():
     msg = "No measures supplied"
     with pytest.raises(ValueError, match=msg):
-        _validate_measures([])
+        _parse_measures([])
 
 
-def test_validate_measures_bad_string():
+def test_parse_measures_bad_string():
     msg = "Unrecognized dependence measure ruler"
     with pytest.raises(ValueError, match=msg):
-        _validate_measures(["mutual_info", "ruler"])
+        _parse_measures(["mutual_info", "ruler"])
