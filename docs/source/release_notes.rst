@@ -23,6 +23,7 @@ Future Release
     * Documentation Changes
         * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
         * Add M1 installation instructions to docs and contributing guide (:pr:`1367`)
+        * Update README text to Alteryx (:pr:`1381`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
