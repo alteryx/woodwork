@@ -12,19 +12,22 @@ def _calculate_dependence_measure(
 ):
     """
     Calculates the specified dependence measure for each pair of columns in the
-    provided list of columns.  If two columns do not have enogh shared rows
+    provided list of columns.  If two columns do not have enough shared rows
     (determined using the notna_mask) no measurement is calculated for that pair.
     Updates the results dictionary.
 
     Args:
-        measure (str): dependence measure to calculate
-        data (dict[pd.Series]): dictionary of pandas series to measure
+        measure (str): Dependence measure to calculate.
+        data (dict[pd.Series]): Dictionary of pandas series to measure.
         results (defaultdict[dict]): dictionary to store results
-        callback_caller (CallbackCaller): callback calling object
-        notna_mask (pd.DataFrame): boolean mask of original data, shows whether
-            a cell is null or not
-        min_shared (int): mininum rows of shared data to calculate measure
-        col_names (list): list of columns to use for this calculation
+        callback_caller (CallbackCaller): Callback calling object.
+        notna_mask (pd.DataFrame): Boolean mask of original data, shows whether
+            a cell is null or not.
+        min_shared (int): Mininum rows of shared data to calculate dependence.
+        col_names (list): List of columns to use for this calculation.
+
+    Returns:
+        None
     """
     column_pairs = itertools.combinations(col_names, 2)
     for a_col, b_col in column_pairs:

@@ -163,7 +163,6 @@ def _get_dependence_dict(
         if calc_max:
             _calculate_max_dependence_for_pair(
                 result=result,
-                returned_measures=returned_measures,
                 min_shared=min_shared,
                 extra_stats=extra_stats,
             )

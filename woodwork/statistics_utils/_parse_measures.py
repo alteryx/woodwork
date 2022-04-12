@@ -6,7 +6,7 @@ from woodwork.exceptions import ParametersIgnoredWarning
 def _parse_measures(measures):
     """Validates the provided measures argument and returns the list of measures
     included in the final dataframe/dictionary, an ordered list of measures to
-    calculate, and whether to calculate the max score across measures"""
+    calculate, and whether to calculate the max score across measures."""
     if not isinstance(measures, list):
         if not isinstance(measures, str):
             raise TypeError(f"Supplied measure {measures} is not a string")
