@@ -19,7 +19,7 @@ jobs:
       fail-fast: true
       matrix:
         python_version: ["3.7", "3.8", "3.9", "3.10"]
-        directories: ["All Other Tests", "Testing to Disk with LatLong", "All other Serialization"]
+        directories: ["All Other Tests", "Testing Table Accessor", "Testing to Disk with LatLong", "All other Serialization"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -59,11 +59,16 @@ jobs:
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0
+      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'Testing Table Accessor' }}
+        name: Run Table Accessor Unit Tests (no code coverage)
+        run: |
+          cd unpacked_sdist
+          pytest woodwork/tests/accessor/test_table_accessor.py -n 2 --durations 0
       - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'All Other Tests' }}
         name: Run all other Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --durations 0
+          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Testing to Disk with LatLong' }}
         name: Run Serialization Unit Tests with code coverage
         run: |
@@ -80,6 +85,14 @@ jobs:
           cd unpacked_sdist/
           coverage erase
           pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../.coveragerc
+      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Testing Table Accessor' }}
+        name: Run Table Accessor Unit Tests with code coverage
+        run: |
+          python -m pip install "$(cat setup.cfg | grep codecov)"
+          coverage erase
+          cd unpacked_sdist/
+          coverage erase
+          pytest woodwork/tests/accessor/test_table_accessor.py -n 2 --durations 0 --cov=woodwork --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'All Other Tests' }}
         name: Run Non-serialization Unit Tests with code coverage
         run: |
@@ -87,7 +100,7 @@ jobs:
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --durations 0 --cov=woodwork --cov-config=../.coveragerc
+          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0 --cov=woodwork --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.8 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
