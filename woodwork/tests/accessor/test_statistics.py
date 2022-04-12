@@ -106,7 +106,7 @@ def test_accessor_bin_numeric_cols_into_categories():
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_same(df_same_mi, measure):
-    df_same_mi.ww.init(logical_types={"nans": Categorical()})
+    df_same_mi.ww.init(logical_types={"nans": Categorical(), "ints": "AgeNullable"})
     dep_df = df_same_mi.ww.dependence(measures=measure, min_shared=3)
 
     cols_used = set(np.unique(dep_df[["column_1", "column_2"]].values))
