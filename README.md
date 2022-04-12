@@ -112,7 +112,7 @@ The Woodwork community is happy to provide support to users of Woodwork. Project
 3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
 4. For everything else, the core developers can be reached by email at open_source_support@alteryx.com
 
-## Built at Alteryx Innovation Labs
+## Built at Alteryx
 
 **Woodwork** is an open source project built by [Alteryx](https://www.alteryx.com). To see the other open source projects we’re working on visit [Alteryx Open Source](https://www.alteryx.com/open-source). If building impactful data science pipelines is important to you or your business, please get in touch.
 
