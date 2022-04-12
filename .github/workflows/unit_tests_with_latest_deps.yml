@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  PYARROW_IGNORE_TIMEZONE: 1
+  ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
+
 name: Unit Tests - Latest Dependencies
 jobs:
   unit_latest_tests:
@@ -50,17 +54,11 @@ jobs:
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_serialization.py -n 2 --durations 0
-        env:
-          PYARROW_IGNORE_TIMEZONE: 1
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'Non-serialization' }}
         name: Run Non-serialization Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --durations 0
-        env:
-          PYARROW_IGNORE_TIMEZONE: 1
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Serialization' }}
         name: Run Serialization Unit Tests with code coverage
         run: |
@@ -69,9 +67,6 @@ jobs:
           cd unpacked_sdist/
           coverage erase
           pytest woodwork/tests/accessor/test_serialization.py -n 2 --cov=woodwork --cov-config=../.coveragerc
-        env:
-          PYARROW_IGNORE_TIMEZONE: 1
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Non-serialization' }}
         name: Run Non-serialization Unit Tests with code coverage
         run: |
@@ -80,9 +75,6 @@ jobs:
           cd unpacked_sdist/
           coverage erase
           pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --cov=woodwork --cov-config=../.coveragerc
-        env:
-          PYARROW_IGNORE_TIMEZONE: 1
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - if: ${{ matrix.python_version == 3.8 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
