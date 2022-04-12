@@ -19,7 +19,7 @@ jobs:
       fail-fast: true
       matrix:
         python_version: ["3.7", "3.8", "3.9", "3.10"]
-        directories: ["Non-serialization", "Serialization"]
+        directories: ["All Other Tests", "Testing to Disk with LatLong", "All other Serialization"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -49,32 +49,45 @@ jobs:
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install unpacked_sdist/[spark]
           python -m pip install unpacked_sdist/[dask]
-      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'Serialization' }}
-        name: Run Serialization Unit Tests (no code coverage)
+      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'Testing to Disk with LatLong' }}
+        name: Run testing to Disk with LatLong Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
-          pytest woodwork/tests/accessor/test_serialization.py -n 2 --durations 0
-      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'Non-serialization' }}
-        name: Run Non-serialization Unit Tests (no code coverage)
+          pytest woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0
+      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'All other Serialization' }}
+        name: Run all other Serialization Unit Tests (no code coverage)
+        run: |
+          cd unpacked_sdist
+          pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0
+      - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'All Other Tests' }}
+        name: Run all other Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --durations 0
-      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Serialization' }}
+      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Testing to Disk with LatLong' }}
         name: Run Serialization Unit Tests with code coverage
         run: |
           python -m pip install "$(cat setup.cfg | grep codecov)"
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest woodwork/tests/accessor/test_serialization.py -n 2 --cov=woodwork --cov-config=../.coveragerc
-      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Non-serialization' }}
+          pytest woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../.coveragerc
+      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'All other Serialization' }}
+        name: Run Serialization Unit Tests with code coverage
+        run: |
+          python -m pip install "$(cat setup.cfg | grep codecov)"
+          coverage erase
+          cd unpacked_sdist/
+          coverage erase
+          pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../.coveragerc
+      - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'All Other Tests' }}
         name: Run Non-serialization Unit Tests with code coverage
         run: |
           python -m pip install "$(cat setup.cfg | grep codecov)"
           coverage erase
           cd unpacked_sdist/
           coverage erase
-          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --cov=woodwork --cov-config=../.coveragerc
+          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --durations 0 --cov=woodwork --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.8 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
