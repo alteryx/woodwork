@@ -20,7 +20,7 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import Categorical, Ordinal
 from woodwork.serializers import get_serializer
-from woodwork.serializers.serializer_base import SCHEMA_VERSION
+from woodwork.serializers.serializer_base import SCHEMA_VERSION, typing_info_to_dict
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"
@@ -703,6 +703,7 @@ def test_to_disk_parquet_saves_custom_metdata_as_expected(sample_df, tmpdir):
         logical_types={"categorical": "CountryCode"}, semantic_tags={"age": "age"}
     )
     sample_df.ww.to_disk(str(tmpdir), format="parquet")
+    expected_typing_info = typing_info_to_dict(sample_df)
 
     if _is_dask_dataframe(sample_df):
         filename = "part.0.parquet"
@@ -725,6 +726,14 @@ def test_to_disk_parquet_saves_custom_metdata_as_expected(sample_df, tmpdir):
 
     assert cat_info["logical_type"]["type"] == "CountryCode"
     assert "age" in age_info["semantic_tags"]
+    
+    # location, type and params are added during serialization, so they are not present
+    # in the expected typing information created from the Woodwork dataframe.
+    del ww_meta["loading_info"]["location"]
+    del ww_meta["loading_info"]["type"]
+    del ww_meta["loading_info"]["params"]
+
+    assert ww_meta == expected_typing_info
 
 
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
