@@ -697,7 +697,7 @@ def test_to_disk_parquet_typing_info_file_is_none(sample_df, tmpdir):
     )
 
 
-def test_to_disk_parquet_saves_custom_metdata_as_expected(sample_df, tmpdir):
+def test_to_disk_parquet_saves_custom_metadata_as_expected(sample_df, tmpdir):
     sample_df.ww.init(index="id")
     sample_df.ww.set_types(
         logical_types={"categorical": "CountryCode"}, semantic_tags={"age": "age"}
