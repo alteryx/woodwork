@@ -1,10 +1,12 @@
 import json
 import os
 import shutil
+from pathlib import Path
 from unittest.mock import patch
 
 import boto3
 import pandas as pd
+import pyarrow as pa
 import pytest
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
@@ -693,6 +695,36 @@ def test_to_disk_parquet_typing_info_file_is_none(sample_df, tmpdir):
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
     )
+
+
+def test_to_disk_parquet_saves_custom_metdata_as_expected(sample_df, tmpdir):
+    sample_df.ww.init(index="id")
+    sample_df.ww.set_types(
+        logical_types={"categorical": "CountryCode"}, semantic_tags={"age": "age"}
+    )
+    sample_df.ww.to_disk(str(tmpdir), format="parquet")
+
+    if _is_dask_dataframe(sample_df):
+        filename = "part.0.parquet"
+        path = os.path.join(tmpdir, "data", filename)
+    elif _is_spark_dataframe(sample_df):
+        path = os.path.join(tmpdir, "data")
+        files = os.listdir(path)
+        metadata_file = sorted([f for f in files if Path(f).suffix == ".parquet"])[0]
+        path = os.path.join(path, metadata_file)
+    else:
+        filename = "data.parquet"
+        path = os.path.join(tmpdir, "data", filename)
+
+    file_metadata = pa.parquet.read_metadata(path).metadata
+    assert b"ww_meta" in file_metadata.keys()
+    ww_meta = json.loads(file_metadata[b"ww_meta"])
+    columns = ww_meta["column_typing_info"]
+    cat_info = list(filter(lambda col: col["name"] == "categorical", columns))[0]
+    age_info = list(filter(lambda col: col["name"] == "age", columns))[0]
+
+    assert cat_info["logical_type"]["type"] == "CountryCode"
+    assert "age" in age_info["semantic_tags"]
 
 
 def test_categorical_dtype_serialization(serialize_df, tmpdir):
