@@ -38,13 +38,29 @@ class ParquetSerializer(Serializer):
         self.kwargs["engine"] = "pyarrow"
         return super().serialize(dataframe, profile_name, **kwargs)
 
-    def write_dataframe(self):
-        # Create a pyarrow table for pandas, skip for Dask/Spark
+    def save_to_local_path(self):
+        """Serialize data and typing information to a local directory. Overrides method on base class
+        due to different serialiation flow"""
+        if self.data_subdirectory:
+            location = os.path.join(self.write_path, self.data_subdirectory)
+            os.makedirs(location, exist_ok=True)
+        else:
+            os.makedirs(self.write_path, exist_ok=True)
+        self._create_pyarrow_table()
+        self._generate_parquet_metadata()
+        self._save_parquet_table_to_disk()
+
+    def _create_pyarrow_table(self):
+        """Create a pyarrow table for pandas. This table will get updated to included
+        Woodwork typing info before saving. Skip for Dask/Spark because for those formats
+        typing information has to be added after files are saved to disk."""
         if isinstance(self.dataframe, pd.DataFrame):
             dataframe = clean_latlong(self.dataframe)
             self.table = pa.Table.from_pandas(dataframe)
 
-    def write_typing_info(self):
+    def _generate_parquet_metadata(self):
+        """Generate metadata for the parquet file header. For pandas this includes additional
+        information needed by pandas. For Dask/Spark, this includes only the Woodwork typing info."""
         loading_info = {
             "location": self.location,
             "type": self.format,
@@ -64,12 +80,13 @@ class ParquetSerializer(Serializer):
                 "ww_meta".encode(): json.dumps(self.typing_info).encode(),
                 **table_metadata,
             }
-        self._save_parquet_table_to_disk(metadata)
+        self.metadata = metadata
 
-    def _save_parquet_table_to_disk(self, metadata):
+    def _save_parquet_table_to_disk(self):
+        """Writes data to disk with the updated metadata including WW typing info."""
         if _is_dask_dataframe(self.dataframe):
             path, dataframe = self._setup_for_dask_and_spark()
-            dataframe.to_parquet(path, custom_metadata=metadata)
+            dataframe.to_parquet(path, custom_metadata=self.metadata)
         elif _is_spark_dataframe(self.dataframe):
             path, dataframe = self._setup_for_dask_and_spark()
             dataframe.to_parquet(path)
@@ -81,7 +98,7 @@ class ParquetSerializer(Serializer):
             table = pq.read_table(update_file)
             table_metadata = table.schema.metadata
             combined_meta = {
-                **metadata,
+                **self.metadata,
                 **table_metadata,
             }
             table = table.replace_schema_metadata(combined_meta)
@@ -93,10 +110,12 @@ class ParquetSerializer(Serializer):
                 os.remove(os.path.join(path, file))
         else:
             file = self._get_filename()
-            self.table = self.table.replace_schema_metadata(metadata)
+            self.table = self.table.replace_schema_metadata(self.metadata)
             pq.write_table(self.table, file)
 
     def _setup_for_dask_and_spark(self):
+        """Since Dask/Spark deserialize to directories only, we can't use the `_get_filename` method like we do
+        for pandas, so we do some additional path setup here and check for existing files."""
         path = self.path
         if self.data_subdirectory is not None:
             path = os.path.join(path, self.data_subdirectory)

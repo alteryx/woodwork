@@ -49,7 +49,7 @@ def _get_deserializer(
             Set to False to use an anonymous profile.
 
     Returns:
-        Deserializer: Initialized ``woodwork.Deserializer`` object that can be used to deserialize data.
+        Deserializer: Initialized `woodwork.Deserializer` object that can be used to deserialize data.
     """
     typing_info = None
     if typing_info_filename:
