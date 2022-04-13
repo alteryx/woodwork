@@ -1,4 +1,4 @@
-from woodwork.deserializers.utils import get_deserializer
+from woodwork.deserializers.utils import _get_deserializer
 
 
 def from_disk(
@@ -55,7 +55,7 @@ def read_woodwork_table(
     Returns:
         DataFrame: DataFrame with Woodwork typing information initialized.
     """
-    deserializer = get_deserializer(
+    deserializer = _get_deserializer(
         path, filename, data_subdirectory, typing_info_filename, profile_name, format
     )
     return deserializer.deserialize(profile_name, validate, **kwargs)
