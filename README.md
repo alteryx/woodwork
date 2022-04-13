@@ -116,6 +116,8 @@ The Woodwork community is happy to provide support to users of Woodwork. Project
 
 **Woodwork** is an open source project built by [Alteryx](https://www.alteryx.com). To see the other open source projects we’re working on visit [Alteryx Open Source](https://www.alteryx.com/open-source). If building impactful data science pipelines is important to you or your business, please get in touch.
 
-<a href="https://www.alteryx.com/innovation-labs">
-    <img src="https://evalml-web-images.s3.amazonaws.com/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
-</a>
+<p align="center">
+  <a href="https://www.alteryx.com/open-source">
+    <img src="https://alteryx-oss-web-images.s3.amazonaws.com/OpenSource_Logo-01.png" alt="Alteryx Open Source" width="800"/>
+  </a>
+</p>
