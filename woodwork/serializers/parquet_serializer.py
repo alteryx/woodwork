@@ -114,8 +114,8 @@ class ParquetSerializer(Serializer):
             pq.write_table(self.table, file)
 
     def _setup_for_dask_and_spark(self):
-        """Since Dask/Spark deserialize to directories only, we can't use the `_get_filename` method like we do
-        for pandas, so we do some additional path setup here and check for existing files."""
+        """Perform additional path setup required for Dask/Spark. Since Dask/Spark deserialize to
+        directories only, the `_get_filename` method does not work like it does for pandas."""
         path = self.path
         if self.data_subdirectory is not None:
             path = os.path.join(path, self.data_subdirectory)
