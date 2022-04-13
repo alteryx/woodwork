@@ -726,7 +726,7 @@ def test_to_disk_parquet_saves_custom_metdata_as_expected(sample_df, tmpdir):
 
     assert cat_info["logical_type"]["type"] == "CountryCode"
     assert "age" in age_info["semantic_tags"]
-    
+
     # location, type and params are added during serialization, so they are not present
     # in the expected typing information created from the Woodwork dataframe.
     del ww_meta["loading_info"]["location"]
