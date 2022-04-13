@@ -50,6 +50,7 @@ jobs:
           python -m pip install unpacked_sdist/[spark]
           python -m pip install unpacked_sdist/[dask]
           python -m pip install "$(cat setup.cfg | grep codecov)"
+          coverage erase
           cd unpacked_sdist
           coverage erase
       - if: ${{ matrix.python_version != 3.8 && matrix.directories == 'Testing to Disk with LatLong' }}
