@@ -26,7 +26,7 @@ Future Release
         * Separate testing matrix to speed up GitHub Actions Linux tests for latest dependencies :pr:`1380`
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`ParthivNaresh`
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 v0.15.0 Mar 24, 2022
 ====================
