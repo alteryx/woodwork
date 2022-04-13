@@ -105,6 +105,9 @@ jobs:
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'All Other Tests' }}
         name: Run all other Unit Tests with code coverage
         run: |
+          ls
+          cd unpacked_sdist
+          ls
           pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0 --cov=woodwork --cov-config=../.coveragerc
       - if: ${{ matrix.python_version == 3.8 }}
         name: Upload coverage to Codecov
