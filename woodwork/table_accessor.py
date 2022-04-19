@@ -959,6 +959,7 @@ class WoodworkTableAccessor:
         self,
         include=None,
         callback=None,
+        add_result_callback=None,
         extra_stats=False,
         bins=10,
         top_x=10,
@@ -979,6 +980,10 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
+            add_result_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+
+                - results_so_far (pd.DataFrame): the full dataframe calculated so far
+                - most_recent_calculation (pd.Series): the calculations for the most recent column
 
             extra_stats (bool): If True, will calculate a histogram for numeric columns, top values
                 for categorical columns and value counts for the most recent values in datetime columns. Will also
@@ -1001,13 +1006,14 @@ class WoodworkTableAccessor:
             self._dataframe,
             include=include,
             callback=callback,
+            add_result_callback=add_result_callback,
             extra_stats=extra_stats,
             bins=bins,
             top_x=top_x,
             recent_x=recent_x,
         )
 
-    def describe(self, include=None, callback=None):
+    def describe(self, include=None, callback=None, add_result_callback=None):
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -1023,13 +1029,19 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
+            add_result_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+
+                - results_so_far (pd.DataFrame): the full dataframe calculated so far
+                - most_recent_calculation (pd.Series): the calculations for the most recent column
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = self.describe_dict(include=include, callback=callback)
+        results = self.describe_dict(
+            include=include, callback=callback, add_result_callback=add_result_callback
+        )
         index_order = [
             "physical_type",
             "logical_type",

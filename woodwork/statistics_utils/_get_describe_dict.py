@@ -1,4 +1,5 @@
 from timeit import default_timer as timer
+from typing import List
 
 import pandas as pd
 
@@ -14,13 +15,14 @@ from woodwork.utils import _is_latlong_nan, _update_progress
 
 
 def _get_describe_dict(
-    dataframe,
-    include=None,
-    callback=None,
-    extra_stats=False,
-    bins=10,
-    top_x=10,
-    recent_x=10,
+    dataframe: pd.DataFrame,
+    include: List[str] = None,
+    callback: object = None,
+    add_result_callback: object = None,
+    extra_stats: bool = False,
+    bins: int = 10,
+    top_x: int = 10,
+    recent_x: int = 10,
 ):
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
@@ -38,6 +40,10 @@ def _get_describe_dict(
             - total (int): the total number of calculations to do
             - unit (str): unit of measurement for progress/total
             - time_elapsed (float): total time in seconds elapsed since start of call
+        add_result_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+
+            - results_so_far (pd.DataFrame): the full dataframe calculated so far
+            - most_recent_calculation (pd.Series): the calculations for the most recent column
 
         extra_stats (bool): If True, will calculate a histogram for numeric columns, top values
             for categorical columns and value counts for the most recent values in datetime columns. Will also
@@ -181,4 +187,9 @@ def _get_describe_dict(
         current_progress = _update_progress(
             start_time, timer(), 1, current_progress, total_loops, unit, callback
         )
+        if add_result_callback is not None:
+            results_so_far = pd.DataFrame.from_dict(results)
+            most_recent_calculations = pd.Series(values, name=column_name)
+            add_result_callback(results_so_far, most_recent_calculations)
+
     return results

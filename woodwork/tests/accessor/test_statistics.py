@@ -798,6 +798,48 @@ def test_describe_with_no_match(sample_df):
     assert df.empty
 
 
+def test_describe_add_result_callback(describe_df):
+    describe_df.ww.init(index="index_col")
+
+    class MockAddResultCallback:
+        def __init__(self):
+            self.results_so_far = None
+            self.most_recent_calculation = []
+
+        def __call__(self, results_so_far, most_recent_calculations):
+            self.results_so_far = results_so_far
+            self.most_recent_calculation.append(most_recent_calculations)
+
+    mock_add_result_callback = MockAddResultCallback()
+
+    description = describe_df.ww.describe(add_result_callback=mock_add_result_callback)
+    index_order = [
+        "physical_type",
+        "logical_type",
+        "semantic_tags",
+        "count",
+        "nunique",
+        "nan_count",
+        "mean",
+        "mode",
+        "std",
+        "min",
+        "first_quartile",
+        "second_quartile",
+        "third_quartile",
+        "max",
+        "num_true",
+        "num_false",
+    ]
+    actual_results = mock_add_result_callback.results_so_far
+    actual_results = actual_results.reindex(index_order)
+    actual_most_recent = mock_add_result_callback.most_recent_calculation
+
+    pd.testing.assert_frame_equal(actual_results, description)
+    assert actual_most_recent[0].name == "boolean_col"
+    assert actual_most_recent[-1].name == "unknown_col"
+
+
 def test_describe_callback(describe_df):
     describe_df.ww.init(index="index_col")
 
