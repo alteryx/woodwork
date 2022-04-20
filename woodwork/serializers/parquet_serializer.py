@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 from pathlib import Path
 
 import pandas as pd
@@ -7,7 +8,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.exceptions import WoodworkFileExistsError
+from woodwork.exceptions import ParametersIgnoredWarning, WoodworkFileExistsError
 from woodwork.serializers.serializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE,
     Serializer,
@@ -23,6 +24,11 @@ class ParquetSerializer(Serializer):
 
     def __init__(self, path, filename, data_subdirectory, typing_info_filename):
         super().__init__(path, filename, data_subdirectory, typing_info_filename)
+        if typing_info_filename:
+            warnings.warn(
+                "Typing info filename has been ignored. Typing information will be stored in parquet file header.",
+                ParametersIgnoredWarning,
+            )
         self.typing_info_filename = None
 
     def serialize(self, dataframe, profile_name, **kwargs):

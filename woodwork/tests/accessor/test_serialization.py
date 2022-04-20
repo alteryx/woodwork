@@ -14,6 +14,7 @@ from woodwork.deserialize import from_disk, read_woodwork_table
 from woodwork.deserializers.deserializer_base import _check_schema_version
 from woodwork.exceptions import (
     OutdatedSchemaWarning,
+    ParametersIgnoredWarning,
     UpgradeSchemaWarning,
     WoodworkFileExistsError,
     WoodworkNotInitError,
@@ -695,6 +696,16 @@ def test_to_disk_parquet_typing_info_file_is_none(sample_df, tmpdir):
         to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
         to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
     )
+
+
+def test_to_disk_parquet_warns_if_typing_info_file_specified(sample_df, tmpdir):
+    sample_df.ww.init()
+
+    message = "Typing info filename has been ignored. Typing information will be stored in parquet file header."
+    with pytest.warns(ParametersIgnoredWarning, match=message):
+        sample_df.ww.to_disk(
+            str(tmpdir), format="parquet", typing_info_filename="woodwork.json"
+        )
 
 
 def test_to_disk_parquet_saves_custom_metadata_as_expected(sample_df, tmpdir):
