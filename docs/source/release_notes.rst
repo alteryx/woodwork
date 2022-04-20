@@ -24,6 +24,7 @@ Future Release
         * Add M1 installation instructions to docs and contributing guide (:pr:`1367`)
         * Update README text to Alteryx (:pr:`1381`, :pr:`1382`)
     * Testing Changes
+        * Separate testing matrix to speed up GitHub Actions Linux tests for latest dependencies :pr:`1380`
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`, :user:`thehomebrewnerd`
