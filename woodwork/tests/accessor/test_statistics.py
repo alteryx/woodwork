@@ -803,11 +803,11 @@ def test_describe_add_result_callback(describe_df):
 
     class MockAddResultCallback:
         def __init__(self):
-            self.results_so_far = None
+            self.results_so_far = []
             self.most_recent_calculation = []
 
         def __call__(self, results_so_far, most_recent_calculations):
-            self.results_so_far = results_so_far
+            self.results_so_far.append(results_so_far)
             self.most_recent_calculation.append(most_recent_calculations)
 
     mock_add_result_callback = MockAddResultCallback()
@@ -831,11 +831,17 @@ def test_describe_add_result_callback(describe_df):
         "num_true",
         "num_false",
     ]
-    actual_results = mock_add_result_callback.results_so_far
+    all_results = mock_add_result_callback.results_so_far
+    actual_results = all_results[-1]
     actual_results = actual_results.reindex(index_order)
     actual_most_recent = mock_add_result_callback.most_recent_calculation
 
     pd.testing.assert_frame_equal(actual_results, description)
+    # Spark df does not have timedelta column
+    if _is_spark_dataframe(describe_df):
+        assert len(all_results) == 8
+    else:
+        assert len(all_results) == 9
     assert actual_most_recent[0].name == "boolean_col"
     assert actual_most_recent[-1].name == "unknown_col"
 
