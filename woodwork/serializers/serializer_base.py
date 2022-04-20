@@ -122,10 +122,11 @@ class Serializer:
         file_name = "ww-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
         file_path = os.path.join(self.write_path, file_name)
         tar = tarfile.open(str(file_path), "w")
-        tar.add(
-            str(self.write_path) + f"/{self.typing_info_filename}",
-            arcname=f"/{self.typing_info_filename}",
-        )
+        if self.typing_info_filename:
+            tar.add(
+                str(self.write_path) + f"/{self.typing_info_filename}",
+                arcname=f"/{self.typing_info_filename}",
+            )
         tar.add(
             str(self.write_path) + f"/{self.data_subdirectory}",
             arcname=f"/{self.data_subdirectory}",

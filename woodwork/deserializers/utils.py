@@ -25,17 +25,52 @@ FORMAT_TO_DESERIALIZER = {
 }
 
 
-def get_deserializer(
-    path, filename, data_subdirectory, typing_info_filename, profile_name
+def _get_deserializer(
+    path,
+    filename,
+    data_subdirectory,
+    typing_info_filename,
+    profile_name,
+    format,
 ):
     """Determine the proper Deserializer class to use based on the specified parameters.
-    Initializes and returns the proper Deserializer object."""
-    typing_info = read_table_typing_information(
-        path, typing_info_filename, profile_name
-    )
-    format = typing_info["loading_info"]["type"]
+    Initializes and returns the proper Deserializer object.
+
+    Args:
+        path (str): Directory on disk, S3 path, or URL to read data and typing information.
+        filename (str, optional): The name of the file used to store the data during serialization. If not specified, will be
+            determined from the typing info file. Must be specified when deserializing from a single parquet file.
+        data_subdirectory (str, optional): The subdirectory in which the data was stored during serialization. Defaults to "data".
+        typing_info_filename (str, optional): The name of the JSON file used to store the Woodwork typing information during
+            serialization. Defaults to "woodwork_typing_info.json".
+        format (str, optional): The format used to serialize the data. Required if the serialized filename suffix does not
+            match the format or when deserializing from parquet files into Dask or Spark dataframes.
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+            Set to False to use an anonymous profile.
+
+    Returns:
+        Deserializer: Initialized `woodwork.Deserializer` object that can be used to deserialize data.
+    """
+    typing_info = None
+    if typing_info_filename:
+        try:
+            typing_info = read_table_typing_information(
+                path, typing_info_filename, profile_name
+            )
+        except FileNotFoundError:
+            pass
+
+    if typing_info:
+        format = typing_info["loading_info"]["type"]
+    elif format is None and filename is not None:
+        # Try to get format from filename suffix
+        format = Path(filename).suffix[1:]
 
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
+    if deserializer_cls is None:
+        raise ValueError(
+            "Could not determine format. Please specify filename and/or format."
+        )
 
     return deserializer_cls(path, filename, data_subdirectory, typing_info)
 

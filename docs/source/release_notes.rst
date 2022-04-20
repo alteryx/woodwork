@@ -20,6 +20,7 @@ Future Release
         * Allow attr version in setup.cfg (:pr:`1361`)
         * Raise error if files already exist during serialization (:pr:`1356`)
         * Improve exception handling in ``col_is_datetime`` (:pr:`1365`)
+        * Store typing info in parquet file header during serialization (:pr:`1377`)
     * Documentation Changes
         * Upgrade nbconvert and remove jinja2 dependency (:pr:`1362`)
         * Add M1 installation instructions to docs and contributing guide (:pr:`1367`)

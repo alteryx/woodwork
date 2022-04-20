@@ -5,4 +5,4 @@ from .arrow_deserializer import ArrowDeserializer
 from .orc_deserializer import OrcDeserializer
 from .pickle_deserializer import PickleDeserializer
 
-from .utils import get_deserializer
+from .utils import _get_deserializer
