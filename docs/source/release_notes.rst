@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
         * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)
         * Stores timezones in Datetime logical type (:pr:`1376`)
@@ -14,6 +15,7 @@ Future Release
     * Fixes
         * Cap pandas at 1.4.1 (:pr:`1373`)
     * Changes
+        * Change underlying logic of ``TableAccessor.mutual_information`` (:pr:`1265`)
         * Added ``from_disk`` as a convenience function to deserialize a WW table (:pr:`1363`)
         * Allow attr version in setup.cfg (:pr:`1361`)
         * Raise error if files already exist during serialization (:pr:`1356`)

@@ -87,5 +87,9 @@ class TypeValidationError(Exception):
     pass
 
 
+class SparseDataWarning(UserWarning):
+    pass
+
+
 class WoodworkFileExistsError(FileExistsError):
     pass
