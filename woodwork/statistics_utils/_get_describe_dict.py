@@ -1,5 +1,5 @@
 from timeit import default_timer as timer
-from typing import Any, Callable, Dict, List, Sequence
+from typing import Any, Callable, Dict, Sequence
 
 import pandas as pd
 
