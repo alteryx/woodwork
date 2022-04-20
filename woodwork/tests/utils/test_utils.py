@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 from unittest.mock import patch
 
 import numpy as np
@@ -33,6 +34,7 @@ from woodwork.type_sys.utils import (
     list_semantic_tags,
 )
 from woodwork.utils import (
+    CallbackCaller,
     _coerce_to_float,
     _convert_input_to_set,
     _get_column_logical_type,
@@ -549,3 +551,53 @@ def test_is_latlong_nan():
     assert not _is_latlong_nan([np.nan, 2.0])
     assert not _is_latlong_nan((2.0, 3.0))
     assert not _is_latlong_nan("test")
+
+
+def test_callback_caller(mock_callback):
+    unit = "yards"
+    total = 100
+    caller = CallbackCaller(callback=mock_callback, unit=unit, total=total)
+    start_time = caller.start_time
+
+    assert mock_callback.total_update == 0
+    assert caller.total == total
+    assert caller.unit == unit
+    assert caller.current_progress == 0
+    assert isinstance(start_time, float)
+
+    caller.update(50)
+    assert mock_callback.unit == unit
+    assert mock_callback.total_update == 50
+    assert caller.current_progress == 50
+    assert mock_callback.total_elapsed_time > 0
+    assert mock_callback.progress_history == [50]
+
+
+def test_callback_caller_defaults(mock_callback):
+    unit = "yards"
+    total = 100
+    start_time = timer()
+    caller = CallbackCaller(
+        callback=mock_callback,
+        unit=unit,
+        total=total,
+        start_time=start_time,
+        start_progress=20,
+    )
+
+    assert caller.start_time == start_time
+    assert caller.current_progress == 20
+
+
+def test_callback_caller_no_callback():
+    unit = "yards"
+    total = 100
+    caller = CallbackCaller(callback=None, unit=unit, total=total)
+
+    assert caller.callback is None
+    assert caller.total == 100
+    assert caller.current_progress == 0
+
+    caller.update(1)
+
+    assert caller.current_progress == 0
