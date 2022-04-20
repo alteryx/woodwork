@@ -1,10 +1,11 @@
 # flake8: noqa
 import pytest
 from .table_utils import (
+    _check_close,
     check_empty_box_plot_dict,
+    dep_between_cols,
     is_property,
     is_public_method,
-    mi_between_cols,
     to_pandas,
     validate_subset_schema,
 )

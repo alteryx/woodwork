@@ -11,6 +11,8 @@ WoodworkTableAccessor
 
     WoodworkTableAccessor
     WoodworkTableAccessor.add_semantic_tags
+    WoodworkTableAccessor.dependence
+    WoodworkTableAccessor.dependence_dict
     WoodworkTableAccessor.describe
     WoodworkTableAccessor.describe_dict
     WoodworkTableAccessor.drop
@@ -26,6 +28,8 @@ WoodworkTableAccessor
     WoodworkTableAccessor.mutual_information
     WoodworkTableAccessor.mutual_information_dict
     WoodworkTableAccessor.name
+    WoodworkTableAccessor.pearson_correlation
+    WoodworkTableAccessor.pearson_correlation_dict
     WoodworkTableAccessor.physical_types
     WoodworkTableAccessor.pop
     WoodworkTableAccessor.remove_semantic_tags
@@ -207,6 +211,7 @@ General Utils
 
     concat_columns
     get_valid_mi_types
+    get_valid_pearson_types
     read_file
 
 .. currentmodule:: woodwork.accessor_utils

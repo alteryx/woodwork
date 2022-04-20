@@ -11,7 +11,7 @@ from ._get_top_values_categorical import _get_top_values_categorical
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import Datetime, LatLong, Unknown
-from woodwork.utils import _is_latlong_nan, _update_progress
+from woodwork.utils import CallbackCaller, _is_latlong_nan
 
 
 def _get_describe_dict(
@@ -101,15 +101,12 @@ def _get_describe_dict(
     # Setup for progress callback and make initial call
     # Assume 1 unit for general preprocessing, plus main loop over column
     total_loops = 1 + len(cols_to_include)
-    current_progress = _update_progress(
-        start_time, timer(), 1, 0, total_loops, unit, callback
-    )
+    callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
+    callback_caller.update(1)
 
     for column_name, column in cols_to_include:
         if "index" in column.semantic_tags:
-            current_progress = _update_progress(
-                start_time, timer(), 1, current_progress, total_loops, unit, callback
-            )
+            callback_caller.update(1)
             continue
         values = {}
         logical_type = column.logical_type
@@ -184,11 +181,9 @@ def _get_describe_dict(
                 values["recent_values"] = _get_recent_value_counts(series, recent_x)
 
         results[column_name] = values
-        current_progress = _update_progress(
-            start_time, timer(), 1, current_progress, total_loops, unit, callback
-        )
         if add_result_callback is not None:
             results_so_far = pd.DataFrame.from_dict(results)
             most_recent_calculations = pd.Series(values, name=column_name)
             add_result_callback(results_so_far, most_recent_calculations)
+        callback_caller.update(1)
     return results
