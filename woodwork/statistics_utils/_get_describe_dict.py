@@ -1,5 +1,5 @@
 from timeit import default_timer as timer
-from typing import List
+from typing import Any, Callable, Dict, List, Sequence
 
 import pandas as pd
 
@@ -16,14 +16,14 @@ from woodwork.utils import _is_latlong_nan, _update_progress
 
 def _get_describe_dict(
     dataframe: pd.DataFrame,
-    include: List[str] = None,
-    callback: object = None,
-    add_result_callback: object = None,
+    include: Sequence[str] = None,
+    callback: Callable[[int, int, int, str, float], Any] = None,
+    add_result_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
     extra_stats: bool = False,
     bins: int = 10,
     top_x: int = 10,
     recent_x: int = 10,
-):
+) -> Dict[str, dict]:
     """Calculates statistics for data contained in a DataFrame using Woodwork typing information.
 
     Args:
@@ -191,5 +191,4 @@ def _get_describe_dict(
             results_so_far = pd.DataFrame.from_dict(results)
             most_recent_calculations = pd.Series(values, name=column_name)
             add_result_callback(results_so_far, most_recent_calculations)
-
     return results

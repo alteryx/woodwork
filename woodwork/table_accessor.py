@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Dict, Iterable, List, Set, Union
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Set, Union
 
 import pandas as pd
 
@@ -957,14 +957,14 @@ class WoodworkTableAccessor:
     @_check_table_schema
     def describe_dict(
         self,
-        include=None,
-        callback=None,
-        add_result_callback=None,
-        extra_stats=False,
-        bins=10,
-        top_x=10,
-        recent_x=10,
-    ):
+        include: Sequence[Union[str, LogicalType]] = None,
+        callback: Callable[[int, int, int, str, float], Any] = None,
+        add_result_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+        extra_stats: bool = False,
+        bins: int = 10,
+        top_x: int = 10,
+        recent_x: int = 10,
+    ) -> Dict[str, dict]:
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -1013,7 +1013,12 @@ class WoodworkTableAccessor:
             recent_x=recent_x,
         )
 
-    def describe(self, include=None, callback=None, add_result_callback=None):
+    def describe(
+        self,
+        include: Sequence[Union[str, LogicalType]] = None,
+        callback: Callable[[int, int, int, str, float], Any] = None,
+        add_result_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+    ) -> pd.DataFrame:
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
