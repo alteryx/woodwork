@@ -24,7 +24,7 @@ class ParquetSerializer(Serializer):
 
     def __init__(self, path, filename, data_subdirectory, typing_info_filename):
         super().__init__(path, filename, data_subdirectory, typing_info_filename)
-        if typing_info_filename:
+        if typing_info_filename and typing_info_filename != "woodwork_typing_info.json":
             warnings.warn(
                 "Typing info filename has been ignored. Typing information will be stored in parquet file header.",
                 ParametersIgnoredWarning,
