@@ -1102,19 +1102,8 @@ def test_describe_with_no_match(sample_df):
     assert df.empty
 
 
-def test_describe_add_result_callback(describe_df):
+def test_describe_add_result_callback(describe_df, mock_add_result_callback):
     describe_df.ww.init(index="index_col")
-
-    class MockAddResultCallback:
-        def __init__(self):
-            self.results_so_far = []
-            self.most_recent_calculation = []
-
-        def __call__(self, results_so_far, most_recent_calculations):
-            self.results_so_far.append(results_so_far)
-            self.most_recent_calculation.append(most_recent_calculations)
-
-    mock_add_result_callback = MockAddResultCallback()
 
     description = describe_df.ww.describe(add_result_callback=mock_add_result_callback)
     index_order = [
