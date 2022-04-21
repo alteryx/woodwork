@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Dict, Iterable, List, Set, Union
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Set, Union
 
 import pandas as pd
 
@@ -1242,13 +1242,14 @@ class WoodworkTableAccessor:
     @_check_table_schema
     def describe_dict(
         self,
-        include=None,
-        callback=None,
-        extra_stats=False,
-        bins=10,
-        top_x=10,
-        recent_x=10,
-    ):
+        include: Sequence[Union[str, LogicalType]] = None,
+        callback: Callable[[int, int, int, str, float], Any] = None,
+        results_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+        extra_stats: bool = False,
+        bins: int = 10,
+        top_x: int = 10,
+        recent_x: int = 10,
+    ) -> Dict[str, dict]:
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -1264,6 +1265,10 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
+            results_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+
+                - results_so_far (pd.DataFrame): the full dataframe calculated so far
+                - most_recent_calculation (pd.Series): the calculations for the most recent column
 
             extra_stats (bool): If True, will calculate a histogram for numeric columns, top values
                 for categorical columns and value counts for the most recent values in datetime columns. Will also
@@ -1286,13 +1291,19 @@ class WoodworkTableAccessor:
             self._dataframe,
             include=include,
             callback=callback,
+            results_callback=results_callback,
             extra_stats=extra_stats,
             bins=bins,
             top_x=top_x,
             recent_x=recent_x,
         )
 
-    def describe(self, include=None, callback=None):
+    def describe(
+        self,
+        include: Sequence[Union[str, LogicalType]] = None,
+        callback: Callable[[int, int, int, str, float], Any] = None,
+        results_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+    ) -> pd.DataFrame:
         """Calculates statistics for data contained in the DataFrame.
 
         Args:
@@ -1308,13 +1319,19 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
+            results_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+
+                - results_so_far (pd.DataFrame): the full dataframe calculated so far
+                - most_recent_calculation (pd.Series): the calculations for the most recent column
 
         Returns:
             pd.DataFrame: A Dataframe containing statistics for the data or the subset of the original
             DataFrame that contains the logical types, semantic tags, or column names specified
             in ``include``.
         """
-        results = self.describe_dict(include=include, callback=callback)
+        results = self.describe_dict(
+            include=include, callback=callback, results_callback=results_callback
+        )
         index_order = [
             "physical_type",
             "logical_type",

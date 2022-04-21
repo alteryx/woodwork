@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added the ability to provide a callback function to ``TableAccessor.describe()`` to get intermediate results (:pr:`1387`)
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
         * Uses ``string[pyarrow]`` instead of ``string`` dtype to save memory (:pr:`1360`)
         * Added a better error message when dataframe and schema have different columns (:pr:`1366`)

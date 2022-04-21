@@ -950,6 +950,21 @@ def mock_callback():
     return MockCallback()
 
 
+class MockResultCallback:
+    def __init__(self):
+        self.results_so_far = []
+        self.most_recent_calculation = []
+
+    def __call__(self, results_so_far, most_recent_calculations):
+        self.results_so_far.append(results_so_far)
+        self.most_recent_calculation.append(most_recent_calculations)
+
+
+@pytest.fixture()
+def mock_results_callback():
+    return MockResultCallback()
+
+
 @pytest.fixture()
 def timezones_df_pandas():
     dtypes = {
