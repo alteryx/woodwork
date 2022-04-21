@@ -1244,7 +1244,7 @@ class WoodworkTableAccessor:
         self,
         include: Sequence[Union[str, LogicalType]] = None,
         callback: Callable[[int, int, int, str, float], Any] = None,
-        add_result_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+        results_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
         extra_stats: bool = False,
         bins: int = 10,
         top_x: int = 10,
@@ -1265,7 +1265,7 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            add_result_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+            results_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
 
                 - results_so_far (pd.DataFrame): the full dataframe calculated so far
                 - most_recent_calculation (pd.Series): the calculations for the most recent column
@@ -1291,7 +1291,7 @@ class WoodworkTableAccessor:
             self._dataframe,
             include=include,
             callback=callback,
-            add_result_callback=add_result_callback,
+            results_callback=results_callback,
             extra_stats=extra_stats,
             bins=bins,
             top_x=top_x,
@@ -1302,7 +1302,7 @@ class WoodworkTableAccessor:
         self,
         include: Sequence[Union[str, LogicalType]] = None,
         callback: Callable[[int, int, int, str, float], Any] = None,
-        add_result_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+        results_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
     ) -> pd.DataFrame:
         """Calculates statistics for data contained in the DataFrame.
 
@@ -1319,7 +1319,7 @@ class WoodworkTableAccessor:
                 - total (int): the total number of calculations to do
                 - unit (str): unit of measurement for progress/total
                 - time_elapsed (float): total time in seconds elapsed since start of call
-            add_result_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+            results_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
 
                 - results_so_far (pd.DataFrame): the full dataframe calculated so far
                 - most_recent_calculation (pd.Series): the calculations for the most recent column
@@ -1330,7 +1330,7 @@ class WoodworkTableAccessor:
             in ``include``.
         """
         results = self.describe_dict(
-            include=include, callback=callback, add_result_callback=add_result_callback
+            include=include, callback=callback, results_callback=results_callback
         )
         index_order = [
             "physical_type",

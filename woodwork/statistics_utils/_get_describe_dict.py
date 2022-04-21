@@ -18,7 +18,7 @@ def _get_describe_dict(
     dataframe: pd.DataFrame,
     include: Sequence[str] = None,
     callback: Callable[[int, int, int, str, float], Any] = None,
-    add_result_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
+    results_callback: Callable[[pd.DataFrame, pd.Series], Any] = None,
     extra_stats: bool = False,
     bins: int = 10,
     top_x: int = 10,
@@ -40,7 +40,7 @@ def _get_describe_dict(
             - total (int): the total number of calculations to do
             - unit (str): unit of measurement for progress/total
             - time_elapsed (float): total time in seconds elapsed since start of call
-        add_result_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
+        results_callback (callable, optional): function to be called with intermediate results. Has the following parameters:
 
             - results_so_far (pd.DataFrame): the full dataframe calculated so far
             - most_recent_calculation (pd.Series): the calculations for the most recent column
@@ -184,6 +184,6 @@ def _get_describe_dict(
         if add_result_callback is not None:
             results_so_far = pd.DataFrame.from_dict(results)
             most_recent_calculations = pd.Series(values, name=column_name)
-            add_result_callback(results_so_far, most_recent_calculations)
+            results_callback(results_so_far, most_recent_calculations)
         callback_caller.update(1)
     return results

@@ -950,7 +950,7 @@ def mock_callback():
     return MockCallback()
 
 
-class MockAddResultCallback:
+class MockResultCallback:
     def __init__(self):
         self.results_so_far = []
         self.most_recent_calculation = []
@@ -961,8 +961,8 @@ class MockAddResultCallback:
 
 
 @pytest.fixture()
-def mock_add_result_callback():
-    return MockAddResultCallback()
+def mock_results_callback():
+    return MockResultCallback()
 
 
 @pytest.fixture()

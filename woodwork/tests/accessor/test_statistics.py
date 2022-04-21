@@ -1102,10 +1102,10 @@ def test_describe_with_no_match(sample_df):
     assert df.empty
 
 
-def test_describe_add_result_callback(describe_df, mock_add_result_callback):
+def test_describe_add_result_callback(describe_df, mock_results_callback):
     describe_df.ww.init(index="index_col")
 
-    description = describe_df.ww.describe(add_result_callback=mock_add_result_callback)
+    description = describe_df.ww.describe(results_callback=mock_results_callback)
     index_order = [
         "physical_type",
         "logical_type",
@@ -1124,12 +1124,14 @@ def test_describe_add_result_callback(describe_df, mock_add_result_callback):
         "num_true",
         "num_false",
     ]
-    all_results = mock_add_result_callback.results_so_far
+    all_results = mock_results_callback.results_so_far
     actual_results = all_results[-1]
     actual_results = actual_results.reindex(index_order)
-    actual_most_recent = mock_add_result_callback.most_recent_calculation
+    actual_most_recent = mock_results_callback.most_recent_calculation
 
     pd.testing.assert_frame_equal(actual_results, description)
+    for ind, new_updated in enumerate(all_results):
+        assert new_updated.shape[1] == ind + 1
     # Spark df does not have timedelta column
     if _is_spark_dataframe(describe_df):
         assert len(all_results) == 8
