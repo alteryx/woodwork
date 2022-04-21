@@ -181,7 +181,7 @@ def _get_describe_dict(
                 values["recent_values"] = _get_recent_value_counts(series, recent_x)
 
         results[column_name] = values
-        if add_result_callback is not None:
+        if results_callback is not None:
             results_so_far = pd.DataFrame.from_dict(results)
             most_recent_calculations = pd.Series(values, name=column_name)
             results_callback(results_so_far, most_recent_calculations)
