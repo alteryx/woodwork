@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Reverting ``string[pyarrow]`` until fix can be found for pandas issue (:pr:``)
+        * Reverting ``string[pyarrow]`` until fix can be found for pandas issue (:pr:`1391`)
     * Changes
     * Documentation Changes
     * Testing Changes
