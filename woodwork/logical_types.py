@@ -13,7 +13,6 @@ from woodwork.exceptions import (
 )
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
-    _check_data_type_equality,
     _infer_datetime_format,
     _is_valid_latlong_series,
     _reformat_to_latlong,
@@ -41,7 +40,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
 
     type_string = ClassNameDescriptor()
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
     backup_dtype = None
     standard_tags = set()
 
@@ -64,7 +63,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     def transform(self, series):
         """Converts the series dtype to match the logical type's if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
-        if new_dtype != str(series.dtype) and new_dtype != series.dtype:
+        if new_dtype != str(series.dtype):
             # Update the underlying series
             try:
                 series = series.astype(new_dtype)
@@ -77,7 +76,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         specific validation, as required. When the series' dtype does not match the logical types' required dtype,
         raises a TypeValidationError."""
         valid_dtype = self._get_valid_dtype(type(series))
-        if not _check_data_type_equality(valid_dtype, str(series.dtype)):
+        if valid_dtype != str(series.dtype):
             raise TypeValidationError(
                 f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
             )
@@ -93,7 +92,7 @@ class Address(LogicalType):
             ['26387 Russell Hill, Dallas, TX 34521', '54305 Oxford Street, Seattle, WA 95132']
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
 
 class Age(LogicalType):
@@ -217,7 +216,7 @@ class Categorical(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string[pyarrow]"
+    backup_dtype = "string"
     standard_tags = {"category"}
 
     def __init__(self, encoding=None):
@@ -238,7 +237,7 @@ class CountryCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string[pyarrow]"
+    backup_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -253,7 +252,7 @@ class CurrencyCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string[pyarrow]"
+    backup_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -392,7 +391,7 @@ class EmailAddress(LogicalType):
              "team@example.com"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
     def validate(self, series, return_invalid_values=False):
         """Validates email address values based on the regex in the config.
@@ -419,7 +418,7 @@ class Filepath(LogicalType):
              "/tmp"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
 
 class PersonFullName(LogicalType):
@@ -434,7 +433,7 @@ class PersonFullName(LogicalType):
              "James Brown"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
 
 class IPAddress(LogicalType):
@@ -449,7 +448,7 @@ class IPAddress(LogicalType):
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
 
 class LatLong(LogicalType):
@@ -514,7 +513,7 @@ class NaturalLanguage(LogicalType):
              "When will humans go to mars?"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
 
 class Unknown(LogicalType):
@@ -529,7 +528,7 @@ class Unknown(LogicalType):
 
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
 
 class Ordinal(LogicalType):
@@ -549,7 +548,7 @@ class Ordinal(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string[pyarrow]"
+    backup_dtype = "string"
     standard_tags = {"category"}
 
     def __init__(self, order=None):
@@ -605,7 +604,7 @@ class PhoneNumber(LogicalType):
              "5551235495"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
     def validate(self, series, return_invalid_values=False):
         """Validates PhoneNumber values based on the regex in the config.
@@ -634,7 +633,7 @@ class SubRegionCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string[pyarrow]"
+    backup_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -664,7 +663,7 @@ class URL(LogicalType):
              "example.com"]
     """
 
-    primary_dtype = "string[pyarrow]"
+    primary_dtype = "string"
 
     def validate(self, series, return_invalid_values=False):
         """Validates URL values based on the regex in the config.
@@ -692,7 +691,7 @@ class PostalCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string[pyarrow]"
+    backup_dtype = "string"
     standard_tags = {"category"}
 
     def validate(self, series, return_invalid_values=False):
@@ -725,7 +724,7 @@ _NULLABLE_PHYSICAL_TYPES = {
     "float64",
     "float128",
     "object",
-    "string[pyarrow]",
+    "string",
     "timedelta64[ns]",
 }
 
