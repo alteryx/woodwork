@@ -173,7 +173,7 @@ def test_read_file(
         "to_csv",
         save_orc_file,
     ]:  # categorical column not inferred as categorical
-        schema_df["categorical"] = schema_df["categorical"].astype("string[pyarrow]")
+        schema_df["categorical"] = schema_df["categorical"].astype("string")
 
     schema_df.ww.init(
         index=kwargs.get("index"),
@@ -194,6 +194,7 @@ def test_read_file(
     if "nrows" in kwargs:
         assert len(df) == kwargs["nrows"]
         schema_df = schema_df.head(kwargs["nrows"])
+
     pd.testing.assert_frame_equal(df, schema_df)
 
 
