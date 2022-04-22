@@ -40,8 +40,8 @@ class LogicalTypeMetaClass(type):
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
 
-    type_string = ClassNameDescriptor()
-    primary_dtype = "string"
+    type_string[pyarrow] = ClassNameDescriptor()
+    primary_dtype = "string[pyarrow]"
     backup_dtype = None
     standard_tags = set()
 
@@ -79,7 +79,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         valid_dtype = self._get_valid_dtype(type(series))
         if not _check_data_type_equality(valid_dtype, str(series.dtype)):
             raise TypeValidationError(
-                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string[pyarrow]} dtype."
             )
 
 
@@ -93,7 +93,7 @@ class Address(LogicalType):
             ['26387 Russell Hill, Dallas, TX 34521', '54305 Oxford Street, Seattle, WA 95132']
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
 
 class Age(LogicalType):
@@ -217,7 +217,7 @@ class Categorical(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
 
     def __init__(self, encoding=None):
@@ -238,7 +238,7 @@ class CountryCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
 
 
@@ -253,7 +253,7 @@ class CurrencyCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
 
 
@@ -319,7 +319,7 @@ class Datetime(LogicalType):
                         f"Some rows in series '{series.name}' are incompatible with datetime format "
                         f"'{self.datetime_format}' and have been replaced with null values. You may be "
                         "able to fix this by using an instantiated Datetime logical type with a different format "
-                        "string specified for this column during Woodwork initialization.",
+                        "string[pyarrow] specified for this column during Woodwork initialization.",
                         TypeConversionWarning,
                     )
                     series = pd.to_datetime(
@@ -392,7 +392,7 @@ class EmailAddress(LogicalType):
              "team@example.com"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
     def validate(self, series, return_invalid_values=False):
         """Validates email address values based on the regex in the config.
@@ -419,7 +419,7 @@ class Filepath(LogicalType):
              "/tmp"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
 
 class PersonFullName(LogicalType):
@@ -434,7 +434,7 @@ class PersonFullName(LogicalType):
              "James Brown"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
 
 class IPAddress(LogicalType):
@@ -449,7 +449,7 @@ class IPAddress(LogicalType):
              "2001:0db8:0000:0000:0000:ff00:0042:8329"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
 
 class LatLong(LogicalType):
@@ -514,11 +514,11 @@ class NaturalLanguage(LogicalType):
              "When will humans go to mars?"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
 
 class Unknown(LogicalType):
-    """Represents Logical Types that cannot be inferred as a specific Logical Type. It is assumed to contain string data.
+    """Represents Logical Types that cannot be inferred as a specific Logical Type. It is assumed to contain string[pyarrow] data.
 
     Examples:
         .. code-block:: python
@@ -529,7 +529,7 @@ class Unknown(LogicalType):
 
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
 
 class Ordinal(LogicalType):
@@ -549,7 +549,7 @@ class Ordinal(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
 
     def __init__(self, order=None):
@@ -605,7 +605,7 @@ class PhoneNumber(LogicalType):
              "5551235495"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
     def validate(self, series, return_invalid_values=False):
         """Validates PhoneNumber values based on the regex in the config.
@@ -634,7 +634,7 @@ class SubRegionCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
 
 
@@ -664,7 +664,7 @@ class URL(LogicalType):
              "example.com"]
     """
 
-    primary_dtype = "string"
+    primary_dtype = "string[pyarrow]"
 
     def validate(self, series, return_invalid_values=False):
         """Validates URL values based on the regex in the config.
@@ -692,7 +692,7 @@ class PostalCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    backup_dtype = "string[pyarrow]"
     standard_tags = {"category"}
 
     def validate(self, series, return_invalid_values=False):
@@ -725,7 +725,7 @@ _NULLABLE_PHYSICAL_TYPES = {
     "float64",
     "float128",
     "object",
-    "string",
+    "string[pyarrow]",
     "timedelta64[ns]",
 }
 
@@ -754,14 +754,14 @@ def _regex_validate(regex_key, series, return_invalid_values):
             any_invalid = any_invalid.compute()
 
         if any_invalid:
-            type_string = {
+            type_string[pyarrow] = {
                 "url_inference_regex": "url",
                 "email_inference_regex": "email address",
                 "phone_inference_regex": "phone number",
                 "postal_code_inference_regex": "postal code",
             }[regex_key]
 
-            info = f"Series {series.name} contains invalid {type_string} values. "
+            info = f"Series {series.name} contains invalid {type_string[pyarrow]} values. "
             info += f"The {regex_key} can be changed in the config if needed."
             raise TypeValidationError(info)
 
