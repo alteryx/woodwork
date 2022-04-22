@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.16.0 Apr 21, 2022
+====================
     * Enhancements
         * Added the ability to provide a callback function to ``TableAccessor.describe()`` to get intermediate results (:pr:`1387`)
         * Add ``pearson_correlation`` and ``dependence`` methods to TableAccessor (:pr:`1265`)
