@@ -40,7 +40,7 @@ class LogicalTypeMetaClass(type):
 class LogicalType(object, metaclass=LogicalTypeMetaClass):
     """Base class for all other Logical Types"""
 
-    type_string[pyarrow] = ClassNameDescriptor()
+    type_string = ClassNameDescriptor()
     primary_dtype = "string[pyarrow]"
     backup_dtype = None
     standard_tags = set()
@@ -79,7 +79,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         valid_dtype = self._get_valid_dtype(type(series))
         if not _check_data_type_equality(valid_dtype, str(series.dtype)):
             raise TypeValidationError(
-                f"Series dtype '{series.dtype}' is incompatible with {self.type_string[pyarrow]} dtype."
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
             )
 
 
@@ -518,7 +518,7 @@ class NaturalLanguage(LogicalType):
 
 
 class Unknown(LogicalType):
-    """Represents Logical Types that cannot be inferred as a specific Logical Type. It is assumed to contain string[pyarrow] data.
+    """Represents Logical Types that cannot be inferred as a specific Logical Type. It is assumed to contain string data.
 
     Examples:
         .. code-block:: python
@@ -754,14 +754,14 @@ def _regex_validate(regex_key, series, return_invalid_values):
             any_invalid = any_invalid.compute()
 
         if any_invalid:
-            type_string[pyarrow] = {
+            type_string = {
                 "url_inference_regex": "url",
                 "email_inference_regex": "email address",
                 "phone_inference_regex": "phone number",
                 "postal_code_inference_regex": "postal code",
             }[regex_key]
 
-            info = f"Series {series.name} contains invalid {type_string[pyarrow]} values. "
+            info = f"Series {series.name} contains invalid {type_string} values. "
             info += f"The {regex_key} can be changed in the config if needed."
             raise TypeValidationError(info)
 
