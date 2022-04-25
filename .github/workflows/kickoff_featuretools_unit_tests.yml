@@ -1,6 +1,8 @@
 name: Kickoff Featuretools Unit Tests
 
 on:
+  pull_request:
+    types: [opened, synchronize]
   push:
     branches:
       - main
