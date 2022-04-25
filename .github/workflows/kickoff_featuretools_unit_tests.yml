@@ -6,9 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  GH_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
-
 jobs:
   featuretools:
     name: Run Featuretools unit tests
@@ -17,3 +14,5 @@ jobs:
     steps:
       - name: Run workflow for unit tests
         run: gh workflow run test_with_woodwork_main_branch.yml --repo alteryx/featuretools
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
