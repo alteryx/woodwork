@@ -7,11 +7,17 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fixed import issues regarding ``pyarrow`` and made ``python-dateutil>=2.8.1`` a required dependency (:pr:`1397`)
     * Changes
     * Documentation Changes
     * Testing Changes
         * Add workflow to kickoff Featuretools unit tests with Woodwork main (:pr:`1400`)
+
+.. Thanks to the following people for contributing to this release:
+
+v0.16.2 Apr 25, 2022
+====================
+    * Fixes
+        * Fixed import issues regarding ``pyarrow`` and made ``python-dateutil>=2.8.1`` a required dependency (:pr:`1397`)
 
     Thanks to the following people for contributing to this release:
     :user:`ParthivNaresh`, :user:`gsheni`
