@@ -3,16 +3,23 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
-        * Reverting ``string[pyarrow]`` until fix can be found for pandas issue (:pr:`1391`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
+.. Thanks to the following people for contributing to this release:
+
+v0.16.1 Apr 25, 2022
+====================
+    * Fixes
+        * Reverting ``string[pyarrow]`` until fix can be found for pandas issue (:pr:`1391`)
+
     Thanks to the following people for contributing to this release:
+    :user:`ParthivNaresh`
 
 v0.16.0 Apr 21, 2022
 ====================
