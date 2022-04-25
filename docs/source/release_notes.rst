@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-      * Fixed import issues regarding ``pyarrow`` and made ``python-dateutil>=2.8.1`` a required dependency (:pr:``)
+      * Fixed import issues regarding ``pyarrow`` and made ``python-dateutil>=2.8.1`` a required dependency (:pr:`1397`)
     * Changes
     * Documentation Changes
     * Testing Changes
