@@ -4,8 +4,6 @@ import warnings
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.exceptions import ParametersIgnoredWarning, WoodworkFileExistsError
@@ -23,6 +21,7 @@ class ParquetSerializer(Serializer):
     format = "parquet"
 
     def __init__(self, path, filename, data_subdirectory, typing_info_filename):
+        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
         super().__init__(path, filename, data_subdirectory, typing_info_filename)
         if typing_info_filename and typing_info_filename != "woodwork_typing_info.json":
             warnings.warn(
@@ -32,7 +31,6 @@ class ParquetSerializer(Serializer):
         self.typing_info_filename = None
 
     def serialize(self, dataframe, profile_name, **kwargs):
-        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
         if self.filename is not None and _is_dask_dataframe(dataframe):
             raise ValueError(
                 "Writing a Dask dataframe to parquet with a filename specified is not supported"
@@ -60,6 +58,8 @@ class ParquetSerializer(Serializer):
         """Create a pyarrow table for pandas. This table will get updated to included
         Woodwork typing info before saving. Skip for Dask/Spark because for those formats
         typing information has to be added after files are saved to disk."""
+        import pyarrow as pa
+
         if isinstance(self.dataframe, pd.DataFrame):
             dataframe = clean_latlong(self.dataframe)
             self.table = pa.Table.from_pandas(dataframe)
@@ -90,6 +90,8 @@ class ParquetSerializer(Serializer):
 
     def _save_parquet_table_to_disk(self):
         """Writes data to disk with the updated metadata including WW typing info."""
+        import pyarrow.parquet as pq
+
         if _is_dask_dataframe(self.dataframe):
             path, dataframe = self._setup_for_dask_and_spark()
             dataframe.to_parquet(path, custom_metadata=self.metadata)

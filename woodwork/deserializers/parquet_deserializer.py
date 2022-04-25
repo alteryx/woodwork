@@ -4,11 +4,13 @@ import tarfile
 import tempfile
 from pathlib import Path
 
-import pyarrow as pa
-
-from woodwork.deserializers.deserializer_base import Deserializer, _check_schema_version
+from woodwork.deserializers.deserializer_base import (
+    PYARROW_IMPORT_ERROR_MESSAGE_DESERIALIZE,
+    Deserializer,
+    _check_schema_version,
+)
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import _is_s3, _is_url
+from woodwork.utils import _is_s3, _is_url, import_or_raise
 
 
 class ParquetDeserializer(Deserializer):
@@ -17,6 +19,7 @@ class ParquetDeserializer(Deserializer):
     format = "parquet"
 
     def deserialize(self, profile_name, validate):
+        import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE_DESERIALIZE)
         if _is_url(self.path) or _is_s3(self.path):
             dataframe = self.read_from_s3(profile_name)
         else:
@@ -31,6 +34,8 @@ class ParquetDeserializer(Deserializer):
         return dataframe
 
     def configure_deserializer(self):
+        import pyarrow as pa
+
         self._set_metadata_path()
         file_metadata = pa.parquet.read_metadata(self.metadata_path)
         self.typing_info = json.loads(file_metadata.metadata[b"ww_meta"])
