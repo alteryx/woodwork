@@ -1,0 +1,18 @@
+name: Kickoff Featuretools Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GH_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+
+jobs:
+  featuretools:
+    name: Run Featuretools unit tests
+    if: github.repository_owner == 'alteryx'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run workflow for unit tests
+        run: gh workflow run test_with_woodwork_main_branch.yml --repo alteryx/featuretools
