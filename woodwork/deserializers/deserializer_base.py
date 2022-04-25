@@ -13,6 +13,14 @@ from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serializers.serializer_base import SCHEMA_VERSION
 from woodwork.utils import _is_s3, _is_url, import_or_raise
 
+PYARROW_IMPORT_ERROR_MESSAGE_DESERIALIZE = (
+    f"The pyarrow library is required to deserialize from {format}.\n"
+    "Install via pip:\n"
+    "    pip install pyarrow\n"
+    "Install via conda:\n"
+    "   conda install pyarrow -c conda-forge"
+)
+
 
 class Deserializer:
     def __init__(self, path, filename, data_subdirectory, typing_info):
