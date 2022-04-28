@@ -107,7 +107,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/alteryx/compose",
+            "url": "https://github.com/alteryx/woodwork",
             "icon": "fab fa-github-square",
             "type": "fontawesome",
         },
