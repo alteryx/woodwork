@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
-        * Update slack invite link to new (:pr:`1406`)
+        * Update slack invite link to new (:pr:`1406`, :pr:`1407`)
     * Testing Changes
         * Add workflow to kickoff Featuretools unit tests with Woodwork main (:pr:`1400`)
 
