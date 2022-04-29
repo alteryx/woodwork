@@ -6,7 +6,6 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-minversion = "6.0"
 addopts = "--doctest-modules"
 testpaths = [
     "woodwork/tests/*"
