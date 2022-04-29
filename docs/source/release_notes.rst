@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`1409`)
     * Documentation Changes
         * Update slack invite link to new (:pr:`1406`, :pr:`1407`, :pr:`1408`)
     * Testing Changes
