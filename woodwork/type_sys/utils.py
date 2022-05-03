@@ -27,7 +27,7 @@ def col_is_datetime(col, datetime_format=None):
         if pd.api.types.is_numeric_dtype(pd.Series(col.values.tolist())):
             return False
     except AttributeError:
-        continue
+        pass
 
     col = col.astype(str)
 
