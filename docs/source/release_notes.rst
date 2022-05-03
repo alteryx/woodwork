@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fixed datetime inference function (:pr:``)
+        * Fixed datetime inference function (:pr:`1413`)
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`1409`)
     * Documentation Changes
