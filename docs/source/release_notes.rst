@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fixed ``col_is_datetime`` inference function to not infer float as datetime (:pr:`1413`)
+        * Fixed ``col_is_datetime`` inference function to not infer numeric dtypes as datetime (:pr:`1413`)
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`1409`)
     * Documentation Changes
