@@ -11,7 +11,8 @@ dd = import_or_none("dask.dataframe")
 
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
-    contains datetimes, False if not. Optionally specify the datetime format string for the column."""
+    contains datetimes, False if not. Optionally specify the datetime format string for the column.
+    Will not infer numeric data as datetime."""
     if _is_spark_series(col):
         col = col.to_pandas()
 
@@ -21,6 +22,17 @@ def col_is_datetime(col, datetime_format=None):
     col = col.dropna()
     if len(col) == 0:
         return False
+
+    try:
+        if pd.api.types.is_numeric_dtype(pd.Series(col.values.tolist())):
+            return False
+    except AttributeError:
+        # given our current minimum dependencies (pandas 1.3.0 and pyarrow 4.0.1)
+        # if we have a string dtype series, calling `col.values.tolist()` throws an error
+        # AttributeError: 'StringArray' object has no attribute 'tolist'
+        # this try/except block handles that, among other potential issues for experimental dtypes
+        # until we find a more appropriate solution
+        pass
 
     col = col.astype(str)
 
