@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fixed datetime inference function (:pr:``)
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`1409`)
     * Documentation Changes
@@ -15,7 +16,7 @@ Future Release
         * Add workflow to kickoff Featuretools unit tests with Woodwork main (:pr:`1400`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`bchen1116`
     
 v0.16.2 Apr 25, 2022
 ====================

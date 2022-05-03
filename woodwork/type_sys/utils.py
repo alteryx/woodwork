@@ -11,9 +11,13 @@ dd = import_or_none("dask.dataframe")
 
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
-    contains datetimes, False if not. Optionally specify the datetime format string for the column."""
+    contains datetimes, False if not. Optionally specify the datetime format string for the column.
+    Will not infer float/double data as datetime."""
     if _is_spark_series(col):
         col = col.to_pandas()
+
+    if pd.api.types.is_float_dtype(col):
+        return False
 
     if pd.api.types.is_datetime64_any_dtype(col):
         return True
