@@ -5,10 +5,10 @@ on:
     branches:
       - main
 
-name: Woodwork Usage without Test Dependencies
+name: Test Woodwork without Test Dependencies
 jobs:
   use_woodwork_without_test_dependencies:
-    name: Woodwork Usage without Test Dependencies
+    name: Test Woodwork without Test Dependencies
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
