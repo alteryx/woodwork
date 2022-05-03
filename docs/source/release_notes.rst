@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fixed ``col_is_datetime`` inference function to not infer numeric dtypes as datetime (:pr:`1413`)
     * Changes
         * Delete setup.py, MANIFEST.in and move configuration to pyproject.toml (:pr:`1409`)
     * Documentation Changes
@@ -16,7 +17,7 @@ Future Release
 	* Add workflow for testing Woodwork without test dependencies (:pr:`1414`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`bchen1116`
     
 v0.16.2 Apr 25, 2022
 ====================

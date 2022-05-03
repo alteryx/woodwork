@@ -460,6 +460,13 @@ def test_col_is_datetime():
         pd.Series(["a", "b", "c"]),
         pd.Series([pd.NA, "b", "c"]),
         pd.Series([pd.NA, pd.NA, pd.NA]),
+        pd.Series([1950.5, 1951, 1953.2, 1955.3]),
+        pd.Series([1950, 1951, 1953, 1955]),
+        pd.Series([1950.5, 1951, 1953.2, np.nan]),
+        pd.Series([1950, 1951, 1953, np.nan]),
+        pd.Series([1950.5, 1951, 1953.2, pd.NA]),
+        pd.Series([1950, 1951, 1953, pd.NA]),
+        pd.Series([1950, 1951, 1953, None]),
     ]
 
     expected_values = [
@@ -471,6 +478,13 @@ def test_col_is_datetime():
         False,
         True,
         True,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
+        False,
         False,
         False,
         False,

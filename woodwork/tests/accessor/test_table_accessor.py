@@ -3128,3 +3128,9 @@ def test_column_initialized_outside_woodwork_error(dict_info, expected_str):
     )
     with pytest.raises(ColumnNotPresentInSchemaError, match=message):
         repr(df.ww)
+
+
+def test_table_init_with_float_not_datetime():
+    df = pd.DataFrame({"column": [1951.5] * 10})
+    df.ww.init()
+    assert df.ww.logical_types["column"].type_string == "double"
