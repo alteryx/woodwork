@@ -14,6 +14,7 @@ Future Release
         * Update slack invite link to new (:pr:`1406`, :pr:`1407`, :pr:`1408`)
     * Testing Changes
         * Add workflow to kickoff Featuretools unit tests with Woodwork main (:pr:`1400`)
+	* Add workflow for testing Woodwork without test dependencies (:pr:`1414`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`bchen1116`

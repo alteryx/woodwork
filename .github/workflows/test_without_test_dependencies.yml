@@ -1,0 +1,39 @@
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+name: Test Woodwork without Test Dependencies
+jobs:
+  use_woodwork_without_test_dependencies:
+    name: Test Woodwork without Test Dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Set up python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Build woodwork and install
+        run: |
+          make package_woodwork
+          python -m pip install unpacked_sdist/
+      - name: Run simple woodwork usage
+        run: |
+          import pandas as pd
+          import woodwork as ww
+          df = ww.demo.load_retail(nrows=100, init_woodwork=False)
+          df.ww.init(name="retail")
+          logical_types = list({k: str(v) for k, v in df.ww.logical_types.items()}.values())
+          assert logical_types == ['Integer', 'Integer', 'Unknown', 'NaturalLanguage', 'Integer', 'Datetime', 'Double', 'Categorical', 'Categorical', 'Double', 'Boolean']
+          filtered_df = df.ww.select(include=['numeric', 'Boolean'])
+          assert filtered_df.shape == (100, 6)
+        shell: python
