@@ -75,25 +75,26 @@ jobs:
         name: Run Testing to Disk with LatLong Unit Tests with code coverage
         run: |
           cd unpacked_sdist
-          pytest woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml
+          pytest woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'All other Serialization' }}
         name: Run all other Serialization Unit Tests with code coverage
         run: |
           cd unpacked_sdist
-          pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml
+          pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'Testing Table Accessor' }}
         name: Run Table Accessor Unit Tests with code coverage
         run: |
           cd unpacked_sdist
-          pytest woodwork/tests/accessor/test_table_accessor.py -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml
+          pytest woodwork/tests/accessor/test_table_accessor.py -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
       - if: ${{ matrix.python_version == 3.8 && matrix.directories == 'All Other Tests' }}
         name: Run all other Unit Tests with code coverage
         run: |
           cd unpacked_sdist
-          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0 --cov=woodwork --cov-config=../pyproject.toml
+          pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
       - if: ${{ matrix.python_version == 3.8 }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ github.workspace }}/coverage.xml
+          verbose: true
