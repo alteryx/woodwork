@@ -26,7 +26,7 @@ v0.16.3 May 4, 2022
     * Testing Changes
         * Add workflow to kickoff Featuretools unit tests with Woodwork main (:pr:`1400`)
         * Add workflow for testing Woodwork without test dependencies (:pr:`1414`)
-	
+
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`
     
