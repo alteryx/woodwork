@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
-.. Thanks to the following people for contributing to this release:
+        * Use codecov action v3 (:pr:`1422`)
 
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 v0.16.3 May 4, 2022
 ===================
     * Fixes
@@ -23,7 +26,7 @@ v0.16.3 May 4, 2022
     * Testing Changes
         * Add workflow to kickoff Featuretools unit tests with Woodwork main (:pr:`1400`)
         * Add workflow for testing Woodwork without test dependencies (:pr:`1414`)
-
+	
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`
     
