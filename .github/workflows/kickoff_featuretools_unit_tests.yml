@@ -1,4 +1,4 @@
-name: Kickoff Featuretools Unit Tests
+name: Kickoff Featuretools & EvalML Unit Tests
 
 on:
   push:
@@ -7,12 +7,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  featuretools:
-    name: Run Featuretools unit tests
+  kickoff:
+    name: Run FT and EvalML unit tests
     if: github.repository_owner == 'alteryx'
     runs-on: ubuntu-latest
     steps:
-      - name: Run workflow for unit tests
+      - name: Run workflow for Featuretools unit tests
         run: gh workflow run unit_tests_with_woodwork_main_branch.yml --repo "alteryx/featuretools"
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+      - name: Run workflow for EvalML unit tests
+        run: gh workflow run unit_tests_with_woodwork_main_branch.yml --repo "alteryx/evalml"
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
