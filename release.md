@@ -9,7 +9,7 @@ Before starting the release process, verify the following:
 - Featuretools Tests are green with Woodwork main:
   - [![Unit Tests - Featuretools with Woodwork main branch](https://github.com/alteryx/featuretools/actions/workflows/unit_tests_with_woodwork_main_branch.yml/badge.svg?branch=main)](https://github.com/alteryx/featuretools/actions/workflows/unit_tests_with_woodwork_main_branch.yml)
 - EvalML Tests are green with Woodwork main:
-  - [![Unit Tests - EvalML with Featuretools main branch](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_featuretools_main_branch.yml)
+  - [![Unit Tests - EvalML with Woodwork main branch](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_woodwork_main_branch.yml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_woodwork_main_branch.yml)
 - The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-datatables/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 - The [public documentation for the "latest" branch](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/) looks correct, and the [release notes](https://feature-labs-inc-datatables.readthedocs-hosted.com/en/latest/release_notes.html) includes the last change which was made on `main`.
 - Get agreement on the version number to use for the release.
