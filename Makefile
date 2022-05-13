@@ -47,6 +47,6 @@ upgradebuild:
 .PHONY: package_woodwork
 package_woodwork: upgradepip upgradebuild
 	python -m build
-	$(eval DT_VERSION := $(shell grep '__version__\s=' woodwork/version.py | grep -o '[^ ]*$$'))
-	tar -zxvf "dist/woodwork-${DT_VERSION}.tar.gz"
-	mv "woodwork-${DT_VERSION}" unpacked_sdist
+	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
+	tar -zxvf "dist/woodwork-${PACKAGE}.tar.gz"
+	mv "woodwork-${PACKAGE}" unpacked_sdist
