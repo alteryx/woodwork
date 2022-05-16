@@ -12,7 +12,7 @@ Future Release
     * Testing Changes
         * Use codecov action v3 (:pr:`1422`)
 	* Add workflow to kickoff EvalML unit tests on commit to main (:pr:`1424`, :pr:`1426`)
-        * Rename yml to yaml for GitHub Actions (:pr:`1428`)
+        * Rename yml to yaml for GitHub Actions (:pr:`1428`, :pr:`1429`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
