@@ -2,4 +2,4 @@ dask==2022.5.0
 numpy==1.22.3
 pandas==1.4.1
 pyarrow==8.0.0
-scikit-learn==1.1.0
+scikit-learn==1.1.1
