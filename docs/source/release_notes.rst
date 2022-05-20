@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
     * Documentation Changes
+	* Add slack icon to footer in docs (:pr:`2087`)
     * Testing Changes
         * Use codecov action v3 (:pr:`1422`)
 	* Add workflow to kickoff EvalML unit tests on commit to main (:pr:`1424`, :pr:`1426`)
