@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 from pandas.api import types as pdtypes
 
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series, _is_cudf_series
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -485,6 +485,9 @@ class LatLong(LogicalType):
                 _reformat_to_latlong, is_spark=True
             )
             series = ps.from_pandas(formatted_series)
+        elif _is_cudf_series(series):
+            # does cuda support tuples
+            pass
         else:
             series = series.apply(_reformat_to_latlong)
 

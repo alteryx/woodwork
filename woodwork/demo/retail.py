@@ -11,7 +11,7 @@ from woodwork.logical_types import (
 )
 
 
-def load_retail(id="demo_retail_data", nrows=None, init_woodwork=True):
+def load_retail(id="demo_retail_data", nrows=None, init_woodwork=True, df_type="pandas"):
     """Load a demo retail dataset into a DataFrame, optionally initializing Woodwork's typing information.
 
     Args:
@@ -36,12 +36,17 @@ def load_retail(id="demo_retail_data", nrows=None, init_woodwork=True):
         "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=woodwork&version="
         + ww.__version__
     )
+    if df_type == "cudf":
+        from cudf import read_csv
+    else:
+        from pandas import read_csv
+
     # Try to read in gz compressed file
     try:
-        df = pd.read_csv(csv_s3_gz, nrows=nrows, parse_dates=["order_date"])
+        df = read_csv(csv_s3_gz, nrows=nrows, parse_dates=["order_date"])
     # Fall back to uncompressed
     except Exception:
-        df = pd.read_csv(csv_s3, nrows=nrows, parse_dates=["order_date"])
+        df = read_csv(csv_s3, nrows=nrows, parse_dates=["order_date"])
     # Add unique column for index
     df.insert(0, "order_product_id", range(len(df)))
 

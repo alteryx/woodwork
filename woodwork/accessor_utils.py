@@ -8,6 +8,7 @@ from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none('cudf')
 
 
 def init_series(
@@ -53,6 +54,8 @@ def init_series(
             raise ValueError(
                 f"np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional"
             )
+        elif cudf and _is_cudf_series(series):
+            pass
         else:
             raise TypeError(
                 f"Input must be of series type. The current input is of type {type(series)}"
@@ -175,6 +178,18 @@ def _is_spark_dataframe(data):
 
 def _is_spark_series(data):
     if ps and isinstance(data, ps.Series):
+        return True
+    return False
+
+
+def _is_cudf_dataframe(data):
+    if cudf and isinstance(data, cudf.DataFrame):
+        return True
+    return False
+
+
+def _is_cudf_series(data):
+    if cudf and isinstance(data, cudf.Series):
         return True
     return False
 

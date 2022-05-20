@@ -2,7 +2,7 @@ import pandas as pd
 from dateutil.parser import ParserError
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series, _is_cudf_series
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
@@ -15,12 +15,18 @@ def col_is_datetime(col, datetime_format=None):
     Will not infer numeric data as datetime."""
     if _is_spark_series(col):
         col = col.to_pandas()
-
+    
     if pd.api.types.is_datetime64_any_dtype(col):
         return True
 
     col = col.dropna()
     if len(col) == 0:
+        return False
+
+    if _is_cudf_series(col):
+        # col.values fails due to 
+        # cudf/core/column/string.py
+        # TypeError("String Arrays is not yet implemented in cudf")
         return False
 
     try:
@@ -57,9 +63,15 @@ def _is_numeric_series(series, logical_type):
     if _is_dask_series(series):
         series = series.get_partition(0).compute()
 
+    if _is_cudf_series(series):
+        from cudf import to_numeric
+    else:
+        from pandas import to_numeric
+        
+
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
-        pd.to_numeric(series, errors="raise")
+        to_numeric(series, errors="raise")
     except (ValueError, TypeError):
         return False
 

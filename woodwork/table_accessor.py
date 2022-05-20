@@ -7,6 +7,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import (
     _check_table_schema,
+    _is_cudf_dataframe,
     _is_dask_dataframe,
     _is_dataframe,
     _is_spark_dataframe,
@@ -37,6 +38,7 @@ from woodwork.utils import _get_column_logical_type, _parse_logical_type, import
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none('cudf')
 
 
 class WoodworkTableAccessor:
@@ -672,7 +674,7 @@ class WoodworkTableAccessor:
         )
 
     def _sort_columns(self, already_sorted):
-        if _is_dask_dataframe(self._dataframe) or _is_spark_dataframe(self._dataframe):
+        if _is_dask_dataframe(self._dataframe) or _is_spark_dataframe(self._dataframe) or _is_cudf_dataframe(self._dataframe):
             already_sorted = True  # Skip sorting for Dask and Spark input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
@@ -1625,3 +1627,10 @@ if ps:
             super().__init__(*args, **kwargs)
             if not ps.get_option("compute.ops_on_diff_frames"):
                 ps.set_option("compute.ops_on_diff_frames", True)
+
+if cudf:
+    from cudf.api.extensions.accessor import register_dataframe_accessor
+
+    @register_dataframe_accessor("ww")
+    class CuDFTableAccessor(WoodworkTableAccessor):
+        pass

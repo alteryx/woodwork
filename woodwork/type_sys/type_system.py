@@ -9,7 +9,7 @@ from .inference_functions import (
     email_address_func,
     integer_func,
     integer_nullable_func,
-    ip_address_func,
+    # ip_address_func,
     natural_language_func,
     phone_number_func,
     postal_code_func,
@@ -17,7 +17,7 @@ from .inference_functions import (
     url_func,
 )
 
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series, _is_cudf_series
 from woodwork.logical_types import (
     URL,
     Address,
@@ -65,7 +65,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     PersonFullName: None,
     Integer: integer_func,
     IntegerNullable: integer_nullable_func,
-    IPAddress: ip_address_func,
+    IPAddress: None,
     LatLong: None,
     NaturalLanguage: natural_language_func,
     Ordinal: None,
@@ -294,7 +294,10 @@ class TypeSystem(object):
                 series = series.head(INFERENCE_SAMPLE_SIZE)
             elif _is_spark_series(series):
                 series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
+            elif _is_cudf_series(series):
+                series = series.head(INFERENCE_SAMPLE_SIZE)
             else:
+
                 raise ValueError(
                     f"Unsupported series type `{type(series)}`"
                 )  # pragma: no cover

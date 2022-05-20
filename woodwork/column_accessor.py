@@ -24,6 +24,7 @@ from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none('cudf')
 
 
 class WoodworkColumnAccessor:
@@ -469,4 +470,11 @@ if ps:
 
     @register_series_accessor("ww")
     class SparkColumnAccessor(WoodworkColumnAccessor):
+        pass
+
+if cudf:
+    from cudf.api.extensions.accessor import register_series_accessor
+
+    @register_series_accessor("ww")
+    class CuDFSeriesAccessor(WoodworkColumnAccessor):
         pass

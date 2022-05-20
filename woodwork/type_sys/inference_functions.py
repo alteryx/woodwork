@@ -7,7 +7,8 @@ from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork import data
-from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
+from woodwork.utils import import_or_none
+from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime, _is_cudf_series
 
 Tokens = Iterable[str]
 
@@ -16,7 +17,7 @@ COMMON_WORDS_SET = set(
 )
 
 NL_delimiters = r"[- \[\].,!\?;\n]"
-
+cudf = import_or_none('cudf')
 
 def categorical_func(series):
     if pdtypes.is_categorical_dtype(series.dtype):
@@ -105,7 +106,13 @@ def num_common_words(wordlist: Union[Tokens, Any]) -> float:
 
 def natural_language_func(series):
     tokens = series.astype("string").str.split(NL_delimiters)
-    mean_num_common_words = np.nanmean(tokens.map(num_common_words))
+    if _is_cudf_series(series):
+        # tokens.map(num_common_words)
+        # *** TypeError: Operation <function num_common_words at 0x7fa0d605ce50> not supported for dtype list.
+        # mean_num_common_words = tokens.mean(skipna=True)
+        return False
+    else:
+        mean_num_common_words = np.nanmean(tokens.map(num_common_words))
 
     return (
         mean_num_common_words > 1.14
@@ -132,7 +139,13 @@ class InferWithRegex:
             # inferred dtype is not compatible with the string API `match` method
             # (TypeError)
             return False
-        matches = series_match_method(pat=regex)
+        if _is_cudf_series(series) and self.get_regex() == ww.config.get_option("email_inference_regex") :
+            # cudf.series.match does not like default Email Regex
+            matches = series_match_method(pat="^\S+@\S+$")
+        elif _is_cudf_series(series) and self.get_regex() == ww.config.get_option("phone_inference_regex") :
+            matches = series_match_method(pat="^\(?([0-9]{3})\)?[-.●]?([0-9]{3})[-.●]?([0-9]{4})$")
+        else:
+            matches = series_match_method(pat=regex)
 
         return matches.sum() == len(matches)
 
@@ -147,12 +160,12 @@ postal_code_func = InferWithRegex(
     lambda: ww.config.get_option("postal_code_inference_regex")
 )
 url_func = InferWithRegex(lambda: ww.config.get_option("url_inference_regex"))
-ip_address_func = InferWithRegex(
-    lambda: (
-        "("
-        + ww.config.get_option("ipv4_inference_regex")
-        + "|"
-        + ww.config.get_option("ipv6_inference_regex")
-        + ")"
-    )
-)
+# ip_address_func = InferWithRegex(
+#     lambda: (
+#         "("
+#         + ww.config.get_option("ipv4_inference_regex")
+#         + "|"
+#         + ww.config.get_option("ipv6_inference_regex")
+#         + ")"
+#     )
+# )
