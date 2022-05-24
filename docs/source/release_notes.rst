@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Fixes
-        * Fix validation for numeric postal codes (:pr:`?`)
+        * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
     * Documentation Changes
 	* Add slack icon to footer in docs (:pr:`1432`)
