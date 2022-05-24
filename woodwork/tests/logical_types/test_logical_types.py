@@ -403,3 +403,10 @@ def test_postal_code_validate_complex(sample_df_postal_code):
     series = series.append(invalid_types)
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
+
+
+def test_postal_code_validate_numeric(postal_code_numeric_series):
+    series = init_series(postal_code_numeric_series, logical_type=PostalCode())
+    actual = to_pandas(series.ww.validate_logical_type(return_invalid_values=True))
+    expected = pd.Series({5: "1234567890"}, dtype=actual.dtype)
+    pd.testing.assert_series_equal(actual, expected)
