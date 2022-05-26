@@ -38,7 +38,7 @@ jobs:
         name: Install woodwork - minimum core requirements
         run: |
           python -m pip install -r woodwork/tests/requirement_files/minimum_core_requirements.txt
-      - if: ${{ matrix.libraries == 'core' }}
+      - if: ${{ matrix.libraries == 'min_min' }}
         name: Install woodwork with the minimum dependencies of minimum dependencies
         run: |
           python -m pip install pipgrip
