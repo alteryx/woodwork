@@ -43,7 +43,7 @@ jobs:
         run: |
           python -m pip install pipgrip
           python -m pip install requirements-parser
-          python minimum_req.py --install=True --package woodwork
+          python minimum_req.py
           pip freeze
       - name: Run unit tests without code coverage
         run: python -m pytest woodwork/ -n 2

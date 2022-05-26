@@ -124,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument('--write-txt', default=False, required=False)
     parser.add_argument('--output-name', default='min_min_dep.txt', required=False)
     parser.add_argument('--delimiter', default='\n', required=False)
-    parser.add_argument('--install', default=False, required=False)
+    parser.add_argument('--install', default=True, required=False)
     parser.add_argument('--path', default='', required=False)
     args = parser.parse_args()
 
@@ -155,8 +155,12 @@ if __name__ == "__main__":
     # iterate through each dependency to determine the minimum version allowed
     for package_value in deps_list:
         req = tuple(requirements.parse(package_value))
-        package_name = req[0].name
-        version_logic = get_version_logic(req[0].specs)
+        try:
+            package_name = req[0].name
+            version_logic = get_version_logic(req[0].specs)
+        except IndexError:
+            print(package_value)
+            continue
         all_versions = get_all_package_versions(package_name)
         min_version = get_min_version_by_logic(all_versions, version_logic)
         add_versions_to_dict(version_dict, package_name, min_version)
