@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     # grabs the dependencies of the current package and sets it as a list
     json_packages = deps_to_json(package, json_name, write)
-    package_deps = list(read_deps(json_name).values())[0]
+    package_deps = list(json_packages.values())[0]
     deps_list = dict_to_list(package_deps)
 
     # the dependencies of pipgrip and requirements-parser
