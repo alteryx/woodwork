@@ -144,6 +144,7 @@ if __name__ == "__main__":
 
     with open('woodwork/tests/requirement_files/minimum_test_requirements.txt', 'r') as f:
         testing_deps = f.read()
+    testing_deps = testing_deps.split("\n")
     # the dependencies of pipgrip and requirements-parser
     # we want to ensure the package dependencies are supported for these
     pipgrip_and_req_deps = get_pipgrip_and_req_parser()
