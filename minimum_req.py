@@ -142,10 +142,13 @@ if __name__ == "__main__":
     package_deps = list(json.loads(json_packages).values())[0]
     deps_list = dict_to_list(package_deps)
 
+    with open('woodwork/tests/requirement_files/minimum_test_requirements.txt', 'r') as f:
+        testing_deps = f.read()
     # the dependencies of pipgrip and requirements-parser
     # we want to ensure the package dependencies are supported for these
     pipgrip_and_req_deps = get_pipgrip_and_req_parser()
     deps_list.extend(pipgrip_and_req_deps)
+    deps_list.extend(testing_deps)
     version_dict = {}
 
     # iterate through each dependency to determine the minimum version allowed
