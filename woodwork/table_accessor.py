@@ -1442,7 +1442,7 @@ class WoodworkTableAccessor:
             if values is not None:
                 invalid_values.append(values)
 
-        if return_invalid_values:
+        if return_invalid_values and invalid_values:
             concat = pd.concat
             if _is_dask_dataframe(self._dataframe):
                 concat = dd.concat
