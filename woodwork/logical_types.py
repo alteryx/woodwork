@@ -696,7 +696,11 @@ class PostalCode(LogicalType):
 
     def transform(self, series):
         if pd.api.types.is_numeric_dtype(series):
-            series = series.astype("Int64").astype("string")
+            try:
+                series = series.astype("Int64").astype("string")
+            except TypeError:
+                raise TypeConversionError(series, "string", type(self))
+
         return super().transform(series)
 
     def validate(self, series, return_invalid_values=False):

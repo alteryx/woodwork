@@ -4,7 +4,11 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_series, init_series
-from woodwork.exceptions import TypeConversionWarning, TypeValidationError
+from woodwork.exceptions import (
+    TypeConversionError,
+    TypeConversionWarning,
+    TypeValidationError,
+)
 from woodwork.logical_types import (
     URL,
     Age,
@@ -416,3 +420,13 @@ def test_postal_code_validate_numeric(postal_code_numeric_series):
         check_dtype=False,
         check_categorical=False,
     )
+
+
+def test_postal_code_error(postal_code_numeric_series_pandas):
+    series = postal_code_numeric_series_pandas.append(pd.Series([1234.5]))
+    match = (
+        "Error converting datatype for None from type float64 to type string. "
+        "Please confirm the underlying data is consistent with logical type PostalCode."
+    )
+    with pytest.raises(TypeConversionError, match=match):
+        init_series(series, logical_type=PostalCode())
