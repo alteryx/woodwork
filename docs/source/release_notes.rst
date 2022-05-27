@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Fixes
+        * Fix concatenation of invalid logical type values (:pr:`1437`)
         * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
     * Documentation Changes
@@ -17,7 +18,7 @@ Future Release
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`
-    
+
 v0.16.3 May 4, 2022
 ===================
     * Fixes
