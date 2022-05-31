@@ -3,46 +3,8 @@ import json
 import re
 import subprocess
 import requirements
-
-def get_pipgrip_and_req_parser() -> list:
-    final_list = []
-    for package in ['pipgrip', 'requirements-parser']:
-        args = ['pipgrip', '--tree-json', package, '--max-depth', '3']
-        subprocess.run(args, capture_output=True)
-        sub_output = subprocess.check_output(args, encoding='utf-8')
-        final_list.extend(dict_to_list(list(json.loads(sub_output).values())[0]))
-    return final_list
-
-def deps_to_json(package: str, filename: str, write: bool) -> json:
-    # writes the json of the min dependencies in the working directory
-    print("Getting tree json...")
-    args = ['pipgrip', '--tree-json', package, '--max-depth', '3']
-    subprocess.run(args, capture_output=True)
-    sub_output = subprocess.check_output(args, encoding='utf-8')
-    # only write if we want to write
-    # primarily used for local testing
-    if write:
-        with open(filename, "w+") as f:
-            f.write(sub_output)
-        f.close()
-    print("Finished grabbing tree json!")
-    return sub_output
-
-def read_deps(path: str) -> json:
-    # reads the dependencies as json file from the json path provided
-    with open(path, "r+") as f:
-        read_json = json.load(f)
-    return read_json
-
-def dict_to_list(json_dict: dict) -> list:
-    # returns the json as a list of values
-    # values will be of format ('<package><equality><version>`)
-    # where equality and version are optional (depending on what pipgrip returns)
-    list_to_return = []
-    for package, sub_deps in json_dict.items():
-        list_to_return.append(package)
-        list_to_return.extend(dict_to_list(sub_deps))
-    return list_to_return
+from pip._vendor import pkg_resources
+from pkg_resources import packaging
 
 def get_all_package_versions(package_name: str) -> list:
     # grabs all package versions using pip index
@@ -90,7 +52,7 @@ def get_min_version_by_logic(available_versions: list, version_logic: list) -> l
 def add_versions_to_dict(version_dict: dict, package: str, version: tuple):
     # handles the logic for adding a version to the version dictionary we track
     if package in version_dict:
-        if version > version_dict[package]:
+        if packaging.version.parse(version) > packaging.version.parse(version_dict[package]):
             # minimal dependency for this package is greater than another, so we take the greater
             version_dict.update({package: version})
     else:
@@ -113,18 +75,33 @@ def install_min_deps():
     print("Installing the minimum requirements generated")
     process = ['pip', 'install']
     process.extend(min_reqs.split(delim)[:-1])
-    process = [x for x in process if ('wheel' not in x and 'pip==' not in x)]
+    # process = [x for x in process if ('wheel' not in x and 'pip==' not in x)]
+    process = [x for x in process if ('pip==' not in x)]
     subprocess.run(process, capture_output=False)
     print("Done!")
+
+def get_min_test_and_core_requirements(core_requirements: str, test_requirements: str) -> tuple:
+    # input arguments should be the path to the core and test requirements.txt files
+    min_reqs = ''
+    min_core_reqs = []
+    with open(test_requirements, "r") as f:
+        min_reqs = f.read()
+
+    with open(core_requirements, "r") as f:
+        s = f.read()
+        min_reqs += s
+        min_core_reqs = s.split("\n")[:-1]
+
+    return (min_reqs, min_core_reqs)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get min dependencies of min dependencies")
     parser.add_argument('--package', default='woodwork', required=False)
     parser.add_argument('--json-filename', default='mindep.json', required=False)
-    parser.add_argument('--write-txt', default=False, required=False)
+    parser.add_argument('--write-txt', default="False", required=False)
     parser.add_argument('--output-name', default='min_min_dep.txt', required=False)
     parser.add_argument('--delimiter', default='\n', required=False)
-    parser.add_argument('--install', default=True, required=False)
+    parser.add_argument('--install', default="True", required=False)
     parser.add_argument('--path', default='', required=False)
     args = parser.parse_args()
 
@@ -137,29 +114,51 @@ if __name__ == "__main__":
     install = bool(args.install=='True')
     path = args.path
 
-    # grabs the dependencies of the current package and sets it as a list
-    json_packages = deps_to_json(package, json_name, write)
-    package_deps = list(json.loads(json_packages).values())[0]
-    deps_list = dict_to_list(package_deps)
+    base_path = 'woodwork/tests/requirement_files/'
+    
+    # get the minimum requirements and install the min core requirements
+    min_reqs, min_core_reqs = get_min_test_and_core_requirements(base_path + "minimum_core_requirements.txt", base_path + "minimum_test_requirements.txt")
+    install_min_deps()
 
-    with open('woodwork/tests/requirement_files/minimum_test_requirements.txt', 'r') as f:
-        testing_deps = f.read()
-    testing_deps = testing_deps.split("\n")
-    # the dependencies of pipgrip and requirements-parser
-    # we want to ensure the package dependencies are supported for these
-    pipgrip_and_req_deps = get_pipgrip_and_req_parser()
-    deps_list.extend(pipgrip_and_req_deps)
-    deps_list.extend(testing_deps)
     version_dict = {}
+    core_requirement_names = set()
+    all_requirements = []
+    # min_reqs = [x for x in set(min_reqs.split("\n")[:-1]) if 'moto' not in x]
+
+    # find all packages that the core requirements rely on
+    for package in min_core_reqs:
+        pack = tuple(requirements.parse(package))[0]
+        _package_name = pack.name
+        _package = pkg_resources.working_set.by_key[_package_name]
+        all_requirements.append(package)
+        reliance = [str(r) for r in _package.requires()]
+        all_requirements.extend(reliance)  # retrieve deps from setup.py
+
+    # for reqs in all_requirements:
+    #     p = tuple(requirements.parse(reqs))[0]
+    #     core_requirement_names.add(p.name)
+
+    # for package in min_reqs:
+    #     pack = tuple(requirements.parse(package))[0]
+    #     _package_name = pack.name
+    #     _package = pkg_resources.working_set.by_key[_package_name]
+    #     if _package_name in core_requirement_names:
+    #         all_requirements.append(package)
+    #     reliance = [str(r) for r in _package.requires()]
+    #     for reqs in reliance:
+    #         p = tuple(requirements.parse(reqs))[0]
+    #         if len(p.specs):
+    #             all_requirements.append(reqs)
+
+    all_requirements = list(set(all_requirements))
 
     # iterate through each dependency to determine the minimum version allowed
-    for package_value in deps_list:
+    for package_value in all_requirements:
         req = tuple(requirements.parse(package_value))
         try:
             package_name = req[0].name
             version_logic = get_version_logic(req[0].specs)
         except IndexError:
-            print(package_value)
             continue
         all_versions = get_all_package_versions(package_name)
         min_version = get_min_version_by_logic(all_versions, version_logic)
@@ -168,5 +167,6 @@ if __name__ == "__main__":
     # min_reqs will represent the string version of all min requirements for the package
     # this does not include testing requirements, which we will need to install prior
     min_reqs = get_min_version_string(version_dict, delim, write, output_name)
+    # print(min_reqs)
     if install:
         install_min_deps()
