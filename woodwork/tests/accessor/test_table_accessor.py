@@ -3089,6 +3089,19 @@ def test_validate_logical_types(sample_df):
     actual = to_pandas(actual).sort_index()
     assert actual.equals(expected)
 
+    # test case for empty list of invalid values
+
+    df.ww.init(
+        logical_types={
+            "url": "Unknown",
+            "email": "Unknown",
+            "email_2": "Unknown",
+        }
+    )
+
+    actual = df.ww.validate_logical_types(return_invalid_values=True)
+    assert actual is None
+
 
 def test_validate_logical_types_call(sample_df):
     sample_df.ww.init(logical_types={"email": "EmailAddress"})
