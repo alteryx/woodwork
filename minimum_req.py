@@ -35,7 +35,7 @@ def get_version_logic(vers_equality: list) -> list:
         # since we are finding the minimum requirement that satisfies the equality
         # this logic should be about the same
         equality = ve[0].replace("~", ">")
-        version_logic.append("{} '{}'".format(equality, value))
+        version_logic.append("{} packaging.version.parse('{}')".format(equality, value))
     return version_logic
 
 def get_min_version_by_logic(available_versions: list, version_logic: list) -> list:
@@ -45,7 +45,7 @@ def get_min_version_by_logic(available_versions: list, version_logic: list) -> l
     for index in range(len(available_versions)):
         # grab the 0 index to get the float value of the version
         # creates the expression that we evaluate to determine if the version satisfies the logic
-        eval_string = "'{}'".format(available_versions[index]) + f" and '{available_versions[index]}'".join(version_logic)
+        eval_string = "packaging.version.parse('{}')".format(available_versions[index]) + f" and packaging.version.parse('{available_versions[index]}')".join(version_logic)
         if eval(eval_string):
             return available_versions[index]
 
@@ -84,15 +84,17 @@ def get_min_test_and_core_requirements(core_requirements: str, test_requirements
     # input arguments should be the path to the core and test requirements.txt files
     min_reqs = ''
     min_core_reqs = []
+    min_test_reqs = []
     with open(test_requirements, "r") as f:
         min_reqs = f.read()
+        min_test_reqs = min_reqs.split("\n")[:-1]
 
     with open(core_requirements, "r") as f:
         s = f.read()
         min_reqs += s
         min_core_reqs = s.split("\n")[:-1]
 
-    return (min_reqs, min_core_reqs)
+    return (min_reqs, min_core_reqs, min_test_reqs)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get min dependencies of min dependencies")
@@ -117,13 +119,11 @@ if __name__ == "__main__":
     base_path = 'woodwork/tests/requirement_files/'
     
     # get the minimum requirements and install the min core requirements
-    min_reqs, min_core_reqs = get_min_test_and_core_requirements(base_path + "minimum_core_requirements.txt", base_path + "minimum_test_requirements.txt")
+    min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(base_path + "minimum_core_requirements.txt", base_path + "minimum_test_requirements.txt")
     install_min_deps()
 
     version_dict = {}
-    core_requirement_names = set()
     all_requirements = []
-    # min_reqs = [x for x in set(min_reqs.split("\n")[:-1]) if 'moto' not in x]
 
     # find all packages that the core requirements rely on
     for package in min_core_reqs:
@@ -134,22 +134,11 @@ if __name__ == "__main__":
         reliance = [str(r) for r in _package.requires()]
         all_requirements.extend(reliance)  # retrieve deps from setup.py
 
-    # for reqs in all_requirements:
-    #     p = tuple(requirements.parse(reqs))[0]
-    #     core_requirement_names.add(p.name)
-
-    # for package in min_reqs:
-    #     pack = tuple(requirements.parse(package))[0]
-    #     _package_name = pack.name
-    #     _package = pkg_resources.working_set.by_key[_package_name]
-    #     if _package_name in core_requirement_names:
-    #         all_requirements.append(package)
-    #     reliance = [str(r) for r in _package.requires()]
-    #     for reqs in reliance:
-    #         p = tuple(requirements.parse(reqs))[0]
-    #         if len(p.specs):
-    #             all_requirements.append(reqs)
-
+    for package in min_test_reqs:
+        pack = tuple(requirements.parse(package))[0]
+        _package_name = pack.name
+        if any([_package_name in s for s in all_requirements]):
+            all_requirements.append(package)
     all_requirements = list(set(all_requirements))
 
     # iterate through each dependency to determine the minimum version allowed
