@@ -49,19 +49,19 @@ def get_min_version_by_logic(available_versions: list, version_logic: list) -> l
         if eval(eval_string):
             return available_versions[index]
 
-def add_versions_to_dict(version_dict: dict, package: str, version: tuple):
+def add_versions_to_dict(package_to_version_dict: dict, package: str, version: tuple):
     # handles the logic for adding a version to the version dictionary we track
-    if package in version_dict:
-        if packaging.version.parse(version) > packaging.version.parse(version_dict[package]):
+    if package in package_to_version_dict:
+        if packaging.version.parse(version) > packaging.version.parse(package_to_version_dict[package]):
             # minimal dependency for this package is greater than another, so we take the greater
-            version_dict.update({package: version})
+            package_to_version_dict.update({package: version})
     else:
-        version_dict.update({package: version})
+        package_to_version_dict.update({package: version})
 
-def get_min_version_string(version_dict: dict, delim: str, write: bool, output_name: str) -> str:
+def get_min_version_string(package_to_version_dict: dict, delim: str, write: bool, output_name: str) -> str:
     # returns the min versions of all packages as a string delimited by the delim value.
     return_string = ""
-    for package, version in version_dict.items():
+    for package, version in package_to_version_dict.items():
         return_string += f"{package}=={version}"
         return_string += delim
     if (write):
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(base_path + "minimum_core_requirements.txt", base_path + "minimum_test_requirements.txt")
     install_min_deps()
 
-    version_dict = {}
+    package_to_version_dict = {}
     all_requirements = []
 
     # find all packages that the core requirements rely on
@@ -134,6 +134,7 @@ if __name__ == "__main__":
         reliance = [str(r) for r in _package.requires()]
         all_requirements.extend(reliance)  # retrieve deps from setup.py
 
+    # for any requirements in our test-requirements that apply to the core requirement packages, add that in as well
     for package in min_test_reqs:
         pack = tuple(requirements.parse(package))[0]
         _package_name = pack.name
@@ -151,11 +152,10 @@ if __name__ == "__main__":
             continue
         all_versions = get_all_package_versions(package_name)
         min_version = get_min_version_by_logic(all_versions, version_logic)
-        add_versions_to_dict(version_dict, package_name, min_version)
+        add_versions_to_dict(package_to_version_dict, package_name, min_version)
 
     # min_reqs will represent the string version of all min requirements for the package
     # this does not include testing requirements, which we will need to install prior
-    min_reqs = get_min_version_string(version_dict, delim, write, output_name)
-    # print(min_reqs)
+    min_reqs = get_min_version_string(package_to_version_dict, delim, write, output_name)
     if install:
         install_min_deps()
