@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix concatenation of invalid logical type values (:pr:`1437`)
     * Changes
     * Documentation Changes
 	    * Add slack icon to footer in docs (:pr:`1432`)
@@ -17,7 +18,7 @@ Future Release
         * Rename yml to yaml for GitHub Actions (:pr:`1428`, :pr:`1429`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`bchen1116`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`bchen1116`
     
 v0.16.3 May 4, 2022
 ===================
