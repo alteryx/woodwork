@@ -45,7 +45,8 @@ def get_min_version_by_logic(available_versions: list, version_logic: list) -> l
     for index in range(len(available_versions)):
         # grab the 0 index to get the float value of the version
         # creates the expression that we evaluate to determine if the version satisfies the logic
-        eval_string = "packaging.version.parse('{}')".format(available_versions[index]) + f" and packaging.version.parse('{available_versions[index]}')".join(version_logic)
+        eval_string = "packaging.version.parse('{}')".format(available_versions[index]) + 
+                      f" and packaging.version.parse('{available_versions[index]}')".join(version_logic)
         if eval(eval_string):
             return available_versions[index]
 
@@ -83,8 +84,7 @@ def install_min_deps():
 def get_min_test_and_core_requirements(core_requirements: str, test_requirements: str) -> tuple:
     # input arguments should be the path to the core and test requirements.txt files
     min_reqs = ''
-    min_core_reqs = []
-    min_test_reqs = []
+    min_core_reqs, min_test_reqs = [], []
     with open(test_requirements, "r") as f:
         min_reqs = f.read()
         min_test_reqs = min_reqs.split("\n")[:-1]
