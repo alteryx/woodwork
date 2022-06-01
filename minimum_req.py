@@ -98,7 +98,6 @@ def get_min_test_and_core_requirements(core_requirements: str, test_requirements
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get min dependencies of min dependencies")
-    parser.add_argument('--package', default='woodwork', required=False)
     parser.add_argument('--json-filename', default='mindep.json', required=False)
     parser.add_argument('--write-txt', default="False", required=False)
     parser.add_argument('--output-name', default='min_min_dep.txt', required=False)
@@ -108,7 +107,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # get the arguments from the parser
-    package = args.package
     json_name = args.json_filename
     delim = args.delimiter
     write = bool(args.write_txt=='True')
@@ -129,6 +127,7 @@ if __name__ == "__main__":
         _package_name = pack.name
         _package = pkg_resources.working_set.by_key[_package_name]
         all_requirements.append(package)
+        # reliance will consist of requirements like ["scipy>=0.17.0", "pandas>=X.x", "moto"]
         reliance = [str(r) for r in _package.requires()]
         all_requirements.extend(reliance)  # retrieve deps from setup.py
 
