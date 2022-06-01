@@ -104,7 +104,7 @@ if __name__ == "__main__":
     parser.add_argument('--output-name', default='min_min_dep.txt', required=False)
     parser.add_argument('--delimiter', default='\n', required=False)
     parser.add_argument('--install', default="True", required=False)
-    parser.add_argument('--path', default='', required=False)
+    parser.add_argument('--req-file-path', default='woodwork/tests/requirement_files/', required=False)
     args = parser.parse_args()
 
     # get the arguments from the parser
@@ -114,12 +114,10 @@ if __name__ == "__main__":
     write = bool(args.write_txt=='True')
     output_name = args.output_name
     install = bool(args.install=='True')
-    path = args.path
-
-    base_path = 'woodwork/tests/requirement_files/'
+    path = args.req_file_path
     
     # get the minimum requirements and install the min core requirements
-    min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(base_path + "minimum_core_requirements.txt", base_path + "minimum_test_requirements.txt")
+    min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(path + "minimum_core_requirements.txt", path + "minimum_test_requirements.txt")
     install_min_deps()
 
     package_to_version_dict = {}
