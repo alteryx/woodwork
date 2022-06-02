@@ -20,8 +20,7 @@ def get_all_package_versions(package_name: str) -> list:
     string_versions = [output_split[len(version_substring):].split(", ") 
                         for output_split in sub_output.split("\n") if version_substring in output_split][0]
     # we filter out versions that might have letters in it (ie 22.2.post1, etc) to only compare versions that we can convert to float
-    float_versions = list(filter(lambda version_number: not re.search(r'[A-Za-z]', version_number), 
-                          string_versions))
+    float_versions = list(set([packaging.version.parse(vers_string).base_version for vers_string in string_versions]))
     # sorting for ease later on
     return sorted(float_versions)
 
