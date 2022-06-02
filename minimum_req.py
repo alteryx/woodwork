@@ -75,7 +75,6 @@ def install_min_deps():
     print("Installing the minimum requirements generated")
     process = ['pip', 'install']
     process.extend(min_reqs.split(delim)[:-1])
-    # process = [x for x in process if ('wheel' not in x and 'pip==' not in x)]
     process = [x for x in process if ('pip==' not in x)]
     subprocess.run(process, capture_output=False)
     print("Done!")
@@ -141,11 +140,8 @@ if __name__ == "__main__":
     # iterate through each dependency to determine the minimum version allowed
     for package_value in all_requirements:
         req = tuple(requirements.parse(package_value))
-        try:
-            package_name = req[0].name
-            version_logic = get_version_logic(req[0].specs)
-        except IndexError:
-            continue
+        package_name = req[0].name
+        version_logic = get_version_logic(req[0].specs)
         all_versions = get_all_package_versions(package_name)
         min_version = get_min_version_by_logic(all_versions, version_logic)
         add_versions_to_dict(package_to_version_dict, package_name, min_version)
