@@ -1,6 +1,4 @@
 import argparse
-import json
-import re
 import subprocess
 import requirements
 from pip._vendor import pkg_resources
