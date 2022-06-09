@@ -10,7 +10,8 @@ Future Release
         * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
     * Documentation Changes
-	    * Add slack icon to footer in docs (:pr:`1432`)
+	* Add slack icon to footer in docs (:pr:`1432`)
+	* Update contributing.md to add pandoc (:pr:`1443`)
     * Testing Changes
         * Use codecov action v3 (:pr:`1422`)
         * Added tests to test minimum dependencies of minimum dependencies (:pr:`1440`)
