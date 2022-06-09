@@ -24,19 +24,21 @@ Whether you are a novice or experienced software developer, all contributions an
   make installdeps
   git checkout -b issue####-branch_name
   ```
-* You will need to install Spark & Scala to run all unit tests:
+* You will need to install Spark and Scala to run all unit tests. You will need pandoc to build docs:
+
+  > If you do not install Spark or Scala, you can still run the unit tests (the Spark tests will be skipped).
 
      **macOS** (Intel) (use [Homebrew](https://brew.sh/)):
      ```console
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
-     brew install scala apache-spark
+     brew install scala apache-spark pandoc
      echo 'export JAVA_HOME=$(/usr/libexec/java_home)' >> ~/.zshrc
      echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc 
      ```
      **macOS (M1)** (use [Homebrew](https://brew.sh/)):
      ```console
-     brew install openjdk@11 scala apache-spark graphviz
+     brew install openjdk@11 scala apache-spark graphviz pandoc
      echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
      sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
@@ -44,10 +46,13 @@ Whether you are a novice or experienced software developer, all contributions an
 
      **Ubuntu**:
      ```console
-     sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
+     sudo apt install openjdk-11-jre openjdk-11-jdk scala cabal-install -y
+     cabal update
+     cabal install pandoc
      echo "export SPARK_HOME=/opt/spark" >> ~/.profile
      echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
      echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
+     echo "export PATH=$HOME/.cabal/bin:$PATH" >> ~/.profile
      ```
      
      **Amazon Linux**:
