@@ -46,13 +46,10 @@ Whether you are a novice or experienced software developer, all contributions an
 
      **Ubuntu**:
      ```console
-     sudo apt install openjdk-11-jre openjdk-11-jdk scala cabal-install -y
-     cabal update
-     cabal install pandoc
+     sudo apt install openjdk-11-jre openjdk-11-jdk scala pandoc -y
      echo "export SPARK_HOME=/opt/spark" >> ~/.profile
      echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
      echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
-     echo "export PATH=$HOME/.cabal/bin:$PATH" >> ~/.profile
      ```
      
      **Amazon Linux**:
