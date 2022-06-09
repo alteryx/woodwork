@@ -102,10 +102,13 @@ $ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/Ja
 
 ````{tab} Ubuntu
 ```console
-$ sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
+$ sudo apt install openjdk-11-jre openjdk-11-jdk scala cabal-install -y
+$ cabal update
+$ cabal install pandoc
 $ echo "export SPARK_HOME=/opt/spark" >> ~/.profile
 $ echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
 $ echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
+$ echo "export PATH=$HOME/.cabal/bin:$PATH" >> ~/.profile
 ```
 ````
 
@@ -124,9 +127,9 @@ creating a new image with Woodwork pre-installed, using the following commands i
 
 ```dockerfile
 FROM python:3.8-slim-buster
-RUN apt-get update && apt-get -y update
-RUN apt-get install -y build-essential python3-pip python3-dev
-RUN pip -q install pip --upgrade
+RUN apt update && apt -y upgrade
+RUN apt install -y build-essential python3-pip python3-dev
+RUN pip install --upgrade pip
 RUN pip install woodwork
 ```
 
