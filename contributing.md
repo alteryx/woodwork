@@ -28,7 +28,7 @@ Whether you are a novice or experienced software developer, all contributions an
 
   > If you do not install Spark/Scala, you can still run the unit tests (the Spark tests will be skipped).
 
-     **macOS** (Intel) (use [Homebrew](https://brew.sh/)):
+     **macOS (Intel)** (use [Homebrew](https://brew.sh/)):
      ```console
      brew tap AdoptOpenJDK/openjdk
      brew install --cask adoptopenjdk11
