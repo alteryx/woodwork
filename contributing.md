@@ -26,7 +26,7 @@ Whether you are a novice or experienced software developer, all contributions an
   ```
 * You will need to install Spark and Scala to run all unit tests. You will need pandoc to build docs:
 
-  > If you do not install Spark or Scala, you can still run the unit tests (the Spark tests will be skipped).
+  > If you do not install Spark/Scala, you can still run the unit tests (the Spark tests will be skipped).
 
      **macOS** (Intel) (use [Homebrew](https://brew.sh/)):
      ```console
