@@ -24,9 +24,11 @@ Whether you are a novice or experienced software developer, all contributions an
   make installdeps
   git checkout -b issue####-branch_name
   ```
-* You will need to install Spark and Scala to run all unit tests. You will need pandoc to build docs:
+* You will need to install Spark, Scala, and Pandoc to run all unit tests & build docs:
 
   > If you do not install Spark/Scala, you can still run the unit tests (the Spark tests will be skipped).
+
+  > Pandoc is only needed to build the documentation locally.
 
      **macOS (Intel)** (use [Homebrew](https://brew.sh/)):
      ```console
