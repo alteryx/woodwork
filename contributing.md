@@ -38,7 +38,7 @@ Whether you are a novice or experienced software developer, all contributions an
      ```
      **macOS (M1)** (use [Homebrew](https://brew.sh/)):
      ```console
-     brew install openjdk@11 scala apache-spark graphviz pandoc
+     brew install openjdk@11 scala apache-spark pandoc
      echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
      echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
      sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
