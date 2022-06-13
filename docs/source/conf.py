@@ -55,7 +55,6 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
-    'sphinx.ext.graphviz',
     'sphinx.ext.inheritance_diagram',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
