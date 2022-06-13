@@ -93,7 +93,7 @@ $ echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
 
 ````{tab} macOS (M1)
 ```console
-$ brew install openjdk@11 scala apache-spark graphviz
+$ brew install openjdk@11 scala apache-spark pandoc
 $ echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
 $ echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
 $ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
