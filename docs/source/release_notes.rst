@@ -9,6 +9,7 @@ Future Release
         * Fix concatenation of invalid logical type values (:pr:`1437`)
         * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
+    	* Update minimum pandas to 1.4.2 and drop Python 3.7 (:pr:`1447`)
     * Documentation Changes
 	* Add slack icon to footer in docs (:pr:`1432`)
 	* Update contributing.md to add pandoc (:pr:`1443`)
