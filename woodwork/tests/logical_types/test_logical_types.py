@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_series, init_series
-from woodwork.exceptions import TypeConversionWarning, TypeValidationError
+from woodwork.exceptions import TypeConversionWarning, TypeValidationError, TypeConversionError
 from woodwork.logical_types import (
     URL,
     Age,
@@ -403,3 +403,18 @@ def test_postal_code_validate_complex(sample_df_postal_code):
     series = series.append(invalid_types)
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
+
+
+
+def test_null_invalid_values_double():
+    types = {'double': 'Double'}
+    invalid = 'text', None, True, object
+    df = pd.DataFrame({'double': [1.2, 3, '4', *invalid]})
+
+    with pytest.raises(TypeConversionError, match='Please confirm the underlying data is consistent with logical type Double'):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    expected = pd.DataFrame({'double': [1.2, 3., 4., *nulls]})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)

@@ -349,7 +349,7 @@ class Double(LogicalType):
 
     def transform(self, series, null_invalid_values=False):
         if null_invalid_values:
-            series = _parse_numeric(series)
+            series = _coerce_numeric(series)
         return super().transform(series)
 
 
@@ -786,9 +786,13 @@ def _validate_not_negative(series, return_invalid_values):
             raise TypeValidationError(info)
 
 
-def _parse_numeric(series):
+def _coerce_string(series):
+    if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
+        series = series.astype('string')
+    return series
+
+
+def _coerce_numeric(series):
     if not pd.api.types.is_numeric_dtype(series):
-        if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
-            series = series.astype('string')
-        series = pd.to_numeric(series, errors='coerce')
+        series = pd.to_numeric(_coerce_string(series), errors='coerce')
     return series
