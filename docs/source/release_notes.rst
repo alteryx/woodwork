@@ -5,6 +5,8 @@ Release Notes
 
 Future Release
 ==============
+    * Enhancements
+        * Added the ability to null invalid values for ``Double`` logical type (:pr:`1449`)
     * Fixes
         * Fix concatenation of invalid logical type values (:pr:`1437`)
         * Fix validation for numeric postal codes (:pr:`1439`)
