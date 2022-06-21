@@ -1008,3 +1008,33 @@ def timezones_df_dask(timezones_df_pandas):
 @pytest.fixture(params=["timezones_df_pandas", "timezones_df_dask"])
 def timezones_df(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def postal_code_numeric_series_pandas():
+    return pd.Series([77449.0, 11368.0, np.nan, 60629.0, 79936.0, 1234567890.0])
+
+
+@pytest.fixture()
+def postal_code_numeric_series_dask(postal_code_numeric_series_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(postal_code_numeric_series_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def postal_code_numeric_series_spark(postal_code_numeric_series_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas", reason="Pyspark pandas not installed, skipping"
+    )
+    return ps.from_pandas(postal_code_numeric_series_pandas)
+
+
+@pytest.fixture(
+    params=[
+        "postal_code_numeric_series_pandas",
+        "postal_code_numeric_series_dask",
+        "postal_code_numeric_series_spark",
+    ]
+)
+def postal_code_numeric_series(request):
+    return request.getfixturevalue(request.param)

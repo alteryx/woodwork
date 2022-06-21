@@ -5,12 +5,13 @@ Release Notes
 
 Future Release
 ==============
-    * Enhancements
     * Fixes
         * Fix concatenation of invalid logical type values (:pr:`1437`)
+        * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
     * Documentation Changes
-	    * Add slack icon to footer in docs (:pr:`1432`)
+	* Add slack icon to footer in docs (:pr:`1432`)
+	* Update contributing.md to add pandoc (:pr:`1443`)
     * Testing Changes
         * Use codecov action v3 (:pr:`1422`)
         * Added tests to test minimum dependencies of minimum dependencies (:pr:`1440`)
@@ -18,8 +19,8 @@ Future Release
         * Rename yml to yaml for GitHub Actions (:pr:`1428`, :pr:`1429`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`bchen1116`
-    
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`
+
 v0.16.3 May 4, 2022
 ===================
     * Fixes

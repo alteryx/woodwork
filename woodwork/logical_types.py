@@ -699,6 +699,15 @@ class PostalCode(LogicalType):
     backup_dtype = "string"
     standard_tags = {"category"}
 
+    def transform(self, series):
+        if pd.api.types.is_numeric_dtype(series):
+            try:
+                series = series.astype("Int64").astype("string")
+            except TypeError:
+                raise TypeConversionError(series, "string", type(self))
+
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=False):
         """Validates PostalCode values based on the regex in the config. Currently only validates US Postal codes.
 
