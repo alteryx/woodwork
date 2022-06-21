@@ -221,7 +221,10 @@ class WoodworkTableAccessor:
 
         # overwrite schema parameters with specified kwargs
         logical_types = _infer_missing_logical_types(
-            self._dataframe, logical_types, existing_logical_types, null_invalid_values=null_invalid_values,
+            self._dataframe,
+            logical_types,
+            existing_logical_types,
+            null_invalid_values=null_invalid_values,
         )
         column_descriptions = {
             **existing_col_descriptions,
@@ -510,7 +513,13 @@ class WoodworkTableAccessor:
         self._schema.set_time_index(new_time_index)
 
     @_check_table_schema
-    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True, null_invalid_values=False):
+    def set_types(
+        self,
+        logical_types=None,
+        semantic_tags=None,
+        retain_index_tags=True,
+        null_invalid_values=False,
+    ):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
         updating the Woodwork typing information for the DataFrame.
 
@@ -537,7 +546,9 @@ class WoodworkTableAccessor:
         # go through changed ltypes and update dtype if necessary
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
-            updated_series = logical_type.transform(series, null_invalid_values=null_invalid_values)
+            updated_series = logical_type.transform(
+                series, null_invalid_values=null_invalid_values
+            )
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
@@ -1576,7 +1587,9 @@ def _infer_missing_logical_types(
         parsed_logical_types[name] = _get_column_logical_type(
             series, logical_type, name
         )
-        updated_series = parsed_logical_types[name].transform(series, null_invalid_values=null_invalid_values)
+        updated_series = parsed_logical_types[name].transform(
+            series, null_invalid_values=null_invalid_values
+        )
         if updated_series is not series:
             dataframe[name] = updated_series
     return parsed_logical_types

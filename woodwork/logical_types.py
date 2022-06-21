@@ -788,11 +788,11 @@ def _validate_not_negative(series, return_invalid_values):
 
 def _coerce_string(series):
     if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
-        series = series.astype('string')
+        series = series.astype("string")
     return series
 
 
 def _coerce_numeric(series):
     if not pd.api.types.is_numeric_dtype(series):
-        series = pd.to_numeric(_coerce_string(series), errors='coerce')
+        series = pd.to_numeric(_coerce_string(series), errors="coerce")
     return series
