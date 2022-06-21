@@ -15,6 +15,7 @@ def init_series(
     logical_type=None,
     semantic_tags=None,
     use_standard_tags=True,
+    null_invalid_values=False,
     description=None,
     origin=None,
     metadata=None,
@@ -58,7 +59,7 @@ def init_series(
                 f"Input must be of series type. The current input is of type {type(series)}"
             )
     logical_type = _get_column_logical_type(series, logical_type, series.name)
-    new_series = logical_type.transform(series)
+    new_series = logical_type.transform(series, null_invalid_values=null_invalid_values)
     new_series.ww.init(
         logical_type=logical_type,
         semantic_tags=semantic_tags,

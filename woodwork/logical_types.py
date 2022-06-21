@@ -60,7 +60,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         else:
             return cls.primary_dtype
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Converts the series dtype to match the logical type's if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
@@ -284,7 +284,7 @@ class Datetime(LogicalType):
             series = series.dt.tz_localize(None)
         return series
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
         new_dtype = self._get_valid_dtype(type(series))
         series = self._remove_timezone(series)
@@ -346,6 +346,11 @@ class Double(LogicalType):
 
     primary_dtype = "float64"
     standard_tags = {"numeric"}
+
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _parse_numeric(series)
+        return super().transform(series)
 
 
 class Integer(LogicalType):
@@ -473,7 +478,7 @@ class LatLong(LogicalType):
 
     primary_dtype = "object"
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Formats a series to be a tuple (or list for Spark) of two floats."""
         if _is_dask_series(series):
             name = series.name
@@ -573,7 +578,7 @@ class Ordinal(LogicalType):
                 )
                 raise ValueError(error_msg)
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
         self._validate_order_values(series)
 
@@ -779,3 +784,11 @@ def _validate_not_negative(series, return_invalid_values):
         if any_invalid:
             info = f"Series {series.name} contains negative values."
             raise TypeValidationError(info)
+
+
+def _parse_numeric(series):
+    if not pd.api.types.is_numeric_dtype(series):
+        if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
+            series = series.astype('string')
+        series = pd.to_numeric(series, errors='coerce')
+    return series
