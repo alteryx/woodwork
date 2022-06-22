@@ -531,6 +531,7 @@ class WoodworkTableAccessor:
             retain_index_tags (bool, optional): If True, will retain any index or time_index
                 semantic tags set on the column. If False, will replace all semantic tags any time a column's
                 semantic tags or logical type changes. Defaults to True.
+            null_invalid_values (bool, optional): If True, replaces any invalid values with null.
         """
         logical_types = logical_types or {}
         logical_types = {

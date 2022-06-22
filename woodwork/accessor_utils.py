@@ -40,6 +40,7 @@ def init_series(
         description (str, optional): Optional text describing the contents of the series.
         origin (str, optional): Optional text specifying origin of the column (i.e. "base" or "engineered").
         metadata (dict[str -> json serializable], optional): Metadata associated with the series.
+        null_invalid_values (bool, optional): If True, replaces any invalid values with null.
 
     Returns:
         Series: A series with Woodwork typing information initialized
