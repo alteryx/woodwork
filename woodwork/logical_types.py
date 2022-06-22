@@ -699,7 +699,7 @@ class PostalCode(LogicalType):
     backup_dtype = "string"
     standard_tags = {"category"}
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         if pd.api.types.is_numeric_dtype(series):
             try:
                 series = series.astype("Int64").astype("string")
