@@ -8,20 +8,31 @@ Future Release
     * Enhancements
         * Added ability to null invalid values for ``Double`` logical type (:pr:`1449`)
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+   Thanks to the following people for contributing to this release:
+   :user:`jeff-hernandez`
+
+v0.16.4 Jun 23, 2022
+====================
+    * Fixes
         * Fix concatenation of invalid logical type values (:pr:`1437`)
         * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
+        * Restrict pyspark below 3.3.0 (:pr:`1450`)
     * Documentation Changes
-	* Add slack icon to footer in docs (:pr:`1432`)
-	* Update contributing.md to add pandoc (:pr:`1443`)
+        * Add slack icon to footer in docs (:pr:`1432`)
+        * Update contributing.md to add pandoc (:pr:`1443`)
     * Testing Changes
         * Use codecov action v3 (:pr:`1422`)
         * Added tests to test minimum dependencies of minimum dependencies (:pr:`1440`)
-	* Add workflow to kickoff EvalML unit tests on commit to main (:pr:`1424`, :pr:`1426`)
+        * Add workflow to kickoff EvalML unit tests on commit to main (:pr:`1424`, :pr:`1426`)
         * Rename yml to yaml for GitHub Actions (:pr:`1428`, :pr:`1429`)
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`
 
 v0.16.3 May 4, 2022
 ===================
