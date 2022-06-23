@@ -9,7 +9,7 @@ Future Release
         * Fix concatenation of invalid logical type values (:pr:`1437`)
         * Fix validation for numeric postal codes (:pr:`1439`)
     * Changes
-        * Restrict numpy below 1.23.0 while investigating test failures (:pr:`1450`)
+        * Restrict pyspark below 3.3.0 (:pr:`1450`)
     * Documentation Changes
 	* Add slack icon to footer in docs (:pr:`1432`)
 	* Update contributing.md to add pandoc (:pr:`1443`)
