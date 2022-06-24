@@ -430,3 +430,20 @@ def test_postal_code_error(postal_code_numeric_series_pandas):
     )
     with pytest.raises(TypeConversionError, match=match):
         init_series(series, logical_type=PostalCode())
+
+
+def test_null_invalid_values_double():
+    types = {"double": "Double"}
+    invalid = "text", None, True, object
+    df = pd.DataFrame({"double": [1.2, 3, "4", *invalid]})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type Double",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    expected = pd.DataFrame({"double": [1.2, 3.0, 4.0, *nulls]})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)

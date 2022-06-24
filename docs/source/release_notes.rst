@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+        * Added ability to null invalid values for ``Double`` logical type (:pr:`1449`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+   Thanks to the following people for contributing to this release:
+   :user:`jeff-hernandez`
 
 v0.16.4 Jun 23, 2022
 ====================
