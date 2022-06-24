@@ -463,6 +463,6 @@ def test_null_invalid_values_boolean():
 
     nulls = [None] * len(invalid)
     data = [True, False, *nulls]
-    expected = pd.DataFrame({"data": pd.Series(data, dtype='boolean')})
+    expected = pd.DataFrame({"data": pd.Series(data, dtype="boolean")})
     df.ww.init(logical_types=types, null_invalid_values=True)
     pd.testing.assert_frame_equal(df, expected)
