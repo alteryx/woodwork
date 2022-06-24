@@ -389,6 +389,11 @@ class IntegerNullable(LogicalType):
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_integer(series)
+        return super().transform(series)
+
 
 class EmailAddress(LogicalType):
     """Represents Logical Types that contain email address values.
@@ -800,6 +805,10 @@ def _validate_not_negative(series, return_invalid_values):
             raise TypeValidationError(info)
 
 
+def _get_index_invalid_integer(series):
+    return ~series.mod(1).eq(0)
+
+
 def _coerce_string(series):
     if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
         series = series.astype("string")
@@ -817,4 +826,11 @@ def _coerce_boolean(series):
         valid = {"True": True, "False": False}
         series = _coerce_string(series)
         series = series.map(valid)
+    return series
+
+
+def _coerce_integer(series):
+    series = _coerce_numeric(series)
+    invalid = _get_index_invalid_integer(series)
+    if invalid.any(): series[invalid] = None
     return series
