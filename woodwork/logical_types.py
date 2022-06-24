@@ -806,7 +806,7 @@ def _validate_not_negative(series, return_invalid_values):
 
 
 def _get_index_invalid_integer(series):
-    return ~series.mod(1).eq(0)
+    return series.mod(1).ne(0)
 
 
 def _coerce_string(series):
