@@ -202,6 +202,11 @@ class BooleanNullable(LogicalType):
 
     primary_dtype = "boolean"
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_boolean(series)
+        return super().transform(series)
+
 
 class Categorical(LogicalType):
     """Represents Logical Types that contain unordered discrete values that fall
@@ -804,4 +809,12 @@ def _coerce_string(series):
 def _coerce_numeric(series):
     if not pd.api.types.is_numeric_dtype(series):
         series = pd.to_numeric(_coerce_string(series), errors="coerce")
+    return series
+
+
+def _coerce_boolean(series):
+    if not pd.api.types.is_bool_dtype(series):
+        valid = {"True": True, "False": False}
+        series = _coerce_string(series)
+        series = series.map(valid)
     return series
