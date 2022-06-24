@@ -447,3 +447,22 @@ def test_null_invalid_values_double():
     expected = pd.DataFrame({"double": [1.2, 3.0, 4.0, *nulls]})
     df.ww.init(logical_types=types, null_invalid_values=True)
     pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_boolean():
+    types = {"data": "BooleanNullable"}
+    invalid = "text", 1.2, 345, object, None
+    data = [True, "False", *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type BooleanNullable",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = [True, False, *nulls]
+    expected = pd.DataFrame({"data": pd.Series(data, dtype='boolean')})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
