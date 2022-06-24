@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Added ability to null invalid values for ``Double`` logical type (:pr:`1449`)
+        * Added ability to null invalid values for ``BooleanNullable`` logical type (:pr:`1455`)
     * Fixes
     * Changes
     * Documentation Changes
