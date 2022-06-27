@@ -832,5 +832,6 @@ def _coerce_boolean(series):
 def _coerce_integer(series):
     series = _coerce_numeric(series)
     invalid = _get_index_invalid_integer(series)
-    if invalid.any(): series[invalid] = None
+    if invalid.any():
+        series[invalid] = None
     return series

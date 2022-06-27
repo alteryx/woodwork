@@ -482,6 +482,6 @@ def test_null_invalid_values_integer():
 
     nulls = [None] * len(invalid)
     data = [1, 2, 345, *nulls]
-    expected = pd.DataFrame({"data": pd.Series(data, dtype='Int64')})
+    expected = pd.DataFrame({"data": pd.Series(data, dtype="Int64")})
     df.ww.init(logical_types=types, null_invalid_values=True)
     pd.testing.assert_frame_equal(df, expected)
