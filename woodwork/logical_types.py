@@ -390,6 +390,16 @@ class IntegerNullable(LogicalType):
     standard_tags = {"numeric"}
 
     def transform(self, series, null_invalid_values=False):
+        """Converts a series dtype to Int64.
+
+        Args:
+            series (Series): A series of data values.
+            null_invalid_values (bool): If true, nulls invalid integers by coercing the series 
+                to string, numeric, and then nulling out floats with decimals. Defaults to False.
+
+        Returns:
+            Series: A series of integers.
+        """
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)
