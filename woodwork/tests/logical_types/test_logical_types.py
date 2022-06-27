@@ -471,7 +471,7 @@ def test_null_invalid_values_boolean():
 def test_null_invalid_values_integer():
     types = {"data": "IntegerNullable"}
     invalid = "text", 6.7, object, None
-    data = [1, "2", 345, *invalid]
+    data = [1.0, "2", 345, *invalid]
     df = pd.DataFrame({"data": data})
 
     with pytest.raises(
