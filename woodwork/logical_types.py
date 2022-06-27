@@ -394,7 +394,7 @@ class IntegerNullable(LogicalType):
 
         Args:
             series (Series): A series of data values.
-            null_invalid_values (bool): If true, nulls invalid integers by coercing the series 
+            null_invalid_values (bool): If true, nulls invalid integers by coercing the series
                 to string, numeric, and then nulling out floats with decimals. Defaults to False.
 
         Returns:
