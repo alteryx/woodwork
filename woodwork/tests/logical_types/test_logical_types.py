@@ -490,7 +490,7 @@ def test_null_invalid_values_integer():
 def test_null_invalid_values_emails():
     types = {"data": "EmailAddress"}
     invalid = ["text", 6.7, object, None]
-    valid = ["john.smith@gmail.com", "support@company.com", "team@example.com"]
+    valid = ["john.smith@example.com", "support@example.com", "team@example.com"]
     data = pd.Series(valid + invalid)
     df = pd.DataFrame({"data": data})
 
