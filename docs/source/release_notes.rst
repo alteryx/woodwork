@@ -9,6 +9,7 @@ Future Release
         * Added ability to null invalid values for ``Double`` logical type (:pr:`1449`)
         * Added ability to null invalid values for ``BooleanNullable`` logical type (:pr:`1455`)
         * Added ability to null invalid values for ``IntegerNullable`` logical type (:pr:`1456`)
+        * Added smarter inference for ``IntegerNullable`` and ``BooleanNullable`` types (:pr:``)
     * Fixes
     * Changes
     * Documentation Changes

@@ -1,6 +1,7 @@
 import re
 import warnings
 
+import numpy as np
 import pandas as pd
 from pandas.api import types as pdtypes
 
@@ -17,7 +18,7 @@ from woodwork.utils import (
     _is_valid_latlong_series,
     _reformat_to_latlong,
     camel_to_snake,
-    import_or_none,
+    import_or_none, NULL_TYPES,
 )
 
 dd = import_or_none("dask.dataframe")
@@ -203,6 +204,7 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
+        series = series.replace(NULL_TYPES, np.nan)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)
@@ -400,6 +402,7 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
+        series = series.replace(NULL_TYPES, np.nan)
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)

@@ -52,6 +52,10 @@ def integer_nullable_func(series):
             return not _is_categorical_series(series, threshold)
         else:
             return True
+    elif pdtypes.is_float_dtype(series.dtype):
+        series_no_null = series.dropna()
+        is_all_integers = all(series_no_null.mod(1).eq(0))
+        return is_all_integers
 
     return False
 
@@ -78,6 +82,10 @@ def boolean_nullable_func(series):
         series.dtype
     ):
         return True
+    elif pdtypes.is_object_dtype(series.dtype):
+        series_no_null = series.dropna()
+        if set(series_no_null) in [{False, True}, {True}, {False}]:
+            return True
     return False
 
 

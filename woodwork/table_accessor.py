@@ -3,6 +3,7 @@ import warnings
 import weakref
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Set, Union
 
+import numpy as np
 import pandas as pd
 
 from woodwork.accessor_utils import (
@@ -33,7 +34,7 @@ from woodwork.statistics_utils import (
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
-from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none
+from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none, NULL_TYPES
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
@@ -1580,6 +1581,7 @@ def _infer_missing_logical_types(
     parsed_logical_types = {}
     for name in dataframe.columns:
         series = dataframe[name]
+        series = series.replace(NULL_TYPES, np.nan)
         logical_type = (
             force_logical_types.get(name)
             if name in force_logical_types
