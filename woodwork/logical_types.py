@@ -636,6 +636,11 @@ class PhoneNumber(LogicalType):
 
     primary_dtype = "string"
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_string(series, regex="phone_inference_regex")
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=False):
         """Validates PhoneNumber values based on the regex in the config.
         By default, this validates US/Canada-based phone numbers.
