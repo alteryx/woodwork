@@ -485,3 +485,21 @@ def test_null_invalid_values_integer():
     expected = pd.DataFrame({"data": pd.Series(data, dtype="Int64")})
     df.ww.init(logical_types=types, null_invalid_values=True)
     pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_emails():
+    types = {"data": "EmailAddress"}
+    invalid = ["text", 6.7, object, None]
+    valid = ["john.smith@example.com", "support@example.com", "team@example.com"]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    df.ww.init(logical_types=types, null_invalid_values=False)
+    expected = pd.DataFrame({"data": data.astype("string")})
+    pd.testing.assert_frame_equal(df, expected)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="string")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
