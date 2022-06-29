@@ -421,6 +421,11 @@ class EmailAddress(LogicalType):
 
     primary_dtype = "string"
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_string(series, regex="email_inference_regex")
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=False):
         """Validates email address values based on the regex in the config.
 
@@ -768,18 +773,7 @@ _NULLABLE_PHYSICAL_TYPES = {
 
 def _regex_validate(regex_key, series, return_invalid_values):
     """Validates data values based on the logical type regex in the config."""
-    regex = config.get_option(regex_key)
-
-    if _is_spark_series(series):
-
-        def match(x):
-            if isinstance(x, str):
-                return bool(re.match(regex, x))
-
-        invalid = series.apply(match).astype("boolean") == False  # noqa: E712
-
-    else:
-        invalid = ~series.str.match(regex).astype("boolean")
+    invalid = _get_index_invalid_string(series, regex_key)
 
     if return_invalid_values:
         return series[invalid]
@@ -822,9 +816,30 @@ def _get_index_invalid_integer(series):
     return series.mod(1).ne(0)
 
 
-def _coerce_string(series):
+def _get_index_invalid_string(series, regex_key):
+    regex = config.get_option(regex_key)
+
+    if _is_spark_series(series):
+
+        def match(x):
+            if isinstance(x, str):
+                return bool(re.match(regex, x))
+
+        return series.apply(match).astype("boolean") == False  # noqa: E712
+
+    else:
+        return ~series.str.match(regex).astype("boolean")
+
+
+def _coerce_string(series, regex=None):
     if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
         series = series.astype("string")
+
+    if isinstance(regex, str):
+        invalid = _get_index_invalid_string(series, regex)
+
+        if invalid.any():
+            series[invalid] = None
     return series
 
 
