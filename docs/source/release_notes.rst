@@ -11,6 +11,7 @@ Future Release
         * Added ability to null invalid values for ``IntegerNullable`` logical type (:pr:`1456`)
         * Added ability to null invalid values for ``EmailAddress`` logical type (:pr:`1457`)
         * Added ability to null invalid values for ``URL`` logical type (:pr:`1459`)
+        * Added ability to null invalid values for ``PhoneNumber`` logical type (:pr:`1460`)
     * Fixes
     * Changes
     * Documentation Changes
