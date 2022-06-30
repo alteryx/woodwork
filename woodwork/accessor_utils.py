@@ -3,10 +3,7 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 
-from woodwork.exceptions import (
-    ColumnNotPresentInSchemaError,
-    WoodworkNotInitError,
-)
+from woodwork.exceptions import ColumnNotPresentInSchemaError, WoodworkNotInitError
 from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")

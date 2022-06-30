@@ -2,13 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.logical_types import (
-    Categorical,
-    CountryCode,
-    Double,
-    Integer,
-    Unknown,
-)
+from woodwork.logical_types import Categorical, CountryCode, Double, Integer, Unknown
 from woodwork.tests.testing_utils import pd_to_dask, pd_to_spark
 from woodwork.type_sys.inference_functions import (
     categorical_func,

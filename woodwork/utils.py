@@ -41,9 +41,11 @@ add_type("application/feather", ".feather")
 add_type("application/orc", ".orc")
 
 NULL_TYPES = [
+    None,
     np.nan,
     pd.NaT,
     "None",
+    "NONE",
     "none",
     "NULL",
     "Null",
