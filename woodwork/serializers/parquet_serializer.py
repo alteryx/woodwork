@@ -6,7 +6,10 @@ from pathlib import Path
 import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.exceptions import ParametersIgnoredWarning, WoodworkFileExistsError
+from woodwork.exceptions import (
+    ParametersIgnoredWarning,
+    WoodworkFileExistsError,
+)
 from woodwork.serializers.serializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE,
     Serializer,
@@ -90,7 +93,7 @@ class ParquetSerializer(Serializer):
 
     def _save_parquet_table_to_disk(self):
         """Writes data to disk with the updated metadata including WW typing info."""
-        import pyarrow.parquet as pq
+        from pyarrow import parquet as pq
 
         if _is_dask_dataframe(self.dataframe):
             path, dataframe = self._setup_for_dask_and_spark()

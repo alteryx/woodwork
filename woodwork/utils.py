@@ -40,7 +40,21 @@ add_type("application/arrow", ".arrow")
 add_type("application/feather", ".feather")
 add_type("application/orc", ".orc")
 
-NULL_TYPES = [None, pd.NA, pd.NaT, "None", "none", "NULL", "Null", "null", "NA", "na", "N/A", "n/a", "n/A", "N/a"]
+NULL_TYPES = [
+    np.nan,
+    pd.NaT,
+    "None",
+    "none",
+    "NULL",
+    "Null",
+    "null",
+    "NA",
+    "na",
+    "N/A",
+    "n/a",
+    "n/A",
+    "N/a",
+]
 
 
 def import_or_none(library):

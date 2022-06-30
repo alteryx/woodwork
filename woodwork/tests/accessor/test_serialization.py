@@ -21,7 +21,10 @@ from woodwork.exceptions import (
 )
 from woodwork.logical_types import Categorical, Ordinal
 from woodwork.serializers import get_serializer
-from woodwork.serializers.serializer_base import SCHEMA_VERSION, typing_info_to_dict
+from woodwork.serializers.serializer_base import (
+    SCHEMA_VERSION,
+    typing_info_to_dict,
+)
 from woodwork.tests.testing_utils import to_pandas
 
 BUCKET_NAME = "test-bucket"

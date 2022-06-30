@@ -14,11 +14,12 @@ from woodwork.exceptions import (
 )
 from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
+    NULL_TYPES,
     _infer_datetime_format,
     _is_valid_latlong_series,
     _reformat_to_latlong,
     camel_to_snake,
-    import_or_none, NULL_TYPES,
+    import_or_none,
 )
 
 dd = import_or_none("dask.dataframe")
@@ -204,7 +205,7 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
-        series = series.replace(NULL_TYPES, np.nan)
+        series = series.replace(NULL_TYPES, None)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)

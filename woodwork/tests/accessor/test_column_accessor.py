@@ -32,7 +32,11 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode,
 )
-from woodwork.tests.testing_utils import is_property, is_public_method, to_pandas
+from woodwork.tests.testing_utils import (
+    is_property,
+    is_public_method,
+    to_pandas,
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")

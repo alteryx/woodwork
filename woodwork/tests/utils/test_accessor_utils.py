@@ -14,7 +14,12 @@ from woodwork.accessor_utils import (
     is_schema_valid,
 )
 from woodwork.exceptions import TypeConversionError
-from woodwork.logical_types import Categorical, Datetime, LatLong, NaturalLanguage
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    LatLong,
+    NaturalLanguage,
+)
 
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):

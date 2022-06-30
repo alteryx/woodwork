@@ -16,13 +16,15 @@ from woodwork.logical_types import (
     AgeFractional,
     AgeNullable,
     Boolean,
+    BooleanNullable,
     Categorical,
     Datetime,
     EmailAddress,
+    IntegerNullable,
     LatLong,
     Ordinal,
     PhoneNumber,
-    PostalCode, IntegerNullable, BooleanNullable,
+    PostalCode,
 )
 from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -491,8 +493,12 @@ def test_null_invalid_values_integer():
 @pytest.mark.parametrize("null_type", [None, pd.NaT, np.nan, "null", "N/A", "mix"])
 @pytest.mark.parametrize("data_type", [int, float])
 def test_integer_nullable(data_type, null_type):
-    nullable_nums = pd.DataFrame(np.random.choice([data_type(i) for i in range(10)], 100), columns=["num_nulls"])
-    nullable_nums["num_nulls"].iloc[-5:] = [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
+    nullable_nums = pd.DataFrame(
+        np.random.choice([data_type(i) for i in range(10)], 100), columns=["num_nulls"]
+    )
+    nullable_nums["num_nulls"].iloc[-5:] = (
+        [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
+    )
     nullable_nums.ww.init()
 
     assert isinstance(nullable_nums.ww.logical_types["num_nulls"], IntegerNullable)
@@ -502,7 +508,10 @@ def test_integer_nullable(data_type, null_type):
 @pytest.mark.parametrize("null_type", [None, pd.NaT, np.nan, "null", "N/A", "mix"])
 def test_boolean_nullable(null_type):
     nullable_bools = pd.DataFrame([True, False] * 50, columns=["bool_nulls"])
-    nullable_bools["bool_nulls"].iloc[-5:] = [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
+    nullable_bools["bool_nulls"].iloc[-5:] = (
+        [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
+    )
     nullable_bools.ww.init()
+
     assert isinstance(nullable_bools.ww.logical_types["bool_nulls"], BooleanNullable)
     assert all(nullable_bools["bool_nulls"][-5:].isna())

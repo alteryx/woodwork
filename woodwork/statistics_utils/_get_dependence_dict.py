@@ -3,16 +3,24 @@ from timeit import default_timer as timer
 
 import numpy as np
 
-from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
+from ._bin_numeric_cols_into_categories import (
+    _bin_numeric_cols_into_categories,
+)
 from ._calculate_dependence_measure import _calculate_dependence_measure
-from ._calculate_max_dependence_for_pair import _calculate_max_dependence_for_pair
+from ._calculate_max_dependence_for_pair import (
+    _calculate_max_dependence_for_pair,
+)
 from ._cast_nullable_int_and_datetime_to_int import (
     _cast_nullable_int_and_datetime_to_int,
 )
 from ._parse_measures import _parse_measures
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
+from woodwork.utils import (
+    CallbackCaller,
+    get_valid_mi_types,
+    get_valid_pearson_types,
+)
 
 
 def _get_dependence_dict(

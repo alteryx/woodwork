@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from woodwork.statistics_utils.frequency_inference._types import DataCheckMessageCode
+from woodwork.statistics_utils.frequency_inference._types import (
+    DataCheckMessageCode,
+)
 
 # https://pandas.pydata.org/docs/user_guide/timeseries.html#offset-aliases
 ALL_ALIASES = [

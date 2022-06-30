@@ -5,7 +5,9 @@ import pandas as pd
 
 from ._get_histogram_values import _get_histogram_values
 from ._get_mode import _get_mode
-from ._get_numeric_value_counts_in_range import _get_numeric_value_counts_in_range
+from ._get_numeric_value_counts_in_range import (
+    _get_numeric_value_counts_in_range,
+)
 from ._get_recent_value_counts import _get_recent_value_counts
 from ._get_top_values_categorical import _get_top_values_categorical
 

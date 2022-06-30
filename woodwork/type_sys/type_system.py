@@ -1,5 +1,6 @@
 import pandas as pd
 
+from ..utils import NULL_TYPES
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,
@@ -325,9 +326,7 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        print(f"Types to check: {types_to_check}")
         type_matches = get_inference_matches(types_to_check, series)
-        print(f"Type matches: {type_matches}")
 
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set
@@ -349,7 +348,9 @@ class TypeSystem(object):
             # If multiple matches, get the most specific one. If multiple
             # matches have the same level of specificity, the first
             # match found at that level will be returned
-            if Double in type_matches and IntegerNullable in type_matches:
+            if (
+                Categorical in type_matches or Double in type_matches
+            ) and IntegerNullable in type_matches:
                 best_match = IntegerNullable
             else:
                 best_match = type_matches[0]

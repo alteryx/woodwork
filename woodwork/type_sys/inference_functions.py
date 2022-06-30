@@ -1,5 +1,5 @@
 from importlib import resources as pkg_resources
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -8,6 +8,7 @@ from pandas.api import types as pdtypes
 import woodwork as ww
 from woodwork import data
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
+from woodwork.utils import NULL_TYPES
 
 Tokens = Iterable[str]
 
@@ -54,8 +55,7 @@ def integer_nullable_func(series):
             return True
     elif pdtypes.is_float_dtype(series.dtype):
         series_no_null = series.dropna()
-        is_all_integers = all(series_no_null.mod(1).eq(0))
-        return is_all_integers
+        return all(series_no_null.mod(1).eq(0))
 
     return False
 
