@@ -14,7 +14,7 @@ Future Release
         * Added ability to null invalid values for ``PhoneNumber`` logical type (:pr:`1460`)
     * Fixes
     * Changes
-        * Set the minimum acceptable version of pandas to ``1.4.0`` (:pr:``)
+        * Set the minimum acceptable version of pandas to ``1.4.0`` (:pr:`1461`)
     * Documentation Changes
     * Testing Changes
 
