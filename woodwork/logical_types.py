@@ -173,7 +173,6 @@ class AgeNullable(LogicalType):
             series = _coerce_age(series, fractional=False)
         return super().transform(series)
 
-
     def validate(self, series, return_invalid_values=True):
         """Validates age values by checking for non-negative values.
 
