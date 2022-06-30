@@ -887,8 +887,8 @@ def _coerce_integer(series):
 
 
 def _coerce_age(series, fractional=False):
-    coerce = _coerce_numeric if fractional else _coerce_integer
-    series = coerce(series)
+    coerce_type = _coerce_numeric if fractional else _coerce_integer
+    series = coerce_type(series)
     invalid = _get_index_invalid_age(series)
     if invalid.any():
         series[invalid] = None
