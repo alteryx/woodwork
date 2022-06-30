@@ -15,6 +15,7 @@ Future Release
     * Fixes
     * Changes
         * Set the minimum acceptable version of pandas to ``1.4.0`` (:pr:`1461`)
+        * Dropped support for Python 3.7 (:pr:`1461`)
     * Documentation Changes
     * Testing Changes
 
