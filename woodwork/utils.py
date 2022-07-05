@@ -306,7 +306,7 @@ def _is_valid_latlong_value(val, is_spark=False):
 
     if isinstance(val, str):
         val = _parse_latlong(val)
-        if val is None:
+        if isinstance(val, str):
             return False
         else:
             return _is_valid_latlong_value(val)
