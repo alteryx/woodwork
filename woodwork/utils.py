@@ -239,12 +239,9 @@ def _reformat_to_latlong(latlong, is_spark=False):
                 f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
             )
 
-        latlong = [latitude, longitude]
-        if pd.isnull(latlong).all():
-            return np.nan
-
-        if not is_spark:
-            latlong = tuple(latlong)
+        latlong = (latitude, longitude)
+        if is_spark:
+            latlong = list(latlong)
         return latlong
 
     if _is_nan(latlong):
@@ -302,7 +299,6 @@ def _is_valid_latlong_value(val, is_spark=False):
         lat_null, long_null = map(pd.isnull, val)
         is_valid = isinstance(latitude, float) or lat_null
         is_valid &= isinstance(longitude, float) or long_null
-        is_valid &= not (lat_null and long_null)
         return is_valid
 
     if isinstance(val, float):
@@ -637,4 +633,4 @@ def _parse_latlong(latlong):
     try:
         return ast.literal_eval(latlong)
     except ValueError:
-        pass
+        return latlong
