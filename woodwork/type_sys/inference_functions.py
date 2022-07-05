@@ -8,7 +8,6 @@ from pandas.api import types as pdtypes
 import woodwork as ww
 from woodwork import data
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
-from woodwork.utils import NULL_TYPES
 
 Tokens = Iterable[str]
 
@@ -54,6 +53,8 @@ def integer_nullable_func(series):
         else:
             return True
     elif pdtypes.is_float_dtype(series.dtype):
+        if not series.isnull().any():
+            return False
         series_no_null = series.dropna()
         return all(series_no_null.mod(1).eq(0))
 
@@ -84,8 +85,13 @@ def boolean_nullable_func(series):
         return True
     elif pdtypes.is_object_dtype(series.dtype):
         series_no_null = series.dropna()
-        if set(series_no_null) in [{False, True}, {True}, {False}]:
-            return True
+        try:
+            if set(series_no_null) in [{False, True}, {True}, {False}]:
+                return True
+        except TypeError as te:
+            te_msg = str(te)
+            if "unhashable type" in te_msg:
+                return False
     return False
 
 
