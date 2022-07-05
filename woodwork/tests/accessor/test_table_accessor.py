@@ -666,8 +666,8 @@ def test_int_dtype_inference_on_init():
     df.ww.init()
 
     assert df["ints_no_nans"].dtype == "int64"
-    assert df["ints_nan"].dtype == "float64"
-    assert df["ints_NA"].dtype == "category"
+    assert df["ints_nan"].dtype == "Int64"
+    assert df["ints_NA"].dtype == "Int64"
     assert df["ints_NA_specified"].dtype == "Int64"
 
 
@@ -684,8 +684,8 @@ def test_bool_dtype_inference_on_init():
     df.ww.init()
 
     assert df["bools_no_nans"].dtype == "bool"
-    assert df["bool_nan"].dtype == "category"
-    assert df["bool_NA"].dtype == "category"
+    assert df["bool_nan"].dtype == "boolean"
+    assert df["bool_NA"].dtype == "boolean"
     assert df["bool_NA_specified"].dtype == "boolean"
 
 
@@ -721,7 +721,7 @@ def test_float_dtype_inference_on_init():
 
     assert df["floats_no_nans"].dtype == "float64"
     assert df["floats_nan"].dtype == "float64"
-    assert df["floats_NA"].dtype == "category"
+    assert df["floats_NA"].dtype == "object"
     assert df["floats_nan_specified"].dtype == "float64"
 
 
@@ -769,7 +769,7 @@ def test_datetime_dtype_inference_on_init():
         {
             "date_no_nans": pd.Series([pd.to_datetime("2020-09-01")] * 2),
             "date_nan": pd.Series([pd.to_datetime("2020-09-01"), np.nan]),
-            "date_NA": pd.Series([pd.to_datetime("2020-09-01"), pd.NA]),
+            "date_NA": pd.Series([pd.to_datetime("2020-09-01", utc=True), pd.NA]),
             "date_NaT": pd.Series([pd.to_datetime("2020-09-01"), pd.NaT]),
             "date_NA_specified": pd.Series(
                 [pd.to_datetime("2020-09-01"), pd.NA], dtype="datetime64[ns]"

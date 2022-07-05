@@ -1,6 +1,5 @@
 import pandas as pd
 
-from ..utils import NULL_TYPES
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,

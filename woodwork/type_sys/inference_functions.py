@@ -1,5 +1,5 @@
 from importlib import resources as pkg_resources
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Union
 
 import numpy as np
 import pandas as pd
