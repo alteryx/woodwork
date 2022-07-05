@@ -215,7 +215,8 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
-        series = series.replace(NULL_TYPES, None)
+        if not _is_spark_series(series):
+            series = series.replace(NULL_TYPES, None)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)
@@ -413,7 +414,8 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
-        series = series.replace(NULL_TYPES, np.nan)
+        if not _is_spark_series(series):
+            series = series.replace(NULL_TYPES, np.nan)
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)

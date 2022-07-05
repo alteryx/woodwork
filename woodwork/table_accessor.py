@@ -12,7 +12,7 @@ from woodwork.accessor_utils import (
     _is_dataframe,
     _is_spark_dataframe,
     get_invalid_schema_message,
-    init_series,
+    init_series, _is_spark_series,
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
@@ -1586,7 +1586,8 @@ def _infer_missing_logical_types(
     parsed_logical_types = {}
     for name in dataframe.columns:
         series = dataframe[name]
-        series = series.replace(NULL_TYPES, np.nan)
+        if not _is_spark_series(series):
+            series = series.replace(NULL_TYPES, np.nan)
         logical_type = (
             force_logical_types.get(name)
             if name in force_logical_types

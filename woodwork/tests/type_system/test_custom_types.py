@@ -2,7 +2,7 @@ import pandas as pd
 from pandas.api import types as pdtypes
 
 import woodwork as ww
-from woodwork.logical_types import Categorical, Double, LogicalType
+from woodwork.logical_types import Categorical, Double, LogicalType, IntegerNullable
 
 
 def test_register_custom_logical_type(type_sys):
@@ -57,7 +57,7 @@ def test_accessor_override_default_function(sample_df):
     )
     ww.type_system.update_inference_function("Integer", inference_function=None)
     sample_df.ww.init()
-    assert isinstance(sample_df.ww["age"].ww.logical_type, Double)
-    assert sample_df["age"].dtype == "float64"
+    assert isinstance(sample_df.ww["age"].ww.logical_type, IntegerNullable)
+    assert sample_df["age"].dtype == "Int64"
     # Reset global type system to original settings
     ww.type_system.reset_defaults()

@@ -41,7 +41,7 @@ def categorical_func(series):
 
 def integer_func(series):
     if integer_nullable_func(series) and not series.isnull().any():
-        return True
+        return all(series.mod(1).eq(0))
     return False
 
 
@@ -53,8 +53,6 @@ def integer_nullable_func(series):
         else:
             return True
     elif pdtypes.is_float_dtype(series.dtype):
-        if not series.isnull().any():
-            return False
         series_no_null = series.dropna()
         return all(series_no_null.mod(1).eq(0))
 
