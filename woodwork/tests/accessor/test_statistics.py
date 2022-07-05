@@ -1086,16 +1086,6 @@ def test_describe_numeric_all_nans():
         assert stats["nulls"]["top_values"] == []
 
 
-def test_pandas_nullable_integer_quantile_fix():
-    """Should fail when https://github.com/pandas-dev/pandas/issues/42626 gets fixed"""
-    if pd.__version__ not in ["1.3.0", "1.3.1"]:  # pragma: no cover
-        pytest.skip("Bug only exists on pandas version 1.3.0 and 1.3.1")
-    series = pd.Series([1, 2, 3], dtype="Int64")
-    error_message = "cannot safely cast non-equivalent object to int64"
-    with pytest.raises(TypeError, match=error_message):
-        series.quantile([0.75])
-
-
 def test_describe_with_no_match(sample_df):
     sample_df.ww.init()
     df = sample_df.ww.describe(include=["wrongname"])
@@ -1281,8 +1271,17 @@ def test_value_counts(categorical_df):
         {"value": 1, "count": 2},
         {"value": 3, "count": 1},
     ]
+    expected_cat2 = [
+        {"value": np.nan, "count": 6},
+        {"value": "test", "count": 3},
+        {"value": "test2", "count": 1},
+    ]
+    expected_cat3 = [
+        {"value": np.nan, "count": 7},
+        {"value": "test", "count": 3},
+    ]
     # Spark converts numeric categories to strings, so we need to update the expected values for this
-    # Spark will result in `None` instead of `np.nan` in categorical columns
+    # Spark will result in `pd.NA` instead of `np.nan` in categorical columns
     if _is_spark_dataframe(categorical_df):
         updated_results = []
         for items in expected_cat1:
@@ -1291,16 +1290,41 @@ def test_value_counts(categorical_df):
             )
         expected_cat1 = updated_results
 
+        updated_results = []
+        for items in expected_cat2:
+            updated_results.append(
+                {
+                    k: (
+                        str(v)
+                        if (k == "value" and v is not np.nan)
+                        else pd.NA
+                        if v is np.nan
+                        else v
+                    )
+                    for k, v in items.items()
+                }
+            )
+        expected_cat2 = updated_results
+
+        updated_results = []
+        for items in expected_cat3:
+            updated_results.append(
+                {
+                    k: (
+                        str(v)
+                        if (k == "value" and v is not np.nan)
+                        else pd.NA
+                        if v is np.nan
+                        else v
+                    )
+                    for k, v in items.items()
+                }
+            )
+        expected_cat3 = updated_results
+
     assert val_cts["categories1"] == expected_cat1
-    assert val_cts["categories2"] == [
-        {"value": np.nan, "count": 6},
-        {"value": "test", "count": 3},
-        {"value": "test2", "count": 1},
-    ]
-    assert val_cts["categories3"] == [
-        {"value": np.nan, "count": 7},
-        {"value": "test", "count": 3},
-    ]
+    assert val_cts["categories2"] == expected_cat2
+    assert val_cts["categories3"] == expected_cat3
 
     val_cts_descending = categorical_df.ww.value_counts(ascending=True)
     for col, vals in val_cts_descending.items():
