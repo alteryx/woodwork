@@ -221,7 +221,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
     NaN like values are replaced with np.nan.
     """
     if isinstance(latlong, str):
-        latlong = _parse_latlong(latlong)
+        latlong = _parse_latlong(latlong) or latlong
 
     if isinstance(latlong, (list, tuple)):
         if len(latlong) != 2:
@@ -306,7 +306,7 @@ def _is_valid_latlong_value(val, is_spark=False):
 
     if isinstance(val, str):
         val = _parse_latlong(val)
-        if isinstance(val, str):
+        if val is None:
             return False
         else:
             return _is_valid_latlong_value(val)
@@ -633,4 +633,4 @@ def _parse_latlong(latlong):
     try:
         return ast.literal_eval(latlong)
     except ValueError:
-        return latlong
+        pass
