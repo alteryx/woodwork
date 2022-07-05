@@ -12,7 +12,8 @@ from woodwork.accessor_utils import (
     _is_dataframe,
     _is_spark_dataframe,
     get_invalid_schema_message,
-    init_series, _is_spark_series,
+    init_series,
+    _is_spark_series,
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
