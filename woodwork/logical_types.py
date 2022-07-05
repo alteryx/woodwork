@@ -15,8 +15,8 @@ from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
     _infer_datetime_format,
     _is_valid_latlong_series,
-    _reformat_to_latlong,
     _is_valid_latlong_value,
+    _reformat_to_latlong,
     camel_to_snake,
     import_or_none,
 )
