@@ -121,7 +121,7 @@ class Age(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        return _validate_not_negative(series, return_invalid_values)
+        return _validate_age(series, return_invalid_values)
 
 
 class AgeFractional(LogicalType):
@@ -138,6 +138,11 @@ class AgeFractional(LogicalType):
     primary_dtype = "float64"
     standard_tags = {"numeric"}
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_age(series, fractional=True)
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=True):
         """Validates age values by checking for non-negative values.
 
@@ -148,7 +153,7 @@ class AgeFractional(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        return _validate_not_negative(series, return_invalid_values)
+        return _validate_age(series, return_invalid_values)
 
 
 class AgeNullable(LogicalType):
@@ -165,6 +170,11 @@ class AgeNullable(LogicalType):
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_age(series, fractional=False)
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=True):
         """Validates age values by checking for non-negative values.
 
@@ -175,7 +185,7 @@ class AgeNullable(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        return _validate_not_negative(series, return_invalid_values)
+        return _validate_age(series, return_invalid_values)
 
 
 class Boolean(LogicalType):
@@ -807,9 +817,9 @@ def _regex_validate(regex_key, series, return_invalid_values):
             raise TypeValidationError(info)
 
 
-def _validate_not_negative(series, return_invalid_values):
+def _validate_age(series, return_invalid_values):
     """Validates data values are non-negative."""
-    invalid = series.lt(0)
+    invalid = _get_index_invalid_age(series)
     if return_invalid_values:
         return series[invalid]
 
@@ -842,6 +852,10 @@ def _get_index_invalid_string(series, regex_key):
         return ~series.str.match(regex).astype("boolean")
 
 
+def _get_index_invalid_age(series):
+    return series.lt(0)
+
+
 def _coerce_string(series, regex=None):
     if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
         series = series.astype("string")
@@ -871,6 +885,15 @@ def _coerce_boolean(series):
 def _coerce_integer(series):
     series = _coerce_numeric(series)
     invalid = _get_index_invalid_integer(series)
+    if invalid.any():
+        series[invalid] = None
+    return series
+
+
+def _coerce_age(series, fractional=False):
+    coerce_type = _coerce_numeric if fractional else _coerce_integer
+    series = coerce_type(series)
+    invalid = _get_index_invalid_age(series)
     if invalid.any():
         series[invalid] = None
     return series

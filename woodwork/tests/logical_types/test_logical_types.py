@@ -554,6 +554,44 @@ def test_null_invalid_values_phone_number():
     pd.testing.assert_frame_equal(df, expected)
 
 
+def test_null_invalid_age_fractional():
+    types = {"data": "AgeFractional"}
+    invalid = "text", -6.7, object, None
+    data = [0.34, "24.34", 45.0, *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type AgeFractional",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = [0.34, 24.34, 45.0, *nulls]
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_age_nullable():
+    types = {"data": "AgeNullable"}
+    invalid = "text", -6, object, None
+    data = [34, "24", 45, *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type AgeNullable",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series([34, 24, 45, *nulls], dtype="Int64")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
 @pytest.mark.parametrize("null_type", [None, pd.NaT, np.nan, "null", "N/A", "mix"])
 @pytest.mark.parametrize("data_type", [int, float])
 def test_integer_nullable(data_type, null_type):
