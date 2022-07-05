@@ -16,6 +16,7 @@ from woodwork.utils import (
     _infer_datetime_format,
     _is_valid_latlong_series,
     _reformat_to_latlong,
+    _is_valid_latlong_value,
     camel_to_snake,
     import_or_none,
 )
@@ -515,6 +516,9 @@ class LatLong(LogicalType):
 
     def transform(self, series, null_invalid_values=False):
         """Formats a series to be a tuple (or list for Spark) of two floats."""
+        if null_invalid_values:
+            series = _coerce_latlong(series)
+
         if _is_dask_series(series):
             name = series.name
             meta = (series, tuple([float, float]))
@@ -852,6 +856,10 @@ def _get_index_invalid_age(series):
     return series.lt(0)
 
 
+def _get_index_invalid_latlong(series):
+    return ~series.apply(_is_valid_latlong_value)
+
+
 def _coerce_string(series, regex=None):
     if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
         series = series.astype("string")
@@ -890,6 +898,13 @@ def _coerce_age(series, fractional=False):
     coerce_type = _coerce_numeric if fractional else _coerce_integer
     series = coerce_type(series)
     invalid = _get_index_invalid_age(series)
+    if invalid.any():
+        series[invalid] = None
+    return series
+
+
+def _coerce_latlong(series):
+    invalid = _get_index_invalid_latlong(series)
     if invalid.any():
         series[invalid] = None
     return series
