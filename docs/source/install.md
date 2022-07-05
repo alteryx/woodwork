@@ -1,6 +1,6 @@
 # Install
 
-Woodwork is available for Python 3.7, 3.8, 3.9 and 3.10. It can be installed from PyPi, conda-forge, or from source.
+Woodwork is available for Python 3.8, 3.9 and 3.10. It can be installed from PyPi, conda-forge, or from source.
 
 To install Woodwork, run the following command:
 

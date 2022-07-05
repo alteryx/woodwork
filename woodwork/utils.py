@@ -10,7 +10,6 @@ import pandas as pd
 
 import woodwork as ww
 from woodwork.exceptions import TypeValidationError
-from woodwork.pandas_backport import guess_datetime_format
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
 type_to_read_func_map = {
@@ -609,7 +608,7 @@ def _infer_datetime_format(dates, n=100):
     if len(first_n) == 0:
         return None
     try:
-        fmts = first_n.map(guess_datetime_format)
+        fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
         mode_fmt = None

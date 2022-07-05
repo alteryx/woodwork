@@ -16,11 +16,13 @@ Future Release
         * Added smarter inference for ``IntegerNullable`` and ``BooleanNullable`` types (:pr:`1458`)
     * Fixes
     * Changes
+        * Set the minimum acceptable version of pandas to ``1.4.0`` for woodwork and ``1.4.3`` for spark add-on (:pr:`1461`)
+        * Dropped support for Python 3.7 (:pr:`1461`)
     * Documentation Changes
     * Testing Changes
 
    Thanks to the following people for contributing to this release:
-   :user:`jeff-hernandez`
+   :user:`jeff-hernandez`, :user:`ParthivNaresh`
 
 v0.16.4 Jun 23, 2022
 ====================
