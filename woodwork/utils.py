@@ -239,9 +239,13 @@ def _reformat_to_latlong(latlong, is_spark=False):
                 f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
             )
 
-        if is_spark:
-            return [latitude, longitude]
-        return (latitude, longitude)
+        latlong = [latitude, longitude]
+        if pd.isnull(latlong).all():
+            return np.nan
+
+        if not is_spark:
+            latlong = tuple(latlong)
+        return latlong
 
     if _is_nan(latlong):
         return np.nan
