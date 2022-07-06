@@ -329,11 +329,12 @@ class TypeSystem(object):
         ]
         if not _is_spark_series(series):
             series_nan_cast = series.replace(NULL_TYPES, np.nan)  # Will change dtype
-            series_nan_cast = series_nan_cast.astype(
-                series.dtype
-            )  # Cast back to original dtype
-        type_matches = get_inference_matches(types_to_check, series_nan_cast)
+            # series_nan_cast = series_nan_cast.astype(
+            #    series.dtype
+            # )  # Cast back to original dtype
 
+        type_matches = get_inference_matches(types_to_check, series_nan_cast)
+        print(f"TYPE MATCHES: {type_matches}")
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set
             # type to default type (Unknown). Assume that a column

@@ -120,7 +120,9 @@ def test_categorical_inference(categories):
     dtypes = ["object", "string", "category"]
     if _is_spark_series(categories[0]):
         dtypes = get_spark_dtypes(dtypes)
-    for series in categories:
+    for ind, series in enumerate(categories):
+        if ind == len(categories) - 1:
+            dtypes = ["string", "category"]
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Categorical)

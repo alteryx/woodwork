@@ -603,7 +603,11 @@ def test_integer_nullable(data_type, null_type):
     nullable_nums["num_nulls"].iloc[-5:] = (
         [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
     )
+    print("--------------------------------")
+    print(nullable_nums.dtypes)
     nullable_nums.ww.init()
+    print(nullable_nums.ww)
+    print(nullable_nums.dtypes)
 
     if null_type != 5:
         assert isinstance(nullable_nums.ww.logical_types["num_nulls"], IntegerNullable)
