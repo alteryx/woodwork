@@ -19,14 +19,14 @@ from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
     Datetime,
+    Double,
     EmailAddress,
+    Integer,
     IntegerNullable,
     LatLong,
     Ordinal,
     PhoneNumber,
     PostalCode,
-    Integer,
-    Double,
 )
 from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -608,8 +608,10 @@ def test_integer_nullable(data_type, null_type):
     if null_type != 5:
         assert isinstance(nullable_nums.ww.logical_types["num_nulls"], IntegerNullable)
         assert all(nullable_nums["num_nulls"][-5:].isna())
-    else:
+    elif data_type is int:
         assert isinstance(nullable_nums.ww.logical_types["num_nulls"], Integer)
+    else:
+        assert isinstance(nullable_nums.ww.logical_types["num_nulls"], Double)
 
 
 @pytest.mark.parametrize(

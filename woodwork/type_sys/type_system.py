@@ -326,6 +326,7 @@ class TypeSystem(object):
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
         type_matches = get_inference_matches(types_to_check, series)
+        print(f"TYPE MATCHES: {type_matches}")
 
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set

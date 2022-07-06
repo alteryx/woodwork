@@ -2,7 +2,7 @@ import pandas as pd
 from pandas.api import types as pdtypes
 
 import woodwork as ww
-from woodwork.logical_types import Categorical, Double, LogicalType, IntegerNullable
+from woodwork.logical_types import Categorical, Double, IntegerNullable, LogicalType
 
 
 def test_register_custom_logical_type(type_sys):

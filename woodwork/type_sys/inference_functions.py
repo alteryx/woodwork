@@ -53,6 +53,8 @@ def integer_nullable_func(series):
         else:
             return True
     elif pdtypes.is_float_dtype(series.dtype):
+        if not series.isnull().any():
+            return False
         series_no_null = series.dropna()
         return all(series_no_null.mod(1).eq(0))
 

@@ -11,9 +11,9 @@ from woodwork.accessor_utils import (
     _is_dask_dataframe,
     _is_dataframe,
     _is_spark_dataframe,
+    _is_spark_series,
     get_invalid_schema_message,
     init_series,
-    _is_spark_series,
 )
 from woodwork.exceptions import (
     ColumnNotPresentError,
@@ -1586,16 +1586,17 @@ def _infer_missing_logical_types(
     existing_logical_types = existing_logical_types or {}
     parsed_logical_types = {}
     for name in dataframe.columns:
-        series = dataframe[name]
-        if not _is_spark_series(series):
-            series = series.replace(NULL_TYPES, np.nan)
         logical_type = (
             force_logical_types.get(name)
             if name in force_logical_types
             else existing_logical_types.get(name)
         )
+        series = dataframe[name]
+        series_no_nan = series.copy()
+        if not _is_spark_series(series):
+            series_no_nan = series.replace(NULL_TYPES, np.nan)
         parsed_logical_types[name] = _get_column_logical_type(
-            series, logical_type, name
+            series_no_nan, logical_type, name
         )
         updated_series = parsed_logical_types[name].transform(
             series, null_invalid_values=null_invalid_values

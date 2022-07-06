@@ -367,6 +367,8 @@ class Double(LogicalType):
     standard_tags = {"numeric"}
 
     def transform(self, series, null_invalid_values=False):
+        if not _is_spark_series(series):
+            series = series.replace(NULL_TYPES, np.nan)
         if null_invalid_values:
             series = _coerce_numeric(series)
         return super().transform(series)
