@@ -587,3 +587,21 @@ def test_null_invalid_age_nullable():
     expected = pd.DataFrame({"data": data})
     df.ww.init(logical_types=types, null_invalid_values=True)
     pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_postal_code():
+    types = {"data": "PostalCode"}
+    invalid = ["text", 6.7, object, "123456"]
+    valid = [90210, "60018-0123", "10010"]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    df.ww.init(logical_types=types, null_invalid_values=False)
+    expected = pd.DataFrame({"data": data.astype("category")})
+    pd.testing.assert_frame_equal(df, expected)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="string")
+    expected = pd.DataFrame({"data": data.astype("category")})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
