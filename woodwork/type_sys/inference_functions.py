@@ -86,9 +86,14 @@ def boolean_nullable_func(series):
     elif pdtypes.is_object_dtype(series.dtype):
         series_no_null = series.dropna()
         try:
-            if set(series_no_null) in [{False, True}, {True}, {False}]:
+            series_no_null_unq = set(series_no_null)
+            if series_no_null_unq in [
+                {False, True},
+                {True},
+                {False},
+            ]:
                 return True
-        except TypeError as te:
+        except TypeError as te:  # Necessary to check for non-hashable values because of object dtype consideration
             te_msg = str(te)
             if "unhashable type" in te_msg:
                 return False

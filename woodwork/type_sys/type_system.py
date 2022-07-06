@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
 
+from ..utils import NULL_TYPES
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,
@@ -325,8 +327,12 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        type_matches = get_inference_matches(types_to_check, series)
-        print(f"TYPE MATCHES: {type_matches}")
+        if not _is_spark_series(series):
+            series_nan_cast = series.replace(NULL_TYPES, np.nan)  # Will change dtype
+            series_nan_cast = series_nan_cast.astype(
+                series.dtype
+            )  # Cast back to original dtype
+        type_matches = get_inference_matches(types_to_check, series_nan_cast)
 
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set

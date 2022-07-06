@@ -3,7 +3,6 @@ import warnings
 import weakref
 from typing import Any, Callable, Dict, Iterable, List, Sequence, Set, Union
 
-import numpy as np
 import pandas as pd
 
 from woodwork.accessor_utils import (
@@ -11,7 +10,6 @@ from woodwork.accessor_utils import (
     _is_dask_dataframe,
     _is_dataframe,
     _is_spark_dataframe,
-    _is_spark_series,
     get_invalid_schema_message,
     init_series,
 )
@@ -35,12 +33,7 @@ from woodwork.statistics_utils import (
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
-from woodwork.utils import (
-    NULL_TYPES,
-    _get_column_logical_type,
-    _parse_logical_type,
-    import_or_none,
-)
+from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
@@ -1592,11 +1585,8 @@ def _infer_missing_logical_types(
             else existing_logical_types.get(name)
         )
         series = dataframe[name]
-        series_no_nan = series.copy()
-        if not _is_spark_series(series):
-            series_no_nan = series.replace(NULL_TYPES, np.nan)
         parsed_logical_types[name] = _get_column_logical_type(
-            series_no_nan, logical_type, name
+            series, logical_type, name
         )
         updated_series = parsed_logical_types[name].transform(
             series, null_invalid_values=null_invalid_values

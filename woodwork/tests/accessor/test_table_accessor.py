@@ -657,9 +657,9 @@ def test_int_dtype_inference_on_init():
     df = pd.DataFrame(
         {
             "ints_no_nans": pd.Series([1, 2]),
-            "ints_nan": pd.Series([1, np.nan]),
-            "ints_NA": pd.Series([1, pd.NA]),
-            "ints_NA_specified": pd.Series([1, pd.NA], dtype="Int64"),
+            "ints_nan": pd.Series([2, np.nan]),
+            "ints_NA": pd.Series([2, pd.NA]),
+            "ints_NA_specified": pd.Series([2, pd.NA], dtype="Int64"),
         }
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
@@ -667,7 +667,7 @@ def test_int_dtype_inference_on_init():
 
     assert df["ints_no_nans"].dtype == "int64"
     assert df["ints_nan"].dtype == "Int64"
-    assert df["ints_NA"].dtype == "Int64"
+    assert df["ints_NA"].dtype == "category"
     assert df["ints_NA_specified"].dtype == "Int64"
 
 
@@ -721,7 +721,7 @@ def test_float_dtype_inference_on_init():
 
     assert df["floats_no_nans"].dtype == "float64"
     assert df["floats_nan"].dtype == "float64"
-    assert df["floats_NA"].dtype == "float64"
+    assert df["floats_NA"].dtype == "category"
     assert df["floats_nan_specified"].dtype == "float64"
 
 
