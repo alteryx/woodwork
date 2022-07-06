@@ -19,8 +19,6 @@ NL_delimiters = r"[- \[\].,!\?;\n]"
 
 
 def categorical_func(series):
-    print("CATEGORICAL")
-    print(f"dtype: {series.dtype}")
     if pdtypes.is_categorical_dtype(series.dtype):
         return True
 
@@ -42,16 +40,12 @@ def categorical_func(series):
 
 
 def integer_func(series):
-    print("INTEGER")
-    print(f"dtype: {series.dtype}")
     if integer_nullable_func(series) and not series.isnull().any():
         return all(series.mod(1).eq(0))
     return False
 
 
 def integer_nullable_func(series):
-    print("INTEGER NULLABLE")
-    print(f"dtype: {series.dtype}")
     if pdtypes.is_integer_dtype(series.dtype):
         threshold = ww.config.get_option("numeric_categorical_threshold")
         if threshold is not None:
@@ -68,8 +62,6 @@ def integer_nullable_func(series):
 
 
 def double_func(series):
-    print("DOUBLE")
-    print(f"dtype: {series.dtype}")
     if pdtypes.is_float_dtype(series.dtype):
         threshold = ww.config.get_option("numeric_categorical_threshold")
         if threshold is not None:
@@ -81,16 +73,12 @@ def double_func(series):
 
 
 def boolean_func(series):
-    print("BOOLEAN")
-    print(f"dtype: {series.dtype}")
     if boolean_nullable_func(series) and not series.isnull().any():
         return True
     return False
 
 
 def boolean_nullable_func(series):
-    print("BOOLEAN NULLABLE")
-    print(f"dtype: {series.dtype}")
     if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
         series.dtype
     ):
