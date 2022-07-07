@@ -631,3 +631,36 @@ def test_boolean_nullable(null_type):
         assert all(nullable_bools["bool_nulls"][-5:].isna())
     else:
         assert isinstance(nullable_bools.ww.logical_types["bool_nulls"], Boolean)
+
+
+def test_null_invalid_latlong():
+    valid = [
+        (33.670914, -117.841501),
+        "(40.423599, -86.921162)",
+        (-45.031705, None),
+        (None, None),
+    ]
+    types = {"data": "LatLong"}
+    invalid = ["text", -6.7, object, None]
+    df = pd.DataFrame({"data": valid + invalid})
+
+    with pytest.raises(
+        TypeValidationError,
+        match="LatLong value is not properly formatted.",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nan = float("nan")
+    nulls = [nan] * len(invalid)
+    data = pd.Series(
+        [
+            (33.670914, -117.841501),
+            (40.423599, -86.921162),
+            (-45.031705, nan),
+            (nan, nan),
+            *nulls,
+        ]
+    )
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
