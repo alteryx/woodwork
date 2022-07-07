@@ -327,11 +327,9 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        if not _is_spark_series(series):
-            series_nan_cast = series.replace(NULL_TYPES, np.nan)  # Will change dtype
-            # series_nan_cast = series_nan_cast.astype(
-            #    series.dtype
-            # )  # Cast back to original dtype
+        series_nan_cast = series.replace(NULL_TYPES, np.nan)  # Will change dtype
+        if series_nan_cast.count() == 0:
+            return Unknown()
 
         type_matches = get_inference_matches(types_to_check, series_nan_cast)
         if len(type_matches) == 0:
