@@ -221,16 +221,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
     NaN like values are replaced with np.nan.
     """
     if isinstance(latlong, str):
-
-        nan_values = [x for x in ww.config.get_option("nan_values") if len(x)]
-        nan_values = "|".join(nan_values)
-
-        latlong = re.sub(nan_values, "None", latlong)
-
-        try:
-            latlong = ast.literal_eval(latlong)
-        except ValueError:
-            pass
+        latlong = _parse_latlong(latlong) or latlong
 
     if isinstance(latlong, (list, tuple)):
         if len(latlong) != 2:
@@ -248,9 +239,10 @@ def _reformat_to_latlong(latlong, is_spark=False):
                 f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
             )
 
+        latlong = (latitude, longitude)
         if is_spark:
-            return [latitude, longitude]
-        return (latitude, longitude)
+            latlong = list(latlong)
+        return latlong
 
     if _is_nan(latlong):
         return np.nan
@@ -304,10 +296,20 @@ def _is_valid_latlong_value(val, is_spark=False):
             return False
 
         latitude, longitude = val
-        return isinstance(latitude, float) and isinstance(longitude, float)
+        lat_null, long_null = map(pd.isnull, val)
+        is_valid = isinstance(latitude, float) or lat_null
+        is_valid &= isinstance(longitude, float) or long_null
+        return is_valid
 
     if isinstance(val, float):
         return np.isnan(val)
+
+    if isinstance(val, str):
+        val = _parse_latlong(val)
+        if val is None:
+            return False
+        else:
+            return _is_valid_latlong_value(val)
 
     if is_spark and val is None:
         return True
@@ -620,3 +622,15 @@ def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = replaced_series
 
     return df
+
+
+def _parse_latlong(latlong):
+    nan_values = [x for x in ww.config.get_option("nan_values") if len(x)]
+    nan_values = "|".join(nan_values)
+
+    latlong = re.sub(nan_values, "None", latlong)
+
+    try:
+        return ast.literal_eval(latlong)
+    except ValueError:
+        pass
