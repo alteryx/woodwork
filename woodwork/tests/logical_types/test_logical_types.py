@@ -610,7 +610,7 @@ def test_null_invalid_postal_code():
 def test_null_invalid_postal_code_numeric():
     types = {"data": "PostalCode"}
     invalid = [-6.7, 60018.0123, 123456.0]
-    valid = [90210, 60018., 10010.]
+    valid = [90210, 60018.0, 10010.0]
     data = pd.Series(valid + invalid)
     df = pd.DataFrame({"data": data})
 
@@ -621,8 +621,8 @@ def test_null_invalid_postal_code_numeric():
         df.ww.init(logical_types=types, null_invalid_values=False)
 
     nulls = [None] * len(invalid)
-    data = pd.Series(valid + nulls, dtype='Int64')
-    data = data.astype('string').astype("category")
+    data = pd.Series(valid + nulls, dtype="Int64")
+    data = data.astype("string").astype("category")
     expected = pd.DataFrame({"data": data})
     df.ww.init(logical_types=types, null_invalid_values=True)
     pd.testing.assert_frame_equal(df, expected)
