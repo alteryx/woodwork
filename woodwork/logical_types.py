@@ -215,8 +215,7 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
-        if not _is_spark_series(series):
-            series = series.replace(NULL_TYPES, np.nan)
+        series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)
@@ -367,8 +366,7 @@ class Double(LogicalType):
     standard_tags = {"numeric"}
 
     def transform(self, series, null_invalid_values=False):
-        if not _is_spark_series(series):
-            series = series.replace(NULL_TYPES, np.nan)
+        series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_numeric(series)
         return super().transform(series)
@@ -416,8 +414,7 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
-        if not _is_spark_series(series):
-            series = series.replace(NULL_TYPES, np.nan)
+        series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)
@@ -819,6 +816,12 @@ def _regex_validate(regex_key, series, return_invalid_values):
             info = f"Series {series.name} contains invalid {type_string} values. "
             info += f"The {regex_key} can be changed in the config if needed."
             raise TypeValidationError(info)
+
+
+def _replace_nans(series):
+    if not _is_spark_series(series):
+        series = series.replace(NULL_TYPES, np.nan)
+    return series
 
 
 def _validate_age(series, return_invalid_values):

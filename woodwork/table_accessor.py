@@ -1591,11 +1591,13 @@ def _infer_missing_logical_types(
         updated_series = parsed_logical_types[name].transform(
             series, null_invalid_values=null_invalid_values
         )
-        print(name)
         if updated_series is not series:
-            print("=============================")
-            print(name)
-            dataframe[name] = updated_series
+            # NotImplementedError thrown by dask when attempting to re-initialize
+            # data after being assigned a numeric column name
+            try:
+                dataframe[name] = updated_series
+            except NotImplementedError:
+                pass
     return parsed_logical_types
 
 
