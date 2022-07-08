@@ -749,6 +749,9 @@ class PostalCode(LogicalType):
     standard_tags = {"category"}
 
     def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_postal_code(series)
+
         if pd.api.types.is_numeric_dtype(series):
             try:
                 series = series.astype("Int64").astype("string")
@@ -868,7 +871,7 @@ def _coerce_string(series, regex=None):
         invalid = _get_index_invalid_string(series, regex)
 
         if invalid.any():
-            series[invalid] = None
+            series[invalid] = pd.NA
     return series
 
 
@@ -908,3 +911,9 @@ def _coerce_latlong(series):
     if invalid.any():
         series[invalid] = None
     return series
+
+
+def _coerce_postal_code(series):
+    if pd.api.types.is_numeric_dtype(series):
+        series = _coerce_integer(series).astype("Int64")
+    return _coerce_string(series, regex="postal_code_inference_regex")
