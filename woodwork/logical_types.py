@@ -17,6 +17,7 @@ from woodwork.utils import (
     NULL_TYPES,
     _infer_datetime_format,
     _is_valid_latlong_series,
+    _is_valid_latlong_value,
     _reformat_to_latlong,
     camel_to_snake,
     import_or_none,
@@ -520,6 +521,9 @@ class LatLong(LogicalType):
 
     def transform(self, series, null_invalid_values=False):
         """Formats a series to be a tuple (or list for Spark) of two floats."""
+        if null_invalid_values:
+            series = _coerce_latlong(series)
+
         if _is_dask_series(series):
             name = series.name
             meta = (series, tuple([float, float]))
@@ -750,6 +754,9 @@ class PostalCode(LogicalType):
     standard_tags = {"category"}
 
     def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_postal_code(series)
+
         if pd.api.types.is_numeric_dtype(series):
             try:
                 series = series.astype("Int64").astype("string")
@@ -867,6 +874,10 @@ def _get_index_invalid_age(series):
     return series.lt(0)
 
 
+def _get_index_invalid_latlong(series):
+    return ~series.apply(_is_valid_latlong_value)
+
+
 def _coerce_string(series, regex=None):
     if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
         series = series.astype("string")
@@ -875,7 +886,7 @@ def _coerce_string(series, regex=None):
         invalid = _get_index_invalid_string(series, regex)
 
         if invalid.any():
-            series[invalid] = None
+            series[invalid] = pd.NA
     return series
 
 
@@ -908,3 +919,16 @@ def _coerce_age(series, fractional=False):
     if invalid.any():
         series[invalid] = None
     return series
+
+
+def _coerce_latlong(series):
+    invalid = _get_index_invalid_latlong(series)
+    if invalid.any():
+        series[invalid] = None
+    return series
+
+
+def _coerce_postal_code(series):
+    if pd.api.types.is_numeric_dtype(series):
+        series = _coerce_integer(series).astype("Int64")
+    return _coerce_string(series, regex="postal_code_inference_regex")
