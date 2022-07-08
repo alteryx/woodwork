@@ -819,7 +819,11 @@ def _regex_validate(regex_key, series, return_invalid_values):
 
 
 def _replace_nans(series):
-    if not _is_spark_series(series):
+    if _is_spark_series(series):
+        series = series.apply(
+            lambda x: np.nan if isinstance(x, pd._libs.missing.NAType) else x
+        )
+    else:
         series = series.replace(NULL_TYPES, np.nan)
     return series
 
