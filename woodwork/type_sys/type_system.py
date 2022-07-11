@@ -1,7 +1,5 @@
-import numpy as np
 import pandas as pd
 
-from ..utils import NULL_TYPES
 from .inference_functions import (
     boolean_func,
     boolean_nullable_func,
@@ -19,6 +17,7 @@ from .inference_functions import (
     url_func,
 )
 
+import woodwork as ww
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     URL,
@@ -48,6 +47,7 @@ from woodwork.logical_types import (
     SubRegionCode,
     Timedelta,
     Unknown,
+    _replace_nans,
 )
 
 DEFAULT_INFERENCE_FUNCTIONS = {
@@ -327,7 +327,7 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        series_nan_cast = series.replace(NULL_TYPES, np.nan)  # Will change dtype
+        series_nan_cast = _replace_nans(series)  # Will change dtype
         if series_nan_cast.count() == 0:
             return Unknown()
 

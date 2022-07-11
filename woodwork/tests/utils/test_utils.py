@@ -338,7 +338,6 @@ def test_is_nan():
 
     assert not _is_nan([None, 1, 3])
     assert not _is_nan([])
-    assert not _is_nan("none")
     assert not _is_nan(0)
     assert not _is_nan(False)
     assert not _is_nan({"key": "value"})
