@@ -415,7 +415,6 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
-        print(f"Initial series dtype: {series.dtype}")
         series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_integer(series)
