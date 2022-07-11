@@ -831,7 +831,7 @@ def _replace_nans(series):
     with np.nan or pd.NA depending on column dtype.
     """
     original_dtype = series.dtype
-    if original_dtype == "string":
+    if str(original_dtype) == "string":
         series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return series
     series = series.apply(
@@ -839,7 +839,7 @@ def _replace_nans(series):
     )
     if not _is_spark_series(series):
         series = series.replace(ww.config.get_option("nan_values"), np.nan)
-    if original_dtype == "boolean":
+    if str(original_dtype) == "boolean":
         series = series.astype(original_dtype)
 
     return series
