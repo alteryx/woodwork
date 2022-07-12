@@ -15,7 +15,7 @@ def get_all_package_versions(package_name: str) -> list:
     except subprocess.CalledProcessError as e:
         raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
     # this gets the string versions available from the `pip index` command
-    string_versions = [output_split[len(version_substring):].split(", ") 
+    string_versions = [output_split[len(version_substring):].split(", ")
                         for output_split in sub_output.split("\n") if version_substring in output_split][0]
     # we filter out versions that might have letters in it (ie 22.2.post1, etc) to only compare versions that we can convert to float
     float_versions = list(set([packaging.version.parse(vers_string).base_version for vers_string in string_versions]))
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     output_name = args.output_name
     install = bool(args.install=='True')
     path = args.req_file_path
-    
+
     # get the minimum requirements and install the min core requirements
     min_reqs, min_core_reqs, min_test_reqs = get_min_test_and_core_requirements(path + "minimum_core_requirements.txt", path + "minimum_test_requirements.txt")
     install_min_deps()

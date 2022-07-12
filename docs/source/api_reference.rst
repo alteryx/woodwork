@@ -116,14 +116,14 @@ ColumnSchema
     ColumnSchema.is_datetime
     ColumnSchema.is_numeric
     ColumnSchema.metadata
-    
+
 Serialization
 =============
 
 .. currentmodule:: woodwork.serializers.serializer_base
 .. autosummary::
     :toctree: generated/
-    
+
     typing_info_to_dict
 
 Deserialization

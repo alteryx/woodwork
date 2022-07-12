@@ -58,7 +58,7 @@ v0.16.3 May 4, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`
-    
+
 v0.16.2 Apr 25, 2022
 ====================
     * Fixes
@@ -218,14 +218,14 @@ v0.11.1 Jan 4, 2022
         * Updating contributing doc with Spark installation instructions (:pr:`1232`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`, :pr:`1230`, :pr:`1233`)
-        
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`willsmithorg`
-	
+
 v0.11.0 Dec 22, 2021
 ====================
     * Enhancements
-        * Add type inference for natural language (:pr:`1210`) 
+        * Add type inference for natural language (:pr:`1210`)
     * Changes
         * Make public method ``get_subset_schema`` (:pr:`1218`)
 
@@ -235,7 +235,7 @@ v0.11.0 Dec 22, 2021
 v0.10.0 Nov 30, 2021
 ====================
     * Enhancements
-        * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`) 
+        * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`)
         * Update ``describe_dict`` to compute ``top_values`` for double columns that contain only integer values (:pr:`1206`)
     * Changes
         * Return histogram bins as a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
@@ -338,18 +338,18 @@ v0.7.0 Aug 25, 2021
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`tuethan1999`
-    
+
 Breaking Changes
 ++++++++++++++++
     * :pr:``1100``: The behavior for ``init`` has changed. A full schema is a
       schema that contains all of the columns of the dataframe it describes
       whereas a partial schema only contains a subset. A full schema will also
-      require that the schema is valid without having to make any changes to 
-      the DataFrame. Before, only a full schema was permitted by the ``init`` 
+      require that the schema is valid without having to make any changes to
+      the DataFrame. Before, only a full schema was permitted by the ``init``
       method so passing a partial schema would error. Additionally, any
       parameters like ``logical_types`` would be ignored if passing in a schema.
-      Now, passing a partial schema to the ``init`` method calls the 
-      ``init_with_partial_schema`` method instead of throwing an error. 
+      Now, passing a partial schema to the ``init`` method calls the
+      ``init_with_partial_schema`` method instead of throwing an error.
       Information from keyword arguments will override information from the
       partial schema. For example, if column ``a`` has the Integer Logical Type
       in the partial schema, it's possible to use the ``logical_type`` argument
@@ -452,7 +452,7 @@ v0.5.0 Jul 7, 2021
 
 Breaking Changes
 ++++++++++++++++
-    * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
+    * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type.
       The global config ``natural_language_threshold`` has been renamed to ``categorical_threshold``.
 
 v0.4.2 Jun 23, 2021
@@ -511,7 +511,7 @@ v0.4.1 Jun 9, 2021
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
-    
+
 
 v0.4.0 May 26, 2021
 ===================
