@@ -666,18 +666,22 @@ def test_null_invalid_postal_code_numeric():
     pd.testing.assert_frame_equal(df, expected)
 
 
-@pytest.mark.parametrize("null_type", [None, pd.NaT, np.nan, "null", "N/A", "mix", 5])
+@pytest.mark.parametrize(
+    "null_type", [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", 5]
+)
 @pytest.mark.parametrize("data_type", [int, float])
 def test_integer_nullable(data_type, null_type):
     nullable_nums = pd.DataFrame(
-        np.random.choice([data_type(i) for i in range(10)], 100), columns=["num_nulls"]
+        map(data_type, [1, 2, 3, 4, 5] * 20), columns=["num_nulls"]
     )
     nullable_nums["num_nulls"].iloc[-5:] = (
-        [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
+        [None, pd.NA, np.nan, "NA", "none"]
+        if not isinstance(null_type, pd._libs.missing.NAType) and null_type == "mix"
+        else [null_type] * 5
     )
     nullable_nums.ww.init()
 
-    if null_type != 5:
+    if not isinstance(null_type, int):
         assert isinstance(nullable_nums.ww.logical_types["num_nulls"], IntegerNullable)
         assert all(nullable_nums["num_nulls"][-5:].isna())
     elif data_type is int:
@@ -687,16 +691,18 @@ def test_integer_nullable(data_type, null_type):
 
 
 @pytest.mark.parametrize(
-    "null_type", [None, pd.NaT, np.nan, "null", "N/A", "mix", True]
+    "null_type", [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True]
 )
 def test_boolean_nullable(null_type):
     nullable_bools = pd.DataFrame([True, False] * 50, columns=["bool_nulls"])
     nullable_bools["bool_nulls"].iloc[-5:] = (
-        [None, pd.NA, np.nan, "NA", "none"] if null_type == "mix" else [null_type] * 5
+        [None, pd.NA, np.nan, "NA", "none"]
+        if not isinstance(null_type, pd._libs.missing.NAType) and null_type == "mix"
+        else [null_type] * 5
     )
     nullable_bools.ww.init()
 
-    if null_type is not True:
+    if not isinstance(null_type, bool):
         assert isinstance(
             nullable_bools.ww.logical_types["bool_nulls"], BooleanNullable
         )

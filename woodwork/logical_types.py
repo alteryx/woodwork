@@ -834,9 +834,9 @@ def _replace_nans(series):
     if str(original_dtype) == "string":
         series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return series
-    # series = series.apply(
-    #    lambda x: np.nan if isinstance(x, pd._libs.missing.NAType) else x
-    # )
+    series = series.apply(
+        lambda x: np.nan if isinstance(x, pd._libs.missing.NAType) else x
+    )
     if not _is_spark_series(series):
         series = series.replace(ww.config.get_option("nan_values"), np.nan)
     if str(original_dtype) == "boolean":
