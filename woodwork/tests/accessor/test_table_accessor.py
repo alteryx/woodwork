@@ -2966,7 +2966,7 @@ def test_infer_missing_logical_types_force_infer(sample_df):
     parsed_logical_types = _infer_missing_logical_types(
         sample_df, force_logical_types, existing_logical_types
     )
-    assert parsed_logical_types["age"] == IntegerNullable()
+    assert isinstance(parsed_logical_types["age"], IntegerNullable)
 
 
 def test_validate_unique_index_with_partial_schema():
