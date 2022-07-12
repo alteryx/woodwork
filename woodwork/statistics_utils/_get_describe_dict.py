@@ -3,14 +3,17 @@ from typing import Any, Callable, Dict, Sequence
 
 import pandas as pd
 
-from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
-from woodwork.statistics_utils._get_mode import _get_mode
-from woodwork.statistics_utils._get_numeric_value_counts_in_range import _get_numeric_value_counts_in_range
-from woodwork.statistics_utils._get_recent_value_counts import _get_recent_value_counts
-from woodwork.statistics_utils._get_top_values_categorical import _get_top_values_categorical
-
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import Datetime, LatLong, Unknown
+from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
+from woodwork.statistics_utils._get_mode import _get_mode
+from woodwork.statistics_utils._get_numeric_value_counts_in_range import (
+    _get_numeric_value_counts_in_range,
+)
+from woodwork.statistics_utils._get_recent_value_counts import _get_recent_value_counts
+from woodwork.statistics_utils._get_top_values_categorical import (
+    _get_top_values_categorical,
+)
 from woodwork.utils import CallbackCaller, _is_latlong_nan
 
 

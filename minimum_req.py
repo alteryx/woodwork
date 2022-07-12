@@ -1,8 +1,10 @@
 import argparse
 import subprocess
+
 import requirements
 from pip._vendor import pkg_resources
 from pkg_resources import packaging
+
 
 def get_all_package_versions(package_name: str) -> list:
     # grabs all package versions using pip index

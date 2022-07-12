@@ -1,6 +1,9 @@
 import pandas as pd
 
-from woodwork.statistics_utils.frequency_inference._constants import ESTIMATED_COLUMN_NAME, OBSERVED_COLUMN_NAME
+from woodwork.statistics_utils.frequency_inference._constants import (
+    ESTIMATED_COLUMN_NAME,
+    OBSERVED_COLUMN_NAME,
+)
 from woodwork.statistics_utils.frequency_inference._get_ranges import _get_ranges
 from woodwork.statistics_utils.frequency_inference._types import RangeObject
 

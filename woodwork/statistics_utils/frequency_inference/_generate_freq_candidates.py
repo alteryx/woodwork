@@ -1,6 +1,9 @@
 import pandas as pd
 
-from woodwork.statistics_utils.frequency_inference._constants import NON_INFERABLE_FREQ, WINDOW_LENGTH
+from woodwork.statistics_utils.frequency_inference._constants import (
+    NON_INFERABLE_FREQ,
+    WINDOW_LENGTH,
+)
 
 
 def _generate_freq_candidates(time_series, window_length=WINDOW_LENGTH):

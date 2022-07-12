@@ -2,16 +2,38 @@ import dataclasses
 
 import pandas as pd
 
-from woodwork.statistics_utils.frequency_inference._clean_timeseries import _clean_timeseries
-from woodwork.statistics_utils.frequency_inference._constants import FREQ_INFERENCE_THRESHOLD, WINDOW_LENGTH
-from woodwork.statistics_utils.frequency_inference._determine_duplicate_values import _determine_duplicate_values
-from woodwork.statistics_utils.frequency_inference._determine_extra_values import _determine_extra_values
-from woodwork.statistics_utils.frequency_inference._determine_missing_values import _determine_missing_values
-from woodwork.statistics_utils.frequency_inference._determine_most_likely_freq import _determine_most_likely_freq
-from woodwork.statistics_utils.frequency_inference._determine_nan_values import _determine_nan_values
-from woodwork.statistics_utils.frequency_inference._generate_estimated_timeseries import _generate_estimated_timeseries
-from woodwork.statistics_utils.frequency_inference._generate_freq_candidates import _generate_freq_candidates
-from woodwork.statistics_utils.frequency_inference._types import DataCheckMessageCode, InferDebug
+from woodwork.statistics_utils.frequency_inference._clean_timeseries import (
+    _clean_timeseries,
+)
+from woodwork.statistics_utils.frequency_inference._constants import (
+    FREQ_INFERENCE_THRESHOLD,
+    WINDOW_LENGTH,
+)
+from woodwork.statistics_utils.frequency_inference._determine_duplicate_values import (
+    _determine_duplicate_values,
+)
+from woodwork.statistics_utils.frequency_inference._determine_extra_values import (
+    _determine_extra_values,
+)
+from woodwork.statistics_utils.frequency_inference._determine_missing_values import (
+    _determine_missing_values,
+)
+from woodwork.statistics_utils.frequency_inference._determine_most_likely_freq import (
+    _determine_most_likely_freq,
+)
+from woodwork.statistics_utils.frequency_inference._determine_nan_values import (
+    _determine_nan_values,
+)
+from woodwork.statistics_utils.frequency_inference._generate_estimated_timeseries import (
+    _generate_estimated_timeseries,
+)
+from woodwork.statistics_utils.frequency_inference._generate_freq_candidates import (
+    _generate_freq_candidates,
+)
+from woodwork.statistics_utils.frequency_inference._types import (
+    DataCheckMessageCode,
+    InferDebug,
+)
 
 
 def inference_response(inferred_freq, debug_obj, debug):

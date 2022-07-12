@@ -3,15 +3,20 @@ from timeit import default_timer as timer
 
 import numpy as np
 
-from woodwork.statistics_utils._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
-from woodwork.statistics_utils._calculate_dependence_measure import _calculate_dependence_measure
-from woodwork.statistics_utils._calculate_max_dependence_for_pair import _calculate_max_dependence_for_pair
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.statistics_utils._bin_numeric_cols_into_categories import (
+    _bin_numeric_cols_into_categories,
+)
+from woodwork.statistics_utils._calculate_dependence_measure import (
+    _calculate_dependence_measure,
+)
+from woodwork.statistics_utils._calculate_max_dependence_for_pair import (
+    _calculate_max_dependence_for_pair,
+)
 from woodwork.statistics_utils._cast_nullable_int_and_datetime_to_int import (
     _cast_nullable_int_and_datetime_to_int,
 )
 from woodwork.statistics_utils._parse_measures import _parse_measures
-
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
 
 

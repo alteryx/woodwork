@@ -1,22 +1,5 @@
 import pandas as pd
 
-from woodwork.type_sys.inference_functions import (
-    boolean_func,
-    boolean_nullable_func,
-    categorical_func,
-    datetime_func,
-    double_func,
-    email_address_func,
-    integer_func,
-    integer_nullable_func,
-    ip_address_func,
-    natural_language_func,
-    phone_number_func,
-    postal_code_func,
-    timedelta_func,
-    url_func,
-)
-
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     URL,
@@ -46,6 +29,22 @@ from woodwork.logical_types import (
     SubRegionCode,
     Timedelta,
     Unknown,
+)
+from woodwork.type_sys.inference_functions import (
+    boolean_func,
+    boolean_nullable_func,
+    categorical_func,
+    datetime_func,
+    double_func,
+    email_address_func,
+    integer_func,
+    integer_nullable_func,
+    ip_address_func,
+    natural_language_func,
+    phone_number_func,
+    postal_code_func,
+    timedelta_func,
+    url_func,
 )
 
 DEFAULT_INFERENCE_FUNCTIONS = {
