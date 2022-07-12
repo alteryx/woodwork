@@ -2,16 +2,16 @@ import dataclasses
 
 import pandas as pd
 
-from ._clean_timeseries import _clean_timeseries
-from ._constants import FREQ_INFERENCE_THRESHOLD, WINDOW_LENGTH
-from ._determine_duplicate_values import _determine_duplicate_values
-from ._determine_extra_values import _determine_extra_values
-from ._determine_missing_values import _determine_missing_values
-from ._determine_most_likely_freq import _determine_most_likely_freq
-from ._determine_nan_values import _determine_nan_values
-from ._generate_estimated_timeseries import _generate_estimated_timeseries
-from ._generate_freq_candidates import _generate_freq_candidates
-from ._types import DataCheckMessageCode, InferDebug
+from woodwork.statistics_utils.frequency_inference._clean_timeseries import _clean_timeseries
+from woodwork.statistics_utils.frequency_inference._constants import FREQ_INFERENCE_THRESHOLD, WINDOW_LENGTH
+from woodwork.statistics_utils.frequency_inference._determine_duplicate_values import _determine_duplicate_values
+from woodwork.statistics_utils.frequency_inference._determine_extra_values import _determine_extra_values
+from woodwork.statistics_utils.frequency_inference._determine_missing_values import _determine_missing_values
+from woodwork.statistics_utils.frequency_inference._determine_most_likely_freq import _determine_most_likely_freq
+from woodwork.statistics_utils.frequency_inference._determine_nan_values import _determine_nan_values
+from woodwork.statistics_utils.frequency_inference._generate_estimated_timeseries import _generate_estimated_timeseries
+from woodwork.statistics_utils.frequency_inference._generate_freq_candidates import _generate_freq_candidates
+from woodwork.statistics_utils.frequency_inference._types import DataCheckMessageCode, InferDebug
 
 
 def inference_response(inferred_freq, debug_obj, debug):
@@ -68,7 +68,7 @@ def infer_frequency(
 
     if pandas_inferred_freq or not debug:
         return inference_response(
-            inferred_freq=pandas_inferred_freq, debug_obj=InferDebug(), debug=debug
+            inferred_freq=pandas_inferred_freq, debug_obj=InferDebug(), debug=debug,
         )
 
     # clean observed timeseries from duplicates and NaTs
@@ -121,7 +121,7 @@ def infer_frequency(
 
     # Generate Frequency Candidates
     alias_dict = _generate_freq_candidates(
-        observed_ts_clean, window_length=window_length
+        observed_ts_clean, window_length=window_length,
     )
 
     most_likely_freq = _determine_most_likely_freq(alias_dict, threshold=threshold)

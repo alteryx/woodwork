@@ -24,8 +24,8 @@ def _parse_measures(measures):
             if not measures == ["all"]:
                 warnings.warn(
                     ParametersIgnoredWarning(
-                        "additional measures to 'all' measure found; 'all' should be used alone"
-                    )
+                        "additional measures to 'all' measure found; 'all' should be used alone",
+                    ),
                 )
             measures = ["max", "pearson", "mutual_info"]
             calc_pearson = True

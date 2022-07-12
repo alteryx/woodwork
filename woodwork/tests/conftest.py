@@ -90,7 +90,7 @@ def sample_df_pandas():
                 "1762:0:0:0:0:B03:1:AF18",
                 np.nan,
             ],
-        }
+        },
     )
 
 
@@ -103,7 +103,7 @@ def sample_df_dask(sample_df_pandas):
 @pytest.fixture()
 def sample_df_spark(sample_df_pandas):
     ps = pytest.importorskip(
-        "pyspark.pandas", reason="Pyspark pandas not installed, skipping"
+        "pyspark.pandas", reason="Pyspark pandas not installed, skipping",
     )
     return ps.from_pandas(sample_df_pandas)
 
@@ -131,8 +131,8 @@ def sample_df_phone_numbers():
                 "1●955●855●9272",
                 "1 266 966 2283",
                 "+001 236 248 8482",
-            ]
-        }
+            ],
+        },
     )
 
 
@@ -145,8 +145,8 @@ def sample_df_postal_code():
                 "07865",
                 "12345-6789",
                 "11111-1111",
-            ]
-        }
+            ],
+        },
     )
 
 
@@ -158,21 +158,21 @@ def datetime_freqs_df_pandas():
             "3M_freq": pd.date_range(start="2015-01-01", freq="3M", periods=10),
             "3B_no_freq": pd.date_range(start="2015-01-01", freq="3B", periods=10),
             "1d_skipped_one_freq": pd.date_range(
-                start="2020-01-01", end="2020-01-11", freq="1D"
+                start="2020-01-01", end="2020-01-11", freq="1D",
             ).drop("2020-01-04"),
             "3M_one_nan": list(
                 pd.date_range(start="2015-01-01", freq="3M", periods=10).drop(
-                    "2015-07-31"
-                )
+                    "2015-07-31",
+                ),
             )
             + [None],
             "2d_timedelta": pd.date_range(
-                start="2020-01-01", end="2020-01-20", freq="2D"
+                start="2020-01-01", end="2020-01-20", freq="2D",
             )
             - pd.Timestamp("2020-01-01"),
             "ints": range(10),
             "same_date": ["2015-01-01"] * 10,
-        }
+        },
     )
 
 
@@ -181,7 +181,7 @@ def datetime_freqs_df_pandas():
         "sample_unsorted_df_pandas",
         "sample_unsorted_df_dask",
         "sample_unsorted_df_spark",
-    ]
+    ],
 )
 def sample_unsorted_df(request):
     return request.getfixturevalue(request.param)
@@ -212,10 +212,10 @@ def sample_unsorted_df_pandas():
             ],
             "age": [33, 25, 33, 57],
             "signup_date": pd.to_datetime(
-                ["2020-09-01", "2020-08-01", "2020-08-02", "2020-09-01"]
+                ["2020-09-01", "2020-08-01", "2020-08-02", "2020-09-01"],
             ),
             "is_registered": [True, False, True, True],
-        }
+        },
     )
 
 
@@ -232,7 +232,7 @@ def sample_unsorted_df_spark(sample_unsorted_df_pandas):
 
 
 @pytest.fixture(
-    params=["sample_series_pandas", "sample_series_dask", "sample_series_spark"]
+    params=["sample_series_pandas", "sample_series_dask", "sample_series_spark"],
 )
 def sample_series(request):
     return request.getfixturevalue(request.param)
@@ -241,7 +241,7 @@ def sample_series(request):
 @pytest.fixture()
 def sample_series_pandas():
     return pd.Series(
-        ["a", "b", "c"] + 10 * ["a", "a", "a"], name="sample_series"
+        ["a", "b", "c"] + 10 * ["a", "a", "a"], name="sample_series",
     ).astype("category")
 
 
@@ -262,7 +262,7 @@ def sample_series_spark(sample_series_pandas):
         "sample_datetime_series_pandas",
         "sample_datetime_series_dask",
         "sample_datetime_series_spark",
-    ]
+    ],
 )
 def sample_datetime_series(request):
     return request.getfixturevalue(request.param)
@@ -271,7 +271,7 @@ def sample_datetime_series(request):
 @pytest.fixture()
 def sample_datetime_series_pandas():
     return pd.Series(
-        [pd.to_datetime("2020-09-01")] * 4, name="sample_datetime_series"
+        [pd.to_datetime("2020-09-01")] * 4, name="sample_datetime_series",
     ).astype("object")
 
 
@@ -314,7 +314,7 @@ def time_index_df_pandas():
             "strs": ["1", "2", "3", "4"],
             "letters": ["a", "b", "c", "d"],
             "bools": [True, False, False, True],
-        }
+        },
     )
 
 
@@ -331,7 +331,7 @@ def time_index_df_spark(time_index_df_pandas):
 
 
 @pytest.fixture(
-    params=["time_index_df_pandas", "time_index_df_dask", "time_index_df_spark"]
+    params=["time_index_df_pandas", "time_index_df_dask", "time_index_df_spark"],
 )
 def time_index_df(request):
     return request.getfixturevalue(request.param)
@@ -344,7 +344,7 @@ def numeric_time_index_df_pandas():
             "floats": pd.Series([1, 2, 3, 4], dtype="float"),
             "ints": pd.Series([1, -2, 3, 4], dtype="int64"),
             "with_null": pd.Series([1, pd.NA, 3, 4], dtype="Int64"),
-        }
+        },
     )
 
 
@@ -365,7 +365,7 @@ def numeric_time_index_df_spark(numeric_time_index_df_pandas):
         "numeric_time_index_df_pandas",
         "numeric_time_index_df_dask",
         "numeric_time_index_df_spark",
-    ]
+    ],
 )
 def numeric_time_index_df(request):
     return request.getfixturevalue(request.param)
@@ -386,7 +386,7 @@ def describe_df_pandas():
             pd.NaT,
             "2020-02-01",
             "2020-01-02",
-        ]
+        ],
     )
     formatted_datetime_data = pd.Series(
         [
@@ -398,7 +398,7 @@ def describe_df_pandas():
             pd.NaT,
             "2020~02~01",
             "2020~01~02",
-        ]
+        ],
     )
     numeric_data = pd.Series([10, 20, 17, 32, np.nan, 1, 56, 10])
     natural_language_data = [
@@ -445,7 +445,7 @@ def describe_df_pandas():
             "timedelta_col": timedelta_data,
             "latlong_col": latlong_data,
             "unknown_col": unknown_data,
-        }
+        },
     )
 
 
@@ -462,8 +462,8 @@ def describe_df_spark(describe_df_pandas):
         describe_df_pandas.applymap(
             lambda tup: [None if pd.isnull(elt) else elt for elt in tup]
             if isinstance(tup, tuple)
-            else tup
-        ).drop(columns="timedelta_col")
+            else tup,
+        ).drop(columns="timedelta_col"),
     )
 
 
@@ -485,9 +485,9 @@ def df_same_mi_pandas():
                     None,
                     "test",
                     "test",
-                ]
+                ],
             ),
-        }
+        },
     )
 
 
@@ -520,7 +520,7 @@ def df_mi_pandas():
             "strs2": pd.Series(["bye", "hi", "bye"]),
             "strs": pd.Series(["hi", "hi", "hi"]),
             "dates": pd.Series(["2020-01-01", "2020-01-01", "1997-01-04"]),
-        }
+        },
     )
     df = df.loc[df.index.repeat(4)].reset_index(drop=True)
     return df
@@ -551,7 +551,7 @@ def df_mi_unique_pandas():
             "unique_with_one_nan": pd.Series(["hi", "bye", None, "goodbye"]),
             "unique_with_nans": pd.Series([1, None, None, 2]),
             "ints": pd.Series([1, 2, 1, 2]),
-        }
+        },
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     return df
@@ -570,7 +570,7 @@ def df_mi_unique_spark(df_mi_unique_pandas):
 
 
 @pytest.fixture(
-    params=["df_mi_unique_pandas", "df_mi_unique_dask", "df_mi_unique_spark"]
+    params=["df_mi_unique_pandas", "df_mi_unique_dask", "df_mi_unique_spark"],
 )
 def df_mi_unique(request):
     return request.getfixturevalue(request.param)
@@ -585,7 +585,7 @@ def categorical_df_pandas():
             "bools": pd.Series([True, False, True, False]),
             "categories2": pd.Series(["test", "test", "test2", "test"]),
             "categories3": pd.Series(["test", "test", "test", np.nan]),
-        }
+        },
     )
 
 
@@ -602,7 +602,7 @@ def categorical_df_spark(categorical_df_pandas):
 
 
 @pytest.fixture(
-    params=["categorical_df_pandas", "categorical_df_dask", "categorical_df_spark"]
+    params=["categorical_df_pandas", "categorical_df_dask", "categorical_df_spark"],
 )
 def categorical_df(request):
     return request.getfixturevalue(request.param)
@@ -629,8 +629,8 @@ def empty_df(request):
 def small_df_pandas():
     return pd.DataFrame(
         pd.Series(
-            [pd.to_datetime("2020-09-01")] * 4, name="sample_datetime_series"
-        ).astype("object")
+            [pd.to_datetime("2020-09-01")] * 4, name="sample_datetime_series",
+        ).astype("object"),
     )
 
 
@@ -665,7 +665,7 @@ def latlong_df_pandas():
             "null_value": pd.Series([np.nan, (3, 4)]),
             "null_latitude": pd.Series([(np.nan, 2.0), (3.0, 4.0)]),
             "both_null": pd.Series([(np.nan, np.nan), (3.0, 4.0)]),
-        }
+        },
     )
 
 
@@ -680,8 +680,8 @@ def latlong_df_spark(latlong_df_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
         latlong_df_pandas.applymap(
-            lambda tup: list(tup) if isinstance(tup, tuple) else tup
-        )
+            lambda tup: list(tup) if isinstance(tup, tuple) else tup,
+        ),
     )
 
 
@@ -714,7 +714,7 @@ def dask_latlongs(pandas_latlongs):
 def spark_latlongs(pandas_latlongs):
     return [
         pd_to_spark(
-            series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)
+            series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup),
         )
         for series in pandas_latlongs
     ]
@@ -738,7 +738,7 @@ def whitespace_df_pandas():
                 "    leading whitespace",
                 "trailing whitespace ",
             ],
-        }
+        },
     )
 
 
@@ -755,7 +755,7 @@ def whitespace_df_spark(whitespace_df_pandas):
 
 
 @pytest.fixture(
-    params=["whitespace_df_pandas", "whitespace_df_dask", "whitespace_df_spark"]
+    params=["whitespace_df_pandas", "whitespace_df_dask", "whitespace_df_spark"],
 )
 def whitespace_df(request):
     return request.getfixturevalue(request.param)
@@ -767,7 +767,7 @@ def falsy_names_df_pandas():
         {
             0: ["a", "b", "c"],
             "": [1, 2, 3],
-        }
+        },
     )
 
 
@@ -782,13 +782,13 @@ def falsy_names_df_spark(falsy_names_df_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
         falsy_names_df_pandas.applymap(
-            lambda tup: list(tup) if isinstance(tup, tuple) else tup
-        )
+            lambda tup: list(tup) if isinstance(tup, tuple) else tup,
+        ),
     )
 
 
 @pytest.fixture(
-    params=["falsy_names_df_pandas", "falsy_names_df_dask", "falsy_names_df_spark"]
+    params=["falsy_names_df_pandas", "falsy_names_df_dask", "falsy_names_df_spark"],
 )
 def falsy_names_df(request):
     return request.getfixturevalue(request.param)
@@ -854,7 +854,7 @@ def serialize_df_pandas():
             "ord_float": [1.0, 2.0, 1.0],
             "cat_bool": [True, False, True],
             "ord_bool": [True, False, True],
-        }
+        },
     )
     return df
 
@@ -872,7 +872,7 @@ def serialize_df_spark(serialize_df_pandas):
 
 
 @pytest.fixture(
-    params=["serialize_df_pandas", "serialize_df_dask", "serialize_df_spark"]
+    params=["serialize_df_pandas", "serialize_df_dask", "serialize_df_spark"],
 )
 def serialize_df(request):
     return request.getfixturevalue(request.param)
@@ -910,7 +910,7 @@ def outliers_df_pandas():
             "non_numeric": ["a"] * 10,
             "has_outliers_with_nans": [None, 42, 37, -16, 49, 93, 36, 57, 60, 23],
             "nans": pd.Series([None] * 10, dtype="float64"),
-        }
+        },
     )
 
 
@@ -1024,7 +1024,7 @@ def postal_code_numeric_series_dask(postal_code_numeric_series_pandas):
 @pytest.fixture()
 def postal_code_numeric_series_spark(postal_code_numeric_series_pandas):
     ps = pytest.importorskip(
-        "pyspark.pandas", reason="Pyspark pandas not installed, skipping"
+        "pyspark.pandas", reason="Pyspark pandas not installed, skipping",
     )
     return ps.from_pandas(postal_code_numeric_series_pandas)
 
@@ -1034,7 +1034,7 @@ def postal_code_numeric_series_spark(postal_code_numeric_series_pandas):
         "postal_code_numeric_series_pandas",
         "postal_code_numeric_series_dask",
         "postal_code_numeric_series_spark",
-    ]
+    ],
 )
 def postal_code_numeric_series(request):
     return request.getfixturevalue(request.param)

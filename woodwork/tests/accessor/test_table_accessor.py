@@ -102,7 +102,7 @@ def test_check_logical_types_errors(sample_df):
         "occupation": None,
     }
     error_message = re.escape(
-        "logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']"
+        "logical_types contains columns that are not present in dataframe: ['birthday', 'occupation']",
     )
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_df, bad_logical_types_keys)
@@ -120,12 +120,12 @@ def test_check_unique_column_names_errors(sample_df):
     duplicate_cols_df = sample_df.copy()
     if _is_dask_dataframe(sample_df):
         duplicate_cols_df = dd.concat(
-            [duplicate_cols_df, duplicate_cols_df["age"]], axis=1
+            [duplicate_cols_df, duplicate_cols_df["age"]], axis=1,
         )
     else:
         duplicate_cols_df.insert(0, "age", [18, 21, 65, 43], allow_duplicates=True)
     with pytest.raises(
-        IndexError, match="Dataframe cannot contain duplicate columns names"
+        IndexError, match="Dataframe cannot contain duplicate columns names",
     ):
         _check_unique_column_names(duplicate_cols_df)
 
@@ -152,7 +152,7 @@ def test_accessor_schema_property(sample_df):
 def test_set_accessor_name(sample_df):
     df = sample_df.copy()
     error = re.escape(
-        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init",
     )
     with pytest.raises(WoodworkNotInitError, match=error):
         df.ww.name
@@ -203,7 +203,7 @@ def test_name_persists_after_drop(sample_df):
 def test_set_accessor_metadata(sample_df):
     df = sample_df.copy()
     error = re.escape(
-        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init",
     )
     with pytest.raises(WoodworkNotInitError, match=error):
         df.ww.metadata
@@ -327,7 +327,7 @@ def test_accessor_init_errors_methods(sample_df):
         "to_disk": ["dir"],
     }
     error = re.escape(
-        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init",
     )
     for method in public_methods:
         func = getattr(sample_df.ww, method)
@@ -348,7 +348,7 @@ def test_accessor_init_errors_properties(sample_df):
     ]
 
     error = re.escape(
-        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init",
     )
     for prop in props:
         with pytest.raises(WoodworkNotInitError, match=error):
@@ -408,7 +408,7 @@ def test_accessor_getattr(sample_df):
     assert schema_df.ww.schema is None
 
     error = re.escape(
-        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init",
     )
     with pytest.raises(WoodworkNotInitError, match=error):
         schema_df.ww.index
@@ -472,7 +472,7 @@ def test_getitem(sample_df):
 
 def test_getitem_init_error(sample_df):
     error = re.escape(
-        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init"
+        "Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init",
     )
     with pytest.raises(WoodworkNotInitError, match=error):
         sample_df.ww["age"]
@@ -542,7 +542,7 @@ def test_accessor_init_with_valid_string_time_index(time_index_df):
     assert time_index_df.ww.index == "id"
     assert time_index_df.ww.time_index == "times"
     assert isinstance(
-        time_index_df.ww.columns[time_index_df.ww.time_index].logical_type, Datetime
+        time_index_df.ww.columns[time_index_df.ww.time_index].logical_type, Datetime,
     )
 
 
@@ -553,7 +553,7 @@ def test_accessor_init_with_numeric_datetime_time_index(time_index_df):
     error_msg = "Time index column must contain datetime or numeric values"
     with pytest.raises(TypeError, match=error_msg):
         time_index_df.ww.init(
-            name="schema", time_index="strs", logical_types={"strs": Datetime}
+            name="schema", time_index="strs", logical_types={"strs": Datetime},
         )
 
     assert schema_df.ww.time_index == "ints"
@@ -618,7 +618,7 @@ def test_numeric_time_index_dtypes(numeric_time_index_df):
     numeric_time_index_df.ww.set_time_index("with_null")
     assert numeric_time_index_df.ww.time_index == "with_null"
     assert isinstance(
-        numeric_time_index_df.ww.logical_types["with_null"], IntegerNullable
+        numeric_time_index_df.ww.logical_types["with_null"], IntegerNullable,
     )
     assert numeric_time_index_df.ww.semantic_tags["with_null"] == {
         "time_index",
@@ -646,7 +646,7 @@ def test_accessor_init_with_string_logical_types(sample_df):
     }
     schema_df = sample_df.copy()
     schema_df.ww.init(
-        name="schema", logical_types=logical_types, time_index="signup_date"
+        name="schema", logical_types=logical_types, time_index="signup_date",
     )
     assert isinstance(schema_df.ww.columns["full_name"].logical_type, NaturalLanguage)
     assert isinstance(schema_df.ww.columns["age"].logical_type, IntegerNullable)
@@ -660,7 +660,7 @@ def test_int_dtype_inference_on_init():
             "ints_nan": pd.Series([1, np.nan]),
             "ints_NA": pd.Series([1, pd.NA]),
             "ints_NA_specified": pd.Series([1, pd.NA], dtype="Int64"),
-        }
+        },
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
@@ -678,7 +678,7 @@ def test_bool_dtype_inference_on_init():
             "bool_nan": pd.Series([True, np.nan]),
             "bool_NA": pd.Series([True, pd.NA]),
             "bool_NA_specified": pd.Series([True, pd.NA], dtype="boolean"),
-        }
+        },
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
@@ -696,7 +696,7 @@ def test_str_dtype_inference_on_init():
             "str_nan": pd.Series(["a", np.nan]),
             "str_NA": pd.Series(["a", pd.NA]),
             "str_NA_specified": pd.Series([1, pd.NA], dtype="string"),
-        }
+        },
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
@@ -714,7 +714,7 @@ def test_float_dtype_inference_on_init():
             "floats_nan": pd.Series([1.1, np.nan]),
             "floats_NA": pd.Series([1.1, pd.NA]),
             "floats_nan_specified": pd.Series([1.1, np.nan], dtype="float"),
-        }
+        },
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
@@ -772,9 +772,9 @@ def test_datetime_dtype_inference_on_init():
             "date_NA": pd.Series([pd.to_datetime("2020-09-01"), pd.NA]),
             "date_NaT": pd.Series([pd.to_datetime("2020-09-01"), pd.NaT]),
             "date_NA_specified": pd.Series(
-                [pd.to_datetime("2020-09-01"), pd.NA], dtype="datetime64[ns]"
+                [pd.to_datetime("2020-09-01"), pd.NA], dtype="datetime64[ns]",
             ),
-        }
+        },
     )
     df.ww.init()
 
@@ -792,9 +792,9 @@ def test_datetime_inference_with_format_param():
             "dates": ["2019/01/01", "2019/01/02", "2019/01/03"],
             "ymd_special": ["2019~01~01", "2019~01~02", "2019~01~03"],
             "mdy_special": pd.Series(
-                ["3~11~2000", "3~12~2000", "3~13~2000"], dtype="string"
+                ["3~11~2000", "3~12~2000", "3~13~2000"], dtype="string",
             ),
-        }
+        },
     )
     df.ww.init(
         name="df_name",
@@ -821,9 +821,9 @@ def test_datetime_inference_with_format_param():
     df = pd.DataFrame(
         {
             "mdy_special": pd.Series(
-                ["3&11&2000", "3&12&2000", "3&13&2000"], dtype="string"
+                ["3&11&2000", "3&12&2000", "3&13&2000"], dtype="string",
             ),
-        }
+        },
     )
     df = df.loc[df.index.repeat(5)].reset_index(drop=True)
     df.ww.init()
@@ -856,7 +856,7 @@ def test_timedelta_dtype_inference_on_init():
                 pd.Series([pd.to_datetime("2020-09-01"), pd.NA], dtype="datetime64[ns]")
                 - pd.to_datetime("2020-07-01")
             ),
-        }
+        },
     )
     df.ww.init()
 
@@ -1024,7 +1024,7 @@ def test_sets_datetime64_dtype_on_init():
         pd.Series(["2020-01-01", np.nan, "2020-01-03"], name=column_name),
         pd.Series(["2020-01-01", pd.NA, "2020-01-03"], name=column_name),
         pd.Series(
-            ["2020-01-01", pd.NaT, "2020-01-03"], name=column_name, dtype="object"
+            ["2020-01-01", pd.NaT, "2020-01-03"], name=column_name, dtype="object",
         ),
     ]
 
@@ -1215,7 +1215,7 @@ def test_underlying_index_unchanged_after_updates(sample_df):
 
     set_types_df = sample_df.ww.copy()
     set_types_df.ww.set_types(
-        semantic_tags={"full_name": "new_tag"}, retain_index_tags=False
+        semantic_tags={"full_name": "new_tag"}, retain_index_tags=False,
     )
     assert set_types_df.ww.index is None
     assert (set_types_df.index == sample_df["full_name"]).all()
@@ -1237,7 +1237,7 @@ def test_accessor_already_sorted(sample_unsorted_df):
 
     assert schema_df.ww.time_index == "signup_date"
     assert isinstance(
-        schema_df.ww.columns[schema_df.ww.time_index].logical_type, Datetime
+        schema_df.ww.columns[schema_df.ww.time_index].logical_type, Datetime,
     )
 
     sorted_df = (
@@ -1247,30 +1247,30 @@ def test_accessor_already_sorted(sample_unsorted_df):
     )
     sorted_df.index.name = None
     pd.testing.assert_frame_equal(
-        sorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False
+        sorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False,
     )
 
     schema_df = sample_unsorted_df.copy()
     schema_df.ww.init(
-        name="schema", index="id", time_index="signup_date", already_sorted=True
+        name="schema", index="id", time_index="signup_date", already_sorted=True,
     )
 
     assert schema_df.ww.time_index == "signup_date"
     assert isinstance(
-        schema_df.ww.columns[schema_df.ww.time_index].logical_type, Datetime
+        schema_df.ww.columns[schema_df.ww.time_index].logical_type, Datetime,
     )
 
     unsorted_df = to_pandas(sample_unsorted_df.set_index("id", drop=False))
     unsorted_df.index.name = None
     pd.testing.assert_frame_equal(
-        unsorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False
+        unsorted_df, to_pandas(schema_df), check_index_type=False, check_dtype=False,
     )
 
 
 def test_ordinal_with_order(sample_series):
     if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not compatible"
+            "Fails with Dask and Spark - ordinal data validation not compatible",
         )
 
     ordinal_with_order = Ordinal(order=["a", "b", "c"])
@@ -1293,13 +1293,13 @@ def test_ordinal_with_order(sample_series):
 def test_ordinal_with_incomplete_ranking(sample_series):
     if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
-        "present in the order values provided: ['c']"
+        "present in the order values provided: ['c']",
     )
 
     schema_df = pd.DataFrame(sample_series)
@@ -1310,7 +1310,7 @@ def test_ordinal_with_incomplete_ranking(sample_series):
     schema_df.ww.init()
     with pytest.raises(ValueError, match=error_msg):
         schema_df.ww.set_types(
-            logical_types={"sample_series": ordinal_incomplete_order}
+            logical_types={"sample_series": ordinal_incomplete_order},
         )
 
 
@@ -1431,7 +1431,7 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
     assert schema_df.ww.name == "test_schema"
 
     pd.testing.assert_frame_equal(
-        to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(["full_name"]))
+        to_pandas(schema_df), to_pandas(df_pre_sort.sort_values(["full_name"])),
     )
 
     warning = "Operation performed by insert has invalidated the Woodwork typing information:\n "
@@ -1484,7 +1484,7 @@ def test_dataframe_methods_on_accessor_to_pandas(sample_df):
     elif _is_spark_dataframe(sample_df):
         pd_df = sample_df.ww.to_pandas()
         pytest.skip(
-            "Bug #1071: Woodwork not initialized after to_pandas call with Spark categorical column"
+            "Bug #1071: Woodwork not initialized after to_pandas call with Spark categorical column",
         )
     assert isinstance(pd_df, pd.DataFrame)
     assert pd_df.ww.index == "id"
@@ -1524,7 +1524,7 @@ def test_get_subset_df_with_schema(sample_df):
     assert just_time_index.ww.time_index == schema.time_index
     assert just_time_index.ww.index is None
     pd.testing.assert_frame_equal(
-        to_pandas(just_time_index), to_pandas(schema_df[["signup_date"]])
+        to_pandas(just_time_index), to_pandas(schema_df[["signup_date"]]),
     )
     validate_subset_schema(just_time_index.ww.schema, schema)
 
@@ -1532,7 +1532,7 @@ def test_get_subset_df_with_schema(sample_df):
     assert transfer_schema.ww.index is None
     assert transfer_schema.ww.time_index is None
     pd.testing.assert_frame_equal(
-        to_pandas(transfer_schema), to_pandas(schema_df[["phone_number"]])
+        to_pandas(transfer_schema), to_pandas(schema_df[["phone_number"]]),
     )
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
@@ -1557,7 +1557,7 @@ def test_select_ltypes_strings(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_multiple_ltypes = schema_df.ww.select(
-        ["PersonFullName", "email_address", "double", "BooleanNullable", "datetime"]
+        ["PersonFullName", "email_address", "double", "BooleanNullable", "datetime"],
     )
     assert len(df_multiple_ltypes.columns) == 7
     assert "phone_number" not in df_multiple_ltypes.columns
@@ -1572,7 +1572,7 @@ def test_select_ltypes_objects(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_multiple_ltypes = schema_df.ww.select(
-        [PersonFullName, EmailAddress, Double, BooleanNullable, Datetime]
+        [PersonFullName, EmailAddress, Double, BooleanNullable, Datetime],
     )
     assert len(df_multiple_ltypes.columns) == 7
     assert "phone_number" not in df_multiple_ltypes.columns
@@ -1596,7 +1596,7 @@ def test_select_ltypes_mixed_exclude(sample_df, sample_correct_logical_types):
     schema_df.ww.init(logical_types=sample_correct_logical_types)
 
     df_mixed_ltypes = schema_df.ww.select(
-        exclude=["PersonFullName", "email_address", Double]
+        exclude=["PersonFullName", "email_address", Double],
     )
     assert len(df_mixed_ltypes.columns) == 12
     assert "full_name" not in df_mixed_ltypes.columns
@@ -1776,7 +1776,7 @@ def test_select_list_inputs(sample_df):
         },
     )
     df_just_strings = schema_df.ww.select(
-        ["PersonFullName", "index", "tag2", "boolean_nullable"]
+        ["PersonFullName", "index", "tag2", "boolean_nullable"],
     )
     assert len(df_just_strings.columns) == 4
     assert "id" in df_just_strings.columns
@@ -1785,7 +1785,7 @@ def test_select_list_inputs(sample_df):
     assert "is_registered" in df_just_strings.columns
 
     df_mixed_selectors = schema_df.ww.select(
-        [PersonFullName, "index", "time_index", Integer]
+        [PersonFullName, "index", "time_index", Integer],
     )
     assert len(df_mixed_selectors.columns) == 4
     assert "id" in df_mixed_selectors.columns
@@ -1793,7 +1793,7 @@ def test_select_list_inputs(sample_df):
     assert "signup_date" in df_mixed_selectors.columns
 
     df_common_tags = schema_df.ww.select(
-        ["category", "numeric", BooleanNullable, Datetime]
+        ["category", "numeric", BooleanNullable, Datetime],
     )
     assert len(df_common_tags.columns) == 9
     assert "is_registered" in df_common_tags.columns
@@ -1823,12 +1823,12 @@ def test_select_semantic_tags_no_match(sample_df):
 
     assert len(schema_df.ww.select(["doesnt_exist"]).columns) == 0
     df_multiple_unused = schema_df.ww.select(
-        ["doesnt_exist", "boolean_nullable", "category", PhoneNumber]
+        ["doesnt_exist", "boolean_nullable", "category", PhoneNumber],
     )
     assert len(df_multiple_unused.columns) == 3
 
     df_unused_ltype = schema_df.ww.select(
-        ["date_of_birth", "doesnt_exist", PostalCode, Integer]
+        ["date_of_birth", "doesnt_exist", PostalCode, Integer],
     )
     assert len(df_unused_ltype.columns) == 3
 
@@ -1868,7 +1868,7 @@ def test_select_instantiated_ltype():
         {
             "dates": ["2019/01/01", "2019/01/02", "2019/01/03"],
             "ymd": ["2019~01~01", "2019~01~02", "2019~01~03"],
-        }
+        },
     )
     df.ww.init(logical_types={"ymd": ymd_format, "dates": Datetime})
 
@@ -2027,7 +2027,7 @@ def test_set_types_errors(sample_df):
 
     error = re.escape(
         "Cannot add 'index' tag directly for column email. To set a column as the index, "
-        "use DataFrame.ww.set_index() instead."
+        "use DataFrame.ww.set_index() instead.",
     )
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(semantic_tags={"email": "index"})
@@ -2055,7 +2055,7 @@ def test_pop(sample_df):
     assert "age" not in schema_df.ww.semantic_tags.keys()
 
     assert schema_df.ww.schema == original_schema.get_subset_schema(
-        list(schema_df.columns)
+        list(schema_df.columns),
     )
 
     schema_df = sample_df.copy()
@@ -2088,7 +2088,7 @@ def test_pop_error(sample_df):
     )
 
     with pytest.raises(
-        ColumnNotPresentError, match="Column with name 'missing' not found in DataFrame"
+        ColumnNotPresentError, match="Column with name 'missing' not found in DataFrame",
     ):
         sample_df.ww.pop("missing")
 
@@ -2206,7 +2206,7 @@ def test_accessor_rename(sample_df):
     new_df = sample_df.ww.rename({"age": "birthday"})
 
     assert to_pandas(sample_df.rename(columns={"age": "birthday"})).equals(
-        to_pandas(new_df)
+        to_pandas(new_df),
     )
     # Confirm original dataframe hasn't changed
     assert to_pandas(sample_df).equals(to_pandas(original_df))
@@ -2214,7 +2214,7 @@ def test_accessor_rename(sample_df):
 
     assert original_df.columns.get_loc("age") == new_df.columns.get_loc("birthday")
     pd.testing.assert_series_equal(
-        to_pandas(original_df["age"]), to_pandas(new_df["birthday"]), check_names=False
+        to_pandas(original_df["age"]), to_pandas(new_df["birthday"]), check_names=False,
     )
 
     # confirm that metadata and descriptions are there
@@ -2230,10 +2230,10 @@ def test_accessor_rename(sample_df):
     new_df = sample_df.ww.rename({"age": "full_name", "full_name": "age"})
 
     pd.testing.assert_series_equal(
-        to_pandas(original_df["age"]), to_pandas(new_df["full_name"]), check_names=False
+        to_pandas(original_df["age"]), to_pandas(new_df["full_name"]), check_names=False,
     )
     pd.testing.assert_series_equal(
-        to_pandas(original_df["full_name"]), to_pandas(new_df["age"]), check_names=False
+        to_pandas(original_df["full_name"]), to_pandas(new_df["age"]), check_names=False,
     )
 
     assert original_df.columns.get_loc("age") == new_df.columns.get_loc("full_name")
@@ -2269,7 +2269,7 @@ def test_accessor_rename_inplace(sample_df):
         inplace_df.ww.rename({"age": "birthday"}, inplace=True)
 
         assert original_df.columns.get_loc("age") == inplace_df.columns.get_loc(
-            "birthday"
+            "birthday",
         )
         pd.testing.assert_series_equal(
             to_pandas(original_df["age"]),
@@ -2309,7 +2309,7 @@ def test_accessor_rename_indices(sample_df):
     sample_df.ww.init(index="id", time_index="signup_date")
 
     renamed_df = sample_df.ww.rename(
-        {"id": "renamed_index", "signup_date": "renamed_time_index"}
+        {"id": "renamed_index", "signup_date": "renamed_time_index"},
     )
     assert "id" not in renamed_df.columns
     assert "signup_date" not in renamed_df.columns
@@ -2620,7 +2620,7 @@ def test_maintain_column_order_of_dataframe(sample_df):
             Categorical,
             URL,
             IPAddress,
-        ]
+        ],
     )
     assert all(schema_df.columns == select_df.columns)
     assert all(schema_df.ww.types.index == select_df.ww.types.index)
@@ -2711,7 +2711,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
     returned_types = sample_df.ww.types
     assert isinstance(returned_types, pd.DataFrame)
     assert all(
-        returned_types.columns == ["Physical Type", "Logical Type", "Semantic Tag(s)"]
+        returned_types.columns == ["Physical Type", "Logical Type", "Semantic Tag(s)"],
     )
     assert returned_types.shape[1] == 3
     assert len(returned_types.index) == len(sample_df.columns)
@@ -2723,7 +2723,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
     if _is_spark_dataframe(sample_df):
         correct_physical_types["categorical"] = "string"
     correct_physical_types = pd.Series(
-        list(correct_physical_types.values()), index=list(correct_physical_types.keys())
+        list(correct_physical_types.values()), index=list(correct_physical_types.keys()),
     )
 
     assert correct_physical_types.equals(returned_types["Physical Type"])
@@ -2751,7 +2751,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
         "ip_address": "[]",
     }
     correct_semantic_tags = pd.Series(
-        list(correct_semantic_tags.values()), index=list(correct_semantic_tags.keys())
+        list(correct_semantic_tags.values()), index=list(correct_semantic_tags.keys()),
     )
     assert correct_semantic_tags.equals(returned_types["Semantic Tag(s)"])
 
@@ -2812,7 +2812,7 @@ def test_validation_methods_called(mock_validate_accessor_params, sample_df):
 
     not_validated_df = sample_df.copy()
     not_validated_df.ww.init(
-        validate=False, index="id", logical_types={"age": "Double"}
+        validate=False, index="id", logical_types={"age": "Double"},
     )
 
     assert not mock_validate_accessor_params.called
@@ -2842,7 +2842,7 @@ def test_ltype_conversions_nullable_types():
             "bool_null": pd.Series([True, False, pd.NA], dtype="boolean"),
             "int": pd.Series([1, 7, 3], dtype="int64"),
             "int_null": pd.Series([1, 7, pd.NA], dtype="Int64"),
-        }
+        },
     )
 
     df.ww.init()
@@ -2930,7 +2930,7 @@ def test_init_with_partial_schema_some_existing_use_standard_tags(sample_df):
     sample_df.ww.init(use_standard_tags={"integer": False})
     test_df = sample_df.copy()
     test_df.ww.init_with_partial_schema(
-        sample_df.ww[["integer"]].ww.schema, use_standard_tags={"full_name": False}
+        sample_df.ww[["integer"]].ww.schema, use_standard_tags={"full_name": False},
     )
     assert not test_df.ww.schema.use_standard_tags["integer"]
     assert not test_df.ww.schema.use_standard_tags["full_name"]
@@ -2978,7 +2978,7 @@ def test_infer_missing_logical_types_force_infer(sample_df):
     force_logical_types = {"age": None}
     assert existing_logical_types["age"] is not None
     parsed_logical_types = _infer_missing_logical_types(
-        sample_df, force_logical_types, existing_logical_types
+        sample_df, force_logical_types, existing_logical_types,
     )
     assert parsed_logical_types["age"] == Double()
 
@@ -3038,7 +3038,7 @@ def test_validate_logical_types(sample_df):
                 "email": "EmailAddress",
                 "ordinal": Ordinal(order=[18, 44, 33, 57]),
                 "latlong": "Latlong",
-            }
+            },
         )
     else:
         df.ww.init(logical_types={"email": "EmailAddress"})
@@ -3049,7 +3049,7 @@ def test_validate_logical_types(sample_df):
             "url": {4: "bad_url"},
             "email": {4: "bad_email"},
             "email_2": {5: "bad_email"},
-        }
+        },
     )
 
     if _is_spark_dataframe(df):
@@ -3061,7 +3061,7 @@ def test_validate_logical_types(sample_df):
             "url": "URL",
             "email": "EmailAddress",
             "email_2": "EmailAddress",
-        }
+        },
     )
 
     match = "Series email contains invalid email address values. "
@@ -3074,7 +3074,7 @@ def test_validate_logical_types(sample_df):
             "email": {4: "bad_email", 5: pd.NA},
             "url": {4: "bad_url"},
             "email_2": {4: pd.NA, 5: "bad_email"},
-        }
+        },
     )
 
     expected = expected.astype(
@@ -3082,7 +3082,7 @@ def test_validate_logical_types(sample_df):
             "url": "string",
             "email": "string",
             "email_2": "string",
-        }
+        },
     )
 
     actual = df.ww.validate_logical_types(return_invalid_values=True)
@@ -3096,7 +3096,7 @@ def test_validate_logical_types(sample_df):
             "url": "Unknown",
             "email": "Unknown",
             "email_2": "Unknown",
-        }
+        },
     )
 
     actual = df.ww.validate_logical_types(return_invalid_values=True)
@@ -3137,7 +3137,7 @@ def test_column_initialized_outside_woodwork_error(dict_info, expected_str):
     message = re.escape(
         "Column(s) "
         + expected_str
-        + " not found in Woodwork schema. Please initialize with DataFrame.ww.init"
+        + " not found in Woodwork schema. Please initialize with DataFrame.ww.init",
     )
     with pytest.raises(ColumnNotPresentInSchemaError, match=message):
         repr(df.ww)

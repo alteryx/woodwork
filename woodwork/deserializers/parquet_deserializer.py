@@ -79,6 +79,6 @@ class ParquetDeserializer(Deserializer):
             elif any(["snappy.parquet" in f for f in files]):
                 # Spark will serialize files with a unique hash but with the ".snappy.parquet" extension
                 parquet_files = sorted(
-                    [f for f in files if Path(f).suffix == ".parquet"]
+                    [f for f in files if Path(f).suffix == ".parquet"],
                 )
                 self.metadata_path = os.path.join(self.read_path, parquet_files[0])

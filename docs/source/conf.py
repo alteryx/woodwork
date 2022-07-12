@@ -182,8 +182,10 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Woodwork.tex', 'Woodwork Documentation',
-     'Alteryx, Inc.', 'manual'),
+    (
+        master_doc, 'Woodwork.tex', 'Woodwork Documentation',
+        'Alteryx, Inc.', 'manual',
+    ),
 ]
 
 
@@ -192,8 +194,10 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'woodwork', 'Woodwork Documentation',
-     [author], 1)
+    (
+        master_doc, 'woodwork', 'Woodwork Documentation',
+        [author], 1,
+    ),
 ]
 
 
@@ -203,9 +207,11 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Woodwork', 'Woodwork Documentation',
-     author, 'Woodwork', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc, 'Woodwork', 'Woodwork Documentation',
+        author, 'Woodwork', 'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 
@@ -244,7 +250,7 @@ copybutton_prompt_is_regexp = True
 extlinks = {
     'issue': ('https://github.com/alteryx/woodwork/issues/%s', '#'),
     'pr': ('https://github.com/alteryx/woodwork/pull/%s', '#'),
-    'user': ('https://github.com/%s', '@')
+    'user': ('https://github.com/%s', '@'),
 }
 
 autosummary_generate = ["api_reference.rst"]
@@ -254,8 +260,10 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
-inheritance_graph_attrs = dict(rankdir="LR", size='"1000, 333"',
-                               fontsize=30, labelfontsize=30, ratio='compress', dpi=960)
+inheritance_graph_attrs = dict(
+    rankdir="LR", size='"1000, 333"',
+    fontsize=30, labelfontsize=30, ratio='compress', dpi=960,
+)
 
 class AccessorLevelDocumenter(Documenter):
     """

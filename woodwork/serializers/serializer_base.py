@@ -74,7 +74,7 @@ class Serializer:
     def write_dataframe(self):
         """Save dataframe to disk."""
         raise NotImplementedError(
-            "Must define write_dataframe on Serializer subclass"
+            "Must define write_dataframe on Serializer subclass",
         )  # pragma: no cover
 
     def write_typing_info(self):
@@ -97,7 +97,7 @@ class Serializer:
                 json.dump(self.typing_info, file)
         except TypeError:
             raise TypeError(
-                "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
+                "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable.",
             )
 
     def _get_filename(self):

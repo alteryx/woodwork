@@ -34,7 +34,7 @@ def test_read_file_errors_unsupported(sample_df_pandas, tmpdir):
 
 @patch("woodwork.table_accessor._validate_accessor_params")
 def test_read_file_validation_control(
-    mock_validate_accessor_params, sample_df_pandas, tmpdir
+    mock_validate_accessor_params, sample_df_pandas, tmpdir,
 ):
     filepath = os.path.join(tmpdir, "sample.csv")
     sample_df_pandas.to_csv(filepath, index=False)
@@ -148,7 +148,7 @@ def test_read_file_validation_control(
     ],
 )
 def test_read_file(
-    sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_nullable_fix
+    sample_df_pandas, tmpdir, filepath, exportfn, kwargs, pandas_nullable_fix,
 ):
     filepath = os.path.join(tmpdir, filepath)
     func, func_kwargs = exportfn
@@ -166,7 +166,7 @@ def test_read_file(
         # so the types in df will be different than the types inferred from sample_df_pandas
         # which uses the nullable types
         schema_df = schema_df.astype(
-            {"age": "float64", "nullable_integer": "float64", "is_registered": "object"}
+            {"age": "float64", "nullable_integer": "float64", "is_registered": "object"},
         )
 
     if func in [

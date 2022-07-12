@@ -62,7 +62,7 @@ class Deserializer:
 
             ltype_metadata = col["logical_type"]
             ltype = ww.type_system.str_to_logical_type(
-                ltype_metadata["type"], params=ltype_metadata["parameters"]
+                ltype_metadata["type"], params=ltype_metadata["parameters"],
             )
 
             tags = col["semantic_tags"]
@@ -87,7 +87,7 @@ class Deserializer:
                 cat_dtype = col["physical_type"]["cat_dtype"]
                 if table_type == "pandas":
                     cat_object = pd.CategoricalDtype(
-                        pd.Index(cat_values, dtype=cat_dtype)
+                        pd.Index(cat_values, dtype=cat_dtype),
                     )
                 else:
                     cat_object = pd.CategoricalDtype(pd.Series(cat_values))
@@ -126,14 +126,14 @@ class Deserializer:
             with tarfile.open(str(tar_filepath)) as tar:
                 tar.extractall(path=tmpdir)
             self.read_path = os.path.join(
-                tmpdir, self.typing_info["loading_info"]["location"]
+                tmpdir, self.typing_info["loading_info"]["location"],
             )
             return self.read_from_local_path()
 
     def read_from_local_path(self):
         """Read data from a local location into a dataframe"""
         raise NotImplementedError(
-            "Must define read_from_local_path on Deserializer subclass"
+            "Must define read_from_local_path on Deserializer subclass",
         )  # pragma: no cover
 
     def _get_library(self):
@@ -175,7 +175,7 @@ def _check_schema_version(saved_version_str):
         elif int(c_num) < int(s_num):
             warnings.warn(
                 UpgradeSchemaWarning().get_warning_message(
-                    saved_version_str, SCHEMA_VERSION
+                    saved_version_str, SCHEMA_VERSION,
                 ),
                 UpgradeSchemaWarning,
             )

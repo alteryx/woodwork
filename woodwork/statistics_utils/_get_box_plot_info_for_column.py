@@ -8,7 +8,7 @@ ps = import_or_none("pyspark.pandas")
 
 
 def _get_box_plot_info_for_column(
-    series, quantiles=None, include_indices_and_values=True
+    series, quantiles=None, include_indices_and_values=True,
 ):
     """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
@@ -89,7 +89,7 @@ def _get_box_plot_info_for_column(
     elif len(set(quantiles.keys()) & {0.0, 0.25, 0.75, 1.0}) != 4:
         raise ValueError(
             "Input quantiles do not contain the minimum necessary quantiles for box plot calculation: "
-            "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value)."
+            "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value).",
         )
     min_value = quantiles[0.0]
     q1 = quantiles[0.25]

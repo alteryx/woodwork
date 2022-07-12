@@ -1,6 +1,6 @@
 import pandas as pd
 
-from .inference_functions import (
+from woodwork.type_sys.inference_functions import (
     boolean_func,
     boolean_nullable_func,
     categorical_func,
@@ -98,7 +98,7 @@ INFERENCE_SAMPLE_SIZE = 100000
 
 class TypeSystem(object):
     def __init__(
-        self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE
+        self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE,
     ):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
@@ -154,7 +154,7 @@ class TypeSystem(object):
         registered_ltype_names = [ltype.__name__ for ltype in self.registered_types]
         if logical_type.__name__ in registered_ltype_names:
             raise ValueError(
-                f"Logical Type with name {logical_type.__name__} already present in the Type System. Please rename the LogicalType or remove existing one."
+                f"Logical Type with name {logical_type.__name__} already present in the Type System. Please rename the LogicalType or remove existing one.",
             )
         self.update_inference_function(logical_type, inference_function)
         if parent:
@@ -198,7 +198,7 @@ class TypeSystem(object):
         if isinstance(logical_type, str):
             logical_type = self.str_to_logical_type(logical_type)
         self._validate_type_input(
-            logical_type=logical_type, inference_function=inference_function
+            logical_type=logical_type, inference_function=inference_function,
         )
         self.inference_functions[logical_type] = inference_function
 
@@ -266,7 +266,7 @@ class TypeSystem(object):
         return depth
 
     def _validate_type_input(
-        self, logical_type=None, inference_function=None, parent=None
+        self, logical_type=None, inference_function=None, parent=None,
     ):
         if logical_type and logical_type not in LogicalType.__subclasses__():
             raise TypeError("logical_type must be a valid LogicalType")
@@ -296,7 +296,7 @@ class TypeSystem(object):
                 series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
             else:
                 raise ValueError(
-                    f"Unsupported series type `{type(series)}`"
+                    f"Unsupported series type `{type(series)}`",
                 )  # pragma: no cover
 
             # For dask or spark collections, unknown type special case comes
@@ -335,7 +335,7 @@ class TypeSystem(object):
             # limiting the times the natural language inference function
             # is called.
             if self.inference_functions.get(
-                NaturalLanguage
+                NaturalLanguage,
             ) and self.inference_functions[NaturalLanguage](series):
                 logical_type = NaturalLanguage
             else:

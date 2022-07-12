@@ -139,7 +139,7 @@ def test_natural_language_inference(natural_language):
 @patch("woodwork.type_sys.inference_functions.natural_language_func")
 def test_nl_inference_called_on_no_other_matches(nl_mock, pandas_natural_language):
     assert isinstance(
-        ww.type_system.infer_logical_type(pandas_natural_language[0]), NaturalLanguage
+        ww.type_system.infer_logical_type(pandas_natural_language[0]), NaturalLanguage,
     )
     new_type_sys = TypeSystem(
         inference_functions=DEFAULT_INFERENCE_FUNCTIONS,

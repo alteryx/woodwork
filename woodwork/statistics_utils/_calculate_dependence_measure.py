@@ -8,7 +8,7 @@ from woodwork.exceptions import SparseDataWarning
 
 
 def _calculate_dependence_measure(
-    measure, data, results, callback_caller, notna_mask, min_shared, col_names
+    measure, data, results, callback_caller, notna_mask, min_shared, col_names,
 ):
     """
     Calculates the specified dependence measure for each pair of columns in the
@@ -61,11 +61,11 @@ def _calculate_dependence_measure(
             intersect = notna_mask[a_col] & notna_mask[b_col]
             if measure == "mutual_info":
                 score = adjusted_mutual_info_score(
-                    data[a_col][intersect], data[b_col][intersect]
+                    data[a_col][intersect], data[b_col][intersect],
                 )
             elif measure == "pearson":
                 score = np.corrcoef(data[a_col][intersect], data[b_col][intersect])[
-                    0, 1
+                    0, 1,
                 ]
 
             score = score * num_intersect / num_union

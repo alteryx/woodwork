@@ -56,7 +56,7 @@ def test_check_time_index_errors(sample_column_names):
     error_message = "Specified time index column `foo` not found in TableSchema"
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_time_index(
-            column_names=sample_column_names, time_index="foo", logical_type=Integer
+            column_names=sample_column_names, time_index="foo", logical_type=Integer,
         )
 
     error_msg = "Time index column must be a Datetime or numeric column"
@@ -75,7 +75,7 @@ def test_check_column_names(sample_column_names):
 
     sample_column_names.append("id")
     with pytest.raises(
-        IndexError, match="TableSchema cannot contain duplicate columns names"
+        IndexError, match="TableSchema cannot contain duplicate columns names",
     ):
         _check_column_names(sample_column_names)
 
@@ -92,7 +92,7 @@ def test_check_logical_types_errors(sample_column_names):
         "occupation": None,
     }
     error_message = re.escape(
-        "logical_types contains columns that are not present in TableSchema: ['birthday', 'occupation']"
+        "logical_types contains columns that are not present in TableSchema: ['birthday', 'occupation']",
     )
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
@@ -107,7 +107,7 @@ def test_check_logical_types_errors(sample_column_names):
     error_message = re.escape(
         "logical_types is missing columns that are present in TableSchema: "
         "['boolean', 'categorical', 'datetime_with_NaT', 'double', 'double_with_nan', "
-        "'integer', 'ip_address', 'is_registered', 'nullable_integer', 'signup_date', 'url']"
+        "'integer', 'ip_address', 'is_registered', 'nullable_integer', 'signup_date', 'url']",
     )
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_logical_types(sample_column_names, bad_logical_types_keys)
@@ -121,7 +121,7 @@ def test_check_logical_types_errors(sample_column_names):
 
     with pytest.raises(TypeError, match=error_message):
         _check_logical_types(
-            sample_column_names, bad_logical_types_keys, require_all_cols=False
+            sample_column_names, bad_logical_types_keys, require_all_cols=False,
         )
 
     bad_logical_types_keys = {
@@ -135,7 +135,7 @@ def test_check_logical_types_errors(sample_column_names):
 
     with pytest.raises(TypeError, match=error_message):
         _check_logical_types(
-            sample_column_names, bad_logical_types_keys, require_all_cols=False
+            sample_column_names, bad_logical_types_keys, require_all_cols=False,
         )
 
 
@@ -151,7 +151,7 @@ def test_check_semantic_tags_errors(sample_column_names):
         "occupation": None,
     }
     error_message = re.escape(
-        "semantic_tags contains columns that are not present in TableSchema: ['birthday', 'occupation']"
+        "semantic_tags contains columns that are not present in TableSchema: ['birthday', 'occupation']",
     )
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_semantic_tags(sample_column_names, bad_semantic_tags_keys)
@@ -174,7 +174,7 @@ def test_check_column_metadata_errors(sample_column_names):
 
     column_metadata = {"invalid_col": {"description": "not a valid column"}}
     err_msg = re.escape(
-        "column_metadata contains columns that are not present in TableSchema: ['invalid_col']"
+        "column_metadata contains columns that are not present in TableSchema: ['invalid_col']",
     )
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         _check_column_metadata(sample_column_names, column_metadata=column_metadata)
@@ -187,11 +187,11 @@ def test_check_column_description_errors(sample_column_names):
 
     column_descriptions = {"invalid_col": "a description"}
     err_msg = re.escape(
-        "column_descriptions contains columns that are not present in TableSchema: ['invalid_col']"
+        "column_descriptions contains columns that are not present in TableSchema: ['invalid_col']",
     )
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         _check_column_descriptions(
-            sample_column_names, column_descriptions=column_descriptions
+            sample_column_names, column_descriptions=column_descriptions,
         )
 
 
@@ -202,7 +202,7 @@ def test_check_column_origin_errors(sample_column_names):
 
     column_origins = {"invalid_col": "base"}
     err_msg = re.escape(
-        "column_origins contains columns that are not present in TableSchema: ['invalid_col']"
+        "column_origins contains columns that are not present in TableSchema: ['invalid_col']",
     )
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         _check_column_origins(sample_column_names, column_origins=column_origins)
@@ -214,11 +214,11 @@ def test_check_use_standard_tags_errors(sample_column_names):
         _check_use_standard_tags(sample_column_names, use_standard_tags=1)
 
     error_message = re.escape(
-        "use_standard_tags contains columns that are not present in TableSchema: ['invalid_col']"
+        "use_standard_tags contains columns that are not present in TableSchema: ['invalid_col']",
     )
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_use_standard_tags(
-            sample_column_names, use_standard_tags={"invalid_col": True}
+            sample_column_names, use_standard_tags={"invalid_col": True},
         )
 
     error_message = "use_standard_tags for column id must be a boolean"
@@ -238,7 +238,7 @@ def test_schema_init(sample_column_names, sample_inferred_logical_types):
 
 def test_schema_init_with_name(sample_column_names, sample_inferred_logical_types):
     schema = TableSchema(
-        sample_column_names, sample_inferred_logical_types, name="schema"
+        sample_column_names, sample_inferred_logical_types, name="schema",
     )
 
     assert schema.name == "schema"
@@ -247,7 +247,7 @@ def test_schema_init_with_name(sample_column_names, sample_inferred_logical_type
 
 
 def test_schema_init_with_name_and_indices(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     schema = TableSchema(
         sample_column_names,
@@ -264,7 +264,7 @@ def test_schema_init_with_name_and_indices(
 
 
 def test_schema_with_numeric_time_index(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     # Set a numeric time index on init
     schema = TableSchema(
@@ -292,10 +292,10 @@ def test_schema_with_numeric_time_index(
 
 
 def test_schema_init_with_logical_type_classes(
-    sample_column_names, sample_correct_logical_types
+    sample_column_names, sample_correct_logical_types,
 ):
     schema = TableSchema(
-        sample_column_names, logical_types=sample_correct_logical_types, name="schema"
+        sample_column_names, logical_types=sample_correct_logical_types, name="schema",
     )
     instantiated_ltypes = {
         name: ltype() for name, ltype in sample_correct_logical_types.items()
@@ -304,11 +304,11 @@ def test_schema_init_with_logical_type_classes(
 
 
 def test_raises_error_setting_index_tag_directly(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     error_msg = re.escape(
         "Cannot add 'index' tag directly for column id. To set a column as the index, "
-        "use DataFrame.ww.set_index() instead."
+        "use DataFrame.ww.set_index() instead.",
     )
     with pytest.raises(ValueError, match=error_msg):
         semantic_tags = {"id": "index"}
@@ -322,11 +322,11 @@ def test_raises_error_setting_index_tag_directly(
 
 
 def test_raises_error_setting_time_index_tag_directly(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     error_msg = re.escape(
         "Cannot add 'time_index' tag directly for column signup_date. To set a column as the time index, "
-        "use DataFrame.ww.set_time_index() instead."
+        "use DataFrame.ww.set_time_index() instead.",
     )
     with pytest.raises(ValueError, match=error_msg):
         semantic_tags = {"signup_date": "time_index"}
@@ -340,7 +340,7 @@ def test_raises_error_setting_time_index_tag_directly(
 
 
 def test_schema_init_with_semantic_tags(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     semantic_tags = {"id": "custom_tag"}
     schema = TableSchema(
@@ -358,7 +358,7 @@ def test_schema_init_with_semantic_tags(
 
 
 def test_schema_adds_standard_semantic_tags(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     schema = TableSchema(
         sample_column_names,
@@ -397,7 +397,7 @@ def test_semantic_tags_during_init(sample_column_names, sample_inferred_logical_
         "age": {"numeric", "age"},
     }
     schema = TableSchema(
-        sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags
+        sample_column_names, sample_inferred_logical_types, semantic_tags=semantic_tags,
     )
     assert schema.columns["full_name"].semantic_tags == expected_types["full_name"]
     assert schema.columns["email"].semantic_tags == expected_types["email"]
@@ -435,10 +435,10 @@ def test_semantic_tag_errors(sample_column_names, sample_inferred_logical_types)
 
 
 def test_index_replacing_standard_tags(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     schema = TableSchema(
-        sample_column_names, sample_inferred_logical_types, use_standard_tags=True
+        sample_column_names, sample_inferred_logical_types, use_standard_tags=True,
     )
     assert schema.columns["id"].semantic_tags == {"numeric"}
 
@@ -447,7 +447,7 @@ def test_index_replacing_standard_tags(
 
 
 def test_schema_init_with_col_descriptions(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     descriptions = {"age": "age of the user", "signup_date": "date of account creation"}
     schema = TableSchema(
@@ -460,12 +460,12 @@ def test_schema_init_with_col_descriptions(
 
 
 def test_schema_col_descriptions_errors(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     err_msg = "column_descriptions must be a dictionary"
     with pytest.raises(TypeError, match=err_msg):
         TableSchema(
-            sample_column_names, sample_inferred_logical_types, column_descriptions=34
+            sample_column_names, sample_inferred_logical_types, column_descriptions=34,
         )
 
     descriptions = {
@@ -473,7 +473,7 @@ def test_schema_col_descriptions_errors(
         "signup_date": "date of account creation",
     }
     err_msg = re.escape(
-        "column_descriptions contains columns that are not present in TableSchema: ['invalid_col']"
+        "column_descriptions contains columns that are not present in TableSchema: ['invalid_col']",
     )
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         TableSchema(
@@ -484,17 +484,17 @@ def test_schema_col_descriptions_errors(
 
 
 def test_schema_init_with_col_origins(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     origins = {"age": "base", "signup_date": "engineered"}
     schema = TableSchema(
-        sample_column_names, sample_inferred_logical_types, column_origins=origins
+        sample_column_names, sample_inferred_logical_types, column_origins=origins,
     )
     for name, column in schema.columns.items():
         assert column.origin == origins.get(name)
 
     schema_single_origin = TableSchema(
-        sample_column_names, sample_inferred_logical_types, column_origins="base"
+        sample_column_names, sample_inferred_logical_types, column_origins="base",
     )
     for name, column in schema_single_origin.columns.items():
         assert column.origin == "base"
@@ -504,28 +504,28 @@ def test_schema_col_origins_errors(sample_column_names, sample_inferred_logical_
     err_msg = "column_origins must be a dictionary or a string"
     with pytest.raises(TypeError, match=err_msg):
         TableSchema(
-            sample_column_names, sample_inferred_logical_types, column_origins=34
+            sample_column_names, sample_inferred_logical_types, column_origins=34,
         )
 
     origins = {"invalid_col": "not a valid column", "signup_date": "base"}
     err_msg = re.escape(
-        "column_origins contains columns that are not present in TableSchema: ['invalid_col']"
+        "column_origins contains columns that are not present in TableSchema: ['invalid_col']",
     )
     with pytest.raises(ColumnNotPresentError, match=err_msg):
         TableSchema(
-            sample_column_names, sample_inferred_logical_types, column_origins=origins
+            sample_column_names, sample_inferred_logical_types, column_origins=origins,
         )
 
     origins = {"signup_date": 1}
     err_msg = "Column origin must be a string"
     with pytest.raises(TypeError, match=err_msg):
         TableSchema(
-            sample_column_names, sample_inferred_logical_types, column_origins=origins
+            sample_column_names, sample_inferred_logical_types, column_origins=origins,
         )
 
 
 def test_schema_init_with_column_metadata(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     column_metadata = {
         "age": {"interesting_values": [33]},
@@ -585,29 +585,29 @@ def test_validation_methods_called(
 
 
 def test_use_standard_tags_from_bool(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     standard_tags_schema = TableSchema(
-        sample_column_names, sample_inferred_logical_types, use_standard_tags=True
+        sample_column_names, sample_inferred_logical_types, use_standard_tags=True,
     )
     assert set(standard_tags_schema.columns.keys()) == set(
-        standard_tags_schema.use_standard_tags.keys()
+        standard_tags_schema.use_standard_tags.keys(),
     )
     assert all([*standard_tags_schema.use_standard_tags.values()])
     assert standard_tags_schema.semantic_tags["id"] == {"numeric"}
 
     no_standard_tags_schema = TableSchema(
-        sample_column_names, sample_inferred_logical_types, use_standard_tags=False
+        sample_column_names, sample_inferred_logical_types, use_standard_tags=False,
     )
     assert set(no_standard_tags_schema.columns.keys()) == set(
-        no_standard_tags_schema.use_standard_tags.keys()
+        no_standard_tags_schema.use_standard_tags.keys(),
     )
     assert not any([*no_standard_tags_schema.use_standard_tags.values()])
     assert no_standard_tags_schema.semantic_tags["id"] == set()
 
 
 def test_use_standard_tags_from_dict(
-    sample_column_names, sample_inferred_logical_types
+    sample_column_names, sample_inferred_logical_types,
 ):
     default_schema = TableSchema(
         sample_column_names,
@@ -675,7 +675,7 @@ def test_use_standard_tags_from_dict(
 
 def test_ordinal_without_init():
     schema = TableSchema(
-        column_names=["ordinal_col"], logical_types={"ordinal_col": Ordinal}
+        column_names=["ordinal_col"], logical_types={"ordinal_col": Ordinal},
     )
     assert isinstance(schema.logical_types["ordinal_col"], Ordinal)
     assert schema.logical_types["ordinal_col"].order is None

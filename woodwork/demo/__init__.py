@@ -1,2 +1,2 @@
 # flake8: noqa
-from .api import *
+from woodwork.demo.api import *

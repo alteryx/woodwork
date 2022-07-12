@@ -13,7 +13,7 @@ def test_register_custom_logical_type(type_sys):
         return True
 
     type_sys.add_type(
-        CustomLogicalType, inference_function=custom_func, parent="Categorical"
+        CustomLogicalType, inference_function=custom_func, parent="Categorical",
     )
     assert CustomLogicalType in type_sys.registered_types
     assert (Categorical, CustomLogicalType) in type_sys.relationships
@@ -35,7 +35,7 @@ def test_custom_type_with_accessor(sample_df):
         return False
 
     ww.type_system.add_type(
-        AgesAbove20, inference_function=ages_func, parent="IntegerNullable"
+        AgesAbove20, inference_function=ages_func, parent="IntegerNullable",
     )
     sample_df.ww.init()
     assert isinstance(sample_df.ww["age"].ww.logical_type, AgesAbove20)
@@ -53,7 +53,7 @@ def test_accessor_override_default_function(sample_df):
 
     # Update functions to cause 'age' to be recognized as Double instead fo Integer
     ww.type_system.update_inference_function(
-        "Double", inference_function=new_double_func
+        "Double", inference_function=new_double_func,
     )
     ww.type_system.update_inference_function("Integer", inference_function=None)
     sample_df.ww.init()
