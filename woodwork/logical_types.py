@@ -47,7 +47,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__) and _get_specified_ltype_params(
-            other
+            other,
         ) == _get_specified_ltype_params(self)
 
     def __str__(self):
@@ -79,7 +79,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         valid_dtype = self._get_valid_dtype(type(series))
         if valid_dtype != str(series.dtype):
             raise TypeValidationError(
-                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype.",
             )
 
 
@@ -308,26 +308,33 @@ class Datetime(LogicalType):
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
-                series
+                series,
             )
             utc = self.datetime_format and self.datetime_format.endswith("%z")
             if _is_dask_series(series):
                 name = series.name
                 series = dd.to_datetime(
-                    series, format=self.datetime_format, errors="coerce", utc=utc
+                    series,
+                    format=self.datetime_format,
+                    errors="coerce",
+                    utc=utc,
                 )
                 series.name = name
             elif _is_spark_series(series):
                 series = ps.Series(
                     ps.to_datetime(
-                        series.to_numpy(), format=self.datetime_format, errors="coerce"
+                        series.to_numpy(),
+                        format=self.datetime_format,
+                        errors="coerce",
                     ),
                     name=series.name,
                 )
             else:
                 try:
                     series = pd.to_datetime(
-                        series, format=self.datetime_format, utc=utc
+                        series,
+                        format=self.datetime_format,
+                        utc=utc,
                     )
                 except (TypeError, ValueError):
                     warnings.warn(
@@ -526,7 +533,8 @@ class LatLong(LogicalType):
             series.name = name
         elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
-                _reformat_to_latlong, is_spark=True
+                _reformat_to_latlong,
+                is_spark=True,
             )
             series = ps.from_pandas(formatted_series)
         else:
@@ -541,7 +549,7 @@ class LatLong(LogicalType):
             raise TypeValidationError(
                 "Cannot initialize Woodwork. Series does not contain properly formatted "
                 "LatLong data. Try reformatting before initializing or use the "
-                "woodwork.init_series function to initialize."
+                "woodwork.init_series function to initialize.",
             )
 
 
@@ -771,7 +779,9 @@ class PostalCode(LogicalType):
             Series: If return_invalid_values is True, returns invalid PostalCodes.
         """
         return _regex_validate(
-            "postal_code_inference_regex", series, return_invalid_values
+            "postal_code_inference_regex",
+            series,
+            return_invalid_values,
         )
 
 

@@ -22,6 +22,9 @@ known_first_party = "woodwork"
 skip = "__init__.py"
 multi_line_output = 3
 
+[tool.black]
+target-version = ['py310']
+
 [tool.coverage.run]
 source = ["woodwork"]
 

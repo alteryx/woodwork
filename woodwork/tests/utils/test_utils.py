@@ -89,7 +89,8 @@ def test_convert_input_to_set():
     assert semantic_tags_from_list == {"index", "numeric", "category"}
 
     semantic_tags_from_set = _convert_input_to_set(
-        {"index", "numeric", "category"}, "include parameter"
+        {"index", "numeric", "category"},
+        "include parameter",
     )
     assert semantic_tags_from_set == {"index", "numeric", "category"}
 
@@ -220,7 +221,7 @@ def test_get_ltype_params():
 
     ymd = "%Y-%m-%d"
     params_value = _get_specified_ltype_params(
-        Datetime(datetime_format=ymd, timezone="UTC")
+        Datetime(datetime_format=ymd, timezone="UTC"),
     )
     assert params_value == {"datetime_format": ymd, "timezone": "UTC"}
 
@@ -425,11 +426,13 @@ def test_get_valid_mi_types():
 
 def test_get_column_logical_type(sample_series):
     assert isinstance(
-        _get_column_logical_type(sample_series, None, "col_name"), Categorical
+        _get_column_logical_type(sample_series, None, "col_name"),
+        Categorical,
     )
 
     assert isinstance(
-        _get_column_logical_type(sample_series, Datetime, "col_name"), Datetime
+        _get_column_logical_type(sample_series, Datetime, "col_name"),
+        Datetime,
     )
 
 
@@ -501,7 +504,7 @@ def test_infer_datetime_format(datetimes):
         assert fmt == "%m/%d/%Y"
 
     dt = pd.Series(
-        ["3/11/2000 9:00", "3/11/2000 10:00", "3/11/2000 11:00", "3/11/2000 12:00"]
+        ["3/11/2000 9:00", "3/11/2000 10:00", "3/11/2000 11:00", "3/11/2000 12:00"],
     )
     fmt = _infer_datetime_format(dt)
     assert fmt == "%m/%d/%Y %H:%M"

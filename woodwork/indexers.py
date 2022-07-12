@@ -38,7 +38,7 @@ def _process_selection(selection, original_data):
         else:
             index_vals = selection.index.values
         if _is_dataframe(original_data) and set(index_vals) == set(
-            original_data.columns
+            original_data.columns,
         ):
             # Selecting a single row from a DataFrame, returned as Series without Woodwork initialized
             schema = None
