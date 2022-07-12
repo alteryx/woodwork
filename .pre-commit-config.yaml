@@ -1,4 +1,4 @@
-exclude: ^LICENSES/|\.(html|csv|svg|md)$
+exclude: ^LICENSE/|\.(html|csv|svg|md)$
 default_stages: [commit]
 repos:
   - repo: https://github.com/kynan/nbstripout
