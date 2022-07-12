@@ -96,7 +96,9 @@ class WoodworkColumnAccessor:
             self._schema = schema
         else:
             logical_type = _get_column_logical_type(
-                self._series, logical_type, self._series.name
+                self._series,
+                logical_type,
+                self._series.name,
             )
 
             if validate:
@@ -112,7 +114,7 @@ class WoodworkColumnAccessor:
                             f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                             f"incompatible with {logical_type} dtype. Try converting series "
                             f"dtype to '{valid_dtype}' before initializing or use the "
-                            "woodwork.init_series function to initialize."
+                            "woodwork.init_series function to initialize.",
                         )
 
             self._schema = ColumnSchema(
@@ -282,7 +284,7 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
                     valid_dtype = self._schema.logical_type._get_valid_dtype(
-                        type(result)
+                        type(result),
                     )
                     if str(result.dtype) == valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
@@ -293,7 +295,9 @@ class WoodworkColumnAccessor:
                         )
                         warning_message = (
                             TypingInfoMismatchWarning().get_warning_message(
-                                attr, invalid_schema_message, "Series"
+                                attr,
+                                invalid_schema_message,
+                                "Series",
                             )
                         )
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
@@ -452,7 +456,7 @@ def _validate_schema(schema, series):
     valid_dtype = schema.logical_type._get_valid_dtype(type(series))
     if str(series.dtype) != valid_dtype:
         raise ValueError(
-            f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}"
+            f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}",
         )
 
 

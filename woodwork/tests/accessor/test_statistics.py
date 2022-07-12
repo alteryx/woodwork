@@ -85,9 +85,9 @@ def test_accessor_bin_numeric_cols_into_categories():
             "booleans": pd.Series([True, False, True, False], dtype="boolean"),
             "categories": pd.Series(["test", "test2", "test2", "test"]),
             "dates": pd.Series(
-                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"]
+                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
             ),
-        }
+        },
     )
     df.ww.init()
     data = {column: df[column] for column in df.copy()}
@@ -339,13 +339,13 @@ def test_dependence_extra_stats(measure):
             "str": pd.Series(["test", np.nan, "test2", "test"]),
             "str_no_nan": pd.Series(["test", "test2", "test2", "test"]),
             "dates": pd.Series(["2020-01-01", None, "2020-01-02", "2020-01-03"]),
-        }
+        },
     )
     df_nans.ww.init(
         logical_types={
             "str": "Categorical",
             "str_no_nan": "Categorical",
-        }
+        },
     )
     original_df = df_nans.copy()
     dep_df_extra = df_nans.ww.dependence(measure, extra_stats=True, min_shared=3)
@@ -358,7 +358,8 @@ def test_dependence_extra_stats(measure):
         assert "measure_used" in dep_df_extra.columns
         # recalculate max to compare
         both_dep_df = df_nans.ww.dependence(
-            measures=["mutual_info", "pearson"], min_shared=3
+            measures=["mutual_info", "pearson"],
+            min_shared=3,
         )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
@@ -380,7 +381,7 @@ def test_dependence_extra_stats(measure):
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_min_shared(time_index_df, measure):
     time_index_df.ww.init(
-        logical_types={"strs": "categorical", "letters": "Categorical"}
+        logical_types={"strs": "categorical", "letters": "Categorical"},
     )
     for min_shared in (25, 4, 3):
         dep_df = time_index_df.ww.dependence(measures=measure, min_shared=min_shared)
@@ -407,7 +408,7 @@ def test_dependence_min_shared(time_index_df, measure):
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_min_shared_warns(time_index_df, measure):
     time_index_df.ww.init(
-        logical_types={"strs": "categorical", "letters": "Categorical"}
+        logical_types={"strs": "categorical", "letters": "Categorical"},
     )
 
     msg = (
@@ -457,7 +458,7 @@ def test_dependence_with_string_index(measure):
             "id": ["a", "b", "c"],
             "col1": [1, 2, 3],
             "col2": [10, 20, 30],
-        }
+        },
     )
     df.ww.init(index="id", logical_types={"id": "unknown"})
     dependence_df = df.ww.dependence(measures=measure)
@@ -476,7 +477,7 @@ def test_dependence_dropna():
             "case": [0, np.nan, 0, 0],
             "for": [0, 0, np.nan, 0],
             "dropna": [0, 1, 2, np.nan],
-        }
+        },
     )
     df.ww.init(logical_types={col: Categorical for col in df})
     mi_df = df.ww.mutual_information(min_shared=2)
@@ -500,7 +501,7 @@ def test_dependence_dropna():
                 5: "dropna",
             },
             "mutual_info": {0: 0.5, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0},
-        }
+        },
     )
     assert mi_df.equals(expected_df)
 
@@ -829,7 +830,7 @@ def test_describe_accessor_method(describe_df):
                 pd.NaT,
                 "2020-02-01",
                 "2020-01-02",
-            ]
+            ],
         )
         expected_vals = pd.Series(
             {
@@ -873,7 +874,8 @@ def test_describe_accessor_method(describe_df):
             )
             df = pd.DataFrame({"col": timedelta_data})
             df.ww.init(
-                logical_types={"col": ltype}, semantic_tags={"col": "custom_tag"}
+                logical_types={"col": ltype},
+                semantic_tags={"col": "custom_tag"},
             )
             stats_df = df.ww.describe()
             assert isinstance(stats_df, pd.DataFrame)
@@ -1165,7 +1167,7 @@ def test_describe_dict_extra_stats(describe_df):
             "formatted_datetime_col",
             "timedelta_col",
             "latlong_col",
-        ]
+        ],
     )
     describe_df["nullable_integer_col"] = describe_df["numeric_col"]
     describe_df["integer_col"] = describe_df["numeric_col"].fillna(0)
@@ -1223,13 +1225,14 @@ def test_describe_dict_extra_stats(describe_df):
     "_get_numeric_value_counts_in_range",
 )
 def test_describe_dict_extra_stats_overflow_range(
-    mock_get_numeric_value_counts_in_range, describe_df
+    mock_get_numeric_value_counts_in_range,
+    describe_df,
 ):
     df = pd.DataFrame(
         {
             "large_range": [-9215883799005046784, 0, 1, 9223177510267041793],
             "large_nums": [97896598486960007123867158471523621205853924, 0, 1, 2],
-        }
+        },
     )
     df.ww.init()
 
@@ -1278,21 +1281,41 @@ def test_value_counts(categorical_df):
         updated_results = []
         for items in expected_cat1:
             updated_results.append(
-                {k: (str(v) if k == "value" else v) for k, v in items.items()}
+                {k: (str(v) if k == "value" else v) for k, v in items.items()},
             )
         expected_cat1 = updated_results
 
-        nan = pd.NA
+        updated_results = []
+        for items in expected_cat2:
+            updated_results.append(
+                {
+                    k: (
+                        str(v)
+                        if (k == "value" and v is not np.nan)
+                        else pd.NA
+                        if v is np.nan
+                        else v
+                    )
+                    for k, v in items.items()
+                },
+            )
+        expected_cat2 = updated_results
 
-    expected_cat2 = [
-        {"value": nan, "count": 6},
-        {"value": "test", "count": 3},
-        {"value": "test2", "count": 1},
-    ]
-    expected_cat3 = [
-        {"value": nan, "count": 7},
-        {"value": "test", "count": 3},
-    ]
+        updated_results = []
+        for items in expected_cat3:
+            updated_results.append(
+                {
+                    k: (
+                        str(v)
+                        if (k == "value" and v is not np.nan)
+                        else pd.NA
+                        if v is np.nan
+                        else v
+                    )
+                    for k, v in items.items()
+                },
+            )
+        expected_cat3 = updated_results
 
     assert val_cts["categories1"] == expected_cat1
     assert val_cts["categories2"] == expected_cat2
@@ -1323,7 +1346,7 @@ def test_datetime_get_recent_value_counts():
             datetime(2019, 4, 2, 7, 20, 1, 0),
             datetime(2019, 5, 1, 8, 30, 0, 0),
             pd.NaT,
-        ]
+        ],
     )
     values = _get_recent_value_counts(times, num_x=3)
     expected_values = [
@@ -1457,7 +1480,7 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     no_outliers_series.ww.init()
 
     has_outliers_dict = outliers_series.ww.box_plot_dict(
-        quantiles={0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0}
+        quantiles={0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0},
     )
     assert has_outliers_dict["low_bound"] == 8.125
     assert has_outliers_dict["high_bound"] == 83.125
@@ -1474,7 +1497,7 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     assert has_outliers_dict["high_indices"] == [0]
 
     no_outliers_dict = no_outliers_series.ww.box_plot_dict(
-        quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0}
+        quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0},
     )
 
     assert no_outliers_dict["low_bound"] == 23.0
@@ -1517,13 +1540,15 @@ def test_box_plot_on_non_numeric_col(outliers_df):
     error = "Cannot calculate box plot statistics for non-numeric column"
 
     non_numeric_series = init_series(
-        outliers_df["non_numeric"], logical_type="Categorical"
+        outliers_df["non_numeric"],
+        logical_type="Categorical",
     )
     with pytest.raises(TypeError, match=error):
         non_numeric_series.ww.box_plot_dict()
 
     wrong_dtype_series = init_series(
-        outliers_df["has_outliers"], logical_type="Categorical"
+        outliers_df["has_outliers"],
+        logical_type="Categorical",
     )
     with pytest.raises(TypeError, match=error):
         wrong_dtype_series.ww.box_plot_dict()
@@ -1536,18 +1561,20 @@ def test_box_plot_with_fully_null_col(outliers_df):
     check_empty_box_plot_dict(box_plot_dict)
 
     box_plot_dict = fully_null_double_series.ww.box_plot_dict(
-        quantiles={0.25: 1, 0.75: 10}
+        quantiles={0.25: 1, 0.75: 10},
     )
     check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_int_series = init_series(
-        outliers_df["nans"], logical_type="IntegerNullable"
+        outliers_df["nans"],
+        logical_type="IntegerNullable",
     )
     box_plot_dict = fully_null_int_series.ww.box_plot_dict()
     check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_categorical_series = init_series(
-        outliers_df["nans"], logical_type="Categorical"
+        outliers_df["nans"],
+        logical_type="Categorical",
     )
     error = "Cannot calculate box plot statistics for non-numeric column"
     with pytest.raises(TypeError, match=error):
@@ -1563,7 +1590,7 @@ def test_box_plot_with_empty_col(outliers_df):
     check_empty_box_plot_dict(box_plot_dict)
 
     box_plot_dict = fully_null_double_series.ww.box_plot_dict(
-        quantiles={0.25: 1, 0.75: 10}
+        quantiles={0.25: 1, 0.75: 10},
     )
     check_empty_box_plot_dict(box_plot_dict)
 
@@ -1646,7 +1673,7 @@ def test_box_plot_quantiles_errors(outliers_df):
 
     error = re.escape(
         "Input quantiles do not contain the minimum necessary quantiles for box plot calculation: "
-        "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value)."
+        "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value).",
     )
 
     partial_quantiles = {0.25: 36.25, 0.75: 20, 1.0: 90}
@@ -1667,14 +1694,14 @@ def test_box_plot_optional_return_values(outliers_df):
     has_outliers_series.ww.init()
 
     has_outliers_box_plot_info_without_optional = has_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=False
+        include_indices_and_values=False,
     )
     has_outliers_box_plot_info_with_optional = has_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=True
+        include_indices_and_values=True,
     )
 
     assert {"low_bound", "high_bound", "quantiles"} == set(
-        has_outliers_box_plot_info_without_optional.keys()
+        has_outliers_box_plot_info_without_optional.keys(),
     )
     assert {
         "low_bound",
@@ -1690,14 +1717,14 @@ def test_box_plot_optional_return_values(outliers_df):
     no_outliers_series.ww.init()
 
     no_outliers_box_plot_info_without_optional = no_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=False
+        include_indices_and_values=False,
     )
     no_outliers_box_plot_info_with_optional = no_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=True
+        include_indices_and_values=True,
     )
 
     assert {"low_bound", "high_bound", "quantiles"} == set(
-        no_outliers_box_plot_info_without_optional.keys()
+        no_outliers_box_plot_info_without_optional.keys(),
     )
     assert {
         "low_bound",
@@ -1719,7 +1746,9 @@ def test_box_plot_optional_return_values(outliers_df):
     [{}, {"debug": True}, {"temporal_columns": ["2D_freq", "3M_freq"]}],
 )
 def test_infer_temporal_frequencies(
-    infer_frequency, expected_call_args, datetime_freqs_df_pandas
+    infer_frequency,
+    expected_call_args,
+    datetime_freqs_df_pandas,
 ):
 
     # TODO: Add support for Dask and Spark DataFrames
@@ -1754,13 +1783,13 @@ def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
     datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
 
     frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
+        temporal_columns=[datetime_freqs_df_pandas.ww.time_index],
     )
     assert len(frequency_dict) == 1
     assert frequency_dict["2D_freq"] == "2D"
 
     empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[]
+        temporal_columns=[],
     )
     assert len(empty_frequency_dict) == 0
 
@@ -1771,13 +1800,13 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
     error = "Column not_present not found in dataframe."
     with pytest.raises(ValueError, match=error):
         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-            temporal_columns=["2D_freq", "not_present"]
+            temporal_columns=["2D_freq", "not_present"],
         )
 
     error = "Cannot determine frequency for column ints with logical type Integer"
     with pytest.raises(TypeError, match=error):
         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-            temporal_columns=["1d_skipped_one_freq", "ints"]
+            temporal_columns=["1d_skipped_one_freq", "ints"],
         )
 
 

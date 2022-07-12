@@ -53,11 +53,11 @@ def init_series(
             series = pd.Series(series)
         elif isinstance(series, np.ndarray) and series.ndim != 1:
             raise ValueError(
-                f"np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional"
+                f"np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional",
             )
         else:
             raise TypeError(
-                f"Input must be of series type. The current input is of type {type(series)}"
+                f"Input must be of series type. The current input is of type {type(series)}",
             )
     logical_type = _get_column_logical_type(series, logical_type, series.name)
     new_series = logical_type.transform(series, null_invalid_values=null_invalid_values)
@@ -131,7 +131,7 @@ def get_invalid_schema_message(dataframe, schema):
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
         # Index validation not performed for Dask/Spark
         if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(
-            pd.Series(dataframe[schema.index].values)
+            pd.Series(dataframe[schema.index].values),
         ):
             return "Index mismatch between DataFrame and typing information"
         elif not dataframe[schema.index].is_unique:
@@ -209,7 +209,7 @@ def _check_table_schema(method):
             )
             raise WoodworkNotInitError(msg)
         diff_cols = set(self._dataframe.columns).difference(
-            set(self._schema.columns.keys())
+            set(self._schema.columns.keys()),
         )
         if diff_cols:
             raise ColumnNotPresentInSchemaError(sorted(list(diff_cols)))

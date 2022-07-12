@@ -24,7 +24,7 @@ class CSVSerializer(Serializer):
         if _is_spark_dataframe(dataframe):
             if self.filename is not None:
                 raise ValueError(
-                    "Writing a Spark dataframe to csv with a filename specified is not supported"
+                    "Writing a Spark dataframe to csv with a filename specified is not supported",
                 )
             self.default_kwargs["multiline"] = True
             self.default_kwargs["ignoreLeadingWhitespace"] = False

@@ -49,7 +49,9 @@ def test_accessor_init(sample_series):
 
 def test_accessor_init_with_schema(sample_series):
     sample_series.ww.init(
-        semantic_tags={"test_tag"}, description="this is a column", origin="base"
+        semantic_tags={"test_tag"},
+        description="this is a column",
+        origin="base",
     )
     schema = sample_series.ww.schema
 
@@ -75,7 +77,9 @@ def test_accessor_init_with_schema(sample_series):
 
 def test_accessor_init_with_schema_errors(sample_series):
     sample_series.ww.init(
-        semantic_tags={"test_tag"}, description="this is a column", origin="base"
+        semantic_tags={"test_tag"},
+        description="this is a column",
+        origin="base",
     )
     schema = sample_series.ww.schema
 
@@ -94,7 +98,7 @@ def test_accessor_init_with_schema_errors(sample_series):
         new_dtype = "object"
 
     error = re.escape(
-        f"dtype mismatch between Series dtype {new_dtype}, and Categorical dtype, {ltype_dtype}"
+        f"dtype mismatch between Series dtype {new_dtype}, and Categorical dtype, {ltype_dtype}",
     )
     diff_dtype_series = sample_series.astype(new_dtype)
     with pytest.raises(ValueError, match=error):
@@ -103,7 +107,9 @@ def test_accessor_init_with_schema_errors(sample_series):
 
 def test_accessor_with_schema_parameter_warning(sample_series):
     sample_series.ww.init(
-        semantic_tags={"test_tag"}, description="this is a column", origin="base"
+        semantic_tags={"test_tag"},
+        description="this is a column",
+        origin="base",
     )
     schema = sample_series.ww.schema
 
@@ -158,7 +164,7 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
     error_message = re.escape(
         f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with "
         f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before "
-        "initializing or use the woodwork.init_series function to initialize."
+        "initializing or use the woodwork.init_series function to initialize.",
     )
     with pytest.raises(TypeValidationError, match=error_message):
         series.ww.init(logical_type=NaturalLanguage)
@@ -378,7 +384,9 @@ def test_does_not_add_standard_tags():
     series = pd.Series([1.1, 2, 3])
     semantic_tags = "custom_tag"
     series.ww.init(
-        logical_type=Double, semantic_tags=semantic_tags, use_standard_tags=False
+        logical_type=Double,
+        semantic_tags=semantic_tags,
+        use_standard_tags=False,
     )
     assert series.ww.semantic_tags == {"custom_tag"}
 
@@ -442,12 +450,12 @@ def test_set_logical_type_valid_dtype_change(sample_series):
 def test_set_logical_type_invalid_dtype_change(sample_series):
     if _is_dask_series(sample_series):
         pytest.xfail(
-            "Dask type conversion with astype does not fail until compute is called"
+            "Dask type conversion with astype does not fail until compute is called",
         )
     if _is_spark_series(sample_series):
         pytest.xfail(
             "Spark allows this conversion, filling values it cannot convert with NaN "
-            "and converting dtype to float."
+            "and converting dtype to float.",
         )
     sample_series.ww.init(logical_type="Categorical")
     error_message = (
@@ -497,7 +505,7 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
     if _is_spark_series(sample_series):
         pytest.xfail(
-            "Running replace on Spark series changes series dtype to object, invalidating schema"
+            "Running replace on Spark series changes series dtype to object, invalidating schema",
         )
     sample_series.ww.init()
 
@@ -505,7 +513,8 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     assert replace_series.ww._schema == sample_series.ww._schema
     assert replace_series.ww._schema is not sample_series.ww._schema
     pd.testing.assert_series_equal(
-        to_pandas(replace_series), to_pandas(sample_series.replace("a", "d"))
+        to_pandas(replace_series),
+        to_pandas(sample_series.replace("a", "d")),
     )
 
 
@@ -585,7 +594,8 @@ def test_series_methods_on_accessor_other_returns(sample_series):
 
 def test_series_methods_on_accessor_new_schema_object(sample_series):
     sample_series.ww.init(
-        semantic_tags=["new_tag", "tag2"], metadata={"important_keys": [1, 2, 3]}
+        semantic_tags=["new_tag", "tag2"],
+        metadata={"important_keys": [1, 2, 3]},
     )
 
     copied_series = sample_series.ww.copy()
@@ -636,7 +646,7 @@ def test_ordinal_requires_instance_on_update(sample_series):
 def test_ordinal_with_order(sample_series):
     if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not compatible"
+            "Fails with Dask and Spark - ordinal data validation not compatible",
         )
 
     series = sample_series.copy()
@@ -655,13 +665,13 @@ def test_ordinal_with_order(sample_series):
 def test_ordinal_with_incomplete_ranking(sample_series):
     if _is_spark_series(sample_series) or _is_dask_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
-        "present in the order values provided: ['c']"
+        "present in the order values provided: ['c']",
     )
     with pytest.raises(ValueError, match=error_msg):
         sample_series.ww.init(logical_type=ordinal_incomplete_order)
@@ -704,7 +714,8 @@ def test_latlong_formatting_with_init_series(latlongs):
         new_series = init_series(series, logical_type=LatLong)
         assert isinstance(new_series.ww.logical_type, LatLong)
         pd.testing.assert_series_equal(
-            to_pandas(new_series), to_pandas(expected_series)
+            to_pandas(new_series),
+            to_pandas(expected_series),
         )
         assert expected_series.ww._schema == new_series.ww._schema
 
@@ -913,7 +924,8 @@ def test_latlong_validation_methods_called_init(mock_validate, latlong_df_pandas
 
 @patch("woodwork.column_accessor._validate_schema")
 def test_validation_methods_called_init_with_schema(
-    mock_validate_schema, sample_series
+    mock_validate_schema,
+    sample_series,
 ):
     assert not mock_validate_schema.called
     schema_series = sample_series.copy()

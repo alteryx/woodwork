@@ -59,7 +59,8 @@ def test_ordinal_order_errors():
     series = pd.Series([1, 2, 3]).astype("category")
 
     with pytest.raises(
-        TypeError, match="Order values must be specified in a list or tuple"
+        TypeError,
+        match="Order values must be specified in a list or tuple",
     ):
         Ordinal(order="not_valid").transform(series)
 
@@ -158,7 +159,7 @@ def test_latlong_validate(latlong_df):
     error_message = re.escape(
         "Cannot initialize Woodwork. Series does not contain properly formatted "
         "LatLong data. Try reformatting before initializing or use the "
-        "woodwork.init_series function to initialize."
+        "woodwork.init_series function to initialize.",
     )
     latlong = LatLong()
     series = latlong_df["tuple_ints"]
@@ -216,13 +217,13 @@ def test_ordinal_transform(sample_series):
 
     if dask or spark:
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
-        "present in the order values provided: ['c']"
+        "present in the order values provided: ['c']",
     )
 
     with pytest.raises(ValueError, match=error_msg):
@@ -236,13 +237,13 @@ def test_ordinal_validate(sample_series):
 
     if dask or spark:
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
-        "present in the order values provided: ['c']"
+        "present in the order values provided: ['c']",
     )
 
     with pytest.raises(ValueError, match=error_msg):
@@ -250,7 +251,7 @@ def test_ordinal_validate(sample_series):
 
     new_type = "string"
     error_message = re.escape(
-        f"Series dtype '{new_type}' is incompatible with ordinal dtype."
+        f"Series dtype '{new_type}' is incompatible with ordinal dtype.",
     )
     with pytest.raises(TypeValidationError, match=error_message):
         ordinal_incomplete_order.validate(sample_series.astype(new_type))
@@ -379,7 +380,7 @@ def test_postal_code_validate(sample_df_postal_code):
             "hello",
             "HELLO",
             "51342-HEL0",
-        ]
+        ],
     )
     series = series.append(invalid_types)
     series.name = "postal_code"
@@ -405,7 +406,7 @@ def test_postal_code_validate_complex(sample_df_postal_code):
             "DT1 1AE",  # UK formatting
             "DT1-1AE",
             "DT11AE",
-        ]
+        ],
     )
     actual = pc.validate(series, return_invalid_values=True)
     assert not len(actual)
@@ -620,7 +621,7 @@ def test_null_invalid_latlong():
             (-45.031705, nan),
             (nan, nan),
             *nulls,
-        ]
+        ],
     )
     expected = pd.DataFrame({"data": data})
     df.ww.init(logical_types=types, null_invalid_values=True)
