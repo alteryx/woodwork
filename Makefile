@@ -10,12 +10,12 @@ clean:
 lint:
 	isort --check-only woodwork
 	python docs/notebook_version_standardizer.py check-execution
-	black woodwork -t py39 --check
+	black woodwork -t py310 --check
 	flake8 woodwork
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py39 woodwork
+	black -t py310 woodwork
 	isort woodwork
 	python docs/notebook_version_standardizer.py standardize
 
@@ -30,6 +30,7 @@ testcoverage:
 .PHONY: installdeps
 installdeps: upgradepip
 	pip install -e ".[dev]"
+	pre-commit install
 
 .PHONY: checkdeps
 checkdeps:

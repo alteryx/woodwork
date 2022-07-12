@@ -87,6 +87,15 @@ Whether you are a novice or experienced software developer, all contributions an
   open build/html/index.html
   ```
 
+* Before you commit, a few lint fixing hooks will run. You can also manually run these.
+  ```bash
+  # run linting hooks only on changed files
+  pre-commit run
+
+  # run linting hooks on all files
+  pre-commit run --all-files
+  ```
+
 #### 3. Submit your Pull Request
 
 * Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically.
