@@ -10,12 +10,12 @@ clean:
 lint:
 	isort --check-only woodwork
 	python docs/notebook_version_standardizer.py check-execution
-	black woodwork -t py310 --check
+	black woodwork docs/source -t py310 --check
 	flake8 woodwork
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py310 woodwork
+	black woodwork docs/source -t py310
 	isort woodwork
 	python docs/notebook_version_standardizer.py standardize
 
