@@ -29,7 +29,7 @@ def categorical_func(series):
 
     if pdtypes.is_float_dtype(series.dtype) or pdtypes.is_integer_dtype(series.dtype):
         numeric_categorical_threshold = ww.config.get_option(
-            "numeric_categorical_threshold"
+            "numeric_categorical_threshold",
         )
         if numeric_categorical_threshold is not None:
             return _is_categorical_series(series, numeric_categorical_threshold)
@@ -80,7 +80,7 @@ def boolean_func(series):
 
 def boolean_nullable_func(series):
     if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
-        series.dtype
+        series.dtype,
     ):
         return True
     elif pdtypes.is_object_dtype(series.dtype):
@@ -157,13 +157,13 @@ class InferWithRegex:
 
 
 email_address_func = InferWithRegex(
-    lambda: ww.config.get_option("email_inference_regex")
+    lambda: ww.config.get_option("email_inference_regex"),
 )
 phone_number_func = InferWithRegex(
-    lambda: ww.config.get_option("phone_inference_regex")
+    lambda: ww.config.get_option("phone_inference_regex"),
 )
 postal_code_func = InferWithRegex(
-    lambda: ww.config.get_option("postal_code_inference_regex")
+    lambda: ww.config.get_option("postal_code_inference_regex"),
 )
 url_func = InferWithRegex(lambda: ww.config.get_option("url_inference_regex"))
 ip_address_func = InferWithRegex(
@@ -173,5 +173,5 @@ ip_address_func = InferWithRegex(
         + "|"
         + ww.config.get_option("ipv6_inference_regex")
         + ")"
-    )
+    ),
 )

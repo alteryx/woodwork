@@ -55,7 +55,9 @@ def _get_deserializer(
     if typing_info_filename:
         try:
             typing_info = read_table_typing_information(
-                path, typing_info_filename, profile_name
+                path,
+                typing_info_filename,
+                profile_name,
             )
         except FileNotFoundError:
             pass
@@ -69,7 +71,7 @@ def _get_deserializer(
     deserializer_cls = FORMAT_TO_DESERIALIZER.get(format)
     if deserializer_cls is None:
         raise ValueError(
-            "Could not determine format. Please specify filename and/or format."
+            "Could not determine format. Please specify filename and/or format.",
         )
 
     return deserializer_cls(path, filename, data_subdirectory, typing_info)

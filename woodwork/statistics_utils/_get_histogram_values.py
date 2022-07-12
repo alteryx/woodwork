@@ -21,7 +21,7 @@ def _get_histogram_values(series, bins=10):
             {
                 "bins": [row["bins"].left, row["bins"].right],
                 "frequency": row["frequency"],
-            }
+            },
         )
 
     return results

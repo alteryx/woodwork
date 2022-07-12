@@ -150,15 +150,15 @@ def read_file(
         inferred_type, _ = guess_type(filepath)
         if inferred_type is None:
             raise RuntimeError(
-                "Content type could not be inferred. Please specify content_type and try again."
+                "Content type could not be inferred. Please specify content_type and try again.",
             )
         content_type = inferred_type
 
     if content_type not in type_to_read_func_map:
         raise RuntimeError(
             "Reading from content type {} is not currently supported".format(
-                content_type
-            )
+                content_type,
+            ),
         )
 
     pyarrow_types = [
@@ -229,7 +229,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
     if isinstance(latlong, (list, tuple)):
         if len(latlong) != 2:
             raise TypeValidationError(
-                f"LatLong values must have exactly two values. {latlong} does not have two values."
+                f"LatLong values must have exactly two values. {latlong} does not have two values.",
             )
 
         latitude, longitude = latlong
@@ -239,7 +239,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
             longitude = _coerce_to_float(longitude)
         except ValueError:
             raise TypeValidationError(
-                f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
+                f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float.",
             )
 
         latlong = (latitude, longitude)
@@ -256,7 +256,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
 - A single NaN value.
 - A string representation of the above.
 
-{latlong} does not fit the criteria."""
+{latlong} does not fit the criteria.""",
     )
 
 
@@ -269,7 +269,7 @@ def _coerce_to_float(val):
         return float(val)
     except (ValueError, TypeError):
         raise ValueError(
-            f"The value represented by {val} cannot be converted to a float."
+            f"The value represented by {val} cannot be converted to a float.",
         )
 
 
@@ -449,7 +449,7 @@ def concat_columns(objs, validate_schema=True):
             overlapping_keys = obj.ww.metadata.keys() & table_metadata.keys()
             if overlapping_keys:
                 raise ValueError(
-                    f"Cannot resolve overlapping keys in table metadata: {overlapping_keys}"
+                    f"Cannot resolve overlapping keys in table metadata: {overlapping_keys}",
                 )
 
             table_metadata = {**obj.ww.metadata, **table_metadata}
@@ -467,7 +467,7 @@ def concat_columns(objs, validate_schema=True):
                 else:
                     raise IndexError(
                         "Cannot set the Woodwork index of multiple input objects. "
-                        "Please remove the index columns from all but one table."
+                        "Please remove the index columns from all but one table.",
                     )
             if obj.ww.time_index is not None:
                 if time_index is None:
@@ -475,7 +475,7 @@ def concat_columns(objs, validate_schema=True):
                 else:
                     raise IndexError(
                         "Cannot set the Woodwork time index of multiple input objects. "
-                        "Please remove the time index columns from all but one table."
+                        "Please remove the time index columns from all but one table.",
                     )
 
             ww_columns = obj.ww.schema.columns
@@ -487,7 +487,7 @@ def concat_columns(objs, validate_schema=True):
             if name in col_names_seen:
                 raise ValueError(
                     f"Duplicate column '{name}' has been found in more than one input object. "
-                    "Please remove duplicate columns from all but one table."
+                    "Please remove duplicate columns from all but one table.",
                 )
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {"time_index"} - {"index"}
@@ -505,11 +505,11 @@ def concat_columns(objs, validate_schema=True):
 
     lib = pd
     if ww.accessor_utils._is_spark_dataframe(obj) or ww.accessor_utils._is_spark_series(
-        obj
+        obj,
     ):
         lib = ps
     elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
-        obj
+        obj,
     ):
         lib = dd
 
@@ -575,7 +575,11 @@ class CallbackCaller:
             elapsed_time = timer() - self.start_time
             new_progress = self.current_progress + progress_increment
             self.callback(
-                progress_increment, new_progress, self.total, self.unit, elapsed_time
+                progress_increment,
+                new_progress,
+                self.total,
+                self.unit,
+                elapsed_time,
             )
             self.current_progress = new_progress
 

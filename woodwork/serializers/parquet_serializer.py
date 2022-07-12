@@ -33,11 +33,11 @@ class ParquetSerializer(Serializer):
     def serialize(self, dataframe, profile_name, **kwargs):
         if self.filename is not None and _is_dask_dataframe(dataframe):
             raise ValueError(
-                "Writing a Dask dataframe to parquet with a filename specified is not supported"
+                "Writing a Dask dataframe to parquet with a filename specified is not supported",
             )
         if self.filename is not None and _is_spark_dataframe(dataframe):
             raise ValueError(
-                "Writing a Spark dataframe to parquet with a filename specified is not supported"
+                "Writing a Spark dataframe to parquet with a filename specified is not supported",
             )
         self.kwargs["engine"] = "pyarrow"
         return super().serialize(dataframe, profile_name, **kwargs)

@@ -79,7 +79,9 @@ class ColumnSchema(object):
 
     def _get_column_tags(self, semantic_tags, validate):
         semantic_tags = _convert_input_to_set(
-            semantic_tags, error_language="semantic_tags", validate=validate
+            semantic_tags,
+            error_language="semantic_tags",
+            validate=validate,
         )
 
         if self.use_standard_tags:
@@ -185,15 +187,16 @@ class ColumnSchema(object):
         invalid_tags = sorted(list(tags_to_remove.difference(self.semantic_tags)))
         if invalid_tags:
             raise LookupError(
-                f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'"
+                f"Semantic tag(s) '{', '.join(invalid_tags)}' not present on column '{name}'",
             )
 
         if self.use_standard_tags and sorted(
-            list(tags_to_remove.intersection(self.logical_type.standard_tags))
+            list(tags_to_remove.intersection(self.logical_type.standard_tags)),
         ):
             warnings.warn(
                 StandardTagsChangedWarning().get_warning_message(
-                    not self.use_standard_tags, name
+                    not self.use_standard_tags,
+                    name,
                 ),
                 StandardTagsChangedWarning,
             )

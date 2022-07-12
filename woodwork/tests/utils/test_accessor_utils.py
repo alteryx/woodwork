@@ -67,7 +67,7 @@ def test_init_series_with_invalid_type(sample_df):
 def test_init_series_with_np_array(sample_series_pandas):
     series = init_series(sample_series_pandas.to_numpy())
     series2 = init_series(
-        sample_series_pandas
+        sample_series_pandas,
     )  # Sample series panda contains ['a','b','c','a']
     assert series.equals(series2)
     assert series.ww.logical_type == series2.ww.logical_type
@@ -139,12 +139,12 @@ def test_init_series_all_parameters(sample_series):
 def test_init_series_error_on_invalid_conversion(sample_series):
     if _is_dask_series(sample_series):
         pytest.xfail(
-            "Dask type conversion with astype does not fail until compute is called"
+            "Dask type conversion with astype does not fail until compute is called",
         )
     if _is_spark_series(sample_series):
         pytest.xfail(
             "Spark allows this conversion, filling values it cannot convert with NaN "
-            "and converting dtype to float."
+            "and converting dtype to float.",
         )
 
     error_message = (
@@ -199,7 +199,7 @@ def test_get_invalid_schema_message(sample_df):
 def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     schema_df = sample_df.copy()
     schema_df.ww.init(
-        logical_types={"age": "Categorical", "full_name": "PersonFullName"}
+        logical_types={"age": "Categorical", "full_name": "PersonFullName"},
     )
     schema = schema_df.ww.schema
 
@@ -218,10 +218,10 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
     # Spark backup dtypes make these checks not relevant
     if not _is_spark_dataframe(sample_df):
         incorrect_str_dtype_df = schema_df.ww.astype(
-            {"full_name": "object"}
+            {"full_name": "object"},
         )  # wont work for spark
         incorrect_categorical_dtype_df = schema_df.ww.astype(
-            {"age": "string"}
+            {"age": "string"},
         )  # wont work for spark
         assert (
             get_invalid_schema_message(incorrect_str_dtype_df, schema)
@@ -264,7 +264,7 @@ def test_get_invalid_schema_message_index_checks(sample_df):
         {
             "id": pd.Series([5, 4, 3, 2], dtype="float64"),
             "col": pd.Series(["b", "b", "b", "d"], dtype="category"),
-        }
+        },
     )
     df.ww.init(index="id")
     df_schema = df.ww.schema

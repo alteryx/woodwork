@@ -1,2 +1,2 @@
 # flake8: noqa
-from .retail import load_retail
+from woodwork.demo.retail import load_retail

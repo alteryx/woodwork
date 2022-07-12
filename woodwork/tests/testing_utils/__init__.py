@@ -1,6 +1,6 @@
 # flake8: noqa
 import pytest
-from .table_utils import (
+from woodwork.tests.testing_utils.table_utils import (
     _check_close,
     check_empty_box_plot_dict,
     dep_between_cols,

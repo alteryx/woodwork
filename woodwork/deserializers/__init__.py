@@ -1,8 +1,8 @@
-from .parquet_deserializer import ParquetDeserializer
-from .csv_deserializer import CSVDeserializer
-from .feather_deserializer import FeatherDeserializer
-from .arrow_deserializer import ArrowDeserializer
-from .orc_deserializer import OrcDeserializer
-from .pickle_deserializer import PickleDeserializer
+from woodwork.deserializers.parquet_deserializer import ParquetDeserializer
+from woodwork.deserializers.csv_deserializer import CSVDeserializer
+from woodwork.deserializers.feather_deserializer import FeatherDeserializer
+from woodwork.deserializers.arrow_deserializer import ArrowDeserializer
+from woodwork.deserializers.orc_deserializer import OrcDeserializer
+from woodwork.deserializers.pickle_deserializer import PickleDeserializer
 
-from .utils import _get_deserializer
+from woodwork.deserializers.utils import _get_deserializer
