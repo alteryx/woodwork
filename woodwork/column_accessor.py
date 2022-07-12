@@ -95,7 +95,9 @@ class WoodworkColumnAccessor:
             self._schema = schema
         else:
             logical_type = _get_column_logical_type(
-                self._series, logical_type, self._series.name,
+                self._series,
+                logical_type,
+                self._series.name,
             )
 
             if validate:
@@ -289,7 +291,9 @@ class WoodworkColumnAccessor:
                         )
                         warning_message = (
                             TypingInfoMismatchWarning().get_warning_message(
-                                attr, invalid_schema_message, "Series",
+                                attr,
+                                invalid_schema_message,
+                                "Series",
                             )
                         )
                         warnings.warn(warning_message, TypingInfoMismatchWarning)

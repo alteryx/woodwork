@@ -20,7 +20,8 @@ from woodwork.accessor_utils import (
 
 if sys.version_info.major == 3 and sys.version_info.minor == 7:  # pragma: no cover
     warnings.warn(
-        "Woodwork may not support Python 3.7 in next non-bugfix release.", FutureWarning,
+        "Woodwork may not support Python 3.7 in next non-bugfix release.",
+        FutureWarning,
     )
 
 # Call functions registered by other libraries when woodwork is imported

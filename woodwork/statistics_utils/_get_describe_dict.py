@@ -173,7 +173,8 @@ def _get_describe_dict(
                     range_len = int(values["max"]) + 1 - int(values["min"])
                     if range_len <= bins and (series % 1 == 0).all():
                         values["top_values"] = _get_numeric_value_counts_in_range(
-                            series, _range,
+                            series,
+                            _range,
                         )
             elif column.is_categorical:
                 values["top_values"] = _get_top_values_categorical(series, top_x)

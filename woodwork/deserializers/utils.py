@@ -55,7 +55,9 @@ def _get_deserializer(
     if typing_info_filename:
         try:
             typing_info = read_table_typing_information(
-                path, typing_info_filename, profile_name,
+                path,
+                typing_info_filename,
+                profile_name,
             )
         except FileNotFoundError:
             pass

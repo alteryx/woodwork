@@ -314,20 +314,27 @@ class Datetime(LogicalType):
             if _is_dask_series(series):
                 name = series.name
                 series = dd.to_datetime(
-                    series, format=self.datetime_format, errors="coerce", utc=utc,
+                    series,
+                    format=self.datetime_format,
+                    errors="coerce",
+                    utc=utc,
                 )
                 series.name = name
             elif _is_spark_series(series):
                 series = ps.Series(
                     ps.to_datetime(
-                        series.to_numpy(), format=self.datetime_format, errors="coerce",
+                        series.to_numpy(),
+                        format=self.datetime_format,
+                        errors="coerce",
                     ),
                     name=series.name,
                 )
             else:
                 try:
                     series = pd.to_datetime(
-                        series, format=self.datetime_format, utc=utc,
+                        series,
+                        format=self.datetime_format,
+                        utc=utc,
                     )
                 except (TypeError, ValueError):
                     warnings.warn(
@@ -526,7 +533,8 @@ class LatLong(LogicalType):
             series.name = name
         elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
-                _reformat_to_latlong, is_spark=True,
+                _reformat_to_latlong,
+                is_spark=True,
             )
             series = ps.from_pandas(formatted_series)
         else:
@@ -771,7 +779,9 @@ class PostalCode(LogicalType):
             Series: If return_invalid_values is True, returns invalid PostalCodes.
         """
         return _regex_validate(
-            "postal_code_inference_regex", series, return_invalid_values,
+            "postal_code_inference_regex",
+            series,
+            return_invalid_values,
         )
 
 

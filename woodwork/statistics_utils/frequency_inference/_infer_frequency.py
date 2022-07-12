@@ -90,7 +90,9 @@ def infer_frequency(
 
     if pandas_inferred_freq or not debug:
         return inference_response(
-            inferred_freq=pandas_inferred_freq, debug_obj=InferDebug(), debug=debug,
+            inferred_freq=pandas_inferred_freq,
+            debug_obj=InferDebug(),
+            debug=debug,
         )
 
     # clean observed timeseries from duplicates and NaTs
@@ -143,7 +145,8 @@ def infer_frequency(
 
     # Generate Frequency Candidates
     alias_dict = _generate_freq_candidates(
-        observed_ts_clean, window_length=window_length,
+        observed_ts_clean,
+        window_length=window_length,
     )
 
     most_likely_freq = _determine_most_likely_freq(alias_dict, threshold=threshold)

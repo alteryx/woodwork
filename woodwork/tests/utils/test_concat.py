@@ -49,7 +49,10 @@ def test_concat_cols_ww_dfs(sample_df):
     assert combined_df.ww.metadata == {"created_by": "user0"}
 
     pandas_combined_df = pd.concat(
-        [to_pandas(df1), to_pandas(df2)], axis=1, join="outer", ignore_index=False,
+        [to_pandas(df1), to_pandas(df2)],
+        axis=1,
+        join="outer",
+        ignore_index=False,
     )
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
@@ -94,7 +97,10 @@ def test_concat_cols_uninit_dfs(sample_df):
     df1.ww.init()
     df2.ww.init()
     pandas_combined_df = pd.concat(
-        [to_pandas(df1), to_pandas(df2)], axis=1, join="outer", ignore_index=False,
+        [to_pandas(df1), to_pandas(df2)],
+        axis=1,
+        join="outer",
+        ignore_index=False,
     )
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
@@ -134,7 +140,10 @@ def test_concat_cols_combo_dfs(sample_df):
     df1.ww.init()
     df2.ww.init()
     pandas_combined_df = pd.concat(
-        [to_pandas(df1), to_pandas(df2)], axis=1, join="outer", ignore_index=False,
+        [to_pandas(df1), to_pandas(df2)],
+        axis=1,
+        join="outer",
+        ignore_index=False,
     )
     assert to_pandas(combined_df).equals(pandas_combined_df)
 
@@ -511,7 +520,8 @@ def test_concat_cols_row_order(sample_df):
     # spark does not preserve index order in the same way
     if _is_spark_dataframe(sample_df):
         pd.testing.assert_index_equal(
-            to_pandas(combined_df.index), pd.Index([0, 1, 2, 3]),
+            to_pandas(combined_df.index),
+            pd.Index([0, 1, 2, 3]),
         )
     else:
         pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))

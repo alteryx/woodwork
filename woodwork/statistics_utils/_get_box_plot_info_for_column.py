@@ -8,7 +8,9 @@ ps = import_or_none("pyspark.pandas")
 
 
 def _get_box_plot_info_for_column(
-    series, quantiles=None, include_indices_and_values=True,
+    series,
+    quantiles=None,
+    include_indices_and_values=True,
 ):
     """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.

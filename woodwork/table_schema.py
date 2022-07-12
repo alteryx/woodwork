@@ -150,7 +150,10 @@ class TableSchema(object):
         columns = ["Logical Type", "Semantic Tag(s)"]
 
         df = pd.DataFrame.from_dict(
-            typing_info, orient="index", columns=columns, dtype="object",
+            typing_info,
+            orient="index",
+            columns=columns,
+            dtype="object",
         )
         df.index.name = "Column"
         return df
@@ -507,7 +510,8 @@ class TableSchema(object):
             if isinstance(selector, str):
                 # Convert possible string to LogicalType - unregistered LogicalTypes return None
                 maybe_ltype = ww.type_system.str_to_logical_type(
-                    selector, raise_error=False,
+                    selector,
+                    raise_error=False,
                 )
             # Get the class - unregistered LogicalTypes return LogicalTypeMetaClass
             maybe_ltype_class = _get_ltype_class(maybe_ltype)

@@ -61,7 +61,8 @@ def is_public_method(class_to_check, name):
 def is_property(class_to_check, name):
     """Determine if the specified name is a property on a class"""
     if hasattr(class_to_check, name) and isinstance(
-        getattr(class_to_check, name), property,
+        getattr(class_to_check, name),
+        property,
     ):
         return True
     return False
@@ -83,7 +84,8 @@ def assert_schema_equal(left_schema, right_schema, deep=True):
     assert set(left_schema.columns.keys()) == set(right_schema.columns.keys())
     for col_name in left_schema.columns:
         assert left_schema.columns[col_name].__eq__(
-            right_schema.columns[col_name], deep=deep,
+            right_schema.columns[col_name],
+            deep=deep,
         )
     if deep:
         assert left_schema.metadata == right_schema.metadata

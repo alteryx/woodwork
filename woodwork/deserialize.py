@@ -56,6 +56,11 @@ def read_woodwork_table(
         DataFrame: DataFrame with Woodwork typing information initialized.
     """
     deserializer = _get_deserializer(
-        path, filename, data_subdirectory, typing_info_filename, profile_name, format,
+        path,
+        filename,
+        data_subdirectory,
+        typing_info_filename,
+        profile_name,
+        format,
     )
     return deserializer.deserialize(profile_name, validate, **kwargs)

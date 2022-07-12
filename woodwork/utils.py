@@ -572,7 +572,11 @@ class CallbackCaller:
             elapsed_time = timer() - self.start_time
             new_progress = self.current_progress + progress_increment
             self.callback(
-                progress_increment, new_progress, self.total, self.unit, elapsed_time,
+                progress_increment,
+                new_progress,
+                self.total,
+                self.unit,
+                elapsed_time,
             )
             self.current_progress = new_progress
 
@@ -617,7 +621,8 @@ def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
 
         replaced_series = df[col].replace(r"^\s*$", replace_val, regex=True)
         replaced_series = replaced_series.replace(
-            ww.config.get_option("nan_values"), replace_val,
+            ww.config.get_option("nan_values"),
+            replace_val,
         )
         df[col] = replaced_series
 

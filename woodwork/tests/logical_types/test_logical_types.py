@@ -54,7 +54,8 @@ def test_ordinal_order_errors():
     series = pd.Series([1, 2, 3]).astype("category")
 
     with pytest.raises(
-        TypeError, match="Order values must be specified in a list or tuple",
+        TypeError,
+        match="Order values must be specified in a list or tuple",
     ):
         Ordinal(order="not_valid").transform(series)
 

@@ -358,7 +358,8 @@ def test_dependence_extra_stats(measure):
         assert "measure_used" in dep_df_extra.columns
         # recalculate max to compare
         both_dep_df = df_nans.ww.dependence(
-            measures=["mutual_info", "pearson"], min_shared=3,
+            measures=["mutual_info", "pearson"],
+            min_shared=3,
         )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
@@ -873,7 +874,8 @@ def test_describe_accessor_method(describe_df):
             )
             df = pd.DataFrame({"col": timedelta_data})
             df.ww.init(
-                logical_types={"col": ltype}, semantic_tags={"col": "custom_tag"},
+                logical_types={"col": ltype},
+                semantic_tags={"col": "custom_tag"},
             )
             stats_df = df.ww.describe()
             assert isinstance(stats_df, pd.DataFrame)
@@ -1223,7 +1225,8 @@ def test_describe_dict_extra_stats(describe_df):
     "_get_numeric_value_counts_in_range",
 )
 def test_describe_dict_extra_stats_overflow_range(
-    mock_get_numeric_value_counts_in_range, describe_df,
+    mock_get_numeric_value_counts_in_range,
+    describe_df,
 ):
     df = pd.DataFrame(
         {
@@ -1545,13 +1548,15 @@ def test_box_plot_on_non_numeric_col(outliers_df):
     error = "Cannot calculate box plot statistics for non-numeric column"
 
     non_numeric_series = init_series(
-        outliers_df["non_numeric"], logical_type="Categorical",
+        outliers_df["non_numeric"],
+        logical_type="Categorical",
     )
     with pytest.raises(TypeError, match=error):
         non_numeric_series.ww.box_plot_dict()
 
     wrong_dtype_series = init_series(
-        outliers_df["has_outliers"], logical_type="Categorical",
+        outliers_df["has_outliers"],
+        logical_type="Categorical",
     )
     with pytest.raises(TypeError, match=error):
         wrong_dtype_series.ww.box_plot_dict()
@@ -1569,13 +1574,15 @@ def test_box_plot_with_fully_null_col(outliers_df):
     check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_int_series = init_series(
-        outliers_df["nans"], logical_type="IntegerNullable",
+        outliers_df["nans"],
+        logical_type="IntegerNullable",
     )
     box_plot_dict = fully_null_int_series.ww.box_plot_dict()
     check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_categorical_series = init_series(
-        outliers_df["nans"], logical_type="Categorical",
+        outliers_df["nans"],
+        logical_type="Categorical",
     )
     error = "Cannot calculate box plot statistics for non-numeric column"
     with pytest.raises(TypeError, match=error):
@@ -1747,7 +1754,9 @@ def test_box_plot_optional_return_values(outliers_df):
     [{}, {"debug": True}, {"temporal_columns": ["2D_freq", "3M_freq"]}],
 )
 def test_infer_temporal_frequencies(
-    infer_frequency, expected_call_args, datetime_freqs_df_pandas,
+    infer_frequency,
+    expected_call_args,
+    datetime_freqs_df_pandas,
 ):
 
     # TODO: Add support for Dask and Spark DataFrames

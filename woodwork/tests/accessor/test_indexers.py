@@ -186,7 +186,9 @@ def test_loc_indices_column(sample_df):
 
 def test_indexer_uses_standard_tags(sample_df):
     sample_df.ww.init(
-        index="id", time_index="age", use_standard_tags={"id": False, "age": True},
+        index="id",
+        time_index="age",
+        use_standard_tags={"id": False, "age": True},
     )
     sliced_index = sample_df.ww.loc[:, "id"]
     assert sliced_index.ww.semantic_tags == {"index"}

@@ -49,7 +49,9 @@ def test_accessor_init(sample_series):
 
 def test_accessor_init_with_schema(sample_series):
     sample_series.ww.init(
-        semantic_tags={"test_tag"}, description="this is a column", origin="base",
+        semantic_tags={"test_tag"},
+        description="this is a column",
+        origin="base",
     )
     schema = sample_series.ww.schema
 
@@ -75,7 +77,9 @@ def test_accessor_init_with_schema(sample_series):
 
 def test_accessor_init_with_schema_errors(sample_series):
     sample_series.ww.init(
-        semantic_tags={"test_tag"}, description="this is a column", origin="base",
+        semantic_tags={"test_tag"},
+        description="this is a column",
+        origin="base",
     )
     schema = sample_series.ww.schema
 
@@ -103,7 +107,9 @@ def test_accessor_init_with_schema_errors(sample_series):
 
 def test_accessor_with_schema_parameter_warning(sample_series):
     sample_series.ww.init(
-        semantic_tags={"test_tag"}, description="this is a column", origin="base",
+        semantic_tags={"test_tag"},
+        description="this is a column",
+        origin="base",
     )
     schema = sample_series.ww.schema
 
@@ -378,7 +384,9 @@ def test_does_not_add_standard_tags():
     series = pd.Series([1.1, 2, 3])
     semantic_tags = "custom_tag"
     series.ww.init(
-        logical_type=Double, semantic_tags=semantic_tags, use_standard_tags=False,
+        logical_type=Double,
+        semantic_tags=semantic_tags,
+        use_standard_tags=False,
     )
     assert series.ww.semantic_tags == {"custom_tag"}
 
@@ -505,7 +513,8 @@ def test_series_methods_on_accessor_returning_series_valid_schema(sample_series)
     assert replace_series.ww._schema == sample_series.ww._schema
     assert replace_series.ww._schema is not sample_series.ww._schema
     pd.testing.assert_series_equal(
-        to_pandas(replace_series), to_pandas(sample_series.replace("a", "d")),
+        to_pandas(replace_series),
+        to_pandas(sample_series.replace("a", "d")),
     )
 
 
@@ -585,7 +594,8 @@ def test_series_methods_on_accessor_other_returns(sample_series):
 
 def test_series_methods_on_accessor_new_schema_object(sample_series):
     sample_series.ww.init(
-        semantic_tags=["new_tag", "tag2"], metadata={"important_keys": [1, 2, 3]},
+        semantic_tags=["new_tag", "tag2"],
+        metadata={"important_keys": [1, 2, 3]},
     )
 
     copied_series = sample_series.ww.copy()
@@ -704,7 +714,8 @@ def test_latlong_formatting_with_init_series(latlongs):
         new_series = init_series(series, logical_type=LatLong)
         assert isinstance(new_series.ww.logical_type, LatLong)
         pd.testing.assert_series_equal(
-            to_pandas(new_series), to_pandas(expected_series),
+            to_pandas(new_series),
+            to_pandas(expected_series),
         )
         assert expected_series.ww._schema == new_series.ww._schema
 
@@ -913,7 +924,8 @@ def test_latlong_validation_methods_called_init(mock_validate, latlong_df_pandas
 
 @patch("woodwork.column_accessor._validate_schema")
 def test_validation_methods_called_init_with_schema(
-    mock_validate_schema, sample_series,
+    mock_validate_schema,
+    sample_series,
 ):
     assert not mock_validate_schema.called
     schema_series = sample_series.copy()

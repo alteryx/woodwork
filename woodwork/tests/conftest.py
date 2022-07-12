@@ -103,7 +103,8 @@ def sample_df_dask(sample_df_pandas):
 @pytest.fixture()
 def sample_df_spark(sample_df_pandas):
     ps = pytest.importorskip(
-        "pyspark.pandas", reason="Pyspark pandas not installed, skipping",
+        "pyspark.pandas",
+        reason="Pyspark pandas not installed, skipping",
     )
     return ps.from_pandas(sample_df_pandas)
 
@@ -158,7 +159,9 @@ def datetime_freqs_df_pandas():
             "3M_freq": pd.date_range(start="2015-01-01", freq="3M", periods=10),
             "3B_no_freq": pd.date_range(start="2015-01-01", freq="3B", periods=10),
             "1d_skipped_one_freq": pd.date_range(
-                start="2020-01-01", end="2020-01-11", freq="1D",
+                start="2020-01-01",
+                end="2020-01-11",
+                freq="1D",
             ).drop("2020-01-04"),
             "3M_one_nan": list(
                 pd.date_range(start="2015-01-01", freq="3M", periods=10).drop(
@@ -167,7 +170,9 @@ def datetime_freqs_df_pandas():
             )
             + [None],
             "2d_timedelta": pd.date_range(
-                start="2020-01-01", end="2020-01-20", freq="2D",
+                start="2020-01-01",
+                end="2020-01-20",
+                freq="2D",
             )
             - pd.Timestamp("2020-01-01"),
             "ints": range(10),
@@ -241,7 +246,8 @@ def sample_series(request):
 @pytest.fixture()
 def sample_series_pandas():
     return pd.Series(
-        ["a", "b", "c"] + 10 * ["a", "a", "a"], name="sample_series",
+        ["a", "b", "c"] + 10 * ["a", "a", "a"],
+        name="sample_series",
     ).astype("category")
 
 
@@ -271,7 +277,8 @@ def sample_datetime_series(request):
 @pytest.fixture()
 def sample_datetime_series_pandas():
     return pd.Series(
-        [pd.to_datetime("2020-09-01")] * 4, name="sample_datetime_series",
+        [pd.to_datetime("2020-09-01")] * 4,
+        name="sample_datetime_series",
     ).astype("object")
 
 
@@ -629,7 +636,8 @@ def empty_df(request):
 def small_df_pandas():
     return pd.DataFrame(
         pd.Series(
-            [pd.to_datetime("2020-09-01")] * 4, name="sample_datetime_series",
+            [pd.to_datetime("2020-09-01")] * 4,
+            name="sample_datetime_series",
         ).astype("object"),
     )
 
@@ -1024,7 +1032,8 @@ def postal_code_numeric_series_dask(postal_code_numeric_series_pandas):
 @pytest.fixture()
 def postal_code_numeric_series_spark(postal_code_numeric_series_pandas):
     ps = pytest.importorskip(
-        "pyspark.pandas", reason="Pyspark pandas not installed, skipping",
+        "pyspark.pandas",
+        reason="Pyspark pandas not installed, skipping",
     )
     return ps.from_pandas(postal_code_numeric_series_pandas)
 

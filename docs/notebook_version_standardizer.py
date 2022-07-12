@@ -39,7 +39,9 @@ def _check_execution_and_output(notebook):
     with open(notebook, "r") as f:
         source = json.load(f)
     for cells in source["cells"]:
-        if cells["cell_type"] == "code" and (cells["execution_count"] is not None or cells['outputs']!= []):
+        if cells["cell_type"] == "code" and (
+            cells["execution_count"] is not None or cells["outputs"] != []
+        ):
             return False
     return True
 
@@ -110,7 +112,11 @@ def cli():
 @cli.command()
 def standardize():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells, versions = _get_notebooks_with_executions_and_empty(notebooks)
+    (
+        executed_notebooks,
+        empty_cells,
+        versions,
+    ) = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         _standardize_outputs(executed_notebooks)
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
@@ -137,7 +143,11 @@ def standardize():
 @cli.command()
 def check_execution():
     notebooks = _get_ipython_notebooks(DOCS_PATH)
-    executed_notebooks, empty_cells, versions = _get_notebooks_with_executions_and_empty(notebooks)
+    (
+        executed_notebooks,
+        empty_cells,
+        versions,
+    ) = _get_notebooks_with_executions_and_empty(notebooks)
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
         executed_notebooks = "\n".join(executed_notebooks)
@@ -159,6 +169,7 @@ def check_execution():
             f"The following notebooks have the wrong Python version: \n {versions}\n"
             "Please run make lint-fix to fix this.",
         )
+
 
 if __name__ == "__main__":
     cli()

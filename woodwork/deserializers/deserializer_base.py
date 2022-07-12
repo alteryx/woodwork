@@ -62,7 +62,8 @@ class Deserializer:
 
             ltype_metadata = col["logical_type"]
             ltype = ww.type_system.str_to_logical_type(
-                ltype_metadata["type"], params=ltype_metadata["parameters"],
+                ltype_metadata["type"],
+                params=ltype_metadata["parameters"],
             )
 
             tags = col["semantic_tags"]
@@ -126,7 +127,8 @@ class Deserializer:
             with tarfile.open(str(tar_filepath)) as tar:
                 tar.extractall(path=tmpdir)
             self.read_path = os.path.join(
-                tmpdir, self.typing_info["loading_info"]["location"],
+                tmpdir,
+                self.typing_info["loading_info"]["location"],
             )
             return self.read_from_local_path()
 
@@ -175,7 +177,8 @@ def _check_schema_version(saved_version_str):
         elif int(c_num) < int(s_num):
             warnings.warn(
                 UpgradeSchemaWarning().get_warning_message(
-                    saved_version_str, SCHEMA_VERSION,
+                    saved_version_str,
+                    SCHEMA_VERSION,
                 ),
                 UpgradeSchemaWarning,
             )

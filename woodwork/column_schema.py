@@ -79,7 +79,9 @@ class ColumnSchema(object):
 
     def _get_column_tags(self, semantic_tags, validate):
         semantic_tags = _convert_input_to_set(
-            semantic_tags, error_language="semantic_tags", validate=validate,
+            semantic_tags,
+            error_language="semantic_tags",
+            validate=validate,
         )
 
         if self.use_standard_tags:
@@ -193,7 +195,8 @@ class ColumnSchema(object):
         ):
             warnings.warn(
                 StandardTagsChangedWarning().get_warning_message(
-                    not self.use_standard_tags, name,
+                    not self.use_standard_tags,
+                    name,
                 ),
                 StandardTagsChangedWarning,
             )

@@ -89,7 +89,8 @@ def test_convert_input_to_set():
     assert semantic_tags_from_list == {"index", "numeric", "category"}
 
     semantic_tags_from_set = _convert_input_to_set(
-        {"index", "numeric", "category"}, "include parameter",
+        {"index", "numeric", "category"},
+        "include parameter",
     )
     assert semantic_tags_from_set == {"index", "numeric", "category"}
 
@@ -425,11 +426,13 @@ def test_get_valid_mi_types():
 
 def test_get_column_logical_type(sample_series):
     assert isinstance(
-        _get_column_logical_type(sample_series, None, "col_name"), Categorical,
+        _get_column_logical_type(sample_series, None, "col_name"),
+        Categorical,
     )
 
     assert isinstance(
-        _get_column_logical_type(sample_series, Datetime, "col_name"), Datetime,
+        _get_column_logical_type(sample_series, Datetime, "col_name"),
+        Datetime,
     )
 
 

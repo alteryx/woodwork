@@ -86,7 +86,9 @@ def generate_pandas_inferrable():
                     {
                         "expected_infer_freq": pd_inferred_freq,
                         "dates": pad_datetime_series(
-                            dates, freq=freq, pad_end=TAIL_RANGE_LEN,
+                            dates,
+                            freq=freq,
+                            pad_end=TAIL_RANGE_LEN,
                         )[1:],
                     },
                 )
@@ -232,7 +234,10 @@ def case0():
     dates = [f"2005-01-01T{d}Z" for d in dates]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -271,7 +276,10 @@ def case1():
     dates = [f"2005-01-01T{d}Z" for d in dates]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -309,7 +317,10 @@ def case2():
     dates = [f"2005-01-01T{d}Z" for d in dates]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -346,7 +357,10 @@ def case3():
     dates = [f"2005-01-01T{d}Z" for d in dates]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -386,7 +400,10 @@ def case4():
     dates = [f"2005-01-01T{d}Z" for d in dates]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -454,7 +471,10 @@ def case6():
     ]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -533,7 +553,10 @@ def case8():
     ]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -572,7 +595,10 @@ def case9():
     ]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -610,7 +636,10 @@ def case10():
     ]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {
@@ -656,7 +685,10 @@ def case11():
     ]
 
     dates = pad_datetime_series(
-        dates, freq="H", pad_start=HEAD_RANGE_LEN, pad_end=TAIL_RANGE_LEN,
+        dates,
+        freq="H",
+        pad_start=HEAD_RANGE_LEN,
+        pad_end=TAIL_RANGE_LEN,
     )
 
     expected_debug_obj = {

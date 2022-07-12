@@ -315,7 +315,10 @@ def test_unserializable_table(sample_df, tmpdir):
     error = "Woodwork table is not json serializable. Check table and column metadata for values that may not be serializable."
     with pytest.raises(TypeError, match=error):
         sample_df.ww.to_disk(
-            str(tmpdir), format="csv", encoding="utf-8", engine="python",
+            str(tmpdir),
+            format="csv",
+            encoding="utf-8",
+            engine="python",
         )
 
 
@@ -393,7 +396,10 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     no_standard_tags_df.ww.init(use_standard_tags=False)
 
     no_standard_tags_df.ww.to_disk(
-        str(tmpdir), format="csv", encoding="utf-8", engine="python",
+        str(tmpdir),
+        format="csv",
+        encoding="utf-8",
+        engine="python",
     )
     deserialized_no_tags_df = read_woodwork_table(str(tmpdir))
     shutil.rmtree(str(tmpdir))
@@ -402,7 +408,10 @@ def test_to_csv_use_standard_tags(sample_df, tmpdir):
     standard_tags_df.ww.init(use_standard_tags=True)
 
     standard_tags_df.ww.to_disk(
-        str(tmpdir), format="csv", encoding="utf-8", engine="python",
+        str(tmpdir),
+        format="csv",
+        encoding="utf-8",
+        engine="python",
     )
     deserialized_tags_df = read_woodwork_table(str(tmpdir))
     shutil.rmtree(str(tmpdir))
@@ -426,7 +435,8 @@ def test_deserialize_handles_indexes(sample_df, tmpdir):
 
 
 @pytest.mark.parametrize(
-    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
+    "file_format",
+    ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
 )
 def test_to_disk(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
@@ -467,7 +477,8 @@ def test_to_disk(sample_df, tmpdir, file_format):
 
 
 @pytest.mark.parametrize(
-    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
+    "file_format",
+    ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
 )
 def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
@@ -500,11 +511,15 @@ def test_to_disk_custom_data_filename(sample_df, tmpdir, file_format):
     if error_msg:
         with pytest.raises(error_type, match=error_msg):
             sample_df.ww.to_disk(
-                path=str(tmpdir), format=file_format, filename=data_filename,
+                path=str(tmpdir),
+                format=file_format,
+                filename=data_filename,
             )
     else:
         sample_df.ww.to_disk(
-            path=str(tmpdir), format=file_format, filename=data_filename,
+            path=str(tmpdir),
+            format=file_format,
+            filename=data_filename,
         )
         assert os.path.isfile(os.path.join(tmpdir, "data", filename_to_check))
         deserialized_df = read_woodwork_table(
@@ -542,11 +557,14 @@ def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
             )
     else:
         sample_df.ww.to_disk(
-            str(tmpdir), format=file_format, typing_info_filename=custom_typing_filename,
+            str(tmpdir),
+            format=file_format,
+            typing_info_filename=custom_typing_filename,
         )
         assert os.path.isfile(os.path.join(tmpdir, custom_typing_filename))
         deserialized_df = read_woodwork_table(
-            str(tmpdir), typing_info_filename=custom_typing_filename,
+            str(tmpdir),
+            typing_info_filename=custom_typing_filename,
         )
         pd.testing.assert_frame_equal(
             to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
@@ -556,11 +574,15 @@ def test_to_disk_custom_typing_filename(sample_df, tmpdir, file_format):
 
 
 @pytest.mark.parametrize(
-    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
+    "file_format",
+    ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
 )
 @pytest.mark.parametrize("data_subdirectory", ["custom_data_directory", None])
 def test_to_disk_custom_data_subdirectory(
-    sample_df, tmpdir, file_format, data_subdirectory,
+    sample_df,
+    tmpdir,
+    file_format,
+    data_subdirectory,
 ):
     if file_format in ("arrow", "feather") and not isinstance(sample_df, pd.DataFrame):
         pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
@@ -577,13 +599,17 @@ def test_to_disk_custom_data_subdirectory(
     if error_msg:
         with pytest.raises(error_type, match=error_msg):
             sample_df.ww.to_disk(
-                str(tmpdir), format=file_format, data_subdirectory=data_subdirectory,
+                str(tmpdir),
+                format=file_format,
+                data_subdirectory=data_subdirectory,
             )
         shutil.rmtree(str(tmpdir))
 
     else:
         sample_df.ww.to_disk(
-            str(tmpdir), format=file_format, data_subdirectory=data_subdirectory,
+            str(tmpdir),
+            format=file_format,
+            data_subdirectory=data_subdirectory,
         )
         if data_subdirectory:
             assert os.path.exists(os.path.join(tmpdir, data_subdirectory))
@@ -610,7 +636,8 @@ def test_to_disk_custom_data_subdirectory(
 
 
 @pytest.mark.parametrize(
-    "file_format", ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
+    "file_format",
+    ["csv", "pickle", "parquet", "arrow", "feather", "orc"],
 )
 def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(latlong_df, pd.DataFrame):
@@ -640,7 +667,9 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
                 filename = "data.parquet"
 
         deserialized_df = read_woodwork_table(
-            str(tmpdir), filename=filename, format=format,
+            str(tmpdir),
+            filename=filename,
+            format=format,
         )
 
         pd.testing.assert_frame_equal(
@@ -704,14 +733,17 @@ def test_to_disk_parquet_warns_if_typing_info_file_specified(sample_df, tmpdir):
     message = "Typing info filename has been ignored. Typing information will be stored in parquet file header."
     with pytest.warns(ParametersIgnoredWarning, match=message):
         sample_df.ww.to_disk(
-            str(tmpdir), format="parquet", typing_info_filename="woodwork.json",
+            str(tmpdir),
+            format="parquet",
+            typing_info_filename="woodwork.json",
         )
 
 
 def test_to_disk_parquet_saves_custom_metadata_as_expected(sample_df, tmpdir):
     sample_df.ww.init(index="id")
     sample_df.ww.set_types(
-        logical_types={"categorical": "CountryCode"}, semantic_tags={"age": "age"},
+        logical_types={"categorical": "CountryCode"},
+        semantic_tags={"age": "age"},
     )
     sample_df.ww.to_disk(str(tmpdir), format="parquet")
     expected_typing_info = typing_info_to_dict(sample_df)
@@ -849,7 +881,9 @@ def test_serialize_s3_parquet(sample_df, s3_client, s3_bucket, profile_name):
     sample_df.ww.to_disk(TEST_S3_URL, format="parquet", profile_name=profile_name)
     make_public(s3_client, s3_bucket)
     deserialized_df = read_woodwork_table(
-        TEST_S3_URL, filename="data.parquet", profile_name=profile_name,
+        TEST_S3_URL,
+        filename="data.parquet",
+        profile_name=profile_name,
     )
 
     pd.testing.assert_frame_equal(

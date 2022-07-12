@@ -46,7 +46,8 @@ def test_inferable_temporal_frequencies_missing(freq, error_range):
     }
 
     inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=dates_observed, debug=True,
+        observed_ts=dates_observed,
+        debug=True,
     )
 
     assert inferred_freq is None
@@ -95,7 +96,8 @@ def test_inferable_temporal_frequencies_duplicates(freq, error_range):
     }
 
     inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=dates_observed, debug=True,
+        observed_ts=dates_observed,
+        debug=True,
     )
 
     assert inferred_freq is None
@@ -140,7 +142,8 @@ def test_inferable_temporal_frequencies_extra(freq, error_range):
     }
 
     inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=dates_observed, debug=True,
+        observed_ts=dates_observed,
+        debug=True,
     )
 
     assert inferred_freq is None
@@ -154,7 +157,8 @@ def test_inferable_temporal_frequencies_cases(case):
     expected_debug_obj = case["expected_debug_obj"]
 
     inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=input_series, debug=True,
+        observed_ts=input_series,
+        debug=True,
     )
 
     assert inferred_freq is None
@@ -179,7 +183,8 @@ def test_error_messages(case):
     expected_debug_obj = case["expected_debug_obj"]
 
     inferred_freq, actual_debug_obj = infer_frequency(
-        observed_ts=input_series, debug=True,
+        observed_ts=input_series,
+        debug=True,
     )
 
     assert inferred_freq is None

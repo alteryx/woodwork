@@ -97,7 +97,10 @@ INFERENCE_SAMPLE_SIZE = 100000
 
 class TypeSystem(object):
     def __init__(
-        self, inference_functions=None, relationships=None, default_type=DEFAULT_TYPE,
+        self,
+        inference_functions=None,
+        relationships=None,
+        default_type=DEFAULT_TYPE,
     ):
         """Create a new TypeSystem object. LogicalTypes that are present in the keys of
         the inference_functions dictionary will be considered registered LogicalTypes.
@@ -197,7 +200,8 @@ class TypeSystem(object):
         if isinstance(logical_type, str):
             logical_type = self.str_to_logical_type(logical_type)
         self._validate_type_input(
-            logical_type=logical_type, inference_function=inference_function,
+            logical_type=logical_type,
+            inference_function=inference_function,
         )
         self.inference_functions[logical_type] = inference_function
 
@@ -265,7 +269,10 @@ class TypeSystem(object):
         return depth
 
     def _validate_type_input(
-        self, logical_type=None, inference_function=None, parent=None,
+        self,
+        logical_type=None,
+        inference_function=None,
+        parent=None,
     ):
         if logical_type and logical_type not in LogicalType.__subclasses__():
             raise TypeError("logical_type must be a valid LogicalType")
