@@ -93,10 +93,8 @@ def boolean_nullable_func(series):
                 {False},
             ]:
                 return True
-        except TypeError as te:  # Necessary to check for non-hashable values because of object dtype consideration
-            te_msg = str(te)
-            if "unhashable type" in te_msg:
-                return False
+        except TypeError:  # Necessary to check for non-hashable values because of object dtype consideration
+            return False
     return False
 
 

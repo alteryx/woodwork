@@ -55,7 +55,7 @@ def test_accessor_override_default_function(sample_df):
             return True
         return False
 
-    # Update functions to cause 'age' to be recognized as Double instead fo Integer
+    # Update functions to cause 'is_registered' to be recognized as Double instead fo BooleanNullable
     ww.type_system.update_inference_function(
         "Double",
         inference_function=new_double_func,

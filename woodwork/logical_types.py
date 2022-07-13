@@ -835,7 +835,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
             raise TypeValidationError(info)
 
 
-def _replace_nans(series):
+def _replace_nans(series: pd.Series) -> pd.Series:
     """
     Replaces empty string values, string representations of NaN values ("nan", "<NA>"), and NaN equivalents
     with np.nan or pd.NA depending on column dtype.
