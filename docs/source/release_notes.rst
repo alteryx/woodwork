@@ -15,8 +15,8 @@ Release Notes
 
 v0.17.0 July 14, 2022
 =====================
-  .. warning::
-          This release of Woodwork will not support Python 3.7
+    .. warning::
+            This release of Woodwork will not support Python 3.7
 
     * Enhancements
         * Added ability to null invalid values for ``Double`` logical type (:pr:`1449`)
