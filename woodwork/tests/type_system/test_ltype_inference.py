@@ -120,7 +120,9 @@ def test_categorical_inference(categories):
     dtypes = ["object", "string", "category"]
     if _is_spark_series(categories[0]):
         dtypes = get_spark_dtypes(dtypes)
-    for series in categories:
+    for ind, series in enumerate(categories):
+        if ind == len(categories) - 1:
+            dtypes = ["string", "category"]
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Categorical)
@@ -234,10 +236,12 @@ def test_unknown_inference(strings):
 
 def test_unknown_inference_all_null(nulls):
     dtypes = ["object", "string", "category", "datetime64[ns]"]
-    if _is_spark_series(nulls[0]):
-        dtypes = get_spark_dtypes(dtypes)
 
-    for series in nulls:
+    for ind, series in enumerate(nulls):
+        if ind == len(nulls) - 1:
+            dtypes = ["object", "string", "category"]
+        if _is_spark_series(nulls[0]):
+            dtypes = get_spark_dtypes(dtypes)
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             inferred_type.transform(series)

@@ -15,7 +15,9 @@ Future Release
         * Added ability to null invalid values for ``AgeFractional`` and ``AgeNullable`` logical types (:pr:`1462`)
         * Added ability to null invalid values for ``LatLong`` logical type (:pr:`1465`)
         * Added ability to null invalid values for ``PostalCode`` logical type (US only) (:pr:`1467`)
+        * Added smarter inference for ``IntegerNullable`` and ``BooleanNullable`` types (:pr:`1458`)
     * Fixes
+        * Fixed inference of all null string values as ``Unknown`` instead of ``Datetime`` (:pr:`1458`)
     * Changes
         * Set the minimum acceptable version of pandas to ``1.4.0`` for woodwork and ``1.4.3`` for spark add-on (:pr:`1461`)
         * Dropped support for Python 3.7 (:pr:`1461`)

@@ -674,8 +674,8 @@ def test_int_dtype_inference_on_init():
     df.ww.init()
 
     assert df["ints_no_nans"].dtype == "int64"
-    assert df["ints_nan"].dtype == "float64"
-    assert df["ints_NA"].dtype == "category"
+    assert df["ints_nan"].dtype == "Int64"
+    assert df["ints_NA"].dtype == "Int64"
     assert df["ints_NA_specified"].dtype == "Int64"
 
 
@@ -692,8 +692,8 @@ def test_bool_dtype_inference_on_init():
     df.ww.init()
 
     assert df["bools_no_nans"].dtype == "bool"
-    assert df["bool_nan"].dtype == "category"
-    assert df["bool_NA"].dtype == "category"
+    assert df["bool_nan"].dtype == "boolean"
+    assert df["bool_NA"].dtype == "boolean"
     assert df["bool_NA_specified"].dtype == "boolean"
 
 
@@ -729,7 +729,7 @@ def test_float_dtype_inference_on_init():
 
     assert df["floats_no_nans"].dtype == "float64"
     assert df["floats_nan"].dtype == "float64"
-    assert df["floats_NA"].dtype == "category"
+    assert df["floats_NA"].dtype == "float64"
     assert df["floats_nan_specified"].dtype == "float64"
 
 
@@ -1055,20 +1055,6 @@ def test_sets_datetime64_dtype_on_init():
 
 def test_invalid_dtype_casting():
     column_name = "test_series"
-
-    # Cannot cast a column with pd.NA to Double
-    series = pd.Series([1.1, pd.NA, 3], name=column_name)
-    ltypes = {
-        column_name: Double,
-    }
-
-    err_msg = (
-        "Error converting datatype for test_series from type object to type "
-        "float64. Please confirm the underlying data is consistent with logical type Double."
-    )
-    df = pd.DataFrame(series)
-    with pytest.raises(TypeConversionError, match=err_msg):
-        df.ww.init(logical_types=ltypes)
 
     # Cannot cast Datetime to Double
     df = pd.DataFrame({column_name: ["2020-01-01", "2020-01-02", "2020-01-03"]})
@@ -3022,7 +3008,7 @@ def test_infer_missing_logical_types_force_infer(sample_df):
         force_logical_types,
         existing_logical_types,
     )
-    assert parsed_logical_types["age"] == Double()
+    assert isinstance(parsed_logical_types["age"], IntegerNullable)
 
 
 def test_validate_unique_index_with_partial_schema():

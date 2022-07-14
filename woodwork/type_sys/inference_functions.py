@@ -41,7 +41,7 @@ def categorical_func(series):
 
 def integer_func(series):
     if integer_nullable_func(series) and not series.isnull().any():
-        return True
+        return all(series.mod(1).eq(0))
     return False
 
 
@@ -52,6 +52,11 @@ def integer_nullable_func(series):
             return not _is_categorical_series(series, threshold)
         else:
             return True
+    elif pdtypes.is_float_dtype(series.dtype):
+        if not series.isnull().any():
+            return False
+        series_no_null = series.dropna()
+        return all(series_no_null.mod(1).eq(0))
 
     return False
 
@@ -78,6 +83,18 @@ def boolean_nullable_func(series):
         series.dtype,
     ):
         return True
+    elif pdtypes.is_object_dtype(series.dtype):
+        series_no_null = series.dropna()
+        try:
+            series_no_null_unq = set(series_no_null)
+            if series_no_null_unq in [
+                {False, True},
+                {True},
+                {False},
+            ]:
+                return True
+        except TypeError:  # Necessary to check for non-hashable values because of object dtype consideration
+            return False
     return False
 
 

@@ -12,6 +12,7 @@ import woodwork as ww
 from woodwork.exceptions import TypeValidationError
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
+
 type_to_read_func_map = {
     "csv": pd.read_csv,
     "text/csv": pd.read_csv,
@@ -143,6 +144,8 @@ def read_file(
     Returns:
         pd.DataFrame: DataFrame created from the specified file with Woodwork typing information initialized.
     """
+    from woodwork.logical_types import _replace_nans
+
     if content_type is None:
         inferred_type, _ = guess_type(filepath)
         if inferred_type is None:
@@ -176,7 +179,7 @@ def read_file(
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
 
     if replace_nan:
-        dataframe = _replace_nan_strings(dataframe)
+        dataframe = dataframe.apply(_replace_nans)
 
     dataframe.ww.init(
         name=name,
@@ -603,35 +606,11 @@ def _infer_datetime_format(dates, n=100):
     return mode_fmt
 
 
-def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
-    """Replaces empty string values and string representations of
-    NaN values ("nan", "<NA>") with np.nan or pd.NA depending on
-    column dtype."""
-    df = df.fillna(value=np.nan)
-
-    for col, dtype in df.dtypes.items():
-        replace_val = np.nan
-        if str(dtype) == "boolean":
-            # All replace calls below fail with boolean dtype
-            # but boolean cols cannot contain strings to begin with.
-            continue
-        elif str(dtype) == "string":
-            # Must use pd.NA as replacement value for string dtype
-            replace_val = pd.NA
-
-        replaced_series = df[col].replace(r"^\s*$", replace_val, regex=True)
-        replaced_series = replaced_series.replace(
-            ww.config.get_option("nan_values"),
-            replace_val,
-        )
-        df[col] = replaced_series
-
-    return df
-
-
 def _parse_latlong(latlong):
-    nan_values = [x for x in ww.config.get_option("nan_values") if len(x)]
-    nan_values = "|".join(nan_values)
+    nan_values_strs = [
+        x for x in ww.config.get_option("nan_values") if isinstance(x, str) and len(x)
+    ]
+    nan_values = "|".join(nan_values_strs)
 
     latlong = re.sub(nan_values, "None", latlong)
 

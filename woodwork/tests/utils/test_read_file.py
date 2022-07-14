@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
+from woodwork.logical_types import _replace_nans
 from woodwork.serializers.orc_serializer import save_orc_file
-from woodwork.utils import _replace_nan_strings
 
 
 def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
@@ -239,7 +239,7 @@ def test_replace_nan_strings():
     }
 
     df = pd.DataFrame(data=data)
-    replaced_df = _replace_nan_strings(df)
+    replaced_df = df.apply(_replace_nans)
     for col in replaced_df:
         assert replaced_df[col].isnull().sum() == expected_null_count[col]
 

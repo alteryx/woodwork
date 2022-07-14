@@ -29,6 +29,7 @@ from woodwork.logical_types import (
     SubRegionCode,
     Timedelta,
     Unknown,
+    _replace_nans,
 )
 from woodwork.type_sys.inference_functions import (
     boolean_func,
@@ -331,8 +332,11 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        type_matches = get_inference_matches(types_to_check, series)
+        series_nan_cast = _replace_nans(series)  # Will change dtype
+        if series_nan_cast.count() == 0:
+            return Unknown()
 
+        type_matches = get_inference_matches(types_to_check, series_nan_cast)
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set
             # type to default type (Unknown). Assume that a column
@@ -353,7 +357,12 @@ class TypeSystem(object):
             # If multiple matches, get the most specific one. If multiple
             # matches have the same level of specificity, the first
             # match found at that level will be returned
-            best_match = type_matches[0]
+            if (
+                Categorical in type_matches or Double in type_matches
+            ) and IntegerNullable in type_matches:
+                best_match = IntegerNullable
+            else:
+                best_match = type_matches[0]
             best_depth = self._get_depth(best_match)
             for logical_type in type_matches[1:]:
                 ltype_depth = self._get_depth(logical_type)

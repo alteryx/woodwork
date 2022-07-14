@@ -1599,12 +1599,12 @@ def _infer_missing_logical_types(
     existing_logical_types = existing_logical_types or {}
     parsed_logical_types = {}
     for name in dataframe.columns:
-        series = dataframe[name]
         logical_type = (
             force_logical_types.get(name)
             if name in force_logical_types
             else existing_logical_types.get(name)
         )
+        series = dataframe[name]
         parsed_logical_types[name] = _get_column_logical_type(
             series,
             logical_type,
@@ -1615,7 +1615,12 @@ def _infer_missing_logical_types(
             null_invalid_values=null_invalid_values,
         )
         if updated_series is not series:
-            dataframe[name] = updated_series
+            # NotImplementedError thrown by dask when attempting to re-initialize
+            # data after being assigned a numeric column name
+            try:
+                dataframe[name] = updated_series
+            except NotImplementedError:
+                pass
     return parsed_logical_types
 
 

@@ -1253,6 +1253,7 @@ def test_describe_dict_extra_stats_overflow_range(
 
 
 def test_value_counts(categorical_df):
+    nan = np.nan
     logical_types = {
         "ints": IntegerNullable,
         "categories1": Categorical,
@@ -1274,56 +1275,27 @@ def test_value_counts(categorical_df):
         {"value": 1, "count": 2},
         {"value": 3, "count": 1},
     ]
-    expected_cat2 = [
-        {"value": np.nan, "count": 6},
-        {"value": "test", "count": 3},
-        {"value": "test2", "count": 1},
-    ]
-    expected_cat3 = [
-        {"value": np.nan, "count": 7},
-        {"value": "test", "count": 3},
-    ]
     # Spark converts numeric categories to strings, so we need to update the expected values for this
     # Spark will result in `pd.NA` instead of `np.nan` in categorical columns
     if _is_spark_dataframe(categorical_df):
         updated_results = []
         for items in expected_cat1:
             updated_results.append(
-                {k: (str(v) if k == "value" else v) for k, v in items.items()},
+                {k: (str(v) if k == "value" else v) for k, v in items.items()}
             )
         expected_cat1 = updated_results
 
-        updated_results = []
-        for items in expected_cat2:
-            updated_results.append(
-                {
-                    k: (
-                        str(v)
-                        if (k == "value" and v is not np.nan)
-                        else pd.NA
-                        if v is np.nan
-                        else v
-                    )
-                    for k, v in items.items()
-                },
-            )
-        expected_cat2 = updated_results
+        nan = pd.NA
 
-        updated_results = []
-        for items in expected_cat3:
-            updated_results.append(
-                {
-                    k: (
-                        str(v)
-                        if (k == "value" and v is not np.nan)
-                        else pd.NA
-                        if v is np.nan
-                        else v
-                    )
-                    for k, v in items.items()
-                },
-            )
-        expected_cat3 = updated_results
+    expected_cat2 = [
+        {"value": nan, "count": 6},
+        {"value": "test", "count": 3},
+        {"value": "test2", "count": 1},
+    ]
+    expected_cat3 = [
+        {"value": nan, "count": 7},
+        {"value": "test", "count": 3},
+    ]
 
     assert val_cts["categories1"] == expected_cat1
     assert val_cts["categories2"] == expected_cat2

@@ -1,9 +1,11 @@
 import re
 import warnings
 
+import numpy as np
 import pandas as pd
 from pandas.api import types as pdtypes
 
+import woodwork as ww
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.config import config
 from woodwork.exceptions import (
@@ -214,6 +216,7 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
+        series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)
@@ -371,6 +374,7 @@ class Double(LogicalType):
     standard_tags = {"numeric"}
 
     def transform(self, series, null_invalid_values=False):
+        series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_numeric(series)
         return super().transform(series)
@@ -418,6 +422,7 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
+        series = _replace_nans(series)
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)
@@ -828,6 +833,23 @@ def _regex_validate(regex_key, series, return_invalid_values):
             info = f"Series {series.name} contains invalid {type_string} values. "
             info += f"The {regex_key} can be changed in the config if needed."
             raise TypeValidationError(info)
+
+
+def _replace_nans(series: pd.Series) -> pd.Series:
+    """
+    Replaces empty string values, string representations of NaN values ("nan", "<NA>"), and NaN equivalents
+    with np.nan or pd.NA depending on column dtype.
+    """
+    original_dtype = series.dtype
+    if str(original_dtype) == "string":
+        series = series.replace(ww.config.get_option("nan_values"), pd.NA)
+        return series
+    if not _is_spark_series(series):
+        series = series.replace(ww.config.get_option("nan_values"), np.nan)
+    if str(original_dtype) == "boolean":
+        series = series.astype(original_dtype)
+
+    return series
 
 
 def _validate_age(series, return_invalid_values):

@@ -326,6 +326,7 @@ def pandas_nulls():
         pd.Series([np.nan, np.nan, np.nan, np.nan]),
         pd.Series([None, None, None, None]),
         pd.Series([None, np.nan, pd.NA, None]),
+        pd.Series(["None", "null", "n/a", "NAN"]),
     ]
 
 

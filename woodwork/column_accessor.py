@@ -3,6 +3,7 @@ import warnings
 import weakref
 
 import pandas as pd
+from pandas.api import types as pdtypes
 
 from woodwork.accessor_utils import (
     _check_column_schema,
@@ -105,7 +106,10 @@ class WoodworkColumnAccessor:
                     logical_type.validate(self._series)
                 else:
                     valid_dtype = logical_type._get_valid_dtype(type(self._series))
-                    if valid_dtype != str(self._series.dtype):
+                    if valid_dtype != str(self._series.dtype) and not (
+                        pdtypes.is_integer_dtype(valid_dtype)
+                        and pdtypes.is_float_dtype(self._series.dtype)
+                    ):
                         raise TypeValidationError(
                             f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                             f"incompatible with {logical_type} dtype. Try converting series "
