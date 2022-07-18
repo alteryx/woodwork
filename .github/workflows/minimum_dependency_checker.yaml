@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'setup.cfg'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
