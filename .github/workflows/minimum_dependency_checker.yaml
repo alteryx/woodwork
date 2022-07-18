@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'setup.cfg'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +17,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Run min dep generator - test reqs
         id: min_dep_gen_test
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
@@ -34,7 +35,7 @@ jobs:
           printf "${{ steps.min_dep_gen_test.outputs.min_reqs }}" > woodwork/tests/requirement_files/minimum_test_requirements.txt
       - name: Run min dep generator - core reqs
         id: min_dep_gen_core
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
@@ -50,7 +51,7 @@ jobs:
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > woodwork/tests/requirement_files/minimum_core_requirements.txt
       - name: Run min dep generator - spark
         id: min_dep_gen_spark
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
@@ -67,7 +68,7 @@ jobs:
           printf "${{ steps.min_dep_gen_spark.outputs.min_reqs }}" > woodwork/tests/requirement_files/minimum_spark_requirements.txt
       - name: Run min dep generator - dask
         id: min_dep_gen_dask
-        uses: alteryx/minimum-dependency-generator@v3.1
+        uses: alteryx/minimum-dependency-generator@v3
         with:
           paths: 'setup.cfg'
           options: 'install_requires'
