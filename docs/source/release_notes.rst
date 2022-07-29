@@ -3,17 +3,23 @@
 Release Notes
 -------------
 
-Future Release
-==============
-    * Enhancements
-    * Fixes
-    * Changes
-    * Documentation Changes
+.. Future Release
+    ==============
+        * Enhancements
+        * Fixes
+        * Changes
+        * Documentation Changes
+        * Testing Changes
+
+..    Thanks to the following people for contributing to this release:
+
+v0.18.0 July 29, 2022
+=====================
     * Testing Changes
        * Allow for manual kickoff for minimum dependency checker (:pr:`1476`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`bchen1116`, :user:`gsheni`
     
 v0.17.0 July 14, 2022
 =====================
