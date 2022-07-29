@@ -13,7 +13,7 @@ Release Notes
 
 ..    Thanks to the following people for contributing to this release:
 
-v0.18.0 July 29, 2022
+v0.17.1 July 29, 2022
 =====================
     * Testing Changes
        * Allow for manual kickoff for minimum dependency checker (:pr:`1476`)
