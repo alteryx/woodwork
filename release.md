@@ -98,4 +98,4 @@ Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkg
   @conda-forge-admin, please add user @username
   ```
 3. A PR will be automatically created on the repo, and will need to be merged by an existing maintainer.
-4. The new user will need to **check their email for an invite link**, which should be https://github.com/conda-forge/woodwork-feedstock/invitations
+4. The new user will need to **check their email for an invite link to click**, which should be https://github.com/conda-forge
