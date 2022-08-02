@@ -87,3 +87,15 @@ After the release pull request has been merged into the `main` branch, it is tim
 1. A bot should automatically create a new PR in [conda-forge/woodwork-feedstock](https://github.com/conda-forge/woodwork-feedstock/pulls) - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in
+
+# Adding users to woodwork-feedstock
+
+Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
+1. Go to the repo: [conda-forge/woodwork-feedstock](https://github.com/conda-forge/woodwork-feedstock/pulls)
+2. Create an issue with the following title:
+
+  ```text
+  @conda-forge-admin, please add user @username
+  ```
+3. A PR will be automatically created on the repo, and will need to be merged by an existing maintainer.
+4. The new user will need to **check their email for an invite link**, which should be https://github.com/conda-forge/woodwork-feedstock/invitations
