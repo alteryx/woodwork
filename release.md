@@ -91,8 +91,8 @@ After the release pull request has been merged into the `main` branch, it is tim
 # Adding users to woodwork-feedstock
 
 Per the instructions [here](https://conda-forge.org/docs/maintainer/updating_pkgs.html#updating-the-maintainer-list):
-1. Go to the repo: [conda-forge/woodwork-feedstock](https://github.com/conda-forge/woodwork-feedstock/pulls)
-2. Create an issue with the following title:
+1. Go to the repo: [conda-forge/woodwork-feedstock](https://github.com/conda-forge/woodwork-feedstock/issues)
+2. Create an issue with the following title (change username to new account):
 
   ```text
   @conda-forge-admin, please add user @username
