@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-    ==============
-        * Enhancements
-        * Fixes
-        * Changes
-        * Documentation Changes
-        * Testing Changes
+Future Release
+==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+       * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
+    * Testing Changes
 
-..    Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.17.1 July 29, 2022
 =====================
