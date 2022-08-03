@@ -515,6 +515,20 @@ def concat_columns(objs, validate_schema=True):
 
     combined_df = lib.concat(objs, axis=1, join="outer")
 
+    # The lib.concat breaks the woodwork schema for dataframes with different shapes
+    # or mismatched indices.
+    null_cols = combined_df.isnull().any()[combined_df.isnull().any()].index
+    if "dask" not in lib.__name__:
+        null_cols = null_cols.to_numpy()
+    else:
+        null_cols = list(null_cols)
+    for null_col in null_cols:
+        if null_col in logical_types and isinstance(
+            logical_types[null_col],
+            ww.logical_types.Integer,
+        ):
+            logical_types.pop(null_col)
+
     # Initialize Woodwork with all of the typing information from the input objs
     # performing type inference on any columns that did not already have Woodwork initialized
     combined_df.ww.init(

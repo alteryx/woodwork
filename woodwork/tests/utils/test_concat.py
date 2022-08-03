@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
+import woodwork.exceptions
 from woodwork.accessor_utils import _is_spark_dataframe
 from woodwork.logical_types import Categorical, Double, Integer
 from woodwork.tests.testing_utils import to_pandas
@@ -397,17 +398,6 @@ def test_concat_cols_validate_schema(mock_validate_accessor_params, sample_df):
 
 
 def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
-    sample_df.ww.init()
-
-    df1 = sample_df.ww.loc[[0, 1, 2], ["id", "full_name"]]
-    df2 = sample_df.ww.loc[[1, 2, 3], ["signup_date", "email"]]
-
-    if isinstance(sample_df, pd.DataFrame):
-        # Only pandas shows the dtype change because Dask and Spark won't show until compute
-        error = "Error converting datatype for id from type float64 to type int64. Please confirm the underlying data is consistent with logical type Integer."
-        with pytest.raises(ww.exceptions.TypeConversionError, match=error):
-            concat_columns([df1, df2])
-
     # If the dtype can handle nans, it won't change
     sample_df.ww.init(logical_types={"id": "IntegerNullable"})
 
@@ -540,3 +530,29 @@ def test_concat_with_none(sample_df):
     error = "'NoneType' object has no attribute 'ww'"
     with pytest.raises(AttributeError, match=error):
         concat_columns([df1, df2, None])
+
+
+def test_concat_shorter_null_int(sample_df):
+    """Tests that concatenating dataframes with different numbers of rows works."""
+    sample_df.ww.init()
+    df1 = sample_df.ww[
+        [
+            "email",
+            "phone_number",
+        ]
+    ]
+
+    # Purposefully create a dataframe with a non-nullable integer column
+    # that's shorter than the one to concat with
+    try:
+        df2 = sample_df.ww[
+            [
+                "integer",
+                "categorical",
+            ]
+        ].iloc[1:, :]
+        df2.ww.init()
+    except (NotImplementedError):
+        return
+
+    result = concat_columns([df1, df2])
