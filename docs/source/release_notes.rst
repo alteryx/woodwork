@@ -7,13 +7,14 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fixed case in which coercing a boolean column with null values to ``Boolean`` resulted in imputation instead of an error. (:pr:``)
     * Changes
     * Documentation Changes
        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`ParthivNaresh`
 
 v0.17.1 July 29, 2022
 =====================

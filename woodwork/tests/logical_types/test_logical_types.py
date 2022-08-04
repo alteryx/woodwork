@@ -710,3 +710,15 @@ def test_boolean_nullable(null_type):
         assert all(nullable_bools["bool_nulls"][-5:].isna())
     else:
         assert isinstance(nullable_bools.ww.logical_types["bool_nulls"], Boolean)
+
+
+@pytest.mark.parametrize("none_type", [None, np.nan, pd.NA])
+@pytest.mark.parametrize("pass_logical_types", [True, False])
+def test_coercion_to_boolean(none_type, pass_logical_types):
+    df = pd.DataFrame({"boolean": [none_type, True, False, True]})
+    if pass_logical_types:
+        with pytest.raises(Exception):
+            df.ww.init(logical_types={"boolean": Boolean})
+    else:
+        df.ww.init()
+        assert isinstance(df.ww.logical_types["boolean"], BooleanNullable)
