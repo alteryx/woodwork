@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-import woodwork.exceptions
+import woodwork.logical_types
 from woodwork.accessor_utils import _is_spark_dataframe
 from woodwork.logical_types import Categorical, Double, Integer
 from woodwork.tests.testing_utils import to_pandas
@@ -532,7 +532,17 @@ def test_concat_with_none(sample_df):
         concat_columns([df1, df2, None])
 
 
-def test_concat_shorter_null_int(sample_df):
+@pytest.mark.parametrize(
+    "nullable_type",
+    [
+        "integer",
+        pytest.param(
+            "boolean",
+            marks=pytest.mark.xfail(reason="Bug with BooleanNullable inference."),
+        ),
+    ],
+)
+def test_concat_shorter_null_int(sample_df, nullable_type):
     """Tests that concatenating dataframes with different numbers of rows works."""
     sample_df.ww.init()
     df1 = sample_df.ww[
@@ -547,7 +557,7 @@ def test_concat_shorter_null_int(sample_df):
     try:
         df2 = sample_df.ww[
             [
-                "integer",
+                nullable_type,
                 "categorical",
             ]
         ].iloc[1:, :]
@@ -556,3 +566,15 @@ def test_concat_shorter_null_int(sample_df):
         return
 
     result = concat_columns([df1, df2])
+    expected_type = (
+        woodwork.logical_types.IntegerNullable
+        if nullable_type == "integer"
+        else woodwork.logical_types.BooleanNullable
+    )
+    assert isinstance(result.ww.logical_types[nullable_type], expected_type)
+    assert (
+        result.shape[0] == df1.shape[0]
+    ), "The output of concat_columns has the incorrect number of rows."
+    assert (
+        result.shape[1] == df1.shape[1] + df2.shape[1]
+    ), "The output of concat_columns has the incorrect number of columns."
