@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
     inputs:
-      pypi_version:
+      version:
         description: 'released PyPI version to use (ex - v1.11.1)'
         required: true
 
@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.inputs.pypi_version }}
+          ref: ${{ github.event.inputs.version }}
           path: "./woodwork"
       - name: Pull latest from upstream for user forked feedstock
         run: |
@@ -34,7 +34,7 @@ jobs:
         uses: alteryx/create-feedstock-meta-yaml@v3
         with:
           project: "woodwork"
-          pypi_version: ${{ github.event.inputs.pypi_version }}
+          pypi_version: ${{ github.event.inputs.version }}
           setup_cfg_filepath: "woodwork/setup.cfg"
           meta_yaml_filepath: "woodwork-feedstock/recipe/meta.yaml"
       - name: View updated meta yaml
@@ -46,10 +46,10 @@ jobs:
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/alteryx/woodwork-feedstock
-          git checkout -b ${{ github.event.inputs.pypi_version }}
+          git checkout -b ${{ github.event.inputs.version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
-          git push origin ${{ github.event.inputs.pypi_version }}
+          git push origin ${{ github.event.inputs.version }}
       - name: Adding URL to job output
         run: |
           echo "Conda Feedstock Pull Request: https://github.com/alteryx/woodwork-feedstock/pull/new/${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
