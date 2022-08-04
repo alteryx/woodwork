@@ -7,13 +7,14 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
     * Changes
     * Documentation Changes
        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`chukarsten`
 
 v0.17.1 July 29, 2022
 =====================
@@ -22,7 +23,7 @@ v0.17.1 July 29, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`
-    
+
 v0.17.0 July 14, 2022
 =====================
     .. warning::
