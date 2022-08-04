@@ -46,10 +46,10 @@ jobs:
           git config --global user.email "machineOSS@alteryx.com"
           git config --global user.name "machineAYX Bot"
           git remote set-url origin https://${{ secrets.AUTO_APPROVE_TOKEN }}@github.com/alteryx/woodwork-feedstock
-          git checkout -b conda-autocreate-${{ github.event.inputs.pypi_version }}
+          git checkout -b ${{ github.event.inputs.pypi_version }}
           git add recipe/meta.yaml
           git commit -m "auto commit"
-          git push origin conda-autocreate-${{ github.event.inputs.pypi_version }}
+          git push origin ${{ github.event.inputs.pypi_version }}
       - name: Adding URL to job output
         run: |
-          echo "Conda Feedstock Pull Request: https://github.com/alteryx/woodwork-feedstock/pull/new/conda-autocreate-${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Conda Feedstock Pull Request: https://github.com/alteryx/woodwork-feedstock/pull/new/${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
