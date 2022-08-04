@@ -1,7 +1,5 @@
 from unittest.mock import patch
 
-import pandas as pd
-
 import woodwork as ww
 from woodwork.accessor_utils import _is_spark_series
 from woodwork.logical_types import (
