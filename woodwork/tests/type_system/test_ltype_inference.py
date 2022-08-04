@@ -281,20 +281,3 @@ def test_updated_ltype_inference(integers, type_sys):
             inferred_type = type_sys.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Integer)
             assert inferred_type.primary_dtype == "string"
-
-
-import numpy as np
-import pytest
-
-
-@pytest.mark.parametrize("none_type", [None, np.nan, pd.NA])
-@pytest.mark.parametrize("pass_logical_types", [True, False])
-def test_boolean_inference(none_type, pass_logical_types):
-    df = pd.DataFrame({"boolean": [none_type, True, False, True]})
-    if pass_logical_types:
-        with pytest.raises(Exception):
-            # Would expect init to fail as you're trying to coerce a boolean to bool.
-            df.ww.init(logical_types={"boolean": Boolean})
-    else:
-        df.ww.init()
-        assert isinstance(df.ww.logical_types["boolean"], BooleanNullable)
