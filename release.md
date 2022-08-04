@@ -91,7 +91,7 @@ In order to release on conda-forge, you can either wait for a bot to create a PR
 3. Kickoff the GitHub action, and monitor the Job Summary.
 4. At the completion of the job, you should see summary output, with a URL. 
     * You will need to visit this URL, and create a PR.
-    * You can also create the PR by clicking the branch name (ex - `conda-autocreate-v0.13.3`): 
+    * You can also create the PR by clicking the branch name (ex - `v0.13.3`): 
       - https://github.com/alteryx/woodwork-feedstock/branches
 5. Verify the `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __woodwork/setup.cfg__.
     * Verify the `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __woodwork/setup.cfg__
