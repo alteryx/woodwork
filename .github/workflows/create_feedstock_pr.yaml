@@ -52,4 +52,4 @@ jobs:
           git push origin ${{ github.event.inputs.version }}
       - name: Adding URL to job output
         run: |
-          echo "Conda Feedstock Pull Request: https://github.com/alteryx/woodwork-feedstock/pull/new/${{ github.event.inputs.pypi_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Conda Feedstock Pull Request: https://github.com/alteryx/woodwork-feedstock/pull/new/${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
