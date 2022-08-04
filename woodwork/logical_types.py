@@ -204,7 +204,11 @@ class Boolean(LogicalType):
     def transform(self, series, null_invalid_values=False):
         if not _is_spark_series(series):
             if str(series.dtype) == "object":
-                series = series.replace(ww.config.get_option("nan_values"), pd.NA)
+                series = _coerce_boolean(series)
+                if not _is_dask_series(
+                    series
+                ):  # Dask cannot handle NA as an ambiguous type for booleans
+                    series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return super().transform(series)
 
 

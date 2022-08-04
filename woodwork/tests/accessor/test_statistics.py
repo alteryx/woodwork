@@ -1003,7 +1003,7 @@ def test_describe_with_improper_tags(describe_df):
     df = describe_df.copy()[["boolean_col", "natural_language_col"]]
 
     logical_types = {
-        "boolean_col": Boolean,
+        "boolean_col": BooleanNullable,
         "natural_language_col": NaturalLanguage,
     }
     semantic_tags = {
@@ -1015,7 +1015,7 @@ def test_describe_with_improper_tags(describe_df):
     stats_df = df.ww.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert isinstance(stats_df["boolean_col"]["logical_type"], Boolean)
+    assert isinstance(stats_df["boolean_col"]["logical_type"], BooleanNullable)
     assert stats_df["boolean_col"]["semantic_tags"] == {"category"}
     # Make sure numeric stats were not computed with improper 'numeric' tag
     assert stats_df["natural_language_col"]["semantic_tags"] == {"numeric"}
@@ -1261,6 +1261,7 @@ def test_value_counts(categorical_df):
         "categories2": Categorical,
         "categories3": Categorical,
     }
+    categorical_df["bools"] = categorical_df["bools"].astype("bool")
     categorical_df.ww.init(logical_types=logical_types)
     val_cts = categorical_df.ww.value_counts()
     for col in categorical_df.ww.columns:

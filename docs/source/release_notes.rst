@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fixed case in which coercing a boolean column with null values to ``Boolean`` resulted in imputation instead of an error. (:pr:``)
+        * Fixed case in which coercing a boolean column with null values to ``Boolean`` resulted in imputation instead of an error. (:pr:`1487`)
     * Changes
     * Documentation Changes
        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
