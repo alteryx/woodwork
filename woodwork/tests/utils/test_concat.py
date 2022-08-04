@@ -4,9 +4,14 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-import woodwork.logical_types
-from woodwork.accessor_utils import _is_spark_dataframe
-from woodwork.logical_types import Categorical, Double, Integer
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.logical_types import (
+    BooleanNullable,
+    Categorical,
+    Double,
+    Integer,
+    IntegerNullable,
+)
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import concat_columns
 
@@ -554,23 +559,20 @@ def test_concat_shorter_null_int(sample_df, nullable_type):
 
     # Purposefully create a dataframe with a non-nullable integer column
     # that's shorter than the one to concat with
-    try:
-        df2 = sample_df.ww[
-            [
-                nullable_type,
-                "categorical",
-            ]
-        ].iloc[1:, :]
-        df2.ww.init()
-    except (NotImplementedError):
-        return
+    if _is_dask_dataframe(sample_df):
+        pytest.skip(
+            "Slicing dataframe with respect to rows is not supported with Dask input",
+        )
+    df2 = sample_df.ww[
+        [
+            nullable_type,
+            "categorical",
+        ]
+    ].iloc[1:, :]
+    df2.ww.init()
 
     result = concat_columns([df1, df2])
-    expected_type = (
-        woodwork.logical_types.IntegerNullable
-        if nullable_type == "integer"
-        else woodwork.logical_types.BooleanNullable
-    )
+    expected_type = IntegerNullable if nullable_type == "integer" else BooleanNullable
     assert isinstance(result.ww.logical_types[nullable_type], expected_type)
     assert (
         result.shape[0] == df1.shape[0]

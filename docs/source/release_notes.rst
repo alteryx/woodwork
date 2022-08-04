@@ -14,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`chukarsten`
 
 v0.17.1 July 29, 2022
 =====================
