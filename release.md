@@ -94,7 +94,7 @@ In order to release on conda-forge, you can either wait for a bot to create a PR
     * You can also create the PR by clicking the branch name (ex - `v0.13.3`): 
       - https://github.com/alteryx/woodwork-feedstock/branches
 5. Verify that the PR has the following: 
-    * The build number is 0
+    * The `build['number']` is reset 0 (in __recipe/meta.yml__)
     * The `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __woodwork/setup.cfg__.
     * The `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __woodwork/setup.cfg__
 
