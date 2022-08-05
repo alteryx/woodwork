@@ -1,4 +1,4 @@
-dask==2022.7.1
+dask==2022.8.0
 numpy==1.23.1
 pandas==1.4.3
 pyarrow==9.0.0
