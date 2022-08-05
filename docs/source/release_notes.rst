@@ -3,19 +3,27 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
-        * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
     * Changes
     * Documentation Changes
-       * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
+    * Testing Changes        
+
+.. Thanks to the following people for contributing to this release:
+
+v0.17.2 August 5, 2022
+======================
+    * Fixes
+        * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
+    * Documentation Changes
+        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
     * Testing Changes
-       * Add create feedstock PR workflow (:pr:`1489`)
-        
+        * Add create feedstock PR workflow (:pr:`1489`)
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`chukarsten`
+    :user:`chukarsten`, :user:`cmancuso`, :user:`gsheni`, 
 
 v0.17.1 July 29, 2022
 =====================
