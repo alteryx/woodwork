@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
         * Fixed case in which coercing a boolean column with null values to ``Boolean`` resulted in imputation instead of an error (:pr:`1487`)
     * Changes
     * Documentation Changes
@@ -14,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ParthivNaresh`
+    :user:`gsheni`, :user:`chukarsten`, :user:`ParthivNaresh`
 
 v0.17.1 July 29, 2022
 =====================
@@ -23,7 +24,7 @@ v0.17.1 July 29, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`
-    
+
 v0.17.0 July 14, 2022
 =====================
     .. warning::
