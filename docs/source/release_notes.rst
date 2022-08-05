@@ -12,7 +12,8 @@ Future Release
     * Documentation Changes
        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
     * Testing Changes
-
+       * Add create feedstock PR workflow (:pr:`1489`)
+        
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`chukarsten`
 
