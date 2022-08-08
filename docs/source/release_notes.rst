@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Restrict dask upper limit (:pr:`1497`)
     * Documentation Changes
     * Testing Changes        
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, 
 
 v0.17.2 August 5, 2022
 ======================
