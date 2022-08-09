@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
-    * Testing Changes        
+    * Testing Changes
+        * Update development requirements and use latest for documentation (:pr:``)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.17.2 August 5, 2022
 ======================
@@ -23,7 +25,7 @@ v0.17.2 August 5, 2022
         * Add create feedstock PR workflow (:pr:`1489`)
 
     Thanks to the following people for contributing to this release:
-    :user:`chukarsten`, :user:`cmancuso`, :user:`gsheni`, 
+    :user:`chukarsten`, :user:`cmancuso`, :user:`gsheni`,
 
 v0.17.1 July 29, 2022
 =====================
