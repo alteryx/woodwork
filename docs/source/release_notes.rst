@@ -10,7 +10,7 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Update development requirements and use latest for documentation (:pr:``)
+        * Update development requirements and use latest for documentation (:pr:`1499`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
