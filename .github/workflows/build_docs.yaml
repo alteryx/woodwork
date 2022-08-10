@@ -36,5 +36,3 @@ jobs:
         run: |
           make -C docs/ html
           ls docs/build/html
-        env:
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
