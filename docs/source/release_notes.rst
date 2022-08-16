@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Updated ``dependence_dict`` and ``mutual_information`` to drop large Categorical columns during mutual information calculation (:pr:``)
     * Fixes
     * Changes
     * Documentation Changes
@@ -13,7 +14,7 @@ Future Release
         * Update development requirements and use latest for documentation (:pr:`1499`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`bchen1116`
 
 v0.17.2 August 5, 2022
 ======================

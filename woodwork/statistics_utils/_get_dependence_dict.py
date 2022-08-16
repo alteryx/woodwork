@@ -30,6 +30,7 @@ def _get_dependence_dict(
     extra_stats=False,
     min_shared=25,
     random_seed=0,
+    max_nunique=6000,
 ):
     """Calculates dependence measures between all pairs of columns in the DataFrame that
     support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -74,6 +75,9 @@ def _get_dependence_dict(
             to measure accurately and will return a NaN value. Must be
             non-negative. Defaults to 25.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        max_nunique (int): The maximum number of unique values for large categorical columns (< 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
         `column_2`, and keys for the specified dependence measures. The list is
@@ -95,7 +99,12 @@ def _get_dependence_dict(
         valid_columns = pearson_columns
     if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
-        mutual_columns = _get_valid_columns(dataframe, mi_types)
+        cols_to_drop = _cols_to_drop_MI(dataframe, max_nunique)
+        mutual_columns = [
+            col
+            for col in _get_valid_columns(dataframe, mi_types)
+            if col not in cols_to_drop
+        ]
         # pearson columns are a subset of mutual columns
         valid_columns = mutual_columns
 
@@ -203,3 +212,27 @@ def _get_valid_columns(dataframe, valid_types):
         if type(col.logical_type) in valid_types
     ]
     return valid_columns
+
+
+def _cols_to_drop_MI(datatable, total_unique=6000):
+    """Finds the categorical columns to drop to speed up mutual information calculations."""
+
+    def drop_helper(df):
+        cols_to_drop = []
+        cols_greater = df.columns[df.nunique().values > 800]
+        if len(cols_greater) < 2:
+            return cols_to_drop
+
+        total = sum(df[cols_greater].nunique())
+        if total > total_unique:
+            # use mergesort to keep the order of the columns
+            drop = df.nunique().sort_values(ascending=False, kind="mergesort").index[0]
+            cols_to_drop.append(drop)
+            df = df.drop(cols_to_drop, axis=1)
+            cols_to_drop += drop_helper(df)
+        return cols_to_drop
+
+    categoricals = datatable.ww.select_dtypes("category").columns
+    if len(categoricals):
+        return drop_helper(datatable[categoricals])
+    return []
