@@ -1,4 +1,5 @@
 from collections import defaultdict
+from inspect import Attribute
 from timeit import default_timer as timer
 
 import numpy as np
@@ -223,16 +224,23 @@ def _cols_to_drop_MI(datatable, total_unique=6000):
         if len(cols_greater) < 2:
             return cols_to_drop
 
-        total = sum(df[cols_greater].nunique())
+        df_uniques = df[cols_greater].nunique()
+        total = sum(df_uniques.to_numpy())
         if total > total_unique:
-            # use mergesort to keep the order of the columns
-            drop = df.nunique().sort_values(ascending=False, kind="mergesort").index[0]
+            # try to use mergesort to keep the order of the columns
+            if not _is_spark_dataframe(df):
+                drop = df_uniques.sort_values(ascending=False, kind="mergesort").index[
+                    0
+                ]
+            else:
+                drop = df_uniques.sort_values(ascending=False).index.tolist()[0]
             cols_to_drop.append(drop)
             df = df.drop(cols_to_drop, axis=1)
             cols_to_drop += drop_helper(df)
         return cols_to_drop
 
-    categoricals = datatable.ww.select_dtypes("category").columns
-    if len(categoricals):
+    categoricals = datatable.ww.select("category").columns
+    # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
+    if len(categoricals) and not _is_dask_dataframe(datatable):
         return drop_helper(datatable[categoricals])
     return []

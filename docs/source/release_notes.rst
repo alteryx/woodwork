@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Updated ``dependence_dict`` and ``mutual_information`` to drop large Categorical columns during mutual information calculation (:pr:`1501`)
+        * Updated ``dependence_dict`` and ``mutual_information`` to drop large Categorical columns during mutual information calculation, non-dask only. (:pr:`1501`)
     * Fixes
     * Changes
     * Documentation Changes
