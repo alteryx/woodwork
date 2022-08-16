@@ -1,5 +1,4 @@
 from collections import defaultdict
-from inspect import Attribute
 from timeit import default_timer as timer
 
 import numpy as np
