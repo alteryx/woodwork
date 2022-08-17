@@ -75,7 +75,7 @@ def _get_dependence_dict(
             to measure accurately and will return a NaN value. Must be
             non-negative. Defaults to 25.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        max_nunique (int): The maximum number of unique values for large categorical columns (< 800 unique values).
+        max_nunique (int): The maximum number of unique values for large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
     Returns:
@@ -99,7 +99,7 @@ def _get_dependence_dict(
         valid_columns = pearson_columns
     if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
-        cols_to_drop = _cols_to_drop_MI(dataframe, max_nunique)
+        cols_to_drop = _find_large_categorical_columns(dataframe, max_nunique)
         mutual_columns = [
             col
             for col in _get_valid_columns(dataframe, mi_types)
@@ -214,10 +214,10 @@ def _get_valid_columns(dataframe, valid_types):
     return valid_columns
 
 
-def _cols_to_drop_MI(datatable, total_unique=6000):
+def _find_large_categorical_columns(datatable, total_unique=6000):
     """Finds the categorical columns to drop to speed up mutual information calculations."""
 
-    def drop_helper(df):
+    def categorical_column_drop_helper(df):
         cols_to_drop = []
         cols_greater = df.columns[df.nunique().values > 800]
         if len(cols_greater) < 2:
@@ -235,11 +235,11 @@ def _cols_to_drop_MI(datatable, total_unique=6000):
                 drop = df_uniques.sort_values(ascending=False).index.tolist()[0]
             cols_to_drop.append(drop)
             df = df.drop(cols_to_drop, axis=1)
-            cols_to_drop += drop_helper(df)
+            cols_to_drop += categorical_column_drop_helper(df)
         return cols_to_drop
 
     categoricals = datatable.ww.select("category").columns
     # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
     if len(categoricals) and not _is_dask_dataframe(datatable):
-        return drop_helper(datatable[categoricals])
+        return categorical_column_drop_helper(datatable[categoricals])
     return []
