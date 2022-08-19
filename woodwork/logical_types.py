@@ -1,5 +1,6 @@
 import re
 import warnings
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -835,7 +836,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
             raise TypeValidationError(info)
 
 
-def _replace_nans(series: pd.Series, primary_dtype: str) -> pd.Series:
+def _replace_nans(series: pd.Series, primary_dtype: Optional[str] = None) -> pd.Series:
     """
     Replaces empty string values, string representations of NaN values ("nan", "<NA>"), and NaN equivalents
     with np.nan or pd.NA depending on column dtype.

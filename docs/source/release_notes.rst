@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:``)
+        * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
     * Documentation Changes
     * Testing Changes
         * Update development requirements and use latest for documentation (:pr:`1499`)
