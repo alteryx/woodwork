@@ -332,7 +332,7 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        series_nan_cast = _replace_nans(series)  # Will change dtype
+        series_nan_cast = _replace_nans(series, None)  # Will change dtype
         if series_nan_cast.count() == 0:
             return Unknown()
 
