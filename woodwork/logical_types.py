@@ -217,7 +217,7 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
-        #series = _replace_nans(series, BooleanNullable.primary_dtype)
+        series = _replace_nans(series, BooleanNullable.primary_dtype)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)
@@ -375,7 +375,7 @@ class Double(LogicalType):
     standard_tags = {"numeric"}
 
     def transform(self, series, null_invalid_values=False):
-        #series = _replace_nans(series, Double.primary_dtype)
+        series = _replace_nans(series, Double.primary_dtype)
         if null_invalid_values:
             series = _coerce_numeric(series)
         return super().transform(series)
@@ -423,7 +423,7 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
-        #series = _replace_nans(series, IntegerNullable.primary_dtype)
+        series = _replace_nans(series, IntegerNullable.primary_dtype)
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)
