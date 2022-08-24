@@ -15,6 +15,7 @@ from woodwork.accessor_utils import (
     init_series,
 )
 from woodwork.exceptions import (
+    ColumnBothIgnoredAndSetError,
     ColumnNotPresentError,
     ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
@@ -731,6 +732,55 @@ def test_float_dtype_inference_on_init():
     assert df["floats_nan"].dtype == "float64"
     assert df["floats_NA"].dtype == "float64"
     assert df["floats_nan_specified"].dtype == "float64"
+
+
+def test_ignore_columns_error_ww_not_init():
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+    df["floats"] = [i * 1.1 for i in range(100)]
+    df["dates"] = pd.date_range("1/1/21", periods=100)
+
+    with pytest.raises(
+        WoodworkNotInitError,
+        match="ignore_columns cannot be set when the dataframe has not been initialized by woodwork.",
+    ):
+        df.ww.init(ignore_columns=["ints", "floats", "dates"])
+
+
+def test_ignore_columns_error_col_ignored_and_set():
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+    df["floats"] = [i * 1.1 for i in range(100)]
+    df["dates"] = pd.date_range("1/1/21", periods=100)
+
+    logical_types = {
+        "ints": Integer,
+    }
+
+    err_msg = re.escape(
+        "ignore_columns contains columns that are being set in logical_types: ['ints']",
+    )
+
+    with pytest.raises(ColumnBothIgnoredAndSetError, match=err_msg):
+        df.ww.init(
+            ignore_columns=["ints", "floats", "dates"], logical_types=logical_types
+        )
+
+
+@patch("woodwork.logical_types._replace_nans")
+def test_ignore_columns(mock_replace_nans):
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)] + [np.nan]
+    df["floats"] = [True, False] * 50 + [pd.NA]
+
+    mock_replace_nans.side_effect = [df["ints"], df["floats"]]
+    df.ww.init()
+
+    assert mock_replace_nans.call_count == 2
+    schema = df.ww.schema
+    df.ww.init(ignore_columns=["ints", "floats"], schema=schema)
+
+    assert mock_replace_nans.call_count == 2
 
 
 def test_datetime_timezones(timezones_df):

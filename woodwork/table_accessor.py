@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Set, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Union
 
 import pandas as pd
 
@@ -14,10 +14,13 @@ from woodwork.accessor_utils import (
     init_series,
 )
 from woodwork.exceptions import (
+    ColumnBothIgnoredAndSetError,
     ColumnNotPresentError,
+    ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning,
+    WoodworkNotInitError,
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
@@ -64,6 +67,10 @@ class WoodworkTableAccessor:
             logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
+            ignore_columns (list[str], optional): List of columns to ignore for inferring logical types. If a column name
+                is included in this list, then it cannot be part of the logical_types dictionary argument, and it must be part
+                of an existing schema for the dataframe. This argument can be used when a column has a logical type that has
+                already been inferred and its physical dtype is not expected to have changed since its last inference.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
@@ -121,20 +128,23 @@ class WoodworkTableAccessor:
 
     def init_with_partial_schema(
         self,
-        schema: TableSchema = None,
-        index: str = None,
-        time_index: str = None,
-        logical_types: Dict[ColumnName, Union[str, LogicalType, None]] = None,
-        already_sorted: bool = False,
-        name: str = None,
-        semantic_tags: Dict[ColumnName, Union[str, List[str], Set[str]]] = None,
-        table_metadata: dict = None,
-        column_metadata: Dict[ColumnName, dict] = None,
-        use_standard_tags: Union[bool, UseStandardTagsDict] = None,
-        column_descriptions: Dict[ColumnName, str] = None,
-        column_origins: Union[str, Dict[ColumnName, str]] = None,
-        null_invalid_values: bool = False,
-        validate: bool = True,
+        schema: Optional[TableSchema] = None,
+        index: Optional[str] = None,
+        time_index: Optional[str] = None,
+        logical_types: Optional[Dict[ColumnName, Union[str, LogicalType, None]]] = None,
+        ignore_columns: Optional[List[str]] = None,
+        already_sorted: Optional[bool] = False,
+        name: Optional[str] = None,
+        semantic_tags: Optional[
+            Dict[ColumnName, Union[str, List[str], Set[str]]]
+        ] = None,
+        table_metadata: Optional[dict] = None,
+        column_metadata: Optional[Dict[ColumnName, dict]] = None,
+        use_standard_tags: Optional[Union[bool, UseStandardTagsDict]] = None,
+        column_descriptions: Optional[Dict[ColumnName, str]] = None,
+        column_origins: Optional[Union[str, Dict[ColumnName, str]]] = None,
+        null_invalid_values: Optional[bool] = False,
+        validate: Optional[bool] = True,
         **kwargs,
     ) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
@@ -156,6 +166,10 @@ class WoodworkTableAccessor:
             logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
+            ignore_columns (list[str], optional): List of columns to ignore for inferring logical types. If a column name
+                is included in this list, then it cannot be part of the logical_types dictionary argument, and it must be part
+                of an existing schema for the dataframe. This argument can be used when a column has a logical type that has
+                already been inferred and its physical dtype is not expected to have changed since its last inference.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
@@ -190,6 +204,7 @@ class WoodworkTableAccessor:
                 index,
                 time_index,
                 logical_types,
+                ignore_columns,
                 schema,
                 use_standard_tags,
             )
@@ -224,6 +239,7 @@ class WoodworkTableAccessor:
             self._dataframe,
             logical_types,
             existing_logical_types,
+            ignore_columns,
             null_invalid_values=null_invalid_values,
         )
         column_descriptions = {
@@ -1485,6 +1501,7 @@ def _validate_accessor_params(
     index,
     time_index,
     logical_types,
+    ignore_columns,
     schema,
     use_standard_tags,
 ) -> None:
@@ -1500,6 +1517,8 @@ def _validate_accessor_params(
         _check_index(dataframe, index)
     if logical_types:
         _check_logical_types(dataframe.columns, logical_types)
+    if ignore_columns:
+        _check_ignore_columns(dataframe.columns, logical_types, schema, ignore_columns)
     if time_index is not None:
         datetime_format = None
         logical_type = None
@@ -1560,6 +1579,31 @@ def _check_logical_types(dataframe_columns, logical_types):
         )
 
 
+def _check_ignore_columns(dataframe_columns, logical_types, schema, ignore_columns):
+    if not isinstance(ignore_columns, list):
+        raise TypeError("ignore_columns must be a list")
+    cols_not_found = set(ignore_columns).difference(set(dataframe_columns))
+    if cols_not_found:
+        raise ColumnNotPresentError(
+            "ignore_columns contains columns that are not present in "
+            f"dataframe: {sorted(list(cols_not_found))}",
+        )
+    if logical_types:
+        col_ignored_and_set = set(logical_types.keys()).intersection(
+            set(ignore_columns)
+        )
+        if col_ignored_and_set:
+            raise ColumnBothIgnoredAndSetError(
+                "ignore_columns contains columns that are being set "
+                f"in logical_types: {list(col_ignored_and_set)}"
+            )
+    if not schema:
+        raise WoodworkNotInitError(
+            "ignore_columns cannot be set when the dataframe has not been "
+            "initialized by woodwork."
+        )
+
+
 def _check_schema(dataframe, schema):
     if not isinstance(schema, TableSchema):
         raise TypeError("Provided schema must be a Woodwork.TableSchema object.")
@@ -1590,15 +1634,20 @@ def _check_use_standard_tags(use_standard_tags):
 
 def _infer_missing_logical_types(
     dataframe: AnyDataFrame,
-    force_logical_types: Dict[ColumnName, Union[str, LogicalType]] = None,
-    existing_logical_types: Dict[ColumnName, Union[str, LogicalType]] = None,
+    force_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
+    existing_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
+    ignore_columns: Optional[List[str]] = None,
     null_invalid_values: bool = False,
 ):
     """Performs type inference and updates underlying data"""
     force_logical_types = force_logical_types or {}
     existing_logical_types = existing_logical_types or {}
+    ignore_columns = ignore_columns or []
     parsed_logical_types = {}
     for name in dataframe.columns:
+        if name in ignore_columns and name in existing_logical_types:
+            parsed_logical_types[name] = existing_logical_types.get(name)
+            continue
         logical_type = (
             force_logical_types.get(name)
             if name in force_logical_types
