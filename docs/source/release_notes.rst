@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1503`)
+        * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
     * Documentation Changes
     * Testing Changes
         * Update development requirements and use latest for documentation (:pr:`1499`)

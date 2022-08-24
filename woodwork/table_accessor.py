@@ -16,7 +16,6 @@ from woodwork.accessor_utils import (
 from woodwork.exceptions import (
     ColumnBothIgnoredAndSetError,
     ColumnNotPresentError,
-    ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning,
@@ -1580,8 +1579,8 @@ def _check_logical_types(dataframe_columns, logical_types):
 
 
 def _check_ignore_columns(dataframe_columns, logical_types, schema, ignore_columns):
-    if not isinstance(ignore_columns, list):
-        raise TypeError("ignore_columns must be a list")
+    if not isinstance(ignore_columns, (list, set)):
+        raise TypeError("ignore_columns must be a list or set")
     cols_not_found = set(ignore_columns).difference(set(dataframe_columns))
     if cols_not_found:
         raise ColumnNotPresentError(
@@ -1599,8 +1598,7 @@ def _check_ignore_columns(dataframe_columns, logical_types, schema, ignore_colum
             )
     if not schema:
         raise WoodworkNotInitError(
-            "ignore_columns cannot be set when the dataframe has not been "
-            "initialized by woodwork."
+            "ignore_columns cannot be set when the dataframe has no existing " "schema."
         )
 
 

@@ -734,37 +734,78 @@ def test_float_dtype_inference_on_init():
     assert df["floats_nan_specified"].dtype == "float64"
 
 
-def test_ignore_columns_error_ww_not_init():
+def test_ignore_columns_error_columns_not_in_dataframe():
     df = pd.DataFrame()
     df["ints"] = [i for i in range(100)]
-    df["floats"] = [i * 1.1 for i in range(100)]
-    df["dates"] = pd.date_range("1/1/21", periods=100)
-
-    with pytest.raises(
-        WoodworkNotInitError,
-        match="ignore_columns cannot be set when the dataframe has not been initialized by woodwork.",
-    ):
-        df.ww.init(ignore_columns=["ints", "floats", "dates"])
-
-
-def test_ignore_columns_error_col_ignored_and_set():
-    df = pd.DataFrame()
-    df["ints"] = [i for i in range(100)]
-    df["floats"] = [i * 1.1 for i in range(100)]
-    df["dates"] = pd.date_range("1/1/21", periods=100)
-
-    logical_types = {
-        "ints": Integer,
-    }
 
     err_msg = re.escape(
-        "ignore_columns contains columns that are being set in logical_types: ['ints']",
+        "ignore_columns contains columns that are not present in dataframe: ['floats']",
+    )
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
+        df.ww.init(ignore_columns=["floats"])
+
+
+@pytest.mark.parametrize("type_", [list, set, tuple])
+def test_ignore_columns_errors_various(type_):
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+    df["floats"] = [i * 1.1 for i in range(100)]
+    df["dates"] = pd.date_range("1/1/21", periods=100)
+
+    if type_ in [list, set]:
+        # Checks that columns in ignore_columns must be part of existing schema
+        with pytest.raises(
+            WoodworkNotInitError,
+            match="ignore_columns cannot be set when the dataframe has no existing schema.",
+        ):
+            df.ww.init(ignore_columns=type_(["ints", "floats", "dates"]))
+
+        df.ww.init()
+        logical_types = {
+            "ints": Integer,
+        }
+        err_msg = re.escape(
+            "ignore_columns contains columns that are being set in logical_types: ['ints']",
+        )
+        # Checks that ignore_columns and logical_types don't overlap
+        with pytest.raises(ColumnBothIgnoredAndSetError, match=err_msg):
+            schema = df.ww.schema
+            df.ww.init(
+                ignore_columns=["ints", "floats", "dates"],
+                logical_types=logical_types,
+                schema=schema,
+            )
+    else:
+        # Checks for acceptable type
+        with pytest.raises(
+            TypeError,
+            match="ignore_columns must be a list or set",
+        ):
+            df.ww.init(ignore_columns=type_(["ints", "floats", "dates"]))
+
+
+def test_ignore_columns_can_force_logical_type_not_in_ignore_columns():
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+    df["floats"] = [i * 1.1 for i in range(100)]
+    df["dates"] = pd.date_range("1/1/21", periods=100)
+    df.ww.init()
+
+    assert isinstance(df.ww.logical_types["ints"], Integer)
+    assert isinstance(df.ww.logical_types["floats"], Double)
+    assert isinstance(df.ww.logical_types["dates"], Datetime)
+
+    schema = df.ww.schema
+    logical_types = {
+        "ints": IntegerNullable,
+    }
+    df.ww.init(
+        ignore_columns=["floats", "dates"], logical_types=logical_types, schema=schema
     )
 
-    with pytest.raises(ColumnBothIgnoredAndSetError, match=err_msg):
-        df.ww.init(
-            ignore_columns=["ints", "floats", "dates"], logical_types=logical_types
-        )
+    assert isinstance(df.ww.logical_types["ints"], IntegerNullable)
+    assert isinstance(df.ww.logical_types["floats"], Double)
+    assert isinstance(df.ww.logical_types["dates"], Datetime)
 
 
 @patch("woodwork.logical_types._replace_nans")
