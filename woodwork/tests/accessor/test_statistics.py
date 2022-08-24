@@ -1,6 +1,5 @@
 import re
 import sys
-import warnings
 from datetime import datetime
 from inspect import isclass
 from unittest.mock import patch
@@ -528,7 +527,7 @@ def test_dependence_drop_columns(logical_types):
 
     df = pd.DataFrame(cat_values)
     df.ww.init(logical_types=log_types)
-    string_warning = "Dropping columns \['c_column'\] to allow mutual information"
+    string_warning = r"Dropping columns \['c_column'\] to allow mutual information"
     with pytest.warns(UserWarning, match=string_warning):
         for dep_dict_str in [
             str(df.ww.dependence_dict()),
