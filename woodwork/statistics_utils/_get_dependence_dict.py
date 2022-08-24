@@ -1,3 +1,4 @@
+import warnings
 from collections import defaultdict
 from timeit import default_timer as timer
 
@@ -100,6 +101,13 @@ def _get_dependence_dict(
     if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
         cols_to_drop = _find_large_categorical_columns(dataframe, max_nunique)
+        if len(cols_to_drop):
+            warnings.warn(
+                "Dropping columns {} to allow mutual information to run faster".format(
+                    cols_to_drop,
+                ),
+                UserWarning,
+            )
         mutual_columns = [
             col
             for col in _get_valid_columns(dataframe, mi_types)

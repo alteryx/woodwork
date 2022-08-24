@@ -1,5 +1,6 @@
 import re
 import sys
+import warnings
 from datetime import datetime
 from inspect import isclass
 from unittest.mock import patch
@@ -527,18 +528,20 @@ def test_dependence_drop_columns(logical_types):
 
     df = pd.DataFrame(cat_values)
     df.ww.init(logical_types=log_types)
-    for dep_dict_str in [
-        str(df.ww.dependence_dict()),
-        str(df.ww.mutual_information_dict()),
-    ]:
-        # based on natural column ordering, "c_column" will be missing rather than "d_column"
-        # even though both have same number of uniques
-        assert "c_column" not in dep_dict_str
-        assert "d_column" in dep_dict_str
-        if logical_types["a_column"] == "Categorical":
-            assert "a_column" in dep_dict_str
-        else:
-            assert "a_column" not in dep_dict_str
+    string_warning = "Dropping columns \['c_column'\] to allow mutual information"
+    with pytest.warns(UserWarning, match=string_warning):
+        for dep_dict_str in [
+            str(df.ww.dependence_dict()),
+            str(df.ww.mutual_information_dict()),
+        ]:
+            # based on natural column ordering, "c_column" will be missing rather than "d_column"
+            # even though both have same number of uniques
+            assert "c_column" not in dep_dict_str
+            assert "d_column" in dep_dict_str
+            if logical_types["a_column"] == "Categorical":
+                assert "a_column" in dep_dict_str
+            else:
+                assert "a_column" not in dep_dict_str
 
 
 @pytest.mark.parametrize("nunique", [1000, 2001])
@@ -617,8 +620,6 @@ def test_dependence_drop_columns_dask_spark(df_type):
         str(df.ww.dependence(max_nunique=1000)),
         str(df.ww.mutual_information(max_nunique=1000)),
     ]:
-        # if df_type == 'spark':
-        #     breakpoint()
         # based on natural column ordering, "a_column" will be missing rather than "c_column"
         # even though both have same number of uniques
         assert "c_column" in dep_dict_str
