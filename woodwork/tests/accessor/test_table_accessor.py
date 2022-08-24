@@ -800,7 +800,7 @@ def test_ignore_columns_can_force_logical_type_not_in_ignore_columns():
         "ints": IntegerNullable,
     }
     df.ww.init(
-        ignore_columns=["floats", "dates"], logical_types=logical_types, schema=schema
+        ignore_columns={"floats", "dates"}, logical_types=logical_types, schema=schema
     )
 
     assert isinstance(df.ww.logical_types["ints"], IntegerNullable)
