@@ -66,7 +66,7 @@ class WoodworkTableAccessor:
             logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
-            ignore_columns (list[str], optional): List of columns to ignore for inferring logical types. If a column name
+            ignore_columns (list[str] or set[str], optional): List of columns to ignore for inferring logical types. If a column name
                 is included in this list, then it cannot be part of the logical_types dictionary argument, and it must be part
                 of an existing schema for the dataframe. This argument can be used when a column has a logical type that has
                 already been inferred and its physical dtype is not expected to have changed since its last inference.
@@ -165,7 +165,7 @@ class WoodworkTableAccessor:
             logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
-            ignore_columns (list[str], optional): List of columns to ignore for inferring logical types. If a column name
+            ignore_columns (list[str] or set[str], optional): List of columns to ignore for inferring logical types. If a column name
                 is included in this list, then it cannot be part of the logical_types dictionary argument, and it must be part
                 of an existing schema for the dataframe. This argument can be used when a column has a logical type that has
                 already been inferred and its physical dtype is not expected to have changed since its last inference.
