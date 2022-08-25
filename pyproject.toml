@@ -7,8 +7,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "woodwork"
+readme = "README.md"
 description = "a data typing library for machine learning"
-dynamic = ["version", "readme"]
+dynamic = ["version"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -43,12 +44,12 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://woodwork.alteryx.com"
+"Documentation" = "https://woodwork.alteryx.com"
 "Source Code"= "https://github.com/alteryx/woodwork/"
-Changes = "https://woodwork.alteryx.com/en/latest/release_notes.html"
+"Changes" = "https://woodwork.alteryx.com/en/latest/release_notes.html"
 "Issue Tracker" = "https://github.com/alteryx/woodwork/issues"
-Twitter = "https://twitter.com/alteryxoss"
-Chat = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA"
+"Twitter" = "https://twitter.com/alteryxoss"
+"Chat" = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA"
 
 [project.optional-dependencies]
 "test" = [
@@ -126,7 +127,6 @@ namespaces = true
 
 [tool.setuptools.dynamic]
 version = {attr = "woodwork.version.__version__"}
-readme = {file = ["README.md"]}
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
