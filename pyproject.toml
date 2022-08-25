@@ -51,7 +51,7 @@ Twitter = "https://twitter.com/alteryxoss"
 Chat = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiCEf8TBziuKp0bNA"
 
 [project.optional-dependencies]
-test = [
+"test" = [
     "pytest == 7.0.1",
     "pytest-cov == 2.10.1",
     "pytest-xdist == 2.1.0",
@@ -60,17 +60,17 @@ test = [
     "smart-open >= 5.0.0",
     "pyarrow >= 4.0.1",
 ]
-dask = [
+"dask" = [
     "dask[dataframe] >= 2021.10.0, <2022.8.0",
 ]
-spark = [
+"spark" = [
     "pyspark >= 3.2.0, <3.3.0",
     "pandas >= 1.4.3",
 ]
 "update_checker" = [
     "alteryx-open-src-update-checker >= 2.0.0"
 ]
-docs = [
+"docs" = [
     "Sphinx == 5.1.1",
     "nbsphinx == 0.8.9",
     "pydata-sphinx-theme == 0.9.0",
@@ -84,7 +84,7 @@ docs = [
     "woodwork[spark]",
     "woodwork[test]",
 ]
-dev = [
+"dev" = [
     "flake8 == 5.0.4",
     "isort == 5.10.1",
     "black[jupyter] == 22.6.0",
@@ -95,7 +95,7 @@ dev = [
     "woodwork[spark]",
     "woodwork[test]",
 ]
-complete = [
+"complete" = [
     "woodwork[dask]",
     "woodwork[spark]",
     "woodwork[update_checker]",
