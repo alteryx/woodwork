@@ -67,7 +67,7 @@ spark = [
     "pyspark >= 3.2.0, <3.3.0",
     "pandas >= 1.4.3",
 ]
-update_checker = [
+"update_checker" = [
     "alteryx-open-src-update-checker >= 2.0.0"
 ]
 docs = [
