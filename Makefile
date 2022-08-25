@@ -45,8 +45,8 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
-.PHONY: package_woodwork
-package_woodwork: upgradepip upgradebuild
+.PHONY: package
+package: upgradepip upgradebuild
 	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/woodwork-${PACKAGE}.tar.gz"

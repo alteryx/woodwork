@@ -24,7 +24,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Build woodwork and install
         run: |
-          make package_woodwork
+          make package
           python -m pip install unpacked_sdist/
       - name: Run simple woodwork usage
         run: |

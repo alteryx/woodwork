@@ -23,7 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Build woodwork package
-        run: make package_woodwork
+        run: make package
       - name: Install complete version of woodwork
         run: |
           pip config --site set global.progress_bar off
