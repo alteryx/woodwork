@@ -104,8 +104,10 @@ dependencies = [
 
 [tool.setuptools]
 include-package-data = true
-packages = ["woodwork"]
 license-files = ["LICENSE"]
+
+[tool.setuptools.packages.find]
+namespaces = true
 
 [tool.setuptools.package-data]
 "*" = [
