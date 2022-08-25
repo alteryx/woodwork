@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Transition from setup.cfg to pyproject.toml (:pr:`778`)
     * Documentation Changes
     * Testing Changes
         * Update development requirements and use latest for documentation (:pr:`1499`)
