@@ -103,6 +103,7 @@ Chat = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiC
 
 [tool.setuptools]
 include-package-data = true
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 namespaces = true
