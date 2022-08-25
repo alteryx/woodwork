@@ -67,7 +67,7 @@ Chat = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiC
     "pyspark >= 3.2.0, <3.3.0",
     "pandas >= 1.4.3",
 ]
-"update_checker" = [
+"update-checker" = [
     "alteryx-open-src-update-checker >= 2.0.0"
 ]
 "docs" = [
@@ -98,7 +98,7 @@ Chat = "https://join.slack.com/t/alteryx-oss/shared_invite/zt-182tyvuxv-NzIn6eiC
 "complete" = [
     "woodwork[dask]",
     "woodwork[spark]",
-    "woodwork[update_checker]",
+    "woodwork[update-checker]",
 ]
 
 [tool.setuptools]
