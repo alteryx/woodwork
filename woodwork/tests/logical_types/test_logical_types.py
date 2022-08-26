@@ -157,16 +157,16 @@ def test_latlong_transform(latlong_df):
 
 def test_latlong_transform_empty_series(empty_latlong_df):
     df_type = str(type(empty_latlong_df))
-    dask = "dask" in df_type
-    spark = "spark" in df_type
+    is_dask = "dask" in df_type
+    is_spark = "spark" in df_type
 
     latlong = LatLong()
     series = empty_latlong_df['latlong']
     actual = latlong.transform(series)
 
-    if dask:
+    if is_dask:
         actual = actual.compute()
-    elif spark:
+    elif is_spark:
         actual = actual.to_pandas()
 
     assert actual.empty
