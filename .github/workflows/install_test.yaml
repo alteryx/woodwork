@@ -39,4 +39,4 @@ jobs:
         run: |
           python -m pip install "unpacked_sdist/[dask]"
           python -m pip install "unpacked_sdist/[spark]"
-          python -m pip install "unpacked_sdist/[update-checker]"
+          python -m pip install "unpacked_sdist/[update_checker]"

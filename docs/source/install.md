@@ -39,7 +39,7 @@ $ python -m pip install "woodwork[spark]"
 ```
 ```{tab} Update Checker
 ```console
-$ python -m pip install "woodwork[update-checker]"
+$ python -m pip install "woodwork[update_checker]"
 ```
 ````
 ````{tab} Conda
