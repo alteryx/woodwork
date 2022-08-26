@@ -161,7 +161,7 @@ def test_latlong_transform_empty_series(empty_latlong_df):
     is_spark = "spark" in df_type
 
     latlong = LatLong()
-    series = empty_latlong_df['latlong']
+    series = empty_latlong_df["latlong"]
     actual = latlong.transform(series)
 
     if is_dask:
@@ -687,12 +687,14 @@ def test_null_invalid_postal_code_numeric():
 
 
 @pytest.mark.parametrize(
-    "null_type", [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", 5]
+    "null_type",
+    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", 5],
 )
 @pytest.mark.parametrize("data_type", [int, float])
 def test_integer_nullable(data_type, null_type):
     nullable_nums = pd.DataFrame(
-        map(data_type, [1, 2, 3, 4, 5] * 20), columns=["num_nulls"]
+        map(data_type, [1, 2, 3, 4, 5] * 20),
+        columns=["num_nulls"],
     )
     nullable_nums["num_nulls"].iloc[-5:] = (
         [None, pd.NA, np.nan, "NA", "none"]
@@ -711,7 +713,8 @@ def test_integer_nullable(data_type, null_type):
 
 
 @pytest.mark.parametrize(
-    "null_type", [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True]
+    "null_type",
+    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True],
 )
 def test_boolean_nullable(null_type):
     nullable_bools = pd.DataFrame([True, False] * 50, columns=["bool_nulls"])
@@ -724,7 +727,8 @@ def test_boolean_nullable(null_type):
 
     if not isinstance(null_type, bool):
         assert isinstance(
-            nullable_bools.ww.logical_types["bool_nulls"], BooleanNullable
+            nullable_bools.ww.logical_types["bool_nulls"],
+            BooleanNullable,
         )
         assert all(nullable_bools["bool_nulls"][-5:].isna())
     else:
