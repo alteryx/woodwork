@@ -7,13 +7,14 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
     * Changes
     * Documentation Changes
     * Testing Changes
         * Update development requirements and use latest for documentation (:pr:`1499`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 v0.17.2 August 5, 2022
 ======================
