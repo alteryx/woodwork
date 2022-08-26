@@ -68,7 +68,7 @@ dependencies = [
     "pandas >= 1.4.3",
 ]
 "update_checker" = [
-    "alteryx-open-src-update-checker >= 2.0.0"
+    "alteryx-open-src-update-checker >= 2.1.0"
 ]
 "docs" = [
     "Sphinx == 5.1.1",
