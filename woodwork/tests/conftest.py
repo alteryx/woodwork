@@ -698,6 +698,28 @@ def latlong_df(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture()
+def empty_latlong_df_pandas():
+    return pd.DataFrame({"latlong": []}, dtype="object")
+
+@pytest.fixture()
+def empty_latlong_df_dask(empty_latlong_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(empty_latlong_df_pandas, npartitions=2)
+
+@pytest.fixture()
+def empty_latlong_df_spark(empty_latlong_df_pandas):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    return ps.from_pandas(
+        empty_latlong_df_pandas.applymap(
+            lambda tup: list(tup) if isinstance(tup, tuple) else tup,
+        ),
+    )
+
+@pytest.fixture(params=["empty_latlong_df_pandas", "empty_latlong_df_dask", "empty_latlong_df_spark"])
+def empty_latlong_df(request):
+    return request.getfixturevalue(request.param)
+
 # LatLong Fixtures for testing access to latlong values
 @pytest.fixture
 def pandas_latlongs():

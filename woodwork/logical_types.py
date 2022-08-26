@@ -533,9 +533,8 @@ class LatLong(LogicalType):
 
         if _is_dask_series(series):
             name = series.name
-            meta = (series, tuple([float, float]))
+            meta = (name, tuple([float, float]))
             series = series.apply(_reformat_to_latlong, meta=meta)
-            series.name = name
         elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
                 _reformat_to_latlong,

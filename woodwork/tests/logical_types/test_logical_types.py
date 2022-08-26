@@ -155,6 +155,25 @@ def test_latlong_transform(latlong_df):
         pd.testing.assert_series_equal(actual, expected)
 
 
+def test_latlong_transform_empty_series(empty_latlong_df):
+    df_type = str(type(empty_latlong_df))
+    dask = "dask" in df_type
+    spark = "spark" in df_type
+
+    latlong = LatLong()
+    series = empty_latlong_df['latlong']
+    actual = latlong.transform(series)
+
+    if dask:
+        actual = actual.compute()
+    elif spark:
+        actual = actual.to_pandas()
+
+    assert actual.empty
+    assert actual.name == "latlong"
+    assert actual.dtype == latlong.primary_dtype
+
+
 def test_latlong_validate(latlong_df):
     error_message = re.escape(
         "Cannot initialize Woodwork. Series does not contain properly formatted "
