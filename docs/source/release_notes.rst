@@ -7,14 +7,17 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
+        * Transition from setup.cfg to pyproject.toml (:pr:`1506`)
+        * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
     * Documentation Changes
     * Testing Changes
         * Update development requirements and use latest for documentation (:pr:`1499`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`ParthivNaresh`, :user:`rwedge`
 
 v0.17.2 August 5, 2022
 ======================
