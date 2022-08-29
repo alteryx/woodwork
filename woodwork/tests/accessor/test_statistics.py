@@ -508,7 +508,11 @@ def test_dependence_dropna():
 
 @pytest.mark.parametrize(
     "logical_types",
-    [{"a_column": "Unknown"}, {"a_column": "Categorical"}],
+    [
+        {"a_column": "Unknown"},
+        {"a_column": "Categorical"},
+        {"a_column": "SubRegionCode"},
+    ],
 )
 def test_dependence_drop_columns(logical_types):
     log_types = {
@@ -537,10 +541,10 @@ def test_dependence_drop_columns(logical_types):
             # even though both have same number of uniques
             assert "c_column" not in dep_dict_str
             assert "d_column" in dep_dict_str
-            if logical_types["a_column"] == "Categorical":
-                assert "a_column" in dep_dict_str
-            else:
+            if logical_types["a_column"] == "Unknown":
                 assert "a_column" not in dep_dict_str
+            else:
+                assert "a_column" in dep_dict_str
 
 
 @pytest.mark.parametrize("nunique", [1000, 2001])

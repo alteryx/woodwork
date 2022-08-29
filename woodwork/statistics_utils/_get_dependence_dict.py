@@ -76,7 +76,7 @@ def _get_dependence_dict(
             to measure accurately and will return a NaN value. Must be
             non-negative. Defaults to 25.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        max_nunique (int): The maximum number of unique values for large categorical columns (> 800 unique values).
+        max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
     Returns:

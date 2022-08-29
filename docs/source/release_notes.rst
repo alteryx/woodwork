@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Updated ``dependence_dict`` and ``mutual_information`` to drop large Categorical columns during mutual information calculation, non-dask only. (:pr:`1501`)
+        * Updated ``dependence_dict`` and ``mutual_information`` to drop to drop Categorical columns with a large number of unique values during mutual information calculation, non-dask only. (:pr:`1501`)
     * Fixes
     * Changes
         * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
