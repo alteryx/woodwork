@@ -95,8 +95,8 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
       - https://github.com/alteryx/woodwork-feedstock/branches
 5. Verify that the PR has the following:
     * The `build['number']` is 0 (in __recipe/meta.yml__).
-    * The `requirements['run']` (in __recipe/meta.yml__) match the `install_requires` in __woodwork/pyproject.toml__.
-    * The `test['requires']` (in __recipe/meta.yml__) match the test requirements in `[options.extras_require]` in __woodwork/pyproject.toml__
+    * The `requirements['run']` (in __recipe/meta.yml__) matches the `[project]['dependencies']` in __woodwork/pyproject.toml__.
+    * The `test['requires']` (in __recipe/meta.yml__) matches the `[project.optional-dependencies]['test']` in __woodwork/pyproject.toml__
 6. Satisfy the conditions in pull request description and **merge it if the CI passes**.
 
 ### Option 2: Waiting for bot to create new PR
