@@ -31,11 +31,11 @@ jobs:
           fetch-depth: '0'
       - name: Run Create Feedstock meta YAML
         id: create-feedstock-meta
-        uses: alteryx/create-feedstock-meta-yaml@v3
+        uses: alteryx/create-feedstock-meta-yaml@v4
         with:
           project: "woodwork"
           pypi_version: ${{ github.event.inputs.version }}
-          setup_cfg_filepath: "woodwork/setup.cfg"
+          project_metadata_filepath: "woodwork/pyproject.toml"
           meta_yaml_filepath: "woodwork-feedstock/recipe/meta.yaml"
       - name: View updated meta yaml
         run: cat woodwork-feedstock/recipe/meta.yaml

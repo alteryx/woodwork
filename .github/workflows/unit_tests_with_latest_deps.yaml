@@ -33,7 +33,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 2
       - name: Build woodwork package
-        run: make package_woodwork
+        run: make package
       - name: Set up pip
         run: |
           pip config --site set global.progress_bar off

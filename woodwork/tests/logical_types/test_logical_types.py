@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_spark_series, init_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series, init_series
 from woodwork.exceptions import (
     TypeConversionError,
     TypeConversionWarning,
@@ -154,6 +154,21 @@ def test_latlong_transform(latlong_df):
 
         expected = pd.Series(expected_data[column], name=column)
         pd.testing.assert_series_equal(actual, expected)
+
+
+def test_latlong_transform_empty_series(empty_latlong_df):
+    latlong = LatLong()
+    series = empty_latlong_df["latlong"]
+    actual = latlong.transform(series)
+
+    if _is_dask_series(actual):
+        actual = actual.compute()
+    elif _is_spark_series(actual):
+        actual = actual.to_pandas()
+
+    assert actual.empty
+    assert actual.name == "latlong"
+    assert actual.dtype == latlong.primary_dtype
 
 
 def test_latlong_validate(latlong_df):
@@ -669,12 +684,14 @@ def test_null_invalid_postal_code_numeric():
 
 
 @pytest.mark.parametrize(
-    "null_type", [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", 5]
+    "null_type",
+    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", 5],
 )
 @pytest.mark.parametrize("data_type", [int, float])
 def test_integer_nullable(data_type, null_type):
     nullable_nums = pd.DataFrame(
-        map(data_type, [1, 2, 3, 4, 5] * 20), columns=["num_nulls"]
+        map(data_type, [1, 2, 3, 4, 5] * 20),
+        columns=["num_nulls"],
     )
     nullable_nums["num_nulls"].iloc[-5:] = (
         [None, pd.NA, np.nan, "NA", "none"]
@@ -693,7 +710,8 @@ def test_integer_nullable(data_type, null_type):
 
 
 @pytest.mark.parametrize(
-    "null_type", [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True]
+    "null_type",
+    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True],
 )
 def test_boolean_nullable(null_type):
     nullable_bools = pd.DataFrame([True, False] * 50, columns=["bool_nulls"])
@@ -706,7 +724,8 @@ def test_boolean_nullable(null_type):
 
     if not isinstance(null_type, bool):
         assert isinstance(
-            nullable_bools.ww.logical_types["bool_nulls"], BooleanNullable
+            nullable_bools.ww.logical_types["bool_nulls"],
+            BooleanNullable,
         )
         assert all(nullable_bools["bool_nulls"][-5:].isna())
     else:
