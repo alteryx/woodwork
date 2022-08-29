@@ -27,6 +27,7 @@ from woodwork.logical_types import (
     Ordinal,
     PhoneNumber,
     PostalCode,
+    _replace_nans,
 )
 from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
@@ -729,3 +730,17 @@ def test_boolean_nullable(null_type):
         assert all(nullable_bools["bool_nulls"][-5:].isna())
     else:
         assert isinstance(nullable_bools.ww.logical_types["bool_nulls"], Boolean)
+
+
+def test_replace_nans_same_types():
+    series = pd.Series([1, 3, 5, -6, "nan"], dtype="object")
+
+    new_series = _replace_nans(series, LatLong.primary_dtype)  # Object dtype
+
+    assert new_series.dtype == "object"
+    pd.testing.assert_series_equal(new_series, pd.Series([1, 3, 5, -6, "nan"]))
+
+    new_series = _replace_nans(series, Double.primary_dtype)
+
+    assert new_series.dtype == "float"
+    pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))

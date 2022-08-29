@@ -1,5 +1,6 @@
 import re
 import warnings
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -216,7 +217,7 @@ class BooleanNullable(LogicalType):
     primary_dtype = "boolean"
 
     def transform(self, series, null_invalid_values=False):
-        series = _replace_nans(series)
+        series = _replace_nans(series, self.primary_dtype)
         if null_invalid_values:
             series = _coerce_boolean(series)
         return super().transform(series)
@@ -374,7 +375,7 @@ class Double(LogicalType):
     standard_tags = {"numeric"}
 
     def transform(self, series, null_invalid_values=False):
-        series = _replace_nans(series)
+        series = _replace_nans(series, self.primary_dtype)
         if null_invalid_values:
             series = _coerce_numeric(series)
         return super().transform(series)
@@ -422,7 +423,7 @@ class IntegerNullable(LogicalType):
         Returns:
             Series: A series of integers.
         """
-        series = _replace_nans(series)
+        series = _replace_nans(series, self.primary_dtype)
         if null_invalid_values:
             series = _coerce_integer(series)
         return super().transform(series)
@@ -834,12 +835,14 @@ def _regex_validate(regex_key, series, return_invalid_values):
             raise TypeValidationError(info)
 
 
-def _replace_nans(series: pd.Series) -> pd.Series:
+def _replace_nans(series: pd.Series, primary_dtype: Optional[str] = None) -> pd.Series:
     """
     Replaces empty string values, string representations of NaN values ("nan", "<NA>"), and NaN equivalents
     with np.nan or pd.NA depending on column dtype.
     """
     original_dtype = series.dtype
+    if primary_dtype == str(original_dtype):
+        return series
     if str(original_dtype) == "string":
         series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return series
