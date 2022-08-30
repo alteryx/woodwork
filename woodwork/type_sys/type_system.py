@@ -315,6 +315,10 @@ class TypeSystem(object):
         def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check
             # any children of NaturalLanguage, otherwise they never get evaluated
+
+            if not pd.api.types.is_numeric_dtype(series):
+                series = try_numeric_types(series)
+
             check_next = []
             for logical_type in types_to_check:
                 inference_func = self.inference_functions.get(logical_type)
@@ -413,3 +417,10 @@ type_system = TypeSystem(
     relationships=DEFAULT_RELATIONSHIPS,
     default_type=DEFAULT_TYPE,
 )
+
+
+def try_numeric_types(data):
+    parsed_data = pd.to_numeric(data, errors="ignore")
+    if pd.api.types.is_numeric_dtype(parsed_data):
+        return parsed_data
+    return data
