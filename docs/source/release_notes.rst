@@ -9,7 +9,7 @@ Future Release
     * Fixes
         * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
     * Changes
-        * Transition from setup.cfg to pyproject.toml (:pr:`1506`)
+        * Transition from setup.cfg to pyproject.toml (:pr:`1506`,:pr:`1508`)
         * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
     * Documentation Changes
     * Testing Changes
