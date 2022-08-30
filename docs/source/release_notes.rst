@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Updated ``dependence_dict`` and ``mutual_information`` to drop to drop Categorical columns with a large number of unique values during mutual information calculation, non-dask only. (:pr:`1501`)
     * Fixes
         * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
     * Changes
@@ -16,7 +17,7 @@ Future Release
         * Update development requirements and use latest for documentation (:pr:`1499`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ParthivNaresh`, :user:`rwedge`
+    :user:`gsheni`, :user:`ParthivNaresh`, :user:`rwedge`, :user:`bchen1116`
 
 v0.17.2 August 5, 2022
 ======================
