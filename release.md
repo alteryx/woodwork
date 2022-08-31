@@ -99,8 +99,6 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
     * The `build['number']` is 0 (in __recipe/meta.yml__).
     * The `requirements['run']` (in __recipe/meta.yml__) matches the `[project]['dependencies']` in __woodwork/pyproject.toml__.
     * The `test['requires']` (in __recipe/meta.yml__) matches the `[project.optional-dependencies]['test']` in __woodwork/pyproject.toml__
-    > There will be 2 entries for graphviz: `graphviz` and `python-graphviz`. 
-    > Make sure `python-graphviz` (in __recipe/meta.yml__) matches `graphviz` in `[project.optional-dependencies]['test']` in __woodwork/pyproject.toml__.
 4. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
 
 ### Option b: Waiting for bot to create new PR
