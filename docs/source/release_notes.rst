@@ -9,7 +9,7 @@ Future Release
         * Updated ``dependence_dict`` and ``mutual_information`` to drop to drop Categorical columns with a large number of unique values during mutual information calculation, non-dask only. (:pr:`1501`)
     * Fixes
         * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
-        * Fix datetime pivot point to be set at 2030 rather than the default for two-digit years (:pr:``)
+        * Fix datetime pivot point to be set at 2030 rather than the default for two-digit years (:pr:`1512`)
     * Changes
         * Transition from setup.cfg to pyproject.toml (:pr:`1506`,:pr:`1508`)
         * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
