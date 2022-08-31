@@ -296,7 +296,6 @@ class Datetime(LogicalType):
     def __init__(self, datetime_format=None, timezone=None):
         self.datetime_format = datetime_format
         self.timezone = timezone
-        self._apply_filter = False
 
     def _remove_timezone(self, series):
         """Removes timezone from series and stores in logical type."""
@@ -314,18 +313,31 @@ class Datetime(LogicalType):
                 date = date.replace(year=date.year - 100)
             return date
 
+        apply_filter = False
         new_dtype = self._get_valid_dtype(type(series))
         series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
 
         if series_dtype == "object":
-
-            def _find_max(item):
-                return max(map(lambda x: len(x), re.findall(r"\d+", item)))
-
-            max_len_series = max(series.apply(_find_max))
-            if max_len_series == 2:
-                self._apply_filter = True
+            numbers_in_date = []
+            for (
+                _,
+                series_val,
+            ) in (
+                series.iteritems()
+            ):  # use iteritems to support iterating through pyspark series
+                try:
+                    vals = re.findall(r"\d+", series_val)
+                    if len(vals):
+                        numbers_in_date.append(vals)
+                except TypeError:
+                    # for values like NaT, None, etc that aren't string/byte types
+                    continue
+            list_lengths = list(
+                map(lambda x: max([len(g) for g in x]), numbers_in_date),
+            )
+            if len(list_lengths) and max(list_lengths) == 2:
+                apply_filter = True
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
@@ -373,7 +385,7 @@ class Datetime(LogicalType):
                     )
 
         series = self._remove_timezone(series)
-        if self._apply_filter:
+        if apply_filter:
             series = series.apply(_year_filter)
         return super().transform(series)
 

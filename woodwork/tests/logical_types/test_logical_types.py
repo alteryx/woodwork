@@ -751,44 +751,32 @@ def test_replace_nans_same_types():
 def test_datetime_pivot_point(delim):
     dates = [
         "01/01/24",
-        "01/01/28",
         "01/01/30",
         "01/01/32",
         "01/01/36",
-        "01/01/40",
-        "01/01/44",
-        "01/01/48",
         "01/01/52",
         "01/01/56",
         "01/01/60",
-        "01/01/64",
-        "01/01/68",
         "01/01/72",
         "01/01/76",
         "01/01/80",
-        "01/01/84",
+        None,
         "01/01/88",
     ]
     if delim != "/":
-        dates = [s.replace("/", delim) for s in dates]
+        dates = [s.replace("/", delim) if s is not None else s for s in dates]
     expected_values = [
         "2024-01-01",
-        "2028-01-01",
         "2030-01-01",
         "1932-01-01",
         "1936-01-01",
-        "1940-01-01",
-        "1944-01-01",
-        "1948-01-01",
         "1952-01-01",
         "1956-01-01",
         "1960-01-01",
-        "1964-01-01",
-        "1968-01-01",
         "1972-01-01",
         "1976-01-01",
         "1980-01-01",
-        "1984-01-01",
+        None,
         "1988-01-01",
     ]
     df = pd.DataFrame({"dates": dates})
@@ -802,21 +790,11 @@ def test_datetime_pivot_point_should_not_apply(delim):
     dates = [
         "01/01/1924",
         "01/01/1928",
-        "01/01/1930",
-        "01/01/1932",
-        "01/01/1936",
-        "01/01/1940",
-        "01/01/1944",
-        "01/01/1948",
-        "01/01/1952",
-        "01/01/1956",
         "01/01/1960",
         "01/01/1964",
         "01/01/1968",
         "01/01/1972",
         "01/01/2076",
-        "01/01/2080",
-        "01/01/2084",
         "01/01/2088",
     ]
     if delim == "-":
@@ -824,24 +802,60 @@ def test_datetime_pivot_point_should_not_apply(delim):
     expected_values = [
         "1924-01-01",
         "1928-01-01",
-        "1930-01-01",
-        "1932-01-01",
-        "1936-01-01",
-        "1940-01-01",
-        "1944-01-01",
-        "1948-01-01",
-        "1952-01-01",
-        "1956-01-01",
         "1960-01-01",
         "1964-01-01",
         "1968-01-01",
         "1972-01-01",
         "2076-01-01",
-        "2080-01-01",
-        "2084-01-01",
         "2088-01-01",
     ]
     df = pd.DataFrame({"dates": dates})
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df.ww.init(logical_types={"dates": Datetime})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("type", ["pyspark", "dask"])
+def test_pyspark_dask_series(type):
+    dates = [
+        "01/01/24",
+        "01/01/28",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/40",
+        "01/01/72",
+        None,
+        "01/01/88",
+    ]
+    expected_values = [
+        "2024-01-01",
+        "2028-01-01",
+        "2030-01-01",
+        "1932-01-01",
+        "1936-01-01",
+        "1940-01-01",
+        "1972-01-01",
+        None,
+        "1988-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    if type == "pyspark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    else:
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=2)
+    df.ww.init(logical_types={"dates": Datetime})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    if type == "pyspark":
+        df = df.to_pandas()
+    else:
+        df = df.compute()
     pd.testing.assert_frame_equal(df, df_expected)
