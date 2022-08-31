@@ -891,6 +891,7 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
@@ -921,6 +922,9 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -937,6 +941,7 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
         )
 
     def mutual_information(
@@ -948,6 +953,7 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Call woodwork.utils.get_valid_mi_types to see which Logical Types support
@@ -977,6 +983,9 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -991,6 +1000,7 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
         )
         return pd.DataFrame(mutual_info)
 
@@ -1108,6 +1118,7 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -1152,6 +1163,9 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and keys for the specified dependence measures. The list is
@@ -1170,6 +1184,7 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
         )
 
     def dependence(
@@ -1182,6 +1197,7 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -1226,6 +1242,9 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The maximum number of unique values for large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
         Returns:
             pd.DataFrame: A DataFrame with the columns `column_1`,
             `column_2`, and keys for the specified dependence measures. The rows
@@ -1245,6 +1264,7 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
         )
         return pd.DataFrame(dep_dict)
 

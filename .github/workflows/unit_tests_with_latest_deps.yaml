@@ -8,6 +8,7 @@ on:
 
 env:
   PYARROW_IGNORE_TIMEZONE: 1
+  JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 
 name: Unit Tests - Latest Dependencies
@@ -32,7 +33,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 2
       - name: Build woodwork package
-        run: make package_woodwork
+        run: make package
       - name: Set up pip
         run: |
           pip config --site set global.progress_bar off
@@ -46,7 +47,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install unpacked_sdist/[spark]
           python -m pip install unpacked_sdist/[dask]
           cd unpacked_sdist

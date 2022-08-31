@@ -3,16 +3,41 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
         * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
         * Fixed case in which coercing a boolean column with null values to ``Boolean`` resulted in imputation instead of an error (:pr:`1487`)
     * Changes
     * Documentation Changes
-       * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
     * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.18.0 August 31, 2022
+=======================
+    * Enhancements
+        * Updated ``dependence_dict`` and ``mutual_information`` to drop to drop Categorical columns with a large number of unique values during mutual information calculation, non-dask only. (:pr:`1501`)
+    * Fixes
+        * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
+    * Changes
+        * Transition from setup.cfg to pyproject.toml (:pr:`1506`,:pr:`1508`)
+        * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
+    * Testing Changes
+        * Update development requirements and use latest for documentation (:pr:`1499`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`
+
+v0.17.2 August 5, 2022
+======================
+    * Fixes
+        * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
+    * Documentation Changes
+        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
+    * Testing Changes
+        * Add create feedstock PR workflow (:pr:`1489`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`chukarsten`, :user:`ParthivNaresh`

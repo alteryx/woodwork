@@ -79,7 +79,7 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -102,6 +102,8 @@ html_theme = "pydata_sphinx_theme"
 # documentation.
 #
 html_theme_options = {
+    "pygment_light_style": "tango",
+    "pygment_dark_style": "native",
     "icon_links": [
         {
             "name": "GitHub",
@@ -254,9 +256,9 @@ copybutton_prompt_is_regexp = True
 
 # If woodwork is open-sourced: replace github specific style.css
 extlinks = {
-    "issue": ("https://github.com/alteryx/woodwork/issues/%s", "#"),
-    "pr": ("https://github.com/alteryx/woodwork/pull/%s", "#"),
-    "user": ("https://github.com/%s", "@"),
+    "issue": ("https://github.com/alteryx/woodwork/issues/%s", "GH#%s"),
+    "pr": ("https://github.com/alteryx/woodwork/pull/%s", "GH#%s"),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 autosummary_generate = ["api_reference.rst"]
