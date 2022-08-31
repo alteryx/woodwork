@@ -1,5 +1,4 @@
 import re
-from xmlrpc.client import DateTime
 
 import numpy as np
 import pandas as pd
@@ -851,7 +850,7 @@ def test_pyspark_dask_series(type):
             "dask.dataframe",
             reason="Dask not installed, skipping",
         )
-        df = dd.from_pandas(df, npartitions=2)
+        df = dd.from_pandas(df)
     df.ww.init(logical_types={"dates": Datetime})
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     if type == "pyspark":
