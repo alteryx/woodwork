@@ -1,4 +1,5 @@
 import re
+from xmlrpc.client import DateTime
 
 import numpy as np
 import pandas as pd
@@ -744,3 +745,103 @@ def test_replace_nans_same_types():
 
     assert new_series.dtype == "float"
     pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))
+
+
+@pytest.mark.parametrize("delim", ["/", "-", "."])
+def test_datetime_pivot_point(delim):
+    dates = [
+        "01/01/24",
+        "01/01/28",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/40",
+        "01/01/44",
+        "01/01/48",
+        "01/01/52",
+        "01/01/56",
+        "01/01/60",
+        "01/01/64",
+        "01/01/68",
+        "01/01/72",
+        "01/01/76",
+        "01/01/80",
+        "01/01/84",
+        "01/01/88",
+    ]
+    if delim != "/":
+        dates = [s.replace("/", delim) for s in dates]
+    expected_values = [
+        "2024-01-01",
+        "2028-01-01",
+        "2030-01-01",
+        "1932-01-01",
+        "1936-01-01",
+        "1940-01-01",
+        "1944-01-01",
+        "1948-01-01",
+        "1952-01-01",
+        "1956-01-01",
+        "1960-01-01",
+        "1964-01-01",
+        "1968-01-01",
+        "1972-01-01",
+        "1976-01-01",
+        "1980-01-01",
+        "1984-01-01",
+        "1988-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("delim", ["/", "-", ".", ""])
+def test_datetime_pivot_point_should_not_apply(delim):
+    dates = [
+        "01/01/1924",
+        "01/01/1928",
+        "01/01/1930",
+        "01/01/1932",
+        "01/01/1936",
+        "01/01/1940",
+        "01/01/1944",
+        "01/01/1948",
+        "01/01/1952",
+        "01/01/1956",
+        "01/01/1960",
+        "01/01/1964",
+        "01/01/1968",
+        "01/01/1972",
+        "01/01/2076",
+        "01/01/2080",
+        "01/01/2084",
+        "01/01/2088",
+    ]
+    if delim == "-":
+        dates = [s.replace("/", delim) for s in dates]
+    expected_values = [
+        "1924-01-01",
+        "1928-01-01",
+        "1930-01-01",
+        "1932-01-01",
+        "1936-01-01",
+        "1940-01-01",
+        "1944-01-01",
+        "1948-01-01",
+        "1952-01-01",
+        "1956-01-01",
+        "1960-01-01",
+        "1964-01-01",
+        "1968-01-01",
+        "1972-01-01",
+        "2076-01-01",
+        "2080-01-01",
+        "2084-01-01",
+        "2088-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime})
+    pd.testing.assert_frame_equal(df, df_expected)

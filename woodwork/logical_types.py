@@ -296,6 +296,7 @@ class Datetime(LogicalType):
     def __init__(self, datetime_format=None, timezone=None):
         self.datetime_format = datetime_format
         self.timezone = timezone
+        self._apply_filter = False
 
     def _remove_timezone(self, series):
         """Removes timezone from series and stores in logical type."""
@@ -306,9 +307,25 @@ class Datetime(LogicalType):
 
     def transform(self, series, null_invalid_values=False):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
+
+        def _year_filter(date):
+            """Applies a filter to the years to ensure that the pivot point isn't too far forward."""
+            if date.year > 2030:
+                date = date.replace(year=date.year - 100)
+            return date
+
         new_dtype = self._get_valid_dtype(type(series))
         series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
+
+        if series_dtype == "object":
+
+            def _find_max(item):
+                return max(map(lambda x: len(x), re.findall(r"\d+", item)))
+
+            max_len_series = max(series.apply(_find_max))
+            if max_len_series == 2:
+                self._apply_filter = True
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
@@ -356,6 +373,8 @@ class Datetime(LogicalType):
                     )
 
         series = self._remove_timezone(series)
+        if self._apply_filter:
+            series = series.apply(_year_filter)
         return super().transform(series)
 
 
