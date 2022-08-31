@@ -95,11 +95,11 @@ In order to release on conda-forge, you can either wait for a bot to create a pu
     * Visit that URL and create a pull request.
     * Alternatively, create the pull request by clicking the branch name (e.g. - `v0.13.3`): 
       - https://github.com/alteryx/woodwork-feedstock/branches
-3. Verify that the PR has the following: 
+3. Verify that the PR has the following:
     * The `build['number']` is 0 (in __recipe/meta.yml__).
     * The `requirements['run']` (in __recipe/meta.yml__) matches the `[project]['dependencies']` in __woodwork/pyproject.toml__.
     * The `test['requires']` (in __recipe/meta.yml__) matches the `[project.optional-dependencies]['test']` in __woodwork/pyproject.toml__
-4. Satisfy the conditions in pull request description and **merge it if the CI passes**. 
+4. Satisfy the conditions in pull request description and **merge it if the CI passes**.
 
 ### Option b: Waiting for bot to create new PR
 
