@@ -857,4 +857,4 @@ def test_pyspark_dask_series(type):
         df = df.to_pandas()
     else:
         df = df.compute()
-    pd.testing.assert_frame_equal(df, df_expected, check_index=False)
+    pd.testing.assert_frame_equal(df, df_expected)

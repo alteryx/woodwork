@@ -386,7 +386,10 @@ class Datetime(LogicalType):
 
         series = self._remove_timezone(series)
         if apply_filter:
-            series = series.apply(_year_filter)
+            if _is_spark_series(series):
+                series = series.transform(_year_filter)
+            else:
+                series = series.apply(_year_filter)
         return super().transform(series)
 
 
