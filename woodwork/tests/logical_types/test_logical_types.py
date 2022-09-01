@@ -853,5 +853,4 @@ def test_pyspark_dask_series(type):
         df = dd.from_pandas(df, npartitions=2)
     df.ww.init(logical_types={"dates": Datetime})
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
-    df = to_pandas(df)
-    pd.testing.assert_frame_equal(df, df_expected)
+    assert df.values.tolist() == df_expected.values.tolist()
