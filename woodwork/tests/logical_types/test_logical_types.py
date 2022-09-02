@@ -747,7 +747,10 @@ def test_replace_nans_same_types():
 
 
 @pytest.mark.parametrize("delim", ["/", "-", "."])
-def test_datetime_pivot_point(delim):
+@pytest.mark.parametrize("dtype", ["string", "object"])
+def test_datetime_pivot_point(dtype, delim):
+    if dtype == "string" and delim != "/":
+        pytest.skip("skipping because we don't want to overtest")
     dates = [
         "01/01/24",
         "01/01/30",
@@ -778,7 +781,7 @@ def test_datetime_pivot_point(delim):
         None,
         "1988-01-01",
     ]
-    df = pd.DataFrame({"dates": dates})
+    df = pd.DataFrame({"dates": dates}, dtype=dtype)
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df.ww.init(logical_types={"dates": Datetime})
     pd.testing.assert_frame_equal(df, df_expected)

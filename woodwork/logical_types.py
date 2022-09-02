@@ -318,7 +318,7 @@ class Datetime(LogicalType):
         series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
 
-        if series_dtype == "object":
+        if series_dtype in ["object", "string"]:
             numbers_in_date = []
             for (
                 _,
