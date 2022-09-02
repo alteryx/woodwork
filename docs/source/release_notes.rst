@@ -11,9 +11,10 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add kickoff for create conda forge pull request from release (:pr:`1515`)
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`
+    :user:`gsheni`, :user:`bchen1116`
 
 v0.18.0 August 31, 2022
 =======================
