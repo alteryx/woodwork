@@ -759,7 +759,6 @@ def get_expected_dates(dates):
             expected.append("{}-01-01".format(year))
         else:
             expected.append(d)
-    print(year)
     return expected
 
 
