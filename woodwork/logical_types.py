@@ -1,5 +1,6 @@
 import re
 import warnings
+from datetime import datetime
 from typing import Optional
 
 import numpy as np
@@ -309,7 +310,7 @@ class Datetime(LogicalType):
 
         def _year_filter(date):
             """Applies a filter to the years to ensure that the pivot point isn't too far forward."""
-            if date.year > 2030:
+            if date.year > datetime.today().year + 10:
                 date = date.replace(year=date.year - 100)
             return date
 

@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -746,6 +747,22 @@ def test_replace_nans_same_types():
     pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))
 
 
+def get_expected_dates(dates):
+    expected = []
+    for d in dates:
+        if d is not None:
+            year = int(re.findall(r"\d+", d)[0])  # gets the year
+            if year > datetime.today().year + 10:
+                year -= 100
+            if year <= datetime.today().year - 90:
+                year += 100
+            expected.append("{}-01-01".format(year))
+        else:
+            expected.append(d)
+    print(year)
+    return expected
+
+
 @pytest.mark.parametrize("delim", ["/", "-", "."])
 @pytest.mark.parametrize("dtype", ["string", "object"])
 def test_datetime_pivot_point(dtype, delim):
@@ -781,6 +798,7 @@ def test_datetime_pivot_point(dtype, delim):
         None,
         "1988-01-01",
     ]
+    expected_values = get_expected_dates(expected_values)
     df = pd.DataFrame({"dates": dates}, dtype=dtype)
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df.ww.init(logical_types={"dates": Datetime})
@@ -841,6 +859,7 @@ def test_pyspark_dask_series(type):
         None,
         "1988-01-01",
     ]
+    expected_values = get_expected_dates(expected_values)
     df = pd.DataFrame({"dates": dates})
     if type == "pyspark":
         ps = pytest.importorskip(
