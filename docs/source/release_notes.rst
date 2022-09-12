@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fix datetime pivot point to be set at 2030 rather than the default for two-digit years (:pr:`1512`)
+        * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years (:pr:`1512`)
     * Changes
     * Documentation Changes
     * Testing Changes
