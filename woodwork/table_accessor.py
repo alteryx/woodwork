@@ -1616,7 +1616,7 @@ def _check_ignore_columns(dataframe_columns, logical_types, schema, ignore_colum
                 "ignore_columns contains columns that are being set "
                 f"in logical_types: {list(col_ignored_and_set)}"
             )
-    if not schema:
+    if schema is None:
         raise WoodworkNotInitError(
             "ignore_columns cannot be set when the dataframe has no existing " "schema."
         )
