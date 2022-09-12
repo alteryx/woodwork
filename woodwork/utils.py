@@ -616,7 +616,8 @@ def _infer_datetime_format(dates, n=100):
     try:
         fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
-    except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
+    except (TypeError, ValueError, IndexError, KeyError, NotImplementedError) as e:
+        print(e)
         mode_fmt = None
     return mode_fmt
 

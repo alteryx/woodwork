@@ -781,8 +781,10 @@ def test_datetime_pivot_point(dtype, delim):
         None,
         "01/01/88",
     ]
+    datetime_str = "%m/%d/%y"
     if delim != "/":
         dates = [s.replace("/", delim) if s is not None else s for s in dates]
+        datetime_str = datetime_str.replace("/", delim)
     expected_values = [
         "2024-01-01",
         "2030-01-01",
@@ -800,7 +802,7 @@ def test_datetime_pivot_point(dtype, delim):
     expected_values = get_expected_dates(expected_values)
     df = pd.DataFrame({"dates": dates}, dtype=dtype)
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
-    df.ww.init(logical_types={"dates": Datetime})
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
     pd.testing.assert_frame_equal(df, df_expected)
 
 
@@ -816,8 +818,10 @@ def test_datetime_pivot_point_should_not_apply(delim):
         "01/01/2076",
         "01/01/2088",
     ]
+    datetime_str = "%m/%d/%Y"
     if delim == "-":
         dates = [s.replace("/", delim) for s in dates]
+        datetime_str = datetime_str.replace("/", delim)
     expected_values = [
         "1924-01-01",
         "1928-01-01",
@@ -830,7 +834,7 @@ def test_datetime_pivot_point_should_not_apply(delim):
     ]
     df = pd.DataFrame({"dates": dates})
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
-    df.ww.init(logical_types={"dates": Datetime})
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
     pd.testing.assert_frame_equal(df, df_expected)
 
 
@@ -847,6 +851,7 @@ def test_pyspark_dask_series(type):
         None,
         "01/01/88",
     ]
+    datetime_str = "%m/%d/%y"
     expected_values = [
         "2024-01-01",
         "2028-01-01",
@@ -872,7 +877,7 @@ def test_pyspark_dask_series(type):
             reason="Dask not installed, skipping",
         )
         df = dd.from_pandas(df, npartitions=2)
-    df.ww.init(logical_types={"dates": Datetime})
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df = to_pandas(df)
     df.sort_index(inplace=True)

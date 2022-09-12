@@ -314,31 +314,9 @@ class Datetime(LogicalType):
                 date = date.replace(year=date.year - 100)
             return date
 
-        apply_filter = False
         new_dtype = self._get_valid_dtype(type(series))
         series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
-
-        if series_dtype in ["object", "string"]:
-            numbers_in_date = []
-            for (
-                _,
-                series_val,
-            ) in (
-                series.iteritems()
-            ):  # use iteritems to support iterating through pyspark series
-                try:
-                    vals = re.findall(r"\d+", series_val)
-                    if len(vals):
-                        numbers_in_date.append(vals)
-                except TypeError:
-                    # for values like NaT, None, etc that aren't string/byte types
-                    continue
-            list_lengths = list(
-                map(lambda x: max([len(g) for g in x]), numbers_in_date),
-            )
-            if len(list_lengths) and max(list_lengths) == 2:
-                apply_filter = True
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
@@ -386,7 +364,7 @@ class Datetime(LogicalType):
                     )
 
         series = self._remove_timezone(series)
-        if apply_filter:
+        if self.datetime_format is not None and "%y" in self.datetime_format:
             if _is_spark_series(series):
                 series = series.transform(_year_filter)
             else:
