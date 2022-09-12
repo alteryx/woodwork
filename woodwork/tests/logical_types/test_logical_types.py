@@ -882,3 +882,38 @@ def test_pyspark_dask_series(type):
     df = to_pandas(df)
     df.sort_index(inplace=True)
     pd.testing.assert_frame_equal(df, df_expected)
+
+
+def test_datetime_pivot_point_no_format_provided():
+    dates = [
+        "01/01/24",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/52",
+        "01/01/56",
+        "01/01/60",
+        "01/01/72",
+        "01/01/76",
+        "01/01/80",
+        None,
+        "01/01/88",
+    ]
+    expected_values = [
+        "2024-01-01",
+        "2030-01-01",
+        "2032-01-01",
+        "2036-01-01",
+        "2052-01-01",
+        "2056-01-01",
+        "2060-01-01",
+        "1972-01-01",
+        "1976-01-01",
+        "1980-01-01",
+        None,
+        "1988-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime})
+    pd.testing.assert_frame_equal(df, df_expected)
