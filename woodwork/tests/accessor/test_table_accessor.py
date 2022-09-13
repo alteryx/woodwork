@@ -905,6 +905,7 @@ def test_datetime_inference_with_format_param():
             "dates": Datetime,
         },
         time_index="ymd_special",
+        already_sorted=False,
     )
 
     assert df["dates"].dtype == "datetime64[ns]"
