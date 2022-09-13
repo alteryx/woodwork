@@ -132,7 +132,7 @@ class WoodworkTableAccessor:
         time_index: Optional[str] = None,
         logical_types: Optional[Dict[ColumnName, Union[str, LogicalType, None]]] = None,
         ignore_columns: Optional[List[str]] = None,
-        already_sorted: Optional[bool] = False,
+        already_sorted: Optional[bool] = True,
         name: Optional[str] = None,
         semantic_tags: Optional[
             Dict[ColumnName, Union[str, List[str], Set[str]]]
@@ -171,7 +171,7 @@ class WoodworkTableAccessor:
                 already been inferred and its physical dtype is not expected to have changed since its last inference.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
-                only). Defaults to False.
+                only). Defaults to True.
             name (str, optional): Name used to identify the DataFrame.
             semantic_tags (dict, optional): Dictionary mapping column names in Woodwork to the
                 semantic tags for the column. The keys in the dictionary should be strings
