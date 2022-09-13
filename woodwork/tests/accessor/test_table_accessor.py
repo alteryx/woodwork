@@ -1324,7 +1324,9 @@ def test_accessor_already_sorted(sample_unsorted_df):
         pytest.xfail("Sorting dataframe is not supported with Spark input")
 
     schema_df = sample_unsorted_df.copy()
-    schema_df.ww.init(name="schema", index="id", time_index="signup_date")
+    schema_df.ww.init(
+        name="schema", index="id", time_index="signup_date", already_sorted=False
+    )
 
     assert schema_df.ww.time_index == "signup_date"
     assert isinstance(
