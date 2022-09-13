@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
-        * Cheged the default value for ``already_sorted`` to ``True`` (:pr:`1505`)
+        * Changed the default value for ``already_sorted`` to ``True`` (:pr:`1505`)
     * Documentation Changes
     * Testing Changes
         * Add kickoff for create conda forge pull request from release (:pr:`1522`)
