@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
         * Changed the default value for ``already_sorted`` to ``True`` (:pr:`1505`)
@@ -15,7 +16,7 @@ Future Release
         * Add kickoff for create conda forge pull request from release (:pr:`1522`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ParthivNaresh`
+    :user:`gsheni`, :user:`ParthivNaresh`, :user:`bchen1116`
 
 v0.18.0 August 31, 2022
 =======================
