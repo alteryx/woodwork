@@ -506,6 +506,133 @@ def test_dependence_dropna():
     assert mi_df.equals(expected_df)
 
 
+@pytest.mark.parametrize(
+    "logical_types",
+    [
+        {"a_column": "Unknown"},
+        {"a_column": "Categorical"},
+        {"a_column": "SubRegionCode"},
+    ],
+)
+def test_dependence_drop_columns(logical_types):
+    log_types = {
+        "b_column": "Categorical",
+        "c_column": "Categorical",
+        "d_column": "Categorical",
+        **logical_types,
+    }
+    cat_values = {"a_column": [], "b_column": [], "c_column": [], "d_column": []}
+    categoricals_string = "some categorical_{}_{}"
+    for k in cat_values.keys():
+        num = 3001 if k in ["c_column", "d_column"] else 100
+        for n in range(4000):
+            # `a_column`, `c_column`, `d_column` all have 3001 unique values, while `b_column` has 100
+            cat_values[k].append(categoricals_string.format(k, n % num))
+
+    df = pd.DataFrame(cat_values)
+    df.ww.init(logical_types=log_types)
+    string_warning = r"Dropping columns \['c_column'\] to allow mutual information"
+    with pytest.warns(UserWarning, match=string_warning):
+        for dep_dict_str in [
+            str(df.ww.dependence_dict()),
+            str(df.ww.mutual_information_dict()),
+        ]:
+            # based on natural column ordering, "c_column" will be missing rather than "d_column"
+            # even though both have same number of uniques
+            assert "c_column" not in dep_dict_str
+            assert "d_column" in dep_dict_str
+            if logical_types["a_column"] == "Unknown":
+                assert "a_column" not in dep_dict_str
+            else:
+                assert "a_column" in dep_dict_str
+
+
+@pytest.mark.parametrize("nunique", [1000, 2001])
+def test_dependence_drop_columns_nunique(nunique):
+    log_types = {
+        "b_column": "Categorical",
+        "c_column": "Categorical",
+        "d_column": "Categorical",
+        "a_column": "Integer",
+    }
+    cat_values = {
+        "a_column": range(1000),
+        "b_column": [],
+        "c_column": [],
+        "d_column": [],
+    }
+    categoricals_string = "some categorical_{}_{}"
+    for k in ["b_column", "c_column", "d_column"]:
+        num = 1000 if k in ["c_column", "d_column"] else 100
+        for n in range(1000):
+            # `a_column`, `c_column`, `d_column` all have 1000 unique values, while `b_column` has 100
+            cat_values[k].append(categoricals_string.format(k, n % num))
+
+    df = pd.DataFrame(cat_values)
+    df.ww.init(logical_types=log_types)
+    for dep_dict_str in [
+        str(df.ww.dependence(max_nunique=nunique)),
+        str(df.ww.mutual_information(max_nunique=nunique)),
+    ]:
+        # based on natural column ordering, "c_column" will be missing rather than "d_column"
+        # even though both have same number of uniques
+        assert "d_column" in dep_dict_str
+        assert "a_column" in dep_dict_str
+        assert "b_column" in dep_dict_str
+        if nunique == 2001:
+            assert "c_column" in dep_dict_str
+        else:
+            assert "c_column" not in dep_dict_str
+
+
+@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
+def test_dependence_drop_columns_dask_spark(df_type):
+    log_types = {
+        "b_column": "Categorical",
+        "c_column": "Categorical",
+        "a_column": "Categorical",
+    }
+    cat_values = {
+        "a_column": [],
+        "b_column": [],
+        "c_column": [],
+    }
+    categoricals_string = "some categorical_{}_{}"
+    for k in cat_values.keys():
+        num = 1000 if k in ["a_column", "c_column"] else 100
+        for n in range(1000):
+            # `a_column`, `c_column`, all have 1000 unique values, while `b_column` has 100
+            cat_values[k].append(categoricals_string.format(k, n % num))
+
+    df = pd.DataFrame(cat_values)
+    if df_type == "dask":
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=1)
+    elif df_type == "spark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Spark not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+
+    df.ww.init(logical_types=log_types)
+    for dep_dict_str in [
+        str(df.ww.dependence(max_nunique=1000)),
+        str(df.ww.mutual_information(max_nunique=1000)),
+    ]:
+        # based on natural column ordering, "a_column" will be missing rather than "c_column"
+        # even though both have same number of uniques
+        assert "c_column" in dep_dict_str
+        if df_type == "dask":
+            assert "a_column" in dep_dict_str
+        else:
+            assert "a_column" not in dep_dict_str
+        assert "b_column" in dep_dict_str
+
+
 @patch("woodwork.table_accessor._get_dependence_dict")
 def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.init()
@@ -575,6 +702,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi, mock_callback):
         extra_stats=True,
         min_shared=25,
         random_seed=5,
+        max_nunique=6000,
     )
 
 
@@ -599,6 +727,7 @@ def test_mutual(df_mi, mock_callback):
         extra_stats=True,
         min_shared=25,
         random_seed=5,
+        max_nunique=6000,
     )
 
 
@@ -1281,7 +1410,7 @@ def test_value_counts(categorical_df):
         updated_results = []
         for items in expected_cat1:
             updated_results.append(
-                {k: (str(v) if k == "value" else v) for k, v in items.items()}
+                {k: (str(v) if k == "value" else v) for k, v in items.items()},
             )
         expected_cat1 = updated_results
 

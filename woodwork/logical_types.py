@@ -1,5 +1,6 @@
 import re
 import warnings
+from datetime import datetime
 from typing import Optional
 
 import numpy as np
@@ -306,6 +307,13 @@ class Datetime(LogicalType):
 
     def transform(self, series, null_invalid_values=False):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
+
+        def _year_filter(date):
+            """Applies a filter to the years to ensure that the pivot point isn't too far forward."""
+            if date.year > datetime.today().year + 10:
+                date = date.replace(year=date.year - 100)
+            return date
+
         new_dtype = self._get_valid_dtype(type(series))
         series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
@@ -356,6 +364,11 @@ class Datetime(LogicalType):
                     )
 
         series = self._remove_timezone(series)
+        if self.datetime_format is not None and "%y" in self.datetime_format:
+            if _is_spark_series(series):
+                series = series.transform(_year_filter)
+            else:
+                series = series.apply(_year_filter)
         return super().transform(series)
 
 
