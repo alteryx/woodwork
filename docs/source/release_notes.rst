@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added ``Spearman Correlation`` to options for dependence calculations (:pr:``)
     * Fixes
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
@@ -14,7 +15,7 @@ Future Release
         * Add kickoff for create conda forge pull request from release (:pr:`1515`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ParthivNaresh`
+    :user:`gsheni`, :user:`ParthivNaresh`, :user:`bchen1116`
 
 v0.18.0 August 31, 2022
 =======================

@@ -17,6 +17,7 @@ def _parse_measures(measures):
 
     calc_pearson = False
     calc_mutual = False
+    calc_spearman = False
     calc_max = False
     calc_order = []
     for measure in measures:
@@ -27,24 +28,30 @@ def _parse_measures(measures):
                         "additional measures to 'all' measure found; 'all' should be used alone",
                     ),
                 )
-            measures = ["max", "pearson", "mutual_info"]
+            measures = ["max", "pearson", "spearman", "mutual_info"]
             calc_pearson = True
             calc_mutual = True
+            calc_spearman = True
             calc_max = True
             break
         elif measure == "pearson":
             calc_pearson = True
         elif measure == "mutual_info":
             calc_mutual = True
+        elif measure == "spearman":
+            calc_spearman = True
         elif measure == "max":
             calc_pearson = True
             calc_mutual = True
+            calc_spearman = True
             calc_max = True
         else:
             raise ValueError("Unrecognized dependence measure %s" % measure)
 
     if calc_pearson:
         calc_order.append("pearson")
+    if calc_spearman:
+        calc_order.append("spearman")
     if calc_mutual:
         calc_order.append("mutual_info")
 

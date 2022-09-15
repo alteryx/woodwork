@@ -17,8 +17,16 @@ from woodwork.statistics_utils._calculate_max_dependence_for_pair import (
 from woodwork.statistics_utils._cast_nullable_int_and_datetime_to_int import (
     _cast_nullable_int_and_datetime_to_int,
 )
+from woodwork.statistics_utils._convert_ordinal_to_numeric import (
+    _convert_ordinal_to_numeric,
+)
 from woodwork.statistics_utils._parse_measures import _parse_measures
-from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
+from woodwork.utils import (
+    CallbackCaller,
+    get_valid_mi_types,
+    get_valid_pearson_types,
+    get_valid_spearman_types,
+)
 
 
 def _get_dependence_dict(
@@ -47,8 +55,9 @@ def _get_dependence_dict(
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual_info", and "max"
+                - "spearman": calculates the Spearman corerlation coefficient
+                - "max":  max(abs(pearson), mutual, abs(spearman)) for each pair of columns
+                - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
         num_bins (int): Determines number of bins to use for converting numeric
             features into categorical.  Default to 10. Pearson calculation does
             not use binning.
@@ -98,6 +107,11 @@ def _get_dependence_dict(
         pearson_types = get_valid_pearson_types()
         pearson_columns = _get_valid_columns(dataframe, pearson_types)
         valid_columns = pearson_columns
+    if "spearman" in calc_order:
+        spearman_types = get_valid_spearman_types()
+        spearman_columns = _get_valid_columns(dataframe, spearman_types)
+        # pearson columns are a subset of spearman columns
+        valid_columns = spearman_columns
     if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
         cols_to_drop = _find_large_categorical_columns(dataframe, max_nunique)
@@ -113,7 +127,7 @@ def _get_dependence_dict(
             for col in _get_valid_columns(dataframe, mi_types)
             if col not in cols_to_drop
         ]
-        # pearson columns are a subset of mutual columns
+        # pearson/spearman columns are a subset of mutual columns
         valid_columns = mutual_columns
 
     index = dataframe.ww.index
@@ -137,20 +151,26 @@ def _get_dependence_dict(
 
     p = 0  # number of pearson columns
     m = 0  # number of mutual columns
+    s = 0  # number of spearman columns
     if "pearson" in calc_order:
         pearson_columns = [col for col in pearson_columns if col in not_null_col_set]
         p = len(pearson_columns)
+    if "spearman" in calc_order:
+        spearman_columns = [col for col in spearman_columns if col in not_null_col_set]
+        s = len(spearman_columns)
     if "mutual_info" in calc_order:
         mutual_columns = [col for col in mutual_columns if col in not_null_col_set]
         m = len(mutual_columns)
-    n = max(m, p)
+    n = max(m, p, s)
 
     # combinations in a loop is n! / 2 / (n - 2)! which reduces to (n) (n - 1) / 2
     def _num_calc_steps(n):
         return (n * n - n) / 2
 
     # Assume 1 unit for preprocessing, n for handling nulls, m for binning numerics
-    total_loops = 1 + n + m + _num_calc_steps(p) + _num_calc_steps(m)
+    total_loops = (
+        1 + n + m + s + _num_calc_steps(p) + _num_calc_steps(m) + _num_calc_steps(s)
+    )
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
 
@@ -170,6 +190,9 @@ def _get_dependence_dict(
             col_names = mutual_columns
         elif measure == "pearson":
             col_names = pearson_columns
+        elif measure == "spearman":
+            _convert_ordinal_to_numeric(dataframe.ww.schema, data)
+            col_names = spearman_columns
 
         _calculate_dependence_measure(
             measure=measure,
@@ -193,6 +216,8 @@ def _get_dependence_dict(
                 del result["mutual_info"]
                 if "pearson" in result:
                     del result["pearson"]
+                if "spearman" in result:
+                    del result["spearman"]
 
         # Remove cached info not expected in result by user
         if "num_union" in result:

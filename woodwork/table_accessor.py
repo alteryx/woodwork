@@ -940,6 +940,7 @@ class WoodworkTableAccessor:
             max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -1001,6 +1002,7 @@ class WoodworkTableAccessor:
             max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -1056,6 +1058,7 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `pearson` that is sorted in decending order by correlation coefficient.
@@ -1107,6 +1110,7 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+
         Returns:
             pd.DataFrame: A DataFrame containing Pearson correlation coefficients with columns `column_1`,
             `column_2`, and `pearson` that is sorted in decending order by correlation value.
@@ -1121,6 +1125,111 @@ class WoodworkTableAccessor:
             random_seed=random_seed,
         )
         return pd.DataFrame(pearson_dict)
+
+    @_check_table_schema
+    def spearman_correlation_dict(
+        self,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
+        random_seed=0,
+    ):
+        """
+        Calculates Spearman correlation coefficient between all pairs of columns in the DataFrame that
+        support correlation. Works with numeric, ordinal, and datetime data. Call woodwork.utils.get_valid_spearman_types to
+        see which Logical Types are supported.
+
+        Args:
+            nrows (int): The number of rows to sample for when determining correlation.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for correlation calculations.
+                If False, the index column will not have the Spearman correlation calculated for it.
+                Defaults to False.
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  If True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative. Defaults to 25.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+
+        Returns:
+            list(dict): A list containing dictionaries that have keys `column_1`,
+            `column_2`, and `spearman` that is sorted in decending order by correlation coefficient.
+            Correlation coefficient values are between -1 and 1.
+        """
+        return _get_dependence_dict(
+            dataframe=self._dataframe,
+            measures=["spearman"],
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
+            random_seed=random_seed,
+        )
+
+    def spearman_correlation(
+        self,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
+        random_seed=0,
+    ):
+        """Calculates Spearman correlation coefficient between all pairs of columns in the DataFrame that
+        support correlation. Works with numeric, ordinal, and datetime data. Call woodwork.utils.get_valid_spearman_types to
+        see which Logical Types are supported.
+
+        Args:
+            nrows (int): The number of rows to sample for when determining correlation.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for correlation calculations.
+                If False, the index column will not have the Spearman correlation calculated for it.
+                Defaults to False.
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  If True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative. Defaults to 25.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing Spearman correlation coefficients with columns `column_1`,
+            `column_2`, and `spearman` that is sorted in decending order by correlation value.
+            Pearson values are between -1 and 1, with 0 meaning no correlation.
+        """
+        spearman_dict = self.spearman_correlation_dict(
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
+            random_seed=random_seed,
+        )
+        return pd.DataFrame(spearman_dict)
 
     @_check_table_schema
     def dependence_dict(
@@ -1149,8 +1258,9 @@ class WoodworkTableAccessor:
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual_info", and "max"
+                - "spearman": calculates the Spearman corerlation coefficient
+                - "max":  max(abs(pearson), mutual, abs(spearman)) for each pair of columns
+                - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
                 calculation does not use binning.
@@ -1181,6 +1291,7 @@ class WoodworkTableAccessor:
             max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and keys for the specified dependence measures. The list is
@@ -1228,8 +1339,9 @@ class WoodworkTableAccessor:
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual_info", and "max"
+                - "spearman": calculates the Spearman corerlation coefficient
+                - "max":  max(abs(pearson), mutual, abs(spearman)) for each pair of columns
+                - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
                 calculation does not use binning.
@@ -1260,6 +1372,7 @@ class WoodworkTableAccessor:
             max_nunique (int): The maximum number of unique values for large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+
         Returns:
             pd.DataFrame: A DataFrame with the columns `column_1`,
             `column_2`, and keys for the specified dependence measures. The rows
@@ -1609,16 +1722,17 @@ def _check_ignore_columns(dataframe_columns, logical_types, schema, ignore_colum
         )
     if logical_types:
         col_ignored_and_set = set(logical_types.keys()).intersection(
-            set(ignore_columns)
+            set(ignore_columns),
         )
         if col_ignored_and_set:
             raise ColumnBothIgnoredAndSetError(
                 "ignore_columns contains columns that are being set "
-                f"in logical_types: {list(col_ignored_and_set)}"
+                f"in logical_types: {list(col_ignored_and_set)}",
             )
     if schema is None:
         raise WoodworkNotInitError(
-            "ignore_columns cannot be set when the dataframe has no existing " "schema."
+            "ignore_columns cannot be set when the dataframe has no existing "
+            "schema.",
         )
 
 
