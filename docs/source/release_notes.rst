@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Added ``Spearman Correlation`` to options for dependence calculations (:pr:``)
+        * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
     * Fixes
         * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
