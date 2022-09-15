@@ -1297,7 +1297,7 @@ class WoodworkTableAccessor:
             `column_2`, and keys for the specified dependence measures. The list is
             sorted in decending order by the first specified measure.
             Dependence information values are between 0 (no dependence) and 1
-            (perfect dependency). For Pearson, values range from -1 to 1 but 0 is
+            (perfect dependency). For Pearson and Spearman, values range from -1 to 1 but 0 is
             still no dependence.
         """
         return _get_dependence_dict(
@@ -1378,7 +1378,7 @@ class WoodworkTableAccessor:
             `column_2`, and keys for the specified dependence measures. The rows
             are sorted in decending order by the first specified measure.
             Dependence information values are between 0 (no dependence) and 1
-            (perfect dependency). For Pearson, values range from -1 to 1 but 0 is
+            (perfect dependency). For Pearson and Spearman, values range from -1 to 1 but 0 is
             still no dependence.  Additional columns will be included if the
             `extra_stats` is True.
         """
