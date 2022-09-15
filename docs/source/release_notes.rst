@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Added ``Spearman Correlation`` to options for dependence calculations (:pr:``)
     * Fixes
+        * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
     * Documentation Changes
