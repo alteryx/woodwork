@@ -1219,7 +1219,7 @@ class WoodworkTableAccessor:
         Returns:
             pd.DataFrame: A DataFrame containing Spearman correlation coefficients with columns `column_1`,
             `column_2`, and `spearman` that is sorted in decending order by correlation value.
-            Pearson values are between -1 and 1, with 0 meaning no correlation.
+            Spearman values are between -1 and 1, with 0 meaning no correlation.
         """
         spearman_dict = self.spearman_correlation_dict(
             nrows=nrows,
@@ -1259,7 +1259,7 @@ class WoodworkTableAccessor:
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
                 - "spearman": calculates the Spearman corerlation coefficient
-                - "max":  max(abs(pearson), mutual, abs(spearman)) for each pair of columns
+                - "max":  max(abs(pearson), abs(spearman), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
@@ -1339,8 +1339,8 @@ class WoodworkTableAccessor:
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "spearman": calculates the Spearman corerlation coefficient
-                - "max":  max(abs(pearson), mutual, abs(spearman)) for each pair of columns
+                - "spearman": calculates the Spearman correlation coefficient
+                - "max":  max(abs(pearson), abs(spearman), mutual) for each pair of columns
                 - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
