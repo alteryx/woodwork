@@ -88,6 +88,7 @@ def _get_dependence_dict(
         max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
         `column_2`, and keys for the specified dependence measures. The list is
