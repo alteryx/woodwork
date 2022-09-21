@@ -1396,7 +1396,7 @@ class WoodworkTableAccessor:
             still no dependence.  Additional columns will be included if the
             `extra_stats` is True.
         """
-        self.dependence.__doc__ = doc
+        __doc__ = doc
         dep_dict = _get_dependence_dict(
             dataframe=self._dataframe,
             measures=measures,
