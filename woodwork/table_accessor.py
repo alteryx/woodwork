@@ -1252,7 +1252,7 @@ class WoodworkTableAccessor:
         max_nunique=6000,
         target_col=None,
     ):
-        f"""Calculates dependence measures between all pairs of columns in the DataFrame that
+        """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
         Call (woodwork.utils.get_valid_mi_types)[https://woodwork.alteryx.com/en/stable/generated/woodwork.utils.get_valid_mi_types.html#woodwork.utils.get_valid_mi_types]
         and woodwork.utils.get_valid_pearson_types for complete lists of supported Logical Types.
@@ -1262,8 +1262,8 @@ class WoodworkTableAccessor:
                 from which to calculate dependence.
             measures (list or str): Which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
-                measures at once.  Valid measure strings:
-                {valid_corr_metrics},
+                measures at once.  Valid measure strings
+
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
                 - "spearman": calculates the Spearman corerlation coefficient
