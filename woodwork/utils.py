@@ -411,6 +411,20 @@ def get_valid_spearman_types():
     return valid_types
 
 
+def get_valid_correlation_metrics():
+    """
+    Generate a list of correlation metrics that are supported by Woodwork through the `dependence_dict()` method.
+    This includes `max` and `all` arguments that can be passed in to the method.
+
+    Args:
+        None
+
+    Returns:
+        list(str): A list of strings that correspond to the possible correlation metric arguments.
+    """
+    return ["mutual_info", "pearson", "spearman", "max", "all"]
+
+
 def _get_column_logical_type(series, logical_type, name):
     if logical_type:
         return _parse_logical_type(logical_type, name)

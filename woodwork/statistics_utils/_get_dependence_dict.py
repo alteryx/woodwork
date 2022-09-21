@@ -40,6 +40,7 @@ def _get_dependence_dict(
     min_shared=25,
     random_seed=0,
     max_nunique=6000,
+    target_col=None,
 ):
     """Calculates dependence measures between all pairs of columns in the DataFrame that
     support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -88,6 +89,8 @@ def _get_dependence_dict(
         max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
             Categorical columns will be dropped until this number is met or until there is only one large categorical column.
             Defaults to 6000.
+        target_col (str): The column name of the target. If provided, will only calculate the dependence dictionary between other columns and this target column.
+            The target column will be `column_2` in the returned result. Defaults to None.
 
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
@@ -203,6 +206,7 @@ def _get_dependence_dict(
             notna_mask=notna_mask,
             min_shared=min_shared,
             col_names=col_names,
+            target_col=target_col,
         )
 
     for result in results.values():

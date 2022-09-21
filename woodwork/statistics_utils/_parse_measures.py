@@ -1,6 +1,7 @@
 import warnings
 
 from woodwork.exceptions import ParametersIgnoredWarning
+from woodwork.utils import get_valid_correlation_metrics
 
 
 def _parse_measures(measures):
@@ -46,7 +47,12 @@ def _parse_measures(measures):
             calc_spearman = True
             calc_max = True
         else:
-            raise ValueError("Unrecognized dependence measure %s" % measure)
+            raise ValueError(
+                "Unrecognized dependence measure {}. Valid measures are {}".format(
+                    measure,
+                    get_valid_correlation_metrics(),
+                ),
+            )
 
     if calc_pearson:
         calc_order.append("pearson")

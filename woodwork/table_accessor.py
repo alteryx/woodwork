@@ -35,10 +35,17 @@ from woodwork.statistics_utils import (
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
-from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none
+from woodwork.utils import (
+    _get_column_logical_type,
+    _parse_logical_type,
+    get_valid_correlation_metrics,
+    import_or_none,
+)
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+
+valid_corr_metrics = get_valid_correlation_metrics()
 
 
 class WoodworkTableAccessor:
@@ -1243,11 +1250,12 @@ class WoodworkTableAccessor:
         min_shared=25,
         random_seed=0,
         max_nunique=6000,
+        target_col=None,
     ):
-        """Calculates dependence measures between all pairs of columns in the DataFrame that
+        f"""Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
-        Call woodwork.utils.get_valid_mi_types and woodwork.utils.get_valid_pearson_types
-        for complete lists of supported Logical Types.
+        Call (woodwork.utils.get_valid_mi_types)[https://woodwork.alteryx.com/en/stable/generated/woodwork.utils.get_valid_mi_types.html#woodwork.utils.get_valid_mi_types]
+        and woodwork.utils.get_valid_pearson_types for complete lists of supported Logical Types.
 
         Args:
             dataframe (pd.DataFrame): Data containing Woodwork typing information
@@ -1255,7 +1263,7 @@ class WoodworkTableAccessor:
             measures (list or str): Which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
                 measures at once.  Valid measure strings:
-
+                {valid_corr_metrics},
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
                 - "spearman": calculates the Spearman corerlation coefficient
@@ -1291,6 +1299,8 @@ class WoodworkTableAccessor:
             max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+            target_col (str): The column name of the target. If provided, will only calculate the dependence dictionary between other columns and this target column.
+                The target column will be `column_2` in the returned result. Defaults to None.
 
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
@@ -1311,6 +1321,7 @@ class WoodworkTableAccessor:
             min_shared=min_shared,
             random_seed=random_seed,
             max_nunique=max_nunique,
+            target_col=target_col,
         )
 
     def dependence(
@@ -1324,6 +1335,7 @@ class WoodworkTableAccessor:
         min_shared=25,
         random_seed=0,
         max_nunique=6000,
+        target_col=None,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -1372,6 +1384,8 @@ class WoodworkTableAccessor:
             max_nunique (int): The maximum number of unique values for large categorical columns (> 800 unique values).
                 Categorical columns will be dropped until this number is met or until there is only one large categorical column.
                 Defaults to 6000.
+            target_col (str): The column name of the target. If provided, will only calculate the dependence dictionary between other columns and this target column.
+                The target column will be `column_2` in the returned result. Defaults to None.
 
         Returns:
             pd.DataFrame: A DataFrame with the columns `column_1`,
@@ -1393,6 +1407,7 @@ class WoodworkTableAccessor:
             min_shared=min_shared,
             random_seed=random_seed,
             max_nunique=max_nunique,
+            target_col=target_col,
         )
         return pd.DataFrame(dep_dict)
 

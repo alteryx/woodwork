@@ -48,6 +48,7 @@ from woodwork.utils import (
     _parse_logical_type,
     _reformat_to_latlong,
     camel_to_snake,
+    get_valid_correlation_metrics,
     get_valid_mi_types,
     import_or_none,
     import_or_raise,
@@ -617,3 +618,13 @@ def test_callback_caller_no_callback():
     caller.update(1)
 
     assert caller.current_progress == 0
+
+
+def test_get_valid_correlation_metrics():
+    assert [
+        "mutual_info",
+        "pearson",
+        "spearman",
+        "max",
+        "all",
+    ] == get_valid_correlation_metrics()
