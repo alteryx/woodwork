@@ -101,6 +101,8 @@ def _get_dependence_dict(
         still no dependence.
     """
     start_time = timer()
+    if target_col is not None and target_col not in list(dataframe.columns):
+        raise ValueError("target_col '{}' not in the dataframe".format(target_col))
 
     returned_measures, calc_order, calc_max = _parse_measures(measures)
 
