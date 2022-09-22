@@ -38,6 +38,7 @@ from woodwork.logical_types import (
 )
 from woodwork.statistics_utils import (
     _bin_numeric_cols_into_categories,
+    _convert_ordinal_to_numeric,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -2066,10 +2067,35 @@ def test_spearman_ordinal(df_mi, use_ordinal):
         df_mi.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
     else:
         df_mi.ww.init()
-    sp = df_mi.ww.spearman_correlation()
+    sp = df_mi.ww.dependence(measures=["spearman"])
     valid_sp_columns = (sp.column_1.append(sp.column_2)).unique()
     assert "strs" not in valid_sp_columns
     if use_ordinal:
         assert "strs2" in valid_sp_columns
         return
     assert "strs2" not in valid_sp_columns
+
+
+def test_convert_ordinal_to_numeric():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "ints2": pd.Series([1, 100, 1, 100]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "strs2": pd.Series(["bye", "hi", "bye", "bye"]),
+            "bools": pd.Series([True, False, True, False]),
+            "categories": pd.Series(["test", "test2", "test2", "test"]),
+            "dates": pd.Series(
+                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
+            ),
+        },
+    )
+    df.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
+    data = {column: df[column] for column in df.copy()}
+    result = [0 if x == "hi" else 1 for x in data["strs2"].values]
+    _convert_ordinal_to_numeric(df.ww.schema, data)
+    for cols in df.columns:
+        if cols != "strs2":
+            assert all(data[cols] == df[cols])
+        else:
+            assert all(data["strs2"].values == result)

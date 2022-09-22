@@ -1,6 +1,9 @@
 from woodwork.statistics_utils._bin_numeric_cols_into_categories import (
     _bin_numeric_cols_into_categories,
 )
+from woodwork.statistics_utils._convert_ordinal_to_numeric import (
+    _convert_ordinal_to_numeric,
+)
 from woodwork.statistics_utils._get_box_plot_info_for_column import (
     _get_box_plot_info_for_column,
 )

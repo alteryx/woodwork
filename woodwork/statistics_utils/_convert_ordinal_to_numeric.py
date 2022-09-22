@@ -9,7 +9,7 @@ def _convert_ordinal_to_numeric(schema, data):
     Returns:
         None
     """
-    columns = [k for k, v in schema.logical_types.items() if str(v) == "Ordinal"]
+    columns = [k for k, v in schema.logical_types.items() if "Ordinal" in str(v)]
     for col_name in columns:
         order = list(schema.columns[col_name].logical_type.order)
         data[col_name] = data[col_name].apply(lambda x: order.index(x))
