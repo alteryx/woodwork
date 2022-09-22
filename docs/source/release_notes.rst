@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
+        * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
     * Fixes
         * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
