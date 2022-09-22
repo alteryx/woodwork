@@ -1976,3 +1976,38 @@ def test_parse_measures_bad_string():
     msg = "Unrecognized dependence measure ruler"
     with pytest.raises(ValueError, match=msg):
         _parse_measures(["mutual_info", "ruler"])
+
+
+def test_box_plot_ignore_zeros():
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100)
+    no_zeros_df = pd.Series(range(1, 100))
+    zeros_df.ww.init()
+    no_zeros_df.ww.init()
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
+
+
+@pytest.mark.parametrize("dtype", ["IntegerNullable", "Double"])
+def test_box_plot_ignore_zeros_null(dtype):
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100 + [None])
+    no_zeros_df = pd.Series(list(range(1, 100)) + [None])
+    zeros_df.ww.init(logical_type=dtype)
+    no_zeros_df.ww.init(logical_type=dtype)
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
