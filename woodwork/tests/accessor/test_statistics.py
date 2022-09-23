@@ -38,6 +38,7 @@ from woodwork.logical_types import (
 )
 from woodwork.statistics_utils import (
     _bin_numeric_cols_into_categories,
+    _convert_ordinal_to_numeric,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -2067,7 +2068,7 @@ def test_spearman_ordinal(df_mi, use_ordinal):
         df_mi.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
     else:
         df_mi.ww.init()
-    sp = df_mi.ww.spearman_correlation()
+    sp = df_mi.ww.dependence(measures=["spearman"])
     valid_sp_columns = (sp.column_1.append(sp.column_2)).unique()
     assert "strs" not in valid_sp_columns
     if use_ordinal:
@@ -2100,3 +2101,63 @@ def test_dependence_dict_target_col_in_output(df_mi):
     assert set(list(dep.columns) + ["all"]) == set(
         ["column_1", "column_2"] + get_valid_correlation_metrics(),
     )
+
+
+def test_convert_ordinal_to_numeric():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "ints2": pd.Series([1, 100, 1, 100]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "strs2": pd.Series(["bye", "hi", "bye", "bye"]),
+            "bools": pd.Series([True, False, True, False]),
+            "categories": pd.Series(["test", "test2", "test2", "test"]),
+            "dates": pd.Series(
+                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
+            ),
+        },
+    )
+    df.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
+    data = {column: df[column] for column in df.copy()}
+    result = [0 if x == "hi" else 1 for x in data["strs2"].values]
+    _convert_ordinal_to_numeric(df.ww.schema, data)
+    for cols in df.columns:
+        if cols != "strs2":
+            assert all(data[cols] == df[cols])
+        else:
+            assert all(data["strs2"].values == result)
+
+
+def test_box_plot_ignore_zeros():
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100)
+    no_zeros_df = pd.Series(range(1, 100))
+    zeros_df.ww.init()
+    no_zeros_df.ww.init()
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
+
+
+@pytest.mark.parametrize("dtype", ["IntegerNullable", "Double"])
+def test_box_plot_ignore_zeros_null(dtype):
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100 + [None])
+    no_zeros_df = pd.Series(list(range(1, 100)) + [None])
+    zeros_df.ww.init(logical_type=dtype)
+    no_zeros_df.ww.init(logical_type=dtype)
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
