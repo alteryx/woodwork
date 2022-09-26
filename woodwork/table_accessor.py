@@ -1255,7 +1255,7 @@ class WoodworkTableAccessor:
                 from which to calculate dependence.
             measures (list or str): Which dependence measures to calculate.
                 A list of measures can be provided to calculate multiple
-                measures at once.  Valid measure strings
+                measures at once.  Valid measure strings:
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
