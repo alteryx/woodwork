@@ -2,6 +2,7 @@ import itertools
 import warnings
 
 import numpy as np
+from scipy.stats import spearmanr
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 from woodwork.exceptions import SparseDataWarning
@@ -75,6 +76,8 @@ def _calculate_dependence_measure(
                     0,
                     1,
                 ]
+            elif measure == "spearman":
+                score, _ = spearmanr(data[a_col][intersect], data[b_col][intersect])
 
             score = score * num_intersect / num_union
             result[measure] = score
