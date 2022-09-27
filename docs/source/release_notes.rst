@@ -3,7 +3,17 @@
 Release Notes
 -------------
 
-Future Release
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.19.0 September 27, 2022
 ==============
     * Enhancements
         * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
@@ -14,12 +24,11 @@ Future Release
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
         * Remove ``dask[dataframe]`` version restriction (:pr:`1527`)
-    * Documentation Changes
     * Testing Changes
         * Add kickoff for create conda forge pull request from release (:pr:`1515`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ParthivNaresh`, :user:`bchen1116`, :user:`thehomebrewnerd`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
 
 v0.18.0 August 31, 2022
 =======================

@@ -1,6 +1,12 @@
 name: Kickoff Featuretools & EvalML Unit Tests
 
+# on:
+  # push:
+  #   branches:
+  #     - main
 on:
+  pull_request:
+    types: [opened, synchronize]
   push:
     branches:
       - main
