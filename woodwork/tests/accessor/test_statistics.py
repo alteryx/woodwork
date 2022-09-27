@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
-from woodwork.config import config
+from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
     URL,
@@ -2074,6 +2074,32 @@ def test_spearman_ordinal(df_mi, use_ordinal):
         assert "strs2" in valid_sp_columns
         return
     assert "strs2" not in valid_sp_columns
+
+
+def test_dependence_target_col_not_exist(df_mi):
+    df_mi.ww.init()
+    with pytest.raises(ValueError, match="target_col 'value' not in the"):
+        df_mi.ww.dependence_dict(target_col="value")
+
+    with pytest.raises(ValueError, match="target_col 'value' not in the"):
+        df_mi.ww.dependence(target_col="value")
+
+
+def test_dependence_target_col_in_output(df_mi):
+    df_mi.ww.init()
+    dep = df_mi.ww.dependence_dict(min_shared=12, target_col="ints")
+    assert all([x["column_2"] == "ints" for x in dep])
+    assert len(dep) < len(df_mi.columns)
+    assert all([isinstance(x["max"], float) for x in dep])
+
+
+def test_dependence_dict_target_col_in_output(df_mi):
+    df_mi.ww.init()
+    dep = df_mi.ww.dependence(min_shared=12, target_col="ints")
+    assert set(list(dep["column_2"])) == {"ints"}
+    assert set(list(dep.columns) + ["all"]) == set(
+        ["column_1", "column_2"] + CONFIG_DEFAULTS["correlation_metrics"],
+    )
 
 
 def test_convert_ordinal_to_numeric():
