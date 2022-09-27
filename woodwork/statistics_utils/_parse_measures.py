@@ -1,7 +1,7 @@
 import warnings
 
+from woodwork.config import CONFIG_DEFAULTS
 from woodwork.exceptions import ParametersIgnoredWarning
-from woodwork.utils import get_valid_correlation_metrics
 
 
 def _parse_measures(measures):
@@ -50,7 +50,7 @@ def _parse_measures(measures):
             raise ValueError(
                 "Unrecognized dependence measure {}. Valid measures are {}".format(
                     measure,
-                    get_valid_correlation_metrics(),
+                    CONFIG_DEFAULTS["correlation_metrics"],
                 ),
             )
 

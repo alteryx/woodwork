@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
-from woodwork.config import config
+from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
     URL,
@@ -53,7 +53,6 @@ from woodwork.tests.testing_utils import (
     dep_between_cols,
     to_pandas,
 )
-from woodwork.utils import get_valid_correlation_metrics
 
 
 def test_get_mode():
@@ -2099,7 +2098,7 @@ def test_dependence_dict_target_col_in_output(df_mi):
     dep = df_mi.ww.dependence(min_shared=12, target_col="ints")
     assert set(list(dep["column_2"])) == {"ints"}
     assert set(list(dep.columns) + ["all"]) == set(
-        ["column_1", "column_2"] + get_valid_correlation_metrics(),
+        ["column_1", "column_2"] + CONFIG_DEFAULTS["correlation_metrics"],
     )
 
 
