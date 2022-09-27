@@ -245,6 +245,26 @@ def test_is_datetime():
     assert not empty_column.is_datetime
 
 
+def test_is_ordinal():
+    ordinal_column = ColumnSchema(logical_type=Ordinal)
+    assert ordinal_column.is_ordinal
+
+    instantiated_ordinal_column = ColumnSchema(logical_type=Ordinal(order=[]))
+    assert instantiated_ordinal_column.is_ordinal
+
+    ordered_ordinal_column = ColumnSchema(logical_type=Ordinal(order=[""]))
+    assert ordered_ordinal_column.is_ordinal
+
+    datetime_column = ColumnSchema(logical_type=Datetime())
+    assert not datetime_column.is_ordinal
+
+    double_column = ColumnSchema(logical_type=Double)
+    assert not double_column.is_ordinal
+
+    empty_column = ColumnSchema()
+    assert not empty_column.is_ordinal
+
+
 def test_set_semantic_tags_no_standard_tags():
     semantic_tags = {"tag1", "tag2"}
     schema = ColumnSchema(logical_type=Categorical, semantic_tags=semantic_tags)

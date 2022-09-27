@@ -3,17 +3,25 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+        * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
+        * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
+        * Added ``target_col`` argument to ``dependence`` and ``dependence_dict`` to calculate correlations between features and target_col (:pr:`1531`)
     * Fixes
         * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
         * Fixed case in which coercing a boolean column with null values to ``Boolean`` resulted in imputation instead of an error (:pr:`1487`)
+        * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
+        * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
+        * Remove ``dask[dataframe]`` version restriction (:pr:`1527`)
     * Documentation Changes
     * Testing Changes
+        * Add kickoff for create conda forge pull request from release (:pr:`1515`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`ParthivNaresh`, :user:`bchen1116`, :user:`thehomebrewnerd`
 
 v0.18.0 August 31, 2022
 =======================

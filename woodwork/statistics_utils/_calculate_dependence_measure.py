@@ -2,6 +2,7 @@ import itertools
 import warnings
 
 import numpy as np
+from scipy.stats import spearmanr
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 from woodwork.exceptions import SparseDataWarning
@@ -15,6 +16,7 @@ def _calculate_dependence_measure(
     notna_mask,
     min_shared,
     col_names,
+    target_col,
 ):
     """
     Calculates the specified dependence measure for each pair of columns in the
@@ -31,11 +33,15 @@ def _calculate_dependence_measure(
             a cell is null or not.
         min_shared (int): Mininum rows of shared data to calculate dependence.
         col_names (list): List of columns to use for this calculation.
+        target_col (str): The string name of the target column.
 
     Returns:
         None
     """
-    column_pairs = itertools.combinations(col_names, 2)
+    if target_col is None:
+        column_pairs = itertools.combinations(col_names, 2)
+    else:
+        column_pairs = [(x, target_col) for x in col_names if x != target_col]
     for a_col, b_col in column_pairs:
         result = results[(a_col, b_col)]
         # check if result already has keys, meaning function has been called
@@ -75,6 +81,8 @@ def _calculate_dependence_measure(
                     0,
                     1,
                 ]
+            elif measure == "spearman":
+                score, _ = spearmanr(data[a_col][intersect], data[b_col][intersect])
 
             score = score * num_intersect / num_union
             result[measure] = score
