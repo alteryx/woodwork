@@ -50,6 +50,7 @@ CONFIG_DEFAULTS = {
     ],
     "frequence_inference_window_length": 15,
     "frequence_inference_threshold": 0.9,
+    "correlation_metrics": ["mutual_info", "pearson", "spearman", "max", "all"],
 }
 
 
