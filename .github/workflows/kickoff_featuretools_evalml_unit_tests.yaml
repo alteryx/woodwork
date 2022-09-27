@@ -24,6 +24,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Run workflow for EvalML unit tests
-        run: gh workflow run unit_tests_with_woodwork_main_branch.yaml --repo "alteryx/evalml"
+        # run: gh workflow run unit_tests_with_woodwork_main_branch.yaml --repo "alteryx/evalml"
+        run: gh workflow run "Unit Tests - EvalML with Woodwork main branch" --repo "alteryx/evalml"
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
