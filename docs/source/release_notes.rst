@@ -14,7 +14,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v0.19.0 September 27, 2022
-==============
+==========================
     * Enhancements
         * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
         * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
