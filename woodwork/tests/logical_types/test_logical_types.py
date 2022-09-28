@@ -1,6 +1,5 @@
 import re
 from datetime import datetime
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -758,10 +757,7 @@ def test_replace_nans_same_types():
     pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))
 
 
-def concat_series(
-    base: Union[ps.Series, pd.Series, dd.Series],
-    to_add: Union[ps.Series, pd.Series, dd.Series],
-) -> Union[ps.Series, pd.Series, dd.Series]:
+def concat_series(base, to_add):
     """
     This function selects and calls the appropriate concat method based on the type on the base and to_add series
     """
