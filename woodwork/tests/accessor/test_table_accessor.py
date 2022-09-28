@@ -70,7 +70,7 @@ from woodwork.tests.testing_utils import (
     validate_subset_schema,
 )
 from woodwork.tests.testing_utils.table_utils import assert_schema_equal
-from woodwork.utils import import_or_none
+from woodwork.utils import import_or_none, ww_concat
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
@@ -800,7 +800,9 @@ def test_ignore_columns_can_force_logical_type_not_in_ignore_columns():
         "ints": IntegerNullable,
     }
     df.ww.init(
-        ignore_columns={"floats", "dates"}, logical_types=logical_types, schema=schema
+        ignore_columns={"floats", "dates"},
+        logical_types=logical_types,
+        schema=schema,
     )
 
     assert isinstance(df.ww.logical_types["ints"], IntegerNullable)
@@ -3173,7 +3175,7 @@ def test_validate_logical_types(sample_df):
 
     if _is_spark_dataframe(df):
         invalid_df = ps.from_pandas(invalid_df)
-    df = df.append(invalid_df)
+    df = ww_concat(df, invalid_df)
 
     df.ww.init(
         logical_types={

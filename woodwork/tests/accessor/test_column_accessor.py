@@ -33,7 +33,7 @@ from woodwork.logical_types import (
     SubRegionCode,
 )
 from woodwork.tests.testing_utils import is_property, is_public_method, to_pandas
-from woodwork.utils import import_or_none
+from woodwork.utils import import_or_none, ww_concat
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
@@ -1025,7 +1025,7 @@ def test_validate_logical_type(sample_df):
     if _is_spark_series(series):
         invalid_row = ps.from_pandas(invalid_row)
 
-    series = series.append(invalid_row)
+    series = ww_concat(series, invalid_row)
     series = init_series(series, logical_type="EmailAddress")
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
