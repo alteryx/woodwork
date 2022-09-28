@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Union
 
 import dask.dataframe as dd
 import numpy as np
@@ -286,12 +287,7 @@ def test_email_address_validate(sample_df):
 
     assert email_address.validate(series) is None
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_row]).astype(dtype)
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_row]).astype(dtype)
-    else:
-        series = ps.concat([series, invalid_row]).astype(dtype)
+    series = concat_series(series, invalid_row).astype(dtype)
 
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
@@ -314,12 +310,7 @@ def test_url_validate(sample_df):
 
     assert logical_type.validate(series) is None
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_row]).astype(dtype)
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_row]).astype(dtype)
-    else:
-        series = ps.concat([series, invalid_row]).astype(dtype)
+    series = concat_series(series, invalid_row).astype(dtype)
 
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
@@ -351,12 +342,7 @@ def test_age_validate(sample_df, logical_type):
     if _is_spark_series(series):
         invalid_row = ps.from_pandas(invalid_row)
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_row]).astype(dtype)
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_row]).astype(dtype)
-    else:
-        series = ps.concat([series, invalid_row]).astype(dtype)
+    series = concat_series(series, invalid_row).astype(dtype)
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
@@ -377,12 +363,7 @@ def test_phone_number_validate(sample_df):
 
     assert phone_number.validate(series) is None
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_row]).astype(dtype)
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_row]).astype(dtype)
-    else:
-        series = ps.concat([series, invalid_row]).astype(dtype)
+    series = concat_series(series, invalid_row).astype(dtype)
 
     match = "Series phone_number contains invalid phone number values. "
     match += "The phone_inference_regex can be changed in the config if needed."
@@ -405,12 +386,7 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
         name="phone_number",
     ).astype(dtype)
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_row]).astype(dtype)
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_row]).astype(dtype)
-    else:
-        series = ps.concat([series, invalid_row]).astype(dtype)
+    series = concat_series(series, invalid_row).astype(dtype)
 
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series(
@@ -431,12 +407,7 @@ def test_postal_code_validate(sample_df_postal_code):
         ],
     )
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_types])
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_types])
-    else:
-        series = ps.concat([series, invalid_types])
+    series = concat_series(series, invalid_types)
 
     series.name = "postal_code"
     match = "Series postal_code contains invalid postal code values. "
@@ -466,12 +437,7 @@ def test_postal_code_validate_complex(sample_df_postal_code):
     actual = pc.validate(series, return_invalid_values=True)
     assert not len(actual)
 
-    if isinstance(series, pd.Series):
-        series = pd.concat([series, invalid_types])
-    elif isinstance(series, dd.Series):
-        series = dd.concat([series, invalid_types])
-    else:
-        series = ps.concat([series, invalid_types])
+    series = concat_series(series, invalid_types)
 
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
@@ -790,6 +756,22 @@ def test_replace_nans_same_types():
 
     assert new_series.dtype == "float"
     pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))
+
+
+def concat_series(
+    base: Union[ps.Series, pd.Series, dd.Series],
+    to_add: Union[ps.Series, pd.Series, dd.Series],
+) -> Union[ps.Series, pd.Series, dd.Series]:
+    """
+    This function selects and calls the appropriate concat method based on the type on the base and to_add series
+    """
+    if isinstance(base, pd.Series):
+        series = pd.concat([base, to_add])
+    elif isinstance(base, dd.Series):
+        series = dd.concat([base, to_add])
+    else:
+        series = ps.concat([base, to_add])
+    return series
 
 
 def get_expected_dates(dates):
