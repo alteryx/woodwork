@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 from typing import Union
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -36,6 +35,7 @@ from woodwork.tests.testing_utils.table_utils import to_pandas
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
+dd = import_or_none("dask.dataframe")
 
 
 def test_logical_eq():
