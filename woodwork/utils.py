@@ -54,6 +54,34 @@ def import_or_none(library):
         return None
 
 
+def ww_concat(base, to_add):
+    """Selects and calls the appropriate concat method based on the type on the base and to_add series
+
+    Args:
+        base: base series or dataframe
+        to_add: series or dataframe to be concatenated
+    Returns: the series or dataframe after concatenation
+    """
+    dd = import_or_none("dd.dataframe")
+    ps = import_or_none("ps.pandas")
+
+    if isinstance(base, (pd.Series, pd.DataFrame)):
+        concatenated_obj = pd.concat([base, to_add])
+    elif ww.accessor_utils._is_dask_dataframe(
+        base,
+    ) or ww.accessor_utils._is_dask_series(base):
+        concatenated_obj = dd.concat([base, to_add])
+    elif ww.accessor_utils._is_spark_dataframe(
+        base,
+    ) or ww.accessor_utils._is_spark_series(base):
+        concatenated_obj = ps.concat([base, to_add])
+    else:
+        raise TypeError(
+            f"When attempting concatenation, encountered unknown type of base: {base}",
+        )
+    return concatenated_obj
+
+
 def camel_to_snake(s):
     s = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s).lower()
