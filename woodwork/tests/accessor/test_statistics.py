@@ -2127,6 +2127,20 @@ def test_convert_ordinal_to_numeric():
             assert all(data["strs2"].values == result)
 
 
+def test_dependence_with_boolean_target():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "target_y": pd.Series([True, False, False, pd.NA]),
+        },
+    )
+    df.ww.init()
+    res = df.ww.dependence(target_col="target_y")
+    assert "pearson" not in res.columns
+    assert "spearman" not in res.columns
+
+
 def test_box_plot_ignore_zeros():
     zeros_df = pd.Series(list(range(1, 100)) + [0] * 100)
     no_zeros_df = pd.Series(range(1, 100))
