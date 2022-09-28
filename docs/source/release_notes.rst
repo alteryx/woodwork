@@ -15,7 +15,6 @@ Future Release
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`
 
-
 v0.19.0 September 27, 2022
 ==========================
     * Enhancements
