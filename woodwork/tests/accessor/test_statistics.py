@@ -2117,10 +2117,10 @@ def test_convert_ordinal_to_numeric():
         },
     )
     df.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
-    data = {column: df[column] for column in df.copy()}
+    data = {column: df[column] for column in df.copy() if column != "ints2"}
     result = [0 if x == "hi" else 1 for x in data["strs2"].values]
     _convert_ordinal_to_numeric(df.ww.schema, data)
-    for cols in df.columns:
+    for cols in data.keys():
         if cols != "strs2":
             assert all(data[cols] == df[cols])
         else:

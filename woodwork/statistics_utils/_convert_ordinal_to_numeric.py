@@ -11,5 +11,6 @@ def _convert_ordinal_to_numeric(schema, data):
     """
     columns = [k for k, v in schema.logical_types.items() if "Ordinal" in str(v)]
     for col_name in columns:
-        order = list(schema.columns[col_name].logical_type.order)
-        data[col_name] = data[col_name].apply(lambda x: order.index(x))
+        if col_name in data:
+            order = list(schema.columns[col_name].logical_type.order)
+            data[col_name] = data[col_name].apply(lambda x: order.index(x))
