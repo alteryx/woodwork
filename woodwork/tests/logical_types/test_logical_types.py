@@ -455,7 +455,7 @@ def test_postal_code_validate_numeric(postal_code_numeric_series):
 
 
 def test_postal_code_error(postal_code_numeric_series_pandas):
-    series = postal_code_numeric_series_pandas.append(pd.Series([1234.5]))
+    series = ww_concat(postal_code_numeric_series_pandas, pd.Series([1234.5]))
     match = (
         "Error converting datatype for None from type float64 to type string. "
         "Please confirm the underlying data is consistent with logical type PostalCode."
