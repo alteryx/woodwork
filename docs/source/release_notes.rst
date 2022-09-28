@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
+        * Fixed bug relating to `dependence` calculations to ensure columns exist in dataframe (:pr:`1534`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`
+
 
 v0.19.0 September 27, 2022
 ==========================
