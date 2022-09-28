@@ -20,7 +20,7 @@ v0.19.0 September 27, 2022
         * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
         * Added ``target_col`` argument to ``dependence`` and ``dependence_dict`` to calculate correlations between features and target_col (:pr:`1531`)
         * Replace use of deprecated ``df.append`` method with ``concat`` (:pr:`1533`)
-  * Fixes
+    * Fixes
         * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
         * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
