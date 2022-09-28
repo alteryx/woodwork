@@ -62,8 +62,8 @@ def ww_concat(base, to_add):
         to_add: series or dataframe to be concatenated
     Returns: the series or dataframe after concatenation
     """
-    dd = import_or_none("dd.dataframe")
-    ps = import_or_none("ps.pandas")
+    dd = import_or_none("dask.dataframe")
+    ps = import_or_none("pyspark.pandas")
 
     if isinstance(base, (pd.Series, pd.DataFrame)):
         concatenated_obj = pd.concat([base, to_add])
