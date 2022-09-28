@@ -1523,7 +1523,6 @@ def test_datetime_get_recent_value_counts():
 
 def test_numeric_histogram():
     column = pd.Series(np.random.randn(1000))
-    column = pd.concat([column, pd.Series([np.nan, " ", "test"])])
     bins = 7
     values = _get_histogram_values(column, bins=bins)
     assert len(values) == bins

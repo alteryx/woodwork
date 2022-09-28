@@ -434,7 +434,7 @@ def case5():
     head_range = pd.DatetimeIndex(["2004-12-31 23:50:00"])
     tail_range = pd.date_range(start="2005-01-01 01:00:00", periods=100, freq="H")[1:]
 
-    dates = pd.concat([head_range, tail_range])
+    dates = head_range.append(tail_range)
 
     expected_debug_obj = {
         "actual_range_start": dates[0].isoformat(),
