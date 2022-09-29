@@ -2127,7 +2127,7 @@ def test_convert_ordinal_to_numeric():
             assert all(data["strs2"].values == result)
 
 
-def test_dependence_with_boolean_target():
+def test_dependence_with_object_target():
     df = pd.DataFrame(
         {
             "ints1": pd.Series([1, 2, 3, 2]),

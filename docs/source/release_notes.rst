@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fixed bug relating to `dependence` calculations to ensure columns exist in dataframe (:pr:`1534`)
+        * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
     * Changes
     * Documentation Changes
     * Testing Changes
