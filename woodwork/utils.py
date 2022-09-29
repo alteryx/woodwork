@@ -58,9 +58,11 @@ def ww_concat(base, to_add):
     """Selects and calls the appropriate concat method based on the type on the base and to_add series
 
     Args:
-        base: base series or dataframe
-        to_add: series or dataframe to be concatenated
-    Returns: the series or dataframe after concatenation
+        base: base Series/DataFrame
+        to_add: Series/DataFrame to be concatenated
+
+    Returns:
+        Series/DataFrame: result of concatenation
     """
     dd = import_or_none("dask.dataframe")
     ps = import_or_none("pyspark.pandas")

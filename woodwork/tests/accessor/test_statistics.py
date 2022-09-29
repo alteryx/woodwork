@@ -2117,14 +2117,28 @@ def test_convert_ordinal_to_numeric():
         },
     )
     df.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
-    data = {column: df[column] for column in df.copy()}
+    data = {column: df[column] for column in df.copy() if column != "ints2"}
     result = [0 if x == "hi" else 1 for x in data["strs2"].values]
     _convert_ordinal_to_numeric(df.ww.schema, data)
-    for cols in df.columns:
+    for cols in data.keys():
         if cols != "strs2":
             assert all(data[cols] == df[cols])
         else:
             assert all(data["strs2"].values == result)
+
+
+def test_dependence_with_object_target():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "target_y": pd.Series([True, False, False, pd.NA]),
+        },
+    )
+    df.ww.init()
+    res = df.ww.dependence(target_col="target_y")
+    assert "pearson" not in res.columns
+    assert "spearman" not in res.columns
 
 
 def test_box_plot_ignore_zeros():

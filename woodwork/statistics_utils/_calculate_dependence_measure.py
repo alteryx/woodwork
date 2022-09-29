@@ -38,9 +38,10 @@ def _calculate_dependence_measure(
     Returns:
         None
     """
+    column_pairs = []
     if target_col is None:
         column_pairs = itertools.combinations(col_names, 2)
-    else:
+    elif target_col in col_names:
         column_pairs = [(x, target_col) for x in col_names if x != target_col]
     for a_col, b_col in column_pairs:
         result = results[(a_col, b_col)]
