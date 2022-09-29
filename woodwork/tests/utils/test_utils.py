@@ -51,6 +51,7 @@ from woodwork.utils import (
     get_valid_mi_types,
     import_or_none,
     import_or_raise,
+    ww_concat,
 )
 
 dd = import_or_none("dask.dataframe")
@@ -617,3 +618,14 @@ def test_callback_caller_no_callback():
     caller.update(1)
 
     assert caller.current_progress == 0
+
+
+def test_concat_dataframe_or_series():
+
+    pandas_series = pd.Series([1, 2, 3])
+    dask_series = dd.from_pandas(pandas_series, npartitions=1)
+    spark_series = ps.Series(data=[1, 2, 3])
+
+    for series in [pandas_series, dask_series, spark_series]:
+        concatenated_series = ww_concat(series, series)
+        assert len(concatenated_series) == 2 * len(series)

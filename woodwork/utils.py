@@ -55,7 +55,7 @@ def import_or_none(library):
 
 
 def ww_concat(base, to_add):
-    """Selects and calls the appropriate concat method based on the type on the base and to_add series
+    """Selects and calls the appropriate concat method based on the type of the base and to_add series
 
     Args:
         base: base Series/DataFrame
@@ -79,7 +79,7 @@ def ww_concat(base, to_add):
         concatenated_obj = ps.concat([base, to_add])
     else:
         raise TypeError(
-            f"When attempting concatenation, encountered unknown type of base: {base}",
+            f"When attempting concatenation, attempted to concatenate type of {to_add} to type of base: {base}",
         )
     return concatenated_obj
 
