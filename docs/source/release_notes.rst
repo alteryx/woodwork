@@ -3,8 +3,8 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
         * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
@@ -12,7 +12,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
     :user:`sbadithe` 
 
 v0.19.0 September 27, 2022
