@@ -54,7 +54,7 @@ def import_or_none(library):
         return None
 
 
-def ww_concat(base, to_add):
+def concat_dataframe_or_series(base, to_add):
     """Selects and calls the appropriate concat method based on the type of the base and to_add series
 
     Args:
