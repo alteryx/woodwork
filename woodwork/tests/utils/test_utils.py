@@ -621,11 +621,17 @@ def test_callback_caller_no_callback():
 
 
 def test_concat_dataframe_or_series():
-
     pandas_series = pd.Series([1, 2, 3])
-    dask_series = dd.from_pandas(pandas_series, npartitions=1)
-    spark_series = ps.Series(data=[1, 2, 3])
-
-    for series in [pandas_series, dask_series, spark_series]:
-        concatenated_series = concat_dataframe_or_series(series, series)
-        assert len(concatenated_series) == 2 * len(series)
+    assert len(concat_dataframe_or_series(pandas_series, pandas_series)) == 2 * len(
+        pandas_series,
+    )
+    if dd:
+        dask_series = dd.from_pandas(pandas_series, npartitions=1)
+        assert len(concat_dataframe_or_series(dask_series, dask_series)) == 2 * len(
+            dask_series,
+        )
+    if ps:
+        spark_series = ps.Series(data=[1, 2, 3])
+        assert len(concat_dataframe_or_series(spark_series, spark_series)) == 2 * len(
+            spark_series,
+        )
