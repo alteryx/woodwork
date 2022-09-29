@@ -6,12 +6,14 @@ Release Notes
 .. Future Release
   ==============
     * Enhancements
+        * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+    :user:`sbadithe` 
 
 v0.19.0 September 27, 2022
 ==========================
@@ -19,7 +21,6 @@ v0.19.0 September 27, 2022
         * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
         * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
         * Added ``target_col`` argument to ``dependence`` and ``dependence_dict`` to calculate correlations between features and target_col (:pr:`1531`)
-        * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
         * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
     * Changes
@@ -29,7 +30,7 @@ v0.19.0 September 27, 2022
         * Add kickoff for create conda forge pull request from release (:pr:`1515`)
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
 
 v0.18.0 August 31, 2022
 =======================
