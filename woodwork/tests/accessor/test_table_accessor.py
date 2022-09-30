@@ -64,13 +64,14 @@ from woodwork.table_accessor import (
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
+    concat_dataframe_or_series,
     is_property,
     is_public_method,
     to_pandas,
     validate_subset_schema,
 )
 from woodwork.tests.testing_utils.table_utils import assert_schema_equal
-from woodwork.utils import concat_dataframe_or_series, import_or_none
+from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
