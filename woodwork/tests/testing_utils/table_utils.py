@@ -122,8 +122,5 @@ def concat_dataframe_or_series(base, to_add):
         base,
     ) or accessor_utils._is_spark_series(base):
         concatenated_obj = ps.concat([base, to_add])
-    else:
-        raise TypeError(
-            f"When attempting concatenation, attempted to concatenate type of {to_add} to type of base: {base}",
-        )
+
     return concatenated_obj

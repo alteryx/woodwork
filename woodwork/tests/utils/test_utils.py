@@ -661,16 +661,8 @@ def test_concat_dataframe_or_series_with_series_with_dataframe():
         )
 
 
-def test_concat_dataframe_or_series_throws_exception():
-    """Tests whether incorrect call to concat_dataframe_or_series throws an exception"""
-    pandas_series = pd.Series([1, 2, 3])
-    obj = dict()
-
-    with pytest.raises(ValueError):
-        _ = concat_dataframe_or_series(pandas_series, obj)
-
-
 def tests_concat_dataframe_or_series_concatenates_in_correct_order():
+    """Tests to_add argument is appropriately added to end of base argument"""
     base = pd.Series([1, 2, 3])
     to_add = pd.Series([4, 5, 6])
     concatenated_object = concat_dataframe_or_series(base, to_add)
