@@ -24,6 +24,7 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode,
 )
+from woodwork.tests.testing_utils import concat_dataframe_or_series
 from woodwork.type_sys.type_system import DEFAULT_INFERENCE_FUNCTIONS
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -48,7 +49,6 @@ from woodwork.utils import (
     _parse_logical_type,
     _reformat_to_latlong,
     camel_to_snake,
-    concat_dataframe_or_series,
     get_valid_mi_types,
     import_or_none,
     import_or_raise,
@@ -620,11 +620,14 @@ def test_callback_caller_no_callback():
     assert caller.current_progress == 0
 
 
-def test_concat_dataframe_or_series():
+def test_concat_dataframe_or_series_with_series():
+    """Tests whether series are correctly concatenated"""
     pandas_series = pd.Series([1, 2, 3])
+
     assert len(concat_dataframe_or_series(pandas_series, pandas_series)) == 2 * len(
         pandas_series,
     )
+
     if dd:
         dask_series = dd.from_pandas(pandas_series, npartitions=1)
         assert len(concat_dataframe_or_series(dask_series, dask_series)) == 2 * len(
@@ -635,3 +638,41 @@ def test_concat_dataframe_or_series():
         assert len(concat_dataframe_or_series(spark_series, spark_series)) == 2 * len(
             spark_series,
         )
+
+
+def test_concat_dataframe_or_series_with_series_with_dataframe():
+    """Tests whether dataframes are correctly concatenated"""
+    d = {"col1": [1, 2], "col2": [3, 4]}
+    df = pd.DataFrame(data=d)
+
+    assert len(concat_dataframe_or_series(df, df)) == 2 * len(
+        df,
+    )
+
+    if dd:
+        dask_df = dd.from_pandas(df, npartitions=1)
+        assert len(concat_dataframe_or_series(dask_df, dask_df)) == 2 * len(
+            dask_df,
+        )
+    if ps:
+        spark_series = ps.from_pandas(df)
+        assert len(concat_dataframe_or_series(spark_series, spark_series)) == 2 * len(
+            spark_series,
+        )
+
+
+def test_concat_dataframe_or_series_throws_exception():
+    """Tests whether incorrect call to concat_dataframe_or_series throws an exception"""
+    pandas_series = pd.Series([1, 2, 3])
+    obj = dict()
+
+    with pytest.raises(ValueError):
+        _ = concat_dataframe_or_series(pandas_series, obj)
+
+
+def tests_concat_dataframe_or_series_concatenates_in_correct_order():
+    base = pd.Series([1, 2, 3])
+    to_add = pd.Series([4, 5, 6])
+    concatenated_object = concat_dataframe_or_series(base, to_add)
+    assert concatenated_object.tail(3) == [4, 5, 6]
+    assert concatenated_object.head(3) == [1, 2, 3]
