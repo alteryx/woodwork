@@ -30,8 +30,11 @@ from woodwork.logical_types import (
     PostalCode,
     _replace_nans,
 )
-from woodwork.tests.testing_utils.table_utils import to_pandas
-from woodwork.utils import concat_dataframe_or_series, import_or_none
+from woodwork.tests.testing_utils.table_utils import (
+    concat_dataframe_or_series,
+    to_pandas,
+)
+from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
 

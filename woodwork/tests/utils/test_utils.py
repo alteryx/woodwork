@@ -666,5 +666,5 @@ def tests_concat_dataframe_or_series_concatenates_in_correct_order():
     base = pd.Series([1, 2, 3])
     to_add = pd.Series([4, 5, 6])
     concatenated_object = concat_dataframe_or_series(base, to_add)
-    assert concatenated_object.tail(3).equals(pd.Series([1, 2, 3]))
-    assert concatenated_object.head(3).equals(pd.Series([4, 5, 6]))
+    assert concatenated_object.head(3).equals(pd.Series([1, 2, 3]))
+    assert concatenated_object.tail(3).equals(pd.Series([4, 5, 6]))
