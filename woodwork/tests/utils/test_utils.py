@@ -655,9 +655,9 @@ def test_concat_dataframe_or_series_with_series_with_dataframe():
             dask_df,
         )
     if ps:
-        spark_series = ps.from_pandas(df)
-        assert len(concat_dataframe_or_series(spark_series, spark_series)) == 2 * len(
-            spark_series,
+        spark_df = ps.from_pandas(df)
+        assert len(concat_dataframe_or_series(spark_df, spark_df)) == 2 * len(
+            spark_df,
         )
 
 
