@@ -129,28 +129,25 @@ def list_semantic_tags():
             for tag in sem_tags
         ],
     )
-    tags_df = tags_df.append(
-        pd.DataFrame(
+    temp_df = pd.DataFrame(
+        [
+            ["index", False, "Any LogicalType"],
             [
-                ["index", False, "Any LogicalType"],
-                [
-                    "time_index",
-                    False,
-                    [ww.type_system.str_to_logical_type("datetime")]
-                    + sem_tags["numeric"],
-                ],
-                [
-                    "date_of_birth",
-                    False,
-                    [ww.type_system.str_to_logical_type("datetime")],
-                ],
-                ["ignore", False, "Any LogicalType"],
-                ["passthrough", False, "Any LogicalType"],
+                "time_index",
+                False,
+                [ww.type_system.str_to_logical_type("datetime")] + sem_tags["numeric"],
             ],
-            columns=tags_df.columns,
-        ),
-        ignore_index=True,
+            [
+                "date_of_birth",
+                False,
+                [ww.type_system.str_to_logical_type("datetime")],
+            ],
+            ["ignore", False, "Any LogicalType"],
+            ["passthrough", False, "Any LogicalType"],
+        ],
+        columns=tags_df.columns,
     )
+    tags_df = pd.concat([tags_df, temp_df], ignore_index=True)
     return tags_df
 
 

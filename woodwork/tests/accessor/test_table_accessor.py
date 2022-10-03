@@ -64,6 +64,7 @@ from woodwork.table_accessor import (
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
+    concat_dataframe_or_series,
     is_property,
     is_public_method,
     to_pandas,
@@ -800,7 +801,9 @@ def test_ignore_columns_can_force_logical_type_not_in_ignore_columns():
         "ints": IntegerNullable,
     }
     df.ww.init(
-        ignore_columns={"floats", "dates"}, logical_types=logical_types, schema=schema
+        ignore_columns={"floats", "dates"},
+        logical_types=logical_types,
+        schema=schema,
     )
 
     assert isinstance(df.ww.logical_types["ints"], IntegerNullable)
@@ -3173,7 +3176,7 @@ def test_validate_logical_types(sample_df):
 
     if _is_spark_dataframe(df):
         invalid_df = ps.from_pandas(invalid_df)
-    df = df.append(invalid_df)
+    df = concat_dataframe_or_series(df, invalid_df)
 
     df.ww.init(
         logical_types={

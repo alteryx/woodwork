@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
     * Changes
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`
+    :user:`bchen1116`, :user:`sbadithe`
 
 v0.19.0 September 27, 2022
 ==========================

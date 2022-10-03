@@ -30,7 +30,10 @@ from woodwork.logical_types import (
     PostalCode,
     _replace_nans,
 )
-from woodwork.tests.testing_utils.table_utils import to_pandas
+from woodwork.tests.testing_utils.table_utils import (
+    concat_dataframe_or_series,
+    to_pandas,
+)
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
@@ -285,7 +288,8 @@ def test_email_address_validate(sample_df):
 
     assert email_address.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
 
@@ -307,7 +311,8 @@ def test_url_validate(sample_df):
 
     assert logical_type.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
 
@@ -337,7 +342,8 @@ def test_age_validate(sample_df, logical_type):
 
     if _is_spark_series(series):
         invalid_row = ps.from_pandas(invalid_row)
-    series = series.append(invalid_row).astype(dtype)
+
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
@@ -358,7 +364,8 @@ def test_phone_number_validate(sample_df):
 
     assert phone_number.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series phone_number contains invalid phone number values. "
     match += "The phone_inference_regex can be changed in the config if needed."
 
@@ -380,7 +387,8 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
         name="phone_number",
     ).astype(dtype)
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series(
         {17: "252 9384", 18: "+1 194 129 1991", 19: "+01 236 248 8482"},
@@ -399,7 +407,9 @@ def test_postal_code_validate(sample_df_postal_code):
             "51342-HEL0",
         ],
     )
-    series = series.append(invalid_types)
+
+    series = concat_dataframe_or_series(series, invalid_types)
+
     series.name = "postal_code"
     match = "Series postal_code contains invalid postal code values. "
     match += "The postal_code_inference_regex can be changed in the config if needed."
@@ -427,7 +437,9 @@ def test_postal_code_validate_complex(sample_df_postal_code):
     )
     actual = pc.validate(series, return_invalid_values=True)
     assert not len(actual)
-    series = series.append(invalid_types)
+
+    series = concat_dataframe_or_series(series, invalid_types)
+
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
 
@@ -446,7 +458,10 @@ def test_postal_code_validate_numeric(postal_code_numeric_series):
 
 
 def test_postal_code_error(postal_code_numeric_series_pandas):
-    series = postal_code_numeric_series_pandas.append(pd.Series([1234.5]))
+    series = concat_dataframe_or_series(
+        postal_code_numeric_series_pandas,
+        pd.Series([1234.5]),
+    )
     match = (
         "Error converting datatype for None from type float64 to type string. "
         "Please confirm the underlying data is consistent with logical type PostalCode."
