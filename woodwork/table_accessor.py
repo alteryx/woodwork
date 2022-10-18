@@ -287,6 +287,8 @@ class WoodworkTableAccessor:
             and isinstance(other.ww._dataframe, pd.DataFrame)
         ):
             return self._dataframe.equals(other.ww._dataframe)
+
+        # TODO: Can we check cuda dataframes here? 
         return True
 
     @_check_table_schema
@@ -1638,6 +1640,8 @@ class WoodworkTableAccessor:
                 concat = dd.concat
             if _is_spark_dataframe(self._dataframe):
                 concat = ps.concat
+            if _is_cudf_dataframe(self._dataframe): 
+                concat = cudf.concat 
 
             return concat(invalid_values, axis=1)
 

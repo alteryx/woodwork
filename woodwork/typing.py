@@ -14,3 +14,5 @@ if dd:
     AnyDataFrame = Union[AnyDataFrame, dd.DataFrame]
 if ps:
     AnyDataFrame = Union[AnyDataFrame, ps.DataFrame]
+if cudf: 
+    AnyDataFrame = Union[AnyDataFrame, cudf.DataFrame]

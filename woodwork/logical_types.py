@@ -27,6 +27,7 @@ from woodwork.utils import (
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 class ClassNameDescriptor(object):
@@ -341,6 +342,13 @@ class Datetime(LogicalType):
                     ),
                     name=series.name,
                 )
+            elif _is_cudf_series(series): 
+                series = cudf.Series(
+                    cudf.to_datetime(
+                        series,
+                    ), 
+                    name=series.name
+                )
             else:
                 try:
                     series = pd.to_datetime(
@@ -645,6 +653,9 @@ class Ordinal(LogicalType):
                     f"in the order values provided: {sorted(list(missing_order_vals))}"
                 )
                 raise ValueError(error_msg)
+        """ 
+        TODO: Check if this op can be supported in cudf
+        """ 
 
     def transform(self, series, null_invalid_values=False):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
