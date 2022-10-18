@@ -191,7 +191,8 @@ def test_is_categorical():
     assert not nl_column.is_categorical
 
     manually_added = ColumnSchema(
-        logical_type=NaturalLanguage, semantic_tags="category"
+        logical_type=NaturalLanguage,
+        semantic_tags="category",
     )
     assert not manually_added.is_categorical
 
@@ -227,7 +228,7 @@ def test_is_datetime():
     assert datetime_column.is_datetime
 
     formatted_datetime_column = ColumnSchema(
-        logical_type=Datetime(datetime_format="%Y-%m%d")
+        logical_type=Datetime(datetime_format="%Y-%m%d"),
     )
     assert formatted_datetime_column.is_datetime
 
@@ -244,6 +245,26 @@ def test_is_datetime():
     assert not empty_column.is_datetime
 
 
+def test_is_ordinal():
+    ordinal_column = ColumnSchema(logical_type=Ordinal)
+    assert ordinal_column.is_ordinal
+
+    instantiated_ordinal_column = ColumnSchema(logical_type=Ordinal(order=[]))
+    assert instantiated_ordinal_column.is_ordinal
+
+    ordered_ordinal_column = ColumnSchema(logical_type=Ordinal(order=[""]))
+    assert ordered_ordinal_column.is_ordinal
+
+    datetime_column = ColumnSchema(logical_type=Datetime())
+    assert not datetime_column.is_ordinal
+
+    double_column = ColumnSchema(logical_type=Double)
+    assert not double_column.is_ordinal
+
+    empty_column = ColumnSchema()
+    assert not empty_column.is_ordinal
+
+
 def test_set_semantic_tags_no_standard_tags():
     semantic_tags = {"tag1", "tag2"}
     schema = ColumnSchema(logical_type=Categorical, semantic_tags=semantic_tags)
@@ -257,7 +278,9 @@ def test_set_semantic_tags_no_standard_tags():
 def test_set_semantic_tags_with_standard_tags():
     semantic_tags = {"tag1", "tag2"}
     schema = ColumnSchema(
-        logical_type=Categorical, semantic_tags=semantic_tags, use_standard_tags=True
+        logical_type=Categorical,
+        semantic_tags=semantic_tags,
+        use_standard_tags=True,
     )
     assert schema.semantic_tags == semantic_tags.union({"category"})
 
@@ -278,7 +301,9 @@ def test_set_semantic_tags_no_logical_type():
 def test_add_custom_tags():
     semantic_tags = "initial_tag"
     schema = ColumnSchema(
-        logical_type=Categorical, semantic_tags=semantic_tags, use_standard_tags=True
+        logical_type=Categorical,
+        semantic_tags=semantic_tags,
+        use_standard_tags=True,
     )
 
     schema._add_semantic_tags("string_tag", "col_name")
@@ -314,7 +339,9 @@ def test_add_custom_tags_no_logical_type():
 def test_warns_on_adding_duplicate_tag():
     semantic_tags = ["first_tag", "second_tag"]
     schema = ColumnSchema(
-        logical_type=Categorical, semantic_tags=semantic_tags, use_standard_tags=False
+        logical_type=Categorical,
+        semantic_tags=semantic_tags,
+        use_standard_tags=False,
     )
 
     expected_message = (
@@ -329,7 +356,9 @@ def test_warns_on_adding_duplicate_tag():
 def test_reset_semantic_tags_with_standard_tags():
     semantic_tags = "initial_tag"
     schema = ColumnSchema(
-        semantic_tags=semantic_tags, logical_type=Categorical, use_standard_tags=True
+        semantic_tags=semantic_tags,
+        logical_type=Categorical,
+        use_standard_tags=True,
     )
 
     schema._reset_semantic_tags()
@@ -346,7 +375,9 @@ def test_reset_semantic_tags_without_standard_tags():
 
 def test_reset_semantic_tags_returns_new_object():
     schema = ColumnSchema(
-        logical_type=Integer, semantic_tags=set(), use_standard_tags=True
+        logical_type=Integer,
+        semantic_tags=set(),
+        use_standard_tags=True,
     )
     standard_tags = Integer.standard_tags
 
@@ -367,7 +398,9 @@ def test_remove_semantic_tags():
 def test_remove_standard_semantic_tag():
     # Check that warning is raised if use_standard_tags is True - tag should be removed
     schema = ColumnSchema(
-        logical_type=Categorical, semantic_tags="tag1", use_standard_tags=True
+        logical_type=Categorical,
+        semantic_tags="tag1",
+        use_standard_tags=True,
     )
     expected_message = 'Standard tags have been removed from "col_name"'
     with pytest.warns(StandardTagsChangedWarning) as record:
@@ -400,7 +433,7 @@ def test_remove_standard_semantic_tag():
 def test_remove_semantic_tags_raises_error_with_invalid_tag():
     schema = ColumnSchema(logical_type=Categorical, semantic_tags="tag1")
     error_msg = re.escape(
-        "Semantic tag(s) 'invalid_tagname' not present on column 'col_name'"
+        "Semantic tag(s) 'invalid_tagname' not present on column 'col_name'",
     )
     with pytest.raises(LookupError, match=error_msg):
         schema._remove_semantic_tags("invalid_tagname", "col_name")
@@ -409,14 +442,17 @@ def test_remove_semantic_tags_raises_error_with_invalid_tag():
 def test_schema_equality():
     col = ColumnSchema(logical_type=Categorical)
     diff_description_col = ColumnSchema(
-        logical_type=Categorical, description="description"
+        logical_type=Categorical,
+        description="description",
     )
     diff_origin_col = ColumnSchema(logical_type=Categorical, origin="base")
     diff_metadata_col = ColumnSchema(
-        logical_type=Categorical, metadata={"interesting_values": ["a", "b"]}
+        logical_type=Categorical,
+        metadata={"interesting_values": ["a", "b"]},
     )
     use_standard_tags_col = ColumnSchema(
-        logical_type=Categorical, use_standard_tags=True
+        logical_type=Categorical,
+        use_standard_tags=True,
     )
     diff_tags_col = ColumnSchema(logical_type=Categorical, semantic_tags={"new_tag"})
 
@@ -454,13 +490,16 @@ def test_schema_shallow_equality():
     assert no_metadata_1.__eq__(no_metadata_2, deep=True)
 
     metadata_1 = ColumnSchema(
-        logical_type=Categorical, metadata={"interesting_values": ["a", "b"]}
+        logical_type=Categorical,
+        metadata={"interesting_values": ["a", "b"]},
     )
     metadata_2 = ColumnSchema(
-        logical_type=Categorical, metadata={"interesting_values": ["a", "b"]}
+        logical_type=Categorical,
+        metadata={"interesting_values": ["a", "b"]},
     )
     metadata_3 = ColumnSchema(
-        logical_type=Categorical, metadata={"interesting_values": ["c", "d"]}
+        logical_type=Categorical,
+        metadata={"interesting_values": ["c", "d"]},
     )
 
     assert metadata_1.__eq__(metadata_2, deep=False)

@@ -1,5 +1,5 @@
-from ._get_ranges import _get_ranges
-from ._types import RangeObject
+from woodwork.statistics_utils.frequency_inference._get_ranges import _get_ranges
+from woodwork.statistics_utils.frequency_inference._types import RangeObject
 
 
 def _determine_nan_values(observed):

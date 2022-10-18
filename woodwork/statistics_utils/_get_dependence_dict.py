@@ -1,18 +1,32 @@
+import warnings
 from collections import defaultdict
 from timeit import default_timer as timer
 
 import numpy as np
 
-from ._bin_numeric_cols_into_categories import _bin_numeric_cols_into_categories
-from ._calculate_dependence_measure import _calculate_dependence_measure
-from ._calculate_max_dependence_for_pair import _calculate_max_dependence_for_pair
-from ._cast_nullable_int_and_datetime_to_int import (
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.statistics_utils._bin_numeric_cols_into_categories import (
+    _bin_numeric_cols_into_categories,
+)
+from woodwork.statistics_utils._calculate_dependence_measure import (
+    _calculate_dependence_measure,
+)
+from woodwork.statistics_utils._calculate_max_dependence_for_pair import (
+    _calculate_max_dependence_for_pair,
+)
+from woodwork.statistics_utils._cast_nullable_int_and_datetime_to_int import (
     _cast_nullable_int_and_datetime_to_int,
 )
-from ._parse_measures import _parse_measures
-
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.utils import CallbackCaller, get_valid_mi_types, get_valid_pearson_types
+from woodwork.statistics_utils._convert_ordinal_to_numeric import (
+    _convert_ordinal_to_numeric,
+)
+from woodwork.statistics_utils._parse_measures import _parse_measures
+from woodwork.utils import (
+    CallbackCaller,
+    get_valid_mi_types,
+    get_valid_pearson_types,
+    get_valid_spearman_types,
+)
 
 
 def _get_dependence_dict(
@@ -25,6 +39,8 @@ def _get_dependence_dict(
     extra_stats=False,
     min_shared=25,
     random_seed=0,
+    max_nunique=6000,
+    target_col=None,
 ):
     """Calculates dependence measures between all pairs of columns in the DataFrame that
     support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -40,8 +56,9 @@ def _get_dependence_dict(
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual_info", and "max"
+                - "spearman": calculates the Spearman corerlation coefficient
+                - "max":  max(abs(pearson), mutual, abs(spearman)) for each pair of columns
+                - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
         num_bins (int): Determines number of bins to use for converting numeric
             features into categorical.  Default to 10. Pearson calculation does
             not use binning.
@@ -69,6 +86,12 @@ def _get_dependence_dict(
             to measure accurately and will return a NaN value. Must be
             non-negative. Defaults to 25.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+            Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+            Defaults to 6000.
+        target_col (str): The column name of the target. If provided, will only calculate the dependence dictionary between other columns and this target column.
+            The target column will be `column_2` in the returned result. Defaults to None.
+
     Returns:
         list(dict): A list containing dictionaries that have keys `column_1`,
         `column_2`, and keys for the specified dependence measures. The list is
@@ -78,6 +101,8 @@ def _get_dependence_dict(
         still no dependence.
     """
     start_time = timer()
+    if target_col is not None and target_col not in list(dataframe.columns):
+        raise ValueError("target_col '{}' not in the dataframe".format(target_col))
 
     returned_measures, calc_order, calc_max = _parse_measures(measures)
 
@@ -88,10 +113,27 @@ def _get_dependence_dict(
         pearson_types = get_valid_pearson_types()
         pearson_columns = _get_valid_columns(dataframe, pearson_types)
         valid_columns = pearson_columns
+    if "spearman" in calc_order:
+        spearman_types = get_valid_spearman_types()
+        spearman_columns = _get_valid_columns(dataframe, spearman_types)
+        # pearson columns are a subset of spearman columns
+        valid_columns = spearman_columns
     if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
-        mutual_columns = _get_valid_columns(dataframe, mi_types)
-        # pearson columns are a subset of mutual columns
+        cols_to_drop = _find_large_categorical_columns(dataframe, max_nunique)
+        if len(cols_to_drop):
+            warnings.warn(
+                "Dropping columns {} to allow mutual information to run faster".format(
+                    cols_to_drop,
+                ),
+                UserWarning,
+            )
+        mutual_columns = [
+            col
+            for col in _get_valid_columns(dataframe, mi_types)
+            if col not in cols_to_drop
+        ]
+        # pearson/spearman columns are a subset of mutual columns
         valid_columns = mutual_columns
 
     index = dataframe.ww.index
@@ -115,20 +157,26 @@ def _get_dependence_dict(
 
     p = 0  # number of pearson columns
     m = 0  # number of mutual columns
+    s = 0  # number of spearman columns
     if "pearson" in calc_order:
         pearson_columns = [col for col in pearson_columns if col in not_null_col_set]
         p = len(pearson_columns)
+    if "spearman" in calc_order:
+        spearman_columns = [col for col in spearman_columns if col in not_null_col_set]
+        s = len(spearman_columns)
     if "mutual_info" in calc_order:
         mutual_columns = [col for col in mutual_columns if col in not_null_col_set]
         m = len(mutual_columns)
-    n = max(m, p)
+    n = max(m, p, s)
 
     # combinations in a loop is n! / 2 / (n - 2)! which reduces to (n) (n - 1) / 2
     def _num_calc_steps(n):
         return (n * n - n) / 2
 
     # Assume 1 unit for preprocessing, n for handling nulls, m for binning numerics
-    total_loops = 1 + n + m + _num_calc_steps(p) + _num_calc_steps(m)
+    total_loops = (
+        1 + n + m + s + _num_calc_steps(p) + _num_calc_steps(m) + _num_calc_steps(s)
+    )
     callback_caller = CallbackCaller(callback, unit, total_loops, start_time=start_time)
     callback_caller.update(1)
 
@@ -148,6 +196,9 @@ def _get_dependence_dict(
             col_names = mutual_columns
         elif measure == "pearson":
             col_names = pearson_columns
+        elif measure == "spearman":
+            _convert_ordinal_to_numeric(dataframe.ww.schema, data)
+            col_names = spearman_columns
 
         _calculate_dependence_measure(
             measure=measure,
@@ -157,6 +208,7 @@ def _get_dependence_dict(
             notna_mask=notna_mask,
             min_shared=min_shared,
             col_names=col_names,
+            target_col=target_col,
         )
 
     for result in results.values():
@@ -171,6 +223,8 @@ def _get_dependence_dict(
                 del result["mutual_info"]
                 if "pearson" in result:
                     del result["pearson"]
+                if "spearman" in result:
+                    del result["spearman"]
 
         # Remove cached info not expected in result by user
         if "num_union" in result:
@@ -198,3 +252,34 @@ def _get_valid_columns(dataframe, valid_types):
         if type(col.logical_type) in valid_types
     ]
     return valid_columns
+
+
+def _find_large_categorical_columns(datatable, total_unique=6000):
+    """Finds the categorical columns to drop to speed up mutual information calculations."""
+
+    def categorical_column_drop_helper(df):
+        cols_to_drop = []
+        cols_greater = df.columns[df.nunique().values > 800]
+        if len(cols_greater) < 2:
+            return cols_to_drop
+
+        df_uniques = df[cols_greater].nunique()
+        total = sum(df_uniques.to_numpy())
+        if total > total_unique:
+            # try to use mergesort to keep the order of the columns
+            if not _is_spark_dataframe(df):
+                drop = df_uniques.sort_values(ascending=False, kind="mergesort").index[
+                    0
+                ]
+            else:
+                drop = df_uniques.sort_values(ascending=False).index.tolist()[0]
+            cols_to_drop.append(drop)
+            df = df.drop(cols_to_drop, axis=1)
+            cols_to_drop += categorical_column_drop_helper(df)
+        return cols_to_drop
+
+    categoricals = datatable.ww.select("category").columns
+    # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
+    if len(categoricals) and not _is_dask_dataframe(datatable):
+        return categorical_column_drop_helper(datatable[categoricals])
+    return []

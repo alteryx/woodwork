@@ -6,22 +6,22 @@ on:
     branches:
       - main
 jobs:
-  py37_unit_tests_minimum_dependencies:
-    name: Unit Tests - 3.7 Minimum Dependencies
+  py38_unit_tests_minimum_dependencies:
+    name: Unit Tests - 3.8 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        libraries: ["core", "dask", "spark"]
+        libraries: ["core", "dask", "spark", "min_min"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Set up python 3.7
+      - name: Set up python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Install woodwork - minimum tests requirements
         run: |
           python -m pip install -e . --no-dependencies
@@ -38,6 +38,13 @@ jobs:
         name: Install woodwork - minimum core requirements
         run: |
           python -m pip install -r woodwork/tests/requirement_files/minimum_core_requirements.txt
+      - if: ${{ matrix.libraries == 'min_min' }}
+        name: Install woodwork with the minimum dependencies of minimum dependencies
+        run: |
+          python -m pip install requirements-parser
+          python -m pip install -r woodwork/tests/requirement_files/minimum_core_requirements.txt
+          python minimum_req.py
+          pip freeze
       - name: Run unit tests without code coverage
         run: python -m pytest woodwork/ -n 2
         env:

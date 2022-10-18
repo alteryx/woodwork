@@ -1,10 +1,14 @@
 import re
 import warnings
+from datetime import datetime
+from typing import Optional
 
+import numpy as np
 import pandas as pd
 from pandas.api import types as pdtypes
 
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series, _is_cudf_series
+import woodwork as ww
+from woodwork.accessor_utils import _is_cudf_series, _is_dask_series, _is_spark_series
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -15,6 +19,7 @@ from woodwork.type_sys.utils import _get_specified_ltype_params
 from woodwork.utils import (
     _infer_datetime_format,
     _is_valid_latlong_series,
+    _is_valid_latlong_value,
     _reformat_to_latlong,
     camel_to_snake,
     import_or_none,
@@ -46,7 +51,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__) and _get_specified_ltype_params(
-            other
+            other,
         ) == _get_specified_ltype_params(self)
 
     def __str__(self):
@@ -60,7 +65,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         else:
             return cls.primary_dtype
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Converts the series dtype to match the logical type's if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
@@ -78,7 +83,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         valid_dtype = self._get_valid_dtype(type(series))
         if valid_dtype != str(series.dtype):
             raise TypeValidationError(
-                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype."
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype.",
             )
 
 
@@ -119,7 +124,7 @@ class Age(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        return _validate_not_negative(series, return_invalid_values)
+        return _validate_age(series, return_invalid_values)
 
 
 class AgeFractional(LogicalType):
@@ -136,6 +141,11 @@ class AgeFractional(LogicalType):
     primary_dtype = "float64"
     standard_tags = {"numeric"}
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_age(series, fractional=True)
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=True):
         """Validates age values by checking for non-negative values.
 
@@ -146,7 +156,7 @@ class AgeFractional(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        return _validate_not_negative(series, return_invalid_values)
+        return _validate_age(series, return_invalid_values)
 
 
 class AgeNullable(LogicalType):
@@ -163,6 +173,11 @@ class AgeNullable(LogicalType):
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_age(series, fractional=False)
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=True):
         """Validates age values by checking for non-negative values.
 
@@ -173,7 +188,7 @@ class AgeNullable(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid age values.
         """
-        return _validate_not_negative(series, return_invalid_values)
+        return _validate_age(series, return_invalid_values)
 
 
 class Boolean(LogicalType):
@@ -201,6 +216,12 @@ class BooleanNullable(LogicalType):
     """
 
     primary_dtype = "boolean"
+
+    def transform(self, series, null_invalid_values=False):
+        series = _replace_nans(series, self.primary_dtype)
+        if null_invalid_values:
+            series = _coerce_boolean(series)
+        return super().transform(series)
 
 
 class Categorical(LogicalType):
@@ -284,34 +305,48 @@ class Datetime(LogicalType):
             series = series.dt.tz_localize(None)
         return series
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Converts the series data to a formatted datetime. Datetime format will be inferred if datetime_format is None."""
+
+        def _year_filter(date):
+            """Applies a filter to the years to ensure that the pivot point isn't too far forward."""
+            if date.year > datetime.today().year + 10:
+                date = date.replace(year=date.year - 100)
+            return date
+
         new_dtype = self._get_valid_dtype(type(series))
         series = self._remove_timezone(series)
         series_dtype = str(series.dtype)
 
         if new_dtype != series_dtype:
             self.datetime_format = self.datetime_format or _infer_datetime_format(
-                series
+                series,
             )
             utc = self.datetime_format and self.datetime_format.endswith("%z")
             if _is_dask_series(series):
                 name = series.name
                 series = dd.to_datetime(
-                    series, format=self.datetime_format, errors="coerce", utc=utc
+                    series,
+                    format=self.datetime_format,
+                    errors="coerce",
+                    utc=utc,
                 )
                 series.name = name
             elif _is_spark_series(series):
                 series = ps.Series(
                     ps.to_datetime(
-                        series.to_numpy(), format=self.datetime_format, errors="coerce"
+                        series.to_numpy(),
+                        format=self.datetime_format,
+                        errors="coerce",
                     ),
                     name=series.name,
                 )
             else:
                 try:
                     series = pd.to_datetime(
-                        series, format=self.datetime_format, utc=utc
+                        series,
+                        format=self.datetime_format,
+                        utc=utc,
                     )
                 except (TypeError, ValueError):
                     warnings.warn(
@@ -329,6 +364,11 @@ class Datetime(LogicalType):
                     )
 
         series = self._remove_timezone(series)
+        if self.datetime_format is not None and "%y" in self.datetime_format:
+            if _is_spark_series(series):
+                series = series.transform(_year_filter)
+            else:
+                series = series.apply(_year_filter)
         return super().transform(series)
 
 
@@ -346,6 +386,12 @@ class Double(LogicalType):
 
     primary_dtype = "float64"
     standard_tags = {"numeric"}
+
+    def transform(self, series, null_invalid_values=False):
+        series = _replace_nans(series, self.primary_dtype)
+        if null_invalid_values:
+            series = _coerce_numeric(series)
+        return super().transform(series)
 
 
 class Integer(LogicalType):
@@ -379,6 +425,22 @@ class IntegerNullable(LogicalType):
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
 
+    def transform(self, series, null_invalid_values=False):
+        """Converts a series dtype to Int64.
+
+        Args:
+            series (Series): A series of data values.
+            null_invalid_values (bool): If true, nulls invalid integers by coercing the series
+                to string, numeric, and then nulling out floats with decimals. Defaults to False.
+
+        Returns:
+            Series: A series of integers.
+        """
+        series = _replace_nans(series, self.primary_dtype)
+        if null_invalid_values:
+            series = _coerce_integer(series)
+        return super().transform(series)
+
 
 class EmailAddress(LogicalType):
     """Represents Logical Types that contain email address values.
@@ -392,6 +454,11 @@ class EmailAddress(LogicalType):
     """
 
     primary_dtype = "string"
+
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_string(series, regex="email_inference_regex")
+        return super().transform(series)
 
     def validate(self, series, return_invalid_values=False):
         """Validates email address values based on the regex in the config.
@@ -473,16 +540,19 @@ class LatLong(LogicalType):
 
     primary_dtype = "object"
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Formats a series to be a tuple (or list for Spark) of two floats."""
+        if null_invalid_values:
+            series = _coerce_latlong(series)
+
         if _is_dask_series(series):
             name = series.name
-            meta = (series, tuple([float, float]))
+            meta = (name, tuple([float, float]))
             series = series.apply(_reformat_to_latlong, meta=meta)
-            series.name = name
         elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
-                _reformat_to_latlong, is_spark=True
+                _reformat_to_latlong,
+                is_spark=True,
             )
             series = ps.from_pandas(formatted_series)
         elif _is_cudf_series(series):
@@ -500,7 +570,7 @@ class LatLong(LogicalType):
             raise TypeValidationError(
                 "Cannot initialize Woodwork. Series does not contain properly formatted "
                 "LatLong data. Try reformatting before initializing or use the "
-                "woodwork.init_series function to initialize."
+                "woodwork.init_series function to initialize.",
             )
 
 
@@ -576,7 +646,7 @@ class Ordinal(LogicalType):
                 )
                 raise ValueError(error_msg)
 
-    def transform(self, series):
+    def transform(self, series, null_invalid_values=False):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
         self._validate_order_values(series)
 
@@ -608,6 +678,11 @@ class PhoneNumber(LogicalType):
     """
 
     primary_dtype = "string"
+
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_string(series, regex="phone_inference_regex")
+        return super().transform(series)
 
     def validate(self, series, return_invalid_values=False):
         """Validates PhoneNumber values based on the regex in the config.
@@ -668,6 +743,11 @@ class URL(LogicalType):
 
     primary_dtype = "string"
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_string(series, regex="url_inference_regex")
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=False):
         """Validates URL values based on the regex in the config.
 
@@ -697,6 +777,18 @@ class PostalCode(LogicalType):
     backup_dtype = "string"
     standard_tags = {"category"}
 
+    def transform(self, series, null_invalid_values=False):
+        if null_invalid_values:
+            series = _coerce_postal_code(series)
+
+        if pd.api.types.is_numeric_dtype(series):
+            try:
+                series = series.astype("Int64").astype("string")
+            except TypeError:
+                raise TypeConversionError(series, "string", type(self))
+
+        return super().transform(series)
+
     def validate(self, series, return_invalid_values=False):
         """Validates PostalCode values based on the regex in the config. Currently only validates US Postal codes.
 
@@ -708,7 +800,9 @@ class PostalCode(LogicalType):
             Series: If return_invalid_values is True, returns invalid PostalCodes.
         """
         return _regex_validate(
-            "postal_code_inference_regex", series, return_invalid_values
+            "postal_code_inference_regex",
+            series,
+            return_invalid_values,
         )
 
 
@@ -734,18 +828,7 @@ _NULLABLE_PHYSICAL_TYPES = {
 
 def _regex_validate(regex_key, series, return_invalid_values):
     """Validates data values based on the logical type regex in the config."""
-    regex = config.get_option(regex_key)
-
-    if _is_spark_series(series):
-
-        def match(x):
-            if isinstance(x, str):
-                return bool(re.match(regex, x))
-
-        invalid = series.apply(match).astype("boolean") == False  # noqa: E712
-
-    else:
-        invalid = ~series.str.match(regex).astype("boolean")
+    invalid = _get_index_invalid_string(series, regex_key)
 
     if return_invalid_values:
         return series[invalid]
@@ -768,9 +851,28 @@ def _regex_validate(regex_key, series, return_invalid_values):
             raise TypeValidationError(info)
 
 
-def _validate_not_negative(series, return_invalid_values):
+def _replace_nans(series: pd.Series, primary_dtype: Optional[str] = None) -> pd.Series:
+    """
+    Replaces empty string values, string representations of NaN values ("nan", "<NA>"), and NaN equivalents
+    with np.nan or pd.NA depending on column dtype.
+    """
+    original_dtype = series.dtype
+    if primary_dtype == str(original_dtype):
+        return series
+    if str(original_dtype) == "string":
+        series = series.replace(ww.config.get_option("nan_values"), pd.NA)
+        return series
+    if not _is_spark_series(series):
+        series = series.replace(ww.config.get_option("nan_values"), np.nan)
+    if str(original_dtype) == "boolean":
+        series = series.astype(original_dtype)
+
+    return series
+
+
+def _validate_age(series, return_invalid_values):
     """Validates data values are non-negative."""
-    invalid = series.lt(0)
+    invalid = _get_index_invalid_age(series)
     if return_invalid_values:
         return series[invalid]
 
@@ -782,3 +884,86 @@ def _validate_not_negative(series, return_invalid_values):
         if any_invalid:
             info = f"Series {series.name} contains negative values."
             raise TypeValidationError(info)
+
+
+def _get_index_invalid_integer(series):
+    return series.mod(1).ne(0)
+
+
+def _get_index_invalid_string(series, regex_key):
+    regex = config.get_option(regex_key)
+
+    if _is_spark_series(series):
+
+        def match(x):
+            if isinstance(x, str):
+                return bool(re.match(regex, x))
+
+        return series.apply(match).astype("boolean") == False  # noqa: E712
+
+    else:
+        return ~series.str.match(regex).astype("boolean")
+
+
+def _get_index_invalid_age(series):
+    return series.lt(0)
+
+
+def _get_index_invalid_latlong(series):
+    return ~series.apply(_is_valid_latlong_value)
+
+
+def _coerce_string(series, regex=None):
+    if pd.api.types.is_object_dtype(series) or not pd.api.types.is_string_dtype(series):
+        series = series.astype("string")
+
+    if isinstance(regex, str):
+        invalid = _get_index_invalid_string(series, regex)
+
+        if invalid.any():
+            series[invalid] = pd.NA
+    return series
+
+
+def _coerce_numeric(series):
+    if not pd.api.types.is_numeric_dtype(series):
+        series = pd.to_numeric(_coerce_string(series), errors="coerce")
+    return series
+
+
+def _coerce_boolean(series):
+    if not pd.api.types.is_bool_dtype(series):
+        valid = {"True": True, "False": False}
+        series = _coerce_string(series)
+        series = series.map(valid)
+    return series
+
+
+def _coerce_integer(series):
+    series = _coerce_numeric(series)
+    invalid = _get_index_invalid_integer(series)
+    if invalid.any():
+        series[invalid] = None
+    return series
+
+
+def _coerce_age(series, fractional=False):
+    coerce_type = _coerce_numeric if fractional else _coerce_integer
+    series = coerce_type(series)
+    invalid = _get_index_invalid_age(series)
+    if invalid.any():
+        series[invalid] = None
+    return series
+
+
+def _coerce_latlong(series):
+    invalid = _get_index_invalid_latlong(series)
+    if invalid.any():
+        series[invalid] = None
+    return series
+
+
+def _coerce_postal_code(series):
+    if pd.api.types.is_numeric_dtype(series):
+        series = _coerce_integer(series).astype("Int64")
+    return _coerce_string(series, regex="postal_code_inference_regex")

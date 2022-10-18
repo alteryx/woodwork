@@ -8,7 +8,7 @@ from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
-cudf = import_or_none('cudf')
+cudf = import_or_none("cudf")
 
 
 def init_series(
@@ -16,6 +16,7 @@ def init_series(
     logical_type=None,
     semantic_tags=None,
     use_standard_tags=True,
+    null_invalid_values=False,
     description=None,
     origin=None,
     metadata=None,
@@ -40,6 +41,7 @@ def init_series(
         description (str, optional): Optional text describing the contents of the series.
         origin (str, optional): Optional text specifying origin of the column (i.e. "base" or "engineered").
         metadata (dict[str -> json serializable], optional): Metadata associated with the series.
+        null_invalid_values (bool, optional): If True, replaces any invalid values with null. Defaults to False.
 
     Returns:
         Series: A series with Woodwork typing information initialized
@@ -52,16 +54,16 @@ def init_series(
             series = pd.Series(series)
         elif isinstance(series, np.ndarray) and series.ndim != 1:
             raise ValueError(
-                f"np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional"
+                f"np.ndarray input must be 1 dimensional. Current np.ndarray is {series.ndim} dimensional",
             )
         elif cudf and _is_cudf_series(series):
             pass
         else:
             raise TypeError(
-                f"Input must be of series type. The current input is of type {type(series)}"
+                f"Input must be of series type. The current input is of type {type(series)}",
             )
     logical_type = _get_column_logical_type(series, logical_type, series.name)
-    new_series = logical_type.transform(series)
+    new_series = logical_type.transform(series, null_invalid_values=null_invalid_values)
     new_series.ww.init(
         logical_type=logical_type,
         semantic_tags=semantic_tags,
@@ -132,7 +134,7 @@ def get_invalid_schema_message(dataframe, schema):
     if schema.index is not None and isinstance(dataframe, pd.DataFrame):
         # Index validation not performed for Dask/Spark
         if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(
-            pd.Series(dataframe[schema.index].values)
+            pd.Series(dataframe[schema.index].values),
         ):
             return "Index mismatch between DataFrame and typing information"
         elif not dataframe[schema.index].is_unique:
@@ -222,7 +224,7 @@ def _check_table_schema(method):
             )
             raise WoodworkNotInitError(msg)
         diff_cols = set(self._dataframe.columns).difference(
-            set(self._schema.columns.keys())
+            set(self._schema.columns.keys()),
         )
         if diff_cols:
             raise ColumnNotPresentInSchemaError(sorted(list(diff_cols)))

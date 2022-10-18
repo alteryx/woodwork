@@ -10,12 +10,12 @@ clean:
 lint:
 	isort --check-only woodwork
 	python docs/notebook_version_standardizer.py check-execution
-	black woodwork -t py39 --check
+	black woodwork docs/source -t py310 --check
 	flake8 woodwork
 
 .PHONY: lint-fix
 lint-fix:
-	black -t py39 woodwork
+	black woodwork docs/source -t py310
 	isort woodwork
 	python docs/notebook_version_standardizer.py standardize
 
@@ -30,6 +30,7 @@ testcoverage:
 .PHONY: installdeps
 installdeps: upgradepip
 	pip install -e ".[dev]"
+	pre-commit install
 
 .PHONY: checkdeps
 checkdeps:
@@ -44,8 +45,12 @@ upgradepip:
 upgradebuild:
 	python -m pip install --upgrade build
 
-.PHONY: package_woodwork
-package_woodwork: upgradepip upgradebuild
+.PHONY: upgradesetuptools
+upgradesetuptools:
+	python -m pip install --upgrade setuptools
+
+.PHONY: package
+package: upgradepip upgradebuild upgradesetuptools
 	python -m build
 	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
 	tar -zxvf "dist/woodwork-${PACKAGE}.tar.gz"

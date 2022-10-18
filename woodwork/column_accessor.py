@@ -3,6 +3,7 @@ import warnings
 import weakref
 
 import pandas as pd
+from pandas.api import types as pdtypes
 
 from woodwork.accessor_utils import (
     _check_column_schema,
@@ -24,7 +25,7 @@ from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
-cudf = import_or_none('cudf')
+cudf = import_or_none("cudf")
 
 
 class WoodworkColumnAccessor:
@@ -96,7 +97,9 @@ class WoodworkColumnAccessor:
             self._schema = schema
         else:
             logical_type = _get_column_logical_type(
-                self._series, logical_type, self._series.name
+                self._series,
+                logical_type,
+                self._series.name,
             )
 
             if validate:
@@ -104,12 +107,15 @@ class WoodworkColumnAccessor:
                     logical_type.validate(self._series)
                 else:
                     valid_dtype = logical_type._get_valid_dtype(type(self._series))
-                    if valid_dtype != str(self._series.dtype):
+                    if valid_dtype != str(self._series.dtype) and not (
+                        pdtypes.is_integer_dtype(valid_dtype)
+                        and pdtypes.is_float_dtype(self._series.dtype)
+                    ):
                         raise TypeValidationError(
                             f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
                             f"incompatible with {logical_type} dtype. Try converting series "
                             f"dtype to '{valid_dtype}' before initializing or use the "
-                            "woodwork.init_series function to initialize."
+                            "woodwork.init_series function to initialize.",
                         )
 
             self._schema = ColumnSchema(
@@ -279,7 +285,7 @@ class WoodworkColumnAccessor:
                 # Try to initialize Woodwork with the existing schema
                 if _is_series(result):
                     valid_dtype = self._schema.logical_type._get_valid_dtype(
-                        type(result)
+                        type(result),
                     )
                     if str(result.dtype) == valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
@@ -290,7 +296,9 @@ class WoodworkColumnAccessor:
                         )
                         warning_message = (
                             TypingInfoMismatchWarning().get_warning_message(
-                                attr, invalid_schema_message, "Series"
+                                attr,
+                                invalid_schema_message,
+                                "Series",
                             )
                         )
                         warnings.warn(warning_message, TypingInfoMismatchWarning)
@@ -382,7 +390,12 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     @_check_column_schema
-    def box_plot_dict(self, quantiles=None, include_indices_and_values=True):
+    def box_plot_dict(
+        self,
+        quantiles=None,
+        include_indices_and_values=True,
+        ignore_zeros=False,
+    ):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -393,6 +406,8 @@ class WoodworkColumnAccessor:
             include_indices_and_values (bool, optional): Whether or not the lists containing individual
                 outlier values and their indices will be included in the returned dictionary.
                 Defaults to True.
+            ignore_zeros (bool): Whether to ignore 0 values (not NaN values) when calculating the box plot and outliers.
+                Defaults to False.
 
         Note:
             The minimum quantiles necessary for building a box plot using the IQR method are the
@@ -422,6 +437,7 @@ class WoodworkColumnAccessor:
             self._series,
             quantiles=quantiles,
             include_indices_and_values=include_indices_and_values,
+            ignore_zeros=ignore_zeros,
         )
 
     @_check_column_schema
@@ -449,7 +465,7 @@ def _validate_schema(schema, series):
     valid_dtype = schema.logical_type._get_valid_dtype(type(series))
     if str(series.dtype) != valid_dtype:
         raise ValueError(
-            f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}"
+            f"dtype mismatch between Series dtype {series.dtype}, and {schema.logical_type} dtype, {valid_dtype}",
         )
 
 
@@ -471,6 +487,7 @@ if ps:
     @register_series_accessor("ww")
     class SparkColumnAccessor(WoodworkColumnAccessor):
         pass
+
 
 if cudf:
     from cudf.api.extensions.accessor import register_series_accessor

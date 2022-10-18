@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from woodwork import accessor_utils
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
@@ -61,7 +62,8 @@ def is_public_method(class_to_check, name):
 def is_property(class_to_check, name):
     """Determine if the specified name is a property on a class"""
     if hasattr(class_to_check, name) and isinstance(
-        getattr(class_to_check, name), property
+        getattr(class_to_check, name),
+        property,
     ):
         return True
     return False
@@ -83,7 +85,8 @@ def assert_schema_equal(left_schema, right_schema, deep=True):
     assert set(left_schema.columns.keys()) == set(right_schema.columns.keys())
     for col_name in left_schema.columns:
         assert left_schema.columns[col_name].__eq__(
-            right_schema.columns[col_name], deep=deep
+            right_schema.columns[col_name],
+            deep=deep,
         )
     if deep:
         assert left_schema.metadata == right_schema.metadata
@@ -94,3 +97,30 @@ def _check_close(actual, expected):
         assert pd.isnull(actual)
     else:
         np.testing.assert_allclose(actual, expected, atol=1e-3)
+
+
+def concat_dataframe_or_series(base, to_add):
+    """Selects and calls the appropriate concat method based on the type of the base and to_add Series/DataFrame
+
+    Args:
+        base: base Series/DataFrame
+        to_add: Series/DataFrame to be concatenated
+
+    Returns:
+        Series/DataFrame: result of concatenation
+    """
+    dd = import_or_none("dask.dataframe")
+    ps = import_or_none("pyspark.pandas")
+
+    if isinstance(base, (pd.Series, pd.DataFrame)):
+        concatenated_obj = pd.concat([base, to_add])
+    elif accessor_utils._is_dask_dataframe(
+        base,
+    ) or accessor_utils._is_dask_series(base):
+        concatenated_obj = dd.concat([base, to_add])
+    elif accessor_utils._is_spark_dataframe(
+        base,
+    ) or accessor_utils._is_spark_series(base):
+        concatenated_obj = ps.concat([base, to_add])
+
+    return concatenated_obj

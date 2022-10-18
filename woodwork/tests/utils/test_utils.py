@@ -24,6 +24,7 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode,
 )
+from woodwork.tests.testing_utils import concat_dataframe_or_series
 from woodwork.type_sys.type_system import DEFAULT_INFERENCE_FUNCTIONS
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -89,7 +90,8 @@ def test_convert_input_to_set():
     assert semantic_tags_from_list == {"index", "numeric", "category"}
 
     semantic_tags_from_set = _convert_input_to_set(
-        {"index", "numeric", "category"}, "include parameter"
+        {"index", "numeric", "category"},
+        "include parameter",
     )
     assert semantic_tags_from_set == {"index", "numeric", "category"}
 
@@ -220,7 +222,7 @@ def test_get_ltype_params():
 
     ymd = "%Y-%m-%d"
     params_value = _get_specified_ltype_params(
-        Datetime(datetime_format=ymd, timezone="UTC")
+        Datetime(datetime_format=ymd, timezone="UTC"),
     )
     assert params_value == {"datetime_format": ymd, "timezone": "UTC"}
 
@@ -338,7 +340,6 @@ def test_is_nan():
 
     assert not _is_nan([None, 1, 3])
     assert not _is_nan([])
-    assert not _is_nan("none")
     assert not _is_nan(0)
     assert not _is_nan(False)
     assert not _is_nan({"key": "value"})
@@ -358,7 +359,7 @@ def test_is_nan():
         ([None, None], False),
         ("None", False),
         ([1.0, 2.0], False),
-        ((pd.NA, pd.NA), False),
+        ((pd.NA, pd.NA), True),
         (("a", 2.0), False),
         ((1.0, 2.0, 3.0), False),
         (None, False),
@@ -380,7 +381,7 @@ def test_is_valid_latlong_value(test_input, expected):
         (pd.NA, False),
         (2.0, False),
         ([2.0], False),
-        ([None, None], False),
+        ([None, None], True),
         ("None", False),
         ((1.0, 2.0), False),
         ((pd.NA, pd.NA), False),
@@ -425,11 +426,13 @@ def test_get_valid_mi_types():
 
 def test_get_column_logical_type(sample_series):
     assert isinstance(
-        _get_column_logical_type(sample_series, None, "col_name"), Categorical
+        _get_column_logical_type(sample_series, None, "col_name"),
+        Categorical,
     )
 
     assert isinstance(
-        _get_column_logical_type(sample_series, Datetime, "col_name"), Datetime
+        _get_column_logical_type(sample_series, Datetime, "col_name"),
+        Datetime,
     )
 
 
@@ -501,7 +504,7 @@ def test_infer_datetime_format(datetimes):
         assert fmt == "%m/%d/%Y"
 
     dt = pd.Series(
-        ["3/11/2000 9:00", "3/11/2000 10:00", "3/11/2000 11:00", "3/11/2000 12:00"]
+        ["3/11/2000 9:00", "3/11/2000 10:00", "3/11/2000 11:00", "3/11/2000 12:00"],
     )
     fmt = _infer_datetime_format(dt)
     assert fmt == "%m/%d/%Y %H:%M"
@@ -615,3 +618,53 @@ def test_callback_caller_no_callback():
     caller.update(1)
 
     assert caller.current_progress == 0
+
+
+def test_concat_dataframe_or_series_with_series():
+    """Tests whether series are correctly concatenated"""
+    pandas_series = pd.Series([1, 2, 3])
+
+    assert len(concat_dataframe_or_series(pandas_series, pandas_series)) == 2 * len(
+        pandas_series,
+    )
+
+    if dd:
+        dask_series = dd.from_pandas(pandas_series, npartitions=1)
+        assert len(concat_dataframe_or_series(dask_series, dask_series)) == 2 * len(
+            dask_series,
+        )
+    if ps:
+        spark_series = ps.Series(data=[1, 2, 3])
+        assert len(concat_dataframe_or_series(spark_series, spark_series)) == 2 * len(
+            spark_series,
+        )
+
+
+def test_concat_dataframe_or_series_with_series_with_dataframe():
+    """Tests whether dataframes are correctly concatenated"""
+    d = {"col1": [1, 2], "col2": [3, 4]}
+    df = pd.DataFrame(data=d)
+
+    assert len(concat_dataframe_or_series(df, df)) == 2 * len(
+        df,
+    )
+
+    if dd:
+        dask_df = dd.from_pandas(df, npartitions=1)
+        assert len(concat_dataframe_or_series(dask_df, dask_df)) == 2 * len(
+            dask_df,
+        )
+    if ps:
+        spark_df = ps.from_pandas(df)
+        assert len(concat_dataframe_or_series(spark_df, spark_df)) == 2 * len(
+            spark_df,
+        )
+
+
+def tests_concat_dataframe_or_series_concatenates_in_correct_order():
+    """Tests to_add argument is appropriately added to end of base argument"""
+    base = pd.Series([1, 2, 3])
+    to_add = pd.Series([4, 5, 6])
+    concatenated_object = concat_dataframe_or_series(base, to_add)
+    assert concatenated_object.head(3).equals(pd.Series([1, 2, 3]))
+    assert concatenated_object.tail(3).equals(pd.Series([4, 5, 6]))

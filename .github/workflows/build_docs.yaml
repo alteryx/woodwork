@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+env:
+  PYARROW_IGNORE_TIMEZONE: 1
+  JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
+  ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 
 name: Build Docs
 jobs:
@@ -25,7 +29,6 @@ jobs:
           sudo apt update
           sudo apt install -y pandoc
           sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install .[dev]
@@ -33,5 +36,3 @@ jobs:
         run: |
           make -C docs/ html
           ls docs/build/html
-        env:
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False

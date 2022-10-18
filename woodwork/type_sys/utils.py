@@ -2,7 +2,7 @@ import pandas as pd
 from dateutil.parser import ParserError
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series, _is_cudf_series
+from woodwork.accessor_utils import _is_cudf_series, _is_dask_series, _is_spark_series
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
@@ -15,7 +15,7 @@ def col_is_datetime(col, datetime_format=None):
     Will not infer numeric data as datetime."""
     if _is_spark_series(col):
         col = col.to_pandas()
-    
+
     if pd.api.types.is_datetime64_any_dtype(col):
         return True
 
@@ -24,7 +24,7 @@ def col_is_datetime(col, datetime_format=None):
         return False
 
     if _is_cudf_series(col):
-        # col.values fails due to 
+        # col.values fails due to
         # cudf/core/column/string.py
         # TypeError("String Arrays is not yet implemented in cudf")
         return False
@@ -67,7 +67,6 @@ def _is_numeric_series(series, logical_type):
         from cudf import to_numeric
     else:
         from pandas import to_numeric
-        
 
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
@@ -81,7 +80,7 @@ def _is_numeric_series(series, logical_type):
 
         # Allow numeric columns to be interpreted as Datetimes - doesn't allow strings even if they could be numeric
         if _get_ltype_class(
-            logical_type
+            logical_type,
         ) == ww.logical_types.Datetime and pd.api.types.is_numeric_dtype(series):
             return True
     else:
@@ -113,7 +112,7 @@ def list_logical_types():
                 "parent_type": ww.type_system._get_parent(ltype),
             }
             for ltype in ww.logical_types.LogicalType.__subclasses__()
-        ]
+        ],
     )
     return ltypes_df.sort_values("name").reset_index(drop=True)
 
@@ -139,30 +138,27 @@ def list_semantic_tags():
         [
             {"name": tag, "is_standard_tag": True, "valid_logical_types": sem_tags[tag]}
             for tag in sem_tags
-        ]
+        ],
     )
-    tags_df = tags_df.append(
-        pd.DataFrame(
+    temp_df = pd.DataFrame(
+        [
+            ["index", False, "Any LogicalType"],
             [
-                ["index", False, "Any LogicalType"],
-                [
-                    "time_index",
-                    False,
-                    [ww.type_system.str_to_logical_type("datetime")]
-                    + sem_tags["numeric"],
-                ],
-                [
-                    "date_of_birth",
-                    False,
-                    [ww.type_system.str_to_logical_type("datetime")],
-                ],
-                ["ignore", False, "Any LogicalType"],
-                ["passthrough", False, "Any LogicalType"],
+                "time_index",
+                False,
+                [ww.type_system.str_to_logical_type("datetime")] + sem_tags["numeric"],
             ],
-            columns=tags_df.columns,
-        ),
-        ignore_index=True,
+            [
+                "date_of_birth",
+                False,
+                [ww.type_system.str_to_logical_type("datetime")],
+            ],
+            ["ignore", False, "Any LogicalType"],
+            ["passthrough", False, "Any LogicalType"],
+        ],
+        columns=tags_df.columns,
     )
+    tags_df = pd.concat([tags_df, temp_df], ignore_index=True)
     return tags_df
 
 

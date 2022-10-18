@@ -110,7 +110,7 @@ def datetimes(request):
 def pandas_emails():
     return [
         pd.Series(
-            ["fl@alteryx.com", "good@email.com", "boaty@mcboatface.com", "foo@bar.com"]
+            ["fl@alteryx.com", "good@email.com", "boaty@mcboatface.com", "foo@bar.com"],
         ),
         pd.Series(["fl@alteryx.com", "good@email.com", "boaty@mcboatface.com", np.nan]),
     ]
@@ -193,7 +193,7 @@ def pandas_categories_dtype():
         {
             "cat": pd.Series(["a", "b", "c", "d"], dtype="category"),
             "non_cat": pd.Series(["a", "b", "c", "d"], dtype="string"),
-        }
+        },
     )
 
 
@@ -237,7 +237,7 @@ def pandas_natural_language():
                 "Hello World! My name is bob!",
                 "I like to move it move it",
                 "its cold outside",
-            ]
+            ],
         ),
     ]
 
@@ -257,7 +257,7 @@ def spark_natural_language(pandas_natural_language):
         "pandas_natural_language",
         "dask_natural_language",
         "spark_natural_language",
-    ]
+    ],
 )
 def natural_language(request):
     return request.getfixturevalue(request.param)
@@ -268,7 +268,7 @@ def natural_language(request):
 def pandas_strings():
     return [
         pd.Series(
-            ["Mr. John Doe", "Doe, Mrs. Jane", "James Brown", "Ms. Paige Turner"]
+            ["Mr. John Doe", "Doe, Mrs. Jane", "James Brown", "Ms. Paige Turner"],
         ),
     ]
 
@@ -298,10 +298,10 @@ def pandas_pdnas():
                 pd.NA,
                 "I like to move it move it",
                 "its cold outside",
-            ]
+            ],
         ),
         pd.Series(["Mr. John Doe", pd.NA, "James Brown", "Ms. Paige Turner"]).astype(
-            "string"
+            "string",
         ),
         pd.Series([1, pd.NA, 2, 3]).astype("Int64"),
         pd.Series([True, pd.NA, False, True]).astype("boolean"),
@@ -326,6 +326,7 @@ def pandas_nulls():
         pd.Series([np.nan, np.nan, np.nan, np.nan]),
         pd.Series([None, None, None, None]),
         pd.Series([None, np.nan, pd.NA, None]),
+        pd.Series(["None", "null", "n/a", "NAN"]),
     ]
 
 

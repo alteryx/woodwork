@@ -1,11 +1,12 @@
+name: Install Test
 on:
   pull_request:
     types: [opened, synchronize]
   push:
     branches:
       - main
-
-name: Install Test
+env:
+  ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   install_ww_complete:
     name: ${{ matrix.os }} - ${{ matrix.python_version }} install woodwork complete
@@ -13,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python_version: ["3.7", "3.8", "3.9", "3.10"]
+        python_version: ["3.8", "3.9", "3.10"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up python ${{ matrix.python_version }}
@@ -23,16 +24,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Build woodwork package
-        run: make package_woodwork
+        run: make package
       - name: Install complete version of woodwork
         run: |
+          python -m pip install --upgrade pip
           pip config --site set global.progress_bar off
-          python -m pip install unpacked_sdist/[complete]
+          python -m pip install "unpacked_sdist/[complete]"
       - name: Test by importing packages
         run: |
           python -c "import alteryx_open_src_update_checker"
-        env:
-          ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
       - name: Check package conflicts
         run: |
           python -m pip check
+      - name: Verify extra_requires commands
+        run: |
+          python -m pip install "unpacked_sdist/[dask]"
+          python -m pip install "unpacked_sdist/[spark]"
+          python -m pip install "unpacked_sdist/[updater]"

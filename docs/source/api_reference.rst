@@ -41,6 +41,8 @@ WoodworkTableAccessor
     WoodworkTableAccessor.set_index
     WoodworkTableAccessor.set_time_index
     WoodworkTableAccessor.set_types
+    WoodworkTableAccessor.spearman_correlation
+    WoodworkTableAccessor.spearman_correlation_dict
     WoodworkTableAccessor.time_index
     WoodworkTableAccessor.to_disk
     WoodworkTableAccessor.to_dictionary
@@ -116,14 +118,14 @@ ColumnSchema
     ColumnSchema.is_datetime
     ColumnSchema.is_numeric
     ColumnSchema.metadata
-    
+
 Serialization
 =============
 
 .. currentmodule:: woodwork.serializers.serializer_base
 .. autosummary::
     :toctree: generated/
-    
+
     typing_info_to_dict
 
 Deserialization
@@ -212,6 +214,7 @@ General Utils
     concat_columns
     get_valid_mi_types
     get_valid_pearson_types
+    get_valid_spearman_types
     read_file
 
 .. currentmodule:: woodwork.accessor_utils

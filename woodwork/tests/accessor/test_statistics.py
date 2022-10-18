@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
-from woodwork.config import config
+from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
     URL,
@@ -38,6 +38,7 @@ from woodwork.logical_types import (
 )
 from woodwork.statistics_utils import (
     _bin_numeric_cols_into_categories,
+    _convert_ordinal_to_numeric,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -85,9 +86,9 @@ def test_accessor_bin_numeric_cols_into_categories():
             "booleans": pd.Series([True, False, True, False], dtype="boolean"),
             "categories": pd.Series(["test", "test2", "test2", "test"]),
             "dates": pd.Series(
-                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"]
+                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
             ),
-        }
+        },
     )
     df.ww.init()
     data = {column: df[column] for column in df.copy()}
@@ -123,29 +124,33 @@ def test_dependence_same(df_same_mi, measure):
         _check_close(actual, 1.0)
 
 
-@pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
+@pytest.mark.parametrize(
+    "measure",
+    ["mutual_info", "pearson", "spearman", "max", "all"],
+)
 def test_dependence(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
-    if measure == "pearson":
+    if measure == "pearson" or measure == "spearman":
         assert dep_df.shape[0] == 3
     else:
         assert dep_df.shape[0] == 15
 
     if measure == "all":
-        measure_columns = ["mutual_info", "max", "pearson"]
+        measure_columns = ["mutual_info", "max", "pearson", "spearman"]
     else:
         measure_columns = [measure]
     assert dep_df.columns.tolist() == ["column_1", "column_2"] + measure_columns
 
-    if measure == "pearson":
-        expected_df = pd.DataFrame(data={"pearson": [0.5]}, index=["dates_ints"])
+    if measure == "pearson" or measure == "spearman":
+        expected_df = pd.DataFrame(data={measure: [0.5]}, index=["dates_ints"])
     else:
         expected_df = pd.DataFrame(
             data={
                 "mutual_info": [1.0, 0.0, 0, 0.208, 0.208],
                 "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
+                "spearman": [np.nan, np.nan, np.nan, 0.5, np.nan],
                 "max": [1.0, 0.0, 0, 0.5, 0.208],
             },
             index=[
@@ -339,13 +344,13 @@ def test_dependence_extra_stats(measure):
             "str": pd.Series(["test", np.nan, "test2", "test"]),
             "str_no_nan": pd.Series(["test", "test2", "test2", "test"]),
             "dates": pd.Series(["2020-01-01", None, "2020-01-02", "2020-01-03"]),
-        }
+        },
     )
     df_nans.ww.init(
         logical_types={
             "str": "Categorical",
             "str_no_nan": "Categorical",
-        }
+        },
     )
     original_df = df_nans.copy()
     dep_df_extra = df_nans.ww.dependence(measure, extra_stats=True, min_shared=3)
@@ -358,7 +363,8 @@ def test_dependence_extra_stats(measure):
         assert "measure_used" in dep_df_extra.columns
         # recalculate max to compare
         both_dep_df = df_nans.ww.dependence(
-            measures=["mutual_info", "pearson"], min_shared=3
+            measures=["mutual_info", "pearson"],
+            min_shared=3,
         )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
@@ -380,7 +386,7 @@ def test_dependence_extra_stats(measure):
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_min_shared(time_index_df, measure):
     time_index_df.ww.init(
-        logical_types={"strs": "categorical", "letters": "Categorical"}
+        logical_types={"strs": "categorical", "letters": "Categorical"},
     )
     for min_shared in (25, 4, 3):
         dep_df = time_index_df.ww.dependence(measures=measure, min_shared=min_shared)
@@ -407,7 +413,7 @@ def test_dependence_min_shared(time_index_df, measure):
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_min_shared_warns(time_index_df, measure):
     time_index_df.ww.init(
-        logical_types={"strs": "categorical", "letters": "Categorical"}
+        logical_types={"strs": "categorical", "letters": "Categorical"},
     )
 
     msg = (
@@ -423,10 +429,11 @@ def test_dependence_min_shared_warns(time_index_df, measure):
 @pytest.mark.parametrize(
     "measure, expected",
     [
-        ("mutual_info", (18, 7, 28)),
-        ("pearson", (5, 4, 7)),
-        ("max", (21, 7, 31)),
-        ("all", (21, 7, 31)),
+        ("mutual_info", (18, 7, 28, 28)),
+        ("pearson", (5, 4, 7, 7)),
+        ("spearman", (5, 4, 10, 7)),
+        ("max", (24, 7, 37, 34)),
+        ("all", (24, 7, 37, 34)),
     ],
 )
 def test_dependence_callback(df_mi, measure, expected, mock_callback):
@@ -434,7 +441,7 @@ def test_dependence_callback(df_mi, measure, expected, mock_callback):
 
     df_mi.ww.dependence(measures=measure, callback=mock_callback)
 
-    total_calls, second_call_progress, total_progress = expected
+    total_calls, second_call_progress, total, total_progress = expected
 
     assert len(mock_callback.progress_history) == total_calls
 
@@ -444,20 +451,23 @@ def test_dependence_callback(df_mi, measure, expected, mock_callback):
     assert mock_callback.progress_history[1] == second_call_progress
 
     # Should be 26 calculations at end with a positive elapsed time
-    assert mock_callback.total == total_progress
+    assert mock_callback.total == total
     assert mock_callback.total_update == total_progress
     assert mock_callback.progress_history[-1] == total_progress
     assert mock_callback.total_elapsed_time > 0
 
 
-@pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
+@pytest.mark.parametrize(
+    "measure",
+    ["mutual_info", "pearson", "spearman", "max", "all"],
+)
 def test_dependence_with_string_index(measure):
     df = pd.DataFrame(
         {
             "id": ["a", "b", "c"],
             "col1": [1, 2, 3],
             "col2": [10, 20, 30],
-        }
+        },
     )
     df.ww.init(index="id", logical_types={"id": "unknown"})
     dependence_df = df.ww.dependence(measures=measure)
@@ -476,7 +486,7 @@ def test_dependence_dropna():
             "case": [0, np.nan, 0, 0],
             "for": [0, 0, np.nan, 0],
             "dropna": [0, 1, 2, np.nan],
-        }
+        },
     )
     df.ww.init(logical_types={col: Categorical for col in df})
     mi_df = df.ww.mutual_information(min_shared=2)
@@ -500,9 +510,136 @@ def test_dependence_dropna():
                 5: "dropna",
             },
             "mutual_info": {0: 0.5, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0},
-        }
+        },
     )
     assert mi_df.equals(expected_df)
+
+
+@pytest.mark.parametrize(
+    "logical_types",
+    [
+        {"a_column": "Unknown"},
+        {"a_column": "Categorical"},
+        {"a_column": "SubRegionCode"},
+    ],
+)
+def test_dependence_drop_columns(logical_types):
+    log_types = {
+        "b_column": "Categorical",
+        "c_column": "Categorical",
+        "d_column": "Categorical",
+        **logical_types,
+    }
+    cat_values = {"a_column": [], "b_column": [], "c_column": [], "d_column": []}
+    categoricals_string = "some categorical_{}_{}"
+    for k in cat_values.keys():
+        num = 3001 if k in ["c_column", "d_column"] else 100
+        for n in range(4000):
+            # `a_column`, `c_column`, `d_column` all have 3001 unique values, while `b_column` has 100
+            cat_values[k].append(categoricals_string.format(k, n % num))
+
+    df = pd.DataFrame(cat_values)
+    df.ww.init(logical_types=log_types)
+    string_warning = r"Dropping columns \['c_column'\] to allow mutual information"
+    with pytest.warns(UserWarning, match=string_warning):
+        for dep_dict_str in [
+            str(df.ww.dependence_dict()),
+            str(df.ww.mutual_information_dict()),
+        ]:
+            # based on natural column ordering, "c_column" will be missing rather than "d_column"
+            # even though both have same number of uniques
+            assert "c_column" not in dep_dict_str
+            assert "d_column" in dep_dict_str
+            if logical_types["a_column"] == "Unknown":
+                assert "a_column" not in dep_dict_str
+            else:
+                assert "a_column" in dep_dict_str
+
+
+@pytest.mark.parametrize("nunique", [1000, 2001])
+def test_dependence_drop_columns_nunique(nunique):
+    log_types = {
+        "b_column": "Categorical",
+        "c_column": "Categorical",
+        "d_column": "Categorical",
+        "a_column": "Integer",
+    }
+    cat_values = {
+        "a_column": range(1000),
+        "b_column": [],
+        "c_column": [],
+        "d_column": [],
+    }
+    categoricals_string = "some categorical_{}_{}"
+    for k in ["b_column", "c_column", "d_column"]:
+        num = 1000 if k in ["c_column", "d_column"] else 100
+        for n in range(1000):
+            # `a_column`, `c_column`, `d_column` all have 1000 unique values, while `b_column` has 100
+            cat_values[k].append(categoricals_string.format(k, n % num))
+
+    df = pd.DataFrame(cat_values)
+    df.ww.init(logical_types=log_types)
+    for dep_dict_str in [
+        str(df.ww.dependence(max_nunique=nunique)),
+        str(df.ww.mutual_information(max_nunique=nunique)),
+    ]:
+        # based on natural column ordering, "c_column" will be missing rather than "d_column"
+        # even though both have same number of uniques
+        assert "d_column" in dep_dict_str
+        assert "a_column" in dep_dict_str
+        assert "b_column" in dep_dict_str
+        if nunique == 2001:
+            assert "c_column" in dep_dict_str
+        else:
+            assert "c_column" not in dep_dict_str
+
+
+@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
+def test_dependence_drop_columns_dask_spark(df_type):
+    log_types = {
+        "b_column": "Categorical",
+        "c_column": "Categorical",
+        "a_column": "Categorical",
+    }
+    cat_values = {
+        "a_column": [],
+        "b_column": [],
+        "c_column": [],
+    }
+    categoricals_string = "some categorical_{}_{}"
+    for k in cat_values.keys():
+        num = 1000 if k in ["a_column", "c_column"] else 100
+        for n in range(1000):
+            # `a_column`, `c_column`, all have 1000 unique values, while `b_column` has 100
+            cat_values[k].append(categoricals_string.format(k, n % num))
+
+    df = pd.DataFrame(cat_values)
+    if df_type == "dask":
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=1)
+    elif df_type == "spark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Spark not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+
+    df.ww.init(logical_types=log_types)
+    for dep_dict_str in [
+        str(df.ww.dependence(max_nunique=1000)),
+        str(df.ww.mutual_information(max_nunique=1000)),
+    ]:
+        # based on natural column ordering, "a_column" will be missing rather than "c_column"
+        # even though both have same number of uniques
+        assert "c_column" in dep_dict_str
+        if df_type == "dask":
+            assert "a_column" in dep_dict_str
+        else:
+            assert "a_column" not in dep_dict_str
+        assert "b_column" in dep_dict_str
 
 
 @patch("woodwork.table_accessor._get_dependence_dict")
@@ -574,6 +711,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi, mock_callback):
         extra_stats=True,
         min_shared=25,
         random_seed=5,
+        max_nunique=6000,
     )
 
 
@@ -592,6 +730,53 @@ def test_mutual(df_mi, mock_callback):
     assert mi_dict_method.called
     mi_dict_method.assert_called_with(
         num_bins=5,
+        nrows=100,
+        include_index=True,
+        callback=mock_callback,
+        extra_stats=True,
+        min_shared=25,
+        random_seed=5,
+        max_nunique=6000,
+    )
+
+
+@patch("woodwork.table_accessor._get_dependence_dict")
+def test_spearman_dict(_get_dependence_dict, df_mi, mock_callback):
+    df_mi.ww.init()
+    df_mi.ww.spearman_correlation_dict(
+        nrows=100,
+        include_index=True,
+        callback=mock_callback,
+        extra_stats=True,
+        min_shared=25,
+        random_seed=5,
+    )
+    assert _get_dependence_dict.called
+    _get_dependence_dict.assert_called_with(
+        dataframe=df_mi,
+        measures=["spearman"],
+        nrows=100,
+        include_index=True,
+        callback=mock_callback,
+        extra_stats=True,
+        min_shared=25,
+        random_seed=5,
+    )
+
+
+def test_spearman(df_mi, mock_callback):
+    df_mi.ww.init()
+    with patch.object(df_mi.ww, "spearman_correlation_dict") as mi_dict_method:
+        df_mi.ww.spearman_correlation(
+            nrows=100,
+            include_index=True,
+            callback=mock_callback,
+            extra_stats=True,
+            min_shared=25,
+            random_seed=5,
+        )
+    assert mi_dict_method.called
+    mi_dict_method.assert_called_with(
         nrows=100,
         include_index=True,
         callback=mock_callback,
@@ -829,7 +1014,7 @@ def test_describe_accessor_method(describe_df):
                 pd.NaT,
                 "2020-02-01",
                 "2020-01-02",
-            ]
+            ],
         )
         expected_vals = pd.Series(
             {
@@ -873,7 +1058,8 @@ def test_describe_accessor_method(describe_df):
             )
             df = pd.DataFrame({"col": timedelta_data})
             df.ww.init(
-                logical_types={"col": ltype}, semantic_tags={"col": "custom_tag"}
+                logical_types={"col": ltype},
+                semantic_tags={"col": "custom_tag"},
             )
             stats_df = df.ww.describe()
             assert isinstance(stats_df, pd.DataFrame)
@@ -1086,16 +1272,6 @@ def test_describe_numeric_all_nans():
         assert stats["nulls"]["top_values"] == []
 
 
-def test_pandas_nullable_integer_quantile_fix():
-    """Should fail when https://github.com/pandas-dev/pandas/issues/42626 gets fixed"""
-    if pd.__version__ not in ["1.3.0", "1.3.1"]:  # pragma: no cover
-        pytest.skip("Bug only exists on pandas version 1.3.0 and 1.3.1")
-    series = pd.Series([1, 2, 3], dtype="Int64")
-    error_message = "cannot safely cast non-equivalent object to int64"
-    with pytest.raises(TypeError, match=error_message):
-        series.quantile([0.75])
-
-
 def test_describe_with_no_match(sample_df):
     sample_df.ww.init()
     df = sample_df.ww.describe(include=["wrongname"])
@@ -1175,7 +1351,7 @@ def test_describe_dict_extra_stats(describe_df):
             "formatted_datetime_col",
             "timedelta_col",
             "latlong_col",
-        ]
+        ],
     )
     describe_df["nullable_integer_col"] = describe_df["numeric_col"]
     describe_df["integer_col"] = describe_df["numeric_col"].fillna(0)
@@ -1233,13 +1409,14 @@ def test_describe_dict_extra_stats(describe_df):
     "_get_numeric_value_counts_in_range",
 )
 def test_describe_dict_extra_stats_overflow_range(
-    mock_get_numeric_value_counts_in_range, describe_df
+    mock_get_numeric_value_counts_in_range,
+    describe_df,
 ):
     df = pd.DataFrame(
         {
             "large_range": [-9215883799005046784, 0, 1, 9223177510267041793],
             "large_nums": [97896598486960007123867158471523621205853924, 0, 1, 2],
-        }
+        },
     )
     df.ww.init()
 
@@ -1260,6 +1437,7 @@ def test_describe_dict_extra_stats_overflow_range(
 
 
 def test_value_counts(categorical_df):
+    nan = np.nan
     logical_types = {
         "ints": IntegerNullable,
         "categories1": Categorical,
@@ -1282,25 +1460,30 @@ def test_value_counts(categorical_df):
         {"value": 3, "count": 1},
     ]
     # Spark converts numeric categories to strings, so we need to update the expected values for this
-    # Spark will result in `None` instead of `np.nan` in categorical columns
+    # Spark will result in `pd.NA` instead of `np.nan` in categorical columns
     if _is_spark_dataframe(categorical_df):
         updated_results = []
         for items in expected_cat1:
             updated_results.append(
-                {k: (str(v) if k == "value" else v) for k, v in items.items()}
+                {k: (str(v) if k == "value" else v) for k, v in items.items()},
             )
         expected_cat1 = updated_results
 
-    assert val_cts["categories1"] == expected_cat1
-    assert val_cts["categories2"] == [
-        {"value": np.nan, "count": 6},
+        nan = pd.NA
+
+    expected_cat2 = [
+        {"value": nan, "count": 6},
         {"value": "test", "count": 3},
         {"value": "test2", "count": 1},
     ]
-    assert val_cts["categories3"] == [
-        {"value": np.nan, "count": 7},
+    expected_cat3 = [
+        {"value": nan, "count": 7},
         {"value": "test", "count": 3},
     ]
+
+    assert val_cts["categories1"] == expected_cat1
+    assert val_cts["categories2"] == expected_cat2
+    assert val_cts["categories3"] == expected_cat3
 
     val_cts_descending = categorical_df.ww.value_counts(ascending=True)
     for col, vals in val_cts_descending.items():
@@ -1327,7 +1510,7 @@ def test_datetime_get_recent_value_counts():
             datetime(2019, 4, 2, 7, 20, 1, 0),
             datetime(2019, 5, 1, 8, 30, 0, 0),
             pd.NaT,
-        ]
+        ],
     )
     values = _get_recent_value_counts(times, num_x=3)
     expected_values = [
@@ -1340,7 +1523,7 @@ def test_datetime_get_recent_value_counts():
 
 def test_numeric_histogram():
     column = pd.Series(np.random.randn(1000))
-    column.append(pd.Series([np.nan, " ", "test"]))
+    column = pd.concat([column, pd.Series([np.nan])])
     bins = 7
     values = _get_histogram_values(column, bins=bins)
     assert len(values) == bins
@@ -1461,7 +1644,7 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     no_outliers_series.ww.init()
 
     has_outliers_dict = outliers_series.ww.box_plot_dict(
-        quantiles={0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0}
+        quantiles={0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0},
     )
     assert has_outliers_dict["low_bound"] == 8.125
     assert has_outliers_dict["high_bound"] == 83.125
@@ -1478,7 +1661,7 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     assert has_outliers_dict["high_indices"] == [0]
 
     no_outliers_dict = no_outliers_series.ww.box_plot_dict(
-        quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0}
+        quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0},
     )
 
     assert no_outliers_dict["low_bound"] == 23.0
@@ -1521,13 +1704,15 @@ def test_box_plot_on_non_numeric_col(outliers_df):
     error = "Cannot calculate box plot statistics for non-numeric column"
 
     non_numeric_series = init_series(
-        outliers_df["non_numeric"], logical_type="Categorical"
+        outliers_df["non_numeric"],
+        logical_type="Categorical",
     )
     with pytest.raises(TypeError, match=error):
         non_numeric_series.ww.box_plot_dict()
 
     wrong_dtype_series = init_series(
-        outliers_df["has_outliers"], logical_type="Categorical"
+        outliers_df["has_outliers"],
+        logical_type="Categorical",
     )
     with pytest.raises(TypeError, match=error):
         wrong_dtype_series.ww.box_plot_dict()
@@ -1540,18 +1725,20 @@ def test_box_plot_with_fully_null_col(outliers_df):
     check_empty_box_plot_dict(box_plot_dict)
 
     box_plot_dict = fully_null_double_series.ww.box_plot_dict(
-        quantiles={0.25: 1, 0.75: 10}
+        quantiles={0.25: 1, 0.75: 10},
     )
     check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_int_series = init_series(
-        outliers_df["nans"], logical_type="IntegerNullable"
+        outliers_df["nans"],
+        logical_type="IntegerNullable",
     )
     box_plot_dict = fully_null_int_series.ww.box_plot_dict()
     check_empty_box_plot_dict(box_plot_dict)
 
     fully_null_categorical_series = init_series(
-        outliers_df["nans"], logical_type="Categorical"
+        outliers_df["nans"],
+        logical_type="Categorical",
     )
     error = "Cannot calculate box plot statistics for non-numeric column"
     with pytest.raises(TypeError, match=error):
@@ -1567,7 +1754,7 @@ def test_box_plot_with_empty_col(outliers_df):
     check_empty_box_plot_dict(box_plot_dict)
 
     box_plot_dict = fully_null_double_series.ww.box_plot_dict(
-        quantiles={0.25: 1, 0.75: 10}
+        quantiles={0.25: 1, 0.75: 10},
     )
     check_empty_box_plot_dict(box_plot_dict)
 
@@ -1650,7 +1837,7 @@ def test_box_plot_quantiles_errors(outliers_df):
 
     error = re.escape(
         "Input quantiles do not contain the minimum necessary quantiles for box plot calculation: "
-        "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value)."
+        "0.0 (the minimum value), 0.25 (the first quartile), 0.75 (the third quartile), and 1.0 (the maximum value).",
     )
 
     partial_quantiles = {0.25: 36.25, 0.75: 20, 1.0: 90}
@@ -1671,14 +1858,14 @@ def test_box_plot_optional_return_values(outliers_df):
     has_outliers_series.ww.init()
 
     has_outliers_box_plot_info_without_optional = has_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=False
+        include_indices_and_values=False,
     )
     has_outliers_box_plot_info_with_optional = has_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=True
+        include_indices_and_values=True,
     )
 
     assert {"low_bound", "high_bound", "quantiles"} == set(
-        has_outliers_box_plot_info_without_optional.keys()
+        has_outliers_box_plot_info_without_optional.keys(),
     )
     assert {
         "low_bound",
@@ -1694,14 +1881,14 @@ def test_box_plot_optional_return_values(outliers_df):
     no_outliers_series.ww.init()
 
     no_outliers_box_plot_info_without_optional = no_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=False
+        include_indices_and_values=False,
     )
     no_outliers_box_plot_info_with_optional = no_outliers_series.ww.box_plot_dict(
-        include_indices_and_values=True
+        include_indices_and_values=True,
     )
 
     assert {"low_bound", "high_bound", "quantiles"} == set(
-        no_outliers_box_plot_info_without_optional.keys()
+        no_outliers_box_plot_info_without_optional.keys(),
     )
     assert {
         "low_bound",
@@ -1723,7 +1910,9 @@ def test_box_plot_optional_return_values(outliers_df):
     [{}, {"debug": True}, {"temporal_columns": ["2D_freq", "3M_freq"]}],
 )
 def test_infer_temporal_frequencies(
-    infer_frequency, expected_call_args, datetime_freqs_df_pandas
+    infer_frequency,
+    expected_call_args,
+    datetime_freqs_df_pandas,
 ):
 
     # TODO: Add support for Dask and Spark DataFrames
@@ -1758,13 +1947,13 @@ def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
     datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
 
     frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[datetime_freqs_df_pandas.ww.time_index]
+        temporal_columns=[datetime_freqs_df_pandas.ww.time_index],
     )
     assert len(frequency_dict) == 1
     assert frequency_dict["2D_freq"] == "2D"
 
     empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[]
+        temporal_columns=[],
     )
     assert len(empty_frequency_dict) == 0
 
@@ -1775,13 +1964,13 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
     error = "Column not_present not found in dataframe."
     with pytest.raises(ValueError, match=error):
         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-            temporal_columns=["2D_freq", "not_present"]
+            temporal_columns=["2D_freq", "not_present"],
         )
 
     error = "Cannot determine frequency for column ints with logical type Integer"
     with pytest.raises(TypeError, match=error):
         datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-            temporal_columns=["1d_skipped_one_freq", "ints"]
+            temporal_columns=["1d_skipped_one_freq", "ints"],
         )
 
 
@@ -1790,23 +1979,51 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
     [
         ("pearson", (["pearson"], ["pearson"], False)),
         (["pearson"], (["pearson"], ["pearson"], False)),
+        ("spearman", (["spearman"], ["spearman"], False)),
+        (["spearman"], (["spearman"], ["spearman"], False)),
         ("mutual_info", (["mutual_info"], ["mutual_info"], False)),
         (["mutual_info"], (["mutual_info"], ["mutual_info"], False)),
-        ("max", (["max"], ["pearson", "mutual_info"], True)),
-        (["max"], (["max"], ["pearson", "mutual_info"], True)),
-        ("all", (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True)),
+        ("max", (["max"], ["pearson", "spearman", "mutual_info"], True)),
+        (["max"], (["max"], ["pearson", "spearman", "mutual_info"], True)),
+        (
+            "all",
+            (
+                ["max", "pearson", "spearman", "mutual_info"],
+                ["pearson", "spearman", "mutual_info"],
+                True,
+            ),
+        ),
         (
             ["all"],
-            (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True),
+            (
+                ["max", "pearson", "spearman", "mutual_info"],
+                ["pearson", "spearman", "mutual_info"],
+                True,
+            ),
         ),
         (
             ["mutual_info", "pearson"],
             (["mutual_info", "pearson"], ["pearson", "mutual_info"], False),
         ),
-        (["pearson", "max"], (["pearson", "max"], ["pearson", "mutual_info"], True)),
+        (
+            ["pearson", "max"],
+            (["pearson", "max"], ["pearson", "spearman", "mutual_info"], True),
+        ),
         (
             ["max", "pearson", "mutual_info"],
-            (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True),
+            (
+                ["max", "pearson", "mutual_info"],
+                ["pearson", "spearman", "mutual_info"],
+                True,
+            ),
+        ),
+        (
+            ["pearson", "spearman"],
+            (["pearson", "spearman"], ["pearson", "spearman"], False),
+        ),
+        (
+            ["spearman", "max"],
+            (["spearman", "max"], ["pearson", "spearman", "mutual_info"], True),
         ),
     ],
 )
@@ -1821,8 +2038,8 @@ def test_parse_measures_warns():
     warning = "additional measures to 'all' measure found; 'all' should be used alone"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
         _measures, _calc_order, _calc_max = _parse_measures(["pearson", "all"])
-    assert _measures == ["max", "pearson", "mutual_info"]
-    assert _calc_order == ["pearson", "mutual_info"]
+    assert _measures == ["max", "pearson", "spearman", "mutual_info"]
+    assert _calc_order == ["pearson", "spearman", "mutual_info"]
     assert _calc_max
 
 
@@ -1842,3 +2059,118 @@ def test_parse_measures_bad_string():
     msg = "Unrecognized dependence measure ruler"
     with pytest.raises(ValueError, match=msg):
         _parse_measures(["mutual_info", "ruler"])
+
+
+@pytest.mark.parametrize("use_ordinal", [True, False])
+def test_spearman_ordinal(df_mi, use_ordinal):
+    if use_ordinal:
+        df_mi.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
+    else:
+        df_mi.ww.init()
+    sp = df_mi.ww.dependence(measures=["spearman"])
+    valid_sp_columns = (sp.column_1.append(sp.column_2)).unique()
+    assert "strs" not in valid_sp_columns
+    if use_ordinal:
+        assert "strs2" in valid_sp_columns
+        return
+    assert "strs2" not in valid_sp_columns
+
+
+def test_dependence_target_col_not_exist(df_mi):
+    df_mi.ww.init()
+    with pytest.raises(ValueError, match="target_col 'value' not in the"):
+        df_mi.ww.dependence_dict(target_col="value")
+
+    with pytest.raises(ValueError, match="target_col 'value' not in the"):
+        df_mi.ww.dependence(target_col="value")
+
+
+def test_dependence_target_col_in_output(df_mi):
+    df_mi.ww.init()
+    dep = df_mi.ww.dependence_dict(min_shared=12, target_col="ints")
+    assert all([x["column_2"] == "ints" for x in dep])
+    assert len(dep) < len(df_mi.columns)
+    assert all([isinstance(x["max"], float) for x in dep])
+
+
+def test_dependence_dict_target_col_in_output(df_mi):
+    df_mi.ww.init()
+    dep = df_mi.ww.dependence(min_shared=12, target_col="ints")
+    assert set(list(dep["column_2"])) == {"ints"}
+    assert set(list(dep.columns) + ["all"]) == set(
+        ["column_1", "column_2"] + CONFIG_DEFAULTS["correlation_metrics"],
+    )
+
+
+def test_convert_ordinal_to_numeric():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "ints2": pd.Series([1, 100, 1, 100]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "strs2": pd.Series(["bye", "hi", "bye", "bye"]),
+            "bools": pd.Series([True, False, True, False]),
+            "categories": pd.Series(["test", "test2", "test2", "test"]),
+            "dates": pd.Series(
+                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
+            ),
+        },
+    )
+    df.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
+    data = {column: df[column] for column in df.copy() if column != "ints2"}
+    result = [0 if x == "hi" else 1 for x in data["strs2"].values]
+    _convert_ordinal_to_numeric(df.ww.schema, data)
+    for cols in data.keys():
+        if cols != "strs2":
+            assert all(data[cols] == df[cols])
+        else:
+            assert all(data["strs2"].values == result)
+
+
+def test_dependence_with_object_target():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "target_y": pd.Series([True, False, False, pd.NA]),
+        },
+    )
+    df.ww.init()
+    res = df.ww.dependence(target_col="target_y")
+    assert "pearson" not in res.columns
+    assert "spearman" not in res.columns
+
+
+def test_box_plot_ignore_zeros():
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100)
+    no_zeros_df = pd.Series(range(1, 100))
+    zeros_df.ww.init()
+    no_zeros_df.ww.init()
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
+
+
+@pytest.mark.parametrize("dtype", ["IntegerNullable", "Double"])
+def test_box_plot_ignore_zeros_null(dtype):
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100 + [None])
+    no_zeros_df = pd.Series(list(range(1, 100)) + [None])
+    zeros_df.ww.init(logical_type=dtype)
+    no_zeros_df.ww.init(logical_type=dtype)
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored

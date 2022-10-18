@@ -72,7 +72,8 @@ def test_update_inference_function_validation_errors(type_sys):
     error_msg = "inference_function must be a function"
     with pytest.raises(TypeError, match=error_msg):
         type_sys.update_inference_function(
-            logical_type=Ordinal, inference_function="not a function"
+            logical_type=Ordinal,
+            inference_function="not a function",
         )
 
 
@@ -100,7 +101,8 @@ def test_type_system_default_type(default_inference_functions, default_relations
 
 
 def test_type_system_default_type_remove_error(
-    default_inference_functions, default_relationships
+    default_inference_functions,
+    default_relationships,
 ):
     type_sys = TypeSystem(
         inference_functions=default_inference_functions,
@@ -336,14 +338,16 @@ def test_str_to_logical_type():
 
     ymd = "%Y-%m-%d"
     datetime_with_format = ww.type_system.str_to_logical_type(
-        "datetime", params={"datetime_format": ymd}
+        "datetime",
+        params={"datetime_format": ymd},
     )
     assert datetime_with_format.__class__ == Datetime
     assert datetime_with_format.datetime_format == ymd
     assert datetime_with_format == Datetime(datetime_format=ymd)
 
     datetime_no_format = ww.type_system.str_to_logical_type(
-        "datetime", params={"datetime_format": None}
+        "datetime",
+        params={"datetime_format": None},
     )
     assert datetime_no_format.__class__ == Datetime
     assert datetime_no_format.datetime_format is None

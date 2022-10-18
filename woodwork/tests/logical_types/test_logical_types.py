@@ -1,25 +1,39 @@
 import re
+from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_spark_series, init_series
-from woodwork.exceptions import TypeConversionWarning, TypeValidationError
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series, init_series
+from woodwork.exceptions import (
+    TypeConversionError,
+    TypeConversionWarning,
+    TypeValidationError,
+)
 from woodwork.logical_types import (
     URL,
     Age,
     AgeFractional,
     AgeNullable,
     Boolean,
+    BooleanNullable,
     Categorical,
     Datetime,
+    Double,
     EmailAddress,
+    Integer,
+    IntegerNullable,
     LatLong,
     Ordinal,
     PhoneNumber,
     PostalCode,
+    _replace_nans,
 )
-from woodwork.tests.testing_utils.table_utils import to_pandas
+from woodwork.tests.testing_utils.table_utils import (
+    concat_dataframe_or_series,
+    to_pandas,
+)
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
@@ -50,7 +64,8 @@ def test_ordinal_order_errors():
     series = pd.Series([1, 2, 3]).astype("category")
 
     with pytest.raises(
-        TypeError, match="Order values must be specified in a list or tuple"
+        TypeError,
+        match="Order values must be specified in a list or tuple",
     ):
         Ordinal(order="not_valid").transform(series)
 
@@ -145,11 +160,26 @@ def test_latlong_transform(latlong_df):
         pd.testing.assert_series_equal(actual, expected)
 
 
+def test_latlong_transform_empty_series(empty_latlong_df):
+    latlong = LatLong()
+    series = empty_latlong_df["latlong"]
+    actual = latlong.transform(series)
+
+    if _is_dask_series(actual):
+        actual = actual.compute()
+    elif _is_spark_series(actual):
+        actual = actual.to_pandas()
+
+    assert actual.empty
+    assert actual.name == "latlong"
+    assert actual.dtype == latlong.primary_dtype
+
+
 def test_latlong_validate(latlong_df):
     error_message = re.escape(
         "Cannot initialize Woodwork. Series does not contain properly formatted "
         "LatLong data. Try reformatting before initializing or use the "
-        "woodwork.init_series function to initialize."
+        "woodwork.init_series function to initialize.",
     )
     latlong = LatLong()
     series = latlong_df["tuple_ints"]
@@ -207,13 +237,13 @@ def test_ordinal_transform(sample_series):
 
     if dask or spark:
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
-        "present in the order values provided: ['c']"
+        "present in the order values provided: ['c']",
     )
 
     with pytest.raises(ValueError, match=error_msg):
@@ -227,13 +257,13 @@ def test_ordinal_validate(sample_series):
 
     if dask or spark:
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported"
+            "Fails with Dask and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
-        "present in the order values provided: ['c']"
+        "present in the order values provided: ['c']",
     )
 
     with pytest.raises(ValueError, match=error_msg):
@@ -241,7 +271,7 @@ def test_ordinal_validate(sample_series):
 
     new_type = "string"
     error_message = re.escape(
-        f"Series dtype '{new_type}' is incompatible with ordinal dtype."
+        f"Series dtype '{new_type}' is incompatible with ordinal dtype.",
     )
     with pytest.raises(TypeValidationError, match=error_message):
         ordinal_incomplete_order.validate(sample_series.astype(new_type))
@@ -258,7 +288,8 @@ def test_email_address_validate(sample_df):
 
     assert email_address.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
 
@@ -280,7 +311,8 @@ def test_url_validate(sample_df):
 
     assert logical_type.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
 
@@ -310,7 +342,8 @@ def test_age_validate(sample_df, logical_type):
 
     if _is_spark_series(series):
         invalid_row = ps.from_pandas(invalid_row)
-    series = series.append(invalid_row).astype(dtype)
+
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
@@ -331,7 +364,8 @@ def test_phone_number_validate(sample_df):
 
     assert phone_number.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series phone_number contains invalid phone number values. "
     match += "The phone_inference_regex can be changed in the config if needed."
 
@@ -353,7 +387,8 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
         name="phone_number",
     ).astype(dtype)
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series(
         {17: "252 9384", 18: "+1 194 129 1991", 19: "+01 236 248 8482"},
@@ -370,9 +405,11 @@ def test_postal_code_validate(sample_df_postal_code):
             "hello",
             "HELLO",
             "51342-HEL0",
-        ]
+        ],
     )
-    series = series.append(invalid_types)
+
+    series = concat_dataframe_or_series(series, invalid_types)
+
     series.name = "postal_code"
     match = "Series postal_code contains invalid postal code values. "
     match += "The postal_code_inference_regex can be changed in the config if needed."
@@ -396,10 +433,502 @@ def test_postal_code_validate_complex(sample_df_postal_code):
             "DT1 1AE",  # UK formatting
             "DT1-1AE",
             "DT11AE",
-        ]
+        ],
     )
     actual = pc.validate(series, return_invalid_values=True)
     assert not len(actual)
-    series = series.append(invalid_types)
+
+    series = concat_dataframe_or_series(series, invalid_types)
+
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
+
+
+def test_postal_code_validate_numeric(postal_code_numeric_series):
+    series = init_series(postal_code_numeric_series, logical_type=PostalCode())
+    actual = to_pandas(series.ww.validate_logical_type(return_invalid_values=True))
+    expected = pd.Series({5: "1234567890"})
+
+    pd.testing.assert_series_equal(
+        actual,
+        expected,
+        check_dtype=False,
+        check_categorical=False,
+    )
+
+
+def test_postal_code_error(postal_code_numeric_series_pandas):
+    series = concat_dataframe_or_series(
+        postal_code_numeric_series_pandas,
+        pd.Series([1234.5]),
+    )
+    match = (
+        "Error converting datatype for None from type float64 to type string. "
+        "Please confirm the underlying data is consistent with logical type PostalCode."
+    )
+    with pytest.raises(TypeConversionError, match=match):
+        init_series(series, logical_type=PostalCode())
+
+
+def test_null_invalid_values_double():
+    types = {"double": "Double"}
+    invalid = "text", None, True, object
+    df = pd.DataFrame({"double": [1.2, 3, "4", *invalid]})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type Double",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    expected = pd.DataFrame({"double": [1.2, 3.0, 4.0, *nulls]})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_boolean():
+    types = {"data": "BooleanNullable"}
+    invalid = "text", 1.2, 345, object, None
+    data = [True, "False", *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type BooleanNullable",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = [True, False, *nulls]
+    expected = pd.DataFrame({"data": pd.Series(data, dtype="boolean")})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_integer():
+    types = {"data": "IntegerNullable"}
+    invalid = "text", 6.7, object, None
+    data = [1.0, "2", 345, *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type IntegerNullable",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = [1, 2, 345, *nulls]
+    expected = pd.DataFrame({"data": pd.Series(data, dtype="Int64")})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_emails():
+    types = {"data": "EmailAddress"}
+    invalid = ["text", 6.7, object, None]
+    valid = ["john.smith@example.com", "support@example.com", "team@example.com"]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    df.ww.init(logical_types=types, null_invalid_values=False)
+    expected = pd.DataFrame({"data": data.astype("string")})
+    pd.testing.assert_frame_equal(df, expected)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="string")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_url():
+    valid = [
+        "https://github.com/alteryx",
+        "https://twitter.com",
+        "http://google.com",
+    ]
+
+    types = {"data": "URL"}
+    invalid = ["text", 6.7, object, None]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    df.ww.init(logical_types=types, null_invalid_values=False)
+    expected = pd.DataFrame({"data": data.astype("string")})
+    pd.testing.assert_frame_equal(df, expected)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="string")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_values_phone_number():
+    valid = [
+        "2002007865",
+        "311-311-3156",
+        "422.422.0461",
+    ]
+
+    types = {"data": "PhoneNumber"}
+    invalid = ["text", 6.7, object, None]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    df.ww.init(logical_types=types, null_invalid_values=False)
+    expected = pd.DataFrame({"data": data.astype("string")})
+    pd.testing.assert_frame_equal(df, expected)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="string")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_age_fractional():
+    types = {"data": "AgeFractional"}
+    invalid = "text", -6.7, object, None
+    data = [0.34, "24.34", 45.0, *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type AgeFractional",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = [0.34, 24.34, 45.0, *nulls]
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_age_nullable():
+    types = {"data": "AgeNullable"}
+    invalid = "text", -6, object, None
+    data = [34, "24", 45, *invalid]
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type AgeNullable",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series([34, 24, 45, *nulls], dtype="Int64")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_latlong():
+    valid = [
+        (33.670914, -117.841501),
+        "(40.423599, -86.921162)",
+        (-45.031705, None),
+        (None, None),
+    ]
+    types = {"data": "LatLong"}
+    invalid = ["text", -6.7, object, None]
+    df = pd.DataFrame({"data": valid + invalid})
+
+    with pytest.raises(
+        TypeValidationError,
+        match="LatLong value is not properly formatted.",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nan = float("nan")
+    nulls = [nan] * len(invalid)
+    data = pd.Series(
+        [
+            (33.670914, -117.841501),
+            (40.423599, -86.921162),
+            (-45.031705, nan),
+            (nan, nan),
+            *nulls,
+        ],
+    )
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_postal_code():
+    types = {"data": "PostalCode"}
+    invalid = ["text", 6.7, object, "123456"]
+    valid = [90210, "60018-0123", "10010"]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    df.ww.init(logical_types=types, null_invalid_values=False)
+    expected = pd.DataFrame({"data": data.astype("category")})
+    pd.testing.assert_frame_equal(df, expected)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="string")
+    expected = pd.DataFrame({"data": data.astype("category")})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+def test_null_invalid_postal_code_numeric():
+    types = {"data": "PostalCode"}
+    invalid = [-6.7, 60018.0123, 123456.0]
+    valid = [90210, 60018.0, 10010.0]
+    data = pd.Series(valid + invalid)
+    df = pd.DataFrame({"data": data})
+
+    with pytest.raises(
+        TypeConversionError,
+        match="Please confirm the underlying data is consistent with logical type PostalCode",
+    ):
+        df.ww.init(logical_types=types, null_invalid_values=False)
+
+    nulls = [None] * len(invalid)
+    data = pd.Series(valid + nulls, dtype="Int64")
+    data = data.astype("string").astype("category")
+    expected = pd.DataFrame({"data": data})
+    df.ww.init(logical_types=types, null_invalid_values=True)
+    pd.testing.assert_frame_equal(df, expected)
+
+
+@pytest.mark.parametrize(
+    "null_type",
+    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", 5],
+)
+@pytest.mark.parametrize("data_type", [int, float])
+def test_integer_nullable(data_type, null_type):
+    nullable_nums = pd.DataFrame(
+        map(data_type, [1, 2, 3, 4, 5] * 20),
+        columns=["num_nulls"],
+    )
+    nullable_nums["num_nulls"].iloc[-5:] = (
+        [None, pd.NA, np.nan, "NA", "none"]
+        if not isinstance(null_type, pd._libs.missing.NAType) and null_type == "mix"
+        else [null_type] * 5
+    )
+    nullable_nums.ww.init()
+
+    if not isinstance(null_type, int):
+        assert isinstance(nullable_nums.ww.logical_types["num_nulls"], IntegerNullable)
+        assert all(nullable_nums["num_nulls"][-5:].isna())
+    elif data_type is int:
+        assert isinstance(nullable_nums.ww.logical_types["num_nulls"], Integer)
+    else:
+        assert isinstance(nullable_nums.ww.logical_types["num_nulls"], Double)
+
+
+@pytest.mark.parametrize(
+    "null_type",
+    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True],
+)
+def test_boolean_nullable(null_type):
+    nullable_bools = pd.DataFrame([True, False] * 50, columns=["bool_nulls"])
+    nullable_bools["bool_nulls"].iloc[-5:] = (
+        [None, pd.NA, np.nan, "NA", "none"]
+        if not isinstance(null_type, pd._libs.missing.NAType) and null_type == "mix"
+        else [null_type] * 5
+    )
+    nullable_bools.ww.init()
+
+    if not isinstance(null_type, bool):
+        assert isinstance(
+            nullable_bools.ww.logical_types["bool_nulls"],
+            BooleanNullable,
+        )
+        assert all(nullable_bools["bool_nulls"][-5:].isna())
+    else:
+        assert isinstance(nullable_bools.ww.logical_types["bool_nulls"], Boolean)
+
+
+def test_replace_nans_same_types():
+    series = pd.Series([1, 3, 5, -6, "nan"], dtype="object")
+
+    new_series = _replace_nans(series, LatLong.primary_dtype)  # Object dtype
+
+    assert new_series.dtype == "object"
+    pd.testing.assert_series_equal(new_series, pd.Series([1, 3, 5, -6, "nan"]))
+
+    new_series = _replace_nans(series, Double.primary_dtype)
+
+    assert new_series.dtype == "float"
+    pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))
+
+
+def get_expected_dates(dates):
+    expected = []
+    for d in dates:
+        if d is not None:
+            year = int(re.findall(r"\d+", d)[0])  # gets the year
+            if year > datetime.today().year + 10:
+                year -= 100
+            if year <= datetime.today().year - 90:
+                year += 100
+            expected.append("{}-01-01".format(year))
+        else:
+            expected.append(d)
+    return expected
+
+
+@pytest.mark.parametrize("delim", ["/", "-", "."])
+@pytest.mark.parametrize("dtype", ["string", "object"])
+def test_datetime_pivot_point(dtype, delim):
+    if dtype == "string" and delim != "/":
+        pytest.skip("skipping because we don't want to overtest")
+    dates = [
+        "01/01/24",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/52",
+        "01/01/56",
+        "01/01/60",
+        "01/01/72",
+        "01/01/76",
+        "01/01/80",
+        None,
+        "01/01/88",
+    ]
+    datetime_str = "%m/%d/%y"
+    if delim != "/":
+        dates = [s.replace("/", delim) if s is not None else s for s in dates]
+        datetime_str = datetime_str.replace("/", delim)
+    expected_values = [
+        "2024-01-01",
+        "2030-01-01",
+        "2032-01-01",
+        "2036-01-01",
+        "2052-01-01",
+        "2056-01-01",
+        "1960-01-01",
+        "1972-01-01",
+        "1976-01-01",
+        "1980-01-01",
+        None,
+        "1988-01-01",
+    ]
+    expected_values = get_expected_dates(expected_values)
+    df = pd.DataFrame({"dates": dates}, dtype=dtype)
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("delim", ["/", "-", ".", ""])
+def test_datetime_pivot_point_should_not_apply(delim):
+    dates = [
+        "01/01/1924",
+        "01/01/1928",
+        "01/01/1960",
+        "01/01/1964",
+        "01/01/1968",
+        "01/01/1972",
+        "01/01/2076",
+        "01/01/2088",
+    ]
+    datetime_str = "%m/%d/%Y"
+    if delim == "-":
+        dates = [s.replace("/", delim) for s in dates]
+        datetime_str = datetime_str.replace("/", delim)
+    expected_values = [
+        "1924-01-01",
+        "1928-01-01",
+        "1960-01-01",
+        "1964-01-01",
+        "1968-01-01",
+        "1972-01-01",
+        "2076-01-01",
+        "2088-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("type", ["pyspark", "dask"])
+def test_pyspark_dask_series(type):
+    dates = [
+        "01/01/24",
+        "01/01/28",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/40",
+        "01/01/72",
+        None,
+        "01/01/88",
+    ]
+    datetime_str = "%m/%d/%y"
+    expected_values = [
+        "2024-01-01",
+        "2028-01-01",
+        "2030-01-01",
+        "1932-01-01",
+        "1936-01-01",
+        "1940-01-01",
+        "1972-01-01",
+        None,
+        "1988-01-01",
+    ]
+    expected_values = get_expected_dates(expected_values)
+    df = pd.DataFrame({"dates": dates})
+    if type == "pyspark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    else:
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=2)
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df = to_pandas(df)
+    df.sort_index(inplace=True)
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+def test_datetime_pivot_point_no_format_provided():
+    dates = [
+        "01/01/24",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/52",
+        "01/01/56",
+        "01/01/60",
+        "01/01/72",
+        "01/01/76",
+        "01/01/80",
+        None,
+        "01/01/88",
+    ]
+    expected_values = [
+        "2024-01-01",
+        "2030-01-01",
+        "2032-01-01",
+        "2036-01-01",
+        "2052-01-01",
+        "2056-01-01",
+        "2060-01-01",
+        "1972-01-01",
+        "1976-01-01",
+        "1980-01-01",
+        None,
+        "1988-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime})
+    pd.testing.assert_frame_equal(df, df_expected)

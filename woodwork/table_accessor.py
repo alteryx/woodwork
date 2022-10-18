@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Any, Callable, Dict, Iterable, List, Sequence, Set, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Union
 
 import pandas as pd
 
@@ -15,10 +15,12 @@ from woodwork.accessor_utils import (
     init_series,
 )
 from woodwork.exceptions import (
+    ColumnBothIgnoredAndSetError,
     ColumnNotPresentError,
     IndexTagRemovedWarning,
     ParametersIgnoredWarning,
     TypingInfoMismatchWarning,
+    WoodworkNotInitError,
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import Datetime, LogicalType
@@ -38,7 +40,7 @@ from woodwork.utils import _get_column_logical_type, _parse_logical_type, import
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
-cudf = import_or_none('cudf')
+cudf = import_or_none("cudf")
 
 
 class WoodworkTableAccessor:
@@ -66,6 +68,10 @@ class WoodworkTableAccessor:
             logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
+            ignore_columns (list[str] or set[str], optional): List of columns to ignore for inferring logical types. If a column name
+                is included in this list, then it cannot be part of the logical_types dictionary argument, and it must be part
+                of an existing schema for the dataframe. This argument can be used when a column has a logical type that has
+                already been inferred and its physical dtype is not expected to have changed since its last inference.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
@@ -123,19 +129,23 @@ class WoodworkTableAccessor:
 
     def init_with_partial_schema(
         self,
-        schema: TableSchema = None,
-        index: str = None,
-        time_index: str = None,
-        logical_types: Dict[ColumnName, Union[str, LogicalType, None]] = None,
-        already_sorted: bool = False,
-        name: str = None,
-        semantic_tags: Dict[ColumnName, Union[str, List[str], Set[str]]] = None,
-        table_metadata: dict = None,
-        column_metadata: Dict[ColumnName, dict] = None,
-        use_standard_tags: Union[bool, UseStandardTagsDict] = None,
-        column_descriptions: Dict[ColumnName, str] = None,
-        column_origins: Union[str, Dict[ColumnName, str]] = None,
-        validate: bool = True,
+        schema: Optional[TableSchema] = None,
+        index: Optional[str] = None,
+        time_index: Optional[str] = None,
+        logical_types: Optional[Dict[ColumnName, Union[str, LogicalType, None]]] = None,
+        ignore_columns: Optional[List[str]] = None,
+        already_sorted: Optional[bool] = False,
+        name: Optional[str] = None,
+        semantic_tags: Optional[
+            Dict[ColumnName, Union[str, List[str], Set[str]]]
+        ] = None,
+        table_metadata: Optional[dict] = None,
+        column_metadata: Optional[Dict[ColumnName, dict]] = None,
+        use_standard_tags: Optional[Union[bool, UseStandardTagsDict]] = None,
+        column_descriptions: Optional[Dict[ColumnName, str]] = None,
+        column_origins: Optional[Union[str, Dict[ColumnName, str]]] = None,
+        null_invalid_values: Optional[bool] = False,
+        validate: Optional[bool] = True,
         **kwargs,
     ) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
@@ -157,6 +167,10 @@ class WoodworkTableAccessor:
             logical_types (Dict[str -> LogicalType], optional): Dictionary mapping column names in
                 the DataFrame to the LogicalType for the column. Setting a column's logical type to None in this dict will
                 force a logical to be inferred.
+            ignore_columns (list[str] or set[str], optional): List of columns to ignore for inferring logical types. If a column name
+                is included in this list, then it cannot be part of the logical_types dictionary argument, and it must be part
+                of an existing schema for the dataframe. This argument can be used when a column has a logical type that has
+                already been inferred and its physical dtype is not expected to have changed since its last inference.
             already_sorted (bool, optional): Indicates whether the input DataFrame is already sorted on the time
                 index. If False, will sort the dataframe first on the time_index and then on the index (pandas DataFrame
                 only). Defaults to False.
@@ -191,6 +205,7 @@ class WoodworkTableAccessor:
                 index,
                 time_index,
                 logical_types,
+                ignore_columns,
                 schema,
                 use_standard_tags,
             )
@@ -222,7 +237,11 @@ class WoodworkTableAccessor:
 
         # overwrite schema parameters with specified kwargs
         logical_types = _infer_missing_logical_types(
-            self._dataframe, logical_types, existing_logical_types
+            self._dataframe,
+            logical_types,
+            existing_logical_types,
+            ignore_columns,
+            null_invalid_values=null_invalid_values,
         )
         column_descriptions = {
             **existing_col_descriptions,
@@ -231,7 +250,9 @@ class WoodworkTableAccessor:
         column_metadata = {**existing_col_metadata, **(column_metadata or {})}
         column_names = list(self._dataframe.columns)
         use_standard_tags = _merge_use_standard_tags(
-            existing_use_standard_tags, use_standard_tags, column_names
+            existing_use_standard_tags,
+            use_standard_tags,
+            column_names,
         )
         semantic_tags = {**existing_semantic_tags, **(semantic_tags or {})}
         column_origins = {**existing_col_origins, **(column_origins or {})}
@@ -316,11 +337,11 @@ class WoodworkTableAccessor:
         # Don't allow reassigning of index or time index with setitem
         if self.index == col_name:
             raise KeyError(
-                "Cannot reassign index. Change column name and then use df.ww.set_index to reassign index."
+                "Cannot reassign index. Change column name and then use df.ww.set_index to reassign index.",
             )
         if self.time_index == col_name:
             raise KeyError(
-                "Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index."
+                "Cannot reassign time index. Change column name and then use df.ww.set_time_index to reassign time index.",
             )
 
         if column.ww._schema is None:
@@ -438,7 +459,7 @@ class WoodworkTableAccessor:
         """A dictionary containing physical types for each column"""
         return {
             col_name: self._schema.logical_types[col_name]._get_valid_dtype(
-                type(self._dataframe[col_name])
+                type(self._dataframe[col_name]),
             )
             for col_name in self._dataframe.columns
         }
@@ -511,7 +532,13 @@ class WoodworkTableAccessor:
         self._schema.set_time_index(new_time_index)
 
     @_check_table_schema
-    def set_types(self, logical_types=None, semantic_tags=None, retain_index_tags=True):
+    def set_types(
+        self,
+        logical_types=None,
+        semantic_tags=None,
+        retain_index_tags=True,
+        null_invalid_values=False,
+    ):
         """Update the logical type and semantic tags for any columns names in the provided types dictionaries,
         updating the Woodwork typing information for the DataFrame.
 
@@ -523,6 +550,7 @@ class WoodworkTableAccessor:
             retain_index_tags (bool, optional): If True, will retain any index or time_index
                 semantic tags set on the column. If False, will replace all semantic tags any time a column's
                 semantic tags or logical type changes. Defaults to True.
+            null_invalid_values (bool, optional): If True, replaces any invalid values with null. Defaults to False.
         """
         logical_types = logical_types or {}
         logical_types = {
@@ -538,7 +566,10 @@ class WoodworkTableAccessor:
         # go through changed ltypes and update dtype if necessary
         for col_name, logical_type in logical_types.items():
             series = self._dataframe[col_name]
-            updated_series = logical_type.transform(series)
+            updated_series = logical_type.transform(
+                series,
+                null_invalid_values=null_invalid_values,
+            )
             if updated_series is not series:
                 self._dataframe[col_name] = updated_series
 
@@ -567,7 +598,7 @@ class WoodworkTableAccessor:
         """
         if include is not None and exclude is not None:
             raise ValueError(
-                "Cannot specify values for both 'include' and 'exclude' in a single call."
+                "Cannot specify values for both 'include' and 'exclude' in a single call.",
             )
         if include is None and exclude is None:
             raise ValueError("Must specify values for either 'include' or 'exclude'.")
@@ -616,7 +647,8 @@ class WoodworkTableAccessor:
                 False.
         """
         self._schema.reset_semantic_tags(
-            columns=columns, retain_index_tags=retain_index_tags
+            columns=columns,
+            retain_index_tags=retain_index_tags,
         )
 
     @_check_table_schema
@@ -674,7 +706,11 @@ class WoodworkTableAccessor:
         )
 
     def _sort_columns(self, already_sorted):
-        if _is_dask_dataframe(self._dataframe) or _is_spark_dataframe(self._dataframe) or _is_cudf_dataframe(self._dataframe):
+        if (
+            _is_dask_dataframe(self._dataframe)
+            or _is_spark_dataframe(self._dataframe)
+            or _is_cudf_dataframe(self._dataframe)
+        ):
             already_sorted = True  # Skip sorting for Dask and Spark input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
@@ -720,31 +756,38 @@ class WoodworkTableAccessor:
                 # Try to initialize Woodwork with the existing schema
                 if _is_dataframe(result):
                     invalid_schema_message = get_invalid_schema_message(
-                        result, self._schema
+                        result,
+                        self._schema,
                     )
                     if invalid_schema_message:
                         warnings.warn(
                             TypingInfoMismatchWarning().get_warning_message(
-                                attr, invalid_schema_message, "DataFrame"
+                                attr,
+                                invalid_schema_message,
+                                "DataFrame",
                             ),
                             TypingInfoMismatchWarning,
                         )
                     else:
                         copied_schema = self.schema
                         result.ww.init_with_full_schema(
-                            schema=copied_schema, validate=False
+                            schema=copied_schema,
+                            validate=False,
                         )
                 else:
                     # Confirm that the schema is still valid on original DataFrame
                     # Important for inplace operations
                     invalid_schema_message = get_invalid_schema_message(
-                        self._dataframe, self._schema
+                        self._dataframe,
+                        self._schema,
                     )
 
                     if invalid_schema_message:
                         warnings.warn(
                             TypingInfoMismatchWarning().get_warning_message(
-                                attr, invalid_schema_message, "DataFrame"
+                                attr,
+                                invalid_schema_message,
+                                "DataFrame",
                             ),
                             TypingInfoMismatchWarning,
                         )
@@ -869,6 +912,7 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
     ):
         """
         Calculates mutual information between all pairs of columns in the DataFrame that
@@ -899,6 +943,10 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
+
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -915,6 +963,7 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
         )
 
     def mutual_information(
@@ -926,6 +975,7 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
     ):
         """Calculates mutual information between all pairs of columns in the DataFrame that
         support mutual information. Call woodwork.utils.get_valid_mi_types to see which Logical Types support
@@ -955,6 +1005,10 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
+
         Returns:
             pd.DataFrame: A DataFrame containing mutual information with columns `column_1`,
             `column_2`, and `mutual_info` that is sorted in decending order by mutual info.
@@ -969,6 +1023,7 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
         )
         return pd.DataFrame(mutual_info)
 
@@ -1009,6 +1064,7 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and `pearson` that is sorted in decending order by correlation coefficient.
@@ -1060,6 +1116,7 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+
         Returns:
             pd.DataFrame: A DataFrame containing Pearson correlation coefficients with columns `column_1`,
             `column_2`, and `pearson` that is sorted in decending order by correlation value.
@@ -1076,6 +1133,111 @@ class WoodworkTableAccessor:
         return pd.DataFrame(pearson_dict)
 
     @_check_table_schema
+    def spearman_correlation_dict(
+        self,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
+        random_seed=0,
+    ):
+        """
+        Calculates Spearman correlation coefficient between all pairs of columns in the DataFrame that
+        support correlation. Works with numeric, ordinal, and datetime data. Call woodwork.utils.get_valid_spearman_types to
+        see which Logical Types are supported.
+
+        Args:
+            nrows (int): The number of rows to sample for when determining correlation.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for correlation calculations.
+                If False, the index column will not have the Spearman correlation calculated for it.
+                Defaults to False.
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  If True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative. Defaults to 25.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+
+        Returns:
+            list(dict): A list containing dictionaries that have keys `column_1`,
+            `column_2`, and `spearman` that is sorted in decending order by correlation coefficient.
+            Correlation coefficient values are between -1 and 1.
+        """
+        return _get_dependence_dict(
+            dataframe=self._dataframe,
+            measures=["spearman"],
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
+            random_seed=random_seed,
+        )
+
+    def spearman_correlation(
+        self,
+        nrows=None,
+        include_index=False,
+        callback=None,
+        extra_stats=False,
+        min_shared=25,
+        random_seed=0,
+    ):
+        """Calculates Spearman correlation coefficient between all pairs of columns in the DataFrame that
+        support correlation. Works with numeric, ordinal, and datetime data. Call woodwork.utils.get_valid_spearman_types to
+        see which Logical Types are supported.
+
+        Args:
+            nrows (int): The number of rows to sample for when determining correlation.
+                If specified, samples the desired number of rows from the data.
+                Defaults to using all rows.
+            include_index (bool): If True, the column specified as the index will be
+                included as long as its LogicalType is valid for correlation calculations.
+                If False, the index column will not have the Spearman correlation calculated for it.
+                Defaults to False.
+            callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
+                - update (int): change in progress since last call
+                - progress (int): the progress so far in the calculations
+                - total (int): the total number of calculations to do
+                - unit (str): unit of measurement for progress/total
+                - time_elapsed (float): total time in seconds elapsed since start of call
+            extra_stats (bool):  If True, additional column "shared_rows"
+                recording the number of shared non-null rows for a column
+                pair will be included with the dataframe. Defaults to False.
+            min_shared (int): The number of shared non-null rows needed to
+                calculate. Less rows than this will be considered too sparse
+                to measure accurately and will return a NaN value. Must be
+                non-negative. Defaults to 25.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing Spearman correlation coefficients with columns `column_1`,
+            `column_2`, and `spearman` that is sorted in decending order by correlation value.
+            Spearman values are between -1 and 1, with 0 meaning no correlation.
+        """
+        spearman_dict = self.spearman_correlation_dict(
+            nrows=nrows,
+            include_index=include_index,
+            callback=callback,
+            extra_stats=extra_stats,
+            min_shared=min_shared,
+            random_seed=random_seed,
+        )
+        return pd.DataFrame(spearman_dict)
+
+    @_check_table_schema
     def dependence_dict(
         self,
         measures="all",
@@ -1086,6 +1248,8 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
+        target_col=None,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -1101,8 +1265,9 @@ class WoodworkTableAccessor:
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual_info", and "max"
+                - "spearman": calculates the Spearman corerlation coefficient
+                - "max":  max(abs(pearson), abs(spearman), mutual) for each pair of columns
+                - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
                 calculation does not use binning.
@@ -1130,12 +1295,18 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The total maximum number of unique values for all large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
+            target_col (str): The column name of the target. If provided, will only calculate the dependence dictionary between other columns and this target column.
+                The target column will be `column_2` in the returned result. Defaults to None.
+
         Returns:
             list(dict): A list containing dictionaries that have keys `column_1`,
             `column_2`, and keys for the specified dependence measures. The list is
             sorted in decending order by the first specified measure.
             Dependence information values are between 0 (no dependence) and 1
-            (perfect dependency). For Pearson, values range from -1 to 1 but 0 is
+            (perfect dependency). For Pearson and Spearman, values range from -1 to 1 but 0 is
             still no dependence.
         """
         return _get_dependence_dict(
@@ -1148,6 +1319,8 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
+            target_col=target_col,
         )
 
     def dependence(
@@ -1160,6 +1333,8 @@ class WoodworkTableAccessor:
         extra_stats=False,
         min_shared=25,
         random_seed=0,
+        max_nunique=6000,
+        target_col=None,
     ):
         """Calculates dependence measures between all pairs of columns in the DataFrame that
         support measuring dependence. Supports boolean, categorical, datetime, and numeric data.
@@ -1175,8 +1350,9 @@ class WoodworkTableAccessor:
 
                 - "pearson": calculates the Pearson correlation coefficient
                 - "mutual_info": calculates the mutual information between columns
-                - "max":  max(abs(pearson), mutual) for each pair of columns
-                - "all": includes columns for "pearson", "mutual_info", and "max"
+                - "spearman": calculates the Spearman correlation coefficient
+                - "max":  max(abs(pearson), abs(spearman), mutual) for each pair of columns
+                - "all": includes columns for "pearson", "mutual_info", "spearman", and "max"
             num_bins (int): Determines number of bins to use for converting
                 numeric features into categorical. Defaults to 10. Pearson
                 calculation does not use binning.
@@ -1204,12 +1380,18 @@ class WoodworkTableAccessor:
                 to measure accurately and will return a NaN value. Must be
                 non-negative. Defaults to 25.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            max_nunique (int): The maximum number of unique values for large categorical columns (> 800 unique values).
+                Categorical columns will be dropped until this number is met or until there is only one large categorical column.
+                Defaults to 6000.
+            target_col (str): The column name of the target. If provided, will only calculate the dependence dictionary between other columns and this target column.
+                The target column will be `column_2` in the returned result. Defaults to None.
+
         Returns:
             pd.DataFrame: A DataFrame with the columns `column_1`,
             `column_2`, and keys for the specified dependence measures. The rows
             are sorted in decending order by the first specified measure.
             Dependence information values are between 0 (no dependence) and 1
-            (perfect dependency). For Pearson, values range from -1 to 1 but 0 is
+            (perfect dependency). For Pearson and Spearman, values range from -1 to 1 but 0 is
             still no dependence.  Additional columns will be included if the
             `extra_stats` is True.
         """
@@ -1223,6 +1405,8 @@ class WoodworkTableAccessor:
             extra_stats=extra_stats,
             min_shared=min_shared,
             random_seed=random_seed,
+            max_nunique=max_nunique,
+            target_col=target_col,
         )
         return pd.DataFrame(dep_dict)
 
@@ -1332,7 +1516,9 @@ class WoodworkTableAccessor:
             in ``include``.
         """
         results = self.describe_dict(
-            include=include, callback=callback, results_callback=results_callback
+            include=include,
+            callback=callback,
+            results_callback=results_callback,
         )
         index_order = [
             "physical_type",
@@ -1420,7 +1606,9 @@ class WoodworkTableAccessor:
 
         """
         return _infer_temporal_frequencies(
-            self._dataframe, temporal_columns=temporal_columns, debug=debug
+            self._dataframe,
+            temporal_columns=temporal_columns,
+            debug=debug,
         )
 
     @_check_table_schema
@@ -1439,12 +1627,12 @@ class WoodworkTableAccessor:
         for column in self.columns:
             series = self.ww[column]
             values = series.ww.validate_logical_type(
-                return_invalid_values=return_invalid_values
+                return_invalid_values=return_invalid_values,
             )
             if values is not None:
                 invalid_values.append(values)
 
-        if return_invalid_values:
+        if return_invalid_values and invalid_values:
             concat = pd.concat
             if _is_dask_dataframe(self._dataframe):
                 concat = dd.concat
@@ -1455,7 +1643,13 @@ class WoodworkTableAccessor:
 
 
 def _validate_accessor_params(
-    dataframe, index, time_index, logical_types, schema, use_standard_tags
+    dataframe,
+    index,
+    time_index,
+    logical_types,
+    ignore_columns,
+    schema,
+    use_standard_tags,
 ) -> None:
     _check_unique_column_names(dataframe)
     if use_standard_tags is not None:
@@ -1469,6 +1663,8 @@ def _validate_accessor_params(
         _check_index(dataframe, index)
     if logical_types:
         _check_logical_types(dataframe.columns, logical_types)
+    if ignore_columns:
+        _check_ignore_columns(dataframe.columns, logical_types, schema, ignore_columns)
     if time_index is not None:
         datetime_format = None
         logical_type = None
@@ -1494,7 +1690,7 @@ def _check_index(dataframe, index):
     if index not in dataframe.columns:
         # User specifies an index that is not in the dataframe
         raise ColumnNotPresentError(
-            f"Specified index column `{index}` not found in dataframe"
+            f"Specified index column `{index}` not found in dataframe",
         )
     if index is not None and isinstance(dataframe, pd.DataFrame):
         # User specifies a dataframe index that is not unique or contains null values
@@ -1509,7 +1705,7 @@ def _check_index(dataframe, index):
 def _check_time_index(dataframe, time_index, datetime_format=None, logical_type=None):
     if time_index not in dataframe.columns:
         raise ColumnNotPresentError(
-            f"Specified time index column `{time_index}` not found in dataframe"
+            f"Specified time index column `{time_index}` not found in dataframe",
         )
     if not (
         _is_numeric_series(dataframe[time_index], logical_type)
@@ -1525,7 +1721,32 @@ def _check_logical_types(dataframe_columns, logical_types):
     if cols_not_found:
         raise ColumnNotPresentError(
             "logical_types contains columns that are not present in "
-            f"dataframe: {sorted(list(cols_not_found))}"
+            f"dataframe: {sorted(list(cols_not_found))}",
+        )
+
+
+def _check_ignore_columns(dataframe_columns, logical_types, schema, ignore_columns):
+    if not isinstance(ignore_columns, (list, set)):
+        raise TypeError("ignore_columns must be a list or set")
+    cols_not_found = set(ignore_columns).difference(set(dataframe_columns))
+    if cols_not_found:
+        raise ColumnNotPresentError(
+            "ignore_columns contains columns that are not present in "
+            f"dataframe: {sorted(list(cols_not_found))}",
+        )
+    if logical_types:
+        col_ignored_and_set = set(logical_types.keys()).intersection(
+            set(ignore_columns),
+        )
+        if col_ignored_and_set:
+            raise ColumnBothIgnoredAndSetError(
+                "ignore_columns contains columns that are being set "
+                f"in logical_types: {list(col_ignored_and_set)}",
+            )
+    if schema is None:
+        raise WoodworkNotInitError(
+            "ignore_columns cannot be set when the dataframe has no existing "
+            "schema.",
         )
 
 
@@ -1535,7 +1756,7 @@ def _check_schema(dataframe, schema):
     invalid_schema_message = get_invalid_schema_message(dataframe, schema)
     if invalid_schema_message:
         raise ValueError(
-            f"Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}"
+            f"Woodwork typing information is not valid for this DataFrame: {invalid_schema_message}",
         )
 
 
@@ -1548,7 +1769,7 @@ def _check_partial_schema(dataframe, schema: TableSchema) -> None:
     if schema_cols_not_in_df:
         raise ColumnNotPresentError(
             f"The following columns in the typing information were missing from the DataFrame: "
-            f"{schema_cols_not_in_df}"
+            f"{schema_cols_not_in_df}",
         )
 
 
@@ -1559,26 +1780,42 @@ def _check_use_standard_tags(use_standard_tags):
 
 def _infer_missing_logical_types(
     dataframe: AnyDataFrame,
-    force_logical_types: Dict[ColumnName, Union[str, LogicalType]] = None,
-    existing_logical_types: Dict[ColumnName, Union[str, LogicalType]] = None,
+    force_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
+    existing_logical_types: Optional[Dict[ColumnName, Union[str, LogicalType]]] = None,
+    ignore_columns: Optional[List[str]] = None,
+    null_invalid_values: bool = False,
 ):
     """Performs type inference and updates underlying data"""
     force_logical_types = force_logical_types or {}
     existing_logical_types = existing_logical_types or {}
+    ignore_columns = ignore_columns or []
     parsed_logical_types = {}
     for name in dataframe.columns:
-        series = dataframe[name]
+        if name in ignore_columns and name in existing_logical_types:
+            parsed_logical_types[name] = existing_logical_types.get(name)
+            continue
         logical_type = (
             force_logical_types.get(name)
             if name in force_logical_types
             else existing_logical_types.get(name)
         )
+        series = dataframe[name]
         parsed_logical_types[name] = _get_column_logical_type(
-            series, logical_type, name
+            series,
+            logical_type,
+            name,
         )
-        updated_series = parsed_logical_types[name].transform(series)
+        updated_series = parsed_logical_types[name].transform(
+            series,
+            null_invalid_values=null_invalid_values,
+        )
         if updated_series is not series:
-            dataframe[name] = updated_series
+            # NotImplementedError thrown by dask when attempting to re-initialize
+            # data after being assigned a numeric column name
+            try:
+                dataframe[name] = updated_series
+            except NotImplementedError:
+                pass
     return parsed_logical_types
 
 
@@ -1627,6 +1864,7 @@ if ps:
             super().__init__(*args, **kwargs)
             if not ps.get_option("compute.ops_on_diff_frames"):
                 ps.set_option("compute.ops_on_diff_frames", True)
+
 
 if cudf:
     from cudf.api.extensions.accessor import register_dataframe_accessor

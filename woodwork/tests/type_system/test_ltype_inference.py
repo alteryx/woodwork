@@ -120,7 +120,9 @@ def test_categorical_inference(categories):
     dtypes = ["object", "string", "category"]
     if _is_spark_series(categories[0]):
         dtypes = get_spark_dtypes(dtypes)
-    for series in categories:
+    for ind, series in enumerate(categories):
+        if ind == len(categories) - 1:
+            dtypes = ["string", "category"]
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Categorical)
@@ -139,7 +141,8 @@ def test_natural_language_inference(natural_language):
 @patch("woodwork.type_sys.inference_functions.natural_language_func")
 def test_nl_inference_called_on_no_other_matches(nl_mock, pandas_natural_language):
     assert isinstance(
-        ww.type_system.infer_logical_type(pandas_natural_language[0]), NaturalLanguage
+        ww.type_system.infer_logical_type(pandas_natural_language[0]),
+        NaturalLanguage,
     )
     new_type_sys = TypeSystem(
         inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
@@ -233,10 +236,12 @@ def test_unknown_inference(strings):
 
 def test_unknown_inference_all_null(nulls):
     dtypes = ["object", "string", "category", "datetime64[ns]"]
-    if _is_spark_series(nulls[0]):
-        dtypes = get_spark_dtypes(dtypes)
 
-    for series in nulls:
+    for ind, series in enumerate(nulls):
+        if ind == len(nulls) - 1:
+            dtypes = ["object", "string", "category"]
+        if _is_spark_series(nulls[0]):
+            dtypes = get_spark_dtypes(dtypes)
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             inferred_type.transform(series)

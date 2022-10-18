@@ -1,5 +1,8 @@
 import contextlib
 
+import numpy as np
+import pandas as pd
+
 CONFIG_DEFAULTS = {
     "categorical_threshold": 0.2,
     "numeric_categorical_threshold": None,
@@ -15,13 +18,39 @@ CONFIG_DEFAULTS = {
 |::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9])
 {0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}
 [0-9]){0,1}[0-9]))
-""".splitlines()
+""".splitlines(),
     ),
     "phone_inference_regex": r"(?:\+?(0{2})?1[-.\s●]?)?\(?([2-9][0-9]{2})\)?[-\.\s●]?([2-9][0-9]{2})[-\.\s●]?([0-9]{4})$",
     "postal_code_inference_regex": r"^[0-9]{5}(?:-[0-9]{4})?$",
-    "nan_values": ["", "None", "nan", "NaN", "<NA>", "null"],
+    "nan_values": [
+        "",
+        None,
+        np.nan,
+        pd.NaT,
+        "None",
+        "NONE",
+        "none",
+        "NULL",
+        "Null",
+        "null",
+        "NAN",
+        "NaN",
+        "Nan",
+        "nan",
+        "NA",
+        "na",
+        "N/A",
+        "n/a",
+        "n/A",
+        "N/a",
+        "<NA>",
+        "<N/A>",
+        "<n/a>",
+        "<na>",
+    ],
     "frequence_inference_window_length": 15,
     "frequence_inference_threshold": 0.9,
+    "correlation_metrics": ["mutual_info", "pearson", "spearman", "max", "all"],
 }
 
 

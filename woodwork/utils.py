@@ -10,9 +10,9 @@ import pandas as pd
 
 import woodwork as ww
 from woodwork.exceptions import TypeValidationError
-from woodwork.pandas_backport import guess_datetime_format
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
+
 type_to_read_func_map = {
     "csv": pd.read_csv,
     "text/csv": pd.read_csv,
@@ -144,19 +144,21 @@ def read_file(
     Returns:
         pd.DataFrame: DataFrame created from the specified file with Woodwork typing information initialized.
     """
+    from woodwork.logical_types import _replace_nans
+
     if content_type is None:
         inferred_type, _ = guess_type(filepath)
         if inferred_type is None:
             raise RuntimeError(
-                "Content type could not be inferred. Please specify content_type and try again."
+                "Content type could not be inferred. Please specify content_type and try again.",
             )
         content_type = inferred_type
 
     if content_type not in type_to_read_func_map:
         raise RuntimeError(
             "Reading from content type {} is not currently supported".format(
-                content_type
-            )
+                content_type,
+            ),
         )
 
     pyarrow_types = [
@@ -177,7 +179,7 @@ def read_file(
     dataframe = type_to_read_func_map[content_type](filepath, **kwargs)
 
     if replace_nan:
-        dataframe = _replace_nan_strings(dataframe)
+        dataframe = dataframe.apply(_replace_nans)
 
     dataframe.ww.init(
         name=name,
@@ -222,21 +224,12 @@ def _reformat_to_latlong(latlong, is_spark=False):
     NaN like values are replaced with np.nan.
     """
     if isinstance(latlong, str):
-
-        nan_values = [x for x in ww.config.get_option("nan_values") if len(x)]
-        nan_values = "|".join(nan_values)
-
-        latlong = re.sub(nan_values, "None", latlong)
-
-        try:
-            latlong = ast.literal_eval(latlong)
-        except ValueError:
-            pass
+        latlong = _parse_latlong(latlong) or latlong
 
     if isinstance(latlong, (list, tuple)):
         if len(latlong) != 2:
             raise TypeValidationError(
-                f"LatLong values must have exactly two values. {latlong} does not have two values."
+                f"LatLong values must have exactly two values. {latlong} does not have two values.",
             )
 
         latitude, longitude = latlong
@@ -246,12 +239,13 @@ def _reformat_to_latlong(latlong, is_spark=False):
             longitude = _coerce_to_float(longitude)
         except ValueError:
             raise TypeValidationError(
-                f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float."
+                f"LatLong values must be in decimal degrees. {latlong} does not have latitude or longitude values that can be converted to a float.",
             )
 
+        latlong = (latitude, longitude)
         if is_spark:
-            return [latitude, longitude]
-        return (latitude, longitude)
+            latlong = list(latlong)
+        return latlong
 
     if _is_nan(latlong):
         return np.nan
@@ -262,7 +256,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
 - A single NaN value.
 - A string representation of the above.
 
-{latlong} does not fit the criteria."""
+{latlong} does not fit the criteria.""",
     )
 
 
@@ -275,7 +269,7 @@ def _coerce_to_float(val):
         return float(val)
     except (ValueError, TypeError):
         raise ValueError(
-            f"The value represented by {val} cannot be converted to a float."
+            f"The value represented by {val} cannot be converted to a float.",
         )
 
 
@@ -305,10 +299,20 @@ def _is_valid_latlong_value(val, is_spark=False):
             return False
 
         latitude, longitude = val
-        return isinstance(latitude, float) and isinstance(longitude, float)
+        lat_null, long_null = map(pd.isnull, val)
+        is_valid = isinstance(latitude, float) or lat_null
+        is_valid &= isinstance(longitude, float) or long_null
+        return is_valid
 
     if isinstance(val, float):
         return np.isnan(val)
+
+    if isinstance(val, str):
+        val = _parse_latlong(val)
+        if val is None:
+            return False
+        else:
+            return _is_valid_latlong_value(val)
 
     if is_spark and val is None:
         return True
@@ -385,6 +389,28 @@ def get_valid_pearson_types():
     return valid_types
 
 
+def get_valid_spearman_types():
+    """
+    Generate a list of LogicalTypes that are valid for calculating Spearman correlation. Note that
+    index columns are not valid for calculating dependence, but their types may be
+    returned by this function.
+
+    Args:
+        None
+
+    Returns:
+        list(LogicalType): A list of the LogicalTypes that can be use to calculate Spearman correlation
+    """
+    valid_types = []
+    for ltype in ww.type_system.registered_types:
+        if "numeric" in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif ltype == ww.logical_types.Datetime or ltype == ww.logical_types.Ordinal:
+            valid_types.append(ltype)
+
+    return valid_types
+
+
 def _get_column_logical_type(series, logical_type, name):
     if logical_type:
         return _parse_logical_type(logical_type, name)
@@ -445,7 +471,7 @@ def concat_columns(objs, validate_schema=True):
             overlapping_keys = obj.ww.metadata.keys() & table_metadata.keys()
             if overlapping_keys:
                 raise ValueError(
-                    f"Cannot resolve overlapping keys in table metadata: {overlapping_keys}"
+                    f"Cannot resolve overlapping keys in table metadata: {overlapping_keys}",
                 )
 
             table_metadata = {**obj.ww.metadata, **table_metadata}
@@ -463,7 +489,7 @@ def concat_columns(objs, validate_schema=True):
                 else:
                     raise IndexError(
                         "Cannot set the Woodwork index of multiple input objects. "
-                        "Please remove the index columns from all but one table."
+                        "Please remove the index columns from all but one table.",
                     )
             if obj.ww.time_index is not None:
                 if time_index is None:
@@ -471,7 +497,7 @@ def concat_columns(objs, validate_schema=True):
                 else:
                     raise IndexError(
                         "Cannot set the Woodwork time index of multiple input objects. "
-                        "Please remove the time index columns from all but one table."
+                        "Please remove the time index columns from all but one table.",
                     )
 
             ww_columns = obj.ww.schema.columns
@@ -483,7 +509,7 @@ def concat_columns(objs, validate_schema=True):
             if name in col_names_seen:
                 raise ValueError(
                     f"Duplicate column '{name}' has been found in more than one input object. "
-                    "Please remove duplicate columns from all but one table."
+                    "Please remove duplicate columns from all but one table.",
                 )
             logical_types[name] = col_schema.logical_type
             semantic_tags[name] = col_schema.semantic_tags - {"time_index"} - {"index"}
@@ -501,15 +527,30 @@ def concat_columns(objs, validate_schema=True):
 
     lib = pd
     if ww.accessor_utils._is_spark_dataframe(obj) or ww.accessor_utils._is_spark_series(
-        obj
+        obj,
     ):
         lib = ps
     elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
-        obj
+        obj,
     ):
         lib = dd
 
     combined_df = lib.concat(objs, axis=1, join="outer")
+
+    # The lib.concat breaks the woodwork schema for dataframes with different shapes
+    # or mismatched indices.
+    mask = combined_df.isnull().any()
+    null_cols = mask[mask].index
+    if not ww.accessor_utils._is_dask_dataframe(combined_df):
+        null_cols = null_cols.to_numpy()
+    else:
+        null_cols = list(null_cols)
+    for null_col in null_cols:
+        if null_col in logical_types and isinstance(
+            logical_types[null_col],
+            ww.logical_types.Integer,
+        ):
+            logical_types.pop(null_col)
 
     # Initialize Woodwork with all of the typing information from the input objs
     # performing type inference on any columns that did not already have Woodwork initialized
@@ -571,7 +612,11 @@ class CallbackCaller:
             elapsed_time = timer() - self.start_time
             new_progress = self.current_progress + progress_increment
             self.callback(
-                progress_increment, new_progress, self.total, self.unit, elapsed_time
+                progress_increment,
+                new_progress,
+                self.total,
+                self.unit,
+                elapsed_time,
             )
             self.current_progress = new_progress
 
@@ -591,33 +636,22 @@ def _infer_datetime_format(dates, n=100):
     if len(first_n) == 0:
         return None
     try:
-        fmts = first_n.map(guess_datetime_format)
+        fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
         mode_fmt = None
     return mode_fmt
 
 
-def _replace_nan_strings(df: pd.DataFrame) -> pd.DataFrame:
-    """Replaces empty string values and string representations of
-    NaN values ("nan", "<NA>") with np.nan or pd.NA depending on
-    column dtype."""
-    df = df.fillna(value=np.nan)
+def _parse_latlong(latlong):
+    nan_values_strs = [
+        x for x in ww.config.get_option("nan_values") if isinstance(x, str) and len(x)
+    ]
+    nan_values = "|".join(nan_values_strs)
 
-    for col, dtype in df.dtypes.items():
-        replace_val = np.nan
-        if str(dtype) == "boolean":
-            # All replace calls below fail with boolean dtype
-            # but boolean cols cannot contain strings to begin with.
-            continue
-        elif str(dtype) == "string":
-            # Must use pd.NA as replacement value for string dtype
-            replace_val = pd.NA
+    latlong = re.sub(nan_values, "None", latlong)
 
-        replaced_series = df[col].replace(r"^\s*$", replace_val, regex=True)
-        replaced_series = replaced_series.replace(
-            ww.config.get_option("nan_values"), replace_val
-        )
-        df[col] = replaced_series
-
-    return df
+    try:
+        return ast.literal_eval(latlong)
+    except ValueError:
+        pass

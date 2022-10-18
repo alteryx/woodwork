@@ -33,11 +33,11 @@ class ParquetSerializer(Serializer):
     def serialize(self, dataframe, profile_name, **kwargs):
         if self.filename is not None and _is_dask_dataframe(dataframe):
             raise ValueError(
-                "Writing a Dask dataframe to parquet with a filename specified is not supported"
+                "Writing a Dask dataframe to parquet with a filename specified is not supported",
             )
         if self.filename is not None and _is_spark_dataframe(dataframe):
             raise ValueError(
-                "Writing a Spark dataframe to parquet with a filename specified is not supported"
+                "Writing a Spark dataframe to parquet with a filename specified is not supported",
             )
         self.kwargs["engine"] = "pyarrow"
         return super().serialize(dataframe, profile_name, **kwargs)
@@ -90,7 +90,7 @@ class ParquetSerializer(Serializer):
 
     def _save_parquet_table_to_disk(self):
         """Writes data to disk with the updated metadata including WW typing info."""
-        import pyarrow.parquet as pq
+        from pyarrow import parquet as pq
 
         if _is_dask_dataframe(self.dataframe):
             path, dataframe = self._setup_for_dask_and_spark()

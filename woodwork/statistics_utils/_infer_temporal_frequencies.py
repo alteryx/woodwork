@@ -36,7 +36,7 @@ def _infer_temporal_frequencies(dataframe, temporal_columns=None, debug=False):
             ltype = logical_types[col]
             if not isinstance(ltype, (Datetime, Timedelta)):
                 raise TypeError(
-                    f"Cannot determine frequency for column {col} with logical type {ltype}"
+                    f"Cannot determine frequency for column {col} with logical type {ltype}",
                 )
 
     window_length = config.get_option("frequence_inference_window_length")

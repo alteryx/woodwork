@@ -1,6 +1,6 @@
 # Install
 
-Woodwork is available for Python 3.7, 3.8, 3.9 and 3.10. It can be installed from PyPi, conda-forge, or from source.
+Woodwork is available for Python 3.8, 3.9 and 3.10. It can be installed from PyPi, conda-forge, or from source.
 
 To install Woodwork, run the following command:
 
@@ -39,7 +39,7 @@ $ python -m pip install "woodwork[spark]"
 ```
 ```{tab} Update Checker
 ```console
-$ python -m pip install "woodwork[update_checker]"
+$ python -m pip install "woodwork[updater]"
 ```
 ````
 ````{tab} Conda
@@ -93,7 +93,7 @@ $ echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
 
 ````{tab} macOS (M1)
 ```console
-$ brew install openjdk@11 scala apache-spark graphviz
+$ brew install openjdk@11 scala apache-spark pandoc
 $ echo 'export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
 $ echo 'export CPPFLAGS="-I/opt/homebrew/opt/openjdk@11/include:$CPPFLAGS"' >> ~/.zprofile
 $ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
@@ -102,7 +102,7 @@ $ sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/Ja
 
 ````{tab} Ubuntu
 ```console
-$ sudo apt install openjdk-11-jre openjdk-11-jdk scala -y
+$ sudo apt install openjdk-11-jre openjdk-11-jdk scala pandoc -y
 $ echo "export SPARK_HOME=/opt/spark" >> ~/.profile
 $ echo "export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" >> ~/.profile
 $ echo "export PYSPARK_PYTHON=/usr/bin/python3" >> ~/.profile
@@ -123,11 +123,11 @@ You can do so by installing it as a package inside a container (following the no
 creating a new image with Woodwork pre-installed, using the following commands in your `Dockerfile`:
 
 ```dockerfile
-FROM python:3.8-slim-buster
-RUN apt-get update && apt-get -y update
-RUN apt-get install -y build-essential python3-pip python3-dev
-RUN pip -q install pip --upgrade
-RUN pip install woodwork
+FROM --platform=linux/x86_64 python:3.8-slim-buster
+RUN apt update && apt -y update
+RUN apt install -y build-essential
+RUN pip3 install --upgrade --quiet pip
+RUN pip3 install woodwork
 ```
 
 ## Optional Python Dependencies

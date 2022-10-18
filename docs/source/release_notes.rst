@@ -6,17 +6,113 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
+        * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
     * Changes
     * Documentation Changes
     * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`sbadithe`
+
+v0.19.0 September 27, 2022
+==========================
+    * Enhancements
+        * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
+        * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
+        * Added ``target_col`` argument to ``dependence`` and ``dependence_dict`` to calculate correlations between features and target_col (:pr:`1531`)
+    * Fixes
+        * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
+    * Changes
+        * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
+        * Remove ``dask[dataframe]`` version restriction (:pr:`1527`)
+    * Testing Changes
+        * Add kickoff for create conda forge pull request from release (:pr:`1515`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
+
+v0.18.0 August 31, 2022
+=======================
+    * Enhancements
+        * Updated ``dependence_dict`` and ``mutual_information`` to drop to drop Categorical columns with a large number of unique values during mutual information calculation, non-dask only. (:pr:`1501`)
+    * Fixes
+        * Fix applying LatLong.transform to empty dask data (:pr:`1507`)
+    * Changes
+        * Transition from setup.cfg to pyproject.toml (:pr:`1506`,:pr:`1508`)
+        * Added a check to see if a series dtype has changed prior to using ``_replace_nans`` (:pr:`1502`)
+    * Testing Changes
+        * Update development requirements and use latest for documentation (:pr:`1499`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`rwedge`
+
+v0.17.2 August 5, 2022
+======================
+    * Fixes
+        * Updated concat_columns to work with dataframes with mismatched indices or different shapes (:pr:`1485`)
+    * Documentation Changes
+        * Add instructions to add new users to woodwork feedstock (:pr:`1483`)
+    * Testing Changes
+        * Add create feedstock PR workflow (:pr:`1489`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`chukarsten`, :user:`cmancuso`, :user:`gsheni`,
+
+v0.17.1 July 29, 2022
+=====================
+    * Testing Changes
+       * Allow for manual kickoff for minimum dependency checker (:pr:`1476`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`gsheni`
+
+v0.17.0 July 14, 2022
+=====================
+    .. warning::
+            This release of Woodwork will not support Python 3.7
+
+    * Enhancements
+        * Added ability to null invalid values for ``Double`` logical type (:pr:`1449`)
+        * Added ability to null invalid values for ``BooleanNullable`` logical type (:pr:`1455`)
+        * Added ability to null invalid values for ``IntegerNullable`` logical type (:pr:`1456`)
+        * Added ability to null invalid values for ``EmailAddress`` logical type (:pr:`1457`)
+        * Added ability to null invalid values for ``URL`` logical type (:pr:`1459`)
+        * Added ability to null invalid values for ``PhoneNumber`` logical type (:pr:`1460`)
+        * Added ability to null invalid values for ``AgeFractional`` and ``AgeNullable`` logical types (:pr:`1462`)
+        * Added ability to null invalid values for ``LatLong`` logical type (:pr:`1465`)
+        * Added ability to null invalid values for ``PostalCode`` logical type (US only) (:pr:`1467`)
+        * Added smarter inference for ``IntegerNullable`` and ``BooleanNullable`` types (:pr:`1458`)
+    * Fixes
+        * Fixed inference of all null string values as ``Unknown`` instead of ``Datetime`` (:pr:`1458`)
+    * Changes
+        * Set the minimum acceptable version of pandas to ``1.4.0`` for woodwork and ``1.4.3`` for spark add-on (:pr:`1461`)
+        * Dropped support for Python 3.7 (:pr:`1461`)
+        * Add pre-commit hooks for linting (:pr:`1470`)
+
+   Thanks to the following people for contributing to this release:
+   :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`
+
+v0.16.4 Jun 23, 2022
+====================
+    * Fixes
+        * Fix concatenation of invalid logical type values (:pr:`1437`)
+        * Fix validation for numeric postal codes (:pr:`1439`)
+    * Changes
+        * Restrict pyspark below 3.3.0 (:pr:`1450`)
+    * Documentation Changes
+        * Add slack icon to footer in docs (:pr:`1432`)
+        * Update contributing.md to add pandoc (:pr:`1443`)
+    * Testing Changes
         * Use codecov action v3 (:pr:`1422`)
-	* Add workflow to kickoff EvalML unit tests on commit to main (:pr:`1424`, :pr:`1426`)
+        * Added tests to test minimum dependencies of minimum dependencies (:pr:`1440`)
+        * Add workflow to kickoff EvalML unit tests on commit to main (:pr:`1424`, :pr:`1426`)
         * Rename yml to yaml for GitHub Actions (:pr:`1428`, :pr:`1429`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
-    
+    :user:`bchen1116`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`
+
 v0.16.3 May 4, 2022
 ===================
     * Fixes
@@ -31,7 +127,7 @@ v0.16.3 May 4, 2022
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`
-    
+
 v0.16.2 Apr 25, 2022
 ====================
     * Fixes
@@ -191,14 +287,14 @@ v0.11.1 Jan 4, 2022
         * Updating contributing doc with Spark installation instructions (:pr:`1232`)
     * Testing Changes
         * Enable auto-merge for minimum and latest dependency merge requests (:pr:`1228`, :pr:`1230`, :pr:`1233`)
-        
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`thehomebrewnerd`, :user:`willsmithorg`
-	
+
 v0.11.0 Dec 22, 2021
 ====================
     * Enhancements
-        * Add type inference for natural language (:pr:`1210`) 
+        * Add type inference for natural language (:pr:`1210`)
     * Changes
         * Make public method ``get_subset_schema`` (:pr:`1218`)
 
@@ -208,7 +304,7 @@ v0.11.0 Dec 22, 2021
 v0.10.0 Nov 30, 2021
 ====================
     * Enhancements
-        * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`) 
+        * Allow frequency inference on temporal (Datetime, Timedelta) columns of Woodwork DataFrame (:pr:`1202`)
         * Update ``describe_dict`` to compute ``top_values`` for double columns that contain only integer values (:pr:`1206`)
     * Changes
         * Return histogram bins as a list of floats instead of a ``pandas.Interval`` object (:pr:`1207`)
@@ -311,18 +407,18 @@ v0.7.0 Aug 25, 2021
 
     Thanks to the following people for contributing to this release:
     :user:`davesque`, :user:`jeff-hernandez`, :user:`tamargrey`, :user:`tuethan1999`
-    
+
 Breaking Changes
 ++++++++++++++++
     * :pr:``1100``: The behavior for ``init`` has changed. A full schema is a
       schema that contains all of the columns of the dataframe it describes
       whereas a partial schema only contains a subset. A full schema will also
-      require that the schema is valid without having to make any changes to 
-      the DataFrame. Before, only a full schema was permitted by the ``init`` 
+      require that the schema is valid without having to make any changes to
+      the DataFrame. Before, only a full schema was permitted by the ``init``
       method so passing a partial schema would error. Additionally, any
       parameters like ``logical_types`` would be ignored if passing in a schema.
-      Now, passing a partial schema to the ``init`` method calls the 
-      ``init_with_partial_schema`` method instead of throwing an error. 
+      Now, passing a partial schema to the ``init`` method calls the
+      ``init_with_partial_schema`` method instead of throwing an error.
       Information from keyword arguments will override information from the
       partial schema. For example, if column ``a`` has the Integer Logical Type
       in the partial schema, it's possible to use the ``logical_type`` argument
@@ -425,7 +521,7 @@ v0.5.0 Jul 7, 2021
 
 Breaking Changes
 ++++++++++++++++
-    * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type. 
+    * The default logical type is now the ``Unknown`` type instead of the ``NaturalLanguage`` type.
       The global config ``natural_language_threshold`` has been renamed to ``categorical_threshold``.
 
 v0.4.2 Jun 23, 2021
@@ -484,7 +580,7 @@ v0.4.1 Jun 9, 2021
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`tamargrey`, :user:`thehomebrewnerd`
-    
+
 
 v0.4.0 May 26, 2021
 ===================

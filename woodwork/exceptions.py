@@ -62,7 +62,7 @@ class ColumnNotPresentError(KeyError):
     def __init__(self, column):
         if isinstance(column, str):
             return super().__init__(
-                f"Column with name '{column}' not found in DataFrame"
+                f"Column with name '{column}' not found in DataFrame",
             )
         elif isinstance(column, list):
             return super().__init__(f"Column(s) '{column}' not found in DataFrame")
@@ -71,8 +71,12 @@ class ColumnNotPresentError(KeyError):
 class ColumnNotPresentInSchemaError(KeyError):
     def __init__(self, column):
         return super().__init__(
-            f"Column(s) {column} not found in Woodwork schema. Please initialize with DataFrame.ww.init"
+            f"Column(s) {column} not found in Woodwork schema. Please initialize with DataFrame.ww.init",
         )
+
+
+class ColumnBothIgnoredAndSetError(KeyError):
+    pass
 
 
 class WoodworkNotInitError(AttributeError):

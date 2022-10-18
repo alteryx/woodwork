@@ -3,14 +3,17 @@ from typing import Any, Callable, Dict, Sequence
 
 import pandas as pd
 
-from ._get_histogram_values import _get_histogram_values
-from ._get_mode import _get_mode
-from ._get_numeric_value_counts_in_range import _get_numeric_value_counts_in_range
-from ._get_recent_value_counts import _get_recent_value_counts
-from ._get_top_values_categorical import _get_top_values_categorical
-
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import Datetime, LatLong, Unknown
+from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
+from woodwork.statistics_utils._get_mode import _get_mode
+from woodwork.statistics_utils._get_numeric_value_counts_in_range import (
+    _get_numeric_value_counts_in_range,
+)
+from woodwork.statistics_utils._get_recent_value_counts import _get_recent_value_counts
+from woodwork.statistics_utils._get_top_values_categorical import (
+    _get_top_values_categorical,
+)
 from woodwork.utils import CallbackCaller, _is_latlong_nan
 
 
@@ -93,7 +96,7 @@ def _get_describe_dict(
             if type(col.logical_type) == LatLong
         ]
         df[latlong_columns] = df[latlong_columns].applymap(
-            lambda latlong: tuple(latlong) if latlong else latlong
+            lambda latlong: tuple(latlong) if latlong else latlong,
         )
     else:
         df = dataframe
@@ -131,10 +134,7 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            float_series = series.astype(
-                "float64"
-            )  # workaround for https://github.com/pandas-dev/pandas/issues/42626
-            quant_values = float_series.quantile([0.25, 0.5, 0.75]).tolist()
+            quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[1]
             values["third_quartile"] = quant_values[2]
@@ -173,7 +173,8 @@ def _get_describe_dict(
                     range_len = int(values["max"]) + 1 - int(values["min"])
                     if range_len <= bins and (series % 1 == 0).all():
                         values["top_values"] = _get_numeric_value_counts_in_range(
-                            series, _range
+                            series,
+                            _range,
                         )
             elif column.is_categorical:
                 values["top_values"] = _get_top_values_categorical(series, top_x)
