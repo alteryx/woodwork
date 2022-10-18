@@ -82,6 +82,8 @@ def _is_series(data):
         return True
     elif _is_spark_series(data):
         return True
+    elif _is_cudf_series(data):
+        return True
     return False
 
 
@@ -91,6 +93,8 @@ def _is_dataframe(data):
     elif _is_dask_dataframe(data):
         return True
     elif _is_spark_dataframe(data):
+        return True
+    elif _is_cudf_dataframe(data):
         return True
     return False
 
