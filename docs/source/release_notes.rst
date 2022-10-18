@@ -9,6 +9,7 @@ Future Release
         * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
+        * Small typo fix in ``select`` docstring (:pr:`1544`)
     * Changes
     * Documentation Changes
     * Testing Changes
