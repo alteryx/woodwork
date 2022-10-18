@@ -34,6 +34,7 @@ def test_load_retail_diff():
     assert "order_product_id" in df.columns
     assert df["order_product_id"].is_unique
 
+
 @pytest.mark.parametrize("df_type", [("pandas"), ("cudf")])
 def test_load_retail(df_type):
     df = load_retail(nrows=10, init_woodwork=True, df_type=df_type)

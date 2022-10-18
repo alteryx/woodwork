@@ -11,7 +11,12 @@ from woodwork.logical_types import (
 )
 
 
-def load_retail(id="demo_retail_data", nrows=None, init_woodwork=True, df_type="pandas"):
+def load_retail(
+    id="demo_retail_data",
+    nrows=None,
+    init_woodwork=True,
+    df_type="pandas",
+):
     """Load a demo retail dataset into a DataFrame, optionally initializing Woodwork's typing information.
 
     Args:
