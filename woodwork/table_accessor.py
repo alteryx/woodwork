@@ -586,7 +586,7 @@ class WoodworkTableAccessor:
                 types, semantic tags to include in the DataFrame.
             exclude (str or LogicalType or list[str or LogicalType]): Logical
                 types, semantic tags to exclude from the DataFrame.
-            return_schema (boolen): If True, return only the schema for the
+            return_schema (bool): If True, return only the schema for the
                 matching columns. Defaults to False
 
         Returns:
