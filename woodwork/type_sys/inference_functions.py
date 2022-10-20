@@ -174,6 +174,9 @@ class InferWithRegex:
             matches = series_match_method(
                 pat="^\(?([0-9]{3})\)?[-.●]?([0-9]{3})[-.●]?([0-9]{4})$",
             )
+        # just turn off regex inference for now     
+        elif _is_cudf_series(series): 
+            return False  
         else:
             matches = series_match_method(pat=regex)
 

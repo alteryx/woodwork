@@ -55,7 +55,9 @@ def test_can_init_float_and_integer_dataframe():
     df.ww.init(name='cuda') 
 
 #TODO: Fix this test 
+# cuda does not have string dtype
+# instead its an object dtype 
 def test_can_init_string_dataframe(): 
     df = cudf.DataFrame()
-    df['col1'] = ['a', 'b', 'c', 'd']
+    df['col1'] = cudf.Series(['a', 'b', 'c', 'd']) 
     df.ww.init(name='cuda') 
