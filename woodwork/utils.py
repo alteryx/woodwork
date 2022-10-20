@@ -218,7 +218,7 @@ def _is_url(string):
     return "http" in string
 
 
-def _reformat_to_latlong(latlong, is_spark=False):
+def _reformat_to_latlong(latlong, is_spark_or_cuda=False):
     """
     Accepts 2-tuple like values, or a single NaN like value.
     NaN like values are replaced with np.nan.

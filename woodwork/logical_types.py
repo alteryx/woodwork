@@ -557,15 +557,12 @@ class LatLong(LogicalType):
             name = series.name
             meta = (name, tuple([float, float]))
             series = series.apply(_reformat_to_latlong, meta=meta)
-        elif _is_spark_series(series):
+        elif _is_spark_series(series) or _is_cudf_series(series):
             formatted_series = series.to_pandas().apply(
                 _reformat_to_latlong,
-                is_spark=True,
+                is_spark_or_cuda=True,
             )
             series = ps.from_pandas(formatted_series)
-        elif _is_cudf_series(series):
-            # does cuda support tuples
-            pass
         else:
             series = series.apply(_reformat_to_latlong)
 
