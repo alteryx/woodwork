@@ -163,20 +163,35 @@ class InferWithRegex:
             # inferred dtype is not compatible with the string API `match` method
             # (TypeError)
             return False
-        if _is_cudf_series(series) and self.get_regex() == ww.config.get_option(
-            "email_inference_regex",
-        ):
-            # cudf.series.match does not like default Email Regex
-            matches = series_match_method(pat="^\S+@\S+$")
-        elif _is_cudf_series(series) and self.get_regex() == ww.config.get_option(
-            "phone_inference_regex",
-        ):
-            matches = series_match_method(
-                pat="^\(?([0-9]{3})\)?[-.●]?([0-9]{3})[-.●]?([0-9]{4})$",
-            )
-        # just turn off regex inference for now     
-        elif _is_cudf_series(series): 
-            return False  
+
+        """ 
+        For cuDF, we have to escape the '-' character when it is not used as a range char
+        for example, A-Z is okay. But in '.;?-', the hyphen needs to be escaped
+        """
+
+        if _is_cudf_series(series):
+            regex = self.get_regex()
+            if regex == ww.config.get_option("email_inference_regex"):
+                matches = series_match_method(
+                    pat="(^[a-zA-Z0-9_.+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-.]+$)"
+                )
+            elif regex == ww.config.get_option("url_inference_regex"):
+                matches = series_match_method(
+                    pat="(http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)"
+                )
+            elif regex == ww.config.get_option("phone_inference_regex"):
+                matches = series_match_method(
+                    pat=r"(?:\+?(0{2})?1[\-.\s●]?)?\(?([2-9][0-9]{2})\)?[\-\.\s●]?([2-9][0-9]{2})[\-\.\s●]?([0-9]{4})$"
+                )
+            elif regex == ww.config.get_option("ipv4_inference_regex"):
+                matches = series_match_method(
+                    pat=r"(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)"
+                )
+            elif regex == ww.config.get_option("postal_code_inference_regex"):
+                matches = series_match_method(pat=r"^[0-9]{5}(?:\-[0-9]{4})?$")
+            else:
+                # TODO: Debug the ip address errors
+                return False
         else:
             matches = series_match_method(pat=regex)
 
