@@ -41,3 +41,25 @@ def test_can_init_all_integer_dataframe():
     df['col1'] = [0, 1, 2, 3]
     df['col2'] = [4, 5, 6, 7]
     df.ww.init(name="cuda") 
+
+def test_can_init_all_float_dataframe(): 
+    df = cudf.DataFrame()
+    df['f1'] = [0.0, 1.0, 2.0, 3.0] 
+    df['f2'] = [1.0, 2.0, 3.0, 4.0] 
+    df.ww.init(name='cuda') 
+
+def test_can_init_float_and_integer_dataframe(): 
+    df = cudf.DataFrame()
+    df['ints'] = [0, 1, 2, 3] 
+    df['floats'] = [0.0, 1.0, 2.0, 3.0] 
+    df.ww.init(name='cuda') 
+
+
+""" 
+This fails right now. 
+
+def test_can_init_string_dataframe(): 
+    df = cudf.DataFrame()
+    df['col1'] = ['a', 'b', 'c', 'd']
+    df.ww.init(name='cuda') 
+""" 
