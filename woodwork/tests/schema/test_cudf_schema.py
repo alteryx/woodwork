@@ -54,12 +54,8 @@ def test_can_init_float_and_integer_dataframe():
     df['floats'] = [0.0, 1.0, 2.0, 3.0] 
     df.ww.init(name='cuda') 
 
-
-""" 
-This fails right now. 
-
+#TODO: Fix this test 
 def test_can_init_string_dataframe(): 
     df = cudf.DataFrame()
     df['col1'] = ['a', 'b', 'c', 'd']
     df.ww.init(name='cuda') 
-""" 
