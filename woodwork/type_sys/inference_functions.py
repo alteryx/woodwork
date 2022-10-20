@@ -131,9 +131,8 @@ def num_common_words(wordlist: Union[Tokens, Any]) -> float:
 def natural_language_func(series):
     tokens = series.astype("string").str.split(NL_delimiters)
     if _is_cudf_series(series):
-        # tokens.map(num_common_words)
-        # *** TypeError: Operation <function num_common_words at 0x7fa0d605ce50> not supported for dtype list.
-        # mean_num_common_words = tokens.mean(skipna=True)
+        # It's unlikely we will be able to support natural language inference for cudf
+        # https://docs.rapids.ai/api/cudf/stable/user_guide/guide-to-udfs.html
         return False
     else:
         mean_num_common_words = np.nanmean(tokens.map(num_common_words))
@@ -190,7 +189,6 @@ class InferWithRegex:
             elif regex == ww.config.get_option("postal_code_inference_regex"):
                 matches = series_match_method(pat=r"^[0-9]{5}(?:\-[0-9]{4})?$")
             else:
-                # TODO: Debug the ip address errors
                 return False
         else:
             matches = series_match_method(pat=regex)

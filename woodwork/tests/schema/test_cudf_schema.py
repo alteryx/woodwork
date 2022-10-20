@@ -56,10 +56,24 @@ def test_can_init_float_and_integer_dataframe():
     df.ww.init(name="cuda")
 
 
-# TODO: Fix this test
-# cuda does not have string dtype
-# instead its an object dtype
 def test_can_init_string_dataframe():
     df = cudf.DataFrame()
     df["col1"] = cudf.Series(["a", "b", "c", "d"])
     df.ww.init(name="cuda")
+
+
+def test_can_infer_email_logical_type():
+    df = cudf.DataFrame()
+    df["col1"] = cudf.Series(
+        [
+            "user@gmail.com",
+            "user2@gmail.com",
+            "user3@gmail.com",
+            "user4@gmail.com",
+            "user5@gmail.com",
+            "user6@gmail.com",
+        ]
+    )
+    df.ww.init(name="cuda")
+    print(f"df: {df.ww.logical_types}")
+    assert isinstance(df.ww.logical_types["col1"], ww.logical_types.EmailAddress)

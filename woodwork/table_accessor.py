@@ -280,7 +280,7 @@ class WoodworkTableAccessor:
         if not self._schema.__eq__(other.ww._schema, deep=deep):
             return False
 
-        # Only check pandas DataFrames for equality
+        # Check pandas DataFrames for equality
         if (
             deep
             and isinstance(self._dataframe, pd.DataFrame)
@@ -288,8 +288,13 @@ class WoodworkTableAccessor:
         ):
             return self._dataframe.equals(other.ww._dataframe)
 
-        # TODO: Can we check cuda dataframes here?
-        return True
+        # Check cudf DataFrames for equality
+        if (
+            deep
+            and _is_cudf_dataframe(self._dataframe)
+            and _is_cudf_dataframe(other.ww._dataframe)
+        ):
+            return self._dataframe.equals(other.ww._dataframe)
 
     @_check_table_schema
     def __getattr__(self, attr):
@@ -723,9 +728,12 @@ class WoodworkTableAccessor:
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
         specified by the TableSchema. Does not change the underlying index if no Woodwork index is
-        specified. Only sets underlying index for pandas DataFrames.
+        specified. Sets underlying index for pandas DataFrames and cudf DataFrames.
         """
-        if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
+        if (
+            isinstance(self._dataframe, (pd.DataFrame, cudf.DataFrame))
+            and self._schema.index is not None
+        ):
             self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
             # Drop index name to not overlap with the original column
             self._dataframe.index.name = None
