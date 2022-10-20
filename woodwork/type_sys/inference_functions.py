@@ -46,6 +46,8 @@ def categorical_func(series):
 
 
 def integer_func(series):
+    if _is_cudf_series(series):
+        return series.mod(1).eq(0).all()
     if integer_nullable_func(series) and not series.isnull().any():
         return all(series.mod(1).eq(0))
     return False

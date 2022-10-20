@@ -1,6 +1,6 @@
 import pandas as pd
 
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_cudf_series, _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     URL,
     Address,

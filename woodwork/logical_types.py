@@ -342,12 +342,12 @@ class Datetime(LogicalType):
                     ),
                     name=series.name,
                 )
-            elif _is_cudf_series(series): 
+            elif _is_cudf_series(series):
                 series = cudf.Series(
                     cudf.to_datetime(
                         series,
-                    ), 
-                    name=series.name
+                    ),
+                    name=series.name,
                 )
             else:
                 try:
@@ -655,7 +655,7 @@ class Ordinal(LogicalType):
                 raise ValueError(error_msg)
         """ 
         TODO: Check if this op can be supported in cudf
-        """ 
+        """
 
     def transform(self, series, null_invalid_values=False):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
@@ -873,7 +873,7 @@ def _replace_nans(series: pd.Series, primary_dtype: Optional[str] = None) -> pd.
     if str(original_dtype) == "string":
         series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return series
-    if not _is_spark_series(series):
+    if not _is_spark_series(series) and not _is_cudf_series(series):
         series = series.replace(ww.config.get_option("nan_values"), np.nan)
     if str(original_dtype) == "boolean":
         series = series.astype(original_dtype)
