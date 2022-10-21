@@ -75,5 +75,18 @@ def test_can_infer_email_logical_type():
         ]
     )
     df.ww.init(name="cuda")
-    print(f"df: {df.ww.logical_types}")
     assert isinstance(df.ww.logical_types["col1"], ww.logical_types.EmailAddress)
+
+
+def test_can_check_equality(): 
+    df = cudf.DataFrame()
+    df["col1"] = [0, 1, 2, 3]
+    df["col2"] = [4, 5, 6, 7] 
+    df.ww.init(name="cuda") 
+    
+    df1 = cudf.DataFrame()
+    df1["col1"] = [0, 1, 2, 3] 
+    df1["col2"] = [4, 5, 6, 7] 
+    df1.ww.init(name='cuda') 
+
+    assert df.ww == df1.ww 
