@@ -144,6 +144,9 @@ def test_accessor_with_schema_parameter_warning(sample_series):
 
 
 def test_accessor_init_with_logical_type(sample_series):
+    if _is_cudf_series(sample_series): 
+        pytest.xfail("NaturalLanguage not supported on cudf")
+        
     series = sample_series.astype("string")
     series.ww.init(logical_type=NaturalLanguage)
     assert isinstance(series.ww.logical_type, NaturalLanguage)
@@ -778,7 +781,7 @@ def test_accessor_equality(sample_series):
 def test_accessor_shallow_equality(sample_series):
     if _is_cudf_series(sample_series): 
         pytest.xfail("NaturalLanguage not supported in cudf")
-        
+
     metadata_col = init_series(
         sample_series.copy(),
         logical_type="NaturalLanguage",
