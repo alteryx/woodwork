@@ -9,6 +9,7 @@ from woodwork.accessor_utils import (
     _is_dask_series,
     _is_dataframe,
     _is_spark_series,
+    _is_cudf_series, 
     init_series,
 )
 from woodwork.column_accessor import WoodworkColumnAccessor
@@ -42,7 +43,7 @@ from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
-
+cudf = import_or_none("cudf") 
 
 def test_accessor_init(sample_series):
     assert sample_series.ww._schema is None
@@ -435,6 +436,9 @@ def test_set_logical_type_without_standard_tags(sample_series):
 
 
 def test_set_logical_type_valid_dtype_change(sample_series):
+    if _is_cudf_series(sample_series): 
+        pytest.xfail("NaturalLanguage logical_type is not supported on cudf dataframes")
+
     sample_series.ww.init(logical_type="Categorical")
 
     new_series = sample_series.ww.set_logical_type("NaturalLanguage")
@@ -544,6 +548,9 @@ def test_series_methods_on_accessor_inplace(sample_series):
     # TODO: Try to find a supported inplace method for Dask, if one exists
     if _is_dask_series(sample_series):
         pytest.xfail("Dask does not support pop.")
+    # Interestingly, cudf supports pop on dataframes but not series. 
+    if _is_cudf_series(sample_series): 
+        pytest.xfail("cudf does not support pop.")
     comparison_series = sample_series.copy()
 
     sample_series.ww.init()
@@ -556,6 +563,9 @@ def test_series_methods_on_accessor_inplace(sample_series):
 
 
 def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
+    if _is_cudf_series(sample_series): 
+        pytest.xfail("Invalid dtype conversions are not supported in cudf.")
+
     sample_series.ww.init()
 
     if _is_spark_series(sample_series):
@@ -668,9 +678,9 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series) or _is_cudf_series(sample_series):
         pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported",
+            "Fails with Dask, cudf, and Spark - ordinal data validation not supported",
         )
 
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
@@ -726,6 +736,9 @@ def test_latlong_formatting_with_init_series(latlongs):
 
 
 def test_accessor_equality(sample_series):
+    if _is_cudf_series(sample_series): 
+        pytest.xfail("NaturalLanguage not supported on cudf")
+
     # Check different parameters
     str_col = sample_series.copy()
     str_col.ww.init(logical_type="Categorical")
@@ -763,6 +776,9 @@ def test_accessor_equality(sample_series):
 
 
 def test_accessor_shallow_equality(sample_series):
+    if _is_cudf_series(sample_series): 
+        pytest.xfail("NaturalLanguage not supported in cudf")
+        
     metadata_col = init_series(
         sample_series.copy(),
         logical_type="NaturalLanguage",

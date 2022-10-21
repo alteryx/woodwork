@@ -237,7 +237,7 @@ def sample_unsorted_df_spark(sample_unsorted_df_pandas):
 
 
 @pytest.fixture(
-    params=["sample_series_pandas", "sample_series_dask", "sample_series_spark"],
+    params=["sample_series_pandas", "sample_series_dask", "sample_series_spark", "sample_series_cudf"],
 )
 def sample_series(request):
     return request.getfixturevalue(request.param)
@@ -262,6 +262,12 @@ def sample_series_spark(sample_series_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(sample_series_pandas.astype("string"))
 
+
+@pytest.fixture() 
+def sample_series_cudf(sample_series_pandas): 
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping") 
+    return cudf.from_pandas(sample_series_pandas) 
+    
 
 @pytest.fixture(
     params=[

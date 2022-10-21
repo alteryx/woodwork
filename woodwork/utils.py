@@ -243,7 +243,7 @@ def _reformat_to_latlong(latlong, is_spark_or_cuda=False):
             )
 
         latlong = (latitude, longitude)
-        if is_spark:
+        if is_spark_or_cuda: 
             latlong = list(latlong)
         return latlong
 
@@ -280,22 +280,24 @@ def _is_valid_latlong_series(series):
         series = series.get_partition(0).compute()
     if ww.accessor_utils._is_spark_series(series):
         series = series.to_pandas()
-        is_spark = True
+        is_spark_or_cuda = True
+    elif ww.accessor_utils._is_cudf_series(series): 
+        is_spark_or_cuda = True 
     else:
-        is_spark = False
-    if series.apply(_is_valid_latlong_value, args=(is_spark,)).all():
+        is_spark_or_cuda = False
+    if series.apply(_is_valid_latlong_value, args=(is_spark_or_cuda,)).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val, is_spark=False):
+def _is_valid_latlong_value(val, is_spark_or_cuda=False):
     """Returns True if the value provided is a properly formatted LatLong value for a
     pandas, Dask or Spark Series, otherwise returns False."""
     if isinstance(val, (list, tuple)):
         if len(val) != 2:
             return False
 
-        if not isinstance(val, list if is_spark else tuple):
+        if not isinstance(val, list if is_spark_or_cuda else tuple):
             return False
 
         latitude, longitude = val

@@ -61,13 +61,15 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     @classmethod
     def _get_valid_dtype(cls, series_type):
         """Return the dtype that is considered valid for a series with the given logical_type"""
+        
+        #TODO: find out what is happening here. do we need to do something similar for cudf?
         if ps and series_type == ps.Series and cls.backup_dtype:
             return cls.backup_dtype
         else:
             return cls.primary_dtype
 
     def transform(self, series, null_invalid_values=False):
-        """Converts the series dtype to match the logical type's if it is different."""
+        """Converts the series dtype to match the logical types if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             # Update the underlying series
