@@ -1,7 +1,7 @@
 import copy
 import warnings
 import weakref
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import pandas as pd
 from pandas.api import types as pdtypes
@@ -393,7 +393,7 @@ class WoodworkColumnAccessor:
     def get_outliers(
         self,
         method="best",
-        quantiles: Optional[Dict[int, int]] = None,
+        quantiles: Optional[Dict[float, Union[int, float]]] = None,
         include_indices_and_values: bool = True,
         ignore_zeros: bool = False,
     ):
@@ -401,9 +401,9 @@ class WoodworkColumnAccessor:
         using the selected method.
 
         Args:
-            method (str): The method to use when calculating the box and whiskers plot. Options are 'box_plot' and 'medcouple'.
-            Defaults to 'best' at which point a heuristic will determine the appropriate method to use.
-            quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
+            method (str): The method to use when calculating the box and whiskers plot. Options are 'best', 'box_plot' and 'medcouple'.
+                Defaults to 'best' at which point a heuristic will determine the appropriate method to use.
+            quantiles (dict[float -> int or float], optional): A dictionary containing the quantiles for the data
                 where the key indicates the quantile, and the value is the quantile's value for the data. If
                 no quantiles are provided, they will be computed from the data.
             include_indices_and_values (bool, optional): Whether or not the lists containing individual
