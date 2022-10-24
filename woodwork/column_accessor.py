@@ -390,13 +390,27 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     @_check_column_schema
-    def get_outliers(self, method="best"):
+    def get_outliers(
+        self,
+        method="best",
+        quantiles: Optional[Dict[int, int]] = None,
+        include_indices_and_values: bool = True,
+        ignore_zeros: bool = False,
+    ):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the selected method.
 
         Args:
             method (str): The method to use when calculating the box and whiskers plot. Options are 'box_plot' and 'medcouple'.
             Defaults to 'best' at which point a heuristic will determine the appropriate method to use.
+            quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
+                where the key indicates the quantile, and the value is the quantile's value for the data. If
+                no quantiles are provided, they will be computed from the data.
+            include_indices_and_values (bool, optional): Whether or not the lists containing individual
+                outlier values and their indices will be included in the returned dictionary.
+                Defaults to True.
+            ignore_zeros (bool): Whether to ignore 0 values (not NaN values) when calculating the box plot and outliers.
+                Defaults to False.
 
         Returns:
             (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
@@ -419,6 +433,9 @@ class WoodworkColumnAccessor:
         return _get_box_plot_info_for_column(
             self._series,
             method=method,
+            quantiles=quantiles,
+            include_indices_and_values=include_indices_and_values,
+            ignore_zeros=ignore_zeros,
         )
 
     @_check_column_schema
