@@ -1,3 +1,4 @@
+import math
 import re
 import sys
 from datetime import datetime
@@ -7,6 +8,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from statsmodels.stats.stattools import medcouple
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
 from woodwork.config import CONFIG_DEFAULTS, config
@@ -39,6 +41,7 @@ from woodwork.logical_types import (
 from woodwork.statistics_utils import (
     _bin_numeric_cols_into_categories,
     _convert_ordinal_to_numeric,
+    _determine_best_outlier_method,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -1679,7 +1682,7 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     assert no_outliers_dict["high_indices"] == []
 
 
-def test_get_outliers_for_column_with_nans(outliers_df):
+def test_get_outliers_for_column_with_nans_box_plot(outliers_df):
     contains_nans_series = outliers_df["has_outliers_with_nans"]
     contains_nans_series.ww.init()
 
@@ -1899,6 +1902,160 @@ def test_box_plot_optional_return_values(outliers_df):
         "low_indices",
         "high_indices",
     } == set(no_outliers_box_plot_info_with_optional.keys())
+
+
+def test_medcouple_outliers(skewed_outliers_df):
+    outliers_series_skewed_right = skewed_outliers_df["right_skewed_outliers"]
+    outliers_series_skewed_right.ww.init()
+
+    outliers_series_skewed_left = skewed_outliers_df["left_skewed_outliers"]
+    outliers_series_skewed_left.ww.init()
+
+    right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict()
+    left_skewed_dict = outliers_series_skewed_left.ww.medcouple_dict()
+
+    expected_right_skewed_dict = {
+        "low_bound": 1.5986854923843101,
+        "high_bound": 23.071505526074297,
+        "quantiles": {
+            0.0: 1.0,
+            0.25: 3.0,
+            0.5: 4.0,
+            0.75: 6.0,
+            1.0: 30.0,
+        },
+        "low_values": [1, 1],
+        "high_values": [30],
+        "low_indices": [0, 1],
+        "high_indices": [65],
+    }
+
+    expected_left_skewed_dict = {
+        "low_bound": 7.928494473925703,
+        "high_bound": 29.40131450761569,
+        "quantiles": {
+            0.0: 1.0,
+            0.25: 25.0,
+            0.5: 27.0,
+            0.75: 28.0,
+            1.0: 30.0,
+        },
+        "low_values": [1],
+        "high_values": [30, 30],
+        "low_indices": [65],
+        "high_indices": [0, 1],
+    }
+
+    assert right_skewed_dict == expected_right_skewed_dict
+    assert left_skewed_dict == expected_left_skewed_dict
+
+
+def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
+    outliers_series_skewed_right = skewed_outliers_df["right_skewed_outliers"]
+    outliers_series_skewed_right.ww.init()
+
+    outliers_series_skewed_left = skewed_outliers_df["left_skewed_outliers"]
+    outliers_series_skewed_left.ww.init()
+
+    override_quantiles_right = {
+        0.0: 1.0,
+        0.25: 8.0,
+        0.5: 11.0,
+        0.75: 25.0,
+        1.0: 30.0,
+    }
+
+    override_quantiles_left = {
+        0.0: 1.0,
+        0.25: 3.0,
+        0.5: 4.0,
+        0.75: 26.0,
+        1.0: 30.0,
+    }
+
+    expected_skewed_dict = {
+        "low_bound": 1.0,
+        "high_bound": 30.0,
+        "quantiles": None,
+        "low_values": [],
+        "high_values": [],
+        "low_indices": [],
+        "high_indices": [],
+    }
+
+    right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict(
+        quantiles=override_quantiles_right,
+    )
+    left_skewed_dict = outliers_series_skewed_left.ww.medcouple_dict(
+        quantiles=override_quantiles_left,
+    )
+
+    expected_skewed_dict["quantiles"] = override_quantiles_right
+    assert right_skewed_dict == expected_skewed_dict
+    expected_skewed_dict["quantiles"] = override_quantiles_left
+    assert left_skewed_dict == expected_skewed_dict
+
+
+def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
+    contains_nans_series = skewed_outliers_df["has_outliers_with_nans"]
+    contains_nans_series.ww.init()
+
+    medcouple_dict = contains_nans_series.ww.medcouple_dict()
+
+    expected_skewed_dict = {
+        "low_bound": 1.9490141192882326,
+        "high_bound": 18.05362914455572,
+        "quantiles": {
+            0.0: 1.0,
+            0.25: 3.0,
+            0.5: 4.0,
+            0.75: 5.25,
+            1.0: 30.0,
+        },
+        "low_values": [1.0, 1.0],
+        "high_values": [30.0],
+        "low_indices": [0, 1],
+        "high_indices": [65],
+    }
+
+    assert medcouple_dict == expected_skewed_dict
+
+
+def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_pandas):
+    # Column of 66,000, far above the 10,000 limit
+    contains_nans_series_skewed = (
+        skewed_outliers_df_pandas["right_skewed_outliers"]
+        .repeat(1000)
+        .reset_index(drop=True)
+    )
+    contains_nans_series_skewed.ww.init()
+
+    mc_result = _determine_best_outlier_method(contains_nans_series_skewed)
+
+    assert mc_result.method == "medcouple"
+    assert math.isclose(mc_result.mc, 0.3333, rel_tol=0.0001)
+
+
+def test_determine_best_outlier_method_equivalent_outcome(
+    outliers_df_pandas, skewed_outliers_df_pandas
+):
+    contains_nans_series_skewed = skewed_outliers_df_pandas["has_outliers_with_nans"]
+    contains_nans_series_skewed.ww.init()
+
+    contains_nans_series = outliers_df_pandas["has_outliers_with_nans"]
+    contains_nans_series.ww.init()
+
+    outliers_mc_skewed = contains_nans_series_skewed.ww.get_outliers(method="medcouple")
+    outliers_best_skewed = contains_nans_series_skewed.ww.get_outliers(method="best")
+
+    outliers_bp = contains_nans_series.ww.get_outliers(method="box_plot")
+    outliers_best = contains_nans_series.ww.get_outliers(method="best")
+
+    assert outliers_bp == outliers_best
+    assert medcouple(contains_nans_series) < 0.2
+
+    assert outliers_mc_skewed == outliers_best_skewed
+    assert medcouple(contains_nans_series_skewed) >= 0.2
 
 
 @patch.object(
@@ -2165,11 +2322,21 @@ def test_box_plot_ignore_zeros_null(dtype):
     zeros_df.ww.init(logical_type=dtype)
     no_zeros_df.ww.init(logical_type=dtype)
 
+    zeros_box_ignored_skewed = zeros_df.ww.medcouple_dict(ignore_zeros=True)
+    zeros_box_not_ignored_skewed = zeros_df.ww.medcouple_dict()
+
     zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
     zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
 
+    no_zeros_box_ignored_skewed = no_zeros_df.ww.medcouple_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored_skewed = no_zeros_df.ww.medcouple_dict()
+
     no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
     no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored_skewed == no_zeros_box_ignored_skewed
+    assert zeros_box_ignored_skewed == no_zeros_box_not_ignored_skewed
+    assert zeros_box_not_ignored_skewed != no_zeros_box_ignored_skewed
 
     assert zeros_box_ignored == no_zeros_box_ignored
     assert zeros_box_ignored == no_zeros_box_not_ignored

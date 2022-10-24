@@ -1,24 +1,51 @@
 import numpy as np
 import pandas as pd
+from statsmodels.stats.stattools import medcouple
 
+from woodwork.statistics_utils._determine_best_outlier_method import (
+    _determine_best_outlier_method,
+)
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
 
 
+def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
+    iqr = q3 - q1
+    if method == "box_plot":
+        # Box plot bounds calculation - the bounds should never be beyond the min and max values
+        low_bound = q1 - (iqr * 1.5)
+        high_bound = q3 + (iqr * 1.5)
+    elif method == "medcouple":
+        # Medcouple bounds calculation - coefficients change based on the skew direction
+        higher_bound_coeff = 4 if mc >= 0 else 3.5
+        lower_bound_coeff = -3.5 if mc >= 0 else -4
+        low_bound = q1 - 1.5 * np.exp(lower_bound_coeff * mc) * iqr
+        high_bound = q3 + 1.5 * np.exp(higher_bound_coeff * mc) * iqr
+    else:
+        raise ValueError(
+            f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
+        )
+    low_bound = max(low_bound, min_value)
+    high_bound = min(high_bound, max_value)
+    return low_bound, high_bound
+
+
 def _get_box_plot_info_for_column(
     series,
+    method="best",
     quantiles=None,
     include_indices_and_values=True,
     ignore_zeros=False,
 ):
-    """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
-        using the IQR method.
+    """Gets the information necessary to create a box and whisker plot with outliers for a numeric column.
 
     Args:
         series (Series): Data for which the box plot and outlier information will be gathered.
             Will be used to calculate quantiles if none are provided.
+        method (str): The method to use when calculating the box and whiskers plot. Options are 'box_plot' and 'medcouple'.
+        Defaults to 'best' at which point a heuristic will determine the appropriate method to use.
         quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
             where the key indicates the quantile, and the value is the quantile's value for the data.
         include_indices_and_values (bool, optional): Whether or not the lists containing individual
@@ -104,10 +131,16 @@ def _get_box_plot_info_for_column(
     q3 = quantiles[0.75]
     max_value = quantiles[1.0]
 
-    # Box plot bounds calculation - the bounds should never be beyond the min and max values
-    iqr = q3 - q1
-    low_bound = max(q1 - (iqr * 1.5), min_value)
-    high_bound = min(q3 + (iqr * 1.5), max_value)
+    mc = None
+    if method == "best":
+        print("ITS BEST")
+        method, mc = _determine_best_outlier_method(series)
+    if method == "medcouple" and mc is None:
+        mc = medcouple(series)
+
+    low_bound, high_bound = _get_low_high_bound(
+        method, q1, q3, min_value, max_value, mc
+    )
 
     if include_indices_and_values:
         # identify outliers in the series

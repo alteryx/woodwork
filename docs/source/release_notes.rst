@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
+        * Added the ``medcouple_dict`` function to the ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
         * Small typo fix in ``select`` docstring (:pr:`1544`)
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`bchen1116`, :user:`sbadithe`
+    :user:`bchen1116`, :user:`ParthivNaresh`, :user:`sbadithe`
 
 v0.19.0 September 27, 2022
 ==========================

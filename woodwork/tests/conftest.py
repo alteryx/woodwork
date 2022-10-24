@@ -971,6 +971,59 @@ def outliers_df(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture()
+def skewed_outliers_df_pandas():
+    outliers_df = pd.DataFrame(
+        {
+            "right_skewed_outliers": [1] * 2
+            + [2] * 6
+            + [3] * 20
+            + [4] * 12
+            + [5] * 8
+            + [6] * 5
+            + [7] * 3
+            + [8, 8, 9, 9, 10, 11, 13, 14, 16, 30],
+            "no_outliers": [60, 42, 37, 23, 49, 42, 36, 57, 60, 23.0] * 6
+            + [35, 54, 43, 47, 41, 39],
+            "non_numeric": ["a"] * 66,
+            "has_outliers_with_nans": [1] * 2
+            + [2] * 6
+            + [3] * 20
+            + [4] * 12
+            + [5] * 8
+            + [6] * 5
+            + [7] * 3
+            + [8, None, 9, 9, 10, 11, None, 14, 16, 30],
+            "nans": pd.Series([None] * 66, dtype="float64"),
+        },
+    )
+    outliers_df["left_skewed_outliers"] = 31 - outliers_df["right_skewed_outliers"]
+    return outliers_df
+
+
+@pytest.fixture()
+def skewed_outliers_df_dask(skewed_outliers_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(skewed_outliers_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def skewed_outliers_df_spark(skewed_outliers_df_pandas):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    return ps.from_pandas(skewed_outliers_df_pandas)
+
+
+@pytest.fixture(
+    params=[
+        "skewed_outliers_df_pandas",
+        "skewed_outliers_df_dask",
+        "skewed_outliers_df_spark",
+    ]
+)
+def skewed_outliers_df(request):
+    return request.getfixturevalue(request.param)
+
+
 class MockCallback:
     def __init__(self):
         self.progress_history = []
