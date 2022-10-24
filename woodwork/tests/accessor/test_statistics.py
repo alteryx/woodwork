@@ -50,6 +50,9 @@ from woodwork.statistics_utils import (
     _get_recent_value_counts,
     _get_top_values_categorical,
 )
+from woodwork.statistics_utils._get_box_plot_info_for_column import (
+    _determine_coefficients,
+)
 from woodwork.statistics_utils._parse_measures import _parse_measures
 from woodwork.tests.testing_utils import (
     _check_close,
@@ -1917,7 +1920,7 @@ def test_medcouple_outliers(skewed_outliers_df):
 
     expected_right_skewed_dict = {
         "low_bound": 1.5986854923843101,
-        "high_bound": 23.071505526074297,
+        "high_bound": 16.945914544292435,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
@@ -1932,7 +1935,7 @@ def test_medcouple_outliers(skewed_outliers_df):
     }
 
     expected_left_skewed_dict = {
-        "low_bound": 7.928494473925703,
+        "low_bound": 14.054085455707563,
         "high_bound": 29.40131450761569,
         "quantiles": {
             0.0: 1.0,
@@ -2005,7 +2008,7 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
 
     expected_skewed_dict = {
         "low_bound": 1.9490141192882326,
-        "high_bound": 18.05362914455572,
+        "high_bound": 13.459435908219328,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
@@ -2014,12 +2017,22 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
             1.0: 30.0,
         },
         "low_values": [1.0, 1.0],
-        "high_values": [30.0],
+        "high_values": [14.0, 16.0, 30.0],
         "low_indices": [0, 1],
-        "high_indices": [65],
+        "high_indices": [63, 64, 65],
     }
 
     assert medcouple_dict == expected_skewed_dict
+
+
+@pytest.mark.parametrize("mc", [-1.0, -0.5, -0.1, 0, 0.3333333, 1.0])
+def test_determine_coefficients(mc):
+    if mc >= 0:
+        coef_to_check = max(1, 4 * (1 - mc))
+        assert _determine_coefficients(mc) == (-3.5, coef_to_check)
+    else:
+        coef_to_check = min(-1, -4 * (1 + mc))
+        assert _determine_coefficients(mc) == (coef_to_check, 3.5)
 
 
 def test_get_low_high_bound_warning():
@@ -2040,16 +2053,16 @@ def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_panda
     mc_result = _determine_best_outlier_method(contains_nans_series_skewed)
 
     assert mc_result.method == "medcouple"
-    assert math.isclose(mc_result.mc, 0.3333, rel_tol=0.0001)
+    assert math.isclose(mc_result.mc, 0.33, rel_tol=0.01)
 
 
 def test_determine_best_outlier_method_equivalent_outcome(
     outliers_df_pandas, skewed_outliers_df_pandas
 ):
-    contains_nans_series_skewed = skewed_outliers_df_pandas["has_outliers_with_nans"]
+    contains_nans_series_skewed = skewed_outliers_df_pandas["right_skewed_outliers"]
     contains_nans_series_skewed.ww.init()
 
-    contains_nans_series = outliers_df_pandas["has_outliers_with_nans"]
+    contains_nans_series = outliers_df_pandas["has_outliers"]
     contains_nans_series.ww.init()
 
     outliers_mc_skewed = contains_nans_series_skewed.ww.get_outliers(method="medcouple")
@@ -2059,10 +2072,10 @@ def test_determine_best_outlier_method_equivalent_outcome(
     outliers_best = contains_nans_series.ww.get_outliers(method="best")
 
     assert outliers_bp == outliers_best
-    assert medcouple(contains_nans_series) < 0.2
+    assert medcouple(contains_nans_series) < 0.3
 
     assert outliers_mc_skewed == outliers_best_skewed
-    assert medcouple(contains_nans_series_skewed) >= 0.2
+    assert medcouple(contains_nans_series_skewed) >= 0.3
 
 
 @patch.object(

@@ -1,14 +1,24 @@
 import numpy as np
 import pandas as pd
-from statsmodels.stats.stattools import medcouple
 
 from woodwork.statistics_utils._determine_best_outlier_method import (
     _determine_best_outlier_method,
+    _sample_for_medcouple,
 )
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+
+
+def _determine_coefficients(mc):
+    if mc >= 0:
+        lower_coef = -3.5
+        higher_coef = max(1, 4 * (1 - mc))
+    else:
+        lower_coef = min(-1, -4 * (1 + mc))
+        higher_coef = 3.5
+    return lower_coef, higher_coef
 
 
 def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
@@ -19,12 +29,41 @@ def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
         high_bound = q3 + (iqr * 1.5)
     elif method == "medcouple":
         if mc is None:
-            raise ValueError("If the method selected is medcouple, then mc cannot be None.")
+            raise ValueError(
+                "If the method selected is medcouple, then mc cannot be None."
+            )
         # Medcouple bounds calculation - coefficients change based on the skew direction
-        higher_bound_coeff = 4 if mc >= 0 else 3.5
         lower_bound_coeff = -3.5 if mc >= 0 else -4
+        higher_bound_coeff = 4 if mc >= 0 else 3.5
         low_bound = q1 - 1.5 * np.exp(lower_bound_coeff * mc) * iqr
         high_bound = q3 + 1.5 * np.exp(higher_bound_coeff * mc) * iqr
+    else:
+        raise ValueError(
+            f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
+        )
+    low_bound = max(low_bound, min_value)
+    high_bound = min(high_bound, max_value)
+    return low_bound, high_bound
+
+
+def _get_low_high_bound_experimental(method, q1, q3, min_value, max_value, mc=None):
+    iqr = q3 - q1
+    # Box plot bounds calculation - the bounds should never be beyond the min and max values
+    low_bound = q1 - (iqr * 1.5)
+    high_bound = q3 + (iqr * 1.5)
+    if method == "medcouple":
+        if mc is None:
+            raise ValueError(
+                "If the method selected is medcouple, then mc cannot be None."
+            )
+        # Medcouple bounds calculation - coefficients change based on the skew direction
+        lower_bound_coeff, higher_bound_coeff = _determine_coefficients(mc)
+        # higher_bound_coeff = 4 if mc >= 0 else 3.5
+        # lower_bound_coeff = -3.5 if mc >= 0 else -4
+        low_bound = q1 - 1.5 * np.exp(lower_bound_coeff * mc) * iqr
+        high_bound = q3 + 1.5 * np.exp(higher_bound_coeff * mc) * iqr
+    elif method == "box_plot":
+        return low_bound, high_bound
     else:
         raise ValueError(
             f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
@@ -135,12 +174,11 @@ def _get_box_plot_info_for_column(
 
     mc = None
     if method == "best":
-        print("ITS BEST")
         method, mc = _determine_best_outlier_method(series)
     if method == "medcouple" and mc is None:
-        mc = medcouple(series)
+        mc = _sample_for_medcouple(series)
 
-    low_bound, high_bound = _get_low_high_bound(
+    low_bound, high_bound = _get_low_high_bound_experimental(
         method, q1, q3, min_value, max_value, mc
     )
 
