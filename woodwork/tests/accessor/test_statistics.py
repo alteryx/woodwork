@@ -1918,6 +1918,17 @@ def test_medcouple_outliers(skewed_outliers_df):
     right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict()
     left_skewed_dict = outliers_series_skewed_left.ww.medcouple_dict()
 
+    assert set(right_skewed_dict.keys()) == {
+        "low_bound",
+        "high_bound",
+        "quantiles",
+        "low_values",
+        "high_values",
+        "low_indices",
+        "high_indices",
+        "medcouple",
+    }
+
     expected_right_skewed_dict = {
         "low_bound": 1.5986854923843101,
         "high_bound": 16.945914544292435,
@@ -1932,6 +1943,7 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values": [30],
         "low_indices": [0, 1],
         "high_indices": [65],
+        "medcouple": 0.3333333333333333,
     }
 
     expected_left_skewed_dict = {
@@ -1948,6 +1960,7 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values": [30, 30],
         "low_indices": [65],
         "high_indices": [0, 1],
+        "medcouple": -0.3333333333333333,
     }
 
     assert right_skewed_dict == expected_right_skewed_dict
@@ -1985,6 +1998,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
         "high_values": [],
         "low_indices": [],
         "high_indices": [],
+        "medcouple": -0.3333333333333333,
     }
 
     right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict(
@@ -2020,6 +2034,7 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
         "high_values": [14.0, 16.0, 30.0],
         "low_indices": [0, 1],
         "high_indices": [63, 64, 65],
+        "medcouple": 0.3333333333333333,
     }
 
     assert medcouple_dict == expected_skewed_dict
@@ -2070,6 +2085,9 @@ def test_determine_best_outlier_method_equivalent_outcome(
 
     outliers_bp = contains_nans_series.ww.get_outliers(method="box_plot")
     outliers_best = contains_nans_series.ww.get_outliers(method="best")
+
+    assert "medcouple" not in outliers_bp.keys()
+    assert "medcouple" in outliers_mc_skewed.keys()
 
     assert outliers_bp == outliers_best
     assert medcouple(contains_nans_series) < 0.3

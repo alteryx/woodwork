@@ -23,31 +23,6 @@ def _determine_coefficients(mc):
 
 def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
     iqr = q3 - q1
-    if method == "box_plot":
-        # Box plot bounds calculation - the bounds should never be beyond the min and max values
-        low_bound = q1 - (iqr * 1.5)
-        high_bound = q3 + (iqr * 1.5)
-    elif method == "medcouple":
-        if mc is None:
-            raise ValueError(
-                "If the method selected is medcouple, then mc cannot be None."
-            )
-        # Medcouple bounds calculation - coefficients change based on the skew direction
-        lower_bound_coeff = -3.5 if mc >= 0 else -4
-        higher_bound_coeff = 4 if mc >= 0 else 3.5
-        low_bound = q1 - 1.5 * np.exp(lower_bound_coeff * mc) * iqr
-        high_bound = q3 + 1.5 * np.exp(higher_bound_coeff * mc) * iqr
-    else:
-        raise ValueError(
-            f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
-        )
-    low_bound = max(low_bound, min_value)
-    high_bound = min(high_bound, max_value)
-    return low_bound, high_bound
-
-
-def _get_low_high_bound_experimental(method, q1, q3, min_value, max_value, mc=None):
-    iqr = q3 - q1
     # Box plot bounds calculation - the bounds should never be beyond the min and max values
     low_bound = q1 - (iqr * 1.5)
     high_bound = q3 + (iqr * 1.5)
@@ -57,11 +32,9 @@ def _get_low_high_bound_experimental(method, q1, q3, min_value, max_value, mc=No
                 "If the method selected is medcouple, then mc cannot be None."
             )
         # Medcouple bounds calculation - coefficients change based on the skew direction
-        lower_bound_coeff, higher_bound_coeff = _determine_coefficients(mc)
-        # higher_bound_coeff = 4 if mc >= 0 else 3.5
-        # lower_bound_coeff = -3.5 if mc >= 0 else -4
-        low_bound = q1 - 1.5 * np.exp(lower_bound_coeff * mc) * iqr
-        high_bound = q3 + 1.5 * np.exp(higher_bound_coeff * mc) * iqr
+        lower_bound_coef, higher_bound_coef = _determine_coefficients(mc)
+        low_bound = q1 - 1.5 * np.exp(lower_bound_coef * mc) * iqr
+        high_bound = q3 + 1.5 * np.exp(higher_bound_coef * mc) * iqr
     elif method == "box_plot":
         pass  # nop
     else:
@@ -178,7 +151,11 @@ def _get_box_plot_info_for_column(
     if method == "medcouple" and mc is None:
         mc = _sample_for_medcouple(series)
 
-    low_bound, high_bound = _get_low_high_bound_experimental(
+    if isinstance(mc, np.ndarray):
+        mc = mc.tolist()
+        assert isinstance(mc, float)
+
+    low_bound, high_bound = _get_low_high_bound(
         method, q1, q3, min_value, max_value, mc
     )
 
@@ -197,6 +174,9 @@ def _get_box_plot_info_for_column(
             "low_indices": low_series.index.tolist(),
             "high_indices": high_series.index.tolist(),
         }
+
+    if method == "medcouple":
+        outliers_dict["medcouple"] = mc
 
     return {
         "low_bound": low_bound,

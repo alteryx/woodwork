@@ -22,10 +22,12 @@ def _sample_for_medcouple(series):
     """
     np.random.seed(42)
     series_size = len(series)
-    if series_size < 10000:
+    if series_size < ww.config.get_option("medcouple_sample_size"):
         series_sample = series.copy()
     else:
-        series_sample = np.random.choice(series, 10000, replace=False)
+        series_sample = np.random.choice(
+            series, ww.config.get_option("medcouple_sample_size"), replace=False
+        )
     col = pd.Series(series_sample)
     mc = medcouple(col)
     return mc
