@@ -18,6 +18,8 @@ def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
         low_bound = q1 - (iqr * 1.5)
         high_bound = q3 + (iqr * 1.5)
     elif method == "medcouple":
+        if mc is None:
+            raise ValueError("If the method selected is medcouple, then mc cannot be None.")
         # Medcouple bounds calculation - coefficients change based on the skew direction
         higher_bound_coeff = 4 if mc >= 0 else 3.5
         lower_bound_coeff = -3.5 if mc >= 0 else -4

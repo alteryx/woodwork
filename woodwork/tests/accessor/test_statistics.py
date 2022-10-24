@@ -44,6 +44,7 @@ from woodwork.statistics_utils import (
     _determine_best_outlier_method,
     _get_describe_dict,
     _get_histogram_values,
+    _get_low_high_bound,
     _get_mode,
     _get_numeric_value_counts_in_range,
     _get_recent_value_counts,
@@ -2019,6 +2020,12 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
     }
 
     assert medcouple_dict == expected_skewed_dict
+
+
+def test_get_low_high_bound_warning():
+    error = "If the method selected is medcouple, then mc cannot be None."
+    with pytest.raises(ValueError, match=error):
+        _get_low_high_bound("medcouple", 1, 1, None, None, None)
 
 
 def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_pandas):
