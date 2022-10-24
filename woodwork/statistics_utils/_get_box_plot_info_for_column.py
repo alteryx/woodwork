@@ -63,7 +63,7 @@ def _get_low_high_bound_experimental(method, q1, q3, min_value, max_value, mc=No
         low_bound = q1 - 1.5 * np.exp(lower_bound_coeff * mc) * iqr
         high_bound = q3 + 1.5 * np.exp(higher_bound_coeff * mc) * iqr
     elif method == "box_plot":
-        return low_bound, high_bound
+        pass  # nop
     else:
         raise ValueError(
             f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
