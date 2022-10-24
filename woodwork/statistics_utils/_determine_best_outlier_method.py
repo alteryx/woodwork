@@ -37,7 +37,7 @@ def _determine_best_outlier_method(series):
     method = "medcouple"
     col = pd.Series(series_sample)
     mc = medcouple(col)
-    if np.abs(mc) < 0.2:
+    if np.abs(mc) < 0.3:
         method = "box_plot"
         mc = None
     return method_result(method, mc)
