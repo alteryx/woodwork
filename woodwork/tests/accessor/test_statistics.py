@@ -1998,7 +1998,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
         "high_values": [],
         "low_indices": [],
         "high_indices": [],
-        "medcouple": -0.3333333333333333,
+        "medcouple": 0.3333333333333333,
     }
 
     right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict(
@@ -2011,6 +2011,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
     expected_skewed_dict["quantiles"] = override_quantiles_right
     assert right_skewed_dict == expected_skewed_dict
     expected_skewed_dict["quantiles"] = override_quantiles_left
+    expected_skewed_dict["medcouple"] = -0.3333333333333333
     assert left_skewed_dict == expected_skewed_dict
 
 
