@@ -224,7 +224,10 @@ def test_to_dictionary(sample_df):
                 "name": "boolean",
                 "ordinal": 11,
                 "use_standard_tags": True,
-                "logical_type": {"parameters": {}, "type": "Boolean"},
+                "logical_type": {
+                    "parameters": {"cast_nulls_as": None},
+                    "type": "Boolean",
+                },
                 "physical_type": {"type": "bool"},
                 "semantic_tags": [],
                 "description": None,

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_spark_dataframe, init_series
+from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe, init_series
 from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
@@ -1187,7 +1187,7 @@ def test_describe_with_improper_tags(describe_df):
     df = describe_df.copy()[["boolean_col", "natural_language_col"]]
 
     logical_types = {
-        "boolean_col": Boolean,
+        "boolean_col": BooleanNullable,
         "natural_language_col": NaturalLanguage,
     }
     semantic_tags = {
@@ -1199,7 +1199,7 @@ def test_describe_with_improper_tags(describe_df):
     stats_df = df.ww.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert isinstance(stats_df["boolean_col"]["logical_type"], Boolean)
+    assert isinstance(stats_df["boolean_col"]["logical_type"], BooleanNullable)
     assert stats_df["boolean_col"]["semantic_tags"] == {"category"}
     # Make sure numeric stats were not computed with improper 'numeric' tag
     assert stats_df["natural_language_col"]["semantic_tags"] == {"numeric"}
@@ -1441,7 +1441,7 @@ def test_value_counts(categorical_df):
     logical_types = {
         "ints": IntegerNullable,
         "categories1": Categorical,
-        "bools": Boolean,
+        "bools": BooleanNullable,
         "categories2": Categorical,
         "categories3": Categorical,
     }
