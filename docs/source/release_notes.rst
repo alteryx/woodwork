@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
-        * Added the ``medcouple_dict`` function to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
+        * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
         * Small typo fix in ``select`` docstring (:pr:`1544`)
