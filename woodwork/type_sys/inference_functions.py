@@ -7,7 +7,6 @@ from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork import data
-from woodwork.accessor_utils import _is_dask_series
 from woodwork.config import config
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
@@ -75,10 +74,7 @@ def double_func(series):
 
 
 def boolean_func(series):
-    is_null = series.isnull().any()
-    if _is_dask_series(series):
-        is_null = is_null.compute()
-    if boolean_nullable_func(series) and not is_null:
+    if boolean_nullable_func(series) and not series.isnull().any():
         return True
     return False
 
