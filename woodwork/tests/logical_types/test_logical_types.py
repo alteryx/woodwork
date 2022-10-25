@@ -991,7 +991,7 @@ def test_boolean_cast_nulls_as():
     (
         [True, True, False, False],
         ["Yes", "yes", "NO", "no"],
-        [1, 1, 0, 0],
+        ["1", "1", "0", "0"],
         ["True", "true", "false", "FALSE"],
     ),
 )

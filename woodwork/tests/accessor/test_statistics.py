@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe, init_series
+from woodwork.accessor_utils import _is_spark_dataframe, init_series
 from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
