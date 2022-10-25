@@ -14,6 +14,7 @@ from woodwork.statistics_utils._get_box_plot_info_for_column import (
 from woodwork.statistics_utils._get_dependence_dict import _get_dependence_dict
 from woodwork.statistics_utils._get_describe_dict import _get_describe_dict
 from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
+from woodwork.statistics_utils._get_medcouple_statistic import _get_medcouple
 from woodwork.statistics_utils._get_mode import _get_mode
 from woodwork.statistics_utils._get_numeric_value_counts_in_range import (
     _get_numeric_value_counts_in_range,

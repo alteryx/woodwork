@@ -8,7 +8,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from statsmodels.stats.stattools import medcouple
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
 from woodwork.config import CONFIG_DEFAULTS, config
@@ -45,6 +44,7 @@ from woodwork.statistics_utils import (
     _get_describe_dict,
     _get_histogram_values,
     _get_low_high_bound,
+    _get_medcouple,
     _get_mode,
     _get_numeric_value_counts_in_range,
     _get_recent_value_counts,
@@ -2091,10 +2091,10 @@ def test_determine_best_outlier_method_equivalent_outcome(
     assert "medcouple" in outliers_mc_skewed.keys()
 
     assert outliers_bp == outliers_best
-    assert medcouple(contains_nans_series) < 0.3
+    assert _get_medcouple(contains_nans_series) < 0.3
 
     assert outliers_mc_skewed == outliers_best_skewed
-    assert medcouple(contains_nans_series_skewed) >= 0.3
+    assert _get_medcouple(contains_nans_series_skewed) >= 0.3
 
 
 @patch.object(
