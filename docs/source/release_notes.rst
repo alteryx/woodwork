@@ -13,6 +13,7 @@ Future Release
         * Small typo fix in ``select`` docstring (:pr:`1544`)
     * Changes
     * Documentation Changes
+        * Updated documentation to include the ``get_outliers`` and ``medcouple_dict`` (:pr:`1547`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
