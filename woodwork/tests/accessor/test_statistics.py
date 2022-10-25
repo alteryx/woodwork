@@ -2051,10 +2051,14 @@ def test_determine_coefficients(mc):
         assert _determine_coefficients(mc) == (coef_to_check, 3.5)
 
 
-def test_get_low_high_bound_warning():
+def test_get_low_high_bound_warnings():
     error = "If the method selected is medcouple, then mc cannot be None."
     with pytest.raises(ValueError, match=error):
         _get_low_high_bound("medcouple", 1, 1, None, None, None)
+
+    error = "Acceptable methods are 'box_plot' and 'medcouple'. The value passed was 'something_else'"
+    with pytest.raises(ValueError, match=error):
+        _get_low_high_bound("something_else", 1, 1, None, None, None)
 
 
 def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
