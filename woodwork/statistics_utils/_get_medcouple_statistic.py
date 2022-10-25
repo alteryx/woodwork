@@ -13,9 +13,6 @@ def _calculate_medcouple_statistic(y):
         float: Medcouple statistic
     """
     y = np.squeeze(np.asarray(y))
-    if y.ndim != 1:
-        raise ValueError("y must be squeezable to a 1-d array")
-
     y = np.sort(y)
 
     n = y.shape[0]
@@ -44,5 +41,7 @@ def _calculate_medcouple_statistic(y):
 
 def _get_medcouple(array_, axis=0):
     array_ = np.asarray(array_, dtype=np.double)
-    array_ = np.apply_along_axis(_calculate_medcouple_statistic, axis, array_)
-    return array_
+    mc = np.apply_along_axis(_calculate_medcouple_statistic, axis, array_)
+    if isinstance(mc, np.ndarray) and isinstance(mc.tolist(), float):
+        return mc.tolist()
+    return mc

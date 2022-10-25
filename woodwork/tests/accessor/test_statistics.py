@@ -2057,6 +2057,27 @@ def test_get_low_high_bound_warning():
         _get_low_high_bound("medcouple", 1, 1, None, None, None)
 
 
+def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
+    has_outliers_series = outliers_df_pandas["has_outliers"]
+    has_outliers_series = has_outliers_series.append(pd.Series([39]), ignore_index=True)
+    has_outliers_series.ww.init()
+    mc = _get_medcouple(has_outliers_series)
+    assert mc == 0.12179487179487179
+
+    outliers_series_skewed_right = skewed_outliers_df_pandas["right_skewed_outliers"]
+    outliers_series_skewed_right.ww.init()
+    mc = _get_medcouple(outliers_series_skewed_right)
+    assert mc == 0.3333333333333333
+
+    outliers_series_skewed = skewed_outliers_df_pandas[
+        ["right_skewed_outliers", "left_skewed_outliers"]
+    ]
+    outliers_series_skewed.ww.init()
+    mc = _get_medcouple(outliers_series_skewed)
+    assert isinstance(mc, np.ndarray)
+    np.testing.assert_almost_equal(mc, np.array([0.33333333, -0.33333333]))
+
+
 def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_pandas):
     # Column of 66,000, far above the 10,000 limit
     contains_nans_series_skewed = (
