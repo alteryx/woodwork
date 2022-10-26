@@ -94,7 +94,7 @@ def boolean_nullable_func(series):
                 {False},
             ]:
                 return True
-            series_lower = set(str(s).lower() for s in set(series))
+            series_lower = set(str(s).lower() for s in set(series_no_null))
             if series_lower in [
                 set(boolean_list)
                 for boolean_list in config.get_option("boolean_inference_strings")

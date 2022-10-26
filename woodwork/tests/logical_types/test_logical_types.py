@@ -1044,7 +1044,7 @@ def test_boolean_nullable_other_values_dont_cast(null, df_type):
         df = dd.from_pandas(df, npartitions=1)
     df.ww.init()
     assert all(
-        [str(dtype) != "BooleanNullable" for dtype in df.ww.logical_types.values()],
+        [str(dtype) == "BooleanNullable" for dtype in df.ww.logical_types.values()],
     )
 
 
