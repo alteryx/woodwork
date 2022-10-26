@@ -69,6 +69,11 @@ def pandas_bools():
         pd.Series(["t", "f", "T", "T"]),
         pd.Series(["yes", "no", "NO", "Yes"]),
         pd.Series(["1", "1", "1", "0"]),
+        pd.Series(["y", "n", "N", None]),
+        pd.Series(["True", "false", pd.NA, "TRUE"]),
+        pd.Series(["t", "f", "T", np.nan]),
+        pd.Series(["yes", "no", "NO", pd.NA]),
+        pd.Series(["1", "1", np.nan, "0"]),
     ]
 
 
@@ -276,11 +281,9 @@ def pandas_strings():
         pd.Series(
             ["Mr. John Doe", "Doe, Mrs. Jane", "James Brown", "Ms. Paige Turner"],
         ),
-        pd.Series(["y", "n", "N", None]),
-        pd.Series(["True", "false", pd.NA, "TRUE"]),
-        pd.Series(["t", "f", "T", np.nan]),
-        pd.Series(["yes", "no", "NO", pd.NA]),
-        pd.Series(["1", "1", np.nan, "0"]),
+        pd.Series(["y", "no", "N", None]),
+        pd.Series(["T", "false", pd.NA, "TRUE"]),
+        pd.Series(["1", "1", np.nan, "0.0"]),
     ]
 
 
