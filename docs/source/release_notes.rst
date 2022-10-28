@@ -10,6 +10,7 @@ Future Release
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
         * Small typo fix in ``select`` docstring (:pr:`1544`)
+        * Fix TypeValidationError message (:pr:`1557`)
     * Changes
     * Documentation Changes
     * Testing Changes
