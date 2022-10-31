@@ -7,13 +7,14 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`sbadithe`
 
 v0.20.0 October 31, 2022
 ========================
