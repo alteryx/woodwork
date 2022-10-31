@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Unpin dask dependency (:pr:`1561`)
     * Documentation Changes
     * Testing Changes
 
-..  Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.20.0 October 31, 2022
 ========================
