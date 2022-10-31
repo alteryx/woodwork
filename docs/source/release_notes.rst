@@ -3,17 +3,25 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+..  Thanks to the following people for contributing to this release:
+
+v0.20.0 October 31, 2022
+========================
     * Enhancements
         * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
         * Small typo fix in ``select`` docstring (:pr:`1544`)
         * Fix TypeValidationError message (:pr:`1557`)
-    * Changes
-    * Documentation Changes
-    * Testing Changes
+        * Set dask version below 2022.10.1 (:pr:`1558`)
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`sbadithe`
