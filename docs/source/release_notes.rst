@@ -21,6 +21,7 @@ v0.20.0 October 31, 2022
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
         * Small typo fix in ``select`` docstring (:pr:`1544`)
         * Fix TypeValidationError message (:pr:`1557`)
+        * Set dask version below 2022.10.1 (:pr:`1558`)
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`sbadithe`

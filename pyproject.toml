@@ -61,7 +61,7 @@ test = [
     "pyarrow >= 4.0.1",
 ]
 dask = [
-    "dask[dataframe] >= 2021.10.0",
+    "dask[dataframe] == 2021.10.0",
 ]
 spark = [
     "pyspark >= 3.2.0, <3.3.0",
