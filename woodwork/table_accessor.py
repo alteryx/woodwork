@@ -296,6 +296,9 @@ class WoodworkTableAccessor:
         ):
             return self._dataframe.equals(other.ww._dataframe)
 
+        return True 
+
+
     @_check_table_schema
     def __getattr__(self, attr):
         # Called if method is not present on the Accessor
