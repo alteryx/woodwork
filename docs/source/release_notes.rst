@@ -6,15 +6,26 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+    * Fixes
+        * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
+    * Changes
+        * Unpin dask dependency (:pr:`1561`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`sbadithe`
+
+v0.20.0 October 31, 2022
+========================
+    * Enhancements
         * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
         * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
     * Fixes
         * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
         * Small typo fix in ``select`` docstring (:pr:`1544`)
         * Fix TypeValidationError message (:pr:`1557`)
-    * Changes
-    * Documentation Changes
-    * Testing Changes
+        * Set dask version below 2022.10.1 (:pr:`1558`)
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`sbadithe`
