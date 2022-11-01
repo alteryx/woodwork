@@ -40,11 +40,10 @@ from woodwork.logical_types import (
 from woodwork.statistics_utils import (
     _bin_numeric_cols_into_categories,
     _convert_ordinal_to_numeric,
-    _determine_best_outlier_method,
     _get_describe_dict,
     _get_histogram_values,
     _get_low_high_bound,
-    _get_medcouple,
+    _get_medcouple_statistic,
     _get_mode,
     _get_numeric_value_counts_in_range,
     _get_recent_value_counts,
@@ -1653,6 +1652,7 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     has_outliers_dict = outliers_series.ww.box_plot_dict(
         quantiles={0.0: -16.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 93.0},
     )
+    assert has_outliers_dict["method"] == "box_plot"
     assert has_outliers_dict["low_bound"] == 8.125
     assert has_outliers_dict["high_bound"] == 83.125
     assert has_outliers_dict["quantiles"] == {
@@ -1667,10 +1667,10 @@ def test_box_plot_outliers_with_quantiles(outliers_df):
     assert has_outliers_dict["low_indices"] == [3]
     assert has_outliers_dict["high_indices"] == [0]
 
-    no_outliers_dict = no_outliers_series.ww.box_plot_dict(
+    no_outliers_dict = no_outliers_series.ww.medcouple_dict(
         quantiles={0.0: 23.0, 0.25: 36.25, 0.5: 42.0, 0.75: 55.0, 1.0: 60.0},
     )
-
+    assert no_outliers_dict["method"] == "medcouple"
     assert no_outliers_dict["low_bound"] == 23.0
     assert no_outliers_dict["high_bound"] == 60.0
     assert no_outliers_dict["quantiles"] == {
@@ -1691,7 +1691,7 @@ def test_get_outliers_for_column_with_nans_box_plot(outliers_df):
     contains_nans_series.ww.init()
 
     box_plot_dict = contains_nans_series.ww.box_plot_dict()
-
+    assert box_plot_dict["method"] == "box_plot"
     assert box_plot_dict["low_bound"] == 4.5
     assert box_plot_dict["high_bound"] == 88.5
     assert box_plot_dict["quantiles"] == {
@@ -2022,6 +2022,7 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
     medcouple_dict = contains_nans_series.ww.medcouple_dict()
 
     expected_skewed_dict = {
+        "method": "medcouple",
         "low_bound": 1.9490141192882326,
         "high_bound": 13.459435908219328,
         "quantiles": {
@@ -2065,19 +2066,19 @@ def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
     has_outliers_series = outliers_df_pandas["has_outliers"]
     has_outliers_series = has_outliers_series.append(pd.Series([39]), ignore_index=True)
     has_outliers_series.ww.init()
-    mc = _get_medcouple(has_outliers_series)
+    mc = _get_medcouple_statistic(has_outliers_series)
     assert mc == 0.12179487179487179
 
     outliers_series_skewed_right = skewed_outliers_df_pandas["right_skewed_outliers"]
     outliers_series_skewed_right.ww.init()
-    mc = _get_medcouple(outliers_series_skewed_right)
+    mc = _get_medcouple_statistic(outliers_series_skewed_right)
     assert mc == 0.3333333333333333
 
     outliers_series_skewed = skewed_outliers_df_pandas[
         ["right_skewed_outliers", "left_skewed_outliers"]
     ]
     outliers_series_skewed.ww.init()
-    mc = _get_medcouple(outliers_series_skewed)
+    mc = _get_medcouple_statistic(outliers_series_skewed)
     assert isinstance(mc, np.ndarray)
     np.testing.assert_almost_equal(mc, np.array([0.33333333, -0.33333333]))
 
@@ -2091,7 +2092,7 @@ def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_panda
     )
     contains_nans_series_skewed.ww.init()
 
-    mc_result = _determine_best_outlier_method(contains_nans_series_skewed)
+    mc_result = _get_medcouple_statistic(contains_nans_series_skewed)
 
     assert mc_result.method == "medcouple"
     assert math.isclose(mc_result.mc, 0.33, rel_tol=0.01)
@@ -2116,10 +2117,10 @@ def test_determine_best_outlier_method_equivalent_outcome(
     assert "medcouple" in outliers_mc_skewed.keys()
 
     assert outliers_bp == outliers_best
-    assert _get_medcouple(contains_nans_series) < 0.3
+    assert _get_medcouple_statistic(contains_nans_series) < 0.3
 
     assert outliers_mc_skewed == outliers_best_skewed
-    assert _get_medcouple(contains_nans_series_skewed) >= 0.3
+    assert _get_medcouple_statistic(contains_nans_series_skewed) >= 0.3
 
 
 @patch.object(

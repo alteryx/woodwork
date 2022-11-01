@@ -1,14 +1,46 @@
+from collections import namedtuple
+
 import numpy as np
 import pandas as pd
 
-from woodwork.statistics_utils._determine_best_outlier_method import (
-    _determine_best_outlier_method,
-    _sample_for_medcouple,
-)
+import woodwork as ww
+from woodwork.statistics_utils._get_medcouple_statistic import _sample_for_medcouple
 from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+
+
+method_result = namedtuple(
+    "MedcoupleHeuristicResult",
+    (
+        "method",
+        "mc",
+    ),
+)
+
+
+def _determine_best_outlier_method(series):
+    """Determines the best outlier method to use based on the distribution of the series and outcome of the medcouple statistic.
+
+    Args:
+        series (Series): Data on which the medcouple statistic will be run in order to determine skewness.
+
+    Note:
+        The calculation of the medcouple statistic has a large memory requirement of O(N**2), therefore larger series will
+        have a random subset selected in order to determine skewness and the best outlier method.
+
+    Returns:
+        MedcoupleHeuristicResult - Named tuple with 2 fields
+            method (str): Name of the outlier method to use.
+            mc (float): The medcouple statistic (if the method chosen is medcouple, otherwise None).
+    """
+    mc = _sample_for_medcouple(series)
+    method = "medcouple"
+    if np.abs(mc) < ww.config.get_option("medcouple_threshold"):
+        method = "box_plot"
+        mc = None
+    return method_result(method, mc)
 
 
 def _determine_coefficients(mc):
@@ -23,24 +55,23 @@ def _determine_coefficients(mc):
 
 def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
     iqr = q3 - q1
-    # Box plot bounds calculation - the bounds should never be beyond the min and max values
-    low_bound = q1 - (iqr * 1.5)
-    high_bound = q3 + (iqr * 1.5)
     if method == "medcouple":
         if mc is None:
             raise ValueError(
                 "If the method selected is medcouple, then mc cannot be None."
             )
-        # Medcouple bounds calculation - coefficients change based on the skew direction
+        # Medcouple coefficients change based on the skew direction
         lower_bound_coef, higher_bound_coef = _determine_coefficients(mc)
         low_bound = q1 - 1.5 * np.exp(lower_bound_coef * mc) * iqr
         high_bound = q3 + 1.5 * np.exp(higher_bound_coef * mc) * iqr
     elif method == "box_plot":
-        pass  # nop
+        low_bound = q1 - (iqr * 1.5)
+        high_bound = q3 + (iqr * 1.5)
     else:
         raise ValueError(
             f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
         )
+    # Box plot bounds calculation - the bounds should never be beyond the min and max values
     low_bound = max(low_bound, min_value)
     high_bound = min(high_bound, max_value)
     return low_bound, high_bound
@@ -175,8 +206,9 @@ def _get_box_plot_info_for_column(
             "high_indices": high_series.index.tolist(),
         }
 
+    outliers_dict["method"] = method
     if method == "medcouple":
-        outliers_dict["medcouple"] = mc
+        outliers_dict["medcouple_stat"] = mc
 
     return {
         "low_bound": low_bound,
