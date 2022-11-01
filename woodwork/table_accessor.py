@@ -715,12 +715,12 @@ class WoodworkTableAccessor:
     def _sort_columns(self, already_sorted):
 
         """
-        cudf doesn't support an in-place sort_values function.
+        cudf doesn't support an in-place sort_values function. 
         we should decide whether we want to create a new dataframe
         or just not support this particular option. Since we don't
-        support this for dask or spark, there would be a precedent for
-        not supporting it.
-        """
+        support this for dask or spark, there would be a precedent for 
+        not supporting it. 
+        """ 
 
         if (
             _is_dask_dataframe(self._dataframe)
@@ -1047,7 +1047,7 @@ class WoodworkTableAccessor:
         """
         It's interesting here -- if we are using cudf, what are the performance implications of returning a pandas dataframe? 
         I suppose the same question goes for Dask or PySpark. Need to study Python memory model to better understand what is happening here.
-        """
+        """ 
         return pd.DataFrame(mutual_info)
 
     @_check_table_schema

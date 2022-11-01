@@ -316,7 +316,7 @@ def _is_valid_latlong_value(val, is_spark_or_cuda=False):
         else:
             return _is_valid_latlong_value(val)
 
-    if is_spark and val is None:
+    if is_spark_or_cuda and val is None:
         return True
 
     return False
