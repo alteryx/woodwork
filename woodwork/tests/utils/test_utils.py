@@ -390,7 +390,7 @@ def test_is_valid_latlong_value(test_input, expected):
     ],
 )
 def test_is_valid_latlong_value_spark(test_input, expected):
-    assert _is_valid_latlong_value(test_input, is_spark=True) == expected
+    assert _is_valid_latlong_value(test_input, is_spark_or_cuda=True) == expected
 
 
 def test_is_valid_latlong_series():

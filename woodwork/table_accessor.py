@@ -828,7 +828,7 @@ class WoodworkTableAccessor:
             if _is_spark_dataframe(self._dataframe):
                 raise ValueError("Drop inplace not supported for Spark")
 
-        assert all([col_name in self._schema.columns for col_name in cols_to_include])
+        assert all(col_name in self._schema.columns for col_name in cols_to_include)
 
         new_schema = self._schema.get_subset_schema(cols_to_include)
         if inplace:
