@@ -91,6 +91,10 @@ def boolean_nullable_func(series):
         series.dtype,
     ):
         return True
+
+    # TODO: What to do in cudf case?
+    elif _is_cudf_series(series):
+        return False
     elif pdtypes.is_object_dtype(series.dtype):
         series_no_null = series.dropna()
         try:

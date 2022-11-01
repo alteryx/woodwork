@@ -61,8 +61,8 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     @classmethod
     def _get_valid_dtype(cls, series_type):
         """Return the dtype that is considered valid for a series with the given logical_type"""
-        
-        #TODO: find out what is happening here. do we need to do something similar for cudf?
+
+        # TODO: find out what is happening here. do we need to do something similar for cudf?
         if ps and series_type == ps.Series and cls.backup_dtype:
             return cls.backup_dtype
         else:

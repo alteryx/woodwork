@@ -330,7 +330,7 @@ class WoodworkTableAccessor:
         return series
 
     def __setitem__(self, col_name, column):
-        series = tuple(pkg.Series for pkg in (pd, dd, ps) if pkg)
+        series = tuple(pkg.Series for pkg in (pd, dd, ps, cudf) if pkg)
         if not isinstance(column, series):
             raise ValueError("New column must be of Series type")
 
@@ -715,19 +715,19 @@ class WoodworkTableAccessor:
     def _sort_columns(self, already_sorted):
 
         """
-        cudf doesn't support an in-place sort_values function. 
+        cudf doesn't support an in-place sort_values function.
         we should decide whether we want to create a new dataframe
         or just not support this particular option. Since we don't
-        support this for dask or spark, there would be a precedent for 
-        not supporting it. 
-        """ 
+        support this for dask or spark, there would be a precedent for
+        not supporting it.
+        """
 
         if (
             _is_dask_dataframe(self._dataframe)
             or _is_spark_dataframe(self._dataframe)
             or _is_cudf_dataframe(self._dataframe)
         ):
-            already_sorted = True  # Skip sorting for Dask and Spark input
+            already_sorted = True  # Skip sorting for Dask, Spark, or cudf input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
             if self._schema.index is None:
@@ -1047,7 +1047,7 @@ class WoodworkTableAccessor:
         """
         It's interesting here -- if we are using cudf, what are the performance implications of returning a pandas dataframe? 
         I suppose the same question goes for Dask or PySpark. Need to study Python memory model to better understand what is happening here.
-        """ 
+        """
         return pd.DataFrame(mutual_info)
 
     @_check_table_schema

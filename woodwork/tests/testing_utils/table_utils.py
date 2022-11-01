@@ -6,7 +6,7 @@ from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
-cudf = import_or_none("cudf") 
+cudf = import_or_none("cudf")
 
 
 def validate_subset_schema(subset_schema, schema):
@@ -44,7 +44,7 @@ def to_pandas(df, index=None, sort_index=False):
     if ps and isinstance(df, (ps.DataFrame, ps.Series, ps.Index)):
         pd_df = df.to_pandas()
 
-    if cudf and isinstance(df, (cudf.DataFrame, cudf.Series, cudf.Index)): 
+    if cudf and isinstance(df, (cudf.DataFrame, cudf.Series, cudf.Index)):
         pd_df = df.to_pandas()
 
     if index:

@@ -243,7 +243,7 @@ def _reformat_to_latlong(latlong, is_spark_or_cuda=False):
             )
 
         latlong = (latitude, longitude)
-        if is_spark_or_cuda: 
+        if is_spark_or_cuda:
             latlong = list(latlong)
         return latlong
 
@@ -281,8 +281,8 @@ def _is_valid_latlong_series(series):
     if ww.accessor_utils._is_spark_series(series):
         series = series.to_pandas()
         is_spark_or_cuda = True
-    elif ww.accessor_utils._is_cudf_series(series): 
-        is_spark_or_cuda = True 
+    elif ww.accessor_utils._is_cudf_series(series):
+        is_spark_or_cuda = True
     else:
         is_spark_or_cuda = False
     if series.apply(_is_valid_latlong_value, args=(is_spark_or_cuda,)).all():

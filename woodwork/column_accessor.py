@@ -7,8 +7,8 @@ from pandas.api import types as pdtypes
 
 from woodwork.accessor_utils import (
     _check_column_schema,
+    _is_cudf_series,
     _is_dataframe,
-    _is_cudf_series, 
     _is_series,
     init_series,
 )
@@ -19,7 +19,12 @@ from woodwork.exceptions import (
     TypingInfoMismatchWarning,
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
-from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal, NaturalLanguage
+from woodwork.logical_types import (
+    _NULLABLE_PHYSICAL_TYPES,
+    LatLong,
+    NaturalLanguage,
+    Ordinal,
+)
 from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
 from woodwork.utils import _get_column_logical_type, import_or_none
@@ -288,6 +293,9 @@ class WoodworkColumnAccessor:
                     valid_dtype = self._schema.logical_type._get_valid_dtype(
                         type(result),
                     )
+                    print(f"logical type: {self._schema.logical_type}")
+                    # if _is_cudf_series(result):
+                    #     import pdb; pdb.set_trace()
                     if str(result.dtype) == valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
                     else:
@@ -366,9 +374,9 @@ class WoodworkColumnAccessor:
             Series: A new series with the updated logical type.
         """
 
-        # if isinstance(self._series, cudf.Series) and (logical_type == "NaturalLanguage" or isinstance(logical_type, NaturalLanguage)): 
+        # if isinstance(self._series, cudf.Series) and (logical_type == "NaturalLanguage" or isinstance(logical_type, NaturalLanguage)):
         #    warnings.warn("Cannot set cudf series to have logical_type of NaturalLanguage")
-        #    return 
+        #    return
 
         # Create a new series without a schema to prevent new series from sharing a common
         # schema with current series

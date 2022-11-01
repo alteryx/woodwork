@@ -16,10 +16,12 @@ def _get_histogram_values(series, bins=10):
     df = values.reset_index()
     df.columns = ["bins", "frequency"]
     results = []
-    if isinstance(df, (cudf.DataFrame, cudf.Series)): 
-        warnings.warn("Can't iterate over cudf objects. Woodwork has automatically converted the cudf to a Pandas dataframe for this calculation. Performance may be worse.")
+    if isinstance(df, (cudf.DataFrame, cudf.Series)):
+        warnings.warn(
+            "Can't iterate over cudf objects. Woodwork has automatically converted the cudf to a Pandas dataframe for this calculation. Performance may be worse."
+        )
         df_iter = df.to_pandas().iterrows()
-    else: 
+    else:
         df_iter = df.iterrows()
     for _, row in df_iter:
         results.append(
