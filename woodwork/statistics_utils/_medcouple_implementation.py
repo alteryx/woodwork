@@ -15,15 +15,15 @@ def _calculate_medcouple_statistic(y):
     y = np.squeeze(np.asarray(y))
     y = np.sort(y)
 
-    n = y.shape[0]
-    if n % 2 == 0:
-        mf = (y[n // 2 - 1] + y[n // 2]) / 2
+    y_length = y.shape[0]
+    if y_length % 2 == 0:
+        median = (y[y_length // 2 - 1] + y[y_length // 2]) / 2
     else:
-        mf = y[(n - 1) // 2]
+        median = y[(y_length - 1) // 2]
 
-    z = y - mf
-    lower = z[z <= 0.0]
-    upper = z[z >= 0.0]
+    deviations = y - median
+    lower = deviations[deviations <= 0.0]
+    upper = deviations[deviations >= 0.0]
     upper = upper[:, None]
     standardization = upper - lower
     is_zero = np.logical_and(lower == 0.0, upper == 0.0)
