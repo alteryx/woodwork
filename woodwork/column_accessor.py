@@ -112,7 +112,7 @@ class WoodworkColumnAccessor:
                     ):
                         raise TypeValidationError(
                             f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
-                            f"incompatible with {logical_type} dtype. Try converting series "
+                            f"incompatible with {logical_type} LogicalType. Try converting series "
                             f"dtype to '{valid_dtype}' before initializing or use the "
                             "woodwork.init_series function to initialize.",
                         )
