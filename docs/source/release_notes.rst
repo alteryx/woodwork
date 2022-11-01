@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
     * Fixes
         * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
     * Changes
@@ -15,7 +16,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`
+    :user:`gsheni`, :user:`ParthivNaresh`, :user:`sbadithe`
 
 v0.20.0 October 31, 2022
 ========================
