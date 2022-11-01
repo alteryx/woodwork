@@ -168,7 +168,7 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
     correct_dtype = "string"
     error_message = re.escape(
         f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with "
-        f"NaturalLanguage dtype. Try converting series dtype to '{correct_dtype}' before "
+        f"NaturalLanguage LogicalType. Try converting series dtype to '{correct_dtype}' before "
         "initializing or use the woodwork.init_series function to initialize.",
     )
     with pytest.raises(TypeValidationError, match=error_message):
