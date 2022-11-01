@@ -1783,6 +1783,7 @@ def test_box_plot_different_quantiles(outliers_df):
     box_plot_info = has_outliers_series.ww.box_plot_dict()
 
     assert set(box_plot_info.keys()) == {
+        "method",
         "low_bound",
         "high_bound",
         "quantiles",
@@ -1791,6 +1792,7 @@ def test_box_plot_different_quantiles(outliers_df):
         "low_indices",
         "high_indices",
     }
+    assert box_plot_info["method"] == "box_plot"
     assert box_plot_info["low_bound"] == 8.125
     assert box_plot_info["high_bound"] == 83.125
     assert len(box_plot_info["quantiles"]) == 5
@@ -1802,6 +1804,7 @@ def test_box_plot_different_quantiles(outliers_df):
     box_plot_info = has_outliers_series.ww.box_plot_dict(quantiles=partial_quantiles)
 
     assert set(box_plot_info.keys()) == {
+        "method",
         "low_bound",
         "high_bound",
         "quantiles",
@@ -1823,6 +1826,7 @@ def test_box_plot_different_quantiles(outliers_df):
     box_plot_info = no_outliers_series.ww.box_plot_dict(quantiles=partial_quantiles)
 
     assert set(box_plot_info.keys()) == {
+        "method",
         "low_bound",
         "high_bound",
         "quantiles",
@@ -1871,10 +1875,11 @@ def test_box_plot_optional_return_values(outliers_df):
         include_indices_and_values=True,
     )
 
-    assert {"low_bound", "high_bound", "quantiles"} == set(
+    assert {"low_bound", "high_bound", "quantiles", "method"} == set(
         has_outliers_box_plot_info_without_optional.keys(),
     )
     assert {
+        "method",
         "low_bound",
         "high_bound",
         "quantiles",
@@ -1894,10 +1899,11 @@ def test_box_plot_optional_return_values(outliers_df):
         include_indices_and_values=True,
     )
 
-    assert {"low_bound", "high_bound", "quantiles"} == set(
+    assert {"low_bound", "high_bound", "quantiles", "method"} == set(
         no_outliers_box_plot_info_without_optional.keys(),
     )
     assert {
+        "method",
         "low_bound",
         "high_bound",
         "quantiles",
@@ -1919,6 +1925,7 @@ def test_medcouple_outliers(skewed_outliers_df):
     left_skewed_dict = outliers_series_skewed_left.ww.medcouple_dict()
 
     assert set(right_skewed_dict.keys()) == {
+        "method",
         "low_bound",
         "high_bound",
         "quantiles",
@@ -1926,10 +1933,11 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values",
         "low_indices",
         "high_indices",
-        "medcouple",
+        "medcouple_stat",
     }
 
     expected_right_skewed_dict = {
+        "method": "medcouple",
         "low_bound": 1.5986854923843101,
         "high_bound": 16.945914544292435,
         "quantiles": {
@@ -1943,10 +1951,11 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values": [30],
         "low_indices": [0, 1],
         "high_indices": [65],
-        "medcouple": 0.3333333333333333,
+        "medcouple_stat": 0.3333333333333333,
     }
 
     expected_left_skewed_dict = {
+        "method": "medcouple",
         "low_bound": 14.054085455707563,
         "high_bound": 29.40131450761569,
         "quantiles": {
@@ -1960,7 +1969,7 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values": [30, 30],
         "low_indices": [65],
         "high_indices": [0, 1],
-        "medcouple": -0.3333333333333333,
+        "medcouple_stat": -0.3333333333333333,
     }
 
     assert right_skewed_dict == expected_right_skewed_dict
@@ -1991,6 +2000,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
     }
 
     expected_skewed_dict = {
+        "method": "medcouple",
         "low_bound": 1.0,
         "high_bound": 30.0,
         "quantiles": None,
@@ -1998,7 +2008,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
         "high_values": [],
         "low_indices": [],
         "high_indices": [],
-        "medcouple": 0.3333333333333333,
+        "medcouple_stat": 0.3333333333333333,
     }
 
     right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict(
@@ -2036,7 +2046,7 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
         "high_values": [14.0, 16.0, 30.0],
         "low_indices": [0, 1],
         "high_indices": [63, 64, 65],
-        "medcouple": 0.3333333333333333,
+        "medcouple_stat": 0.3333333333333333,
     }
 
     assert medcouple_dict == expected_skewed_dict
@@ -2113,8 +2123,8 @@ def test_determine_best_outlier_method_equivalent_outcome(
     outliers_bp = contains_nans_series.ww.get_outliers(method="box_plot")
     outliers_best = contains_nans_series.ww.get_outliers(method="best")
 
-    assert "medcouple" not in outliers_bp.keys()
-    assert "medcouple" in outliers_mc_skewed.keys()
+    assert "medcouple_stat" not in outliers_bp.keys()
+    assert "medcouple_stat" in outliers_mc_skewed.keys()
 
     assert outliers_bp == outliers_best
     assert _get_medcouple_statistic(contains_nans_series) < 0.3

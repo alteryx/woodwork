@@ -5,6 +5,7 @@ from woodwork.statistics_utils._convert_ordinal_to_numeric import (
     _convert_ordinal_to_numeric,
 )
 from woodwork.statistics_utils._get_medcouple_statistic import (
+    _get_medcouple_statistic,
     _sample_for_medcouple,
 )
 from woodwork.statistics_utils._get_box_plot_info_for_column import (
