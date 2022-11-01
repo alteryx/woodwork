@@ -50,6 +50,7 @@ from woodwork.statistics_utils import (
     _get_top_values_categorical,
 )
 from woodwork.statistics_utils._get_box_plot_info_for_column import (
+    _determine_best_outlier_method,
     _determine_coefficients,
 )
 from woodwork.statistics_utils._parse_measures import _parse_measures
@@ -2021,7 +2022,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
     expected_skewed_dict["quantiles"] = override_quantiles_right
     assert right_skewed_dict == expected_skewed_dict
     expected_skewed_dict["quantiles"] = override_quantiles_left
-    expected_skewed_dict["medcouple"] = -0.3333333333333333
+    expected_skewed_dict["medcouple_stat"] = -0.3333333333333333
     assert left_skewed_dict == expected_skewed_dict
 
 
@@ -2102,7 +2103,7 @@ def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_panda
     )
     contains_nans_series_skewed.ww.init()
 
-    mc_result = _get_medcouple_statistic(contains_nans_series_skewed)
+    mc_result = _determine_best_outlier_method(contains_nans_series_skewed)
 
     assert mc_result.method == "medcouple"
     assert math.isclose(mc_result.mc, 0.33, rel_tol=0.01)
