@@ -560,6 +560,12 @@ def df_same_mi_spark(df_same_mi_pandas):
     df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
     return ps.from_pandas(df_same_mi_pandas)
 
+@pytest.fixture()
+def df_same_mi_cudf(df_same_mi_pandas):
+    cudf = pytest.importorskip("cudf", reason="Spark not installed, skipping")
+    df_same_mi_pandas["ints"] = df_same_mi_pandas["ints"].astype("float")
+    df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
+    return cudf.from_pandas(df_same_mi_pandas)
 
 @pytest.fixture(
     params=[
@@ -684,7 +690,7 @@ def categorical_df_spark(categorical_df_pandas):
 @pytest.fixture()
 def categorical_df_cudf(categorical_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    return cudf.from_pandas(categorical_df_cudf)
+    return cudf.from_pandas(categorical_df_pandas)
 
 
 @pytest.fixture(
