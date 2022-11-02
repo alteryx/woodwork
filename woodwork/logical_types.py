@@ -438,6 +438,9 @@ class IntegerNullable(LogicalType):
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
 
+    # all dtypes are nullable in cudf 
+    cudf_dtype = "int64"
+
     def transform(self, series, null_invalid_values=False):
         """Converts a series dtype to Int64.
 

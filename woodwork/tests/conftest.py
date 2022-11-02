@@ -240,7 +240,7 @@ def sample_unsorted_df_spark(sample_unsorted_df_pandas):
 @pytest.fixture()
 def sample_unsorted_df_cudf(sample_unsorted_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    return cudf.from_pandas(sample_unsorted_df_cudf)
+    return cudf.from_pandas(sample_unsorted_df_pandas)
 
 
 @pytest.fixture(
@@ -371,8 +371,9 @@ def time_index_df_spark(time_index_df_pandas):
 @pytest.fixture()
 def time_index_df_cudf(time_index_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    return cudf.from_pandas(time_index_df_pandas)
-
+    df = cudf.from_pandas(time_index_df_pandas)
+    df['times'] = df['times'].astype('datetime64[ns]')
+    return df 
 
 @pytest.fixture(
     params=[
@@ -719,7 +720,7 @@ def empty_df_dask(empty_df_pandas):
 @pytest.fixture()
 def empty_df_cudf(empty_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    return cudf.from_pandas(empty_df_pandas, npartitions=2)
+    return cudf.from_pandas(empty_df_pandas)
 
 
 # Cannot have an empty Spark DataFrame
@@ -754,7 +755,7 @@ def small_df_spark(small_df_pandas):
 @pytest.fixture()
 def small_df_cudf(small_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    df = cudf.from_pandas(small_df_pandas)
+    return cudf.from_pandas(small_df_pandas)
 
 
 @pytest.fixture(
@@ -800,7 +801,7 @@ def latlong_df_spark(latlong_df_pandas):
 @pytest.fixture()
 def latlong_df_cudf(latlong_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    return cudf.from_pandas(latlong_df_cudf)
+    return cudf.from_pandas(latlong_df_pandas)
 
 
 @pytest.fixture(
@@ -1217,6 +1218,7 @@ def timezones_df_dask(timezones_df_pandas):
 @pytest.fixture()
 def timezones_df_cudf(timezones_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+
     return cudf.from_pandas(timezones_df_pandas)
 
 

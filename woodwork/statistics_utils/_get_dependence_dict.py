@@ -287,8 +287,6 @@ def _find_large_categorical_columns(datatable, total_unique=6000):
 
     categoricals = datatable.ww.select("category").columns
     # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
-    if _is_cudf_dataframe(datatable):
-        datatable = datatable.to_pandas()
-    if len(categoricals) and not _is_dask_dataframe(datatable):
+    if len(categoricals) and _is_dask_dataframe(datatable):
         return categorical_column_drop_helper(datatable[categoricals])
     return []

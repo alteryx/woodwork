@@ -226,7 +226,7 @@ def _reformat_to_latlong(latlong, is_spark_or_cuda=False):
     if isinstance(latlong, str):
         latlong = _parse_latlong(latlong) or latlong
 
-    if isinstance(latlong, (list, tuple)):
+    if isinstance(latlong, (np.ndarray, list, tuple)):
         if len(latlong) != 2:
             raise TypeValidationError(
                 f"LatLong values must have exactly two values. {latlong} does not have two values.",
@@ -642,6 +642,10 @@ def _infer_datetime_format(dates, n=100):
 
     ps = import_or_none("pyspark.pandas")
     if ps and isinstance(first_n, ps.series.Series):
+        first_n = first_n.to_pandas()
+    
+    cudf = import_or_none("cudf") 
+    if cudf and isinstance(first_n, cudf.Series): 
         first_n = first_n.to_pandas()
 
     if len(first_n) == 0:

@@ -8,6 +8,8 @@ import pytest
 
 import woodwork as ww
 from woodwork.accessor_utils import (
+    _is_cudf_dataframe, 
+    _is_cudf_series, 
     _is_dask_dataframe,
     _is_dask_series,
     _is_spark_dataframe,
@@ -1013,12 +1015,18 @@ def test_sets_object_dtype_on_init(latlong_df):
         df = latlong_df.loc[:, [column_name]]
         df.ww.init(logical_types=ltypes)
         assert isinstance(df.ww.columns[column_name].logical_type, LatLong)
-        assert df[column_name].dtype == LatLong.primary_dtype
+        if _is_cudf_dataframe(latlong_df): 
+            assert df[column_name].dtype == LatLong.cudf_dtype 
+        else:
+            assert df[column_name].dtype == LatLong.primary_dtype
         df_pandas = to_pandas(df[column_name])
         expected_val = (3, 4)
-        if _is_spark_dataframe(latlong_df):
+        if _is_spark_dataframe(latlong_df) or _is_cudf_dataframe(latlong_df):
             expected_val = [3, 4]
-        assert df_pandas.iloc[-1] == expected_val
+            actual = list(df_pandas.iloc[-1]) 
+            assert actual == expected_val 
+        else: 
+            assert df_pandas.iloc[-1] == expected_val
 
 
 def test_sets_string_dtype_on_init():
@@ -1325,6 +1333,9 @@ def test_accessor_already_sorted(sample_unsorted_df):
         pytest.xfail("Sorting dataframe is not supported with Dask input")
     if _is_spark_dataframe(sample_unsorted_df):
         pytest.xfail("Sorting dataframe is not supported with Spark input")
+    if _is_cudf_dataframe(sample_unsorted_df): 
+        pytest.xfail("In-place sorting dataframe is not supported with cudf input") 
+
 
     schema_df = sample_unsorted_df.copy()
     schema_df.ww.init(name="schema", index="id", time_index="signup_date")
@@ -1336,7 +1347,7 @@ def test_accessor_already_sorted(sample_unsorted_df):
     )
 
     sorted_df = (
-        to_pandas(sample_unsorted_df)
+        sample_unsorted_df 
         .sort_values(["signup_date", "id"])
         .set_index("id", drop=False)
     )
@@ -1373,7 +1384,8 @@ def test_accessor_already_sorted(sample_unsorted_df):
 
 
 def test_ordinal_with_order(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
+    # not sure if we can support with cudf but xfail for now 
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series) or _is_cudf_series(sample_series):
         pytest.xfail(
             "Fails with Dask and Spark - ordinal data validation not compatible",
         )
@@ -1396,7 +1408,8 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
+    # not sure if we can support this in cudf, but just don't support for now 
+    if _is_spark_series(sample_series) or _is_dask_series(sample_series) or _is_cudf_series(sample_series):
         pytest.xfail(
             "Fails with Dask and Spark - ordinal data validation not supported",
         )

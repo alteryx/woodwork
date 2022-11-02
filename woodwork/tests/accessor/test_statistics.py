@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_spark_dataframe, init_series
+from woodwork.accessor_utils import _is_cudf_dataframe, _is_spark_dataframe, init_series
 from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
@@ -1445,6 +1445,11 @@ def test_value_counts(categorical_df):
         "categories2": Categorical,
         "categories3": Categorical,
     }
+
+    # cudf does not have a `to_dict` method
+    if _is_cudf_dataframe(categorical_df): 
+        categorical_df = categorical_df.to_pandas()
+
     categorical_df.ww.init(logical_types=logical_types)
     val_cts = categorical_df.ww.value_counts()
     for col in categorical_df.ww.columns:
