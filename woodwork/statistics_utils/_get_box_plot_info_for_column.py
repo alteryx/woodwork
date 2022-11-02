@@ -5,6 +5,7 @@ from woodwork.utils import import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 def _get_box_plot_info_for_column(
@@ -60,6 +61,8 @@ def _get_box_plot_info_for_column(
     if dd and isinstance(series, dd.Series):
         series = series.compute()
     if ps and isinstance(series, ps.Series):
+        series = series.to_pandas()
+    if cudf and isinstance(series, cudf.Series):
         series = series.to_pandas()
 
     # remove null values from the data

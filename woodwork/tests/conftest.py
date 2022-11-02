@@ -369,9 +369,9 @@ def time_index_df_spark(time_index_df_pandas):
 
 
 @pytest.fixture()
-def time_index_df_cudf(time_index_cudf_pandas):
+def time_index_df_cudf(time_index_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-    return cudf.from_pandas(time_index_cudf_pandas)
+    return cudf.from_pandas(time_index_df_pandas)
 
 
 @pytest.fixture(
@@ -639,7 +639,7 @@ def df_mi_unique_spark(df_mi_unique_pandas):
 
 
 @pytest.fixture()
-def df_mi_unique_spark(df_mi_unique_pandas):
+def df_mi_unique_cudf(df_mi_unique_pandas):
     cudf = pytest.importorskip("cudf", reason="Spark not installed, skipping")
     return cudf.from_pandas(df_mi_unique_pandas)
 

@@ -4,7 +4,11 @@ from timeit import default_timer as timer
 
 import numpy as np
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
+from woodwork.accessor_utils import (
+    _is_cudf_dataframe,
+    _is_dask_dataframe,
+    _is_spark_dataframe,
+)
 from woodwork.statistics_utils._bin_numeric_cols_into_categories import (
     _bin_numeric_cols_into_categories,
 )
@@ -146,6 +150,9 @@ def _get_dependence_dict(
         data = data.compute()
     elif _is_spark_dataframe(dataframe):
         data = data.to_pandas()
+    elif _is_cudf_dataframe(dataframe):
+        data = data.to_pandas()
+
     if nrows is not None and nrows < data.shape[0]:
         data = data.sample(nrows, random_state=random_seed)
 
@@ -280,6 +287,8 @@ def _find_large_categorical_columns(datatable, total_unique=6000):
 
     categoricals = datatable.ww.select("category").columns
     # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
+    if _is_cudf_dataframe(datatable):
+        datatable = datatable.to_pandas()
     if len(categoricals) and not _is_dask_dataframe(datatable):
         return categorical_column_drop_helper(datatable[categoricals])
     return []

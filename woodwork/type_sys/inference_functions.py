@@ -64,6 +64,8 @@ def integer_nullable_func(series):
         if not series.isnull().any():
             return False
         series_no_null = series.dropna()
+        if _is_cudf_series(series):
+            return series_no_null.mod(1).eq(0).all()
         return all(series_no_null.mod(1).eq(0))
 
     return False
