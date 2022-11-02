@@ -282,6 +282,14 @@ def _is_valid_latlong_series(series):
         series = series.to_pandas()
         is_spark_or_cuda = True
     elif ww.accessor_utils._is_cudf_series(series):
+        series = series.to_pandas()
+        # calling to_pandas on a cudf df converts lists to ndarrays
+        # we can manually convert it back here to comply with latlong
+
+        # NOTE:
+        # alternatively, we can make ndarray work with all the utility
+        # functions, but I felt that was more invasive
+        series = series.apply(lambda t: list(t) if isinstance(t, np.ndarray) else t)
         is_spark_or_cuda = True
     else:
         is_spark_or_cuda = False
@@ -292,7 +300,8 @@ def _is_valid_latlong_series(series):
 
 def _is_valid_latlong_value(val, is_spark_or_cuda=False):
     """Returns True if the value provided is a properly formatted LatLong value for a
-    pandas, Dask or Spark Series, otherwise returns False."""
+    pandas, Dask, Spark, or cudf Series, otherwise returns False."""
+
     if isinstance(val, (list, tuple)):
         if len(val) != 2:
             return False

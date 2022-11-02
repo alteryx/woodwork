@@ -48,6 +48,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     type_string = ClassNameDescriptor()
     primary_dtype = "string"
     backup_dtype = None
+    cudf_dtype = None
     standard_tags = set()
 
     def __eq__(self, other, deep=False):
@@ -65,6 +66,8 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         # TODO: find out what is happening here. do we need to do something similar for cudf?
         if ps and series_type == ps.Series and cls.backup_dtype:
             return cls.backup_dtype
+        elif cudf and series_type == cudf.Series and cls.cudf_dtype:
+            return cls.cudf_dtype
         else:
             return cls.primary_dtype
 
@@ -549,6 +552,7 @@ class LatLong(LogicalType):
     """
 
     primary_dtype = "object"
+    cudf_dtype = "list"
 
     def transform(self, series, null_invalid_values=False):
         """Formats a series to be a tuple (or list for Spark) of two floats."""
@@ -559,12 +563,18 @@ class LatLong(LogicalType):
             name = series.name
             meta = (name, tuple([float, float]))
             series = series.apply(_reformat_to_latlong, meta=meta)
-        elif _is_spark_series(series) or _is_cudf_series(series):
+        elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
                 _reformat_to_latlong,
                 is_spark_or_cuda=True,
             )
             series = ps.from_pandas(formatted_series)
+        elif _is_cudf_series(series):
+            formatted_series = series.to_pandas().apply(
+                _reformat_to_latlong,
+                is_spark_or_cuda=True,
+            )
+            series = cudf.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
 

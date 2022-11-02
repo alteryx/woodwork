@@ -729,7 +729,7 @@ def test_latlong_formatting_with_init_series(latlongs):
     expected_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
     if _is_dask_series(latlongs[0]):
         expected_series = dd.from_pandas(expected_series, npartitions=2)
-    elif _is_spark_series(latlongs[0]):
+    elif _is_spark_series(latlongs[0]) or _is_cudf_series(latlongs[0]):
         expected_series = ps.Series([[1.0, 2.0], [3.0, 4.0]])
 
     expected_series.ww.init(logical_type=LatLong)
