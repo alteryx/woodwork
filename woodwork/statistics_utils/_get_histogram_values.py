@@ -1,5 +1,9 @@
 import pandas as pd
 
+from woodwork.utils import import_or_none
+
+cudf = import_or_none("cudf")
+
 
 def _get_histogram_values(series, bins=10):
     """Get the histogram for a given numeric column.

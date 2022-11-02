@@ -186,6 +186,7 @@ def datetime_freqs_df_pandas():
         "sample_unsorted_df_pandas",
         "sample_unsorted_df_dask",
         "sample_unsorted_df_spark",
+        "sample_unsorted_df_cudf",
     ],
 )
 def sample_unsorted_df(request):
@@ -236,6 +237,12 @@ def sample_unsorted_df_spark(sample_unsorted_df_pandas):
     return ps.from_pandas(sample_unsorted_df_pandas)
 
 
+@pytest.fixture()
+def sample_unsorted_df_cudf(sample_unsorted_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(sample_unsorted_df_cudf)
+
+
 @pytest.fixture(
     params=[
         "sample_series_pandas",
@@ -279,6 +286,7 @@ def sample_series_cudf(sample_series_pandas):
         "sample_datetime_series_pandas",
         "sample_datetime_series_dask",
         "sample_datetime_series_spark",
+        "sample_datetime_series_cudf",
     ],
 )
 def sample_datetime_series(request):
@@ -306,6 +314,12 @@ def sample_datetime_series_spark(sample_datetime_series_pandas):
 
 
 @pytest.fixture()
+def sample_datetime_series_cudf(sample_datetime_series_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(sample_datetime_series_pandas)
+
+
+@pytest.fixture()
 def ordinal_transform_series_pandas():
     return pd.Series([1, 2, 3], dtype="int64")
 
@@ -320,6 +334,12 @@ def ordinal_transform_series_dask(ordinal_transform_series_pandas):
 def ordinal_transform_series_spark(ordinal_transform_series_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(ordinal_transform_series_pandas)
+
+
+@pytest.fixture()
+def ordinal_transform_series_cudf(ordinal_transform_series_cudf):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(ordinal_transform_series_pandas)
 
 
 @pytest.fixture()
@@ -348,8 +368,19 @@ def time_index_df_spark(time_index_df_pandas):
     return ps.from_pandas(time_index_df_pandas)
 
 
+@pytest.fixture()
+def time_index_df_cudf(time_index_cudf_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(time_index_cudf_pandas)
+
+
 @pytest.fixture(
-    params=["time_index_df_pandas", "time_index_df_dask", "time_index_df_spark"],
+    params=[
+        "time_index_df_pandas",
+        "time_index_df_dask",
+        "time_index_df_spark",
+        "time_index_df_cudf",
+    ],
 )
 def time_index_df(request):
     return request.getfixturevalue(request.param)
@@ -378,11 +409,18 @@ def numeric_time_index_df_spark(numeric_time_index_df_pandas):
     return ps.from_pandas(numeric_time_index_df_pandas)
 
 
+@pytest.fixture()
+def numeric_time_index_df_cudf(numeric_time_index_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="Spark not installed, skipping")
+    return cudf.from_pandas(numeric_time_index_df_pandas)
+
+
 @pytest.fixture(
     params=[
         "numeric_time_index_df_pandas",
         "numeric_time_index_df_dask",
         "numeric_time_index_df_spark",
+        "numeric_time_index_df_cudf",
     ],
 )
 def numeric_time_index_df(request):
@@ -523,7 +561,14 @@ def df_same_mi_spark(df_same_mi_pandas):
     return ps.from_pandas(df_same_mi_pandas)
 
 
-@pytest.fixture(params=["df_same_mi_pandas", "df_same_mi_dask", "df_same_mi_spark"])
+@pytest.fixture(
+    params=[
+        "df_same_mi_pandas",
+        "df_same_mi_dask",
+        "df_same_mi_spark",
+        "df_same_mi_cudf",
+    ]
+)
 def df_same_mi(request):
     return request.getfixturevalue(request.param)
 
@@ -554,6 +599,12 @@ def df_mi_dask(df_mi_pandas):
 def df_mi_spark(df_mi_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(df_mi_pandas)
+
+
+@pytest.fixture()
+def df_mi_cudf(df_mi_pandas):
+    cudf = pytest.importorskip("cudf", reason="Spark not installed, skipping")
+    return cudf.from_pandas(df_mi_pandas)
 
 
 @pytest.fixture(params=["df_mi_pandas", "df_mi_dask", "df_mi_spark"])
@@ -587,8 +638,19 @@ def df_mi_unique_spark(df_mi_unique_pandas):
     return ps.from_pandas(df_mi_unique_pandas)
 
 
+@pytest.fixture()
+def df_mi_unique_spark(df_mi_unique_pandas):
+    cudf = pytest.importorskip("cudf", reason="Spark not installed, skipping")
+    return cudf.from_pandas(df_mi_unique_pandas)
+
+
 @pytest.fixture(
-    params=["df_mi_unique_pandas", "df_mi_unique_dask", "df_mi_unique_spark"],
+    params=[
+        "df_mi_unique_pandas",
+        "df_mi_unique_dask",
+        "df_mi_unique_spark",
+        "df_mi_unique_cudf",
+    ],
 )
 def df_mi_unique(request):
     return request.getfixturevalue(request.param)
@@ -619,8 +681,19 @@ def categorical_df_spark(categorical_df_pandas):
     return ps.from_pandas(categorical_df_pandas)
 
 
+@pytest.fixture()
+def categorical_df_cudf(categorical_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(categorical_df_cudf)
+
+
 @pytest.fixture(
-    params=["categorical_df_pandas", "categorical_df_dask", "categorical_df_spark"],
+    params=[
+        "categorical_df_pandas",
+        "categorical_df_dask",
+        "categorical_df_spark",
+        "categorical_df_cudf",
+    ],
 )
 def categorical_df(request):
     return request.getfixturevalue(request.param)
@@ -637,8 +710,14 @@ def empty_df_dask(empty_df_pandas):
     return dd.from_pandas(empty_df_pandas, npartitions=2)
 
 
+@pytest.fixture()
+def empty_df_cudf(empty_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(empty_df_pandas, npartitions=2)
+
+
 # Cannot have an empty Spark DataFrame
-@pytest.fixture(params=["empty_df_pandas", "empty_df_dask"])
+@pytest.fixture(params=["empty_df_pandas", "empty_df_dask", "empty_df_cudf"])
 def empty_df(request):
     return request.getfixturevalue(request.param)
 
@@ -666,7 +745,15 @@ def small_df_spark(small_df_pandas):
     return ps.from_pandas(df)
 
 
-@pytest.fixture(params=["small_df_pandas", "small_df_dask", "small_df_spark"])
+@pytest.fixture()
+def small_df_cudf(small_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    df = cudf.from_pandas(small_df_pandas)
+
+
+@pytest.fixture(
+    params=["small_df_pandas", "small_df_dask", "small_df_spark", "small_df_cudf"]
+)
 def small_df(request):
     return request.getfixturevalue(request.param)
 
@@ -704,7 +791,20 @@ def latlong_df_spark(latlong_df_pandas):
     )
 
 
-@pytest.fixture(params=["latlong_df_pandas", "latlong_df_dask", "latlong_df_spark"])
+@pytest.fixture()
+def latlong_df_cudf(latlong_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(latlong_df_cudf)
+
+
+@pytest.fixture(
+    params=[
+        "latlong_df_pandas",
+        "latlong_df_dask",
+        "latlong_df_spark",
+        "latlong_df_cudf",
+    ]
+)
 def latlong_df(request):
     return request.getfixturevalue(request.param)
 
@@ -730,11 +830,18 @@ def empty_latlong_df_spark(empty_latlong_df_pandas):
     )
 
 
+@pytest.fixture()
+def empty_latlong_df_cudf(empty_latlong_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(empty_latlong_df_cudf)
+
+
 @pytest.fixture(
     params=[
         "empty_latlong_df_pandas",
         "empty_latlong_df_dask",
         "empty_latlong_df_spark",
+        "empty_latlong_df_cudf",
     ],
 )
 def empty_latlong_df(request):
@@ -771,7 +878,20 @@ def spark_latlongs(pandas_latlongs):
     ]
 
 
-@pytest.fixture(params=["pandas_latlongs", "dask_latlongs", "spark_latlongs"])
+@pytest.fixture()
+def cudf_latlongs(pandas_latlongs):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return [
+        cudf.from_pandas(
+            series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)
+        )
+        for series in pandas_latlongs
+    ]
+
+
+@pytest.fixture(
+    params=["pandas_latlongs", "dask_latlongs", "spark_latlongs", "cudf_latlongs"]
+)
 def latlongs(request):
     return request.getfixturevalue(request.param)
 
@@ -922,8 +1042,19 @@ def serialize_df_spark(serialize_df_pandas):
     return ps.from_pandas(serialize_df_pandas)
 
 
+@pytest.fixture()
+def serialize_df_cudf(serialize_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(serialize_df_pandas)
+
+
 @pytest.fixture(
-    params=["serialize_df_pandas", "serialize_df_dask", "serialize_df_spark"],
+    params=[
+        "serialize_df_pandas",
+        "serialize_df_dask",
+        "serialize_df_spark",
+        "serialize_df_cudf",
+    ],
 )
 def serialize_df(request):
     return request.getfixturevalue(request.param)
@@ -947,7 +1078,15 @@ def spark_datetimes(pandas_datetimes):
     return [pd_to_spark(series) for series in pandas_datetimes]
 
 
-@pytest.fixture(params=["pandas_datetimes", "dask_datetimes", "spark_datetimes"])
+@pytest.fixture()
+def cudf_datetimes(pandas_datetimes):
+    cudf = pytest.importorskip("cudf", "cudf not installed, skipping")
+    return [cudf.from_pandas(series) for series in pandas_datetimes]
+
+
+@pytest.fixture(
+    params=["pandas_datetimes", "dask_datetimes", "spark_datetimes", "cudf_datetimes"]
+)
 def datetimes(request):
     return request.getfixturevalue(request.param)
 
@@ -977,7 +1116,20 @@ def outliers_df_spark(outliers_df_pandas):
     return ps.from_pandas(outliers_df_pandas)
 
 
-@pytest.fixture(params=["outliers_df_pandas", "outliers_df_dask", "outliers_df_spark"])
+@pytest.fixture()
+def outliers_df_cudf(outliers_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(outliers_df_pandas)
+
+
+@pytest.fixture(
+    params=[
+        "outliers_df_pandas",
+        "outliers_df_dask",
+        "outliers_df_spark",
+        "outliers_df_cudf",
+    ]
+)
 def outliers_df(request):
     return request.getfixturevalue(request.param)
 
@@ -1056,7 +1208,15 @@ def timezones_df_dask(timezones_df_pandas):
     return dd.from_pandas(timezones_df_pandas, npartitions=2)
 
 
-@pytest.fixture(params=["timezones_df_pandas", "timezones_df_dask"])
+@pytest.fixture()
+def timezones_df_cudf(timezones_df_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(timezones_df_pandas)
+
+
+@pytest.fixture(
+    params=["timezones_df_pandas", "timezones_df_dask", "timezones_df_cudf"]
+)
 def timezones_df(request):
     return request.getfixturevalue(request.param)
 
@@ -1081,11 +1241,18 @@ def postal_code_numeric_series_spark(postal_code_numeric_series_pandas):
     return ps.from_pandas(postal_code_numeric_series_pandas)
 
 
+@pytest.fixture()
+def postal_code_numeric_series_cudf(postal_code_numeric_series_pandas):
+    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
+    return cudf.from_pandas(postal_code_numeric_series_pandas)
+
+
 @pytest.fixture(
     params=[
         "postal_code_numeric_series_pandas",
         "postal_code_numeric_series_dask",
         "postal_code_numeric_series_spark",
+        "postal_code_numeric_series_cudf",
     ],
 )
 def postal_code_numeric_series(request):

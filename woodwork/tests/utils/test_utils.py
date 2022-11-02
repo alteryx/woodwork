@@ -525,7 +525,7 @@ def test_infer_datetime_format_all_null():
         pd.Series([None, None, None]),
         pd.Series([np.nan, np.nan, np.nan]),
         pd.Series([pd.NA, pd.NA, pd.NA]),
-        pd.Series([], dtype='float64'),
+        pd.Series([], dtype="float64"),
     ]
 
     for pd_series in missing_data:
@@ -544,7 +544,7 @@ def test_is_categorical() -> None:
     assert not _is_categorical_series(pd.Series([None, [1]]), 0)
 
     # not categorical because empty series
-    assert not _is_categorical_series(pd.Series([], dtype='float64'), 0)
+    assert not _is_categorical_series(pd.Series([], dtype="float64"), 0)
     assert not _is_categorical_series(pd.Series([None]), 0)
     assert not _is_categorical_series(pd.Series([None, None]), 0)
 
