@@ -194,6 +194,10 @@ class AgeNullable(LogicalType):
 class Boolean(LogicalType):
     """Represents Logical Types that contain binary values indicating true/false.
 
+    Args:
+        cast_nulls_as (bool): If provided, null values in the column will be cast to this default bool, otherwise will raise an error if None.
+            Defaults to None.
+
     Examples:
         .. code-block:: python
 
@@ -202,6 +206,34 @@ class Boolean(LogicalType):
     """
 
     primary_dtype = "bool"
+
+    def __init__(self, cast_nulls_as=None):
+        if cast_nulls_as and not isinstance(cast_nulls_as, bool):
+            raise ValueError(
+                f"Parameter `cast_nulls_as` must be either True or False, recieved {cast_nulls_as}",
+            )
+        self.cast_nulls_as = cast_nulls_as
+
+    def transform(self, series, null_invalid_values=False):
+        """Validates Boolean values by checking for valid boolean equivalents.
+
+        Args:
+            series (series): Series of boolean values
+
+        Returns:
+            Series: Returns column transformed into boolean type
+        """
+        is_dask = _is_dask_series(series)
+        if (is_dask and series.isna().any().compute()) or (
+            not is_dask and series.isna().any()
+        ):
+            if self.cast_nulls_as is None:
+                raise ValueError(
+                    "Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value with the `cast_null_as` parameter.",
+                )
+            series.fillna(self.cast_nulls_as, inplace=True)
+        series = _coerce_boolean(series, True)
+        return super().transform(series)
 
 
 class BooleanNullable(LogicalType):
@@ -219,8 +251,7 @@ class BooleanNullable(LogicalType):
 
     def transform(self, series, null_invalid_values=False):
         series = _replace_nans(series, self.primary_dtype)
-        if null_invalid_values:
-            series = _coerce_boolean(series)
+        series = _coerce_boolean(series, null_invalid_values)
         return super().transform(series)
 
 
@@ -928,11 +959,24 @@ def _coerce_numeric(series):
     return series
 
 
-def _coerce_boolean(series):
+def _coerce_boolean(series, null_invalid_values=False):
     if not pd.api.types.is_bool_dtype(series):
-        valid = {"True": True, "False": False}
-        series = _coerce_string(series)
-        series = series.map(valid)
+        series = _coerce_string(series).str.lower()
+        return _transform_boolean(series, null_invalid_values)
+    return series
+
+
+def _transform_boolean(series, null_invalid_values):
+    boolean_inference_list = config.get_option("boolean_inference_strings")
+    boolean_inference_list.append(config.get_option("boolean_inference_ints"))
+    valid = {}
+    for booleans in boolean_inference_list:
+        valid[booleans[0]] = True
+        valid[booleans[1]] = False
+    if null_invalid_values:
+        series = series.apply(lambda x: valid.get(x, np.nan))
+    else:
+        series = series.apply(lambda x: valid.get(x, x))
     return series
 
 

@@ -298,7 +298,7 @@ class TypeSystem(object):
             series = series.head(INFERENCE_SAMPLE_SIZE)
         else:
             if _is_dask_series(series):
-                series = series.head(INFERENCE_SAMPLE_SIZE)
+                series = series.head(INFERENCE_SAMPLE_SIZE, npartitions=-1)
             elif _is_spark_series(series):
                 series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
             else:
