@@ -2997,11 +2997,8 @@ def test_ltype_conversions_nullable_types():
     assert isinstance(df.ww.logical_types["int"], Integer)
 
     # Test invalid conversions
-    error_msg = (
-        "Error converting datatype for bool_null from type boolean to type bool. "
-        "Please confirm the underlying data is consistent with logical type Boolean."
-    )
-    with pytest.raises(TypeConversionError, match=error_msg):
+    error_msg = "Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value"
+    with pytest.raises(ValueError, match=error_msg):
         df.ww.set_types({"bool_null": "Boolean"})
 
     error_msg = (

@@ -51,6 +51,14 @@ CONFIG_DEFAULTS = {
     "frequence_inference_window_length": 15,
     "frequence_inference_threshold": 0.9,
     "correlation_metrics": ["mutual_info", "pearson", "spearman", "max", "all"],
+    "boolean_inference_strings": [
+        ["yes", "no"],
+        ["y", "n"],
+        ["1", "0"],
+        ["true", "false"],
+        ["t", "f"],
+    ],
+    "boolean_inference_ints": [1, 0],
 }
 
 
