@@ -7,6 +7,7 @@ from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork import data
+from woodwork.config import config
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
 Tokens = Iterable[str]
@@ -93,8 +94,18 @@ def boolean_nullable_func(series):
                 {False},
             ]:
                 return True
+            series_lower = set(str(s).lower() for s in set(series_no_null))
+            if series_lower in [
+                set(boolean_list)
+                for boolean_list in config.get_option("boolean_inference_strings")
+            ]:
+                return True
         except TypeError:  # Necessary to check for non-hashable values because of object dtype consideration
             return False
+    elif pdtypes.is_integer_dtype(series.dtype):
+        series_unique = set(series)
+        if series_unique == set(config.get_option("boolean_inference_ints")):
+            return True
     return False
 
 

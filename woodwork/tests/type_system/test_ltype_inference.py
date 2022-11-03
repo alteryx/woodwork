@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_spark_series
+from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
@@ -72,7 +72,11 @@ def test_boolean_inference(bools):
 
     for series in bools:
         for dtype in dtypes:
-            cast_series = series.astype(dtype)
+            if _is_dask_series(series):
+                series = series.compute()
+            cast_series = series
+            if True in series.values:
+                cast_series = series.astype(dtype)
             inferred_type = ww.type_system.infer_logical_type(cast_series)
             if to_pandas(cast_series).isnull().any():
                 assert isinstance(inferred_type, BooleanNullable)

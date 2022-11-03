@@ -932,3 +932,130 @@ def test_datetime_pivot_point_no_format_provided():
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df.ww.init(logical_types={"dates": Datetime})
     pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
+def test_boolean_other_values(df_type):
+    df = pd.DataFrame(
+        {
+            "bool1": [0, 1, 0, 1, 1, 0],
+            "bool2": ["t", "f", "t", "f", "t", "t"],
+            "bool3": ["T", "F", "T", "F", "F", "f"],
+            "bool4": ["true", "false", "false", "false", "true", "true"],
+            "bool5": ["True", "False", "False", "True", "false", "TRUE"],
+            "bool6": ["1", "0", "1", "1", "1", "0"],
+            "bool7": ["YES", "NO", "YES", "yes", "no", "no"],
+            "bool8": ["N", "N", "n", "y", "Y", "y"],
+        },
+    )
+    if df_type == "spark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    elif df_type == "dask":
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=1)
+    df.ww.init()
+    assert all([str(dtype) == "Boolean" for dtype in df.ww.logical_types.values()])
+
+
+def test_boolean_cast_nulls_as():
+    Boolean(cast_nulls_as=None)
+    Boolean(cast_nulls_as=False)
+    Boolean(cast_nulls_as=True)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Parameter `cast_nulls_as` must be either True or False, recieved {1}",
+        ),
+    ):
+        Boolean(cast_nulls_as=1)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Parameter `cast_nulls_as` must be either True or False, recieved {'True'}",
+        ),
+    ):
+        Boolean(cast_nulls_as="True")
+
+
+@pytest.mark.parametrize("cast_null", [None, True, False])
+@pytest.mark.parametrize("null", [None, pd.NA, np.nan])
+@pytest.mark.parametrize(
+    "series",
+    (
+        [True, True, False, False],
+        ["Yes", "yes", "NO", "no"],
+        ["1", "1", "0", "0"],
+        ["True", "true", "false", "FALSE"],
+    ),
+)
+def test_boolean_with_null_error(series, null, cast_null):
+    df = pd.DataFrame({"bool_with_null": series + [null]})
+    if cast_null is None:
+        with pytest.raises(
+            ValueError,
+            match="Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value",
+        ):
+            df.ww.init(
+                logical_types={"bool_with_null": Boolean(cast_nulls_as=cast_null)},
+            )
+    else:
+        df.ww.init(logical_types={"bool_with_null": Boolean(cast_nulls_as=cast_null)})
+        assert list(df["bool_with_null"].values) == [
+            True,
+            True,
+            False,
+            False,
+            cast_null,
+        ]
+
+
+@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
+@pytest.mark.parametrize("null", [None, pd.NA, np.nan])
+def test_boolean_nullable_other_values_dont_cast(null, df_type):
+    df = pd.DataFrame(
+        {
+            "bool1": ["N", "N", "n", null, "Y", "y"],
+            "bool2": ["t", "f", "t", null, "f", "t"],
+            "bool3": ["T", "F", "T", "F", "F", null],
+            "bool4": ["true", "false", "false", "false", "true", null],
+            "bool5": ["True", "False", "False", "True", null, "TRUE"],
+            "bool6": ["1", "0", "1", null, "1", "0"],
+            "bool7": ["YES", "NO", "YES", "yes", null, "no"],
+        },
+    )
+    if df_type == "spark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    elif df_type == "dask":
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=1)
+    df.ww.init()
+    assert all(
+        [str(dtype) == "BooleanNullable" for dtype in df.ww.logical_types.values()],
+    )
+
+
+def test_boolean_mixed_string():
+    df = pd.DataFrame(
+        {
+            "a": ["yes", "y", "n", "n"],
+            "b": ["True", "t", "False", "False"],
+            "c": ["0", "y", "0", "y"],
+        },
+    )
+
+    df.ww.init()
+    assert all([str(dtype) != "Boolean" for dtype in df.ww.logical_types.values()])

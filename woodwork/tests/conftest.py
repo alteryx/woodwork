@@ -97,7 +97,7 @@ def sample_df_pandas():
 @pytest.fixture()
 def sample_df_dask(sample_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(sample_df_pandas, npartitions=2)
+    return dd.from_pandas(sample_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -227,7 +227,7 @@ def sample_unsorted_df_pandas():
 @pytest.fixture()
 def sample_unsorted_df_dask(sample_unsorted_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(sample_unsorted_df_pandas, npartitions=2)
+    return dd.from_pandas(sample_unsorted_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -254,7 +254,7 @@ def sample_series_pandas():
 @pytest.fixture()
 def sample_series_dask(sample_series_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(sample_series_pandas, npartitions=2)
+    return dd.from_pandas(sample_series_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -285,7 +285,7 @@ def sample_datetime_series_pandas():
 @pytest.fixture()
 def sample_datetime_series_dask(sample_datetime_series_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(sample_datetime_series_pandas, npartitions=2)
+    return dd.from_pandas(sample_datetime_series_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -328,7 +328,7 @@ def time_index_df_pandas():
 @pytest.fixture()
 def time_index_df_dask(time_index_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(time_index_df_pandas, npartitions=2)
+    return dd.from_pandas(time_index_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -358,7 +358,7 @@ def numeric_time_index_df_pandas():
 @pytest.fixture()
 def numeric_time_index_df_dask(numeric_time_index_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(numeric_time_index_df_pandas, npartitions=2)
+    return dd.from_pandas(numeric_time_index_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -459,7 +459,7 @@ def describe_df_pandas():
 @pytest.fixture()
 def describe_df_dask(describe_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(describe_df_pandas, npartitions=2)
+    return dd.from_pandas(describe_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -501,7 +501,7 @@ def df_same_mi_pandas():
 @pytest.fixture()
 def df_same_mi_dask(df_same_mi_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(df_same_mi_pandas, npartitions=2)
+    return dd.from_pandas(df_same_mi_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -599,7 +599,7 @@ def categorical_df_pandas():
 @pytest.fixture()
 def categorical_df_dask(categorical_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(categorical_df_pandas, npartitions=2)
+    return dd.from_pandas(categorical_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -623,7 +623,7 @@ def empty_df_pandas():
 @pytest.fixture()
 def empty_df_dask(empty_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(empty_df_pandas, npartitions=2)
+    return dd.from_pandas(empty_df_pandas, npartitions=1)
 
 
 # Cannot have an empty Spark DataFrame
@@ -680,7 +680,7 @@ def latlong_df_pandas():
 @pytest.fixture()
 def latlong_df_dask(latlong_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(latlong_df_pandas, npartitions=2)
+    return dd.from_pandas(latlong_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -706,7 +706,7 @@ def empty_latlong_df_pandas():
 @pytest.fixture()
 def empty_latlong_df_dask(empty_latlong_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(empty_latlong_df_pandas, npartitions=2)
+    return dd.from_pandas(empty_latlong_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -785,7 +785,7 @@ def whitespace_df_pandas():
 @pytest.fixture()
 def whitespace_df_dask(whitespace_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(whitespace_df_pandas, npartitions=2)
+    return dd.from_pandas(whitespace_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -814,7 +814,7 @@ def falsy_names_df_pandas():
 @pytest.fixture()
 def falsy_names_df_dask(falsy_names_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(falsy_names_df_pandas, npartitions=2)
+    return dd.from_pandas(falsy_names_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -902,7 +902,7 @@ def serialize_df_pandas():
 @pytest.fixture()
 def serialize_df_dask(serialize_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(serialize_df_pandas, npartitions=2)
+    return dd.from_pandas(serialize_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -957,7 +957,7 @@ def outliers_df_pandas():
 @pytest.fixture()
 def outliers_df_dask(outliers_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(outliers_df_pandas, npartitions=2)
+    return dd.from_pandas(outliers_df_pandas, npartitions=1)
 
 
 @pytest.fixture()
@@ -1042,7 +1042,7 @@ def timezones_df_pandas():
 @pytest.fixture()
 def timezones_df_dask(timezones_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(timezones_df_pandas, npartitions=2)
+    return dd.from_pandas(timezones_df_pandas, npartitions=1)
 
 
 @pytest.fixture(params=["timezones_df_pandas", "timezones_df_dask"])
@@ -1058,7 +1058,7 @@ def postal_code_numeric_series_pandas():
 @pytest.fixture()
 def postal_code_numeric_series_dask(postal_code_numeric_series_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(postal_code_numeric_series_pandas, npartitions=2)
+    return dd.from_pandas(postal_code_numeric_series_pandas, npartitions=1)
 
 
 @pytest.fixture()
