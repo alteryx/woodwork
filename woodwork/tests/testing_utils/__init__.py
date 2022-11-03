@@ -15,7 +15,7 @@ from woodwork.tests.testing_utils.table_utils import (
 
 def pd_to_dask(series):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(series, npartitions=2)
+    return dd.from_pandas(series, npartitions=1)
 
 
 def pd_to_spark(series):

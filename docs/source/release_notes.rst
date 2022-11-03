@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
         * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
     * Fixes
         * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
@@ -16,7 +17,11 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`ParthivNaresh`, :user:`sbadithe`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`sbadithe`
+
+Breaking Changes
+++++++++++++++++
+    * :pr:`1549` will automatically infer more values as ``Boolean`` or ``BooleanNullable``, including, but not limited to, ``[0, 1]``, ``['yes', 'no']``, and ``["True", "False"]``.
 
 v0.20.0 October 31, 2022
 ========================
