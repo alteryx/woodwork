@@ -112,7 +112,7 @@ class WoodworkColumnAccessor:
                     ):
                         raise TypeValidationError(
                             f"Cannot initialize Woodwork. Series dtype '{self._series.dtype}' is "
-                            f"incompatible with {logical_type} dtype. Try converting series "
+                            f"incompatible with {logical_type} LogicalType. Try converting series "
                             f"dtype to '{valid_dtype}' before initializing or use the "
                             "woodwork.init_series function to initialize.",
                         )
@@ -389,7 +389,12 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     @_check_column_schema
-    def box_plot_dict(self, quantiles=None, include_indices_and_values=True):
+    def box_plot_dict(
+        self,
+        quantiles=None,
+        include_indices_and_values=True,
+        ignore_zeros=False,
+    ):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
 
@@ -400,6 +405,8 @@ class WoodworkColumnAccessor:
             include_indices_and_values (bool, optional): Whether or not the lists containing individual
                 outlier values and their indices will be included in the returned dictionary.
                 Defaults to True.
+            ignore_zeros (bool): Whether to ignore 0 values (not NaN values) when calculating the box plot and outliers.
+                Defaults to False.
 
         Note:
             The minimum quantiles necessary for building a box plot using the IQR method are the
@@ -429,6 +436,7 @@ class WoodworkColumnAccessor:
             self._series,
             quantiles=quantiles,
             include_indices_and_values=include_indices_and_values,
+            ignore_zeros=ignore_zeros,
         )
 
     @_check_column_schema

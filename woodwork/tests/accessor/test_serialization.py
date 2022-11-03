@@ -224,7 +224,10 @@ def test_to_dictionary(sample_df):
                 "name": "boolean",
                 "ordinal": 11,
                 "use_standard_tags": True,
-                "logical_type": {"parameters": {}, "type": "Boolean"},
+                "logical_type": {
+                    "parameters": {"cast_nulls_as": None},
+                    "type": "Boolean",
+                },
                 "physical_type": {"type": "bool"},
                 "semantic_tags": [],
                 "description": None,
@@ -673,8 +676,8 @@ def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
         )
 
         pd.testing.assert_frame_equal(
-            to_pandas(latlong_df, index=latlong_df.ww.index, sort_index=True),
-            to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+            to_pandas(latlong_df).reset_index(drop=True),
+            to_pandas(deserialized_df).reset_index(drop=True),
         )
         assert latlong_df.ww.schema == deserialized_df.ww.schema
 

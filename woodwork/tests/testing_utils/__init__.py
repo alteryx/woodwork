@@ -1,8 +1,10 @@
 # flake8: noqa
 import pytest
+
 from woodwork.tests.testing_utils.table_utils import (
     _check_close,
     check_empty_box_plot_dict,
+    concat_dataframe_or_series,
     dep_between_cols,
     is_property,
     is_public_method,
@@ -13,7 +15,7 @@ from woodwork.tests.testing_utils.table_utils import (
 
 def pd_to_dask(series):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
-    return dd.from_pandas(series, npartitions=2)
+    return dd.from_pandas(series, npartitions=1)
 
 
 def pd_to_spark(series):

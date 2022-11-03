@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -29,7 +30,10 @@ from woodwork.logical_types import (
     PostalCode,
     _replace_nans,
 )
-from woodwork.tests.testing_utils.table_utils import to_pandas
+from woodwork.tests.testing_utils.table_utils import (
+    concat_dataframe_or_series,
+    to_pandas,
+)
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
@@ -284,7 +288,8 @@ def test_email_address_validate(sample_df):
 
     assert email_address.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
 
@@ -306,7 +311,8 @@ def test_url_validate(sample_df):
 
     assert logical_type.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
 
@@ -336,7 +342,8 @@ def test_age_validate(sample_df, logical_type):
 
     if _is_spark_series(series):
         invalid_row = ps.from_pandas(invalid_row)
-    series = series.append(invalid_row).astype(dtype)
+
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
@@ -357,7 +364,8 @@ def test_phone_number_validate(sample_df):
 
     assert phone_number.validate(series) is None
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     match = "Series phone_number contains invalid phone number values. "
     match += "The phone_inference_regex can be changed in the config if needed."
 
@@ -379,7 +387,8 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
         name="phone_number",
     ).astype(dtype)
 
-    series = series.append(invalid_row).astype(dtype)
+    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series(
         {17: "252 9384", 18: "+1 194 129 1991", 19: "+01 236 248 8482"},
@@ -398,7 +407,9 @@ def test_postal_code_validate(sample_df_postal_code):
             "51342-HEL0",
         ],
     )
-    series = series.append(invalid_types)
+
+    series = concat_dataframe_or_series(series, invalid_types)
+
     series.name = "postal_code"
     match = "Series postal_code contains invalid postal code values. "
     match += "The postal_code_inference_regex can be changed in the config if needed."
@@ -426,7 +437,9 @@ def test_postal_code_validate_complex(sample_df_postal_code):
     )
     actual = pc.validate(series, return_invalid_values=True)
     assert not len(actual)
-    series = series.append(invalid_types)
+
+    series = concat_dataframe_or_series(series, invalid_types)
+
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
 
@@ -445,7 +458,10 @@ def test_postal_code_validate_numeric(postal_code_numeric_series):
 
 
 def test_postal_code_error(postal_code_numeric_series_pandas):
-    series = postal_code_numeric_series_pandas.append(pd.Series([1234.5]))
+    series = concat_dataframe_or_series(
+        postal_code_numeric_series_pandas,
+        pd.Series([1234.5]),
+    )
     match = (
         "Error converting datatype for None from type float64 to type string. "
         "Please confirm the underlying data is consistent with logical type PostalCode."
@@ -744,3 +760,302 @@ def test_replace_nans_same_types():
 
     assert new_series.dtype == "float"
     pd.testing.assert_series_equal(new_series, pd.Series([1.0, 3.0, 5.0, -6.0, np.nan]))
+
+
+def get_expected_dates(dates):
+    expected = []
+    for d in dates:
+        if d is not None:
+            year = int(re.findall(r"\d+", d)[0])  # gets the year
+            if year > datetime.today().year + 10:
+                year -= 100
+            if year <= datetime.today().year - 90:
+                year += 100
+            expected.append("{}-01-01".format(year))
+        else:
+            expected.append(d)
+    return expected
+
+
+@pytest.mark.parametrize("delim", ["/", "-", "."])
+@pytest.mark.parametrize("dtype", ["string", "object"])
+def test_datetime_pivot_point(dtype, delim):
+    if dtype == "string" and delim != "/":
+        pytest.skip("skipping because we don't want to overtest")
+    dates = [
+        "01/01/24",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/52",
+        "01/01/56",
+        "01/01/60",
+        "01/01/72",
+        "01/01/76",
+        "01/01/80",
+        None,
+        "01/01/88",
+    ]
+    datetime_str = "%m/%d/%y"
+    if delim != "/":
+        dates = [s.replace("/", delim) if s is not None else s for s in dates]
+        datetime_str = datetime_str.replace("/", delim)
+    expected_values = [
+        "2024-01-01",
+        "2030-01-01",
+        "2032-01-01",
+        "2036-01-01",
+        "2052-01-01",
+        "2056-01-01",
+        "1960-01-01",
+        "1972-01-01",
+        "1976-01-01",
+        "1980-01-01",
+        None,
+        "1988-01-01",
+    ]
+    expected_values = get_expected_dates(expected_values)
+    df = pd.DataFrame({"dates": dates}, dtype=dtype)
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("delim", ["/", "-", ".", ""])
+def test_datetime_pivot_point_should_not_apply(delim):
+    dates = [
+        "01/01/1924",
+        "01/01/1928",
+        "01/01/1960",
+        "01/01/1964",
+        "01/01/1968",
+        "01/01/1972",
+        "01/01/2076",
+        "01/01/2088",
+    ]
+    datetime_str = "%m/%d/%Y"
+    if delim == "-":
+        dates = [s.replace("/", delim) for s in dates]
+        datetime_str = datetime_str.replace("/", delim)
+    expected_values = [
+        "1924-01-01",
+        "1928-01-01",
+        "1960-01-01",
+        "1964-01-01",
+        "1968-01-01",
+        "1972-01-01",
+        "2076-01-01",
+        "2088-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("type", ["pyspark", "dask"])
+def test_pyspark_dask_series(type):
+    dates = [
+        "01/01/24",
+        "01/01/28",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/40",
+        "01/01/72",
+        None,
+        "01/01/88",
+    ]
+    datetime_str = "%m/%d/%y"
+    expected_values = [
+        "2024-01-01",
+        "2028-01-01",
+        "2030-01-01",
+        "1932-01-01",
+        "1936-01-01",
+        "1940-01-01",
+        "1972-01-01",
+        None,
+        "1988-01-01",
+    ]
+    expected_values = get_expected_dates(expected_values)
+    df = pd.DataFrame({"dates": dates})
+    if type == "pyspark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    else:
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=2)
+    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df = to_pandas(df)
+    df.sort_index(inplace=True)
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+def test_datetime_pivot_point_no_format_provided():
+    dates = [
+        "01/01/24",
+        "01/01/30",
+        "01/01/32",
+        "01/01/36",
+        "01/01/52",
+        "01/01/56",
+        "01/01/60",
+        "01/01/72",
+        "01/01/76",
+        "01/01/80",
+        None,
+        "01/01/88",
+    ]
+    expected_values = [
+        "2024-01-01",
+        "2030-01-01",
+        "2032-01-01",
+        "2036-01-01",
+        "2052-01-01",
+        "2056-01-01",
+        "2060-01-01",
+        "1972-01-01",
+        "1976-01-01",
+        "1980-01-01",
+        None,
+        "1988-01-01",
+    ]
+    df = pd.DataFrame({"dates": dates})
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+    df.ww.init(logical_types={"dates": Datetime})
+    pd.testing.assert_frame_equal(df, df_expected)
+
+
+@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
+def test_boolean_other_values(df_type):
+    df = pd.DataFrame(
+        {
+            "bool1": [0, 1, 0, 1, 1, 0],
+            "bool2": ["t", "f", "t", "f", "t", "t"],
+            "bool3": ["T", "F", "T", "F", "F", "f"],
+            "bool4": ["true", "false", "false", "false", "true", "true"],
+            "bool5": ["True", "False", "False", "True", "false", "TRUE"],
+            "bool6": ["1", "0", "1", "1", "1", "0"],
+            "bool7": ["YES", "NO", "YES", "yes", "no", "no"],
+            "bool8": ["N", "N", "n", "y", "Y", "y"],
+        },
+    )
+    if df_type == "spark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    elif df_type == "dask":
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=1)
+    df.ww.init()
+    assert all([str(dtype) == "Boolean" for dtype in df.ww.logical_types.values()])
+
+
+def test_boolean_cast_nulls_as():
+    Boolean(cast_nulls_as=None)
+    Boolean(cast_nulls_as=False)
+    Boolean(cast_nulls_as=True)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Parameter `cast_nulls_as` must be either True or False, recieved {1}",
+        ),
+    ):
+        Boolean(cast_nulls_as=1)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Parameter `cast_nulls_as` must be either True or False, recieved {'True'}",
+        ),
+    ):
+        Boolean(cast_nulls_as="True")
+
+
+@pytest.mark.parametrize("cast_null", [None, True, False])
+@pytest.mark.parametrize("null", [None, pd.NA, np.nan])
+@pytest.mark.parametrize(
+    "series",
+    (
+        [True, True, False, False],
+        ["Yes", "yes", "NO", "no"],
+        ["1", "1", "0", "0"],
+        ["True", "true", "false", "FALSE"],
+    ),
+)
+def test_boolean_with_null_error(series, null, cast_null):
+    df = pd.DataFrame({"bool_with_null": series + [null]})
+    if cast_null is None:
+        with pytest.raises(
+            ValueError,
+            match="Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value",
+        ):
+            df.ww.init(
+                logical_types={"bool_with_null": Boolean(cast_nulls_as=cast_null)},
+            )
+    else:
+        df.ww.init(logical_types={"bool_with_null": Boolean(cast_nulls_as=cast_null)})
+        assert list(df["bool_with_null"].values) == [
+            True,
+            True,
+            False,
+            False,
+            cast_null,
+        ]
+
+
+@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
+@pytest.mark.parametrize("null", [None, pd.NA, np.nan])
+def test_boolean_nullable_other_values_dont_cast(null, df_type):
+    df = pd.DataFrame(
+        {
+            "bool1": ["N", "N", "n", null, "Y", "y"],
+            "bool2": ["t", "f", "t", null, "f", "t"],
+            "bool3": ["T", "F", "T", "F", "F", null],
+            "bool4": ["true", "false", "false", "false", "true", null],
+            "bool5": ["True", "False", "False", "True", null, "TRUE"],
+            "bool6": ["1", "0", "1", null, "1", "0"],
+            "bool7": ["YES", "NO", "YES", "yes", null, "no"],
+        },
+    )
+    if df_type == "spark":
+        ps = pytest.importorskip(
+            "pyspark.pandas",
+            reason="Pyspark pandas not installed, skipping",
+        )
+        df = ps.from_pandas(df)
+    elif df_type == "dask":
+        dd = pytest.importorskip(
+            "dask.dataframe",
+            reason="Dask not installed, skipping",
+        )
+        df = dd.from_pandas(df, npartitions=1)
+    df.ww.init()
+    assert all(
+        [str(dtype) == "BooleanNullable" for dtype in df.ww.logical_types.values()],
+    )
+
+
+def test_boolean_mixed_string():
+    df = pd.DataFrame(
+        {
+            "a": ["yes", "y", "n", "n"],
+            "b": ["True", "t", "False", "False"],
+            "c": ["0", "y", "0", "y"],
+        },
+    )
+
+    df.ww.init()
+    assert all([str(dtype) != "Boolean" for dtype in df.ww.logical_types.values()])

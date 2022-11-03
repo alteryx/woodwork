@@ -3,7 +3,14 @@ from inspect import isclass
 
 import woodwork as ww
 from woodwork.exceptions import DuplicateTagsWarning, StandardTagsChangedWarning
-from woodwork.logical_types import Boolean, BooleanNullable, Datetime, LatLong, Unknown
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Datetime,
+    LatLong,
+    Ordinal,
+    Unknown,
+)
 from woodwork.utils import _convert_input_to_set
 
 
@@ -158,6 +165,11 @@ class ColumnSchema(object):
     def is_unknown(self):
         """Whether the ColumnSchema is a Unknown column"""
         return type(self.logical_type) == Unknown
+
+    @property
+    def is_ordinal(self):
+        """Whether the ColumnSchema is a Ordinal column"""
+        return type(self.logical_type) == Ordinal
 
     def _add_semantic_tags(self, new_tags, name):
         """Add the specified semantic tags to the current set of tags

@@ -389,6 +389,28 @@ def get_valid_pearson_types():
     return valid_types
 
 
+def get_valid_spearman_types():
+    """
+    Generate a list of LogicalTypes that are valid for calculating Spearman correlation. Note that
+    index columns are not valid for calculating dependence, but their types may be
+    returned by this function.
+
+    Args:
+        None
+
+    Returns:
+        list(LogicalType): A list of the LogicalTypes that can be use to calculate Spearman correlation
+    """
+    valid_types = []
+    for ltype in ww.type_system.registered_types:
+        if "numeric" in ltype.standard_tags:
+            valid_types.append(ltype)
+        elif ltype == ww.logical_types.Datetime or ltype == ww.logical_types.Ordinal:
+            valid_types.append(ltype)
+
+    return valid_types
+
+
 def _get_column_logical_type(series, logical_type, name):
     if logical_type:
         return _parse_logical_type(logical_type, name)

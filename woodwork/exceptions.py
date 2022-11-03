@@ -75,6 +75,10 @@ class ColumnNotPresentInSchemaError(KeyError):
         )
 
 
+class ColumnBothIgnoredAndSetError(KeyError):
+    pass
+
+
 class WoodworkNotInitError(AttributeError):
     pass
 

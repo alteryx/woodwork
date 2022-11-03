@@ -6,15 +6,51 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
     * Fixes
+        * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
     * Changes
+        * Unpin dask dependency (:pr:`1561`)
     * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`sbadithe`, :user:`bchen1116`
+
+Breaking Changes
+++++++++++++++++
+    * :pr:`1549` will automatically infer more values as ``Boolean`` or ``BooleanNullable``, including, but not limited to, ``[0, 1]``, ``['yes', 'no']``, and ``["True", "False"]``.
+
+v0.20.0 October 31, 2022
+========================
+    * Enhancements
+        * Replace use of deprecated ``append`` method for dataframes and series with ``concat`` method (:pr:`1533`)
+    * Fixes
+        * Fixed bug relating to ``dependence`` calculations to ensure columns exist in dataframe (:pr:`1534`)
+        * Small typo fix in ``select`` docstring (:pr:`1544`)
+        * Fix TypeValidationError message (:pr:`1557`)
+        * Set dask version below 2022.10.1 (:pr:`1558`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`sbadithe`
+
+v0.19.0 September 27, 2022
+==========================
+    * Enhancements
+        * Added ``Spearman Correlation`` to options for dependence calculations (:pr:`1523`)
+        * Added ``ignore_zeros`` as an argument for ``box_plot_dict`` to allow for calculations of outliers without 0 values (:pr:`1524`)
+        * Added ``target_col`` argument to ``dependence`` and ``dependence_dict`` to calculate correlations between features and target_col (:pr:`1531`)
+    * Fixes
+        * Fix datetime pivot point to be set at current year + 10 rather than the default for two-digit years when ``datetime_format`` provided (:pr:`1512`)
+    * Changes
+        * Added ``ignore_columns`` as an argument when initializing a dataframe (:pr:`1504`)
+        * Remove ``dask[dataframe]`` version restriction (:pr:`1527`)
     * Testing Changes
         * Add kickoff for create conda forge pull request from release (:pr:`1515`)
         * Perform performance tests on merge (:pr:`1567`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
 
 v0.18.0 August 31, 2022
 =======================

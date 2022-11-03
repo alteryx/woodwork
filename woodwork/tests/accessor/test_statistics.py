@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
-from woodwork.config import config
+from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
     URL,
@@ -38,6 +38,7 @@ from woodwork.logical_types import (
 )
 from woodwork.statistics_utils import (
     _bin_numeric_cols_into_categories,
+    _convert_ordinal_to_numeric,
     _get_describe_dict,
     _get_histogram_values,
     _get_mode,
@@ -123,29 +124,33 @@ def test_dependence_same(df_same_mi, measure):
         _check_close(actual, 1.0)
 
 
-@pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
+@pytest.mark.parametrize(
+    "measure",
+    ["mutual_info", "pearson", "spearman", "max", "all"],
+)
 def test_dependence(df_mi, measure):
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
-    if measure == "pearson":
+    if measure == "pearson" or measure == "spearman":
         assert dep_df.shape[0] == 3
     else:
         assert dep_df.shape[0] == 15
 
     if measure == "all":
-        measure_columns = ["mutual_info", "max", "pearson"]
+        measure_columns = ["mutual_info", "max", "pearson", "spearman"]
     else:
         measure_columns = [measure]
     assert dep_df.columns.tolist() == ["column_1", "column_2"] + measure_columns
 
-    if measure == "pearson":
-        expected_df = pd.DataFrame(data={"pearson": [0.5]}, index=["dates_ints"])
+    if measure == "pearson" or measure == "spearman":
+        expected_df = pd.DataFrame(data={measure: [0.5]}, index=["dates_ints"])
     else:
         expected_df = pd.DataFrame(
             data={
                 "mutual_info": [1.0, 0.0, 0, 0.208, 0.208],
                 "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
+                "spearman": [np.nan, np.nan, np.nan, 0.5, np.nan],
                 "max": [1.0, 0.0, 0, 0.5, 0.208],
             },
             index=[
@@ -424,10 +429,11 @@ def test_dependence_min_shared_warns(time_index_df, measure):
 @pytest.mark.parametrize(
     "measure, expected",
     [
-        ("mutual_info", (18, 7, 28)),
-        ("pearson", (5, 4, 7)),
-        ("max", (21, 7, 31)),
-        ("all", (21, 7, 31)),
+        ("mutual_info", (18, 7, 28, 28)),
+        ("pearson", (5, 4, 7, 7)),
+        ("spearman", (5, 4, 10, 7)),
+        ("max", (24, 7, 37, 34)),
+        ("all", (24, 7, 37, 34)),
     ],
 )
 def test_dependence_callback(df_mi, measure, expected, mock_callback):
@@ -435,7 +441,7 @@ def test_dependence_callback(df_mi, measure, expected, mock_callback):
 
     df_mi.ww.dependence(measures=measure, callback=mock_callback)
 
-    total_calls, second_call_progress, total_progress = expected
+    total_calls, second_call_progress, total, total_progress = expected
 
     assert len(mock_callback.progress_history) == total_calls
 
@@ -445,13 +451,16 @@ def test_dependence_callback(df_mi, measure, expected, mock_callback):
     assert mock_callback.progress_history[1] == second_call_progress
 
     # Should be 26 calculations at end with a positive elapsed time
-    assert mock_callback.total == total_progress
+    assert mock_callback.total == total
     assert mock_callback.total_update == total_progress
     assert mock_callback.progress_history[-1] == total_progress
     assert mock_callback.total_elapsed_time > 0
 
 
-@pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
+@pytest.mark.parametrize(
+    "measure",
+    ["mutual_info", "pearson", "spearman", "max", "all"],
+)
 def test_dependence_with_string_index(measure):
     df = pd.DataFrame(
         {
@@ -728,6 +737,52 @@ def test_mutual(df_mi, mock_callback):
         min_shared=25,
         random_seed=5,
         max_nunique=6000,
+    )
+
+
+@patch("woodwork.table_accessor._get_dependence_dict")
+def test_spearman_dict(_get_dependence_dict, df_mi, mock_callback):
+    df_mi.ww.init()
+    df_mi.ww.spearman_correlation_dict(
+        nrows=100,
+        include_index=True,
+        callback=mock_callback,
+        extra_stats=True,
+        min_shared=25,
+        random_seed=5,
+    )
+    assert _get_dependence_dict.called
+    _get_dependence_dict.assert_called_with(
+        dataframe=df_mi,
+        measures=["spearman"],
+        nrows=100,
+        include_index=True,
+        callback=mock_callback,
+        extra_stats=True,
+        min_shared=25,
+        random_seed=5,
+    )
+
+
+def test_spearman(df_mi, mock_callback):
+    df_mi.ww.init()
+    with patch.object(df_mi.ww, "spearman_correlation_dict") as mi_dict_method:
+        df_mi.ww.spearman_correlation(
+            nrows=100,
+            include_index=True,
+            callback=mock_callback,
+            extra_stats=True,
+            min_shared=25,
+            random_seed=5,
+        )
+    assert mi_dict_method.called
+    mi_dict_method.assert_called_with(
+        nrows=100,
+        include_index=True,
+        callback=mock_callback,
+        extra_stats=True,
+        min_shared=25,
+        random_seed=5,
     )
 
 
@@ -1132,7 +1187,7 @@ def test_describe_with_improper_tags(describe_df):
     df = describe_df.copy()[["boolean_col", "natural_language_col"]]
 
     logical_types = {
-        "boolean_col": Boolean,
+        "boolean_col": BooleanNullable,
         "natural_language_col": NaturalLanguage,
     }
     semantic_tags = {
@@ -1144,7 +1199,7 @@ def test_describe_with_improper_tags(describe_df):
     stats_df = df.ww.describe()
 
     # Make sure boolean stats were computed with improper 'category' tag
-    assert isinstance(stats_df["boolean_col"]["logical_type"], Boolean)
+    assert isinstance(stats_df["boolean_col"]["logical_type"], BooleanNullable)
     assert stats_df["boolean_col"]["semantic_tags"] == {"category"}
     # Make sure numeric stats were not computed with improper 'numeric' tag
     assert stats_df["natural_language_col"]["semantic_tags"] == {"numeric"}
@@ -1386,7 +1441,7 @@ def test_value_counts(categorical_df):
     logical_types = {
         "ints": IntegerNullable,
         "categories1": Categorical,
-        "bools": Boolean,
+        "bools": BooleanNullable,
         "categories2": Categorical,
         "categories3": Categorical,
     }
@@ -1468,7 +1523,7 @@ def test_datetime_get_recent_value_counts():
 
 def test_numeric_histogram():
     column = pd.Series(np.random.randn(1000))
-    column.append(pd.Series([np.nan, " ", "test"]))
+    column = pd.concat([column, pd.Series([np.nan])])
     bins = 7
     values = _get_histogram_values(column, bins=bins)
     assert len(values) == bins
@@ -1924,23 +1979,51 @@ def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
     [
         ("pearson", (["pearson"], ["pearson"], False)),
         (["pearson"], (["pearson"], ["pearson"], False)),
+        ("spearman", (["spearman"], ["spearman"], False)),
+        (["spearman"], (["spearman"], ["spearman"], False)),
         ("mutual_info", (["mutual_info"], ["mutual_info"], False)),
         (["mutual_info"], (["mutual_info"], ["mutual_info"], False)),
-        ("max", (["max"], ["pearson", "mutual_info"], True)),
-        (["max"], (["max"], ["pearson", "mutual_info"], True)),
-        ("all", (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True)),
+        ("max", (["max"], ["pearson", "spearman", "mutual_info"], True)),
+        (["max"], (["max"], ["pearson", "spearman", "mutual_info"], True)),
+        (
+            "all",
+            (
+                ["max", "pearson", "spearman", "mutual_info"],
+                ["pearson", "spearman", "mutual_info"],
+                True,
+            ),
+        ),
         (
             ["all"],
-            (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True),
+            (
+                ["max", "pearson", "spearman", "mutual_info"],
+                ["pearson", "spearman", "mutual_info"],
+                True,
+            ),
         ),
         (
             ["mutual_info", "pearson"],
             (["mutual_info", "pearson"], ["pearson", "mutual_info"], False),
         ),
-        (["pearson", "max"], (["pearson", "max"], ["pearson", "mutual_info"], True)),
+        (
+            ["pearson", "max"],
+            (["pearson", "max"], ["pearson", "spearman", "mutual_info"], True),
+        ),
         (
             ["max", "pearson", "mutual_info"],
-            (["max", "pearson", "mutual_info"], ["pearson", "mutual_info"], True),
+            (
+                ["max", "pearson", "mutual_info"],
+                ["pearson", "spearman", "mutual_info"],
+                True,
+            ),
+        ),
+        (
+            ["pearson", "spearman"],
+            (["pearson", "spearman"], ["pearson", "spearman"], False),
+        ),
+        (
+            ["spearman", "max"],
+            (["spearman", "max"], ["pearson", "spearman", "mutual_info"], True),
         ),
     ],
 )
@@ -1955,8 +2038,8 @@ def test_parse_measures_warns():
     warning = "additional measures to 'all' measure found; 'all' should be used alone"
     with pytest.warns(ParametersIgnoredWarning, match=warning):
         _measures, _calc_order, _calc_max = _parse_measures(["pearson", "all"])
-    assert _measures == ["max", "pearson", "mutual_info"]
-    assert _calc_order == ["pearson", "mutual_info"]
+    assert _measures == ["max", "pearson", "spearman", "mutual_info"]
+    assert _calc_order == ["pearson", "spearman", "mutual_info"]
     assert _calc_max
 
 
@@ -1976,3 +2059,118 @@ def test_parse_measures_bad_string():
     msg = "Unrecognized dependence measure ruler"
     with pytest.raises(ValueError, match=msg):
         _parse_measures(["mutual_info", "ruler"])
+
+
+@pytest.mark.parametrize("use_ordinal", [True, False])
+def test_spearman_ordinal(df_mi, use_ordinal):
+    if use_ordinal:
+        df_mi.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
+    else:
+        df_mi.ww.init()
+    sp = df_mi.ww.dependence(measures=["spearman"])
+    valid_sp_columns = (sp.column_1.append(sp.column_2)).unique()
+    assert "strs" not in valid_sp_columns
+    if use_ordinal:
+        assert "strs2" in valid_sp_columns
+        return
+    assert "strs2" not in valid_sp_columns
+
+
+def test_dependence_target_col_not_exist(df_mi):
+    df_mi.ww.init()
+    with pytest.raises(ValueError, match="target_col 'value' not in the"):
+        df_mi.ww.dependence_dict(target_col="value")
+
+    with pytest.raises(ValueError, match="target_col 'value' not in the"):
+        df_mi.ww.dependence(target_col="value")
+
+
+def test_dependence_target_col_in_output(df_mi):
+    df_mi.ww.init()
+    dep = df_mi.ww.dependence_dict(min_shared=12, target_col="ints")
+    assert all([x["column_2"] == "ints" for x in dep])
+    assert len(dep) < len(df_mi.columns)
+    assert all([isinstance(x["max"], float) for x in dep])
+
+
+def test_dependence_dict_target_col_in_output(df_mi):
+    df_mi.ww.init()
+    dep = df_mi.ww.dependence(min_shared=12, target_col="ints")
+    assert set(list(dep["column_2"])) == {"ints"}
+    assert set(list(dep.columns) + ["all"]) == set(
+        ["column_1", "column_2"] + CONFIG_DEFAULTS["correlation_metrics"],
+    )
+
+
+def test_convert_ordinal_to_numeric():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "ints2": pd.Series([1, 100, 1, 100]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "strs2": pd.Series(["bye", "hi", "bye", "bye"]),
+            "bools": pd.Series([True, False, True, False]),
+            "categories": pd.Series(["test", "test2", "test2", "test"]),
+            "dates": pd.Series(
+                ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
+            ),
+        },
+    )
+    df.ww.init(logical_types={"strs2": Ordinal(order=["hi", "bye"])})
+    data = {column: df[column] for column in df.copy() if column != "ints2"}
+    result = [0 if x == "hi" else 1 for x in data["strs2"].values]
+    _convert_ordinal_to_numeric(df.ww.schema, data)
+    for cols in data.keys():
+        if cols != "strs2":
+            assert all(data[cols] == df[cols])
+        else:
+            assert all(data["strs2"].values == result)
+
+
+def test_dependence_with_object_target():
+    df = pd.DataFrame(
+        {
+            "ints1": pd.Series([1, 2, 3, 2]),
+            "strs": pd.Series(["hi", "hi", "hi", "hi"]),
+            "target_y": pd.Series([True, False, False, pd.NA]),
+        },
+    )
+    df.ww.init()
+    res = df.ww.dependence(target_col="target_y")
+    assert "pearson" not in res.columns
+    assert "spearman" not in res.columns
+
+
+def test_box_plot_ignore_zeros():
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100)
+    no_zeros_df = pd.Series(range(1, 100))
+    zeros_df.ww.init()
+    no_zeros_df.ww.init()
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
+
+
+@pytest.mark.parametrize("dtype", ["IntegerNullable", "Double"])
+def test_box_plot_ignore_zeros_null(dtype):
+    zeros_df = pd.Series(list(range(1, 100)) + [0] * 100 + [None])
+    no_zeros_df = pd.Series(list(range(1, 100)) + [None])
+    zeros_df.ww.init(logical_type=dtype)
+    no_zeros_df.ww.init(logical_type=dtype)
+
+    zeros_box_ignored = zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    zeros_box_not_ignored = zeros_df.ww.box_plot_dict()
+
+    no_zeros_box_ignored = no_zeros_df.ww.box_plot_dict(ignore_zeros=True)
+    no_zeros_box_not_ignored = no_zeros_df.ww.box_plot_dict()
+
+    assert zeros_box_ignored == no_zeros_box_ignored
+    assert zeros_box_ignored == no_zeros_box_not_ignored
+    assert zeros_box_not_ignored != no_zeros_box_ignored
