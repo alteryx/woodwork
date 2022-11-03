@@ -11,6 +11,7 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Add kickoff for create conda forge pull request from release (:pr:`1515`)
+        * Perform performance tests on merge (:pr:`1567`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
