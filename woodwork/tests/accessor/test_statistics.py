@@ -1447,7 +1447,7 @@ def test_value_counts(categorical_df):
     }
 
     # cudf does not have a `to_dict` method
-    if _is_cudf_dataframe(categorical_df): 
+    if _is_cudf_dataframe(categorical_df):
         categorical_df = categorical_df.to_pandas()
 
     categorical_df.ww.init(logical_types=logical_types)

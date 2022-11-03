@@ -643,9 +643,9 @@ def _infer_datetime_format(dates, n=100):
     ps = import_or_none("pyspark.pandas")
     if ps and isinstance(first_n, ps.series.Series):
         first_n = first_n.to_pandas()
-    
-    cudf = import_or_none("cudf") 
-    if cudf and isinstance(first_n, cudf.Series): 
+
+    cudf = import_or_none("cudf")
+    if cudf and isinstance(first_n, cudf.Series):
         first_n = first_n.to_pandas()
 
     if len(first_n) == 0:

@@ -727,10 +727,10 @@ class WoodworkTableAccessor:
         if (
             _is_dask_dataframe(self._dataframe)
             or _is_spark_dataframe(self._dataframe)
-            or _is_cudf_dataframe(self._dataframe) 
+            or _is_cudf_dataframe(self._dataframe)
         ):
             already_sorted = True  # Skip sorting for Dask, Spark, or cudf input
-        
+
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
             if self._schema.index is None:

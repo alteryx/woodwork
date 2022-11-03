@@ -372,8 +372,9 @@ def time_index_df_spark(time_index_df_pandas):
 def time_index_df_cudf(time_index_df_pandas):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
     df = cudf.from_pandas(time_index_df_pandas)
-    df['times'] = df['times'].astype('datetime64[ns]')
-    return df 
+    df["times"] = df["times"].astype("datetime64[ns]")
+    return df
+
 
 @pytest.fixture(
     params=[
@@ -561,12 +562,14 @@ def df_same_mi_spark(df_same_mi_pandas):
     df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
     return ps.from_pandas(df_same_mi_pandas)
 
+
 @pytest.fixture()
 def df_same_mi_cudf(df_same_mi_pandas):
     cudf = pytest.importorskip("cudf", reason="Spark not installed, skipping")
     df_same_mi_pandas["ints"] = df_same_mi_pandas["ints"].astype("float")
     df_same_mi_pandas["nans"] = df_same_mi_pandas["nans"].astype("float")
     return cudf.from_pandas(df_same_mi_pandas)
+
 
 @pytest.fixture(
     params=[
@@ -1215,16 +1218,10 @@ def timezones_df_dask(timezones_df_pandas):
     return dd.from_pandas(timezones_df_pandas, npartitions=2)
 
 
-@pytest.fixture()
-def timezones_df_cudf(timezones_df_pandas):
-    cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
-
-    return cudf.from_pandas(timezones_df_pandas)
+# cudf does not support timezone aware operations
 
 
-@pytest.fixture(
-    params=["timezones_df_pandas", "timezones_df_dask", "timezones_df_cudf"]
-)
+@pytest.fixture(params=["timezones_df_pandas", "timezones_df_dask"])
 def timezones_df(request):
     return request.getfixturevalue(request.param)
 

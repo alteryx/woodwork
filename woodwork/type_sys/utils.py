@@ -13,7 +13,8 @@ def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column.
     Will not infer numeric data as datetime."""
-    if _is_spark_series(col):
+
+    if _is_spark_series(col) or _is_cudf_series(col):
         col = col.to_pandas()
 
     if pd.api.types.is_datetime64_any_dtype(col):
@@ -23,14 +24,8 @@ def col_is_datetime(col, datetime_format=None):
     if len(col) == 0:
         return False
 
-    if _is_cudf_series(col):
-        # col.values fails due to
-        # cudf/core/column/string.py
-        # TypeError("String Arrays is not yet implemented in cudf")
-        return False
-
     try:
-        if pd.api.types.is_numeric_dtype(pd.Series(col.values.tolist())):
+        if pd.api.types.is_numeric_dtype(col.dtype):
             return False
     except AttributeError:
         # given our current minimum dependencies (pandas 1.3.0 and pyarrow 4.0.1)
@@ -41,6 +36,9 @@ def col_is_datetime(col, datetime_format=None):
         pass
 
     col = col.astype(str)
+
+    if _is_cudf_series(col):
+        col = col.to_pandas()
 
     try:
         pd.to_datetime(

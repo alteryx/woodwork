@@ -351,6 +351,8 @@ class Datetime(LogicalType):
                 series = cudf.Series(
                     cudf.to_datetime(
                         series,
+                        format=self.datetime_format,
+                        errors="coerce",
                     ),
                     name=series.name,
                 )
@@ -438,7 +440,7 @@ class IntegerNullable(LogicalType):
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
 
-    # all dtypes are nullable in cudf 
+    # all dtypes are nullable in cudf
     cudf_dtype = "int64"
 
     def transform(self, series, null_invalid_values=False):
