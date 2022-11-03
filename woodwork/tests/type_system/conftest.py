@@ -9,7 +9,7 @@ from woodwork.type_sys.inference_functions import (
     double_func,
     integer_func,
 )
-from woodwork.type_sys.type_system import TypeSystem
+from woodwork.type_sys.type_system import INFERENCE_SAMPLE_SIZE, TypeSystem
 
 
 # Integer Inference Fixtures
@@ -342,6 +342,31 @@ def spark_nulls(pandas_nulls):
 
 @pytest.fixture(params=["pandas_nulls", "dask_nulls", "spark_nulls"])
 def nulls(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pandas_large_df():
+    df = pd.DataFrame()
+    df["int_nullable"] = [int(i) for i in range(INFERENCE_SAMPLE_SIZE)] + [np.nan]
+    df["bool_nullable"] = [True, False] * int(INFERENCE_SAMPLE_SIZE // 2) + [pd.NA]
+    df["floats"] = [int(i) for i in range(INFERENCE_SAMPLE_SIZE)] + [1.2]
+    df["constant"] = [None] * (INFERENCE_SAMPLE_SIZE + 1)
+    return df
+
+
+@pytest.fixture
+def dask_large_df(pandas_large_df):
+    return pd_to_dask(pandas_large_df)
+
+
+@pytest.fixture
+def spark_large_df(pandas_large_df):
+    return pd_to_spark(pandas_large_df)
+
+
+@pytest.fixture(params=["pandas_large_df", "dask_large_df", "spark_large_df"])
+def large_df(request):
     return request.getfixturevalue(request.param)
 
 

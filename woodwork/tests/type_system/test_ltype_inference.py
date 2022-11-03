@@ -279,3 +279,16 @@ def test_updated_ltype_inference(integers, type_sys):
             inferred_type = type_sys.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Integer)
             assert inferred_type.primary_dtype == "string"
+
+
+def test_inference_randomly_sampled(large_df, type_sys):
+    large_df.ww.init()
+
+    inferred_type = large_df.ww.logical_types["int_nullable"]
+    assert isinstance(inferred_type, IntegerNullable)
+    inferred_type = large_df.ww.logical_types["bool_nullable"]
+    assert isinstance(inferred_type, BooleanNullable)
+    inferred_type = large_df.ww.logical_types["floats"]
+    assert isinstance(inferred_type, Double)
+    inferred_type = large_df.ww.logical_types["constant"]
+    print(inferred_type)
