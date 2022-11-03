@@ -16,7 +16,7 @@ Future Release
         * Run looking glass performance tests on merge (:pr:`1567`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`, :user:`bchen1116`
+    :user:`gsheni`, :user:`sbadithe`, :user:`bchen1116`, :user:`simha104`
 
 Breaking Changes
 ++++++++++++++++
