@@ -22,10 +22,14 @@ def _calculate_max_dependence_for_pair(result, min_shared, extra_stats):
     """
     # if pearson was not measured, mutual info must be max, since columns valid
     # for pearson are a subset of columns valid for mutual info
-    if "pearson" in result:
+    if "pearson" in result or "spearman" in result:
         score = pd.Series(
-            [result["mutual_info"], abs(result["pearson"])],
-            index=["mutual_info", "pearson"],
+            [
+                result["mutual_info"],
+                abs(result.get("pearson", np.nan)),
+                abs(result.get("spearman", np.nan)),
+            ],
+            index=["mutual_info", "pearson", "spearman"],
         )
         # to keep sign, get name of max score and use original value
         measure_used = score.idxmax()

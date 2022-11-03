@@ -15,6 +15,7 @@ from woodwork.accessor_utils import (
     init_series,
 )
 from woodwork.exceptions import (
+    ColumnBothIgnoredAndSetError,
     ColumnNotPresentError,
     ColumnNotPresentInSchemaError,
     IndexTagRemovedWarning,
@@ -63,6 +64,7 @@ from woodwork.table_accessor import (
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
+    concat_dataframe_or_series,
     is_property,
     is_public_method,
     to_pandas,
@@ -731,6 +733,98 @@ def test_float_dtype_inference_on_init():
     assert df["floats_nan"].dtype == "float64"
     assert df["floats_NA"].dtype == "float64"
     assert df["floats_nan_specified"].dtype == "float64"
+
+
+def test_ignore_columns_error_columns_not_in_dataframe():
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+
+    err_msg = re.escape(
+        "ignore_columns contains columns that are not present in dataframe: ['floats']",
+    )
+    with pytest.raises(ColumnNotPresentError, match=err_msg):
+        df.ww.init(ignore_columns=["floats"])
+
+
+@pytest.mark.parametrize("type_", [list, set, tuple])
+def test_ignore_columns_errors_various(type_):
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+    df["floats"] = [i * 1.1 for i in range(100)]
+    df["dates"] = pd.date_range("1/1/21", periods=100)
+
+    if type_ in [list, set]:
+        # Checks that columns in ignore_columns must be part of existing schema
+        with pytest.raises(
+            WoodworkNotInitError,
+            match="ignore_columns cannot be set when the dataframe has no existing schema.",
+        ):
+            df.ww.init(ignore_columns=type_(["ints", "floats", "dates"]))
+
+        df.ww.init()
+        logical_types = {
+            "ints": Integer,
+        }
+        err_msg = re.escape(
+            "ignore_columns contains columns that are being set in logical_types: ['ints']",
+        )
+        # Checks that ignore_columns and logical_types don't overlap
+        with pytest.raises(ColumnBothIgnoredAndSetError, match=err_msg):
+            schema = df.ww.schema
+            df.ww.init(
+                ignore_columns=["ints", "floats", "dates"],
+                logical_types=logical_types,
+                schema=schema,
+            )
+    else:
+        # Checks for acceptable type
+        with pytest.raises(
+            TypeError,
+            match="ignore_columns must be a list or set",
+        ):
+            df.ww.init(ignore_columns=type_(["ints", "floats", "dates"]))
+
+
+def test_ignore_columns_can_force_logical_type_not_in_ignore_columns():
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)]
+    df["floats"] = [i * 1.1 for i in range(100)]
+    df["dates"] = pd.date_range("1/1/21", periods=100)
+    df.ww.init()
+
+    assert isinstance(df.ww.logical_types["ints"], Integer)
+    assert isinstance(df.ww.logical_types["floats"], Double)
+    assert isinstance(df.ww.logical_types["dates"], Datetime)
+
+    schema = df.ww.schema
+    logical_types = {
+        "ints": IntegerNullable,
+    }
+    df.ww.init(
+        ignore_columns={"floats", "dates"},
+        logical_types=logical_types,
+        schema=schema,
+    )
+
+    assert isinstance(df.ww.logical_types["ints"], IntegerNullable)
+    assert isinstance(df.ww.logical_types["floats"], Double)
+    assert isinstance(df.ww.logical_types["dates"], Datetime)
+
+
+@patch("woodwork.logical_types._replace_nans")
+def test_ignore_columns(mock_replace_nans):
+    df = pd.DataFrame()
+    df["ints"] = [i for i in range(100)] + [np.nan]
+    df["floats"] = [True, False] * 50 + [pd.NA]
+
+    mock_replace_nans.side_effect = [df["ints"], df["floats"]]
+    df.ww.init()
+
+    assert mock_replace_nans.call_count == 2
+    schema = df.ww.schema
+    df.ww.init(ignore_columns=["ints", "floats"], schema=schema)
+
+    assert mock_replace_nans.call_count == 2
 
 
 def test_datetime_timezones(timezones_df):
@@ -2885,11 +2979,8 @@ def test_ltype_conversions_nullable_types():
     assert isinstance(df.ww.logical_types["int"], Integer)
 
     # Test invalid conversions
-    error_msg = (
-        "Error converting datatype for bool_null from type boolean to type bool. "
-        "Please confirm the underlying data is consistent with logical type Boolean."
-    )
-    with pytest.raises(TypeConversionError, match=error_msg):
+    error_msg = "Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value"
+    with pytest.raises(ValueError, match=error_msg):
         df.ww.set_types({"bool_null": "Boolean"})
 
     error_msg = (
@@ -3082,7 +3173,7 @@ def test_validate_logical_types(sample_df):
 
     if _is_spark_dataframe(df):
         invalid_df = ps.from_pandas(invalid_df)
-    df = df.append(invalid_df)
+    df = concat_dataframe_or_series(df, invalid_df)
 
     df.ww.init(
         logical_types={

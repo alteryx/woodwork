@@ -82,7 +82,7 @@ def test_read_file_validation_control(
             "sample.csv",
             ("to_csv", {"index": False}),
             {
-                "nrows": 2,
+                "nrows": 3,
                 "dtype": {
                     "age": "Int64",
                     "is_registered": "boolean",
@@ -193,7 +193,6 @@ def test_read_file(
         semantic_tags=kwargs.get("semantic_tags"),
         column_origins=kwargs.get("column_origins"),
     )
-
     if func == "to_csv":
         for c in ["signup_date", "datetime_with_NaT"]:
             df.ww.logical_types[

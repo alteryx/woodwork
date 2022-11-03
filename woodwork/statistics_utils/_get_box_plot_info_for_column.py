@@ -11,6 +11,7 @@ def _get_box_plot_info_for_column(
     series,
     quantiles=None,
     include_indices_and_values=True,
+    ignore_zeros=False,
 ):
     """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
@@ -23,6 +24,8 @@ def _get_box_plot_info_for_column(
         include_indices_and_values (bool, optional): Whether or not the lists containing individual
             outlier values and their indices will be included in the returned dictionary.
             Defaults to True.
+        ignore_zeros (bool): Whether to ignore 0 values (not NaN values) when calculating the box plot and outliers.
+                Defaults to False.
 
     Note:
         The minimum quantiles necessary for building a box plot using the IQR method are the
@@ -61,6 +64,9 @@ def _get_box_plot_info_for_column(
 
     # remove null values from the data
     series = series.dropna()
+
+    if ignore_zeros:
+        series = series[series.astype(bool)]
 
     outliers_dict = {}
     # An empty or fully null Series has no outliers, bounds, or quantiles
@@ -106,10 +112,14 @@ def _get_box_plot_info_for_column(
     if include_indices_and_values:
         # identify outliers in the series
         low_series = (
-            series[series < low_bound] if low_bound > min_value else pd.Series()
+            series[series < low_bound]
+            if low_bound > min_value
+            else pd.Series(dtype="float64")
         )
         high_series = (
-            series[series > high_bound] if high_bound < max_value else pd.Series()
+            series[series > high_bound]
+            if high_bound < max_value
+            else pd.Series(dtype="float64")
         )
 
         outliers_dict = {
