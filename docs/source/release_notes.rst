@@ -13,6 +13,7 @@ Future Release
         * Unpin dask dependency (:pr:`1561`)
     * Documentation Changes
     * Testing Changes
+        * Run looking glass performance tests on merge (:pr:`1567`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`sbadithe`, :user:`bchen1116`
