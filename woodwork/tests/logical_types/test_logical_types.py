@@ -271,7 +271,7 @@ def test_ordinal_validate(sample_series):
 
     new_type = "string"
     error_message = re.escape(
-        f"Series dtype '{new_type}' is incompatible with ordinal LogicalType, try converting to {valid_dtype}",
+        f"Series dtype '{new_type}' is incompatible with ordinal LogicalType, try converting to category dtype",
     )
     with pytest.raises(TypeValidationError, match=error_message):
         ordinal_incomplete_order.validate(sample_series.astype(new_type))

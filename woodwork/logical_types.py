@@ -83,7 +83,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         valid_dtype = self._get_valid_dtype(type(series))
         if valid_dtype != str(series.dtype):
             raise TypeValidationError(
-                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} LogicalType, try converting to {valid_dtype}",
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} LogicalType, try converting to {valid_dtype} dtype",
             )
 
 
