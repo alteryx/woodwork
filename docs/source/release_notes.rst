@@ -10,6 +10,7 @@ Future Release
         * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
     * Fixes
         * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
+        * Fixes error message in validate method in logical_types.py (:pr:`1565`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
     * Documentation Changes
