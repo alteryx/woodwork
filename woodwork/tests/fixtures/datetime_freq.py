@@ -50,8 +50,8 @@ TAIL_RANGE_LEN = 100
 def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
     dates = [pd.Timestamp(d) for d in dates]
 
-    head = pd.Series([])
-    tail = pd.Series([])
+    head = pd.Series([], dtype="object")
+    tail = pd.Series([], dtype="object")
 
     if pad_start > 0:
         head = (
@@ -66,7 +66,7 @@ def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
     return (
         pd.concat([head, pd.Series(dates), tail])
         .reset_index(drop=True)
-        .astype("datetime64[ns]")
+        .tz_localize(None)
     )
 
 
