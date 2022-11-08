@@ -290,17 +290,34 @@ class TypeSystem(object):
         Args:
             series (pandas.Series): The series for which to infer the LogicalType.
         """
+
+        def get_random_sample(series_, **kwargs):
+            if len(series_) > INFERENCE_SAMPLE_SIZE:
+                sampled_series = series_.sample(**kwargs)
+                return sampled_series
+            else:
+                return series_
+
+        kw_args_sampling = {
+            "replace": False,
+            "random_state": 42,
+        }
         if isinstance(series, pd.Series):
             # Special case for series with no valid values
             if series.count() == 0:
                 return Unknown()
-
-            series = series.head(INFERENCE_SAMPLE_SIZE)
+            kw_args_sampling["n"] = INFERENCE_SAMPLE_SIZE
+            series = get_random_sample(series, **kw_args_sampling)
         else:
+            # Dask and Spark don't accept the n argument
+            kw_args_sampling["frac"] = INFERENCE_SAMPLE_SIZE / len(series)
             if _is_dask_series(series):
-                series = series.head(INFERENCE_SAMPLE_SIZE, npartitions=-1)
+                series = get_random_sample(
+                    series.head(len(series), npartitions=-1), **kw_args_sampling
+                )
             elif _is_spark_series(series):
-                series = series.head(INFERENCE_SAMPLE_SIZE).to_pandas()
+                series = get_random_sample(series, **kw_args_sampling)
+                series = series.to_pandas()
             else:
                 raise ValueError(
                     f"Unsupported series type `{type(series)}`",
