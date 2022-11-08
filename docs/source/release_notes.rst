@@ -12,6 +12,7 @@ Future Release
         * Fixes error message in validate method in logical_types.py (:pr:`1565`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
+        * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
     * Documentation Changes
     * Testing Changes
 
