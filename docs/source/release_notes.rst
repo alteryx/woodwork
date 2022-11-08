@@ -10,6 +10,7 @@ Future Release
         * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1552`)
     * Fixes
         * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
+        * Fixes error message in validate method in logical_types.py (:pr:`1565`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
     * Documentation Changes
