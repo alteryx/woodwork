@@ -179,7 +179,6 @@ def _get_box_plot_info_for_column(
     mc = None
     if method == "best":
         method, mc = _determine_best_outlier_method(series)
-        assert mc is not None
     if method == "medcouple" and mc is None:
         mc = _sample_for_medcouple(series)
 
