@@ -263,10 +263,7 @@ def _find_large_categorical_columns(datatable, total_unique=6000):
         if len(cols_greater) < 2:
             return cols_to_drop
 
-        if _is_dask_dataframe(df):
-            df_uniques = df[cols_greater].nunique().compute()
-        else:
-            df_uniques = df[cols_greater].nunique()
+        df_uniques = df[cols_greater].nunique()
         total = sum(df_uniques.to_numpy())
         if total > total_unique:
             # try to use mergesort to keep the order of the columns
@@ -283,6 +280,6 @@ def _find_large_categorical_columns(datatable, total_unique=6000):
 
     categoricals = datatable.ww.select("category").columns
     # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
-    if len(categoricals):
+    if len(categoricals) and not _is_dask_dataframe(datatable):
         return categorical_column_drop_helper(datatable[categoricals])
     return []
