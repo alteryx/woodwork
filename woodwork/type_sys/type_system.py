@@ -312,12 +312,13 @@ class TypeSystem(object):
             # Dask and Spark don't accept the n argument
 
             # prevent division by zero error
-            if not len(series):
+            series_len = len(series)
+            if not series_len:
                 return Unknown()
-            kw_args_sampling["frac"] = INFERENCE_SAMPLE_SIZE / len(series)
+            kw_args_sampling["frac"] = INFERENCE_SAMPLE_SIZE / series_len
             if _is_dask_series(series):
                 series = get_random_sample(
-                    series.head(len(series), npartitions=-1), **kw_args_sampling
+                    series.head(series_len, npartitions=-1), **kw_args_sampling
                 )
             elif _is_spark_series(series):
                 series = get_random_sample(series, **kw_args_sampling)
