@@ -10,7 +10,8 @@ Future Release
     * Fixes
         * Resolved FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
         * Fixed error message in validate method in logical_types.py (:pr:`1565`)
-        * Fixed ``IntegerNullable`` inference by checking values are within valid ``Int64`` bounds (:pr:``)
+        * Fixed ``IntegerNullable`` inference by checking values are within valid ``Int64`` bounds (:pr:`1572`)
+        * Update demo dataset links to point to new endpoint (:pr:`1570`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
         * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
