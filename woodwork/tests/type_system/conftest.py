@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -18,6 +20,7 @@ def pandas_integers():
     return [
         pd.Series(4 * [-1, 2, 1, 7]),
         pd.Series(4 * [-1, 0, 5, 3]),
+        pd.Series(4 * [sys.maxsize, -sys.maxsize - 1, 0], dtype="str").astype("int64"),
     ]
 
 
@@ -43,7 +46,7 @@ def pandas_doubles():
         pd.Series(4 * [-1, 2.5, 1, 7]),
         pd.Series(4 * [1.5, np.nan, 1, 3]),
         pd.Series(4 * [1.5, np.inf, 1, 3]),
-        pd.Series([np.finfo("d").max, np.finfo("d").min] + [3, 1] * 7),
+        pd.Series([np.finfo("d").max, np.finfo("d").min, 3, 1]),
     ]
 
 

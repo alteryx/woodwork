@@ -204,6 +204,8 @@ def test_categorical_integers_inference(integers):
             dtypes = get_spark_dtypes(dtypes)
         for series in integers:
             for dtype in dtypes:
+                if len(integers) < 12 and "64" not in dtypes:
+                    continue
                 inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
                 assert isinstance(inferred_type, Categorical)
 
@@ -215,6 +217,8 @@ def test_categorical_double_inference(doubles):
             dtypes = get_spark_dtypes(dtypes)
         for series in doubles:
             for dtype in dtypes:
+                if len(doubles) < 16 and dtypes != "float64":
+                    continue
                 inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
                 assert isinstance(inferred_type, Categorical)
 
