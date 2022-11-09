@@ -310,6 +310,10 @@ class TypeSystem(object):
             series = get_random_sample(series, **kw_args_sampling)
         else:
             # Dask and Spark don't accept the n argument
+            
+            # prevent division by zero error
+            if not len(series): 
+                return Unknown()
             kw_args_sampling["frac"] = INFERENCE_SAMPLE_SIZE / len(series)
             if _is_dask_series(series):
                 series = get_random_sample(
