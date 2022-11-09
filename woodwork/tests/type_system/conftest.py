@@ -46,7 +46,7 @@ def pandas_doubles():
         pd.Series(4 * [-1, 2.5, 1, 7]),
         pd.Series(4 * [1.5, np.nan, 1, 3]),
         pd.Series(4 * [1.5, np.inf, 1, 3]),
-        pd.Series([np.finfo("d").max, np.finfo("d").min, 3, 1]),
+        pd.Series(4 * [np.finfo("d").max, np.finfo("d").min, 3, 1]),
     ]
 
 
