@@ -331,18 +331,22 @@ def dask_pdnas(pandas_pdnas):
 def pdnas(request):
     return request.getfixturevalue(request.param)
 
+
 # Empty Inference Fixtures
 @pytest.fixture
 def pandas_empty():
-    return pd.Series([], dtype='object')
+    return pd.Series([], dtype="object")
+
 
 @pytest.fixture
 def dask_empty(pandas_empty):
     return pd_to_dask(pandas_empty)
 
+
 @pytest.fixture
 def pyspark_empty(pandas_empty):
     return pd_to_spark(pandas_empty)
+
 
 @pytest.fixture(params=["pandas_empty", "dask_empty", "pyspark_empty"])
 def empty_series(request):
