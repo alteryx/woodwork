@@ -253,9 +253,8 @@ def test_unknown_inference_all_null(nulls):
 
 
 def test_unknown_inference_empty_series(empty_series):
-    for series in empty_series:
-        inferred_type = ww.type_system.infer_logical_type(series.astype("string"))
-        assert isinstance(inferred_type, Unknown)
+    inferred_type = ww.type_system.infer_logical_type(empty_series.astype("string"))
+    assert isinstance(inferred_type, Unknown)
 
 
 def test_pdna_inference(pdnas):

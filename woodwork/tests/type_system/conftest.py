@@ -335,17 +335,17 @@ def pdnas(request):
 # Empty Series Inference Fixtures
 @pytest.fixture
 def pandas_empty_series():
-    return [pd.Series([], dtype="object")]
+    return pd.Series([], dtype="object")
 
 
 @pytest.fixture
 def dask_empty_series(pandas_empty_series):
-    return [pd_to_dask(series) for series in pandas_empty_series]
+    return pd_to_dask(pandas_empty_series)
 
 
 @pytest.fixture
 def pyspark_empty_series(pandas_empty_series):
-    return [pd_to_spark(series) for series in pandas_empty_series]
+    return pd_to_spark(pandas_empty_series)
 
 
 @pytest.fixture(
