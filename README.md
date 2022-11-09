@@ -52,7 +52,7 @@ Below is an example of using Woodwork. In this example, a sample dataset of orde
 import pandas as pd
 import woodwork as ww
 
-df = pd.read_csv("https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv")
+df = pd.read_csv("https://oss.alteryx.com/datasets/online-retail-logs-2018-08-28.csv")
 df.ww.init(name='retail')
 df.ww.set_types(logical_types={
     'quantity': 'Integer',
