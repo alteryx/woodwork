@@ -348,7 +348,9 @@ def pyspark_empty_series(pandas_empty_series):
     return [pd_to_spark(series) for series in pandas_empty_series]
 
 
-@pytest.fixture(params=["pandas_empty_series", "dask_empty_series", "pyspark_empty_series"])
+@pytest.fixture(
+    params=["pandas_empty_series", "dask_empty_series", "pyspark_empty_series"]
+)
 def empty_series(request):
     return request.getfixturevalue(request.param)
 

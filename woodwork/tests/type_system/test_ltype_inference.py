@@ -255,7 +255,6 @@ def test_unknown_inference_all_null(nulls):
 def test_unknown_inference_empty_series(empty_series):
     for series in empty_series:
         inferred_type = ww.type_system.infer_logical_type(series.astype("string"))
-        inferred_type.transform(series)
         assert isinstance(inferred_type, Unknown)
 
 
