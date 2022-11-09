@@ -332,7 +332,7 @@ def pdnas(request):
     return request.getfixturevalue(request.param)
 
 
-# Empty Inference Fixtures
+# Empty Series Inference Fixtures
 @pytest.fixture
 def pandas_empty_series():
     return [pd.Series([], dtype="object")]
