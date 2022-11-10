@@ -215,10 +215,7 @@ def test_categorical_double_inference(doubles):
             dtypes = get_spark_dtypes(dtypes)
         for series in doubles:
             for dtype in dtypes:
-                # if len(doubles) < 16 and dtypes == "float_":
-                #     continue
                 inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-                # print(inferred_type, dtype)
                 assert isinstance(inferred_type, Categorical)
 
 
