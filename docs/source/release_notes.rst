@@ -13,6 +13,7 @@ Future Release
         * Fixed ``IntegerNullable`` inference by checking values are within valid ``Int64`` bounds (:pr:`1572`)
         * Update demo dataset links to point to new endpoint (:pr:`1570`)
         * Fix DivisionByZero error in ``type_system.py`` (:pr:`1571`)
+        * Fix Categorical dtype inference for PostalCode logical type (:pr:`1574`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
         * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
