@@ -13,6 +13,7 @@ from woodwork.logical_types import (
     IntegerNullable,
     LogicalType,
     NaturalLanguage,
+    PostalCode,
     Timedelta,
     Unknown,
 )
@@ -125,11 +126,21 @@ def test_categorical_inference(categories):
     if _is_spark_series(categories[0]):
         dtypes = get_spark_dtypes(dtypes)
     for ind, series in enumerate(categories):
-        if ind == len(categories) - 1:
+        if ind >= len(categories) - 2:
             dtypes = ["string", "category"]
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Categorical)
+
+
+def test_postal_inference(postal):
+    dtypes = ["category", "string"]
+    for series in postal:
+        if _is_spark_series(series):
+            dtypes = get_spark_dtypes(dtypes)
+        for dtype in dtypes:
+            inferred_dtype = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_dtype, PostalCode)
 
 
 def test_natural_language_inference(natural_language):
