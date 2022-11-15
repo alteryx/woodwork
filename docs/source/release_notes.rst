@@ -9,8 +9,11 @@ Future Release
         * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
     * Fixes
         * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
+        * Fixes error message in validate method in logical_types.py (:pr:`1565`)
+        * Update demo dataset links to point to new endpoint (:pr:`1570`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
+        * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
     * Documentation Changes
     * Testing Changes
         * Run looking glass performance tests on merge (:pr:`1567`)
