@@ -58,7 +58,7 @@ jobs:
       - name: Await results
         id: results
         run: |
-          for id in ${{ steps.current.outputs.job_id }} ${{ steps.previous.outputs.job_id }}
+          for id in ${{ steps.current.outputs.job_id }} ${{ steps.previous.outputs.job_id }}; do
             echo "Waiting for job id: $id"
             result=''
             sleep_time=0
