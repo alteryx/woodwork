@@ -48,12 +48,12 @@ jobs:
       - name: Run performance test (current)
         id: current
         run: |
-          response=$( looking-glass run-woodwork --username machineFL --scenarios-yaml scenarios_v2.yaml --woodwork-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }} )
+          response=$( looking-glass run-woodwork --username machineFL --scenarios-yaml woodwork_scenarios.yaml --woodwork-branch ${{ steps.get_hashes.outputs.current_hash }} --job-desc ${{ steps.get_hashes.outputs.current_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Run performance test (previous)
         id: previous
         run: |
-          response=$( looking-glass run-woodwork --username machineFL --scenarios-yaml scenarios_v2.yaml --woodwork-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }} )
+          response=$( looking-glass run-woodwork --username machineFL --scenarios-yaml woodwork_scenarios.yaml --woodwork-branch ${{ steps.get_hashes.outputs.previous_hash }} --job-desc ${{ steps.get_hashes.outputs.previous_hash }} )
           echo "::set-output name=job_id::$(echo $response | sed 's/.*Job ID: \([^ ]*\).*/\1/')"
       - name: Await results
         id: results
