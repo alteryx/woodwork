@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - lg_merge_perf_test
 
 jobs:
   performance_tests:
