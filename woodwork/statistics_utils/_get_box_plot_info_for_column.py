@@ -184,7 +184,6 @@ def _get_box_plot_info_for_column(
 
     if isinstance(mc, np.ndarray):
         mc = mc.tolist()
-        assert isinstance(mc, float)
 
     low_bound, high_bound = _get_low_high_bound(
         series, method, q1, q3, min_value, max_value, mc
