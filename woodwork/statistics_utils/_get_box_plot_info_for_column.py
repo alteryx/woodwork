@@ -2,9 +2,9 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
+from scipy.stats import skew
 
 import woodwork as ww
-from scipy.stats import skew
 from woodwork.statistics_utils._get_medcouple_statistic import _sample_for_medcouple
 from woodwork.utils import import_or_none
 
