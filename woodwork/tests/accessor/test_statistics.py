@@ -1941,7 +1941,7 @@ def test_medcouple_outliers(skewed_outliers_df):
     expected_right_skewed_dict = {
         "method": "medcouple",
         "low_bound": 1.5883928623275634,
-        "high_bound": 20.345351096332454,
+        "high_bound": 20.34535109633245,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
