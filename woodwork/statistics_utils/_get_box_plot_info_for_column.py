@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 import woodwork as ww
+from scipy.stats import skew
 from woodwork.statistics_utils._get_medcouple_statistic import _sample_for_medcouple
 from woodwork.utils import import_or_none
 
@@ -43,17 +44,16 @@ def _determine_best_outlier_method(series):
     return method_result(method, mc)
 
 
-def _determine_coefficients(mc):
+def _determine_coefficients(series, mc):
+    coeff = np.abs(skew(series))
+    coeff = min(coeff, 3.5)
     if mc >= 0:
-        lower_coef = -3.5
-        higher_coef = max(1, 4 * (1 - mc))
+        return -coeff, coeff
     else:
-        lower_coef = min(-1, -4 * (1 + mc))
-        higher_coef = 3.5
-    return lower_coef, higher_coef
+        return coeff, -coeff
 
 
-def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
+def _get_low_high_bound(series, method, q1, q3, min_value, max_value, mc=None):
     iqr = q3 - q1
     if method == "medcouple":
         if mc is None:
@@ -61,7 +61,7 @@ def _get_low_high_bound(method, q1, q3, min_value, max_value, mc=None):
                 "If the method selected is medcouple, then mc cannot be None."
             )
         # Medcouple coefficients change based on the skew direction
-        lower_bound_coef, higher_bound_coef = _determine_coefficients(mc)
+        lower_bound_coef, higher_bound_coef = _determine_coefficients(series, mc)
         low_bound = q1 - 1.5 * np.exp(lower_bound_coef * mc) * iqr
         high_bound = q3 + 1.5 * np.exp(higher_bound_coef * mc) * iqr
     elif method == "box_plot":
@@ -187,7 +187,7 @@ def _get_box_plot_info_for_column(
         assert isinstance(mc, float)
 
     low_bound, high_bound = _get_low_high_bound(
-        method, q1, q3, min_value, max_value, mc
+        series, method, q1, q3, min_value, max_value, mc
     )
 
     if include_indices_and_values:

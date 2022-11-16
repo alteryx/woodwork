@@ -8,6 +8,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.stats import skew
 
 from woodwork.accessor_utils import _is_spark_dataframe, init_series
 from woodwork.config import CONFIG_DEFAULTS, config
@@ -1939,8 +1940,8 @@ def test_medcouple_outliers(skewed_outliers_df):
 
     expected_right_skewed_dict = {
         "method": "medcouple",
-        "low_bound": 1.5986854923843101,
-        "high_bound": 16.945914544292435,
+        "low_bound": 1.5883928623275634,
+        "high_bound": 20.345351096332454,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
@@ -1957,8 +1958,8 @@ def test_medcouple_outliers(skewed_outliers_df):
 
     expected_left_skewed_dict = {
         "method": "medcouple",
-        "low_bound": 14.054085455707563,
-        "high_bound": 29.40131450761569,
+        "low_bound": 10.654648903667557,
+        "high_bound": 29.411607137672437,
         "quantiles": {
             0.0: 1.0,
             0.25: 25.0,
@@ -2035,7 +2036,7 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
     expected_skewed_dict = {
         "method": "medcouple",
         "low_bound": 1.9490141192882326,
-        "high_bound": 13.459435908219328,
+        "high_bound": 16.088038083143267,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
@@ -2044,9 +2045,9 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
             1.0: 30.0,
         },
         "low_values": [1.0, 1.0],
-        "high_values": [14.0, 16.0, 30.0],
+        "high_values": [30.0],
         "low_indices": [0, 1],
-        "high_indices": [63, 64, 65],
+        "high_indices": [65],
         "medcouple_stat": 0.3333333333333333,
     }
 
@@ -2054,23 +2055,34 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
 
 
 @pytest.mark.parametrize("mc", [-1.0, -0.5, -0.1, 0, 0.3333333, 1.0])
-def test_determine_coefficients(mc):
+def test_determine_coefficients(mc, skewed_outliers_df):
+    if _is_spark_dataframe(skewed_outliers_df):
+        pytest.xfail("spark hasn't implemented __iter__() for series")
+    right_skewed = skewed_outliers_df["right_skewed_outliers"]
+    left_skewed = skewed_outliers_df["left_skewed_outliers"]
+
+    right_coeff = np.abs(skew(right_skewed))
+    right_coeff = min(right_coeff, 3.5)
+
+    left_coeff = np.abs(skew(left_skewed))
+    left_coeff = min(left_coeff, 3.5)
+
     if mc >= 0:
-        coef_to_check = max(1, 4 * (1 - mc))
-        assert _determine_coefficients(mc) == (-3.5, coef_to_check)
+        assert _determine_coefficients(right_skewed, mc) == (-right_coeff, right_coeff)
+        assert _determine_coefficients(left_skewed, mc) == (-left_coeff, left_coeff)
     else:
-        coef_to_check = min(-1, -4 * (1 + mc))
-        assert _determine_coefficients(mc) == (coef_to_check, 3.5)
+        assert _determine_coefficients(right_skewed, mc) == (right_coeff, -right_coeff)
+        assert _determine_coefficients(left_skewed, mc) == (left_coeff, -left_coeff)
 
 
 def test_get_low_high_bound_warnings():
     error = "If the method selected is medcouple, then mc cannot be None."
     with pytest.raises(ValueError, match=error):
-        _get_low_high_bound("medcouple", 1, 1, None, None, None)
+        _get_low_high_bound(None, "medcouple", 1, 1, None, None, None)
 
     error = "Acceptable methods are 'box_plot' and 'medcouple'. The value passed was 'something_else'"
     with pytest.raises(ValueError, match=error):
-        _get_low_high_bound("something_else", 1, 1, None, None, None)
+        _get_low_high_bound(None, "something_else", 1, 1, None, None, None)
 
 
 def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
