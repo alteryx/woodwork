@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - lg_merge_perf_test
 
 jobs:
   performance_tests:
@@ -132,7 +131,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*Algorithm Report*: <$presigned_url|${{ steps.s3_upload.outputs.report_url }}>"
+                  "text": "*Report*: <$presigned_url|${{ steps.s3_upload.outputs.report_url }}>"
                 }
               },
             ]
