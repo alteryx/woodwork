@@ -1958,8 +1958,8 @@ def test_medcouple_outliers(skewed_outliers_df):
 
     expected_left_skewed_dict = {
         "method": "medcouple",
-        "low_bound": 10.654648903667557,
-        "high_bound": 29.411607137672437,
+        "low_bound": 23.588392862327563,
+        "high_bound": 30.0,
         "quantiles": {
             0.0: 1.0,
             0.25: 25.0,
@@ -1967,10 +1967,10 @@ def test_medcouple_outliers(skewed_outliers_df):
             0.75: 28.0,
             1.0: 30.0,
         },
-        "low_values": [1],
-        "high_values": [30, 30],
-        "low_indices": [65],
-        "high_indices": [0, 1],
+        "low_values": [23, 23, 22, 22, 21, 20, 18, 17, 15, 1],
+        "high_values": [],
+        "low_indices": [56, 57, 58, 59, 60, 61, 62, 63, 64, 65],
+        "high_indices": [],
         "medcouple_stat": -0.3333333333333333,
     }
 
