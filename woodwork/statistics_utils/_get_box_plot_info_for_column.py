@@ -45,6 +45,20 @@ def _determine_best_outlier_method(series):
 
 
 def _determine_coefficients(series, mc):
+    """Determines the coefficients to use in the medcouple bounds equation using the moment of skewness.
+
+    Args:
+        series (Series): Data on which the medcouple statistic will be run in order to determine coefficients.
+
+    Note:
+        Based off of the paper I. H. Adil and A. R. Irshad, "A Modified Approach for Detection of Outliers",
+        Pak.j.stat.oper.res. Vol.XI No.1 2015 pp. 91-102, 2015.
+
+    Returns:
+        MedcoupleHeuristicResult - Named tuple with 2 fields
+            method (str): Name of the outlier method to use.
+            mc (float): The medcouple statistic (if the method chosen is medcouple, otherwise None).
+    """
     coeff = np.abs(skew(series))
     coeff = min(coeff, 3.5)
     if mc >= 0:

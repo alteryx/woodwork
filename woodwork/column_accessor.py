@@ -429,6 +429,9 @@ class WoodworkColumnAccessor:
                     Will not be included if ``include_indices_and_values`` is False.
                 - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
                     Will not be included if ``include_indices_and_values`` is False.
+                - method (str): the method used to identify outliers
+                - medcouple_stat (float): the medcouple statistic will be added in the response if the method selected
+                    is medcouple
         """
         return _get_box_plot_info_for_column(
             self._series,
@@ -481,6 +484,7 @@ class WoodworkColumnAccessor:
                     Will not be included if ``include_indices_and_values`` is False.
                 - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
                     Will not be included if ``include_indices_and_values`` is False.
+                - method (str): the method used to identify outliers, in this case box_plot
         """
         return _get_box_plot_info_for_column(
             self._series,
@@ -533,6 +537,8 @@ class WoodworkColumnAccessor:
                     Will not be included if ``include_indices_and_values`` is False.
                 - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
                     Will not be included if ``include_indices_and_values`` is False.
+                - method (str): the method used to identify outliers, in this case medcouple.
+                - medcouple_stat (float): the medcouple statistic
         """
         return _get_box_plot_info_for_column(
             self._series,
