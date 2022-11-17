@@ -1,3 +1,4 @@
+import sys
 from importlib import resources as pkg_resources
 from typing import Any, Callable, Iterable, Union
 
@@ -10,6 +11,8 @@ from woodwork import data
 from woodwork.config import config
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
+MAX_INT = sys.maxsize
+MIN_INT = -sys.maxsize - 1
 Tokens = Iterable[str]
 
 COMMON_WORDS_SET = set(
@@ -54,10 +57,14 @@ def integer_nullable_func(series):
         else:
             return True
     elif pdtypes.is_float_dtype(series.dtype):
+
+        def _is_valid_int(value):
+            return value >= MIN_INT and value <= MAX_INT and value.is_integer()
+
         if not series.isnull().any():
             return False
         series_no_null = series.dropna()
-        return all(series_no_null.mod(1).eq(0))
+        return all([_is_valid_int(v) for v in series_no_null])
 
     return False
 
