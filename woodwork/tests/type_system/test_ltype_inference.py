@@ -16,6 +16,7 @@ from woodwork.logical_types import (
     Timedelta,
     Unknown,
 )
+from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.type_system import (
     DEFAULT_INFERENCE_FUNCTIONS,
@@ -300,3 +301,4 @@ def test_inference_randomly_sampled(large_df, type_sys):
     inferred_type = large_df.ww.logical_types["floats"]
     assert isinstance(inferred_type, Double)
     inferred_type = large_df.ww.logical_types["constant"]
+    assert isinstance(inferred_type, Unknown)

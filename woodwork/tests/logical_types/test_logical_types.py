@@ -944,8 +944,9 @@ def test_boolean_other_values(df_type):
             "bool4": ["true", "false", "false", "false", "true", "true"],
             "bool5": ["True", "False", "False", "True", "false", "TRUE"],
             "bool6": ["1", "0", "1", "1", "1", "0"],
-            "bool7": ["YES", "NO", "YES", "yes", "no", "no"],
-            "bool8": ["N", "N", "n", "y", "Y", "y"],
+            "bool7": ["1.0", "0.0", "1.0", "1.0", "1.0", "0.0"],
+            "bool8": ["YES", "NO", "YES", "yes", "no", "no"],
+            "bool9": ["N", "N", "n", "y", "Y", "y"],
         },
     )
     if df_type == "spark":
