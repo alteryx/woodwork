@@ -16,7 +16,6 @@ from woodwork.logical_types import (
     Timedelta,
     Unknown,
 )
-from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.type_system import (
     DEFAULT_INFERENCE_FUNCTIONS,
