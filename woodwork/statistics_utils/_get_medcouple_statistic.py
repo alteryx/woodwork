@@ -11,7 +11,8 @@ def _get_medcouple_statistic(array_, axis=0):
     array_ = np.asarray(array_, dtype=np.double)
     mc = np.apply_along_axis(_calculate_medcouple_statistic, axis, array_)
     if isinstance(mc, np.ndarray) and isinstance(mc.tolist(), float):
-        return mc.tolist()
+        mc = mc.tolist()
+        mc = round(mc, 3)
     return mc
 
 

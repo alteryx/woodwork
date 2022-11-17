@@ -202,6 +202,8 @@ def _get_box_plot_info_for_column(
     low_bound, high_bound = _get_low_high_bound(
         series, method, q1, q3, min_value, max_value, mc
     )
+    low_bound = round(low_bound, 5) if isinstance(low_bound, float) else low_bound
+    high_bound = round(high_bound, 5) if isinstance(high_bound, float) else high_bound
 
     if include_indices_and_values:
         # identify outliers in the series

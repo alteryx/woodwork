@@ -1940,8 +1940,8 @@ def test_medcouple_outliers(skewed_outliers_df):
 
     expected_right_skewed_dict = {
         "method": "medcouple",
-        "low_bound": 1.5883928623275634,
-        "high_bound": 20.345351096332454,
+        "low_bound": 1.58676,
+        "high_bound": 20.32873,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
@@ -1953,12 +1953,12 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values": [30],
         "low_indices": [0, 1],
         "high_indices": [65],
-        "medcouple_stat": 0.3333333333333333,
+        "medcouple_stat": 0.333,
     }
 
     expected_left_skewed_dict = {
         "method": "medcouple",
-        "low_bound": 23.588392862327563,
+        "low_bound": 23.58676,
         "high_bound": 30.0,
         "quantiles": {
             0.0: 1.0,
@@ -1971,7 +1971,7 @@ def test_medcouple_outliers(skewed_outliers_df):
         "high_values": [],
         "low_indices": [56, 57, 58, 59, 60, 61, 62, 63, 64, 65],
         "high_indices": [],
-        "medcouple_stat": -0.3333333333333333,
+        "medcouple_stat": -0.333,
     }
 
     assert right_skewed_dict == expected_right_skewed_dict
@@ -2010,7 +2010,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
         "high_values": [],
         "low_indices": [],
         "high_indices": [],
-        "medcouple_stat": 0.3333333333333333,
+        "medcouple_stat": 0.333,
     }
 
     right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict(
@@ -2023,7 +2023,7 @@ def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
     expected_skewed_dict["quantiles"] = override_quantiles_right
     assert right_skewed_dict == expected_skewed_dict
     expected_skewed_dict["quantiles"] = override_quantiles_left
-    expected_skewed_dict["medcouple_stat"] = -0.3333333333333333
+    expected_skewed_dict["medcouple_stat"] = -0.333
     assert left_skewed_dict == expected_skewed_dict
 
 
@@ -2035,8 +2035,8 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
 
     expected_skewed_dict = {
         "method": "medcouple",
-        "low_bound": 1.9490141192882326,
-        "high_bound": 16.088038083143267,
+        "low_bound": 1.94779,
+        "high_bound": 16.0754,
         "quantiles": {
             0.0: 1.0,
             0.25: 3.0,
@@ -2048,7 +2048,7 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
         "high_values": [30.0],
         "low_indices": [0, 1],
         "high_indices": [65],
-        "medcouple_stat": 0.3333333333333333,
+        "medcouple_stat": 0.333,
     }
 
     assert medcouple_dict == expected_skewed_dict
@@ -2090,12 +2090,12 @@ def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
     has_outliers_series = has_outliers_series.append(pd.Series([39]), ignore_index=True)
     has_outliers_series.ww.init()
     mc = _get_medcouple_statistic(has_outliers_series)
-    assert mc == 0.12179487179487179
+    assert mc == 0.122
 
     outliers_series_skewed_right = skewed_outliers_df_pandas["right_skewed_outliers"]
     outliers_series_skewed_right.ww.init()
     mc = _get_medcouple_statistic(outliers_series_skewed_right)
-    assert mc == 0.3333333333333333
+    assert mc == 0.333
 
     outliers_series_skewed = skewed_outliers_df_pandas[
         ["right_skewed_outliers", "left_skewed_outliers"]
