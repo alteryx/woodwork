@@ -311,3 +311,4 @@ def test_inference_randomly_sampled(large_df, type_sys):
     inferred_type = large_df.ww.logical_types["floats"]
     assert isinstance(inferred_type, Double)
     inferred_type = large_df.ww.logical_types["constant"]
+    assert isinstance(inferred_type, Unknown)
