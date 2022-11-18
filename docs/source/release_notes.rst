@@ -53,7 +53,6 @@ v0.19.0 September 27, 2022
         * Remove ``dask[dataframe]`` version restriction (:pr:`1527`)
     * Testing Changes
         * Add kickoff for create conda forge pull request from release (:pr:`1515`)
-        * Perform performance tests on merge (:pr:`1567`)
 
     Thanks to the following people for contributing to this release:
     :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`thehomebrewnerd`
