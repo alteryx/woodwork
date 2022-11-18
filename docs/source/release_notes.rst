@@ -9,9 +9,12 @@ Future Release
         * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
         * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1552`)
     * Fixes
-        * Resolve FutureWarning in `_get_box_plot_info_for_column` (:pr:`1563`)
-        * Fixes error message in validate method in logical_types.py (:pr:`1565`)
+        * Resolved FutureWarning in ``_get_box_plot_info_for_column`` (:pr:`1563`)
+        * Fixed error message in validate method in logical_types.py (:pr:`1565`)
+        * Fixed ``IntegerNullable`` inference by checking values are within valid ``Int64`` bounds (:pr:`1572`)
         * Update demo dataset links to point to new endpoint (:pr:`1570`)
+        * Fix DivisionByZero error in ``type_system.py`` (:pr:`1571`)
+        * Fixed issue where forcing a ``Boolean`` logical type on a column of 0.0s and 1.0s caused incorrect transformation (:pr:`1576`)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
         * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
