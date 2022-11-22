@@ -15,6 +15,7 @@ Future Release
         * Update demo dataset links to point to new endpoint (:pr:`1570`)
         * Fix DivisionByZero error in ``type_system.py`` (:pr:`1571`)
         * Fixed issue where forcing a ``Boolean`` logical type on a column of 0.0s and 1.0s caused incorrect transformation (:pr:`1576`)
+        * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:``)
     * Changes
         * Unpin dask dependency (:pr:`1561`)
         * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
