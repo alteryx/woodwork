@@ -1,5 +1,5 @@
 numpy==1.23.5
 pandas==1.5.1
-pyarrow==10.0.0
+pyarrow==10.0.1
 pyspark==3.2.2
 scikit-learn==1.1.3
