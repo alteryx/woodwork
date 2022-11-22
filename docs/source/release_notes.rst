@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
+        * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
     * Fixes
         * Resolved FutureWarning in ``_get_box_plot_info_for_column`` (:pr:`1563`)
         * Fixed error message in validate method in logical_types.py (:pr:`1565`)
@@ -19,10 +20,11 @@ Future Release
         * Unpin dask dependency (:pr:`1561`)
         * Changed the sampling strategy for type inference from ``head`` to random (:pr:`1566`)
     * Documentation Changes
+        * Updated documentation to include the ``get_outliers`` and ``medcouple_dict`` (:pr:`1547`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`sbadithe`, :user:`bchen1116`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`sbadithe`
 
 Breaking Changes
 ++++++++++++++++
