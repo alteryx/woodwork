@@ -1,6 +1,7 @@
 import copy
 import warnings
 import weakref
+from typing import Dict, Optional, Union
 
 import pandas as pd
 from pandas.api import types as pdtypes
@@ -389,11 +390,63 @@ class WoodworkColumnAccessor:
         self._schema._set_semantic_tags(semantic_tags)
 
     @_check_column_schema
+    def get_outliers(
+        self,
+        method="best",
+        quantiles: Optional[Dict[float, Union[int, float]]] = None,
+        include_indices_and_values: bool = True,
+        ignore_zeros: bool = False,
+    ):
+        """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
+        using the selected method.
+
+        Args:
+            method (str): The method to use when calculating the box and whiskers plot. Options are 'best', 'box_plot' and 'medcouple'.
+                Defaults to 'best' at which point a heuristic will determine the appropriate method to use.
+            quantiles (dict[float -> int or float], optional): A dictionary containing the quantiles for the data
+                where the key indicates the quantile, and the value is the quantile's value for the data. If
+                no quantiles are provided, they will be computed from the data.
+            include_indices_and_values (bool, optional): Whether or not the lists containing individual
+                outlier values and their indices will be included in the returned dictionary.
+                Defaults to True.
+            ignore_zeros (bool): Whether to ignore 0 values (not NaN values) when calculating the box plot and outliers.
+                Defaults to False.
+
+        Returns:
+            (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
+                The following elements will be found in the dictionary:
+
+                - low_bound (float): the lowest data point in the dataset excluding any outliers - to be used as a whisker
+                - high_bound (float): the highest point in the dataset excluding any outliers - to be used as a whisker
+                - quantiles (list[float]): the quantiles used to determine the bounds.
+                    If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
+                    quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
+                - low_values (list[float, int], optional): the values of the lower outliers.
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_values (list[float, int], optional): the values of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - low_indices (list[int], optional): the corresponding index values for each of the lower outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - method (str): the method used to identify outliers
+                - medcouple_stat (float): the medcouple statistic will be added in the response if the method selected
+                    is medcouple
+        """
+        return _get_box_plot_info_for_column(
+            self._series,
+            method=method,
+            quantiles=quantiles,
+            include_indices_and_values=include_indices_and_values,
+            ignore_zeros=ignore_zeros,
+        )
+
+    @_check_column_schema
     def box_plot_dict(
         self,
-        quantiles=None,
-        include_indices_and_values=True,
-        ignore_zeros=False,
+        quantiles: Optional[Dict[int, int]] = None,
+        include_indices_and_values: bool = True,
+        ignore_zeros: bool = False,
     ):
         """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
         using the IQR method.
@@ -401,7 +454,7 @@ class WoodworkColumnAccessor:
         Args:
             quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
                 where the key indicates the quantile, and the value is the quantile's value for the data. If
-                no qantiles are provided, they will be computed from the data.
+                no quantiles are provided, they will be computed from the data.
             include_indices_and_values (bool, optional): Whether or not the lists containing individual
                 outlier values and their indices will be included in the returned dictionary.
                 Defaults to True.
@@ -431,9 +484,65 @@ class WoodworkColumnAccessor:
                     Will not be included if ``include_indices_and_values`` is False.
                 - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
                     Will not be included if ``include_indices_and_values`` is False.
+                - method (str): the method used to identify outliers, in this case box_plot
         """
         return _get_box_plot_info_for_column(
             self._series,
+            method="box_plot",
+            quantiles=quantiles,
+            include_indices_and_values=include_indices_and_values,
+            ignore_zeros=ignore_zeros,
+        )
+
+    @_check_column_schema
+    def medcouple_dict(
+        self,
+        quantiles: Optional[Dict[int, int]] = None,
+        include_indices_and_values: bool = True,
+        ignore_zeros: bool = False,
+    ):
+        """Gets the information necessary to create a box and whisker plot with outliers for a numeric column
+        using the Medcouple statistic method.
+
+        Args:
+            quantiles (dict[float -> float], optional): A dictionary containing the quantiles for the data
+                where the key indicates the quantile, and the value is the quantile's value for the data. If
+                no quantiles are provided, they will be computed from the data.
+            include_indices_and_values (bool, optional): Whether or not the lists containing individual
+                outlier values and their indices will be included in the returned dictionary.
+                Defaults to True.
+            ignore_zeros (bool): Whether to ignore 0 values (not NaN values) when calculating the box plot and outliers.
+                Defaults to False.
+
+        Note:
+            The minimum quantiles necessary for building a box plot using the Medcouple statistic method are the
+            minimum value (0.0 in the quantiles dict), first quartile (0.25), third quartile (0.75), and maximum value (1.0).
+            If no quantiles are provided, the following quantiles will be calculated:
+            {0.0, 0.25, 0.5, 0.75, 1.0}, which correspond to {min, first quantile, median, third quantile, max}.
+
+        Returns:
+            (dict[str -> float,list[number]]): Returns a dictionary containing box plot information for the Series.
+                The following elements will be found in the dictionary:
+
+                - low_bound (float): the lowest data point in the dataset excluding any outliers - to be used as a whisker
+                - high_bound (float): the highest point in the dataset excluding any outliers - to be used as a whisker
+                - quantiles (list[float]): the quantiles used to determine the bounds.
+                    If quantiles were passed in, will contain all quantiles passed in. Otherwise, contains the five
+                    quantiles {0.0, 0.25, 0.5, 0.75, 1.0}.
+                - low_values (list[float, int], optional): the values of the lower outliers.
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_values (list[float, int], optional): the values of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - low_indices (list[int], optional): the corresponding index values for each of the lower outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - high_indices (list[int], optional): the corresponding index values for each of the upper outliers
+                    Will not be included if ``include_indices_and_values`` is False.
+                - method (str): the method used to identify outliers, in this case medcouple.
+                - medcouple_stat (float): the medcouple statistic
+        """
+        return _get_box_plot_info_for_column(
+            self._series,
+            method="medcouple",
             quantiles=quantiles,
             include_indices_and_values=include_indices_and_values,
             ignore_zeros=ignore_zeros,

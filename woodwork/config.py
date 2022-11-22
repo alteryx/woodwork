@@ -51,6 +51,8 @@ CONFIG_DEFAULTS = {
     "frequence_inference_window_length": 15,
     "frequence_inference_threshold": 0.9,
     "correlation_metrics": ["mutual_info", "pearson", "spearman", "max", "all"],
+    "medcouple_threshold": 0.3,  # Must be between 0.0 and 1.0
+    "medcouple_sample_size": 10000,
     "boolean_inference_strings": [
         ["yes", "no"],
         ["y", "n"],
