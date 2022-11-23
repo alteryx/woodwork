@@ -282,6 +282,33 @@ def natural_language(request):
     return request.getfixturevalue(request.param)
 
 
+# Postal Inference Fixtures
+@pytest.fixture
+def pandas_postal_codes():
+    return [
+        pd.Series(10 * ["77002", "55106"]),
+        pd.Series(10 * ["77002-0000", "55106-0000"]),
+        pd.Series(10 * ["12345", "12345", "12345-6789", "12345-0000"]),
+    ]
+
+
+@pytest.fixture
+def dask_postal_codes(pandas_postal_codes):
+    return [pd_to_dask(series) for series in pandas_postal_codes]
+
+
+@pytest.fixture
+def spark_postal_codes(pandas_postal_codes):
+    return [pd_to_spark(series) for series in pandas_postal_codes]
+
+
+@pytest.fixture(
+    params=["pandas_postal_codes", "dask_postal_codes", "spark_postal_codes"],
+)
+def postal(request):
+    return request.getfixturevalue(request.param)
+
+
 # Unknown Inference Fixtures
 @pytest.fixture
 def pandas_strings():
@@ -357,7 +384,7 @@ def pyspark_empty_series(pandas_empty_series):
 
 
 @pytest.fixture(
-    params=["pandas_empty_series", "dask_empty_series", "pyspark_empty_series"]
+    params=["pandas_empty_series", "dask_empty_series", "pyspark_empty_series"],
 )
 def empty_series(request):
     return request.getfixturevalue(request.param)

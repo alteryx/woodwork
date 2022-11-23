@@ -156,7 +156,10 @@ class InferWithRegex:
         regex = self.get_regex()
 
         # Includes a check for object dtypes
-        if not pdtypes.is_string_dtype(series.dtype):
+        if not (
+            pdtypes.is_categorical_dtype(series.dtype)
+            or pdtypes.is_string_dtype(series.dtype)
+        ):
             return False
 
         try:
