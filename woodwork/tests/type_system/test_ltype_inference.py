@@ -13,6 +13,7 @@ from woodwork.logical_types import (
     IntegerNullable,
     LogicalType,
     NaturalLanguage,
+    PostalCode,
     Timedelta,
     Unknown,
 )
@@ -130,6 +131,16 @@ def test_categorical_inference(categories):
         for dtype in dtypes:
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Categorical)
+
+
+def test_postal_inference(postal):
+    dtypes = ["category", "string"]
+    for series in postal:
+        if _is_spark_series(series):
+            dtypes = get_spark_dtypes(dtypes)
+        for dtype in dtypes:
+            inferred_dtype = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_dtype, PostalCode)
 
 
 def test_natural_language_inference(natural_language):
@@ -252,6 +263,11 @@ def test_unknown_inference_all_null(nulls):
             assert isinstance(inferred_type, Unknown)
 
 
+def test_unknown_inference_empty_series(empty_series):
+    inferred_type = ww.type_system.infer_logical_type(empty_series.astype("string"))
+    assert isinstance(inferred_type, Unknown)
+
+
 def test_pdna_inference(pdnas):
     expected_logical_types = [
         NaturalLanguage,
@@ -283,3 +299,16 @@ def test_updated_ltype_inference(integers, type_sys):
             inferred_type = type_sys.infer_logical_type(series.astype(dtype))
             assert isinstance(inferred_type, Integer)
             assert inferred_type.primary_dtype == "string"
+
+
+def test_inference_randomly_sampled(large_df, type_sys):
+    large_df.ww.init()
+
+    inferred_type = large_df.ww.logical_types["int_nullable"]
+    assert isinstance(inferred_type, IntegerNullable)
+    inferred_type = large_df.ww.logical_types["bool_nullable"]
+    assert isinstance(inferred_type, BooleanNullable)
+    inferred_type = large_df.ww.logical_types["floats"]
+    assert isinstance(inferred_type, Double)
+    inferred_type = large_df.ww.logical_types["constant"]
+    assert isinstance(inferred_type, Unknown)

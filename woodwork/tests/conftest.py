@@ -577,7 +577,7 @@ def df_same_mi_cudf(df_same_mi_pandas):
         "df_same_mi_dask",
         "df_same_mi_spark",
         "df_same_mi_cudf",
-    ]
+    ],
 )
 def df_same_mi(request):
     return request.getfixturevalue(request.param)
@@ -762,7 +762,7 @@ def small_df_cudf(small_df_pandas):
 
 
 @pytest.fixture(
-    params=["small_df_pandas", "small_df_dask", "small_df_spark", "small_df_cudf"]
+    params=["small_df_pandas", "small_df_dask", "small_df_spark", "small_df_cudf"],
 )
 def small_df(request):
     return request.getfixturevalue(request.param)
@@ -813,7 +813,7 @@ def latlong_df_cudf(latlong_df_pandas):
         "latlong_df_dask",
         "latlong_df_spark",
         "latlong_df_cudf",
-    ]
+    ],
 )
 def latlong_df(request):
     return request.getfixturevalue(request.param)
@@ -893,14 +893,14 @@ def cudf_latlongs(pandas_latlongs):
     cudf = pytest.importorskip("cudf", reason="cudf not installed, skipping")
     return [
         cudf.from_pandas(
-            series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup)
+            series.apply(lambda tup: list(tup) if isinstance(tup, tuple) else tup),
         )
         for series in pandas_latlongs
     ]
 
 
 @pytest.fixture(
-    params=["pandas_latlongs", "dask_latlongs", "spark_latlongs", "cudf_latlongs"]
+    params=["pandas_latlongs", "dask_latlongs", "spark_latlongs", "cudf_latlongs"],
 )
 def latlongs(request):
     return request.getfixturevalue(request.param)
@@ -1095,7 +1095,7 @@ def cudf_datetimes(pandas_datetimes):
 
 
 @pytest.fixture(
-    params=["pandas_datetimes", "dask_datetimes", "spark_datetimes", "cudf_datetimes"]
+    params=["pandas_datetimes", "dask_datetimes", "spark_datetimes", "cudf_datetimes"],
 )
 def datetimes(request):
     return request.getfixturevalue(request.param)
@@ -1138,9 +1138,62 @@ def outliers_df_cudf(outliers_df_pandas):
         "outliers_df_dask",
         "outliers_df_spark",
         "outliers_df_cudf",
-    ]
+    ],
 )
 def outliers_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def skewed_outliers_df_pandas():
+    outliers_df = pd.DataFrame(
+        {
+            "right_skewed_outliers": [1] * 2
+            + [2] * 6
+            + [3] * 20
+            + [4] * 12
+            + [5] * 8
+            + [6] * 5
+            + [7] * 3
+            + [8, 8, 9, 9, 10, 11, 13, 14, 16, 30],
+            "no_outliers": [60, 42, 37, 23, 49, 42, 36, 57, 60, 23.0] * 6
+            + [35, 54, 43, 47, 41, 39],
+            "non_numeric": ["a"] * 66,
+            "has_outliers_with_nans": [1] * 2
+            + [2] * 6
+            + [3] * 20
+            + [4] * 12
+            + [5] * 8
+            + [6] * 5
+            + [7] * 3
+            + [8, None, 9, 9, 10, 11, None, 14, 16, 30],
+            "nans": pd.Series([None] * 66, dtype="float64"),
+        },
+    )
+    outliers_df["left_skewed_outliers"] = 31 - outliers_df["right_skewed_outliers"]
+    return outliers_df
+
+
+@pytest.fixture()
+def skewed_outliers_df_dask(skewed_outliers_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(skewed_outliers_df_pandas, npartitions=2)
+
+
+@pytest.fixture()
+def skewed_outliers_df_spark(skewed_outliers_df_pandas):
+    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
+    return ps.from_pandas(skewed_outliers_df_pandas)
+
+
+@pytest.fixture(
+    params=[
+        "skewed_outliers_df_pandas",
+        "skewed_outliers_df_dask",
+        "skewed_outliers_df_spark",
+    ],
+)
+def skewed_outliers_df(request):
     return request.getfixturevalue(request.param)
 
 

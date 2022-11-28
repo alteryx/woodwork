@@ -271,7 +271,7 @@ def test_ordinal_validate(sample_series):
 
     new_type = "string"
     error_message = re.escape(
-        f"Series dtype '{new_type}' is incompatible with ordinal dtype.",
+        f"Series dtype '{new_type}' is incompatible with ordinal LogicalType, try converting to category dtype",
     )
     with pytest.raises(TypeValidationError, match=error_message):
         ordinal_incomplete_order.validate(sample_series.astype(new_type))
@@ -944,8 +944,9 @@ def test_boolean_other_values(df_type):
             "bool4": ["true", "false", "false", "false", "true", "true"],
             "bool5": ["True", "False", "False", "True", "false", "TRUE"],
             "bool6": ["1", "0", "1", "1", "1", "0"],
-            "bool7": ["YES", "NO", "YES", "yes", "no", "no"],
-            "bool8": ["N", "N", "n", "y", "Y", "y"],
+            "bool7": ["1.0", "0.0", "1.0", "1.0", "1.0", "0.0"],
+            "bool8": ["YES", "NO", "YES", "yes", "no", "no"],
+            "bool9": ["N", "N", "n", "y", "Y", "y"],
         },
     )
     if df_type == "spark":

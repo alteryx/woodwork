@@ -34,11 +34,11 @@ def load_retail(
         If `init_woodwork` is False, will return an uninitialized DataFrame.
     """
     csv_s3_gz = (
-        "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?library=woodwork&version="
+        "https://oss.alteryx.com/datasets/online-retail-logs-2018-08-28.csv.gz?library=woodwork&version="
         + ww.__version__
     )
     csv_s3 = (
-        "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?library=woodwork&version="
+        "https://oss.alteryx.com/datasets/online-retail-logs-2018-08-28.csv?library=woodwork&version="
         + ww.__version__
     )
     if df_type == "cudf":

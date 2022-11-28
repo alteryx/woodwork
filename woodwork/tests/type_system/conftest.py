@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -9,7 +11,7 @@ from woodwork.type_sys.inference_functions import (
     double_func,
     integer_func,
 )
-from woodwork.type_sys.type_system import TypeSystem
+from woodwork.type_sys.type_system import INFERENCE_SAMPLE_SIZE, TypeSystem
 
 
 # Integer Inference Fixtures
@@ -18,6 +20,7 @@ def pandas_integers():
     return [
         pd.Series(4 * [-1, 2, 1, 7]),
         pd.Series(4 * [-1, 0, 5, 3]),
+        pd.Series(4 * [sys.maxsize, -sys.maxsize - 1, 0], dtype="str").astype("int64"),
     ]
 
 
@@ -39,7 +42,12 @@ def integers(request):
 # Double Inference Fixtures
 @pytest.fixture
 def pandas_doubles():
-    return [pd.Series(4 * [-1, 2.5, 1, 7]), pd.Series(4 * [1.5, np.nan, 1, 3])]
+    return [
+        pd.Series(4 * [-1, 2.5, 1, 7]),
+        pd.Series(4 * [1.5, np.nan, 1, 3]),
+        pd.Series(4 * [1.5, np.inf, 1, 3]),
+        pd.Series(4 * [np.finfo("d").max, np.finfo("d").min, 3, 1]),
+    ]
 
 
 @pytest.fixture
@@ -274,6 +282,33 @@ def natural_language(request):
     return request.getfixturevalue(request.param)
 
 
+# Postal Inference Fixtures
+@pytest.fixture
+def pandas_postal_codes():
+    return [
+        pd.Series(10 * ["77002", "55106"]),
+        pd.Series(10 * ["77002-0000", "55106-0000"]),
+        pd.Series(10 * ["12345", "12345", "12345-6789", "12345-0000"]),
+    ]
+
+
+@pytest.fixture
+def dask_postal_codes(pandas_postal_codes):
+    return [pd_to_dask(series) for series in pandas_postal_codes]
+
+
+@pytest.fixture
+def spark_postal_codes(pandas_postal_codes):
+    return [pd_to_spark(series) for series in pandas_postal_codes]
+
+
+@pytest.fixture(
+    params=["pandas_postal_codes", "dask_postal_codes", "spark_postal_codes"],
+)
+def postal(request):
+    return request.getfixturevalue(request.param)
+
+
 # Unknown Inference Fixtures
 @pytest.fixture
 def pandas_strings():
@@ -332,6 +367,29 @@ def pdnas(request):
     return request.getfixturevalue(request.param)
 
 
+# Empty Series Inference Fixtures
+@pytest.fixture
+def pandas_empty_series():
+    return pd.Series([], dtype="object")
+
+
+@pytest.fixture
+def dask_empty_series(pandas_empty_series):
+    return pd_to_dask(pandas_empty_series)
+
+
+@pytest.fixture
+def pyspark_empty_series(pandas_empty_series):
+    return pd_to_spark(pandas_empty_series)
+
+
+@pytest.fixture(
+    params=["pandas_empty_series", "dask_empty_series", "pyspark_empty_series"],
+)
+def empty_series(request):
+    return request.getfixturevalue(request.param)
+
+
 # Null Inference Fixtures
 @pytest.fixture
 def pandas_nulls():
@@ -356,6 +414,31 @@ def spark_nulls(pandas_nulls):
 
 @pytest.fixture(params=["pandas_nulls", "dask_nulls", "spark_nulls"])
 def nulls(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pandas_large_df():
+    df = pd.DataFrame()
+    df["int_nullable"] = [int(i) for i in range(INFERENCE_SAMPLE_SIZE)] + [np.nan]
+    df["bool_nullable"] = [True, False] * int(INFERENCE_SAMPLE_SIZE // 2) + [pd.NA]
+    df["floats"] = [int(i) for i in range(INFERENCE_SAMPLE_SIZE)] + [1.2]
+    df["constant"] = [None] * (INFERENCE_SAMPLE_SIZE + 1)
+    return df
+
+
+@pytest.fixture
+def dask_large_df(pandas_large_df):
+    return pd_to_dask(pandas_large_df)
+
+
+@pytest.fixture
+def spark_large_df(pandas_large_df):
+    return pd_to_spark(pandas_large_df)
+
+
+@pytest.fixture(params=["pandas_large_df", "dask_large_df", "spark_large_df"])
+def large_df(request):
     return request.getfixturevalue(request.param)
 
 

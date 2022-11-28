@@ -1,3 +1,4 @@
+import sys
 from importlib import resources as pkg_resources
 from typing import Any, Callable, Iterable, Union
 
@@ -7,15 +8,16 @@ from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork import data
+from woodwork.config import config
 from woodwork.type_sys.utils import (
     _is_categorical_series,
     _is_cudf_series,
     col_is_datetime,
 )
 from woodwork.utils import import_or_none
-from woodwork.config import config
-from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
+MAX_INT = sys.maxsize
+MIN_INT = -sys.maxsize - 1
 Tokens = Iterable[str]
 
 COMMON_WORDS_SET = set(
@@ -63,12 +65,16 @@ def integer_nullable_func(series):
         else:
             return True
     elif pdtypes.is_float_dtype(series.dtype):
+
+        def _is_valid_int(value):
+            return value >= MIN_INT and value <= MAX_INT and value.is_integer()
+
         if not series.isnull().any():
             return False
         series_no_null = series.dropna()
         if _is_cudf_series(series):
-            return series_no_null.mod(1).eq(0).all()
-        return all(series_no_null.mod(1).eq(0))
+            return all([_is_valid_int(v) for v in series_no_null])
+        return all([_is_valid_int(v) for v in series_no_null])
 
     return False
 
@@ -169,7 +175,10 @@ class InferWithRegex:
         regex = self.get_regex()
 
         # Includes a check for object dtypes
-        if not pdtypes.is_string_dtype(series.dtype):
+        if not (
+            pdtypes.is_categorical_dtype(series.dtype)
+            or pdtypes.is_string_dtype(series.dtype)
+        ):
             return False
 
         try:
@@ -181,7 +190,7 @@ class InferWithRegex:
             # (TypeError)
             return False
 
-        """ 
+        """
         For cuDF, we have to escape the '-' character when it is not used as a range char
         for example, A-Z is okay. But in '.;?-', the hyphen needs to be escaped
         """
@@ -190,19 +199,19 @@ class InferWithRegex:
             regex = self.get_regex()
             if regex == ww.config.get_option("email_inference_regex"):
                 matches = series_match_method(
-                    pat="(^[a-zA-Z0-9_.+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-.]+$)"
+                    pat="(^[a-zA-Z0-9_.+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-.]+$)",
                 )
             elif regex == ww.config.get_option("url_inference_regex"):
                 matches = series_match_method(
-                    pat="(http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)"
+                    pat="(http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)",
                 )
             elif regex == ww.config.get_option("phone_inference_regex"):
                 matches = series_match_method(
-                    pat=r"(?:\+?(0{2})?1[\-.\s●]?)?\(?([2-9][0-9]{2})\)?[\-\.\s●]?([2-9][0-9]{2})[\-\.\s●]?([0-9]{4})$"
+                    pat=r"(?:\+?(0{2})?1[\-.\s●]?)?\(?([2-9][0-9]{2})\)?[\-\.\s●]?([2-9][0-9]{2})[\-\.\s●]?([0-9]{4})$",
                 )
             elif regex == ww.config.get_option("ipv4_inference_regex"):
                 matches = series_match_method(
-                    pat=r"(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)"
+                    pat=r"(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)",
                 )
             elif regex == ww.config.get_option("postal_code_inference_regex"):
                 matches = series_match_method(pat=r"^[0-9]{5}(?:\-[0-9]{4})?$")

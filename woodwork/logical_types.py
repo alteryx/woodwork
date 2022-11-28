@@ -89,7 +89,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
         valid_dtype = self._get_valid_dtype(type(series))
         if valid_dtype != str(series.dtype):
             raise TypeValidationError(
-                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} dtype.",
+                f"Series dtype '{series.dtype}' is incompatible with {self.type_string} LogicalType, try converting to {valid_dtype} dtype",
             )
 
 
@@ -698,7 +698,7 @@ class Ordinal(LogicalType):
                     f"in the order values provided: {sorted(list(missing_order_vals))}"
                 )
                 raise ValueError(error_msg)
-        """ 
+        """
         TODO: Check if this op can be supported in cudf
         """
 
