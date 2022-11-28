@@ -8,7 +8,7 @@ on:
 jobs:
   py38_unit_tests_minimum_dependencies:
     name: Unit Tests - 3.8 Minimum Dependencies
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, gpu]
     strategy:
       matrix:
         libraries: ["core", "dask", "spark", "min_min"]
