@@ -30,9 +30,9 @@ repos:
         name: isort (python)
         args: [--settings-path=pyproject.toml]
   - repo: https://github.com/python/black
-    rev: 22.6.0
+    rev: 22.10.0
     hooks:
       - id: black
-        args: [--target-version=py310]
+        args: [--target-version=py311]
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]
