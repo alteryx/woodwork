@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.21.0 December 1, 2022
+========================
     * Enhancements
         * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
         * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
