@@ -15,7 +15,8 @@ MIN_INT = -sys.maxsize - 1
 Tokens = Iterable[str]
 
 COMMON_WORDS_SET = set(
-    line.strip().lower() for line in files("woodwork.data").joinpath("1-1000.txt").read_text()
+    word.strip().lower()
+    for word in files("woodwork.data").joinpath("1-1000.txt").read_text().split("\n")
 )
 
 NL_delimiters = r"[- \[\].,!\?;\n]"
