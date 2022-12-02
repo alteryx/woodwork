@@ -3,8 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.21.0 December 1, 2022
+========================
     * Enhancements
         * Improved ``Boolean`` and ``BooleanNullable`` inference to detect common string representations of boolean values (:pr:`1549`)
         * Added the ``get_outliers`` and ``medcouple_dict`` functions to ``WoodworkColumnAccessor`` so that the medcouple statistic can be used for outlier detection (:pr:`1547`)
@@ -14,6 +24,7 @@ Future Release
         * Fixed ``IntegerNullable`` inference by checking values are within valid ``Int64`` bounds (:pr:`1572`)
         * Update demo dataset links to point to new endpoint (:pr:`1570`)
         * Fix DivisionByZero error in ``type_system.py`` (:pr:`1571`)
+        * Fix Categorical dtype inference for ``PostalCode`` logical type (:pr:`1574`)
         * Fixed issue where forcing a ``Boolean`` logical type on a column of 0.0s and 1.0s caused incorrect transformation (:pr:`1576`)
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
     * Changes
