@@ -1,10 +1,13 @@
 import re
 from inspect import isclass
+from platform import python_version
+from string import punctuation
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
+from packaging.version import Version
 
 import woodwork as ww
 from woodwork.accessor_utils import (
@@ -2456,7 +2459,11 @@ def test_accessor_schema_properties(sample_df):
         assert prop_from_accessor == prop_from_schema
 
         # Assumes we don't have setters for any of these attributes
-        error = "can't set attribute"
+        if Version(python_version().strip(punctuation)) < Version("3.11.0"):
+            error = "can't set attribute"
+        else:
+            # Error messages were changed as part of Python 3.11
+            error = "has no setter"
         with pytest.raises(AttributeError, match=error):
             setattr(sample_df.ww, schema_property, "new_value")
 
