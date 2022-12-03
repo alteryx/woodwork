@@ -1,9 +1,9 @@
 import sys
-from importlib.resources import files
 from typing import Any, Callable, Iterable, Union
 
 import numpy as np
 import pandas as pd
+from importlib_resources import files
 from pandas.api import types as pdtypes
 
 import woodwork as ww
@@ -17,6 +17,7 @@ Tokens = Iterable[str]
 COMMON_WORDS_SET = set(
     word.strip().lower()
     for word in files("woodwork.data").joinpath("1-1000.txt").read_text().split("\n")
+    if len(word) > 0
 )
 
 NL_delimiters = r"[- \[\].,!\?;\n]"
