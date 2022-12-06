@@ -58,6 +58,7 @@ from woodwork.statistics_utils._parse_measures import _parse_measures
 from woodwork.tests.testing_utils import (
     _check_close,
     check_empty_box_plot_dict,
+    concat_dataframe_or_series,
     dep_between_cols,
     to_pandas,
 )
@@ -2087,7 +2088,10 @@ def test_get_low_high_bound_warnings():
 
 def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
     has_outliers_series = outliers_df_pandas["has_outliers"]
-    has_outliers_series = has_outliers_series.append(pd.Series([39]), ignore_index=True)
+    has_outliers_series = pd.concat(
+        [has_outliers_series, pd.Series([39], dtype="int64")],
+        ignore_index=True,
+    )
     has_outliers_series.ww.init()
     mc = _get_medcouple_statistic(has_outliers_series)
     assert mc == 0.122
@@ -2122,7 +2126,8 @@ def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_panda
 
 
 def test_determine_best_outlier_method_equivalent_outcome(
-    outliers_df_pandas, skewed_outliers_df_pandas
+    outliers_df_pandas,
+    skewed_outliers_df_pandas,
 ):
     contains_nans_series_skewed = skewed_outliers_df_pandas["right_skewed_outliers"]
     contains_nans_series_skewed.ww.init()
@@ -2313,7 +2318,7 @@ def test_spearman_ordinal(df_mi, use_ordinal):
     else:
         df_mi.ww.init()
     sp = df_mi.ww.dependence(measures=["spearman"])
-    valid_sp_columns = (sp.column_1.append(sp.column_2)).unique()
+    valid_sp_columns = concat_dataframe_or_series(sp.column_1, sp.column_2).unique()
     assert "strs" not in valid_sp_columns
     if use_ordinal:
         assert "strs2" in valid_sp_columns
