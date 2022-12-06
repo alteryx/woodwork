@@ -50,8 +50,8 @@ TAIL_RANGE_LEN = 100
 def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
     dates = [pd.Timestamp(d) for d in dates]
 
-    head = pd.Series([])
-    tail = pd.Series([])
+    head = pd.Series([], dtype="datetime64[ns]")
+    tail = pd.Series([], dtype="datetime64[ns]")
 
     if pad_start > 0:
         head = (
