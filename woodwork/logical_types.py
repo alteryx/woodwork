@@ -8,7 +8,7 @@ import pandas as pd
 from pandas.api import types as pdtypes
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_cudf_series, _is_dask_series, _is_spark_series
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -27,6 +27,7 @@ from woodwork.utils import (
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 class ClassNameDescriptor(object):
@@ -47,6 +48,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     type_string = ClassNameDescriptor()
     primary_dtype = "string"
     backup_dtype = None
+    cudf_dtype = None
     standard_tags = set()
 
     def __eq__(self, other, deep=False):
@@ -60,13 +62,17 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     @classmethod
     def _get_valid_dtype(cls, series_type):
         """Return the dtype that is considered valid for a series with the given logical_type"""
+
+        # TODO: find out what is happening here. do we need to do something similar for cudf?
         if ps and series_type == ps.Series and cls.backup_dtype:
             return cls.backup_dtype
+        elif cudf and series_type == cudf.Series and cls.cudf_dtype:
+            return cls.cudf_dtype
         else:
             return cls.primary_dtype
 
     def transform(self, series, null_invalid_values=False):
-        """Converts the series dtype to match the logical type's if it is different."""
+        """Converts the series dtype to match the logical types if it is different."""
         new_dtype = self._get_valid_dtype(type(series))
         if new_dtype != str(series.dtype):
             # Update the underlying series
@@ -372,6 +378,15 @@ class Datetime(LogicalType):
                     ),
                     name=series.name,
                 )
+            elif _is_cudf_series(series):
+                series = cudf.Series(
+                    cudf.to_datetime(
+                        series,
+                        format=self.datetime_format,
+                        errors="coerce",
+                    ),
+                    name=series.name,
+                )
             else:
                 try:
                     series = pd.to_datetime(
@@ -455,6 +470,9 @@ class IntegerNullable(LogicalType):
 
     primary_dtype = "Int64"
     standard_tags = {"numeric"}
+
+    # all dtypes are nullable in cudf
+    cudf_dtype = "int64"
 
     def transform(self, series, null_invalid_values=False):
         """Converts a series dtype to Int64.
@@ -570,6 +588,7 @@ class LatLong(LogicalType):
     """
 
     primary_dtype = "object"
+    cudf_dtype = "list"
 
     def transform(self, series, null_invalid_values=False):
         """Formats a series to be a tuple (or list for Spark) of two floats."""
@@ -583,9 +602,15 @@ class LatLong(LogicalType):
         elif _is_spark_series(series):
             formatted_series = series.to_pandas().apply(
                 _reformat_to_latlong,
-                is_spark=True,
+                is_spark_or_cuda=True,
             )
             series = ps.from_pandas(formatted_series)
+        elif _is_cudf_series(series):
+            formatted_series = series.to_pandas().apply(
+                _reformat_to_latlong,
+                is_spark_or_cuda=True,
+            )
+            series = cudf.from_pandas(formatted_series)
         else:
             series = series.apply(_reformat_to_latlong)
 
@@ -673,6 +698,9 @@ class Ordinal(LogicalType):
                     f"in the order values provided: {sorted(list(missing_order_vals))}"
                 )
                 raise ValueError(error_msg)
+        """
+        TODO: Check if this op can be supported in cudf
+        """
 
     def transform(self, series, null_invalid_values=False):
         """Validates the series and converts the dtype to match the logical type's if it is different."""
@@ -890,7 +918,7 @@ def _replace_nans(series: pd.Series, primary_dtype: Optional[str] = None) -> pd.
     if str(original_dtype) == "string":
         series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return series
-    if not _is_spark_series(series):
+    if not _is_spark_series(series) and not _is_cudf_series(series):
         series = series.replace(ww.config.get_option("nan_values"), np.nan)
     if str(original_dtype) == "boolean":
         series = series.astype(original_dtype)

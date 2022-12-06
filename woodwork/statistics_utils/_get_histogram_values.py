@@ -1,5 +1,9 @@
 import pandas as pd
 
+from woodwork.utils import import_or_none
+
+cudf = import_or_none("cudf")
+
 
 def _get_histogram_values(series, bins=10):
     """Get the histogram for a given numeric column.
@@ -16,7 +20,14 @@ def _get_histogram_values(series, bins=10):
     df = values.reset_index()
     df.columns = ["bins", "frequency"]
     results = []
-    for _, row in df.iterrows():
+    if isinstance(df, (cudf.DataFrame, cudf.Series)):
+        warnings.warn(
+            "Can't iterate over cudf objects. Woodwork has automatically converted the cudf to a Pandas dataframe for this calculation. Performance may be worse."
+        )
+        df_iter = df.to_pandas().iterrows()
+    else:
+        df_iter = df.iterrows()
+    for _, row in df_iter:
         results.append(
             {
                 "bins": [row["bins"].left, row["bins"].right],

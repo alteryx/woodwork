@@ -2,7 +2,7 @@ import pandas as pd
 from dateutil.parser import ParserError
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_cudf_series, _is_dask_series, _is_spark_series
 from woodwork.utils import import_or_none
 
 ps = import_or_none("pyspark.pandas")
@@ -13,7 +13,8 @@ def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column.
     Will not infer numeric data as datetime."""
-    if _is_spark_series(col):
+
+    if _is_spark_series(col) or _is_cudf_series(col):
         col = col.to_pandas()
 
     if pd.api.types.is_datetime64_any_dtype(col):
@@ -24,7 +25,7 @@ def col_is_datetime(col, datetime_format=None):
         return False
 
     try:
-        if pd.api.types.is_numeric_dtype(pd.Series(col.values.tolist())):
+        if pd.api.types.is_numeric_dtype(col.dtype):
             return False
     except AttributeError:
         # given our current minimum dependencies (pandas 1.3.0 and pyarrow 4.0.1)
@@ -35,6 +36,9 @@ def col_is_datetime(col, datetime_format=None):
         pass
 
     col = col.astype(str)
+
+    if _is_cudf_series(col):
+        col = col.to_pandas()
 
     try:
         pd.to_datetime(
@@ -57,9 +61,14 @@ def _is_numeric_series(series, logical_type):
     if _is_dask_series(series):
         series = series.get_partition(0).compute()
 
+    if _is_cudf_series(series):
+        from cudf import to_numeric
+    else:
+        from pandas import to_numeric
+
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
-        pd.to_numeric(series, errors="raise")
+        to_numeric(series, errors="raise")
     except (ValueError, TypeError):
         return False
 

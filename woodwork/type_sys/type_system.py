@@ -1,6 +1,6 @@
 import pandas as pd
 
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
+from woodwork.accessor_utils import _is_cudf_series, _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     URL,
     Address,
@@ -323,6 +323,8 @@ class TypeSystem(object):
             elif _is_spark_series(series):
                 series = get_random_sample(series, **kw_args_sampling)
                 series = series.to_pandas()
+            elif _is_cudf_series(series):
+                series = series.head(INFERENCE_SAMPLE_SIZE)
             else:
                 raise ValueError(
                     f"Unsupported series type `{type(series)}`",

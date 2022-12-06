@@ -7,6 +7,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import (
     _check_table_schema,
+    _is_cudf_dataframe,
     _is_dask_dataframe,
     _is_dataframe,
     _is_spark_dataframe,
@@ -39,6 +40,7 @@ from woodwork.utils import _get_column_logical_type, _parse_logical_type, import
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 class WoodworkTableAccessor:
@@ -278,13 +280,22 @@ class WoodworkTableAccessor:
         if not self._schema.__eq__(other.ww._schema, deep=deep):
             return False
 
-        # Only check pandas DataFrames for equality
+        # Check pandas DataFrames for equality
         if (
             deep
             and isinstance(self._dataframe, pd.DataFrame)
             and isinstance(other.ww._dataframe, pd.DataFrame)
         ):
             return self._dataframe.equals(other.ww._dataframe)
+
+        # Check cudf DataFrames for equality
+        if (
+            deep
+            and _is_cudf_dataframe(self._dataframe)
+            and _is_cudf_dataframe(other.ww._dataframe)
+        ):
+            return self._dataframe.equals(other.ww._dataframe)
+
         return True
 
     @_check_table_schema
@@ -321,7 +332,7 @@ class WoodworkTableAccessor:
         return series
 
     def __setitem__(self, col_name, column):
-        series = tuple(pkg.Series for pkg in (pd, dd, ps) if pkg)
+        series = tuple(pkg.Series for pkg in (pd, dd, ps, cudf) if pkg)
         if not isinstance(column, series):
             raise ValueError("New column must be of Series type")
 
@@ -704,8 +715,22 @@ class WoodworkTableAccessor:
         )
 
     def _sort_columns(self, already_sorted):
-        if _is_dask_dataframe(self._dataframe) or _is_spark_dataframe(self._dataframe):
-            already_sorted = True  # Skip sorting for Dask and Spark input
+
+        """
+        cudf doesn't support an in-place sort_values function.
+        we should decide whether we want to create a new dataframe
+        or just not support this particular option. Since we don't
+        support this for dask or spark, there would be a precedent for
+        not supporting it.
+        """
+
+        if (
+            _is_dask_dataframe(self._dataframe)
+            or _is_spark_dataframe(self._dataframe)
+            or _is_cudf_dataframe(self._dataframe)
+        ):
+            already_sorted = True  # Skip sorting for Dask, Spark, or cudf input
+
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
             if self._schema.index is None:
@@ -715,9 +740,12 @@ class WoodworkTableAccessor:
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
         specified by the TableSchema. Does not change the underlying index if no Woodwork index is
-        specified. Only sets underlying index for pandas DataFrames.
+        specified. Sets underlying index for pandas DataFrames and cudf DataFrames.
         """
-        if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
+        if (
+            isinstance(self._dataframe, (pd.DataFrame, cudf.DataFrame))
+            and self._schema.index is not None
+        ):
             self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
             # Drop index name to not overlap with the original column
             self._dataframe.index.name = None
@@ -803,7 +831,7 @@ class WoodworkTableAccessor:
             if _is_spark_dataframe(self._dataframe):
                 raise ValueError("Drop inplace not supported for Spark")
 
-        assert all([col_name in self._schema.columns for col_name in cols_to_include])
+        assert all(col_name in self._schema.columns for col_name in cols_to_include)
 
         new_schema = self._schema.get_subset_schema(cols_to_include)
         if inplace:
@@ -1019,6 +1047,10 @@ class WoodworkTableAccessor:
             random_seed=random_seed,
             max_nunique=max_nunique,
         )
+        """
+        It's interesting here -- if we are using cudf, what are the performance implications of returning a pandas dataframe? 
+        I suppose the same question goes for Dask or PySpark. Need to study Python memory model to better understand what is happening here.
+        """
         return pd.DataFrame(mutual_info)
 
     @_check_table_schema
@@ -1124,6 +1156,8 @@ class WoodworkTableAccessor:
             min_shared=min_shared,
             random_seed=random_seed,
         )
+
+        # same as above^
         return pd.DataFrame(pearson_dict)
 
     @_check_table_schema
@@ -1632,6 +1666,8 @@ class WoodworkTableAccessor:
                 concat = dd.concat
             if _is_spark_dataframe(self._dataframe):
                 concat = ps.concat
+            if _is_cudf_dataframe(self._dataframe):
+                concat = cudf.concat
 
             return concat(invalid_values, axis=1)
 
@@ -1858,3 +1894,11 @@ if ps:
             super().__init__(*args, **kwargs)
             if not ps.get_option("compute.ops_on_diff_frames"):
                 ps.set_option("compute.ops_on_diff_frames", True)
+
+
+if cudf:
+    from cudf.api.extensions.accessor import register_dataframe_accessor
+
+    @register_dataframe_accessor("ww")
+    class CuDFTableAccessor(WoodworkTableAccessor):
+        pass

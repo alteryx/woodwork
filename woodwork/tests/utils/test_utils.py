@@ -390,7 +390,7 @@ def test_is_valid_latlong_value(test_input, expected):
     ],
 )
 def test_is_valid_latlong_value_spark(test_input, expected):
-    assert _is_valid_latlong_value(test_input, is_spark=True) == expected
+    assert _is_valid_latlong_value(test_input, is_spark_or_cuda=True) == expected
 
 
 def test_is_valid_latlong_series():
@@ -525,7 +525,7 @@ def test_infer_datetime_format_all_null():
         pd.Series([None, None, None]),
         pd.Series([np.nan, np.nan, np.nan]),
         pd.Series([pd.NA, pd.NA, pd.NA]),
-        pd.Series([]),
+        pd.Series([], dtype="float64"),
     ]
 
     for pd_series in missing_data:
@@ -544,7 +544,7 @@ def test_is_categorical() -> None:
     assert not _is_categorical_series(pd.Series([None, [1]]), 0)
 
     # not categorical because empty series
-    assert not _is_categorical_series(pd.Series([]), 0)
+    assert not _is_categorical_series(pd.Series([], dtype="float64"), 0)
     assert not _is_categorical_series(pd.Series([None]), 0)
     assert not _is_categorical_series(pd.Series([None, None]), 0)
 

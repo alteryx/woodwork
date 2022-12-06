@@ -8,6 +8,7 @@ from pandas.api import types as pdtypes
 
 from woodwork.accessor_utils import (
     _check_column_schema,
+    _is_cudf_series,
     _is_dataframe,
     _is_series,
     init_series,
@@ -19,13 +20,19 @@ from woodwork.exceptions import (
     TypingInfoMismatchWarning,
 )
 from woodwork.indexers import _iLocIndexer, _locIndexer
-from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
+from woodwork.logical_types import (
+    _NULLABLE_PHYSICAL_TYPES,
+    LatLong,
+    NaturalLanguage,
+    Ordinal,
+)
 from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
 from woodwork.utils import _get_column_logical_type, import_or_none
 
 dd = import_or_none("dask.dataframe")
 ps = import_or_none("pyspark.pandas")
+cudf = import_or_none("cudf")
 
 
 class WoodworkColumnAccessor:
@@ -287,6 +294,9 @@ class WoodworkColumnAccessor:
                     valid_dtype = self._schema.logical_type._get_valid_dtype(
                         type(result),
                     )
+                    print(f"logical type: {self._schema.logical_type}")
+                    # if _is_cudf_series(result):
+                    #     import pdb; pdb.set_trace()
                     if str(result.dtype) == valid_dtype:
                         result.ww.init(schema=self.schema, validate=False)
                     else:
@@ -356,7 +366,7 @@ class WoodworkColumnAccessor:
     @_check_column_schema
     def set_logical_type(self, logical_type):
         """Update the logical type for the series, clearing any previously set semantic tags,
-        and returning a new series with Woodwork initialied.
+        and returning a new series with Woodwork initialized.
 
         Args:
             logical_type (LogicalType, str): The new logical type to set for the series.
@@ -364,6 +374,11 @@ class WoodworkColumnAccessor:
         Returns:
             Series: A new series with the updated logical type.
         """
+
+        # if isinstance(self._series, cudf.Series) and (logical_type == "NaturalLanguage" or isinstance(logical_type, NaturalLanguage)):
+        #    warnings.warn("Cannot set cudf series to have logical_type of NaturalLanguage")
+        #    return
+
         # Create a new series without a schema to prevent new series from sharing a common
         # schema with current series
         new_series = self._series.copy()
@@ -594,4 +609,12 @@ if ps:
 
     @register_series_accessor("ww")
     class SparkColumnAccessor(WoodworkColumnAccessor):
+        pass
+
+
+if cudf:
+    from cudf.api.extensions.accessor import register_series_accessor
+
+    @register_series_accessor("ww")
+    class CuDFSeriesAccessor(WoodworkColumnAccessor):
         pass

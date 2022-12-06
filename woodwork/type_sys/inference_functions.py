@@ -8,7 +8,12 @@ from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork.config import config
-from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
+from woodwork.type_sys.utils import (
+    _is_categorical_series,
+    _is_cudf_series,
+    col_is_datetime,
+)
+from woodwork.utils import import_or_none
 
 MAX_INT = sys.maxsize
 MIN_INT = -sys.maxsize - 1
@@ -21,6 +26,7 @@ COMMON_WORDS_SET = set(
 )
 
 NL_delimiters = r"[- \[\].,!\?;\n]"
+cudf = import_or_none("cudf")
 
 
 def categorical_func(series):
@@ -46,6 +52,8 @@ def categorical_func(series):
 
 def integer_func(series):
     if integer_nullable_func(series) and not series.isnull().any():
+        if _is_cudf_series(series):
+            return series.mod(1).eq(0).all()
         return all(series.mod(1).eq(0))
     return False
 
@@ -65,6 +73,8 @@ def integer_nullable_func(series):
         if not series.isnull().any():
             return False
         series_no_null = series.dropna()
+        if _is_cudf_series(series):
+            return all([_is_valid_int(v) for v in series_no_null])
         return all([_is_valid_int(v) for v in series_no_null])
 
     return False
@@ -92,6 +102,10 @@ def boolean_nullable_func(series):
         series.dtype,
     ):
         return True
+
+    # TODO: What to do in cudf case?
+    elif _is_cudf_series(series):
+        return False
     elif pdtypes.is_object_dtype(series.dtype):
         series_no_null = series.dropna()
         try:
@@ -141,7 +155,12 @@ def num_common_words(wordlist: Union[Tokens, Any]) -> float:
 
 def natural_language_func(series):
     tokens = series.astype("string").str.split(NL_delimiters)
-    mean_num_common_words = np.nanmean(tokens.map(num_common_words))
+    if _is_cudf_series(series):
+        # It's unlikely we will be able to support natural language inference for cudf
+        # https://docs.rapids.ai/api/cudf/stable/user_guide/guide-to-udfs.html
+        return False
+    else:
+        mean_num_common_words = np.nanmean(tokens.map(num_common_words))
 
     return (
         mean_num_common_words > 1.14
@@ -171,7 +190,36 @@ class InferWithRegex:
             # inferred dtype is not compatible with the string API `match` method
             # (TypeError)
             return False
-        matches = series_match_method(pat=regex)
+
+        """
+        For cuDF, we have to escape the '-' character when it is not used as a range char
+        for example, A-Z is okay. But in '.;?-', the hyphen needs to be escaped
+        """
+
+        if _is_cudf_series(series):
+            regex = self.get_regex()
+            if regex == ww.config.get_option("email_inference_regex"):
+                matches = series_match_method(
+                    pat="(^[a-zA-Z0-9_.+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-.]+$)",
+                )
+            elif regex == ww.config.get_option("url_inference_regex"):
+                matches = series_match_method(
+                    pat="(http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+)",
+                )
+            elif regex == ww.config.get_option("phone_inference_regex"):
+                matches = series_match_method(
+                    pat=r"(?:\+?(0{2})?1[\-.\s●]?)?\(?([2-9][0-9]{2})\)?[\-\.\s●]?([2-9][0-9]{2})[\-\.\s●]?([0-9]{4})$",
+                )
+            elif regex == ww.config.get_option("ipv4_inference_regex"):
+                matches = series_match_method(
+                    pat=r"(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)",
+                )
+            elif regex == ww.config.get_option("postal_code_inference_regex"):
+                matches = series_match_method(pat=r"^[0-9]{5}(?:\-[0-9]{4})?$")
+            else:
+                return False
+        else:
+            matches = series_match_method(pat=regex)
 
         return matches.sum() == len(matches)
 

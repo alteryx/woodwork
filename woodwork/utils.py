@@ -218,7 +218,7 @@ def _is_url(string):
     return "http" in string
 
 
-def _reformat_to_latlong(latlong, is_spark=False):
+def _reformat_to_latlong(latlong, is_spark_or_cuda=False):
     """
     Accepts 2-tuple like values, or a single NaN like value.
     NaN like values are replaced with np.nan.
@@ -226,7 +226,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
     if isinstance(latlong, str):
         latlong = _parse_latlong(latlong) or latlong
 
-    if isinstance(latlong, (list, tuple)):
+    if isinstance(latlong, (np.ndarray, list, tuple)):
         if len(latlong) != 2:
             raise TypeValidationError(
                 f"LatLong values must have exactly two values. {latlong} does not have two values.",
@@ -243,7 +243,7 @@ def _reformat_to_latlong(latlong, is_spark=False):
             )
 
         latlong = (latitude, longitude)
-        if is_spark:
+        if is_spark_or_cuda:
             latlong = list(latlong)
         return latlong
 
@@ -280,22 +280,33 @@ def _is_valid_latlong_series(series):
         series = series.get_partition(0).compute()
     if ww.accessor_utils._is_spark_series(series):
         series = series.to_pandas()
-        is_spark = True
+        is_spark_or_cuda = True
+    elif ww.accessor_utils._is_cudf_series(series):
+        series = series.to_pandas()
+        # calling to_pandas on a cudf df converts lists to ndarrays
+        # we can manually convert it back here to comply with latlong
+
+        # NOTE:
+        # alternatively, we can make ndarray work with all the utility
+        # functions, but I felt that was more invasive
+        series = series.apply(lambda t: list(t) if isinstance(t, np.ndarray) else t)
+        is_spark_or_cuda = True
     else:
-        is_spark = False
-    if series.apply(_is_valid_latlong_value, args=(is_spark,)).all():
+        is_spark_or_cuda = False
+    if series.apply(_is_valid_latlong_value, args=(is_spark_or_cuda,)).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val, is_spark=False):
+def _is_valid_latlong_value(val, is_spark_or_cuda=False):
     """Returns True if the value provided is a properly formatted LatLong value for a
-    pandas, Dask or Spark Series, otherwise returns False."""
+    pandas, Dask, Spark, or cudf Series, otherwise returns False."""
+
     if isinstance(val, (list, tuple)):
         if len(val) != 2:
             return False
 
-        if not isinstance(val, list if is_spark else tuple):
+        if not isinstance(val, list if is_spark_or_cuda else tuple):
             return False
 
         latitude, longitude = val
@@ -314,7 +325,7 @@ def _is_valid_latlong_value(val, is_spark=False):
         else:
             return _is_valid_latlong_value(val)
 
-    if is_spark and val is None:
+    if is_spark_or_cuda and val is None:
         return True
 
     return False
@@ -631,6 +642,10 @@ def _infer_datetime_format(dates, n=100):
 
     ps = import_or_none("pyspark.pandas")
     if ps and isinstance(first_n, ps.series.Series):
+        first_n = first_n.to_pandas()
+
+    cudf = import_or_none("cudf")
+    if cudf and isinstance(first_n, cudf.Series):
         first_n = first_n.to_pandas()
 
     if len(first_n) == 0:
