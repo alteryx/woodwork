@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Rename `backup_dtype` to `pyspark_dtype`
+        * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
     * Documentation Changes
     * Testing Changes
 
