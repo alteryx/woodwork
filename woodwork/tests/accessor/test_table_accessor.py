@@ -1,6 +1,5 @@
 import re
 from inspect import isclass
-from string import punctuation
 from unittest.mock import patch
 
 import numpy as np
@@ -2457,7 +2456,7 @@ def test_accessor_schema_properties(sample_df):
         assert prop_from_accessor == prop_from_schema
 
         with pytest.raises(AttributeError):
-            setattr(sample_df.ww, schema_property)
+            setattr(sample_df.ww, schema_property, "new_value")
 
 
 def test_sets_spark_option_on_init(sample_df_spark):
