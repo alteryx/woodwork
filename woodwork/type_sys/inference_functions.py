@@ -1,13 +1,12 @@
 import sys
-from importlib import resources as pkg_resources
 from typing import Any, Callable, Iterable, Union
 
 import numpy as np
 import pandas as pd
+from importlib_resources import files
 from pandas.api import types as pdtypes
 
 import woodwork as ww
-from woodwork import data
 from woodwork.config import config
 from woodwork.type_sys.utils import _is_categorical_series, col_is_datetime
 
@@ -16,7 +15,9 @@ MIN_INT = -sys.maxsize - 1
 Tokens = Iterable[str]
 
 COMMON_WORDS_SET = set(
-    line.strip().lower() for line in pkg_resources.open_text(data, "1-1000.txt")
+    word.strip().lower()
+    for word in files("woodwork.data").joinpath("1-1000.txt").read_text().split("\n")
+    if len(word) > 0
 )
 
 NL_delimiters = r"[- \[\].,!\?;\n]"
