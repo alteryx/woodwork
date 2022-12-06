@@ -11,7 +11,6 @@ Future Release
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Add handling of Python 3.11 error messages in ``test_table_accessor.py`` (:pr:`1584`)
 
     Thanks to the following people for contributing to this release:
     :user:`sbadithe`
