@@ -9,6 +9,7 @@ Future Release
     * Fixes
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
     * Changes
+        * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
     * Documentation Changes
     * Testing Changes
 

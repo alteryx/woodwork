@@ -262,8 +262,8 @@ def test_accessor_physical_types_property(sample_df):
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
     for k, v in sample_df.ww.physical_types.items():
         logical_type = sample_df.ww.columns[k].logical_type
-        if _is_spark_dataframe(sample_df) and logical_type.backup_dtype is not None:
-            assert v == logical_type.backup_dtype
+        if _is_spark_dataframe(sample_df) and logical_type.pyspark_dtype is not None:
+            assert v == logical_type.pyspark_dtype
         else:
             assert v == logical_type.primary_dtype
 
