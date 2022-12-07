@@ -2456,8 +2456,7 @@ def test_accessor_schema_properties(sample_df):
         assert prop_from_accessor == prop_from_schema
 
         # Assumes we don't have setters for any of these attributes
-        error = "can't set attribute"
-        with pytest.raises(AttributeError, match=error):
+        with pytest.raises(AttributeError):
             setattr(sample_df.ww, schema_property, "new_value")
 
 
