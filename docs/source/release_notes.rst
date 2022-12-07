@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
-        * Schema now maintains column order after renaming a column (:pr:``)
+        * Schema now maintains column order after renaming a column (:pr:`1594`)
     * Changes
     * Documentation Changes
     * Testing Changes
