@@ -445,12 +445,12 @@ class TableSchema(object):
             raise ValueError("New columns names must be unique from one another.")
 
         new_schema = copy.deepcopy(self)
-        new_col_dict = OrderedDict()
+        ordered_col_dict = OrderedDict()
         for column in self.columns:
-            new_col_dict[column] = columns.get(column, column)
+            ordered_col_dict[column] = columns.get(column, column)
 
         cols_to_update = {}
-        for old_name, new_name in new_col_dict.items():
+        for old_name, new_name in ordered_col_dict.items():
             col = new_schema.columns.pop(old_name)
             cols_to_update[new_name] = col
 
