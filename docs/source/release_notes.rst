@@ -10,6 +10,7 @@ Future Release
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
         * Schema now maintains column order after renaming a column (:pr:`1594`)
     * Changes
+        * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
     * Documentation Changes
     * Testing Changes
 
