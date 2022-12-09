@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 import woodwork as ww
+from woodwork.deserializers.utils import safe_extract
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serializers.serializer_base import SCHEMA_VERSION
@@ -125,25 +126,6 @@ class Deserializer:
 
             use_smartopen(tar_filepath, self.path, transport_params)
             with tarfile.open(str(tar_filepath)) as tar:
-
-                def is_within_directory(directory, target):
-
-                    abs_directory = os.path.abspath(directory)
-                    abs_target = os.path.abspath(target)
-
-                    prefix = os.path.commonprefix([abs_directory, abs_target])
-
-                    return prefix == abs_directory
-
-                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-
-                    for member in tar.getmembers():
-                        member_path = os.path.join(path, member.name)
-                        if not is_within_directory(path, member_path):
-                            raise Exception("Attempted Path Traversal in Tar File")
-
-                    tar.extractall(path, members, numeric_owner=numeric_owner)
-
                 safe_extract(tar, path=tmpdir)
             self.read_path = os.path.join(
                 tmpdir,
