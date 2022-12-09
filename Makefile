@@ -21,11 +21,11 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest woodwork/
+	pytest woodwork/ -n auto
 
 .PHONY: testcoverage
 testcoverage:
-	pytest woodwork/ --cov=woodwork
+	pytest woodwork/ --cov=woodwork -n auto
 
 .PHONY: installdeps
 installdeps: upgradepip
