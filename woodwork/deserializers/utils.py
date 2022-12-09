@@ -99,7 +99,26 @@ def read_table_typing_information(path, typing_info_filename, profile_name):
 
             use_smartopen(file_path, path, transport_params)
             with tarfile.open(str(file_path)) as tar:
-                tar.extractall(path=tmpdir)
+                def is_within_directory(directory, target):
+                    
+                    abs_directory = os.path.abspath(directory)
+                    abs_target = os.path.abspath(target)
+                
+                    prefix = os.path.commonprefix([abs_directory, abs_target])
+                    
+                    return prefix == abs_directory
+                
+                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                
+                    for member in tar.getmembers():
+                        member_path = os.path.join(path, member.name)
+                        if not is_within_directory(path, member_path):
+                            raise Exception("Attempted Path Traversal in Tar File")
+                
+                    tar.extractall(path, members, numeric_owner=numeric_owner) 
+                    
+                
+                safe_extract(tar, path=tmpdir)
 
             file = os.path.join(tmpdir, typing_info_filename)
             with open(file, "r") as file:
