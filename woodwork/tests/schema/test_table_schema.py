@@ -1337,3 +1337,19 @@ def test_validation_methods_called(
     no_validation_schema.set_time_index("signup_date", validate=True)
     assert mock_check_time_index.called
     assert validation_schema == no_validation_schema
+
+
+def test_schema_rename_preserves_order(
+    sample_column_names,
+    sample_inferred_logical_types,
+):
+    schema = TableSchema(
+        sample_column_names,
+        sample_inferred_logical_types,
+    )
+    rename_dict = {"id": "renamed_index", "signup_date": "renamed_time_index"}
+    renamed_schema = schema.rename(rename_dict)
+    expected_result = [
+        rename_dict.get(col_name, col_name) for col_name in sample_column_names
+    ]
+    assert list(renamed_schema.columns.keys()) == expected_result
