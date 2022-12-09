@@ -9,9 +9,8 @@ from woodwork.deserializers.deserializer_base import (
     Deserializer,
     _check_schema_version,
 )
-from woodwork.deserializers.utils import safe_extract
 from woodwork.s3_utils import get_transport_params, use_smartopen
-from woodwork.utils import _is_s3, _is_url, import_or_raise
+from woodwork.utils import _is_s3, _is_url, import_or_raise, safe_extract
 
 
 class ParquetDeserializer(Deserializer):

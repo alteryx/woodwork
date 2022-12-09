@@ -8,11 +8,10 @@ from pathlib import Path
 import pandas as pd
 
 import woodwork as ww
-from woodwork.deserializers.utils import safe_extract
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serializers.serializer_base import SCHEMA_VERSION
-from woodwork.utils import _is_s3, _is_url, import_or_raise
+from woodwork.utils import _is_s3, _is_url, import_or_raise, safe_extract
 
 PYARROW_IMPORT_ERROR_MESSAGE_DESERIALIZE = (
     f"The pyarrow library is required to deserialize from {format}.\n"
