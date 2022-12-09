@@ -262,8 +262,8 @@ def test_accessor_physical_types_property(sample_df):
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
     for k, v in sample_df.ww.physical_types.items():
         logical_type = sample_df.ww.columns[k].logical_type
-        if _is_spark_dataframe(sample_df) and logical_type.backup_dtype is not None:
-            assert v == logical_type.backup_dtype
+        if _is_spark_dataframe(sample_df) and logical_type.pyspark_dtype is not None:
+            assert v == logical_type.pyspark_dtype
         else:
             assert v == logical_type.primary_dtype
 
@@ -2312,11 +2312,17 @@ def test_accessor_rename(sample_df):
     )
     original_df = sample_df.ww.copy()
 
-    new_df = sample_df.ww.rename({"age": "birthday"})
+    rename_dict = {"age": "birthday"}
+    new_df = sample_df.ww.rename(rename_dict)
 
-    assert to_pandas(sample_df.rename(columns={"age": "birthday"})).equals(
+    assert to_pandas(sample_df.rename(columns=rename_dict)).equals(
         to_pandas(new_df),
     )
+    expected_schema_order = [
+        rename_dict.get(name, name) for name in list(sample_df.columns)
+    ]
+    assert list(new_df.ww.schema.columns.keys()) == expected_schema_order
+
     # Confirm original dataframe hasn't changed
     assert to_pandas(sample_df).equals(to_pandas(original_df))
     assert sample_df.ww.schema == original_df.ww.schema

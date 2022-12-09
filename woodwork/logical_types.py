@@ -46,7 +46,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     type_string = ClassNameDescriptor()
     primary_dtype = "string"
-    backup_dtype = None
+    pyspark_dtype = None
     standard_tags = set()
 
     def __eq__(self, other, deep=False):
@@ -60,8 +60,8 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     @classmethod
     def _get_valid_dtype(cls, series_type):
         """Return the dtype that is considered valid for a series with the given logical_type"""
-        if ps and series_type == ps.Series and cls.backup_dtype:
-            return cls.backup_dtype
+        if ps and series_type == ps.Series and cls.pyspark_dtype:
+            return cls.pyspark_dtype
         else:
             return cls.primary_dtype
 
@@ -268,7 +268,7 @@ class Categorical(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    pyspark_dtype = "string"
     standard_tags = {"category"}
 
     def __init__(self, encoding=None):
@@ -289,7 +289,7 @@ class CountryCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    pyspark_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -304,7 +304,7 @@ class CurrencyCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    pyspark_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -649,7 +649,7 @@ class Ordinal(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    pyspark_dtype = "string"
     standard_tags = {"category"}
 
     def __init__(self, order=None):
@@ -739,7 +739,7 @@ class SubRegionCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    pyspark_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -802,7 +802,7 @@ class PostalCode(LogicalType):
     """
 
     primary_dtype = "category"
-    backup_dtype = "string"
+    pyspark_dtype = "string"
     standard_tags = {"category"}
 
     def transform(self, series, null_invalid_values=False):
