@@ -9,7 +9,7 @@ Future Release
     * Fixes
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
         * Schema now maintains column order after renaming a column (:pr:`1594`)
-        * Fix CVE-2007-4559 for deserialization (:pr:`1597`)
+        * Fix CVE-2007-4559 for deserialization of tar files (:pr:`1597`)
     * Changes
         * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
     * Documentation Changes
