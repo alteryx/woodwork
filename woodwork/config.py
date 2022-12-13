@@ -61,7 +61,7 @@ CONFIG_DEFAULTS = {
         ["true", "false"],
         ["t", "f"],
     ],
-    "boolean_inference_ints": [1, 0],
+    "boolean_inference_ints": [[1, 0]],
 }
 
 
