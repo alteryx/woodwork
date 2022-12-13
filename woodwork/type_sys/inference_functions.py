@@ -113,8 +113,9 @@ def boolean_nullable_func(series):
     elif pdtypes.is_integer_dtype(series.dtype):
         if config.get_option("boolean_inference_ints"):
             series_unique = set(series)
-            if series_unique == set(config.get_option("boolean_inference_ints")):
-                return True
+            for boolean_list in config.get_option("boolean_inference_ints"):
+                if series_unique == set(boolean_list):
+                    return True
     return False
 
 
