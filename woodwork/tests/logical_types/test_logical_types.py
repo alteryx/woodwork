@@ -1055,3 +1055,14 @@ def test_boolean_mixed_string():
 
     df.ww.init()
     assert all([str(dtype) != "Boolean" for dtype in df.ww.logical_types.values()])
+
+
+def test_boolean_int_works():
+    df = pd.DataFrame({"ints": [i % 2 for i in range(100)]})
+    df2 = df.copy()
+    df.ww.init()
+    assert [str(v) for v in df.ww.logical_types.values()] == ["Integer"]
+
+    df2.ww.init(logical_types={"ints": "Boolean"})
+    assert [str(v) for v in df2.ww.logical_types.values()] == ["Boolean"]
+    assert df2.values.tolist() == [[bool(i % 2)] for i in range(100)]
