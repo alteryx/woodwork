@@ -11,6 +11,7 @@ Future Release
         * Schema now maintains column order after renaming a column (:pr:`1594`)
     * Changes
         * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
+        * Remove ``[0, 1]`` from boolean predictions (:pr:`1600`)
     * Documentation Changes
     * Testing Changes
 
