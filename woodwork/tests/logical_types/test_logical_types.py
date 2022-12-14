@@ -938,13 +938,10 @@ def test_datetime_pivot_point_no_format_provided():
 def test_boolean_other_values(df_type):
     df = pd.DataFrame(
         {
-            "bool1": [0, 1, 0, 1, 1, 0],
             "bool2": ["t", "f", "t", "f", "t", "t"],
             "bool3": ["T", "F", "T", "F", "F", "f"],
             "bool4": ["true", "false", "false", "false", "true", "true"],
             "bool5": ["True", "False", "False", "True", "false", "TRUE"],
-            "bool6": ["1", "0", "1", "1", "1", "0"],
-            "bool7": ["1.0", "0.0", "1.0", "1.0", "1.0", "0.0"],
             "bool8": ["YES", "NO", "YES", "yes", "no", "no"],
             "bool9": ["N", "N", "n", "y", "Y", "y"],
         },
@@ -992,7 +989,6 @@ def test_boolean_cast_nulls_as():
     (
         [True, True, False, False],
         ["Yes", "yes", "NO", "no"],
-        ["1", "1", "0", "0"],
         ["True", "true", "false", "FALSE"],
     ),
 )
@@ -1027,7 +1023,6 @@ def test_boolean_nullable_other_values_dont_cast(null, df_type):
             "bool3": ["T", "F", "T", "F", "F", null],
             "bool4": ["true", "false", "false", "false", "true", null],
             "bool5": ["True", "False", "False", "True", null, "TRUE"],
-            "bool6": ["1", "0", "1", null, "1", "0"],
             "bool7": ["YES", "NO", "YES", "yes", null, "no"],
         },
     )

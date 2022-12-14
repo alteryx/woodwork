@@ -56,12 +56,9 @@ CONFIG_DEFAULTS = {
     "boolean_inference_strings": [
         ["yes", "no"],
         ["y", "n"],
-        ["1", "0"],
-        ["1.0", "0.0"],
         ["true", "false"],
         ["t", "f"],
     ],
-    "boolean_inference_ints": [1, 0],
 }
 
 
