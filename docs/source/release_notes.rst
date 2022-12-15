@@ -11,6 +11,7 @@ Future Release
         * Schema now maintains column order after renaming a column (:pr:`1594`)
     * Changes
         * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
+        * Removed inference for `["0", "1"]`, `["0.0", "1.0"]`, and `[0, 1]` as Boolean logical types, but maintained forced inference of such values (:pr:`1600`)
     * Documentation Changes
     * Testing Changes
 

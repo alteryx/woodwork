@@ -968,7 +968,7 @@ def _coerce_boolean(series, null_invalid_values=False):
 
 def _transform_boolean(series, null_invalid_values):
     boolean_inference_list = config.get_option("boolean_inference_strings")
-    boolean_inference_list.append(config.get_option("boolean_inference_ints"))
+    boolean_inference_list.extend([["1", "0"], ["1.0", "0.0"]])
     valid = {}
     for booleans in boolean_inference_list:
         valid[booleans[0]] = True

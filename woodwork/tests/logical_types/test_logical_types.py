@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series, init_series
+from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
     TypeConversionWarning,
@@ -938,13 +939,10 @@ def test_datetime_pivot_point_no_format_provided():
 def test_boolean_other_values(df_type):
     df = pd.DataFrame(
         {
-            "bool1": [0, 1, 0, 1, 1, 0],
             "bool2": ["t", "f", "t", "f", "t", "t"],
             "bool3": ["T", "F", "T", "F", "F", "f"],
             "bool4": ["true", "false", "false", "false", "true", "true"],
             "bool5": ["True", "False", "False", "True", "false", "TRUE"],
-            "bool6": ["1", "0", "1", "1", "1", "0"],
-            "bool7": ["1.0", "0.0", "1.0", "1.0", "1.0", "0.0"],
             "bool8": ["YES", "NO", "YES", "yes", "no", "no"],
             "bool9": ["N", "N", "n", "y", "Y", "y"],
         },
@@ -992,7 +990,6 @@ def test_boolean_cast_nulls_as():
     (
         [True, True, False, False],
         ["Yes", "yes", "NO", "no"],
-        ["1", "1", "0", "0"],
         ["True", "true", "false", "FALSE"],
     ),
 )
@@ -1027,7 +1024,6 @@ def test_boolean_nullable_other_values_dont_cast(null, df_type):
             "bool3": ["T", "F", "T", "F", "F", null],
             "bool4": ["true", "false", "false", "false", "true", null],
             "bool5": ["True", "False", "False", "True", null, "TRUE"],
-            "bool6": ["1", "0", "1", null, "1", "0"],
             "bool7": ["YES", "NO", "YES", "yes", null, "no"],
         },
     )
@@ -1060,3 +1056,53 @@ def test_boolean_mixed_string():
 
     df.ww.init()
     assert all([str(dtype) != "Boolean" for dtype in df.ww.logical_types.values()])
+
+
+@pytest.mark.parametrize("ints_to_config,type", [[False, "Integer"], [True, "Boolean"]])
+def test_boolean_int_works(ints_to_config, type):
+    df = pd.DataFrame({"ints": [i % 2 for i in range(100)]})
+    df2 = df.copy()
+
+    def tester_df_ints():
+        df.ww.init()
+        assert [str(v) for v in df.ww.logical_types.values()] == [type]
+
+        df2.ww.init(logical_types={"ints": "Boolean"})
+        assert [str(v) for v in df2.ww.logical_types.values()] == ["Boolean"]
+        assert df2.values.tolist() == [[bool(i % 2)] for i in range(100)]
+
+    if ints_to_config:
+        with config.with_options(boolean_inference_ints=[0, 1]):
+            tester_df_ints()
+    else:
+        tester_df_ints()
+
+
+def test_boolean_strings_of_numeric_work():
+    expected = {
+        "str_ints": pd.Series([True, False, False] * 10, dtype="bool"),
+        "str_floats": pd.Series([True, False, False] * 10, dtype="bool"),
+        "str_ints_nans": pd.Series([True, False, np.nan] * 10, dtype="boolean"),
+        "str_floats_nans": pd.Series([True, False, np.nan] * 10, dtype="boolean"),
+    }
+    str_ints = ["1", "0", "0"] * 10
+    str_floats = ["1.0", "0.0", "0.0"] * 10
+    str_ints_nans = ["1", "0", None] * 10
+    str_floats_nans = ["1.0", "0.0", None] * 10
+
+    df = pd.DataFrame(
+        {
+            "str_ints": str_ints,
+            "str_floats": str_floats,
+            "str_ints_nans": str_ints_nans,
+            "str_floats_nans": str_floats_nans,
+        },
+    )
+    logical_types = {
+        "str_ints": "Boolean",
+        "str_floats": "Boolean",
+        "str_ints_nans": "BooleanNullable",
+        "str_floats_nans": "BooleanNullable",
+    }
+    df.ww.init(logical_types=logical_types)
+    pd.testing.assert_frame_equal(pd.DataFrame.from_dict(expected), df)
