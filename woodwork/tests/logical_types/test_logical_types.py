@@ -1066,3 +1066,33 @@ def test_boolean_int_works():
     df2.ww.init(logical_types={"ints": "Boolean"})
     assert [str(v) for v in df2.ww.logical_types.values()] == ["Boolean"]
     assert df2.values.tolist() == [[bool(i % 2)] for i in range(100)]
+
+
+def test_boolean_strings_of_numeric_work():
+    expected = {
+        "str_ints": pd.Series([True, False, False] * 10, dtype="bool"),
+        "str_floats": pd.Series([True, False, False] * 10, dtype="bool"),
+        "str_ints_nans": pd.Series([True, False, np.nan] * 10, dtype="boolean"),
+        "str_floats_nans": pd.Series([True, False, np.nan] * 10, dtype="boolean"),
+    }
+    str_ints = ["1", "0", "0"] * 10
+    str_floats = ["1.0", "0.0", "0.0"] * 10
+    str_ints_nans = ["1", "0", None] * 10
+    str_floats_nans = ["1.0", "0.0", None] * 10
+
+    df = pd.DataFrame(
+        {
+            "str_ints": str_ints,
+            "str_floats": str_floats,
+            "str_ints_nans": str_ints_nans,
+            "str_floats_nans": str_floats_nans,
+        },
+    )
+    logical_types = {
+        "str_ints": "Boolean",
+        "str_floats": "Boolean",
+        "str_ints_nans": "BooleanNullable",
+        "str_floats_nans": "BooleanNullable",
+    }
+    df.ww.init(logical_types=logical_types)
+    pd.testing.assert_frame_equal(pd.DataFrame.from_dict(expected), df)
