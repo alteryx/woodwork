@@ -1079,6 +1079,7 @@ def test_boolean_int_works(ints_to_config, type):
 
 
 def test_boolean_strings_of_numeric_work():
+    config_len = len(config.get_option("boolean_inference_strings"))
     expected = {
         "str_ints": pd.Series([True, False, False] * 10, dtype="bool"),
         "str_floats": pd.Series([True, False, False] * 10, dtype="bool"),
@@ -1106,3 +1107,5 @@ def test_boolean_strings_of_numeric_work():
     }
     df.ww.init(logical_types=logical_types)
     pd.testing.assert_frame_equal(pd.DataFrame.from_dict(expected), df)
+    config_len_after = len(config.get_option("boolean_inference_strings"))
+    assert config_len == config_len_after
