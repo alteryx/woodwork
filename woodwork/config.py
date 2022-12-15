@@ -59,6 +59,9 @@ CONFIG_DEFAULTS = {
         ["true", "false"],
         ["t", "f"],
     ],
+    # when adding to boolean_inference_ints, add `0, 1` to the list directly
+    # rather than making it nested lists
+    "boolean_inference_ints": [],
 }
 
 

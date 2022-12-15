@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series, init_series
+from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
     TypeConversionWarning,
@@ -1057,15 +1058,24 @@ def test_boolean_mixed_string():
     assert all([str(dtype) != "Boolean" for dtype in df.ww.logical_types.values()])
 
 
-def test_boolean_int_works():
+@pytest.mark.parametrize("ints_to_config,type", [[False, "Integer"], [True, "Boolean"]])
+def test_boolean_int_works(ints_to_config, type):
     df = pd.DataFrame({"ints": [i % 2 for i in range(100)]})
     df2 = df.copy()
-    df.ww.init()
-    assert [str(v) for v in df.ww.logical_types.values()] == ["Integer"]
 
-    df2.ww.init(logical_types={"ints": "Boolean"})
-    assert [str(v) for v in df2.ww.logical_types.values()] == ["Boolean"]
-    assert df2.values.tolist() == [[bool(i % 2)] for i in range(100)]
+    def tester_df_ints():
+        df.ww.init()
+        assert [str(v) for v in df.ww.logical_types.values()] == [type]
+
+        df2.ww.init(logical_types={"ints": "Boolean"})
+        assert [str(v) for v in df2.ww.logical_types.values()] == ["Boolean"]
+        assert df2.values.tolist() == [[bool(i % 2)] for i in range(100)]
+
+    if ints_to_config:
+        with config.with_options(boolean_inference_ints=[0, 1]):
+            tester_df_ints()
+    else:
+        tester_df_ints()
 
 
 def test_boolean_strings_of_numeric_work():
