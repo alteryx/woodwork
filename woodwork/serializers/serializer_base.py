@@ -11,7 +11,7 @@ from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.type_sys.utils import _get_ltype_class, _get_specified_ltype_params
 from woodwork.utils import _is_s3, _is_url
 
-SCHEMA_VERSION = "12.0.0"
+SCHEMA_VERSION = "13.0.0"
 
 PYARROW_IMPORT_ERROR_MESSAGE = (
     f"The pyarrow library is required to serialize to {format}.\n"
@@ -177,6 +177,7 @@ def typing_info_to_dict(dataframe):
             "description": col.description,
             "origin": col.origin,
             "metadata": col.metadata,
+            "secondary_name": col.secondary_name,
         }
         for col_name, col in dataframe.ww.columns.items()
     ]
