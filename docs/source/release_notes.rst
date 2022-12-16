@@ -9,6 +9,7 @@ Future Release
     * Fixes
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
         * Schema now maintains column order after renaming a column (:pr:`1594`)
+        * Fixed logic to not set config during boolean transform (:pr:`1601`)
     * Changes
         * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
         * Removed inference for `["0", "1"]`, `["0.0", "1.0"]`, and `[0, 1]` as Boolean logical types, but maintained forced inference of such values (:pr:`1600`)
