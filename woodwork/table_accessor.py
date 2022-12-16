@@ -97,6 +97,7 @@ class WoodworkTableAccessor:
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
+            secondary_name (str, optional): An optional secondary name to identify the DataFrame
         """
         self.init_with_partial_schema(**kwargs)
 
@@ -144,6 +145,7 @@ class WoodworkTableAccessor:
         column_origins: Optional[Union[str, Dict[ColumnName, str]]] = None,
         null_invalid_values: Optional[bool] = False,
         validate: Optional[bool] = True,
+        secondary_name: Optional[str] = None,
         **kwargs,
     ) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
