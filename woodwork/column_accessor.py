@@ -43,6 +43,7 @@ class WoodworkColumnAccessor:
         metadata=None,
         schema=None,
         validate=True,
+        secondary_name=None,
     ):
         """Initializes Woodwork typing information for a Series.
 
@@ -68,6 +69,7 @@ class WoodworkColumnAccessor:
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
+            secondary_name (str, optional): Optional secondary name to describe series
         """
 
         if schema is not None:
@@ -87,6 +89,8 @@ class WoodworkColumnAccessor:
                 extra_params.append("metadata")
             if not use_standard_tags:
                 extra_params.append("use_standard_tags")
+            if not secondary_name:
+                extra_params.append("secondary_name")
             if extra_params:
                 warnings.warn(
                     "A schema was provided and the following parameters were ignored: "
@@ -126,6 +130,7 @@ class WoodworkColumnAccessor:
                 origin=origin,
                 metadata=metadata,
                 validate=validate,
+                secondary_name=secondary_name,
             )
 
     @property
