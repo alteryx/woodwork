@@ -3,9 +3,18 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.21.1 December 16, 2022
+========================
     * Fixes
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
         * Schema now maintains column order after renaming a column (:pr:`1594`)
@@ -13,11 +22,9 @@ Future Release
     * Changes
         * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
         * Removed inference for `["0", "1"]`, `["0.0", "1.0"]`, and `[0, 1]` as Boolean logical types, but maintained forced inference of such values (:pr:`1600`)
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`, :user:`bchen1116`
+    :user:`bchen1116`, :user:`sbadithe`
 
 v0.21.0 December 1, 2022
 ========================
