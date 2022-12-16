@@ -584,7 +584,7 @@ class TableSchema(object):
         new_column_origins = {}
         new_column_metadata = {}
         for col_name in subset_cols:
-            col = col = self.columns[col_name]
+            col = self.columns[col_name]
 
             new_logical_types[col_name] = col.logical_type
             new_semantic_tags[col_name] = col.semantic_tags
