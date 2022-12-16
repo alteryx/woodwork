@@ -60,6 +60,9 @@ def init_series(
             raise TypeError(
                 f"Input must be of series type. The current input is of type {type(series)}",
             )
+    import pdb
+
+    pdb.set_trace()
     logical_type = _get_column_logical_type(series, logical_type, series.name)
     new_series = logical_type.transform(series, null_invalid_values=null_invalid_values)
     new_series.ww.init(

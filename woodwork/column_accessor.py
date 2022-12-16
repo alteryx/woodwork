@@ -172,6 +172,17 @@ class WoodworkColumnAccessor:
 
     @property
     @_check_column_schema
+    def secondary_name(self):
+        """The secondary name of the series"""
+        return self._schema._secondary_name
+
+    @secondary_name.setter
+    @_check_column_schema
+    def secondary_name(self, secondary_name):
+        self._schema._secondary_name = secondary_name
+
+    @property
+    @_check_column_schema
     def iloc(self):
         """
         Integer-location based indexing for selection by position.
