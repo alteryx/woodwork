@@ -24,6 +24,7 @@ class ColumnSchema(object):
         origin=None,
         metadata=None,
         validate=True,
+        secondary_name=None,
     ):
         """Create ColumnSchema
 
@@ -37,6 +38,7 @@ class ColumnSchema(object):
             metadata (dict[str -> json serializable], optional): Extra metadata provided by the user. The dictionary must contain
                 data types that are JSON serializable such as string, integers, and floats. DataFrame and Series types are not supported.
             validate (bool, optional): Whether to perform parameter validation. Defaults to True.
+            secondary_name (str, optional): Provides a secondary name for a column. Defaults to None.
         """
         metadata = metadata or {}
 
@@ -52,6 +54,7 @@ class ColumnSchema(object):
         self._metadata = metadata
         self._description = description
         self._origin = origin
+        self._secondary_name = secondary_name
         self.logical_type = logical_type
 
         self.use_standard_tags = use_standard_tags
@@ -107,6 +110,15 @@ class ColumnSchema(object):
     def description(self, description):
         _validate_description(description)
         self._description = description
+
+    @property
+    def secondary_name(self):
+        return self._secondary_name
+
+    @secondary_name.setter
+    def secondary_name(self, secondary_name):
+        _validate_secondary_name(secondary_name)
+        self._secondary_name = secondary_name
 
     @property
     def origin(self):
@@ -260,6 +272,11 @@ def _validate_description(column_description):
 def _validate_origin(origin):
     if origin is not None and not isinstance(origin, str):
         raise TypeError("Column origin must be a string")
+
+
+def _validate_secondary_name(secondary_name: str):
+    if secondary_name is not None and not isinstance(secondary_name, str):
+        raise TypeError("Column secondary name must be a string")
 
 
 def _validate_metadata(column_metadata):
