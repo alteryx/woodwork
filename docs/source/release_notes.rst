@@ -14,7 +14,7 @@ Release Notes
 .. Thanks to the following people for contributing to this release:
 
 v0.21.1 December 16, 2022
-========================
+=========================
     * Fixes
         * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
         * Schema now maintains column order after renaming a column (:pr:`1594`)
