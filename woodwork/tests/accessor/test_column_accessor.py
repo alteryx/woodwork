@@ -304,6 +304,37 @@ def test_accessor_origin(sample_series):
     assert sample_series.ww.origin == new_origin
 
 
+def test_accessor_secondary_name(sample_series):
+    secondary_name = "second name"
+    sample_series.ww.init(secondary_name=secondary_name)
+    assert sample_series.ww.secondary_name == secondary_name
+
+    new_secondary_name = "third name"
+    sample_series.ww.secondary_name = new_secondary_name
+    assert sample_series.ww.secondary_name == new_secondary_name
+
+
+def test_secondary_name_setter_error_before_init(sample_series):
+    err_msg = (
+        "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
+    )
+    with pytest.raises(WoodworkNotInitError, match=err_msg):
+        sample_series.ww.secondary_name = "second name"
+
+
+def test_secondary_name_error_on_update(sample_series):
+    sample_series.ww.init()
+    err_msg = "Column secondary_name must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.secondary_name = {3}
+
+
+def test_secondary_name_error_on_init(sample_series):
+    err_msg = "Column secondary_name must be a string"
+    with pytest.raises(TypeError, match=err_msg):
+        sample_series.ww.init(secondary_name=123)
+
+
 def test_origin_setter_error_before_init(sample_series):
     err_msg = (
         "Woodwork not initialized for this Series. Initialize by calling Series.ww.init"
