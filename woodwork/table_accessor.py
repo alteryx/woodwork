@@ -145,7 +145,7 @@ class WoodworkTableAccessor:
         column_origins: Optional[Union[str, Dict[ColumnName, str]]] = None,
         null_invalid_values: Optional[bool] = False,
         validate: Optional[bool] = True,
-        secondary_name: Optional[str] = None,
+        secondary_names: Optional[Dict[ColumnName, str]] = None,
         **kwargs,
     ) -> None:
         """Initializes Woodwork typing information for a DataFrame with a partial schema.
@@ -198,6 +198,8 @@ class WoodworkTableAccessor:
             validate (bool, optional): Whether parameter and data validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
+            secondary_names (Dict[str -> str], optional): Secondary name of each column. If a column does not
+                have a secondary name, it's value will be None.
         """
         if validate:
             _validate_accessor_params(
@@ -216,6 +218,7 @@ class WoodworkTableAccessor:
         existing_use_standard_tags = {}
         existing_semantic_tags = {}
         existing_col_origins = {}
+        existing_secondary_names = {}
 
         if schema:  # pull schema parameters
             name = name if name is not None else schema.name
@@ -234,6 +237,7 @@ class WoodworkTableAccessor:
                 existing_col_origins[col_name] = col_schema.origin
                 existing_col_metadata[col_name] = col_schema.metadata
                 existing_use_standard_tags[col_name] = col_schema.use_standard_tags
+                existing_secondary_names[col_name] = col_schema.secondary_name
 
         # overwrite schema parameters with specified kwargs
         logical_types = _infer_missing_logical_types(
@@ -256,6 +260,7 @@ class WoodworkTableAccessor:
         )
         semantic_tags = {**existing_semantic_tags, **(semantic_tags or {})}
         column_origins = {**existing_col_origins, **(column_origins or {})}
+        secondary_names = {**existing_secondary_names, **(secondary_names or {})}
 
         self._schema = TableSchema(
             column_names=column_names,
@@ -270,6 +275,7 @@ class WoodworkTableAccessor:
             column_descriptions=column_descriptions,
             column_origins=column_origins,
             validate=validate,
+            secondary_names=secondary_names,
             **kwargs,
         )
         self._set_underlying_index()

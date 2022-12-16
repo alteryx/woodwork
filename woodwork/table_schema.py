@@ -26,6 +26,7 @@ class TableSchema(object):
         column_descriptions=None,
         column_origins=None,
         validate=True,
+        secondary_names=None,
     ):
         """Create TableSchema
 
@@ -61,6 +62,8 @@ class TableSchema(object):
             validate (bool, optional): Whether parameter validation should occur. Defaults to True. Warning:
                 Should be set to False only when parameters and data are known to be valid.
                 Any errors resulting from skipping validation with invalid inputs may not be easily understood.
+            secondary_names (dict[str -> str], optional): Secondary name of each column. If a column does not
+                have a secondary name, it's value will be None.
         """
         if validate:
             # Check that inputs are valid
@@ -76,6 +79,7 @@ class TableSchema(object):
                 column_descriptions,
                 column_origins,
                 use_standard_tags,
+                secondary_names,
             )
 
         self._name = name
@@ -102,6 +106,7 @@ class TableSchema(object):
             column_origins,
             column_metadata,
             validate,
+            secondary_names,
         )
         if index is not None:
             self.set_index(index, validate=validate)
@@ -341,6 +346,7 @@ class TableSchema(object):
         column_origins,
         column_metadata,
         validate,
+        secondary_names,
     ):
         """Create a dictionary with column names as keys and new column dictionaries holding
         each column's typing information as values."""
@@ -360,6 +366,7 @@ class TableSchema(object):
                 else (column_origins or {}).get(name)
             )
             metadata_for_col = (column_metadata or {}).get(name)
+            secondary_name = (secondary_names or {}).get(name)
 
             columns[name] = ColumnSchema(
                 logical_type=logical_types.get(name),
@@ -369,6 +376,7 @@ class TableSchema(object):
                 origin=origin,
                 metadata=metadata_for_col,
                 validate=validate,
+                secondary_name=secondary_name,
             )
         return columns
 
