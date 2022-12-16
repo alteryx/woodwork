@@ -73,6 +73,8 @@ class ColumnSchema(object):
             return False
         if self.origin != other.origin:
             return False
+        if self._secondary_name != other._secondary_name:
+            return False
         if deep and self.metadata != other.metadata:
             return False
 
@@ -113,6 +115,7 @@ class ColumnSchema(object):
 
     @property
     def secondary_name(self):
+        """Secondary name of the column"""
         return self._secondary_name
 
     @secondary_name.setter

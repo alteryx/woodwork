@@ -19,6 +19,7 @@ def init_series(
     description=None,
     origin=None,
     metadata=None,
+    secondary_name=None,
 ):
     """Initializes Woodwork typing information for a series, numpy.ndarray or pd.api.extensions.
     ExtensionArray, returning a new Series. The dtype of the returned series will be converted
@@ -41,7 +42,7 @@ def init_series(
         origin (str, optional): Optional text specifying origin of the column (i.e. "base" or "engineered").
         metadata (dict[str -> json serializable], optional): Metadata associated with the series.
         null_invalid_values (bool, optional): If True, replaces any invalid values with null. Defaults to False.
-
+        secondary_name (str, optional): Sets a secondary name to describe series
     Returns:
         Series: A series with Woodwork typing information initialized
     """
@@ -68,6 +69,7 @@ def init_series(
         description=description,
         origin=origin,
         metadata=metadata,
+        secondary_name=secondary_name,
     )
     return new_series
 
