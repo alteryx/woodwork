@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Bump scipy min version for compatibility with numpy 1.24.0 (:pr:`1606`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
 
 v0.21.1 December 16, 2022
 =========================
