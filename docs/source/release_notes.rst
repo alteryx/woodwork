@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Bump scipy min version for compatibility with numpy 1.24.0 (:pr:`1606`)
+        * Bump scipy and scikit-learn min versions for compatibility with numpy 1.24.0 (:pr:`1606`)
     * Documentation Changes
     * Testing Changes
 
