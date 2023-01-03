@@ -7,15 +7,27 @@ Future Release
 ==============
     * Enhancements
     * Fixes
-        * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
-        * Schema now maintains column order after renaming a column (:pr:`1594`)
     * Changes
-        * Rename `backup_dtype` to `pyspark_dtype` (:pr:`1593`)
+        * Bump scipy and scikit-learn min versions for compatibility with numpy 1.24.0 (:pr:`1606`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`, :user:`bchen1116`
+    :user:`thehomebrewnerd`
+
+
+v0.21.1 December 16, 2022
+=========================
+    * Fixes
+        * Fix importlib DeprecationWarning in ``inference_functions.py`` (:pr:`1584`)
+        * Schema now maintains column order after renaming a column (:pr:`1594`)
+        * Fixed logic to not set config during boolean transform (:pr:`1601`)
+    * Changes
+        * Rename ``backup_dtype`` to ``pyspark_dtype`` (:pr:`1593`)
+        * Removed inference for ``["0", "1"]``, ``["0.0", "1.0"]``, and ``[0, 1]`` as Boolean logical types, but maintained forced inference of such values (:pr:`1600`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`bchen1116`, :user:`sbadithe`
 
 v0.21.0 December 1, 2022
 ========================
