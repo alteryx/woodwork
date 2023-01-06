@@ -9,11 +9,12 @@ Future Release
     * Fixes
     * Changes
         * Bump scipy and scikit-learn min versions for compatibility with numpy 1.24.0 (:pr:`1606`)
+        * Add ``is_natural_language`` method to ``ColumnSchema`` object (:pr:``)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`sbadithe`, :user:`thehomebrewnerd`
 
 
 v0.21.1 December 16, 2022
