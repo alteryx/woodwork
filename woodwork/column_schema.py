@@ -7,8 +7,8 @@ from woodwork.logical_types import (
     Boolean,
     BooleanNullable,
     Datetime,
-    NaturalLanguage,
     LatLong,
+    NaturalLanguage,
     Ordinal,
     Unknown,
 )
