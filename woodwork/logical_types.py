@@ -223,15 +223,17 @@ class Boolean(LogicalType):
         Returns:
             Series: Returns column transformed into boolean type
         """
+        ve = ValueError(
+            "Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value with the `cast_null_as` parameter.",
+        )
         is_dask = _is_dask_series(series)
-        if (is_dask and series.isna().any().compute()) or (
-            not is_dask and series.isna().any()
-        ):
-            if self.cast_nulls_as is None:
-                raise ValueError(
-                    "Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value with the `cast_null_as` parameter.",
-                )
-            series.fillna(self.cast_nulls_as, inplace=True)
+        if not pdtypes.is_dtype_equal("bool", series.dtype):
+            if (is_dask and series.isna().any().compute()) or (
+                not is_dask and series.isna().any()
+            ):
+                if self.cast_nulls_as is None:
+                    raise ve
+                series.fillna(self.cast_nulls_as, inplace=True)
         series = _coerce_boolean(series, True)
         return super().transform(series)
 
