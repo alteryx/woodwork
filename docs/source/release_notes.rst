@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Bump scipy and scikit-learn min versions for compatibility with numpy 1.24.0 (:pr:`1606`)
+        * Changed the ``transform`` function for the ``Boolean`` logical type to improve runtime (:pr:`1612`)
     * Documentation Changes
     * Testing Changes
 
