@@ -234,7 +234,7 @@ class Boolean(LogicalType):
                 if self.cast_nulls_as is None:
                     raise ve
                 series.fillna(self.cast_nulls_as, inplace=True)
-        series = _coerce_boolean(series, True)
+            series = _coerce_boolean(series, True)
         return super().transform(series)
 
 
