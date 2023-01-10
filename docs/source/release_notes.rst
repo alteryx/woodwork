@@ -15,7 +15,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`sbadithe`, :user:`thehomebrewnerd`
+    :user:`ParthivNaresh`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 
 v0.21.1 December 16, 2022
