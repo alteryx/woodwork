@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -909,7 +910,7 @@ def test_datetime_pivot_point_no_format_provided():
         "01/01/52",
         "01/01/56",
         "01/01/60",
-        "01/01/72",
+        "01/01/73",
         "01/01/76",
         "01/01/80",
         None,
@@ -923,7 +924,7 @@ def test_datetime_pivot_point_no_format_provided():
         "2052-01-01",
         "2056-01-01",
         "2060-01-01",
-        "1972-01-01",
+        "1973-01-01",
         "1976-01-01",
         "1980-01-01",
         None,
@@ -1109,3 +1110,11 @@ def test_boolean_strings_of_numeric_work():
     pd.testing.assert_frame_equal(pd.DataFrame.from_dict(expected), df)
     config_len_after = len(config.get_option("boolean_inference_strings"))
     assert config_len == config_len_after
+
+
+@patch("woodwork.logical_types._coerce_boolean")
+def test_coerce_boolean_not_called_for_bool_dtype(coerce_boolean_patch):
+    series = pd.Series([0, 1, 1, 0, 1, 0, 1], dtype="bool")
+    series_init = init_series(series)
+    assert not coerce_boolean_patch.called
+    assert series_init.dtype == "bool"
