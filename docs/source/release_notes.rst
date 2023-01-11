@@ -3,16 +3,22 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.21.2 January 11, 2023
+========================
     * Changes
         * Bump scipy and scikit-learn min versions for compatibility with numpy 1.24.0 (:pr:`1606`)
         * Add ``is_natural_language`` method to ``ColumnSchema`` object (:pr:`1610`)
         * Changed the ``transform`` function for the ``Boolean`` logical type to improve runtime (:pr:`1612`)
-    * Documentation Changes
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`ParthivNaresh`, :user:`sbadithe`, :user:`thehomebrewnerd`
