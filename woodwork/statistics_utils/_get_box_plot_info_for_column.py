@@ -72,7 +72,7 @@ def _get_low_high_bound(series, method, q1, q3, min_value, max_value, mc=None):
     if method == "medcouple":
         if mc is None:
             raise ValueError(
-                "If the method selected is medcouple, then mc cannot be None."
+                "If the method selected is medcouple, then mc cannot be None.",
             )
         # Medcouple coefficients change based on the skew direction
         lower_bound_coef, higher_bound_coef = _determine_coefficients(series, mc)
@@ -83,7 +83,7 @@ def _get_low_high_bound(series, method, q1, q3, min_value, max_value, mc=None):
         high_bound = q3 + (iqr * 1.5)
     else:
         raise ValueError(
-            f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'."
+            f"Acceptable methods are 'box_plot' and 'medcouple'. The value passed was '{method}'.",
         )
     # Box plot bounds calculation - the bounds should never be beyond the min and max values
     low_bound = max(low_bound, min_value)
@@ -200,7 +200,13 @@ def _get_box_plot_info_for_column(
         mc = mc.tolist()
 
     low_bound, high_bound = _get_low_high_bound(
-        series, method, q1, q3, min_value, max_value, mc
+        series,
+        method,
+        q1,
+        q3,
+        min_value,
+        max_value,
+        mc,
     )
     low_bound = round(low_bound, 5) if isinstance(low_bound, float) else low_bound
     high_bound = round(high_bound, 5) if isinstance(high_bound, float) else high_bound

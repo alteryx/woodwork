@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add ruff for linting and replace isort/flake8 (:pr:`1614`)
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
 
 v0.21.2 January 11, 2023
 ========================

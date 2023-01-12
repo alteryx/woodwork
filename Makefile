@@ -8,16 +8,15 @@ clean:
 
 .PHONY: lint
 lint:
-	isort --check-only woodwork
 	python docs/notebook_version_standardizer.py check-execution
-	black woodwork docs/source -t py310 --check
-	flake8 woodwork
+	black woodwork/ docs/source/ --check
+	ruff woodwork/
 
 .PHONY: lint-fix
 lint-fix:
-	black woodwork docs/source -t py310
-	isort woodwork
 	python docs/notebook_version_standardizer.py standardize
+	black woodwork/ docs/source/
+	ruff woodwork/ --fix
 
 .PHONY: test
 test:
@@ -52,6 +51,6 @@ upgradesetuptools:
 .PHONY: package
 package: upgradepip upgradebuild upgradesetuptools
 	python -m build
-	$(eval PACKAGE=$(shell python -c "from pep517.meta import load; metadata = load('.'); print(metadata.version)"))
+	$(eval PACKAGE=$(shell python -c 'import setuptools; setuptools.setup()' --version))
 	tar -zxvf "dist/woodwork-${PACKAGE}.tar.gz"
 	mv "woodwork-${PACKAGE}" unpacked_sdist
