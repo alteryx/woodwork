@@ -36,7 +36,9 @@ def _sample_for_medcouple(series, seed=42):
         series_sample = series.copy()
     else:
         series_sample = np.random.choice(
-            series, ww.config.get_option("medcouple_sample_size"), replace=False
+            series,
+            ww.config.get_option("medcouple_sample_size"),
+            replace=False,
         )
     col = pd.Series(series_sample)
     mc = _get_medcouple_statistic(col)
