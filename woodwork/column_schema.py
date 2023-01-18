@@ -8,6 +8,7 @@ from woodwork.logical_types import (
     BooleanNullable,
     Datetime,
     LatLong,
+    NaturalLanguage,
     Ordinal,
     Unknown,
 )
@@ -160,6 +161,11 @@ class ColumnSchema(object):
         """Whether the ColumnSchema is a Boolean column"""
         ltype_class = type(self.logical_type)
         return ltype_class == Boolean or ltype_class == BooleanNullable
+
+    @property
+    def is_natural_language(self):
+        """Whether the ColumnSchema is a Natural Language column"""
+        return type(self.logical_type) == NaturalLanguage
 
     @property
     def is_unknown(self):

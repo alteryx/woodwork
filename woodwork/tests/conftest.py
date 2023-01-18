@@ -1018,7 +1018,7 @@ def skewed_outliers_df_spark(skewed_outliers_df_pandas):
         "skewed_outliers_df_pandas",
         "skewed_outliers_df_dask",
         "skewed_outliers_df_spark",
-    ]
+    ],
 )
 def skewed_outliers_df(request):
     return request.getfixturevalue(request.param)

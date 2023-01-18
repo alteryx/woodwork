@@ -223,6 +223,23 @@ def test_is_boolean():
     assert not empty_column.is_boolean
 
 
+def test_is_natural_language():
+    nl_column = ColumnSchema(logical_type=NaturalLanguage)
+    assert nl_column.is_natural_language
+
+    instantiated_column = ColumnSchema(logical_type=NaturalLanguage())
+    assert instantiated_column.is_natural_language
+
+    ordinal_column = ColumnSchema(logical_type=Ordinal(order=["a", "b'"]))
+    assert not ordinal_column.is_natural_language
+
+    datetime_col = ColumnSchema(logical_type=Datetime)
+    assert not datetime_col.is_natural_language
+
+    empty_column = ColumnSchema()
+    assert not empty_column.is_natural_language
+
+
 def test_is_datetime():
     datetime_column = ColumnSchema(logical_type=Datetime)
     assert datetime_column.is_datetime
