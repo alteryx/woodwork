@@ -9,14 +9,14 @@ clean:
 .PHONY: lint
 lint:
 	python docs/notebook_version_standardizer.py check-execution
-	black woodwork/ docs/source/ --check
-	ruff woodwork/
+	black woodwork/ docs/source/ --config=./pyproject.toml --check
+	ruff woodwork/ --config=./pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
-	black woodwork/ docs/source/
-	ruff woodwork/ --fix
+	black woodwork/ docs/source/ --config=./pyproject.toml
+	ruff woodwork/ --config=./pyproject.toml --fix 
 
 .PHONY: test
 test:
