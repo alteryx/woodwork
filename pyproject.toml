@@ -83,9 +83,8 @@ docs = [
     "nbconvert == 6.5.0",
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
-    "woodwork[dask]",
-    "woodwork[spark]",
-    "woodwork[test]",
+    "jupyter-client == 7.4.9",
+    "woodwork[dask, spark, test]",
 ]
 dev = [
     "ruff >= 0.0.231",
@@ -96,9 +95,7 @@ dev = [
     "woodwork[docs, dask, spark, test]",
 ]
 complete = [
-    "woodwork[dask]",
-    "woodwork[spark]",
-    "woodwork[updater]",
+    "woodwork[dask, spark, updater]",
 ]
 
 [tool.setuptools]
