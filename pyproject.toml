@@ -83,7 +83,6 @@ docs = [
     "nbconvert == 6.5.0",
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
-    "jupyter-client >= 8.0.2",
     "woodwork[dask, spark, test]",
 ]
 dev = [
