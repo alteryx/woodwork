@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
+        * Unpin jupyter-client documentation requirement (:pr:`1627`)
     * Documentation Changes
     * Testing Changes
         * Add ruff for linting and replace isort/flake8 (:pr:`1614`)
