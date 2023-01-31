@@ -27,7 +27,7 @@ jobs:
         id: cache
         with:
           path: ${{ env.pythonLocation }} 
-          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+          key: ${{ matrix.os- }}-${{ matrix.python_version }}-install-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build woodwork package
         run: |
           make package
