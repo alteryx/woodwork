@@ -27,8 +27,9 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - uses: actions/cache@v3
         id: cache
-        path: ${{ env.pythonLocation }} 
-        key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Install apt requirements
         run: |
           sudo apt update

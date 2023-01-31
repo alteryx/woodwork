@@ -20,8 +20,9 @@ jobs:
           cache: 'pyproject.toml' 
       - uses: actions/cache@v3
         id: cache
-        path: ${{ env.pythonLocation }} 
-        key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
