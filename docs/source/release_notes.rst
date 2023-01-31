@@ -14,6 +14,7 @@ Future Release
     * Testing Changes
         * Add ruff for linting and replace isort/flake8 (:pr:`1614`)
         * Specify black and ruff config arguments (:pr:`1620`)
+        * Add codecov token for unit tests workflow (:pr:`1630`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
