@@ -16,7 +16,7 @@ lint:
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
 	black woodwork/ docs/source/ --config=./pyproject.toml
-	ruff woodwork/ --config=./pyproject.toml --fix 
+	ruff woodwork/ --config=./pyproject.toml --fix
 
 .PHONY: test
 test:

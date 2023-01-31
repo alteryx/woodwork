@@ -38,6 +38,6 @@ repos:
     rev: 'v0.0.231'
     hooks:
       - id: ruff
-        args: 
+        args:
           - --config=./pyproject.toml
           - --fix
