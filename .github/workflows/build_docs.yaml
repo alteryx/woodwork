@@ -40,11 +40,11 @@ jobs:
           sudo apt install -y pandoc
           sudo apt install -y openjdk-11-jre-headless
           python -m pip install --upgrade pip
-      - name: Install woodwork with no dependencies
+      - name: Install woodwork with no doc dependencies
         if: steps.cache.outputs.cache-hit == 'true'
         run: |
           python -m pip install -e . --no-deps
-      - name: Install woodwork with doc requirements
+      - name: Install woodwork with doc dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install .[dev]
