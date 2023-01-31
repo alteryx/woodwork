@@ -14,11 +14,14 @@ jobs:
   build_docs:
     name: 3.8 build docs
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.8"]
     steps:
-      - name: Set up python 3.8
+      - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python_version }}
           cache: 'pyproject.toml' 
       - name: Checkout repository
         uses: actions/checkout@v3
