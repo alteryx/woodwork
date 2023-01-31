@@ -32,11 +32,11 @@ jobs:
       - name: Upgrade pip
         run: |
           python -m pip install --upgrade pip
-      - name: Install woodwork with dev, test, and optional dependencies
+      - name: Install woodwork with dev, test, and optional dependencies (not using cache)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install -e .[dev]
-      - name: Install woodwork with no dependencies
+      - name: Install woodwork with no dependencies (using cache)
         if: steps.cache.outputs.cache-hit == 'true'
         run: |
           python -m pip install -e . --no-deps
