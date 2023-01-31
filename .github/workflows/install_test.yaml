@@ -17,19 +17,33 @@ jobs:
         python_version: ["3.8", "3.9", "3.10"]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Set up python ${{ matrix.python_version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-      - name: Checkout repository
-        uses: actions/checkout@v2
+          cache: 'pip' 
+          cache-dependency-path: 'pyproject.toml'
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.os- }}-${{ matrix.python_version }}-install-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Build woodwork package
-        run: make package
-      - name: Install complete version of woodwork
         run: |
-          python -m pip install --upgrade pip
-          pip config --site set global.progress_bar off
-          python -m pip install "unpacked_sdist/[complete]"
+          make package
+      - name: Install woodwork with dependencies (not using cache)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install -e "unpacked_sdist/[complete]"
+      - name: Install woodwork with no dependencies (using cache)
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          python -m pip install -e "unpacked_sdist/[complete]" --no-deps
       - name: Test by importing packages
         run: |
           python -c "import alteryx_open_src_update_checker"

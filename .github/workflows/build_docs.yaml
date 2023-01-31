@@ -1,3 +1,4 @@
+name: Build Docs
 on:
   pull_request:
     types: [opened, synchronize]
@@ -8,30 +9,44 @@ env:
   PYARROW_IGNORE_TIMEZONE: 1
   JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
-
-name: Build Docs
 jobs:
   build_docs:
     name: 3.8 build docs
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.8"]
     steps:
-      - name: Set up python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Install woodwork with doc requirements
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: 'pip' 
+          cache-dependency-path: 'pyproject.toml'
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ${{ env.pythonLocation }} 
+          key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
+      - name: Install apt requirements
         run: |
           sudo apt update
           sudo apt install -y pandoc
           sudo apt install -y openjdk-11-jre-headless
-          pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
+      - name: Install woodwork with doc dependencies (not using cache)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
           python -m pip install .[dev]
+      - name: Install woodwork with no doc dependencies (using cache)
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+          python -m pip install -e . --no-deps
       - name: Build docs
         run: |
           make -C docs/ html
