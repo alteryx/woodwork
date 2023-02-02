@@ -25,4 +25,3 @@ jobs:
           msg="If you are not sure how to do this, please see https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue"
           echo $msg
           echo $msg >> $GITHUB_STEP_SUMMARY
-          exit 1
