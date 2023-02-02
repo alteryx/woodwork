@@ -1,6 +1,7 @@
 import ast
 import importlib
 import re
+from datetime import datetime
 from inspect import isclass
 from mimetypes import add_type, guess_type
 from timeit import default_timer as timer
@@ -9,7 +10,6 @@ import numpy as np
 import pandas as pd
 
 import woodwork as ww
-from datetime import datetime
 from woodwork.exceptions import TypeValidationError
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
@@ -659,8 +659,6 @@ def _infer_datetime_format(dates, n=100):
                 continue
             except TypeError:  # TimeStamp found instead of string
                 break
-    except (TypeError, ValueError, IndexError, NotImplementedError):
-        mode_fmt = None
     return mode_fmt
 
 
