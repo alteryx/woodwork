@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 import woodwork as ww
+from datetime import datetime
 from woodwork.exceptions import TypeValidationError
 
 # Dictionary mapping formats/content types to the appropriate pandas read function
@@ -638,7 +639,27 @@ def _infer_datetime_format(dates, n=100):
     try:
         fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
-    except (TypeError, ValueError, IndexError, KeyError, NotImplementedError):
+    except KeyError:
+        check_for_two_digit_years = [
+            "%m/%d/%y",
+            "%y/%m/%d",
+            "%m/%d/%y %H:%M:%S",
+            "%y/%m/%d %H:%M:%S",
+            "%d/%m/%y",
+            "%y/%d/%m",
+            "%d/%m/%y %H:%M:%S",
+            "%y/%d/%m %H:%M:%S",
+        ]
+        mode_fmt = None
+        for format_ in check_for_two_digit_years:
+            try:
+                first_n.map(lambda x: datetime.strptime(x, format_))
+                return format_
+            except ValueError:  # Format doesn't match
+                continue
+            except TypeError:  # TimeStamp found instead of string
+                break
+    except (TypeError, ValueError, IndexError, NotImplementedError):
         mode_fmt = None
     return mode_fmt
 

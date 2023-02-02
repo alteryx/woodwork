@@ -768,12 +768,23 @@ def get_expected_dates(dates):
     expected = []
     for d in dates:
         if d is not None:
-            year = int(re.findall(r"\d+", d)[0])  # gets the year
+            dt_groups = re.findall(r"\d+", d)
+            year = int(dt_groups[0])  # gets the year
+            month = int(dt_groups[1])  # gets the month
+            day = int(dt_groups[2])  # gets the day
+            time_groups = None
+            if len(dt_groups) > 3:
+                time_groups = ":".join(dt_groups[3:])
             if year > datetime.today().year + 10:
                 year -= 100
             if year <= datetime.today().year - 90:
                 year += 100
-            expected.append("{}-01-01".format(year))
+            new_dt = (
+                f"{year}-{month}-{day} {time_groups}"
+                if time_groups
+                else f"{year}-{month}-{day}"
+            )
+            expected.append(new_dt)
         else:
             expected.append(d)
     return expected
@@ -930,10 +941,29 @@ def test_datetime_pivot_point_no_format_provided():
         None,
         "1988-01-01",
     ]
+    expected_values = get_expected_dates(expected_values)
     df = pd.DataFrame({"dates": dates})
     df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df.ww.init(logical_types={"dates": Datetime})
     pd.testing.assert_frame_equal(df, df_expected)
+
+
+def test_datetime_formats_two_digit_years(datetime_different_formats):
+    for format_, starting_date_ in datetime_different_formats:
+        # 01/15/24, 01/15/28, 01/15/32, etc.
+        dates = [starting_date_.replace("24", str(each)) for each in range(24, 90, 4)]
+        final_format = "%Y-%m-%d %H:%M:%S" if "%H:%M:%S" in format_ else "%Y-%m-%d"
+        expected_values = [
+            datetime.strptime(
+                starting_date_.replace("24", str(each)), format_
+            ).strftime(final_format)
+            for each in range(24, 90, 4)
+        ]
+        expected_values = get_expected_dates(expected_values)
+        df = pd.DataFrame({"dates": dates})
+        df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+        df.ww.init(logical_types={"dates": Datetime})
+        pd.testing.assert_frame_equal(df, df_expected)
 
 
 @pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])

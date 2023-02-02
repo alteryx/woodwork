@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Updated datetime format inference to handle years represented by 2 digits (:pr:`1632`)
     * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
