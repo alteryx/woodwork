@@ -12,7 +12,7 @@ jobs:
         with:
           ref: 'main'
           repository: 'nearform/github-action-check-linked-issues'
-      - uses: ./actions/github-action-check-linked-issues
+      - uses: ./github-action-check-linked-issues
         id: check-linked-issues
         with:
           exclude-branches: "release_v/**, backport_v/**, main, latest-dep-update-/**, min-dep-update-/**, dependabot/**"
