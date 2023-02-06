@@ -655,3 +655,14 @@ def _parse_latlong(latlong):
         return ast.literal_eval(latlong)
     except ValueError:
         pass
+
+
+def _check_data_type_equality(first: str, second: str) -> bool:
+    """Returns whether or not the data types are considered equivalent.
+    Args:
+        first (string): The string of the first data type to compare.
+        second (string): The string of the second data type to compare.
+    Returns:
+        bool: Whether or not the two types are considered equivalent.
+    """
+    return first == second or ("string" in first and "string" in second)

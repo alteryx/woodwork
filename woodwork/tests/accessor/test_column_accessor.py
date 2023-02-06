@@ -165,7 +165,7 @@ def test_accessor_init_with_invalid_logical_type(sample_series):
     else:
         series_dtype = "object"
     series = sample_series.astype(series_dtype)
-    correct_dtype = "string"
+    correct_dtype = "string[pyarrow]"
     error_message = re.escape(
         f"Cannot initialize Woodwork. Series dtype '{series_dtype}' is incompatible with "
         f"NaturalLanguage LogicalType. Try converting series dtype to '{correct_dtype}' before "
@@ -560,7 +560,7 @@ def test_series_methods_on_accessor_returning_series_invalid_schema(sample_serie
 
     if _is_spark_series(sample_series):
         # Spark uses `string` for Categorical, so must try a different conversion
-        original_type = "string"
+        original_type = r"string\[pyarrow\]"
         new_type = "Int64"
     else:
         original_type = "category"
@@ -740,7 +740,7 @@ def test_accessor_equality(sample_series):
     diff_name_col.name = "different_name"
     diff_name_col.ww.init(logical_type=Categorical)
 
-    diff_dtype_col = sample_series.astype("string")
+    diff_dtype_col = sample_series.astype("string[pyarrow]")
     diff_dtype_col.ww.init(logical_type=NaturalLanguage)
 
     assert str_col.ww == str_col_2.ww
@@ -749,10 +749,10 @@ def test_accessor_equality(sample_series):
     assert str_col.ww != diff_dtype_col.ww
 
     # Check different underlying series
-    str_col = sample_series.astype("string")
+    str_col = sample_series.astype("string[pyarrow]")
     str_col.ww.init(logical_type="NaturalLanguage")
     changed_series = sample_series.copy().replace(to_replace="a", value="test")
-    changed_series = changed_series.astype("string")
+    changed_series = changed_series.astype("string[pyarrow]")
     changed_series.ww.init(logical_type="NaturalLanguage")
 
     # We only check underlying data for equality with pandas dataframes
@@ -780,7 +780,7 @@ def test_accessor_shallow_equality(sample_series):
     schema = metadata_col.ww.schema
     diff_data_col = metadata_col.replace(to_replace="a", value="1")
     # dtype gets changed to object in replace
-    diff_data_col = diff_data_col.astype("string")
+    diff_data_col = diff_data_col.astype("string[pyarrow]")
 
     diff_data_col.ww.init(schema=schema)
     same_data_col = metadata_col.ww.copy()
@@ -1039,5 +1039,5 @@ def test_validate_logical_type(sample_df):
         series.ww.validate_logical_type()
 
     actual = series.ww.validate_logical_type(return_invalid_values=True)
-    expected = pd.Series({4: "bad_email"}, dtype="string")
+    expected = pd.Series({4: "bad_email"}, dtype="string[pyarrow]")
     assert to_pandas(actual).equals(expected)

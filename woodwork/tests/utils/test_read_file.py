@@ -184,7 +184,7 @@ def test_read_file(
         "to_csv",
         save_orc_file,
     ]:  # categorical column not inferred as categorical
-        schema_df["categorical"] = schema_df["categorical"].astype("string")
+        schema_df["categorical"] = schema_df["categorical"].astype("string[pyarrow]")
 
     schema_df.ww.init(
         index=kwargs.get("index"),

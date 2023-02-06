@@ -142,7 +142,7 @@ def num_common_words(wordlist: Union[Tokens, Any]) -> float:
 
 
 def natural_language_func(series):
-    tokens = series.astype("string").str.split(NL_delimiters)
+    tokens = series.astype("string[pyarrow]").str.split(NL_delimiters)
     mean_num_common_words = np.nanmean(tokens.map(num_common_words))
 
     return (
