@@ -9,8 +9,8 @@ clean:
 .PHONY: lint
 lint:
 	python docs/notebook_version_standardizer.py check-execution
-	black woodwork/ docs/source/ --config=./pyproject.toml --check
-	ruff woodwork/ docs/source/ --config=./pyproject.toml
+	black . --config=./pyproject.toml --check
+	ruff . --config=./pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
