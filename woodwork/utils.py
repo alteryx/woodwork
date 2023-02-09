@@ -628,7 +628,7 @@ def _infer_datetime_format(dates, n=100):
         dates (Series): Series of string or datetime string to guess the format of
         n (int): the maximum number of nonnull rows to sample from the series
     """
-    first_n = dates.dropna().head(n)
+    first_n = dates.dropna().sample(min(n, len(dates)), random_state=42)
 
     ps = import_or_none("pyspark.pandas")
     if ps and isinstance(first_n, ps.series.Series):
@@ -650,6 +650,10 @@ def _infer_datetime_format(dates, n=100):
             "%d/%m/%y %H:%M:%S",
             "%y/%d/%m %H:%M:%S",
         ]
+        dash_formats = []
+        for format_ in check_for_two_digit_years:
+            dash_formats.append(format_.replace("/", "-"))
+        check_for_two_digit_years = check_for_two_digit_years + dash_formats
         mode_fmt = None
         for format_ in check_for_two_digit_years:
             try:

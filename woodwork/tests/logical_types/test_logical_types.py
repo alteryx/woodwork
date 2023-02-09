@@ -966,6 +966,15 @@ def test_datetime_formats_two_digit_years(datetime_different_formats):
         pd.testing.assert_frame_equal(df, df_expected)
 
 
+def test_datetime_formats_two_digit_years_ambiguous():
+    series = pd.Series([f"{i}-01-01" for i in range(10, 90)])
+    series = init_series(series)
+    expected_values = [f"{i}-01-01" for i in range(2010, 2090)]
+    expected_values = get_expected_dates(expected_values)
+    series_expected = pd.Series(expected_values, dtype="datetime64[ns]")
+    pd.testing.assert_series_equal(series, series_expected)
+
+
 @pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
 def test_boolean_other_values(df_type):
     df = pd.DataFrame(
