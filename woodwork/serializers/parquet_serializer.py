@@ -66,7 +66,8 @@ class ParquetSerializer(Serializer):
 
     def _generate_parquet_metadata(self):
         """Generate metadata for the parquet file header. For pandas this includes additional
-        information needed by pandas. For Dask/Spark, this includes only the Woodwork typing info."""
+        information needed by pandas. For Dask/Spark, this includes only the Woodwork typing info.
+        """
         loading_info = {
             "location": self.location,
             "type": self.format,
@@ -123,7 +124,8 @@ class ParquetSerializer(Serializer):
 
     def _setup_for_dask_and_spark(self):
         """Perform additional path setup required for Dask/Spark. Since Dask/Spark deserialize to
-        directories only, the `_get_filename` method does not work like it does for pandas."""
+        directories only, the `_get_filename` method does not work like it does for pandas.
+        """
         path = self.path
         if self.data_subdirectory is not None:
             path = os.path.join(path, self.data_subdirectory)

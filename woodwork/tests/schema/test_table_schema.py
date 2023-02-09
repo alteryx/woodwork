@@ -1247,7 +1247,6 @@ def test_schema_rename_errors(sample_column_names, sample_inferred_logical_types
 
 
 def test_schema_rename(sample_column_names, sample_inferred_logical_types):
-
     table_metadata = {"table_info": "this is text"}
     id_description = "the id of the row"
     id_origin = "base"
