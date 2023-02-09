@@ -628,16 +628,17 @@ def _infer_datetime_format(dates, n=100):
         dates (Series): Series of string or datetime string to guess the format of
         n (int): the maximum number of nonnull rows to sample from the series
     """
-    first_n = dates.dropna().sample(min(n, len(dates)), random_state=42)
+    date_no_null = dates.dropna()
+    random_n = date_no_null.sample(min(n, len(date_no_null)), random_state=42)
 
     ps = import_or_none("pyspark.pandas")
-    if ps and isinstance(first_n, ps.series.Series):
-        first_n = first_n.to_pandas()
+    if ps and isinstance(random_n, ps.series.Series):
+        random_n = random_n.to_pandas()
 
-    if len(first_n) == 0:
+    if len(random_n) == 0:
         return None
     try:
-        fmts = first_n.map(pd.core.tools.datetimes.guess_datetime_format)
+        fmts = random_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except KeyError:
         check_for_two_digit_years = [
@@ -662,7 +663,7 @@ def _infer_datetime_format(dates, n=100):
         mode_fmt = None
         for format_ in check_for_two_digit_years:
             try:
-                first_n.map(lambda x: datetime.strptime(x, format_))
+                random_n.map(lambda x: datetime.strptime(x, format_))
                 return format_
             except ValueError:  # Format doesn't match
                 continue
