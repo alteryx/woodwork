@@ -653,7 +653,12 @@ def _infer_datetime_format(dates, n=100):
         dash_formats = []
         for format_ in check_for_two_digit_years:
             dash_formats.append(format_.replace("/", "-"))
-        check_for_two_digit_years = check_for_two_digit_years + dash_formats
+        dot_formats = []
+        for format_ in check_for_two_digit_years:
+            dot_formats.append(format_.replace("/", "."))
+        check_for_two_digit_years = (
+            check_for_two_digit_years + dash_formats + dot_formats
+        )
         mode_fmt = None
         for format_ in check_for_two_digit_years:
             try:
