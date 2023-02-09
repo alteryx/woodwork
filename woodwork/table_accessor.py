@@ -796,7 +796,8 @@ class WoodworkTableAccessor:
 
     def _get_subset_df_with_schema(self, cols_to_include, inplace=False):
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
-        retaining all typing information and maintaining the DataFrame's column order."""
+        retaining all typing information and maintaining the DataFrame's column order.
+        """
         if inplace:
             if _is_dask_dataframe(self._dataframe):
                 raise ValueError("Drop inplace not supported for Dask")
