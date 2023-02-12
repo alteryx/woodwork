@@ -629,15 +629,28 @@ def _infer_datetime_format(dates, n=100):
         n (int): the maximum number of nonnull rows to sample from the series
     """
     date_no_null = dates.dropna()
-    random_n = date_no_null.sample(min(n, len(date_no_null)), random_state=42)
 
     ps = import_or_none("pyspark.pandas")
+    dd = import_or_none("dask.dataframe")
+
+    if dd and isinstance(date_no_null, dd.Series):
+        random_n = date_no_null.sample(
+            frac=min(n, len(date_no_null)) / len(date_no_null), random_state=42
+        )
+    else:
+        random_n = date_no_null.sample(min(n, len(date_no_null)), random_state=42)
+
     if ps and isinstance(random_n, ps.series.Series):
         random_n = random_n.to_pandas()
+    if dd and isinstance(random_n, dd.Series):
+        random_n = random_n.compute()
 
     if len(random_n) == 0:
         return None
     try:
+        import pdb
+
+        pdb.set_trace()
         fmts = random_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except KeyError:
@@ -669,6 +682,9 @@ def _infer_datetime_format(dates, n=100):
                 continue
             except TypeError:  # TimeStamp found instead of string
                 break
+    except TypeError:
+        mode_fmt = None
+        return mode_fmt
     return mode_fmt
 
 
