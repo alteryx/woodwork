@@ -673,9 +673,6 @@ def _infer_datetime_format(dates, n=100):
                 continue
             except TypeError:  # TimeStamp found instead of string
                 break
-    except TypeError:
-        mode_fmt = None
-        return mode_fmt
     return mode_fmt
 
 
