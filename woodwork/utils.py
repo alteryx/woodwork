@@ -637,7 +637,7 @@ def _infer_datetime_format(dates, n=100):
     if dd and isinstance(dates_no_null, dd.Series):
         dates_no_null = dates_no_null.compute()
 
-    random_n = dates_no_null.head(n)
+    random_n = dates_no_null.sample(min(n, len(dates_no_null)), random_state=42)
 
     if len(random_n) == 0:
         return None
