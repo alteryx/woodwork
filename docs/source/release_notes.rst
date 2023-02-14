@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Improved inference for numeric logical types to handle incoming ``object`` dtype data (:pr:`1645`)
     * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
