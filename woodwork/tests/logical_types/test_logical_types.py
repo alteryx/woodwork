@@ -30,6 +30,7 @@ from woodwork.logical_types import (
     Ordinal,
     PhoneNumber,
     PostalCode,
+    Unknown,
     _replace_nans,
 )
 from woodwork.tests.testing_utils.table_utils import (
@@ -729,7 +730,7 @@ def test_integer_nullable(data_type, null_type):
 
 @pytest.mark.parametrize(
     "null_type",
-    [None, pd.NA, pd.NaT, np.nan, "null", "N/A", "mix", True],
+    [None, pd.NA, pd.NaT, np.nan, "null", " ", "N/A", "mix", True],
 )
 def test_boolean_nullable(null_type):
     nullable_bools = pd.DataFrame([True, False] * 50, columns=["bool_nulls"])
@@ -1118,3 +1119,42 @@ def test_coerce_boolean_not_called_for_bool_dtype(coerce_boolean_patch):
     series_init = init_series(series)
     assert not coerce_boolean_patch.called
     assert series_init.dtype == "bool"
+
+
+def test_object_dtype_inference(comprehensive_df):
+    expected = {
+        "ints": "Integer",
+        "ints_str": "Integer",
+        "ints_null": "IntegerNullable",
+        "ints_null_str": "IntegerNullable",
+        "floats": "Double",
+        "floats_str": "Double",
+        "floats_null": "Double",
+        "floats_null_str": "Double",
+        "int_float_mixed": "Double",
+        "int_float_mixed_null": "Double",
+        "bools": "Boolean",
+        "bools_str": "Boolean",
+        "bools_null": "BooleanNullable",
+        "bools_null_str": "BooleanNullable",
+        "datetimes": "Datetime",
+        "datetimes_str": "Datetime",
+        "datetimes_null_str": "Datetime",
+    }
+    # Confirm proper Woodwork inference for pandas-inferred object columns
+    df_copy = comprehensive_df.copy()
+    df_copy.ww.init()
+    assert {
+        col: str(ltype) for col, ltype in df_copy.ww.logical_types.items()
+    } == expected
+    # Confirm proper Woodwork inference when every column is converted to string and then cast to object
+    df_copy_objects = comprehensive_df.copy()
+    df_copy_objects.ww.init(
+        logical_types={col: Unknown for col in df_copy_objects.columns},
+    )
+    for col in df_copy_objects:
+        df_copy_objects[col] = df_copy_objects[col].astype("object")
+    df_copy_objects.ww.init()
+    assert {
+        col: str(ltype) for col, ltype in df_copy_objects.ww.logical_types.items()
+    } == expected
