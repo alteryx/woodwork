@@ -49,13 +49,6 @@ def integer_func(series):
         if pdtypes.is_object_dtype(series.dtype):
             return True
         return all(series.mod(1).eq(0))
-    elif not series.isnull().any() and pdtypes.is_object_dtype(series.dtype):
-        try:
-            return series.map(
-                lambda x: (isinstance(x, str) and isinstance(int(x), int)),
-            ).all()
-        except ValueError:
-            return False
     return False
 
 
