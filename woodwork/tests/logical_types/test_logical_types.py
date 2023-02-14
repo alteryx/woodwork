@@ -6,7 +6,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series, init_series
+from woodwork.accessor_utils import (
+    _is_dask_dataframe,
+    _is_dask_series,
+    _is_spark_dataframe,
+    _is_spark_series,
+    init_series,
+)
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -956,7 +962,8 @@ def test_datetime_formats_two_digit_years(datetime_different_formats):
         final_format = "%Y-%m-%d %H:%M:%S" if "%H:%M:%S" in format_ else "%Y-%m-%d"
         expected_values = [
             datetime.strptime(
-                starting_date_.replace("24", str(each)), format_
+                starting_date_.replace("24", str(each)),
+                format_,
             ).strftime(final_format)
             for each in range(24, 90, 4)
         ]
@@ -1187,20 +1194,26 @@ def test_object_dtype_inference(comprehensive_df):
         "datetimes_str": "Datetime",
         "datetimes_null_str": "Datetime",
     }
-    # Confirm proper Woodwork inference for pandas-inferred object columns
     df_copy = comprehensive_df.copy()
-    df_copy.ww.init()
-    assert {
-        col: str(ltype) for col, ltype in df_copy.ww.logical_types.items()
-    } == expected
-    # Confirm proper Woodwork inference when every column is converted to string and then cast to object
     df_copy_objects = comprehensive_df.copy()
+    df_copy.ww.init()
     df_copy_objects.ww.init(
         logical_types={col: Unknown for col in df_copy_objects.columns},
     )
+    if _is_dask_dataframe(df_copy):
+        df_copy = df_copy.ww.compute()
+        df_copy_objects = df_copy_objects.ww.compute()
+    elif _is_spark_dataframe(df_copy):
+        df_copy = df_copy.ww.to_pandas()
+        df_copy_objects = df_copy_objects.ww.to_pandas()
+    # Confirm proper Woodwork inference for pandas-inferred object columns
+    assert {
+        col: str(ltype) for col, ltype in df_copy.ww.logical_types.items()
+    } == expected
     for col in df_copy_objects:
         df_copy_objects[col] = df_copy_objects[col].astype("object")
     df_copy_objects.ww.init()
+    # Confirm proper Woodwork inference when every column is converted to string and then cast to object
     assert {
         col: str(ltype) for col, ltype in df_copy_objects.ww.logical_types.items()
     } == expected
