@@ -191,7 +191,7 @@ def test_is_numeric_datetime_series(time_index_df):
     assert not _is_numeric_series(time_index_df["ints"], Categorical)
     assert _is_numeric_series(time_index_df["ints"], Datetime)
 
-    assert not _is_numeric_series(time_index_df["strs"], None)
+    assert _is_numeric_series(time_index_df["strs"], Integer)
     assert not _is_numeric_series(time_index_df["strs"], "Categorical")
     assert not _is_numeric_series(time_index_df["strs"], Categorical)
     assert _is_numeric_series(time_index_df["strs"], Double)
