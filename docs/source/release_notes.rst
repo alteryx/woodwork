@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Improved inference for numeric logical types to handle incoming ``object`` dtype data (:pr:`1645`)
+        * Updated datetime format inference to handle years represented by 2 digits (:pr:`1632`)
     * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
