@@ -1978,6 +1978,15 @@ def test_medcouple_outliers(skewed_outliers_df):
     assert right_skewed_dict == expected_right_skewed_dict
     assert left_skewed_dict == expected_left_skewed_dict
 
+    outliers_series_skewed_right = skewed_outliers_df[
+        "right_skewed_outliers_nullable_int"
+    ]
+    outliers_series_skewed_right.ww.init(logical_type="IntegerNullable")
+
+    right_skewed_dict = outliers_series_skewed_right.ww.medcouple_dict()
+
+    assert right_skewed_dict == expected_right_skewed_dict
+
 
 def test_medcouple_outliers_with_quantiles(skewed_outliers_df):
     outliers_series_skewed_right = skewed_outliers_df["right_skewed_outliers"]
