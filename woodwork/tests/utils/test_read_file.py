@@ -262,7 +262,8 @@ def test_replace_nan_strings_with_read_file(tmpdir):
         filepath=filepath,
         replace_nan=False,
     )
-    assert actual.isnull().sum().sum() == 1
+
+    assert actual.isnull().sum().sum() == 3
 
     # With replacement
     actual = ww.read_file(

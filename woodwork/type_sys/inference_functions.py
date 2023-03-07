@@ -46,6 +46,8 @@ def categorical_func(series):
 
 def integer_func(series):
     if integer_nullable_func(series) and not series.isnull().any():
+        if pdtypes.is_object_dtype(series.dtype):
+            return True
         return all(series.mod(1).eq(0))
     return False
 
@@ -66,6 +68,14 @@ def integer_nullable_func(series):
             return False
         series_no_null = series.dropna()
         return all([_is_valid_int(v) for v in series_no_null])
+    elif pdtypes.is_object_dtype(series.dtype):
+        series_no_null = series.dropna()
+        try:
+            return series_no_null.map(
+                lambda x: (isinstance(x, str) and isinstance(int(x), int)),
+            ).all()
+        except ValueError:
+            return False
 
     return False
 
@@ -77,6 +87,15 @@ def double_func(series):
             return not _is_categorical_series(series, threshold)
         else:
             return True
+    elif pdtypes.is_object_dtype(series.dtype):
+        series_no_null = series.dropna()
+        try:
+            # If str and casting to float works, make sure that it isn't just an integer
+            return series_no_null.map(
+                lambda x: isinstance(x, str) and not float(x).is_integer(),
+            ).any()
+        except ValueError:
+            return False
 
     return False
 

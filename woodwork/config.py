@@ -24,6 +24,7 @@ CONFIG_DEFAULTS = {
     "postal_code_inference_regex": r"^[0-9]{5}(?:-[0-9]{4})?$",
     "nan_values": [
         "",
+        " ",
         None,
         np.nan,
         pd.NaT,

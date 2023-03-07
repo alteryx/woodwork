@@ -59,7 +59,11 @@ def _determine_coefficients(series, mc):
             method (str): Name of the outlier method to use.
             mc (float): The medcouple statistic (if the method chosen is medcouple, otherwise None).
     """
-    coeff = np.abs(skew(series))
+    try:
+        coeff = np.abs(skew(series))
+    except ValueError:
+        # skew can't handle Int64 dtype
+        coeff = np.abs(skew(series.astype("float64")))
     coeff = min(coeff, 3.5)
     if mc >= 0:
         return -coeff, coeff

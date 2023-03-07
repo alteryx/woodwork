@@ -109,6 +109,90 @@ def sample_df_spark(sample_df_pandas):
     return ps.from_pandas(sample_df_pandas)
 
 
+@pytest.fixture(
+    params=[
+        "comprehensive_df_pandas",
+        "comprehensive_df_dask",
+        "comprehensive_df_spark",
+    ],
+)
+def comprehensive_df(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def comprehensive_df_pandas():
+    df = pd.DataFrame()
+    df["ints"] = np.random.choice([i for i in range(-100, 100)], 1_000)
+    df["ints_str"] = np.random.choice([f"{i}" for i in range(-100, 100)], 1_000)
+    df["ints_null"] = np.random.choice(
+        [i for i in range(-50, 50)] + [pd.NA, np.nan, None],
+        1_000,
+    )
+    df["ints_null_str"] = np.random.choice(
+        [f"{i}" for i in range(-50, 50)] + [pd.NA, np.nan, None],
+        1_000,
+    )
+    df["floats"] = np.random.choice([i * 1.1 for i in range(-100, 100)], 1_000)
+    df["floats_str"] = np.random.choice([f"{i * 1.1}" for i in range(-100, 100)], 1_000)
+    df["floats_null"] = np.random.choice(
+        [i * 1.1 for i in range(-50, 50)] + [pd.NA, np.nan, None],
+        1_000,
+    )
+    df["floats_null_str"] = np.random.choice(
+        [f"{i * 1.1}" for i in range(-50, 50)] + [pd.NA, np.nan, None],
+        1_000,
+    )
+    df["int_float_mixed"] = np.random.choice(
+        [f"{i}" for i in range(-50, 50)] + ["3.14"],
+        1_000,
+    )
+    df["int_float_mixed_null"] = np.random.choice(
+        [f"{i}" for i in range(-50, 50)] + ["3.14", pd.NA, np.nan, None],
+        1_000,
+    )
+    df["bools"] = np.random.choice([True, False], 1_000)
+    df["bools_str"] = np.random.choice(["y", "n"], 1_000)
+    df["bools_null"] = np.random.choice([True, False, pd.NA], 1_000)
+    df["bools_null_str"] = np.random.choice(["y", "n", pd.NA], 1_000)
+    df["datetimes"] = pd.date_range("01/01/1995", freq="3D", periods=1_000)
+    df["datetimes_str"] = [
+        "01-05-12",
+        "01-11-04",
+        "03-21-11",
+        "11-01-19",
+        "12-28-01",
+    ] * 200
+    df["datetimes_null_str"] = [
+        "01-05-12",
+        "01-11-04",
+        "03-21-11",
+        "11-01-19",
+        "12-28-01",
+        "04-21-15",
+        "06-20-98",
+        "10-09-99",
+        "01-03-00",
+        pd.NA,
+    ] * 100
+    return df
+
+
+@pytest.fixture()
+def comprehensive_df_dask(comprehensive_df_pandas):
+    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    return dd.from_pandas(comprehensive_df_pandas, npartitions=1)
+
+
+@pytest.fixture()
+def comprehensive_df_spark(comprehensive_df_pandas):
+    ps = pytest.importorskip(
+        "pyspark.pandas",
+        reason="Pyspark pandas not installed, skipping",
+    )
+    return ps.from_pandas(comprehensive_df_pandas)
+
+
 @pytest.fixture()
 def sample_df_phone_numbers():
     return pd.DataFrame(
@@ -1008,6 +1092,17 @@ def skewed_outliers_df_pandas():
             + [6] * 5
             + [7] * 3
             + [8, 8, 9, 9, 10, 11, 13, 14, 16, 30],
+            "right_skewed_outliers_nullable_int": pd.Series(
+                [1] * 2
+                + [2] * 6
+                + [3] * 20
+                + [4] * 12
+                + [5] * 8
+                + [6] * 5
+                + [7] * 3
+                + [8, 8, 9, 9, 10, 11, 13, 14, 16, 30],
+                dtype="Int64",
+            ),
             "no_outliers": [60, 42, 37, 23, 49, 42, 36, 57, 60, 23.0] * 6
             + [35, 54, 43, 47, 41, 39],
             "non_numeric": ["a"] * 66,

@@ -678,7 +678,9 @@ def _infer_datetime_format(dates, n=100):
 
 def _parse_latlong(latlong):
     nan_values_strs = [
-        x for x in ww.config.get_option("nan_values") if isinstance(x, str) and len(x)
+        x
+        for x in ww.config.get_option("nan_values")
+        if isinstance(x, str) and len(x) and x != " "
     ]
     nan_values = "|".join(nan_values_strs)
 
