@@ -1041,3 +1041,47 @@ def test_validate_logical_type(sample_df):
     actual = series.ww.validate_logical_type(return_invalid_values=True)
     expected = pd.Series({4: "bad_email"}, dtype="string[pyarrow]")
     assert to_pandas(actual).equals(expected)
+
+import memory_profiler
+import time
+
+
+def test_this(tmpdir):
+
+    def measure_time_and_memory(func):
+        def wrapper(*args, **kwargs):
+            mem_before = memory_profiler.memory_usage()[0]
+            start_time = time.perf_counter()
+
+            func(*args, **kwargs)
+
+            end_time = time.perf_counter()
+            mem_after = memory_profiler.memory_usage()[0]
+
+            print(f"Time elapsed: {end_time - start_time:0.6f} seconds")
+            print(f"Memory usage: {mem_after - mem_before:0.2f} MB")
+        return wrapper()
+
+    import pandas as pd
+    from woodwork.deserialize import read_woodwork_table
+
+    @measure_time_and_memory
+    def ww_init():
+        df = pd.DataFrame()
+        df["strings"] = [f"Here we go {i}" for i in range(3000000)]
+        df["phones"] = [f"1203253{i}" for i in range(3000000)]
+        df["email"] = [f"{i}@gmail.com" for i in range(3000000)]
+        df.ww.init()
+        df.ww.to_disk(str(tmpdir), format="csv", encoding="utf-8", engine="python")
+        deserialized_df = read_woodwork_table(str(tmpdir))
+
+
+def test_other():
+    df = pd.DataFrame()
+    df["strings"] = [f"Here we go {i}" for i in range(3000000)]
+    df["phones"] = [f"1203253{i}" for i in range(3000000)]
+    df["email"] = [f"{i}@gmail.com" for i in range(3000000)]
+    start_time = time.perf_counter()
+    df.ww.init()
+    end_time = time.perf_counter()
+    print(f"Time elapsed: {end_time - start_time:0.6f} seconds")
