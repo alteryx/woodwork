@@ -93,7 +93,7 @@ DEFAULT_RELATIONSHIPS = [
 
 DEFAULT_TYPE = Unknown
 
-INFERENCE_SAMPLE_SIZE = 100000
+INFERENCE_SAMPLE_SIZE = 100_000
 
 
 class TypeSystem(object):
@@ -383,6 +383,8 @@ class TypeSystem(object):
                 Categorical in type_matches or Double in type_matches
             ) and IntegerNullable in type_matches:
                 best_match = IntegerNullable
+            elif Categorical in type_matches and Double in type_matches:
+                best_match = Double
             else:
                 best_match = type_matches[0]
             best_depth = self._get_depth(best_match)

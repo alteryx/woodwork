@@ -129,8 +129,11 @@ def test_categorical_inference(categories):
         if ind == len(categories) - 1:
             dtypes = ["string", "category"]
         for dtype in dtypes:
+            expected_ltype = Categorical
+            if ind in [1, 3] and dtype == "object":
+                expected_ltype = Integer
             inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
-            assert isinstance(inferred_type, Categorical)
+            assert isinstance(inferred_type, expected_ltype)
 
 
 def test_postal_inference(postal):
