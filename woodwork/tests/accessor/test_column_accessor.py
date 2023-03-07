@@ -1042,12 +1042,13 @@ def test_validate_logical_type(sample_df):
     expected = pd.Series({4: "bad_email"}, dtype="string[pyarrow]")
     assert to_pandas(actual).equals(expected)
 
-import memory_profiler
+
 import time
+
+import memory_profiler
 
 
 def test_this(tmpdir):
-
     def measure_time_and_memory(func):
         def wrapper(*args, **kwargs):
             mem_before = memory_profiler.memory_usage()[0]
@@ -1060,9 +1061,11 @@ def test_this(tmpdir):
 
             print(f"Time elapsed: {end_time - start_time:0.6f} seconds")
             print(f"Memory usage: {mem_after - mem_before:0.2f} MB")
+
         return wrapper()
 
     import pandas as pd
+
     from woodwork.deserialize import read_woodwork_table
 
     @measure_time_and_memory
@@ -1073,7 +1076,7 @@ def test_this(tmpdir):
         df["email"] = [f"{i}@gmail.com" for i in range(3000000)]
         df.ww.init()
         df.ww.to_disk(str(tmpdir), format="csv", encoding="utf-8", engine="python")
-        deserialized_df = read_woodwork_table(str(tmpdir))
+        read_woodwork_table(str(tmpdir))
 
 
 def test_other():
