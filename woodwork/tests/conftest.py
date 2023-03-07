@@ -181,6 +181,31 @@ def datetime_freqs_df_pandas():
     )
 
 
+@pytest.fixture()
+def datetime_different_formats():
+    formats = [
+        "%m/%d/%y",
+        "%y/%m/%d",
+        "%m/%d/%y %H:%M:%S",
+        "%y/%m/%d %H:%M:%S",
+        "%d/%m/%y",
+        "%y/%d/%m",
+        "%d/%m/%y %H:%M:%S",
+        "%y/%d/%m %H:%M:%S",
+    ]
+    dates = [
+        "01/15/24",
+        "24/01/15",
+        "01/15/24 04:23:45",
+        "24/01/15 04:23:45",
+        "15/01/24",
+        "24/15/01",
+        "15/01/24 04:23:45",
+        "24/15/01 04:23:45",
+    ]
+    return [(format_, date_) for format_, date_ in zip(formats, dates)]
+
+
 @pytest.fixture(
     params=[
         "sample_unsorted_df_pandas",

@@ -25,7 +25,6 @@ def _generate_freq_candidates(time_series, window_length=WINDOW_LENGTH):
     alias_dict = {}
     for window in time_series.rolling(window_length):
         if len(window) == window_length:
-
             # calculate alias
             alias = pd.infer_freq(window) or NON_INFERABLE_FREQ
 

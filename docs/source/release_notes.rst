@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+        * Updated datetime format inference to handle years represented by 2 digits (:pr:`1632`)
     * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
@@ -16,7 +17,8 @@ Future Release
         * Specify black and ruff config arguments (:pr:`1620`)
         * Add codecov token for unit tests workflow (:pr:`1630`)
         * Add GitHub Actions cache to speed up workflows (:pr:`1631`)
-        * Add pull request check for linked issues to CI workflow (:pr:`1633`)
+        * Add pull request check for linked issues to CI workflow (:pr:`1633`, :pr:`1636`)
+        * Run lint fix on latest dependency update pull requests (:pr:`1640`, :pr:`1641`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`

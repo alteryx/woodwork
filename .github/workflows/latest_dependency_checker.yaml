@@ -24,7 +24,6 @@ jobs:
       run: |
         python -m virtualenv venv_core
         source venv_core/bin/activate
-        python -m pip install --upgrade pip
         python -m pip install .[test]
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_core_dependencies.txt
         cat woodwork/tests/requirement_files/latest_core_dependencies.txt
@@ -46,6 +45,8 @@ jobs:
         python -m pip install .[dask]
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_dask_dependencies.txt
         cat woodwork/tests/requirement_files/latest_dask_dependencies.txt
+        python -m pip install .[dev]
+        make lint-fix
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v3
       with:
