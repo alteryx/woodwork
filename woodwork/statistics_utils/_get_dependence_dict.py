@@ -103,7 +103,9 @@ def _get_dependence_dict(
     start_time = timer()
     if target_col is not None and target_col not in list(dataframe.columns):
         raise ValueError("target_col '{}' not in the dataframe".format(target_col))
-
+    boolean_columns = dataframe.ww.select(["Boolean", "BooleanNullable"]).columns.values
+    bool_to_int = {col: "IntegerNullable" for col in boolean_columns}
+    dataframe_with_bools_to_int = dataframe.ww.set_types(bool_to_int)
     returned_measures, calc_order, calc_max = _parse_measures(measures)
 
     unit = "calculations"
@@ -111,16 +113,22 @@ def _get_dependence_dict(
     # get valid columns for dependence calculations
     if "pearson" in calc_order:
         pearson_types = get_valid_pearson_types()
-        pearson_columns = _get_valid_columns(dataframe, pearson_types)
+        pearson_columns = _get_valid_columns(dataframe_with_bools_to_int, pearson_types)
         valid_columns = pearson_columns
     if "spearman" in calc_order:
         spearman_types = get_valid_spearman_types()
-        spearman_columns = _get_valid_columns(dataframe, spearman_types)
+        spearman_columns = _get_valid_columns(
+            dataframe_with_bools_to_int,
+            spearman_types,
+        )
         # pearson columns are a subset of spearman columns
         valid_columns = spearman_columns
     if "mutual_info" in calc_order:
         mi_types = get_valid_mi_types()
-        cols_to_drop = _find_large_categorical_columns(dataframe, max_nunique)
+        cols_to_drop = _find_large_categorical_columns(
+            dataframe_with_bools_to_int,
+            max_nunique,
+        )
         if len(cols_to_drop):
             warnings.warn(
                 "Dropping columns {} to allow mutual information to run faster".format(
@@ -130,21 +138,21 @@ def _get_dependence_dict(
             )
         mutual_columns = [
             col
-            for col in _get_valid_columns(dataframe, mi_types)
+            for col in _get_valid_columns(dataframe_with_bools_to_int, mi_types)
             if col not in cols_to_drop
         ]
         # pearson/spearman columns are a subset of mutual columns
         valid_columns = mutual_columns
 
-    index = dataframe.ww.index
+    index = dataframe_with_bools_to_int.ww.index
     if not include_index and index is not None and index in valid_columns:
         valid_columns.remove(index)
 
-    data = dataframe.loc[:, valid_columns]
+    data = dataframe_with_bools_to_int.loc[:, valid_columns]
     # cut off data if necessary
     if _is_dask_dataframe(data):
         data = data.compute()
-    elif _is_spark_dataframe(dataframe):
+    elif _is_spark_dataframe(dataframe_with_bools_to_int):
         data = data.to_pandas()
     if nrows is not None and nrows < data.shape[0]:
         data = data.sample(nrows, random_state=random_seed)
@@ -184,20 +192,24 @@ def _get_dependence_dict(
     data = {col: data[col].dropna() for col in data}
 
     # cast nullable type to non-nullable (needed for both pearson and mutual)
-    _cast_nullable_int_and_datetime_to_int(data, dataframe.ww.columns)
+    _cast_nullable_int_and_datetime_to_int(data, dataframe_with_bools_to_int.ww.columns)
     callback_caller.update(n)
 
     results = defaultdict(dict)
 
     for measure in calc_order:
         if measure == "mutual_info":
-            _bin_numeric_cols_into_categories(dataframe.ww.schema, data, num_bins)
+            _bin_numeric_cols_into_categories(
+                dataframe_with_bools_to_int.ww.schema,
+                data,
+                num_bins,
+            )
             callback_caller.update(n)
             col_names = mutual_columns
         elif measure == "pearson":
             col_names = pearson_columns
         elif measure == "spearman":
-            _convert_ordinal_to_numeric(dataframe.ww.schema, data)
+            _convert_ordinal_to_numeric(dataframe_with_bools_to_int.ww.schema, data)
             col_names = spearman_columns
 
         _calculate_dependence_measure(
