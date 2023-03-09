@@ -386,10 +386,11 @@ def test_dependence_extra_stats(measure):
         assert "measure_used" in dep_df_extra.columns
         # recalculate max to compare
         both_dep_df = df_nans.ww.dependence(
-            measures=["mutual_info", "pearson"],
+            measures=["mutual_info", "pearson", "spearman"],
             min_shared=3,
         )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
+        both_dep_df["pearson"] = both_dep_df["spearman"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
         both_dep_df = both_dep_df.transpose()
 
@@ -400,6 +401,8 @@ def test_dependence_extra_stats(measure):
             assert (
                 expected_max == dep_df_extra["measure_used"][row]
                 or both_dep_df[col_1][col_2]["pearson"]
+                == both_dep_df[col_1][col_2]["mutual_info"]
+                or both_dep_df[col_1][col_2]["spearman"]
                 == both_dep_df[col_1][col_2]["mutual_info"]
             )
     else:
