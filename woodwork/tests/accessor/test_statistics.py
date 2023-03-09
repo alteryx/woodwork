@@ -390,7 +390,7 @@ def test_dependence_extra_stats(measure):
             min_shared=3,
         )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
-        both_dep_df["pearson"] = both_dep_df["spearman"].abs()
+        both_dep_df["spearman"] = both_dep_df["spearman"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
         both_dep_df = both_dep_df.transpose()
 
