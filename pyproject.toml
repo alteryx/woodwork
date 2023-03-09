@@ -67,7 +67,7 @@ dask = [
     "dask[dataframe] >= 2021.10.0 , !=2022.10.1",
 ]
 spark = [
-    "pyspark >= 3.2.0, <3.3.0",
+    "pyspark >= 3.2.0",
     "pandas >= 1.4.3",
     "numpy < 1.24.0",
 ]
