@@ -134,6 +134,10 @@ filterwarnings = [
     "ignore::PendingDeprecationWarning"
 ]
 
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
 [tool.ruff]
 ignore = ["E501"]
 select = [
