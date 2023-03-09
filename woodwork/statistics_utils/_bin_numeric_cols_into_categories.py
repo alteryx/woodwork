@@ -17,8 +17,8 @@ def _bin_numeric_cols_into_categories(schema, data, num_bins):
     """
     for col_name in data.keys():
         column = schema.columns[col_name]
-        if column.is_numeric or column.is_datetime:
-            # bin numeric features to make categories
+        if (column.is_numeric or column.is_datetime) and len(set(data[col_name])) > 2:
+            # bin numeric features to make categories if there's enough values
             data[col_name] = pd.qcut(data[col_name], num_bins, duplicates="drop")
         # convert categories to integers
         new_col = data[col_name]

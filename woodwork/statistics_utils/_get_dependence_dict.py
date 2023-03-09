@@ -105,7 +105,8 @@ def _get_dependence_dict(
         raise ValueError("target_col '{}' not in the dataframe".format(target_col))
     boolean_columns = dataframe.ww.select(["Boolean", "BooleanNullable"]).columns.values
     bool_to_int = {col: "IntegerNullable" for col in boolean_columns}
-    dataframe_with_bools_to_int = dataframe.ww.set_types(bool_to_int)
+    dataframe_with_bools_to_int = dataframe.ww.copy()
+    dataframe_with_bools_to_int.ww.set_types(bool_to_int)
     returned_measures, calc_order, calc_max = _parse_measures(measures)
 
     unit = "calculations"
