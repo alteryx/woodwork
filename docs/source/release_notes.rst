@@ -20,6 +20,7 @@ Future Release
         * Add GitHub Actions cache to speed up workflows (:pr:`1631`)
         * Add pull request check for linked issues to CI workflow (:pr:`1633`, :pr:`1636`)
         * Run lint fix on latest dependency update pull requests (:pr:`1640`, :pr:`1641`)
+        * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1655`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
