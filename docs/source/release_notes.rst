@@ -23,7 +23,7 @@ Future Release
         * Run lint fix on latest dependency update pull requests (:pr:`1640`, :pr:`1641`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`bchen1116`
+    :user:`gsheni`, :user:`bchen1116`, :user:`ParthivNaresh`
 
 v0.21.2 January 11, 2023
 ========================
