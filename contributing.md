@@ -21,7 +21,7 @@ Whether you are a novice or experienced software developer, all contributions an
   cd woodwork
   python -m venv venv
   source venv/bin/activate
-  make installdeps
+  make installdeps-dev
   git checkout -b issue####-branch_name
   ```
 * You will need to install Spark, Scala, and Pandoc to run all unit tests & build docs:
