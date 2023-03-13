@@ -35,6 +35,10 @@ installdeps-dev: upgradepip
 	pip install -e ".[dev]"
 	pre-commit install
 
+.PHONY: installdeps-test
+installdeps-test: upgradepip
+	pip install -e ".[test]"
+	
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark')
