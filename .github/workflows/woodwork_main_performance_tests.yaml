@@ -42,7 +42,6 @@ jobs:
           token: ${{ secrets.LOOKING_GLASS_TOKEN }}
       - name: Installing Dependencies
         run: |
-          make installdeps
           make installdeps-test
       - name: Run performance test (current)
         id: current
