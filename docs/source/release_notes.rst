@@ -3,18 +3,26 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.22.0 March 13, 2023
+======================
     * Enhancements
         * Improved inference for numeric logical types to handle incoming ``object`` dtype data (:pr:`1645`)
         * Updated datetime format inference to handle years represented by 2 digits (:pr:`1632`)
         * Updated ``dependence_dict`` to handle boolean columns (:pr:`1652`)
-    * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
         * Remove jupyter-client documentation requirement (:pr:`1627`)
         * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`1658`)
-    * Documentation Changes
     * Testing Changes
         * Add ruff for linting and replace isort/flake8 (:pr:`1614`)
         * Specify black and ruff config arguments (:pr:`1620`)
@@ -24,7 +32,7 @@ Future Release
         * Run lint fix on latest dependency update pull requests (:pr:`1640`, :pr:`1641`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`bchen1116`, :user:`ParthivNaresh`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`
 
 v0.21.2 January 11, 2023
 ========================
