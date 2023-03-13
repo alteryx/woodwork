@@ -12,6 +12,7 @@ Future Release
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
         * Remove jupyter-client documentation requirement (:pr:`1627`)
+        * Separate Makefile command for core requirements, test requirements and dev requirements (:pr:`1659`)
     * Documentation Changes
     * Testing Changes
         * Add ruff for linting and replace isort/flake8 (:pr:`1614`)
