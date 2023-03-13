@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Improved inference for numeric logical types to handle incoming ``object`` dtype data (:pr:`1645`)
         * Updated datetime format inference to handle years represented by 2 digits (:pr:`1632`)
+        * Updated ``dependence_dict`` to handle boolean columns (:pr:`1652`)
     * Fixes
     * Changes
         * Pin for jupyter-client to 7.4.9 for documentation (:pr:`1624`)
@@ -23,7 +24,7 @@ Future Release
         * Run lint fix on latest dependency update pull requests (:pr:`1640`, :pr:`1641`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`bchen1116`, :user:`ParthivNaresh`
 
 v0.21.2 January 11, 2023
 ========================

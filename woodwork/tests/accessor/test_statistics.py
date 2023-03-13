@@ -91,11 +91,15 @@ def test_accessor_bin_numeric_cols_into_categories():
             "ints1": pd.Series([1, 2, 3, 2]),
             "ints2": pd.Series([1, 100, 1, 100]),
             "ints3": pd.Series([1, 2, 3, 2], dtype="Int64"),
+            "ints4": pd.Series([0, 1, 1, 0], dtype="Int64"),
             "bools": pd.Series([True, False, True, False]),
             "booleans": pd.Series([True, False, True, False], dtype="boolean"),
             "categories": pd.Series(["test", "test2", "test2", "test"]),
             "dates": pd.Series(
                 ["2020-01-01", "2019-01-02", "2020-08-03", "1997-01-04"],
+            ),
+            "dates2": pd.Series(
+                ["2020-01-01", "2020-01-01", "2020-02-01", "2020-01-01"],
             ),
         },
     )
@@ -108,10 +112,12 @@ def test_accessor_bin_numeric_cols_into_categories():
     assert data["ints1"].equals(pd.Series([0, 1, 3, 1], dtype="int8"))
     assert data["ints2"].equals(pd.Series([0, 1, 0, 1], dtype="int8"))
     assert data["ints3"].equals(pd.Series([0, 1, 3, 1], dtype="int8"))
+    assert data["ints4"].equals(pd.Series([0, 1, 1, 0], dtype="int8"))
     assert data["bools"].equals(pd.Series([1, 0, 1, 0], dtype="int8"))
     assert data["booleans"].equals(pd.Series([1, 0, 1, 0], dtype="int8"))
     assert data["categories"].equals(pd.Series([0, 1, 1, 0], dtype="int8"))
     assert data["dates"].equals(pd.Series([2, 1, 3, 0], dtype="int8"))
+    assert data["dates2"].equals(pd.Series([0, 0, 1, 0], dtype="int8"))
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
@@ -142,7 +148,7 @@ def test_dependence(df_mi, measure):
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
     if measure == "pearson" or measure == "spearman":
-        assert dep_df.shape[0] == 3
+        assert dep_df.shape[0] == 6
     else:
         assert dep_df.shape[0] == 15
 
@@ -150,17 +156,22 @@ def test_dependence(df_mi, measure):
         measure_columns = ["mutual_info", "max", "pearson", "spearman"]
     else:
         measure_columns = [measure]
-    assert dep_df.columns.tolist() == ["column_1", "column_2"] + measure_columns
+    assert sorted(dep_df.columns.tolist()) == sorted(
+        ["column_1", "column_2"] + measure_columns,
+    )
 
     if measure == "pearson" or measure == "spearman":
-        expected_df = pd.DataFrame(data={measure: [0.5]}, index=["dates_ints"])
+        expected_df = pd.DataFrame(
+            data={measure: [0.5, -0.5]},
+            index=["dates_ints", "dates_bools"],
+        )
     else:
         expected_df = pd.DataFrame(
             data={
                 "mutual_info": [1.0, 0.0, 0, 0.208, 0.208],
-                "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
-                "spearman": [np.nan, np.nan, np.nan, 0.5, np.nan],
-                "max": [1.0, 0.0, 0, 0.5, 0.208],
+                "pearson": [-1.0, np.nan, np.nan, 0.5, -0.5],
+                "spearman": [-1.0, np.nan, np.nan, 0.5, -0.5],
+                "max": [1.0, 0.0, 0, 0.5, -0.5],
             },
             index=[
                 "ints_bools",
@@ -216,7 +227,7 @@ def test_dependence_one_row(df_mi, measure):
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measure, nrows=1, min_shared=1)
     if measure == "pearson":
-        assert dep_df.shape[0] == 3
+        assert dep_df.shape[0] == 6
     else:
         assert dep_df.shape[0] == 15
     expected = {"mutual_info": 1.0, "pearson": np.nan, "max": 1.0}
@@ -238,18 +249,21 @@ def test_dependence_num_bins(df_mi, measure):
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measure, num_bins=2, min_shared=12)
     if measure == "pearson":
-        assert dep_df.shape[0] == 3
+        assert dep_df.shape[0] == 6
     else:
         assert dep_df.shape[0] == 15
 
     if measure == "pearson":
-        expected_df = pd.DataFrame(data={"pearson": [0.5]}, index=["dates_ints"])
+        expected_df = pd.DataFrame(
+            data={"pearson": [0.5, -1.0]},
+            index=["dates_ints", "bools_ints"],
+        )
     else:
         expected_df = pd.DataFrame(
             data={
-                "mutual_info": [0.0, 1.0, 0, 1.0, 1.0],
-                "pearson": [np.nan, np.nan, np.nan, 0.5, np.nan],
-                "max": [0.0, 1.0, 0, 1.0, 1.0],
+                "mutual_info": [1.0, 0.0, 0, 0.208, 1.0],
+                "pearson": [-1.0, np.nan, np.nan, 0.5, np.nan],
+                "max": [1.0, 0.0, 0, 0.5, 1.0],
             },
             index=[
                 "bools_ints",
@@ -372,10 +386,11 @@ def test_dependence_extra_stats(measure):
         assert "measure_used" in dep_df_extra.columns
         # recalculate max to compare
         both_dep_df = df_nans.ww.dependence(
-            measures=["mutual_info", "pearson"],
+            measures=["mutual_info", "pearson", "spearman"],
             min_shared=3,
         )
         both_dep_df["pearson"] = both_dep_df["pearson"].abs()
+        both_dep_df["spearman"] = both_dep_df["spearman"].abs()
         both_dep_df = both_dep_df.set_index(["column_1", "column_2"])
         both_dep_df = both_dep_df.transpose()
 
@@ -386,6 +401,8 @@ def test_dependence_extra_stats(measure):
             assert (
                 expected_max == dep_df_extra["measure_used"][row]
                 or both_dep_df[col_1][col_2]["pearson"]
+                == both_dep_df[col_1][col_2]["mutual_info"]
+                or both_dep_df[col_1][col_2]["spearman"]
                 == both_dep_df[col_1][col_2]["mutual_info"]
             )
     else:
@@ -413,7 +430,7 @@ def test_dependence_min_shared(time_index_df, measure):
                 assert (dep_df[measurement].isna()).any()
             elif min_shared == 3:
                 if measure == "all" and measurement == "pearson":
-                    assert dep_df[measurement].isna().sum() == 12
+                    assert dep_df[measurement].isna().sum() == 9
                 else:
                     assert not (dep_df[measurement].isna()).all()
                     assert not (dep_df[measurement].isna()).any()
@@ -439,10 +456,10 @@ def test_dependence_min_shared_warns(time_index_df, measure):
     "measure, expected",
     [
         ("mutual_info", (18, 7, 28, 28)),
-        ("pearson", (5, 4, 7, 7)),
-        ("spearman", (5, 4, 10, 7)),
-        ("max", (24, 7, 37, 34)),
-        ("all", (24, 7, 37, 34)),
+        ("pearson", (8, 5, 11, 11)),
+        ("spearman", (8, 5, 15, 11)),
+        ("max", (30, 7, 44, 40)),
+        ("all", (30, 7, 44, 40)),
     ],
 )
 def test_dependence_callback(df_mi, measure, expected, mock_callback):
@@ -2395,8 +2412,8 @@ def test_dependence_with_object_target():
     )
     df.ww.init()
     res = df.ww.dependence(target_col="target_y")
-    assert "pearson" not in res.columns
-    assert "spearman" not in res.columns
+    assert "pearson" in res.columns
+    assert "spearman" in res.columns
 
 
 def test_box_plot_ignore_zeros():
