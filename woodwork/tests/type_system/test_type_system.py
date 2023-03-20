@@ -50,9 +50,6 @@ def test_add_and_remove_custom_ltype_options(
         primary_dtype = "Int64"
         standard_tags = {"numeric"}
 
-    def my_int_inference():
-        return True
-
     type_sys = TypeSystem(
         inference_functions=default_inference_functions,
         relationships=default_relationships,
@@ -77,20 +74,20 @@ def test_add_and_remove_custom_ltype_options(
         ):
             type_sys.add_type(
                 logical_type=MyInteger,
-                inference_function=my_int_inference,
+                inference_function=double_func,
                 parent=Integer,
                 treatment=add_treatment,
             )
     else:
         type_sys.add_type(
             logical_type=MyInteger,
-            inference_function=my_int_inference,
+            inference_function=double_func,
             parent=Integer,
             treatment=add_treatment,
         )
         if add_treatment.lower() == "replace":
             assert MyInteger in type_sys.inference_functions.keys()
-            assert type_sys.inference_functions[MyInteger] is my_int_inference
+            assert type_sys.inference_functions[MyInteger] is double_func
         elif add_treatment.lower() == "ignore":
             assert MyInteger in type_sys.inference_functions.keys()
             assert type_sys.inference_functions[MyInteger] is integer_func

@@ -8,7 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-        * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1657`)
+        * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1661`)
     * Documentation Changes
     * Testing Changes
 
