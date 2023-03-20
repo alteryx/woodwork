@@ -38,6 +38,80 @@ def test_type_system_init(default_inference_functions, default_relationships):
     assert type_sys.relationships[1] == (Categorical, CountryCode)
 
 
+@pytest.mark.parametrize("add_treatment", ["Replace", "IGNORE", None])
+@pytest.mark.parametrize("remove_treatment", ["Ignore", None])
+def test_add_and_remove_custom_ltype_options(
+    remove_treatment,
+    add_treatment,
+    default_inference_functions,
+    default_relationships,
+):
+    class MyInteger(LogicalType):
+        primary_dtype = "Int64"
+        standard_tags = {"numeric"}
+
+    def my_int_inference():
+        return True
+
+    type_sys = TypeSystem(
+        inference_functions=default_inference_functions,
+        relationships=default_relationships,
+        default_type=SubRegionCode,
+    )
+    type_sys.add_type(
+        logical_type=MyInteger,
+        inference_function=integer_func,
+        parent=Integer,
+        treatment=add_treatment,
+    )
+
+    assert MyInteger in type_sys.inference_functions.keys()
+    assert type_sys.inference_functions[MyInteger] is integer_func
+    assert len(type_sys.relationships) == 3
+    assert type_sys.relationships[-1] == (Integer, MyInteger)
+
+    if add_treatment is None:
+        with pytest.raises(
+            ValueError,
+            match="Logical Type with name MyInteger is already present",
+        ):
+            type_sys.add_type(
+                logical_type=MyInteger,
+                inference_function=my_int_inference,
+                parent=Integer,
+                treatment=add_treatment,
+            )
+    else:
+        type_sys.add_type(
+            logical_type=MyInteger,
+            inference_function=my_int_inference,
+            parent=Integer,
+            treatment=add_treatment,
+        )
+        if add_treatment.lower() == "replace":
+            assert MyInteger in type_sys.inference_functions.keys()
+            assert type_sys.inference_functions[MyInteger] is my_int_inference
+        elif add_treatment.lower() == "ignore":
+            assert MyInteger in type_sys.inference_functions.keys()
+            assert type_sys.inference_functions[MyInteger] is integer_func
+
+    type_sys.remove_type(logical_type=MyInteger, treatment=remove_treatment)
+
+    assert MyInteger not in type_sys.inference_functions.keys()
+    assert len(type_sys.relationships) == 2
+
+    if remove_treatment is None:
+        with pytest.raises(
+            ValueError,
+            match="Logical Type with name MyInteger is not present in the Type System.",
+        ):
+            type_sys.remove_type(logical_type=MyInteger, treatment=remove_treatment)
+    else:
+        type_sys.remove_type(logical_type=MyInteger, treatment=remove_treatment)
+        assert MyInteger not in type_sys.inference_functions.keys()
+        assert len(type_sys.relationships) == 2
+
+
 def test_add_type_validation_errors(type_sys):
     error_msg = "logical_type must be a valid LogicalType"
     with pytest.raises(TypeError, match=error_msg):
@@ -163,7 +237,7 @@ def test_add_duplicate_ltype(type_sys):
     class Integer(LogicalType):
         primary_dtype = "string"
 
-    error_msg = "Logical Type with name Integer already present in the Type System. Please rename the LogicalType or remove existing one."
+    error_msg = "Logical Type with name Integer is already present in the Type System. Please rename the LogicalType or remove existing one."
     with pytest.raises(ValueError, match=error_msg):
         type_sys.add_type(Integer, inference_function=inference_fn)
 

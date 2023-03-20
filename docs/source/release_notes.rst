@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1657`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user: `ParthivNaresh`
 
 v0.22.0 March 13, 2023
 ======================
