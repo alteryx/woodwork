@@ -154,12 +154,22 @@ class TypeSystem(object):
             parent (LogicalType, optional): The parent LogicalType, if applicable. Defaults to None. If not specified,
                 this type will be considered a root type with no parent.
             treatment (string, optional): If the specified LogicalType already exists, determine the logic that should
-                be applied. Options are "replace", "ignore", or None (default). "Replace" will unregister the present
-                LogicalType and replace it with the one that was passed. "Ignore" will not register the passed
+                be applied. Options are "replace", "ignore", or None (default). "replace" will unregister the present
+                LogicalType and replace it with the one that was passed. "ignore" will not register the passed
                 LogicalType if it already exists. The default value of None will raise an error.
         """
         if isinstance(parent, str):
             parent = self.str_to_logical_type(parent)
+        if not (
+            isinstance(treatment, type(None))
+            or (
+                isinstance(treatment, str)
+                and treatment.lower() in ["replace", "ignore"]
+            )
+        ):
+            raise ValueError(
+                "The parameter treatment can only take on the values 'replace', 'ignore', and None.",
+            )
         self._validate_type_input(
             logical_type=logical_type,
             inference_function=inference_function,
@@ -186,11 +196,18 @@ class TypeSystem(object):
         Args:
             logical_type (LogicalType): The LogicalType to remove.
             treatment (str, optional): If the specified logical type doesn't exist, determine the logic that should
-                be applied. Options are "ignore" and None (default). "Ignore" will not raise an error if the passed
+                be applied. Options are "ignore" and None (default). "ignore" will not raise an error if the passed
                 LogicalType doesn't exists. The default value of None will raise an error.
         """
         if isinstance(logical_type, str):
             logical_type = self.str_to_logical_type(logical_type)
+        if not (
+            isinstance(treatment, type(None))
+            or (isinstance(treatment, str) and treatment.lower() in ["ignore"])
+        ):
+            raise ValueError(
+                "The parameter treatment can only take on the values 'ignore', and None.",
+            )
         self._validate_type_input(logical_type=logical_type)
         # Remove the inference function
         if logical_type == self.default_type:

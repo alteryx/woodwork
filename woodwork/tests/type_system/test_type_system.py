@@ -128,11 +128,21 @@ def test_add_type_validation_errors(type_sys):
     with pytest.raises(ValueError, match=error_msg):
         type_sys.add_type(logical_type=Ordinal, parent=Double())
 
+    error_msg = "The parameter treatment can only take on the values 'replace', 'ignore', and None."
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.add_type(logical_type=Ordinal, parent=Double(), treatment="rreplace")
+
 
 def test_remove_type_validation_errors(type_sys):
     error_msg = "logical_type must be a valid LogicalType"
     with pytest.raises(TypeError, match=error_msg):
-        type_sys.add_type(logical_type=1)
+        type_sys.remove_type(logical_type=1)
+
+    error_msg = (
+        "The parameter treatment can only take on the values 'ignore', and None."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        type_sys.remove_type(logical_type=Ordinal, treatment="iignore")
 
 
 def test_update_inference_function_validation_errors(type_sys):
