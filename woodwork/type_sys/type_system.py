@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
@@ -135,7 +137,13 @@ class TypeSystem(object):
         self._default_relationships = self.relationships.copy()
         self._default_type = self.default_type
 
-    def add_type(self, logical_type, inference_function=None, parent=None):
+    def add_type(
+        self,
+        logical_type: LogicalType,
+        inference_function: Callable = None,
+        parent: LogicalType = None,
+        treatment: str = None,
+    ):
         """Add a new LogicalType to the TypeSystem, optionally specifying the corresponding inference function and a
         parent type.
 
@@ -145,50 +153,87 @@ class TypeSystem(object):
                 Defaults to None. If not specified, this LogicalType will never be inferred.
             parent (LogicalType, optional): The parent LogicalType, if applicable. Defaults to None. If not specified,
                 this type will be considered a root type with no parent.
+            treatment (string, optional): If the specified LogicalType already exists, determine the logic that should
+                be applied. Options are "replace", "ignore", or None (default). "replace" will unregister the present
+                LogicalType and replace it with the one that was passed. "ignore" will not register the passed
+                LogicalType if it already exists. The default value of None will raise an error.
         """
         if isinstance(parent, str):
             parent = self.str_to_logical_type(parent)
+        if not (
+            isinstance(treatment, type(None))
+            or (
+                isinstance(treatment, str)
+                and treatment.lower() in ["replace", "ignore"]
+            )
+        ):
+            raise ValueError(
+                "The parameter treatment can only take on the values 'replace', 'ignore', and None.",
+            )
         self._validate_type_input(
             logical_type=logical_type,
             inference_function=inference_function,
             parent=parent,
         )
 
-        registered_ltype_names = [ltype.__name__ for ltype in self.registered_types]
-        if logical_type.__name__ in registered_ltype_names:
+        registered_ltype_names = {ltype.__name__ for ltype in self.registered_types}
+        ltype_is_registered = logical_type.__name__ in registered_ltype_names
+        if ltype_is_registered and treatment is None:
             raise ValueError(
-                f"Logical Type with name {logical_type.__name__} already present in the Type System. Please rename the LogicalType or remove existing one.",
+                f"Logical Type with name {logical_type.__name__} is already present in the Type System. Please rename the LogicalType or remove existing one.",
             )
-        self.update_inference_function(logical_type, inference_function)
-        if parent:
-            self.update_relationship(logical_type, parent)
+        elif ltype_is_registered and treatment.lower() == "replace":
+            self.remove_type(logical_type=logical_type)
+        if not ltype_is_registered or treatment.lower() == "replace":
+            self.update_inference_function(logical_type, inference_function)
+            if parent:
+                self.update_relationship(logical_type, parent)
 
-    def remove_type(self, logical_type):
+    def remove_type(self, logical_type: LogicalType, treatment: str = None):
         """Remove a logical type from the TypeSystem. Any children of the remove type will have their parent
         set to the parent of the removed type.
 
         Args:
             logical_type (LogicalType): The LogicalType to remove.
+            treatment (str, optional): If the specified logical type doesn't exist, determine the logic that should
+                be applied. Options are "ignore" and None (default). "ignore" will not raise an error if the passed
+                LogicalType doesn't exists. The default value of None will raise an error.
         """
         if isinstance(logical_type, str):
             logical_type = self.str_to_logical_type(logical_type)
+        if not (
+            isinstance(treatment, type(None))
+            or (isinstance(treatment, str) and treatment.lower() in ["ignore"])
+        ):
+            raise ValueError(
+                "The parameter treatment can only take on the values 'ignore', and None.",
+            )
         self._validate_type_input(logical_type=logical_type)
         # Remove the inference function
         if logical_type == self.default_type:
             raise ValueError("Default LogicalType cannot be removed")
-        self.inference_functions.pop(logical_type)
 
-        # If the removed type had children we need to update them
-        children = self._get_children(logical_type)
-        if children:
-            parent = self._get_parent(logical_type)
-            for child in children:
-                self.update_relationship(child, parent)
+        registered_ltype_names = {ltype.__name__ for ltype in self.registered_types}
+        ltype_is_registered = logical_type.__name__ in registered_ltype_names
+        if ltype_is_registered:
+            self.inference_functions.pop(logical_type)
 
-        # Rebuild the relationships list to remove any reference to the removed type
-        self.relationships = [
-            rel for rel in self.relationships if logical_type not in rel
-        ]
+            # If the removed type had children we need to update them
+            children = self._get_children(logical_type)
+            if children:
+                parent = self._get_parent(logical_type)
+                for child in children:
+                    self.update_relationship(child, parent)
+
+            # Rebuild the relationships list to remove any reference to the removed type
+            self.relationships = [
+                rel for rel in self.relationships if logical_type not in rel
+            ]
+        else:
+            if treatment is None or treatment.lower() != "ignore":
+                raise ValueError(
+                    f"Logical Type with name {logical_type.__name__} is not present in the Type System.",
+                )
 
     def update_inference_function(self, logical_type, inference_function):
         """Update the inference function for the specified LogicalType.
