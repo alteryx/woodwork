@@ -36,12 +36,13 @@ keywords = ["data science", "machine learning", "typing"]
 license = {file = "LICENSE"}
 requires-python = ">=3.8,<4"
 dependencies = [
-    "pandas >= 1.4.0, != 1.4.2",
+    "pandas >= 1.5.0",
     "scikit-learn >= 0.22",
     "python-dateutil >= 2.8.1",
     "scipy >= 1.4.0",
     "importlib-resources >= 5.10.0",
     "numpy >= 1.21.0",
+    "pyarrow >= 1.0.0",
 ]
 
 [project.urls]
