@@ -650,10 +650,12 @@ def _infer_datetime_format(dates, n=100):
             "%y/%m/%d",
             "%m/%d/%y %H:%M:%S",
             "%y/%m/%d %H:%M:%S",
+            "%y/%m/%d %H:%M:%S%z",
             "%d/%m/%y",
             "%y/%d/%m",
             "%d/%m/%y %H:%M:%S",
             "%y/%d/%m %H:%M:%S",
+            "%y/%d/%m %H:%M:%S%z",
         ]
         dash_formats = []
         for format_ in check_for_two_digit_years:
