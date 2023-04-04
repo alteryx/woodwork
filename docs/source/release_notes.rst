@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
     * Fixes
+        * Updated ``Datetime`` format inference to include formats with two digit year dates along with timezones (:pr:`1665`)
     * Changes
         * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1661`)
     * Documentation Changes
