@@ -913,8 +913,7 @@ def test_pyspark_dask_series(type):
         )
         df = dd.from_pandas(df, npartitions=2)
     df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
-    df_expected = pd.DataFrame({"dates": expected_values})
-    df_expected = pd.to_datetime(df_expected, utc=True)
+    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
     df = to_pandas(df)
     df.sort_index(inplace=True)
     pd.testing.assert_frame_equal(df, df_expected)
@@ -973,7 +972,8 @@ def test_datetime_formats_two_digit_years(datetime_different_formats):
         ]
         expected_values = get_expected_dates(expected_values)
         df = pd.DataFrame({"dates": dates})
-        df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+        df_expected = pd.DataFrame({"dates": expected_values})
+        df_expected = pd.to_datetime(df_expected, utc=True)
         df.ww.init(logical_types={"dates": Datetime})
         pd.testing.assert_frame_equal(df, df_expected)
 
