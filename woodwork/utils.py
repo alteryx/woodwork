@@ -666,7 +666,11 @@ def _infer_datetime_format(dates, n=100):
         for format_ in check_for_two_digit_years:
             time_stamp_formats_with_timezone.append(format_ + " %H:%M:%S%z")
         check_for_two_digit_years = (
-            check_for_two_digit_years + dash_formats + dot_formats
+            check_for_two_digit_years
+            + dash_formats
+            + dot_formats
+            + time_stamp_formats
+            + time_stamp_formats_with_timezone
         )
         mode_fmt = None
         for format_ in check_for_two_digit_years:
