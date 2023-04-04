@@ -520,7 +520,7 @@ def test_infer_datetime_format(datetimes):
     assert fmt == "%A %d %b %Y %H:%M:%S %p"
 
     dt = pd.Series(
-        ["00-03-22 10:30:15+0000", "00-03-23 10:30:15+0000", "00-03-24 10:30:15+0000"],
+        ["13-03-16 10:30:15+0000", "14-03-16 10:30:15+0000", "15-03-16 10:30:15+0000"],
     )
     fmt = _infer_datetime_format(dt)
     assert fmt == "%d-%m-%y %H:%M:%S%z"
