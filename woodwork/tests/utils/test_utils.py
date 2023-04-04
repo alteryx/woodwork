@@ -523,7 +523,7 @@ def test_infer_datetime_format(datetimes):
         ["00-03-22 10:30:15+0000", "00-03-23 10:30:15+0000", "00-03-24 10:30:15+0000"],
     )
     fmt = _infer_datetime_format(dt)
-    assert fmt == "%m-%d-%y %H:%M:%S%z"
+    assert fmt == "%d-%m-%y %H:%M:%S%z"
 
 
 def test_infer_datetime_format_all_null():
