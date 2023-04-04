@@ -14,7 +14,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user: `ParthivNaresh`
+    :user: `ParthivNaresh`, :user: `simha104`
 
 v0.22.0 March 13, 2023
 ======================
