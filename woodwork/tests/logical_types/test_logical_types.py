@@ -775,13 +775,14 @@ def get_expected_dates(dates):
     expected = []
     for d in dates:
         if d is not None:
-            dt_groups = re.findall(r"\d+", d)
-            year = int(dt_groups[0])  # gets the year
-            month = int(dt_groups[1])  # gets the month
-            day = int(dt_groups[2])  # gets the day
+            dt_split = d.split(" ")
+            date_groups = re.findall(r"\d+", dt_split[0])
             time_groups = None
-            if len(dt_groups) > 3:
-                time_groups = ":".join(dt_groups[3:])
+            if len(dt_split) > 1:
+                time_groups = dt_split[1]
+            year = int(date_groups[0])  # gets the year
+            month = int(date_groups[1])  # gets the month
+            day = int(date_groups[2])  # gets the day
             if year > datetime.today().year + 10:
                 year -= 100
             if year <= datetime.today().year - 90:
@@ -972,8 +973,7 @@ def test_datetime_formats_two_digit_years(datetime_different_formats):
         ]
         expected_values = get_expected_dates(expected_values)
         df = pd.DataFrame({"dates": dates})
-        df_expected = pd.DataFrame({"dates": expected_values})
-        df_expected = pd.to_datetime(df_expected, utc=True)
+        df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
         df.ww.init(logical_types={"dates": Datetime})
         pd.testing.assert_frame_equal(df, df_expected)
 
