@@ -652,9 +652,9 @@ def _infer_datetime_format(dates, n=100):
             "%y/%d/%m",
             "%d/%y/%m",
             "%m/%y/%d",
-            "%Y-%d-%m",
-            "%d-%Y-%m",
-            "%m-%Y-%d",
+            "%Y/%d/%m",
+            "%d/%Y/%m",
+            "%m/%Y/%d",
         ]
         dash_formats = []
         for format_ in check_for_other_formats:
