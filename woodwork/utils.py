@@ -645,21 +645,24 @@ def _infer_datetime_format(dates, n=100):
         fmts = random_n.map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except KeyError:
-        check_for_two_digit_years = [
+        check_for_other_formats = [
             "%y/%m/%d",
             "%m/%d/%y",
             "%d/%m/%y",
             "%y/%d/%m",
             "%d/%y/%m",
             "%m/%y/%d",
+            "%Y-%d-%m",
+            "%d-%Y-%m",
+            "%m-%Y-%d",
         ]
         dash_formats = []
-        for format_ in check_for_two_digit_years:
+        for format_ in check_for_other_formats:
             dash_formats.append(format_.replace("/", "-"))
         dot_formats = []
-        for format_ in check_for_two_digit_years:
+        for format_ in check_for_other_formats:
             dot_formats.append(format_.replace("/", "."))
-        datetime_only_formats = check_for_two_digit_years + dash_formats + dot_formats
+        datetime_only_formats = check_for_other_formats + dash_formats + dot_formats
 
         time_stamp_formats = []
         for format_ in datetime_only_formats:
@@ -668,13 +671,13 @@ def _infer_datetime_format(dates, n=100):
         for format_ in datetime_only_formats:
             time_stamp_formats_with_timezone.append(format_ + " %H:%M:%S%z")
 
-        check_for_two_digit_years = (
+        check_for_other_formats = (
             datetime_only_formats
             + time_stamp_formats
             + time_stamp_formats_with_timezone
         )
         mode_fmt = None
-        for format_ in check_for_two_digit_years:
+        for format_ in check_for_other_formats:
             try:
                 random_n.map(lambda x: datetime.strptime(x, format_))
                 return format_
