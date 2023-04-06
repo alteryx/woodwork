@@ -652,7 +652,6 @@ def _infer_datetime_format(dates, n=100):
             "%y/%d/%m",
             "%d/%y/%m",
             "%m/%y/%d",
-            "%Y/%d/%m",
             "%d/%Y/%m",
             "%m/%Y/%d",
         ]
