@@ -956,7 +956,7 @@ def test_datetime_pivot_point_no_format_provided():
     pd.testing.assert_frame_equal(df, df_expected)
 
 
-def test_datetime_other_formats(datetime_different_formats):
+def test_datetime_formats_two_digit_years(datetime_different_formats):
     for format_, starting_date_ in datetime_different_formats:
         # 01/15/24, 01/15/28, 01/15/32, etc.
         dates = [starting_date_.replace("24", str(each)) for each in range(24, 90, 4)]
@@ -978,7 +978,7 @@ def test_datetime_other_formats(datetime_different_formats):
         pd.testing.assert_frame_equal(df, df_expected)
 
 
-def test_datetime_other_formats_ambiguous():
+def test_datetime_formats_two_digit_years_ambiguous():
     series = pd.Series([f"{i}-01-01" for i in range(10, 90)])
     series = init_series(series)
     expected_values = [f"{i}-01-01" for i in range(2010, 2090)]
