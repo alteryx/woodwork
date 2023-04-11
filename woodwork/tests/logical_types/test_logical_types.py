@@ -775,13 +775,14 @@ def get_expected_dates(dates):
     expected = []
     for d in dates:
         if d is not None:
-            dt_groups = re.findall(r"\d+", d)
-            year = int(dt_groups[0])  # gets the year
-            month = int(dt_groups[1])  # gets the month
-            day = int(dt_groups[2])  # gets the day
+            dt_split = d.split(" ")
+            date_groups = re.findall(r"\d+", dt_split[0])
             time_groups = None
-            if len(dt_groups) > 3:
-                time_groups = ":".join(dt_groups[3:])
+            if len(dt_split) > 1:
+                time_groups = dt_split[1]
+            year = int(date_groups[0])  # gets the year
+            month = int(date_groups[1])  # gets the month
+            day = int(date_groups[2])  # gets the day
             if year > datetime.today().year + 10:
                 year -= 100
             if year <= datetime.today().year - 90:
@@ -959,7 +960,10 @@ def test_datetime_formats_two_digit_years(datetime_different_formats):
     for format_, starting_date_ in datetime_different_formats:
         # 01/15/24, 01/15/28, 01/15/32, etc.
         dates = [starting_date_.replace("24", str(each)) for each in range(24, 90, 4)]
-        final_format = "%Y-%m-%d %H:%M:%S" if "%H:%M:%S" in format_ else "%Y-%m-%d"
+        format_split = format_.split(" ")
+        final_format = (
+            ("%Y-%m-%d " + format_split[1]) if (len(format_split) > 1) else "%Y-%m-%d"
+        )
         expected_values = [
             datetime.strptime(
                 starting_date_.replace("24", str(each)),

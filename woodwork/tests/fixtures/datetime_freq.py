@@ -63,11 +63,10 @@ def pad_datetime_series(dates, freq, pad_start=0, pad_end=100):
             pd.date_range(start=dates[-1], periods=pad_end, freq=freq)[1:]
         ).to_series()
 
-    return (
-        pd.concat([head, pd.Series(dates), tail])
-        .reset_index(drop=True)
-        .astype("datetime64[ns]")
-    )
+    df = pd.concat([head, pd.Series(dates), tail]).reset_index(drop=True)
+    df = pd.to_datetime(df, utc=True)
+
+    return df
 
 
 def generate_pandas_inferrable():
