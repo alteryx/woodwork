@@ -11,6 +11,7 @@ Future Release
     * Changes
         * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1661`)
         * Limit pandas <2.0.0 for core requirements (:pr:`1668`)
+        * Upgrade minimum dask to 2022.11.1 and minimum pandas to 1.4.3 (:pr:`1671`)
     * Documentation Changes
     * Testing Changes
 
