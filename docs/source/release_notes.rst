@@ -3,11 +3,19 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
         * Updated ``Datetime`` format inference to include formats with two digit year dates along with timezones (:pr:`1666`)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.23.0 April 12, 2023
+======================
     * Changes
         * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1661`)
         * Limit pandas <2.0.0 for core requirements (:pr:`1668`)
@@ -16,7 +24,7 @@ Future Release
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user: `ParthivNaresh`, :user: `simha104`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user: `simha104`
 
 v0.22.0 March 13, 2023
 ======================
