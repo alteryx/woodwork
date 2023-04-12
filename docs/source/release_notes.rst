@@ -15,11 +15,12 @@ Release Notes
 
 v0.23.0 April 12, 2023
 ======================
+    * Fixes
+        * Updated ``Datetime`` format inference to include formats with two digit year dates along with timezones (:pr:`1666`)
     * Changes
         * Updated ``add_type`` and ``remove_type`` to include a `treatment` argument (:pr:`1661`)
         * Limit pandas <2.0.0 for core requirements (:pr:`1668`)
         * Upgrade minimum dask to 2022.11.1 and minimum pandas to 1.4.3 (:pr:`1671`)
-        * Updated ``Datetime`` format inference to include formats with two digit year dates along with timezones (:pr:`1666`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`simha104`
