@@ -22,7 +22,7 @@ v0.23.0 April 12, 2023
         * Updated ``Datetime`` format inference to include formats with two digit year dates along with timezones (:pr:`1666`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user: `simha104`
+    :user:`gsheni`, :user:`jeff-hernandez`, :user:`ParthivNaresh`, :user:`simha104`
 
 v0.22.0 March 13, 2023
 ======================
