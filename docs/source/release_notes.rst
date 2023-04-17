@@ -3,16 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-    ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
-
-.. Thanks to the following people for contributing to this release:
-
+        * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1678`)
+        
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 v0.23.0 April 12, 2023
 ======================
     * Fixes

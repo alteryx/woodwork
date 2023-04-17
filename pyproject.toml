@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: Unix",
@@ -63,15 +64,15 @@ test = [
     "pyarrow >= 4.0.1",
 ]
 dask = [
-    "dask[dataframe] >= 2022.11.1",
+    "dask[dataframe] >= 2022.11.1, < 2023.4.0",
 ]
 spark = [
-    "pyspark >= 3.2.0, <3.3.0",
+    "pyspark >= 3.2.0",
     "pandas >= 1.4.3",
     "numpy < 1.24.0",
 ]
 updater = [
-    "alteryx-open-src-update-checker >= 2.1.0"
+    "alteryx-open-src-update-checker >= 3.1.0"
 ]
 docs = [
     "Sphinx == 5.1.1",
@@ -133,7 +134,12 @@ filterwarnings = [
     "ignore::PendingDeprecationWarning"
 ]
 
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
 [tool.ruff]
+line-length = 88
 ignore = ["E501"]
 select = [
     # Pyflakes

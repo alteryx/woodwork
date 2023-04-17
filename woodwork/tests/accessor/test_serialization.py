@@ -645,7 +645,6 @@ def test_to_disk_custom_data_subdirectory(
 def test_to_disk_with_latlong(latlong_df, tmpdir, file_format):
     if file_format in ("arrow", "feather") and not isinstance(latlong_df, pd.DataFrame):
         pytest.xfail("Arrow IPC format (Feather) not supported on Dask or Spark")
-
     latlong_df.ww.init(logical_types={col: "LatLong" for col in latlong_df.columns})
 
     error_msg = None

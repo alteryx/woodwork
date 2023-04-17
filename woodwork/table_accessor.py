@@ -1794,7 +1794,10 @@ def _infer_missing_logical_types(
             if name in force_logical_types
             else existing_logical_types.get(name)
         )
-        series = dataframe[name]
+        if name is not None:
+            series = dataframe[name]
+        elif name is None and len(dataframe.columns) == 1:
+            series = dataframe.iloc[:, 0]
         parsed_logical_types[name] = _get_column_logical_type(
             series,
             logical_type,
