@@ -135,8 +135,8 @@ def _get_describe_dict(
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
             series = series.sort_values()
-            values["max"] = series[values["count"] - 1]
-            values["min"] = series[0]
+            values["max"] = int(series[values["count"] - 1])
+            values["min"] = int(series[0])
             quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[1]
