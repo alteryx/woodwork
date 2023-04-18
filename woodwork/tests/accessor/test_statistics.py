@@ -1123,8 +1123,6 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {"numeric_col"}
         assert stats_df.index.tolist() == expected_index
-        print("ACTUAL: ", stats_df["numeric_col"].dropna())
-        print("EXPECTED: ", expected_vals)
         assert expected_vals.equals(stats_df["numeric_col"].dropna())
 
     # Test numeric with non-nullable ltypes
