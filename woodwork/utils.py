@@ -632,7 +632,7 @@ def _infer_datetime_format(dates, n=100):
 
     ps = import_or_none("pyspark.pandas")
     dd = import_or_none("dask.dataframe")
-    if ps and isinstance(dates_no_null, ps.series.Series):
+    if ps and isinstance(dates_no_null, ps.Series):
         dates_no_null = dates_no_null.to_pandas()
     if dd and isinstance(dates_no_null, dd.Series):
         dates_no_null = dates_no_null.compute()
