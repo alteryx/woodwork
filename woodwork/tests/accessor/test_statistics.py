@@ -1107,11 +1107,11 @@ def test_describe_accessor_method(describe_df):
                 "mean": 20.857142857142858,
                 "mode": 10,
                 "std": 18.27957486220227,
-                "min": 1,
+                "min": 1.0,
                 "first_quartile": 10,
                 "second_quartile": 17,
                 "third_quartile": 26,
-                "max": 56,
+                "max": 56.0,
             },
             name="numeric_col",
         )
@@ -1123,6 +1123,8 @@ def test_describe_accessor_method(describe_df):
         assert isinstance(stats_df, pd.DataFrame)
         assert set(stats_df.columns) == {"numeric_col"}
         assert stats_df.index.tolist() == expected_index
+        print("ACTUAL: ", stats_df["numeric_col"].dropna())
+        print("EXPECTED: ", expected_vals)
         assert expected_vals.equals(stats_df["numeric_col"].dropna())
 
     # Test numeric with non-nullable ltypes
@@ -1139,11 +1141,11 @@ def test_describe_accessor_method(describe_df):
                 "mean": 18.25,
                 "mode": 10,
                 "std": 18.460382289804137,
-                "min": 0,
+                "min": 0.0,
                 "first_quartile": 7.75,
                 "second_quartile": 13.5,
                 "third_quartile": 23,
-                "max": 56,
+                "max": 56.0,
             },
             name="numeric_col",
         )
