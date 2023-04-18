@@ -1139,7 +1139,7 @@ def test_describe_accessor_method(describe_df):
                 "mean": 18.25,
                 "mode": 10,
                 "std": 18.460382289804137,
-                "min": 0.0,
+                "min": 0,
                 "first_quartile": 7.75,
                 "second_quartile": 13.5,
                 "third_quartile": 23,
