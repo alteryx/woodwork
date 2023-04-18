@@ -1107,11 +1107,11 @@ def test_describe_accessor_method(describe_df):
                 "mean": 20.857142857142858,
                 "mode": 10,
                 "std": 18.27957486220227,
-                "min": 1.0,
+                "min": 1,
                 "first_quartile": 10,
                 "second_quartile": 17,
                 "third_quartile": 26,
-                "max": 56.0,
+                "max": 56,
             },
             name="numeric_col",
         )
@@ -1145,7 +1145,7 @@ def test_describe_accessor_method(describe_df):
                 "first_quartile": 7.75,
                 "second_quartile": 13.5,
                 "third_quartile": 23,
-                "max": 56.0,
+                "max": 56,
             },
             name="numeric_col",
         )
