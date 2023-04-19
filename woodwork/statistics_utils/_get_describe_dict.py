@@ -34,8 +34,8 @@ def percentile(N, percent, count):
     c = math.ceil(k)
     if f == c:
         return N[int(k)]
-    d0 = N.iloc[int(f)] * (c - k)
-    d1 = N.iloc[int(c)] * (k - f)
+    d0 = N.iat[int(f)] * (c - k)
+    d1 = N.iat[int(c)] * (k - f)
     return d0 + d1
 
 
@@ -157,8 +157,8 @@ def _get_describe_dict(
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
             series = series.sort_values(ignore_index=True)
-            values["max"] = series.iloc[int(values["count"] - 1)]
-            values["min"] = series.iloc[0]
+            values["max"] = series.iat[int(values["count"] - 1)]
+            values["min"] = series.iat[0]
             values["first_quartile"] = percentile(series, 0.25, int(values["count"]))
             values["second_quartile"] = percentile(series, 0.5, int(values["count"]))
             values["third_quartile"] = percentile(series, 0.75, int(values["count"]))
