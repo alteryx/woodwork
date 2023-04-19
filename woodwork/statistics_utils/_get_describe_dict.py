@@ -1,3 +1,4 @@
+import math
 from timeit import default_timer as timer
 from typing import Any, Callable, Dict, Sequence
 
@@ -15,6 +16,27 @@ from woodwork.statistics_utils._get_top_values_categorical import (
     _get_top_values_categorical,
 )
 from woodwork.utils import CallbackCaller, _is_latlong_nan
+
+
+def percentile(N, percent, count):
+    """
+    Find the percentile of a list of values.
+
+    Args:
+        N (pd.Series): Series is a list of values. Note N MUST BE already sorted.
+        percent (float): float value from 0.0 to 1.0.
+        count (int): Count of values in series
+
+    @return - the percentile of the values
+    """
+    k = (count - 1) * percent
+    f = math.floor(k)
+    c = math.ceil(k)
+    if f == c:
+        return N[int(k)]
+    d0 = N.iloc[int(f)] * (c - k)
+    d1 = N.iloc[int(c)] * (k - f)
+    return d0 + d1
 
 
 def _get_describe_dict(
@@ -134,13 +156,12 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            series = series.sort_values()
+            series = series.sort_values(ignore_index=True)
             values["max"] = series.iloc[int(values["count"] - 1)]
             values["min"] = series.iloc[0]
-            quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
-            values["first_quartile"] = quant_values[0]
-            values["second_quartile"] = quant_values[1]
-            values["third_quartile"] = quant_values[2]
+            values["first_quartile"] = percentile(series, 0.25, int(values["count"]))
+            values["second_quartile"] = percentile(series, 0.5, int(values["count"]))
+            values["third_quartile"] = percentile(series, 0.75, int(values["count"]))
 
         mode = _get_mode(series)
         # The format of the mode should match its format in the DataFrame
