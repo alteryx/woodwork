@@ -18,6 +18,14 @@ from woodwork.statistics_utils._get_top_values_categorical import (
 from woodwork.utils import CallbackCaller, _is_latlong_nan
 
 
+def get_stdev(mean, count, series):
+    def variance_func(x):
+        return (x - mean) ** 2 if not pd.isna(x) else None
+
+    stdev = (((series.apply(variance_func)).sum() / (count - 1))) ** 0.5
+    return stdev
+
+
 def percentile(N, percent, count):
     """
     Find the percentile of a list of values.
@@ -91,7 +99,7 @@ def _get_describe_dict(
     unit = "calculations"
     agg_stats_to_calculate = {
         "category": ["count", "nunique"],
-        "numeric": ["count", "nunique", "mean", "std"],
+        "numeric": ["count", "nunique", "mean"],
         Datetime: ["count", "max", "min", "nunique", "mean"],
         Unknown: ["count", "nunique"],
     }
@@ -157,6 +165,7 @@ def _get_describe_dict(
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
             series = series.sort_values(ignore_index=True)
+            values["std"] = get_stdev(values["mean"], values["count"], series)
             values["max"] = series.iat[int(values["count"] - 1)]
             values["min"] = series.iat[0]
             values["first_quartile"] = percentile(series, 0.25, int(values["count"]))
