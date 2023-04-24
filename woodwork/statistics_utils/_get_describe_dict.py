@@ -156,7 +156,10 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            series = series.sort_values(ignore_index=True, kind="mergesort")
+            series = series.sort_values(
+                ignore_index=True,
+                key=lambda x: float("inf") if pd.isnull(x) is None else x,
+            )
             values["max"] = series.iat[int(values["count"] - 1)]
             values["min"] = series.iat[0]
             values["first_quartile"] = percentile(series, 0.25, int(values["count"]))
