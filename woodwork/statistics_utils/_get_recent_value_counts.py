@@ -14,6 +14,6 @@ def _get_recent_value_counts(column, num_x):
     values = frequencies.sort_index(ascending=False)[:num_x]
     df = values.reset_index()
     df.columns = ["value", "count"]
-    df = df.sort_values(["count"], ascending=False)
+    df = df.sort_values(["count", "value"], ascending=[False, True])
     value_counts = list(df.to_dict(orient="index").values())
     return value_counts
