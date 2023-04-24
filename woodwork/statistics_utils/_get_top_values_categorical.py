@@ -12,6 +12,6 @@ def _get_top_values_categorical(series, num_x):
     frequencies = series.value_counts(dropna=True)
     df = frequencies.head(num_x).reset_index()
     df.columns = ["value", "count"]
-    df = df.sort_values(["count", "value"], ascending=[False, True])
+    df = df.sort_values(["count"], ascending=False)
     value_counts = list(df.to_dict(orient="index").values())
     return value_counts
