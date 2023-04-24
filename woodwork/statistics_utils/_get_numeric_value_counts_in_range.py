@@ -13,12 +13,13 @@ def _get_numeric_value_counts_in_range(series, _range):
         value_counts (list(dict)): a list of dictionaries with keys `value` and
             `count`. Output is sorted in descending order based on the value counts.
     """
+    _is_integer_dtype = is_integer_dtype(series)
     frequencies = series.value_counts(dropna=True)
     value_counts = [
         {
-            "value": i if is_integer_dtype(series) else float(i),
+            "value": i if _is_integer_dtype else float(i),
             "count": frequencies[i] if i in frequencies else 0,
         }
         for i in _range
     ]
-    return sorted(value_counts, key=lambda i: (-i["count"], i["value"]))
+    return sorted(value_counts, key=lambda i: -i["count"])
