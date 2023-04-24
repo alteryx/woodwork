@@ -816,7 +816,7 @@ def test_get_valid_mi_columns(df_mi):
     df_mi.ww.init()
     valid_columns = df_mi.ww.get_valid_mi_columns()
     mi = df_mi.ww.mutual_information()
-    valid_mi_columns = (mi.column_1.append(mi.column_2)).unique()
+    valid_mi_columns = pd.concat([mi.column_1, mi.column_2]).unique()
 
     assert (valid_columns == valid_mi_columns).all()
 

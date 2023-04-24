@@ -37,7 +37,7 @@ keywords = ["data science", "machine learning", "typing"]
 license = {file = "LICENSE"}
 requires-python = ">=3.8,<4"
 dependencies = [
-    "pandas >= 1.4.3, <2.0.0",
+    "pandas == 2.0.0",
     "scikit-learn >= 0.22",
     "python-dateutil >= 2.8.1",
     "scipy >= 1.4.0",
@@ -67,8 +67,8 @@ dask = [
     "dask[dataframe] >= 2022.11.1, < 2023.4.0",
 ]
 spark = [
-    "pyspark >= 3.2.0",
-    "pandas >= 1.4.3",
+    "pyspark == 3.4.0",
+    "pandas == 2.0.0",
     "numpy < 1.24.0",
 ]
 updater = [

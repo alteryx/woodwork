@@ -511,6 +511,7 @@ def describe_df_pandas():
             "2020-02-01",
             "2020-01-02",
         ],
+        format="ISO8601"
     )
     formatted_datetime_data = pd.Series(
         [

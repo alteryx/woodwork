@@ -86,6 +86,7 @@ def infer_frequency(
         - range: the length of this range.
     """
 
+
     pandas_inferred_freq = pd.infer_freq(observed_ts)
 
     if pandas_inferred_freq or not debug:

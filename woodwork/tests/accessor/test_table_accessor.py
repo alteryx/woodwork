@@ -1181,7 +1181,7 @@ def test_underlying_index_set_no_index_on_init(sample_df):
     if _is_spark_dataframe(sample_df):
         pytest.xfail("Setting underlying index is not supported with Spark input")
 
-    input_index = pd.Int64Index([99, 88, 77, 66])
+    input_index = pd.Index([99, 88, 77, 66], dtype="Int64")
 
     schema_df = sample_df.copy()
     schema_df.index = input_index.copy()
@@ -1193,7 +1193,7 @@ def test_underlying_index_set_no_index_on_init(sample_df):
 
     sorted_df = schema_df.ww.sort_values("full_name")
     assert sorted_df.ww.index is None
-    pd.testing.assert_index_equal(pd.Int64Index([88, 77, 99, 66]), sorted_df.index)
+    pd.testing.assert_index_equal(pd.Index([88, 77, 99, 66], dtype="Int64"), sorted_df.index)
 
 
 def test_underlying_index_set(sample_df):
