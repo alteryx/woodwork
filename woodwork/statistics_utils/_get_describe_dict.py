@@ -89,12 +89,6 @@ def _get_describe_dict(
     """
     start_time = timer()
     unit = "calculations"
-    agg_stats_to_calculate = {
-        "category": ["count", "nunique"],
-        "numeric": ["count", "nunique", "mean", "std"],
-        Datetime: ["count", "max", "min", "nunique", "mean"],
-        Unknown: ["count", "nunique"],
-    }
     if include is not None:
         filtered_cols = dataframe.ww._filter_cols(include, col_names=True)
         cols_to_include = [
@@ -137,6 +131,16 @@ def _get_describe_dict(
         logical_type = column.logical_type
         semantic_tags = column.semantic_tags
         series = df[column_name]
+        percent_missing = series.isnull().sum() / len(series)
+
+        agg_stats_to_calculate = {
+            "category": ["count", "nunique"],
+            "numeric": ["count", "nunique", "mean", "std"]
+            if percent_missing < 0.1
+            else ["count", "nunique", "mean", "std", "max", "min"],
+            Datetime: ["count", "max", "min", "nunique", "mean"],
+            Unknown: ["count", "nunique"],
+        }
 
         # Calculate Aggregation Stats
         if column.is_categorical:
@@ -156,14 +160,32 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            series = series.sort_values(
-                ignore_index=True,
-            )
-            values["max"] = series.iat[int(values["count"] - 1)]
-            values["min"] = series.iat[0]
-            values["first_quartile"] = percentile(series, 0.25, int(values["count"]))
-            values["second_quartile"] = percentile(series, 0.5, int(values["count"]))
-            values["third_quartile"] = percentile(series, 0.75, int(values["count"]))
+            if percent_missing < 0.1:
+                series = series.sort_values(
+                    ignore_index=True,
+                )
+                values["max"] = series.iat[int(values["count"] - 1)]
+                values["min"] = series.iat[0]
+                values["first_quartile"] = percentile(
+                    series,
+                    0.25,
+                    int(values["count"]),
+                )
+                values["second_quartile"] = percentile(
+                    series,
+                    0.5,
+                    int(values["count"]),
+                )
+                values["third_quartile"] = percentile(
+                    series,
+                    0.75,
+                    int(values["count"]),
+                )
+            else:
+                quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
+                values["first_quartile"] = quant_values[0]
+                values["second_quartile"] = quant_values[1]
+                values["third_quartile"] = quant_values[2]
 
         mode = _get_mode(series)
         # The format of the mode should match its format in the DataFrame
