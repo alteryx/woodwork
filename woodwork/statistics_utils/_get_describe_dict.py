@@ -158,7 +158,7 @@ def _get_describe_dict(
         elif column.is_numeric:
             series = series.sort_values(
                 ignore_index=True,
-                key=lambda x: float("inf") if pd.isnull(x) is None else x,
+                key=lambda x: x.apply(lambda y: float("inf") if pd.isnull(y) else y),
             )
             values["max"] = series.iat[int(values["count"] - 1)]
             values["min"] = series.iat[0]
