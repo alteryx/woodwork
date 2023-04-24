@@ -136,7 +136,7 @@ def _get_describe_dict(
         agg_stats_to_calculate = {
             "category": ["count", "nunique"],
             "numeric": ["count", "nunique", "mean", "std"]
-            if percent_missing < 0.1
+            if percent_missing < 0.05
             else ["count", "nunique", "mean", "std", "max", "min"],
             Datetime: ["count", "max", "min", "nunique", "mean"],
             Unknown: ["count", "nunique"],
@@ -160,7 +160,7 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            if percent_missing < 0.1:
+            if percent_missing < 0.05:
                 series = series.sort_values(
                     ignore_index=True,
                 )
