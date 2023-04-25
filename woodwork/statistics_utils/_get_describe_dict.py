@@ -131,14 +131,10 @@ def _get_describe_dict(
         logical_type = column.logical_type
         semantic_tags = column.semantic_tags
         series = df[column_name]
-        percent_missing = series.isnull().sum() / len(series)
-        _use_manual_sort = percent_missing < 0.03
 
         agg_stats_to_calculate = {
             "category": ["count", "nunique"],
-            "numeric": ["count", "nunique", "mean", "std"]
-            if _use_manual_sort
-            else ["count", "nunique", "mean", "std", "max", "min"],
+            "numeric": ["count", "nunique", "mean", "std"],
             Datetime: ["count", "max", "min", "nunique", "mean"],
             Unknown: ["count", "nunique"],
         }
@@ -161,6 +157,8 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
+            percent_missing = 1 - (values["count"] / len(series))
+            _use_manual_sort = percent_missing < 0.05
             if _use_manual_sort:
                 series = series.sort_values(
                     ignore_index=True,
@@ -183,6 +181,7 @@ def _get_describe_dict(
                     int(values["count"]),
                 )
             else:
+                values.update(series.agg(["min", "max"]).to_dict())
                 quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
                 values["first_quartile"] = quant_values[0]
                 values["second_quartile"] = quant_values[1]
