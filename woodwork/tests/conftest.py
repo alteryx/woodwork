@@ -801,7 +801,7 @@ def latlong_df_dask(latlong_df_pandas):
     return dd.from_pandas(latlong_df_pandas, npartitions=1)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def latlong_df_spark(latlong_df_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
