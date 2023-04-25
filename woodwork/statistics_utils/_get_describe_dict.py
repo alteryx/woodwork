@@ -158,7 +158,7 @@ def _get_describe_dict(
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
             percent_missing = 1 - (values["count"] / len(series))
-            _use_manual_sort = percent_missing < 0.2
+            _use_manual_sort = percent_missing < 0.5
             if _use_manual_sort:
                 series = series.sort_values(
                     ignore_index=True,
