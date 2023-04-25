@@ -106,7 +106,7 @@ def test_ordinal_transform_pandas(ordinal_transform_series_pandas) -> None:
     ser_ = typ.transform(ordinal_transform_series_pandas)
 
     assert ser_.dtype == "category"
-    pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="Int64"))
+    pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="int64"))
 
 
 def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
