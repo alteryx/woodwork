@@ -152,14 +152,30 @@ def _get_describe_dict(
             agg_stats = ["count"]
         values = series.agg(agg_stats).to_dict()
 
+        mode = _get_mode(series)
+        # The format of the mode should match its format in the DataFrame
+        if _is_spark_dataframe(dataframe) and series.name in latlong_columns:
+            mode = list(mode)
+
+        if column.is_latlong:
+            nan_count = series.apply(_is_latlong_nan).sum()
+            count = len(series) - nan_count
+
+            values["nan_count"] = nan_count
+            values["count"] = count
+        else:
+            values["nan_count"] = series.isna().sum()
+
+        null_pct = values["nan_count"] / (values["nan_count"] + values["count"])
+        _use_manual_sort = null_pct < 0.05
+
         # Calculate other specific stats based on logical type or semantic tags
         if column.is_boolean:
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            percent_missing = 1 - (values["count"] / len(series))
-            _use_manual_sort = percent_missing < 0.5
-            if _use_manual_sort:
+            1 - (values["count"] / len(series))
+            if series.isna().sum():
                 series = series.sort_values(
                     ignore_index=True,
                 )
@@ -186,20 +202,6 @@ def _get_describe_dict(
                 values["first_quartile"] = quant_values[0]
                 values["second_quartile"] = quant_values[1]
                 values["third_quartile"] = quant_values[2]
-
-        mode = _get_mode(series)
-        # The format of the mode should match its format in the DataFrame
-        if _is_spark_dataframe(dataframe) and series.name in latlong_columns:
-            mode = list(mode)
-
-        if column.is_latlong:
-            nan_count = series.apply(_is_latlong_nan).sum()
-            count = len(series) - nan_count
-
-            values["nan_count"] = nan_count
-            values["count"] = count
-        else:
-            values["nan_count"] = series.isna().sum()
 
         values["mode"] = mode
         values["physical_type"] = series.dtype
