@@ -167,7 +167,7 @@ def _get_describe_dict(
             values["nan_count"] = series.isna().sum()
 
         null_pct = values["nan_count"] / (values["nan_count"] + values["count"])
-        _use_manual_sort = null_pct < 0.1
+        _use_manual_sort = null_pct < 0.05
 
         # Calculate other specific stats based on logical type or semantic tags
         if column.is_boolean:
