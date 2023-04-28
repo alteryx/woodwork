@@ -166,7 +166,6 @@ def _get_describe_dict(
         else:
             values["nan_count"] = series.isna().sum()
 
-        # null_pct = values["nan_count"] / (values["nan_count"] + values["count"])
         _use_manual_sort = values["nan_count"] == 0
 
         # Calculate other specific stats based on logical type or semantic tags
@@ -174,7 +173,6 @@ def _get_describe_dict(
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            1 - (values["count"] / len(series))
             if _use_manual_sort:
                 series = series.sort_values(
                     ignore_index=True,
