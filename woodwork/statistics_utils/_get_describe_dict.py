@@ -175,7 +175,7 @@ def _get_describe_dict(
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
             1 - (values["count"] / len(series))
-            if series.isna().sum():
+            if _use_manual_sort:
                 series = series.sort_values(
                     ignore_index=True,
                 )
