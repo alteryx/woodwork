@@ -134,7 +134,6 @@ def _get_describe_dict(
 
         agg_stats_to_calculate = {
             "category": ["count", "nunique"],
-            "numeric": ["count", "nunique", "mean", "std"],
             Datetime: ["count", "max", "min", "nunique", "mean"],
             Unknown: ["count", "nunique"],
         }
@@ -143,14 +142,16 @@ def _get_describe_dict(
         if column.is_categorical:
             agg_stats = agg_stats_to_calculate["category"]
         elif column.is_numeric:
-            agg_stats = agg_stats_to_calculate["numeric"]
+            agg_stats = None
         elif column.is_datetime:
             agg_stats = agg_stats_to_calculate[Datetime]
         elif column.is_unknown:
             agg_stats = agg_stats_to_calculate[Unknown]
         else:
             agg_stats = ["count"]
-        values = series.agg(agg_stats).to_dict()
+        values = {}
+        if agg_stats:
+            values = series.agg(agg_stats).to_dict()
 
         mode = _get_mode(series)
         # The format of the mode should match its format in the DataFrame
@@ -166,14 +167,14 @@ def _get_describe_dict(
         else:
             values["nan_count"] = series.isna().sum()
 
-        _use_manual_sort = values["nan_count"] == 0
-
         # Calculate other specific stats based on logical type or semantic tags
         if column.is_boolean:
             values["num_false"] = series.value_counts().get(False, 0)
             values["num_true"] = series.value_counts().get(True, 0)
         elif column.is_numeric:
-            if _use_manual_sort:
+            if values["nan_count"] == 0:
+                agg_stats = ["count", "nunique", "mean", "std"]
+                values.update(series.agg(agg_stats).to_dict())
                 series = series.sort_values(
                     ignore_index=True,
                 )
@@ -195,7 +196,8 @@ def _get_describe_dict(
                     int(values["count"]),
                 )
             else:
-                values.update(series.agg(["min", "max"]).to_dict())
+                agg_stats = ["count", "max", "min", "nunique", "mean", "std"]
+                values.update(series.agg(agg_stats).to_dict())
                 quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
                 values["first_quartile"] = quant_values[0]
                 values["second_quartile"] = quant_values[1]
