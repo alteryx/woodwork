@@ -22,4 +22,4 @@ def _get_numeric_value_counts_in_range(series, _range):
         }
         for i in _range
     ]
-    return sorted(value_counts, key=lambda i: -i["count"])
+    return sorted(value_counts, key=lambda i: (-i["count"], i["value"]))
