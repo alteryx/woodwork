@@ -1126,6 +1126,37 @@ def test_describe_accessor_method(describe_df):
         assert expected_vals.equals(stats_df["numeric_col"].dropna())
 
     # Test numeric with non-nullable ltypes
+    numeric_data = describe_df[["numeric_col"]].dropna()
+    for ltype in nullable_numeric_ltypes:
+        expected_vals = pd.Series(
+            {
+                "physical_type": ltype.primary_dtype,
+                "logical_type": ltype(),
+                "semantic_tags": {"numeric", "custom_tag"},
+                "count": 7,
+                "nunique": 6,
+                "nan_count": 0,
+                "mean": 20.857142857142858,
+                "mode": 10,
+                "std": 18.27957486220227,
+                "min": 1,
+                "first_quartile": 10,
+                "second_quartile": 17,
+                "third_quartile": 26,
+                "max": 56,
+            },
+            name="numeric_col",
+        )
+        numeric_data.ww.init(
+            logical_types={"numeric_col": ltype},
+            semantic_tags={"numeric_col": "custom_tag"},
+        )
+        stats_df = numeric_data.ww.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {"numeric_col"}
+        assert stats_df.index.tolist() == expected_index
+        assert expected_vals.equals(stats_df["numeric_col"].dropna())
+
     numeric_data = describe_df[["numeric_col"]].fillna(0)
     for ltype in non_nullable_numeric_ltypes:
         expected_vals = pd.Series(
