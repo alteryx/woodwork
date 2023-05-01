@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Sequence
 import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.logical_types import Datetime, LatLong, Unknown
+from woodwork.logical_types import Datetime, Integer, IntegerNullable, LatLong, Unknown
 from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
 from woodwork.statistics_utils._get_mode import _get_mode
 from woodwork.statistics_utils._get_numeric_value_counts_in_range import (
@@ -166,16 +166,16 @@ def _get_describe_dict(
                     values["top_values"] = []
                 else:
                     values["histogram"] = _get_histogram_values(series, bins=bins)
-                    _range = range(int(values["min"]), int(values["max"]) + 1)
-                    # Calculate top numeric values if range of values present
-                    # is less than or equal number of histogram bins and series
-                    # contains only integer values
-                    range_len = int(values["max"]) + 1 - int(values["min"])
-                    if range_len <= bins and (series % 1 == 0).all():
-                        values["top_values"] = _get_numeric_value_counts_in_range(
-                            series,
-                            _range,
-                        )
+                    if isinstance(column.logical_type, (Integer, IntegerNullable)):
+                        _range = range(int(values["min"]), int(values["max"]) + 1)
+                        # Calculate top numeric values if range of values present
+                        # is less than or equal number of histogram bins
+                        range_len = int(values["max"]) + 1 - int(values["min"])
+                        if range_len <= bins and (series % 1 == 0).all():
+                            values["top_values"] = _get_numeric_value_counts_in_range(
+                                series,
+                                _range,
+                            )
             elif column.is_categorical:
                 values["top_values"] = _get_top_values_categorical(series, top_x)
             elif column.is_datetime:

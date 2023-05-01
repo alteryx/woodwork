@@ -1423,7 +1423,7 @@ def test_describe_dict_extra_stats(describe_df):
     ]:
         assert isinstance(desc_dict[col]["histogram"], list)
         assert desc_dict[col].get("recent_values") is None
-        if col in {"small_range_col", "small_range_col_ints_as_double"}:
+        if col in {"small_range_col"}:
             # If values are in a narrow range, top values should be present
             assert isinstance(desc_dict[col]["top_values"], list)
         else:
@@ -1456,7 +1456,10 @@ def test_describe_dict_extra_stats_overflow_range(
     assert not mock_get_numeric_value_counts_in_range.called
 
     # Confirm we actually have the ability to make it into that block
-    describe_df["small_range_col"] = describe_df["numeric_col"].fillna(0) // 10
+    # by shrinking the range and keeping the integer values
+    describe_df["small_range_col"] = (
+        describe_df["numeric_col"].fillna(0) // 10
+    ).astype("Int64")
     describe_df.ww.init(index="index_col")
     describe_df.ww.describe_dict(extra_stats=True)
     assert mock_get_numeric_value_counts_in_range.called
