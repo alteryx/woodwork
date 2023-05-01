@@ -1369,7 +1369,8 @@ def test_describe_callback(describe_df, mock_callback):
     assert mock_callback.total_elapsed_time > 0
 
 
-def test_describe_dict_extra_stats(describe_df):
+@pytest.mark.parametrize("use_age", [True, False])
+def test_describe_dict_extra_stats(use_age, describe_df):
     describe_df = describe_df.drop(
         columns=[
             "boolean_col",
@@ -1399,6 +1400,17 @@ def test_describe_dict_extra_stats(describe_df):
         "small_range_col_ints_as_double": "Double",
         "small_range_col_double_not_valid": "Double",
     }
+    if use_age:
+        ltypes.update(
+            {
+                "numeric_col": "AgeFractional",
+                "nullable_integer_col": "AgeNullable",
+                "integer_col": "Age",
+                "small_range_col": "Age",
+                "small_range_col_ints_as_double": "AgeFractional",
+                "small_range_col_double_not_valid": "AgeFractional",
+            },
+        )
     describe_df.ww.init(index="index_col", logical_types=ltypes)
     desc_dict = describe_df.ww.describe_dict(extra_stats=True)
 

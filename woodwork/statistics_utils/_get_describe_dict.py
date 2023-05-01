@@ -4,7 +4,15 @@ from typing import Any, Callable, Dict, Sequence
 import pandas as pd
 
 from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
-from woodwork.logical_types import Datetime, Integer, IntegerNullable, LatLong, Unknown
+from woodwork.logical_types import (
+    Age,
+    AgeNullable,
+    Datetime,
+    Integer,
+    IntegerNullable,
+    LatLong,
+    Unknown,
+)
 from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
 from woodwork.statistics_utils._get_mode import _get_mode
 from woodwork.statistics_utils._get_numeric_value_counts_in_range import (
@@ -166,7 +174,10 @@ def _get_describe_dict(
                     values["top_values"] = []
                 else:
                     values["histogram"] = _get_histogram_values(series, bins=bins)
-                    if isinstance(column.logical_type, (Integer, IntegerNullable)):
+                    if isinstance(
+                        column.logical_type,
+                        (Age, AgeNullable, Integer, IntegerNullable),
+                    ):
                         _range = range(int(values["min"]), int(values["max"]) + 1)
                         # Calculate top numeric values if range of values present
                         # is less than or equal number of histogram bins
