@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Generate ISO timestamp
         run: |
-          TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3Z")
+          echo "TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3Z")" >> $GITHUB_ENV
       - name: Checkout woodwork
         uses: actions/checkout@v3
         with:
@@ -51,6 +51,6 @@ jobs:
                   "woodwork_branch_new": "${{ steps.get_hashes.outputs.current_hash }}",
                   "username": "${{ secrets.AIRFLOW_WW_USER }}"
                 },
-            "logical_date": "$(TIMESTAMP)",
-            "dag_run_id": "api_woodwork_run_tests_generate_report_$(TIMESTAMP)"
+            "logical_date": "${{ env.TIMESTAMP }}",
+            "dag_run_id": "api_woodwork_run_tests_generate_report_${{ env.TIMESTAMP }}"
           }'
