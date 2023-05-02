@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - lg_airflow_merge_perf_tests
 
 jobs:
   performance_tests:
