@@ -8,13 +8,14 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Stopped calculating ``top_values`` for Double columns with integer values (:pr:`1692`)
     * Documentation Changes
     * Testing Changes
         * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1678`)
-        
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
-    
+    :user:`gsheni`, :user:`tamargrey`
+
 v0.23.0 April 12, 2023
 ======================
     * Fixes
