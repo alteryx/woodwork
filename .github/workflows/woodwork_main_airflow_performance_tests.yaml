@@ -7,7 +7,7 @@ on:
 
 jobs:
   performance_tests:
-    name: Run looking glass performance tests
+    name: Run looking glass performance tests via airflow
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
