@@ -1,0 +1,55 @@
+name: Run looking glass performance tests via Airflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  performance_tests:
+    name: Run looking glass performance tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+      - name: Generate ISO timestamp
+        run: |
+          TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S.%3Z")
+      - name: Checkout woodwork
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Get commit hashes
+        id: get_hashes
+        run: |
+          current_hash=$(git rev-parse --short HEAD)
+          echo "Latest commit hash: $current_hash"
+          echo "::set-output name=current_hash::$current_hash"
+          previous_hash=$(git rev-parse --short HEAD~1)
+          echo "Previous commit hash: $previous_hash"
+          echo "::set-output name=previous_hash::$previous_hash"
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Run airflow tests and generate report
+        run: | 
+          curl --location --request POST '${{ secrets.AIRFLOW_BASE_URL }}dags/woodwork_run_tests_generate_report/dagRuns' \
+          -u '${{ secrets.AIRFLOW_WW_USER }}:${{ secrets.AIRFLOW_WW_PASS }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "conf": {
+                  "description": null,
+                  "lg_branch": "lg_baton_airflow",
+                  "n_trials": 1,
+                  "pytest_args": {},
+                  "python_version": "3.8",
+                  "scenario_count_limit": null,
+                  "scenarios_yaml": "woodwork_scenarios.yaml",
+                  "woodwork_branch_previous": "${{ steps.get_hashes.outputs.previous_hash }}",
+                  "woodwork_branch_new": "${{ steps.get_hashes.outputs.current_hash }}",
+                  "username": "${{ secrets.AIRFLOW_WW_USER }}"
+                },
+            "logical_date": "$(TIMESTAMP)",
+            "dag_run_id": "api_woodwork_run_tests_generate_report_$(TIMESTAMP)"
+          }'
