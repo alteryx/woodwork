@@ -23,12 +23,10 @@ jobs:
       - name: Get commit hashes
         id: get_hashes
         run: |
-          current_hash=$(git rev-parse --short HEAD)
-          echo "Latest commit hash: $current_hash"
-          echo "::set-output name=current_hash::$current_hash"
-          previous_hash=$(git rev-parse --short HEAD~1)
-          echo "Previous commit hash: $previous_hash"
-          echo "::set-output name=previous_hash::$previous_hash"
+          echo "CURRENT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "Latest commit hash: ${{ env.CURRENT_HASH }}"
+          echo "PREVIOUS_HASH=$(git rev-parse --short HEAD~1)" >> $GITHUB_ENV
+          echo "Previous commit hash: ${{ env.PREVIOUS_HASH }}"
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
@@ -47,8 +45,8 @@ jobs:
                   "python_version": "3.8",
                   "scenario_count_limit": null,
                   "scenarios_yaml": "woodwork_scenarios.yaml",
-                  "woodwork_branch_previous": "${{ steps.get_hashes.outputs.previous_hash }}",
-                  "woodwork_branch_new": "${{ steps.get_hashes.outputs.current_hash }}",
+                  "woodwork_branch_previous": "${{ env.PREVIOUS_HASH }}",
+                  "woodwork_branch_new": "${{ env.CURRENT_HASH }}",
                   "username": "${{ secrets.AIRFLOW_WW_USER }}"
                 },
             "logical_date": "${{ env.TIMESTAMP }}",
