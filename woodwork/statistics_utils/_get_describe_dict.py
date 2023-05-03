@@ -28,6 +28,8 @@ from woodwork.utils import CallbackCaller, _is_latlong_nan
 
 def percentile(N, percent, count):
     """
+    Source: https://stackoverflow.com/questions/2374640/how-do-i-calculate-percentiles-with-python-numpy/2753343#2753343
+
     Find the percentile of a list of values.
 
     Args:
