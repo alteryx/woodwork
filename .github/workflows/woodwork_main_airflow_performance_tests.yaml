@@ -48,7 +48,7 @@ jobs:
                   "woodwork_branch_previous": "${{ env.PREVIOUS_HASH }}",
                   "woodwork_branch_new": "${{ env.CURRENT_HASH }}",
                   "username": "${{ secrets.AIRFLOW_WW_USER }}",
-                  "author": "${{ github.event.head_commit.author.name }}""
+                  "author": "${{ github.event.head_commit.author.name }}"
                 },
             "logical_date": "${{ env.TIMESTAMP }}",
             "dag_run_id": "api_woodwork_run_tests_generate_report_${{ env.TIMESTAMP }}"
