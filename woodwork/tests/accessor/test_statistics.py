@@ -1250,7 +1250,6 @@ def test_percentile_func_not_called_with_nans(
     describe_df,
     nullable_numeric_type,
 ):
-    # Test numeric columns with nullable ltypes
     numeric_data = describe_df[["numeric_col"]]
     numeric_data.ww.init(
         logical_types={"numeric_col": nullable_numeric_type},
