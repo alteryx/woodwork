@@ -100,7 +100,7 @@ def sample_df_dask(sample_df_pandas):
     return dd.from_pandas(sample_df_pandas, npartitions=1)
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def sample_df_spark(sample_df_pandas):
     ps = pytest.importorskip(
         "pyspark.pandas",
