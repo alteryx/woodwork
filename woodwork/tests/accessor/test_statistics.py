@@ -1241,22 +1241,28 @@ def test_describe_accessor_method(describe_df):
 
 
 @patch.object(sys.modules["woodwork.statistics_utils._get_describe_dict"], "percentile")
-def test_percentile_func_not_called(mock_percentile, describe_df):
-    nullable_numeric_ltypes = [Double, IntegerNullable, AgeNullable, AgeFractional]
+@pytest.mark.parametrize(
+    "nullable_numeric_type",
+    [Double, IntegerNullable, AgeNullable, AgeFractional],
+)
+def test_percentile_func_not_called_with_nans(
+    mock_percentile,
+    describe_df,
+    nullable_numeric_type,
+):
     # Test numeric columns with nullable ltypes
     numeric_data = describe_df[["numeric_col"]]
-    for ltype in nullable_numeric_ltypes:
-        numeric_data.ww.init(
-            logical_types={"numeric_col": ltype},
-            semantic_tags={"numeric_col": "custom_tag"},
-        )
-        numeric_data.ww.describe()
-        assert not mock_percentile.called
+    numeric_data.ww.init(
+        logical_types={"numeric_col": nullable_numeric_type},
+        semantic_tags={"numeric_col": "custom_tag"},
+    )
+    numeric_data.ww.describe()
+    assert not mock_percentile.called
 
 
 @patch.object(sys.modules["woodwork.statistics_utils._get_describe_dict"], "percentile")
 @pytest.mark.parametrize("non_nullable_numeric_type", [Integer, Age])
-def test_percentile_func_called(
+def test_percentile_func_called_without_nans(
     mock_percentile,
     describe_df,
     non_nullable_numeric_type,
