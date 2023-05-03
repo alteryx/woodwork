@@ -1256,7 +1256,7 @@ def test_percentile_func_usage(mock_percentile, describe_df):
 
     # Test numeric with non-nullable ltypes
     numeric_data = describe_df[["numeric_col"]].dropna()
-    for ltype in nullable_numeric_ltypes:
+    for ltype in non_nullable_numeric_ltypes:
         numeric_data.ww.init(
             logical_types={"numeric_col": ltype},
             semantic_tags={"numeric_col": "custom_tag"},
