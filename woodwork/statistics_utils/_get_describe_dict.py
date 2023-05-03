@@ -1,3 +1,4 @@
+import math
 from timeit import default_timer as timer
 from typing import Any, Callable, Dict, Sequence
 
@@ -23,6 +24,30 @@ from woodwork.statistics_utils._get_top_values_categorical import (
     _get_top_values_categorical,
 )
 from woodwork.utils import CallbackCaller, _is_latlong_nan
+
+
+def percentile(N, percent, count):
+    """
+    Source: https://stackoverflow.com/questions/2374640/how-do-i-calculate-percentiles-with-python-numpy/2753343#2753343
+
+    Find the percentile of a list of values.
+
+    Args:
+        N (pd.Series): Series is a list of values. Note N MUST BE already sorted.
+        percent (float): float value from 0.0 to 1.0.
+        count (int): Count of values in series
+
+    Returns:
+        Value at percentile.
+    """
+    k = (count - 1) * percent
+    f = math.floor(k)
+    c = math.ceil(k)
+    if f == c:
+        return N[int(k)]
+    d0 = N.iat[int(f)] * (c - k)
+    d1 = N.iat[int(c)] * (k - f)
+    return d0 + d1
 
 
 def _get_describe_dict(
@@ -75,12 +100,6 @@ def _get_describe_dict(
     """
     start_time = timer()
     unit = "calculations"
-    agg_stats_to_calculate = {
-        "category": ["count", "nunique"],
-        "numeric": ["count", "max", "min", "nunique", "mean", "std"],
-        Datetime: ["count", "max", "min", "nunique", "mean"],
-        Unknown: ["count", "nunique"],
-    }
     if include is not None:
         filtered_cols = dataframe.ww._filter_cols(include, col_names=True)
         cols_to_include = [
@@ -124,28 +143,26 @@ def _get_describe_dict(
         semantic_tags = column.semantic_tags
         series = df[column_name]
 
+        agg_stats_to_calculate = {
+            "category": ["count", "nunique"],
+            Datetime: ["count", "max", "min", "nunique", "mean"],
+            Unknown: ["count", "nunique"],
+        }
+
         # Calculate Aggregation Stats
         if column.is_categorical:
             agg_stats = agg_stats_to_calculate["category"]
         elif column.is_numeric:
-            agg_stats = agg_stats_to_calculate["numeric"]
+            agg_stats = None
         elif column.is_datetime:
             agg_stats = agg_stats_to_calculate[Datetime]
         elif column.is_unknown:
             agg_stats = agg_stats_to_calculate[Unknown]
         else:
             agg_stats = ["count"]
-        values = series.agg(agg_stats).to_dict()
-
-        # Calculate other specific stats based on logical type or semantic tags
-        if column.is_boolean:
-            values["num_false"] = series.value_counts().get(False, 0)
-            values["num_true"] = series.value_counts().get(True, 0)
-        elif column.is_numeric:
-            quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
-            values["first_quartile"] = quant_values[0]
-            values["second_quartile"] = quant_values[1]
-            values["third_quartile"] = quant_values[2]
+        values = {}
+        if agg_stats:
+            values = series.agg(agg_stats).to_dict()
 
         mode = _get_mode(series)
         # The format of the mode should match its format in the DataFrame
@@ -160,6 +177,42 @@ def _get_describe_dict(
             values["count"] = count
         else:
             values["nan_count"] = series.isna().sum()
+
+        # Calculate other specific stats based on logical type or semantic tags
+        if column.is_boolean:
+            values["num_false"] = series.value_counts().get(False, 0)
+            values["num_true"] = series.value_counts().get(True, 0)
+        elif column.is_numeric:
+            if values["nan_count"] == 0:
+                agg_stats = ["count", "nunique", "mean", "std"]
+                values.update(series.agg(agg_stats).to_dict())
+                series = series.sort_values(
+                    ignore_index=True,
+                )
+                values["max"] = series.iat[int(values["count"] - 1)]
+                values["min"] = series.iat[0]
+                values["first_quartile"] = percentile(
+                    series,
+                    0.25,
+                    int(values["count"]),
+                )
+                values["second_quartile"] = percentile(
+                    series,
+                    0.5,
+                    int(values["count"]),
+                )
+                values["third_quartile"] = percentile(
+                    series,
+                    0.75,
+                    int(values["count"]),
+                )
+            else:
+                agg_stats = ["count", "max", "min", "nunique", "mean", "std"]
+                values.update(series.agg(agg_stats).to_dict())
+                quant_values = series.quantile([0.25, 0.5, 0.75]).tolist()
+                values["first_quartile"] = quant_values[0]
+                values["second_quartile"] = quant_values[1]
+                values["third_quartile"] = quant_values[2]
 
         values["mode"] = mode
         values["physical_type"] = series.dtype
