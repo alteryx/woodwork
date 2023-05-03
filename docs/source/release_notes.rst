@@ -9,12 +9,13 @@ Future Release
         * Removed repeated sorting for numeric data in ``_get_describe_dict`` to improve performance (:pr:`1682`)
     * Fixes
     * Changes
+        * Stopped calculating ``top_values`` for Double columns with integer values (:pr:`1692`)
     * Documentation Changes
     * Testing Changes
         * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1678`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`simha104`
+    :user:`gsheni`, :user:`simha104`, :user:`tamargrey`
 
 v0.23.0 April 12, 2023
 ======================
