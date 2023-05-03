@@ -37,7 +37,8 @@ def percentile(N, percent, count):
         percent (float): float value from 0.0 to 1.0.
         count (int): Count of values in series
 
-    @return - the percentile of the values
+    Returns:
+        Value at percentile.
     """
     k = (count - 1) * percent
     f = math.floor(k)
