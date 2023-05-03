@@ -1369,7 +1369,8 @@ def test_describe_callback(describe_df, mock_callback):
     assert mock_callback.total_elapsed_time > 0
 
 
-def test_describe_dict_extra_stats(describe_df):
+@pytest.mark.parametrize("use_age", [True, False])
+def test_describe_dict_extra_stats(use_age, describe_df):
     describe_df = describe_df.drop(
         columns=[
             "boolean_col",
@@ -1399,6 +1400,17 @@ def test_describe_dict_extra_stats(describe_df):
         "small_range_col_ints_as_double": "Double",
         "small_range_col_double_not_valid": "Double",
     }
+    if use_age:
+        ltypes.update(
+            {
+                "numeric_col": "AgeFractional",
+                "nullable_integer_col": "AgeNullable",
+                "integer_col": "Age",
+                "small_range_col": "Age",
+                "small_range_col_ints_as_double": "AgeFractional",
+                "small_range_col_double_not_valid": "AgeFractional",
+            },
+        )
     describe_df.ww.init(index="index_col", logical_types=ltypes)
     desc_dict = describe_df.ww.describe_dict(extra_stats=True)
 
@@ -1423,7 +1435,7 @@ def test_describe_dict_extra_stats(describe_df):
     ]:
         assert isinstance(desc_dict[col]["histogram"], list)
         assert desc_dict[col].get("recent_values") is None
-        if col in {"small_range_col", "small_range_col_ints_as_double"}:
+        if col in {"small_range_col"}:
             # If values are in a narrow range, top values should be present
             assert isinstance(desc_dict[col]["top_values"], list)
         else:
@@ -1456,7 +1468,10 @@ def test_describe_dict_extra_stats_overflow_range(
     assert not mock_get_numeric_value_counts_in_range.called
 
     # Confirm we actually have the ability to make it into that block
-    describe_df["small_range_col"] = describe_df["numeric_col"].fillna(0) // 10
+    # by shrinking the range and keeping the integer values
+    describe_df["small_range_col"] = (
+        describe_df["numeric_col"].fillna(0) // 10
+    ).astype("Int64")
     describe_df.ww.init(index="index_col")
     describe_df.ww.describe_dict(extra_stats=True)
     assert mock_get_numeric_value_counts_in_range.called
