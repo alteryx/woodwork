@@ -11,9 +11,10 @@ Future Release
     * Documentation Changes
     * Testing Changes
         * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1678`)
+        * Run looking glass performance tests on merge via Airflow (:pr:`1695`)
         
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`petejanuszewski1`
     
 v0.23.0 April 12, 2023
 ======================
