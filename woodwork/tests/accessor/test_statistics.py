@@ -1126,6 +1126,37 @@ def test_describe_accessor_method(describe_df):
         assert expected_vals.equals(stats_df["numeric_col"].dropna())
 
     # Test numeric with non-nullable ltypes
+    numeric_data = describe_df[["numeric_col"]].dropna()
+    for ltype in nullable_numeric_ltypes:
+        expected_vals = pd.Series(
+            {
+                "physical_type": ltype.primary_dtype,
+                "logical_type": ltype(),
+                "semantic_tags": {"numeric", "custom_tag"},
+                "count": 7,
+                "nunique": 6,
+                "nan_count": 0,
+                "mean": 20.857142857142858,
+                "mode": 10,
+                "std": 18.27957486220227,
+                "min": 1,
+                "first_quartile": 10,
+                "second_quartile": 17,
+                "third_quartile": 26,
+                "max": 56,
+            },
+            name="numeric_col",
+        )
+        numeric_data.ww.init(
+            logical_types={"numeric_col": ltype},
+            semantic_tags={"numeric_col": "custom_tag"},
+        )
+        stats_df = numeric_data.ww.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {"numeric_col"}
+        assert stats_df.index.tolist() == expected_index
+        assert expected_vals.equals(stats_df["numeric_col"].dropna())
+
     numeric_data = describe_df[["numeric_col"]].fillna(0)
     for ltype in non_nullable_numeric_ltypes:
         expected_vals = pd.Series(
@@ -1207,6 +1238,41 @@ def test_describe_accessor_method(describe_df):
         assert set(stats_df.columns) == {"latlong_col"}
         assert stats_df.index.tolist() == expected_index
         assert expected_vals.equals(stats_df["latlong_col"].dropna())
+
+
+@patch.object(sys.modules["woodwork.statistics_utils._get_describe_dict"], "percentile")
+@pytest.mark.parametrize(
+    "nullable_numeric_type",
+    [Double, IntegerNullable, AgeNullable, AgeFractional],
+)
+def test_percentile_func_not_called_with_nans(
+    mock_percentile,
+    describe_df,
+    nullable_numeric_type,
+):
+    numeric_data = describe_df[["numeric_col"]]
+    numeric_data.ww.init(
+        logical_types={"numeric_col": nullable_numeric_type},
+        semantic_tags={"numeric_col": "custom_tag"},
+    )
+    numeric_data.ww.describe()
+    assert not mock_percentile.called
+
+
+@patch.object(sys.modules["woodwork.statistics_utils._get_describe_dict"], "percentile")
+@pytest.mark.parametrize("non_nullable_numeric_type", [Integer, Age])
+def test_percentile_func_called_without_nans(
+    mock_percentile,
+    describe_df,
+    non_nullable_numeric_type,
+):
+    numeric_data = describe_df[["numeric_col"]].fillna(0)
+    numeric_data.ww.init(
+        logical_types={"numeric_col": non_nullable_numeric_type},
+        semantic_tags={"numeric_col": "custom_tag"},
+    )
+    numeric_data.ww.describe()
+    assert mock_percentile.called
 
 
 def test_describe_with_improper_tags(describe_df):
@@ -1369,7 +1435,8 @@ def test_describe_callback(describe_df, mock_callback):
     assert mock_callback.total_elapsed_time > 0
 
 
-def test_describe_dict_extra_stats(describe_df):
+@pytest.mark.parametrize("use_age", [True, False])
+def test_describe_dict_extra_stats(use_age, describe_df):
     describe_df = describe_df.drop(
         columns=[
             "boolean_col",
@@ -1399,6 +1466,17 @@ def test_describe_dict_extra_stats(describe_df):
         "small_range_col_ints_as_double": "Double",
         "small_range_col_double_not_valid": "Double",
     }
+    if use_age:
+        ltypes.update(
+            {
+                "numeric_col": "AgeFractional",
+                "nullable_integer_col": "AgeNullable",
+                "integer_col": "Age",
+                "small_range_col": "Age",
+                "small_range_col_ints_as_double": "AgeFractional",
+                "small_range_col_double_not_valid": "AgeFractional",
+            },
+        )
     describe_df.ww.init(index="index_col", logical_types=ltypes)
     desc_dict = describe_df.ww.describe_dict(extra_stats=True)
 
@@ -1423,7 +1501,7 @@ def test_describe_dict_extra_stats(describe_df):
     ]:
         assert isinstance(desc_dict[col]["histogram"], list)
         assert desc_dict[col].get("recent_values") is None
-        if col in {"small_range_col", "small_range_col_ints_as_double"}:
+        if col in {"small_range_col"}:
             # If values are in a narrow range, top values should be present
             assert isinstance(desc_dict[col]["top_values"], list)
         else:
@@ -1456,7 +1534,10 @@ def test_describe_dict_extra_stats_overflow_range(
     assert not mock_get_numeric_value_counts_in_range.called
 
     # Confirm we actually have the ability to make it into that block
-    describe_df["small_range_col"] = describe_df["numeric_col"].fillna(0) // 10
+    # by shrinking the range and keeping the integer values
+    describe_df["small_range_col"] = (
+        describe_df["numeric_col"].fillna(0) // 10
+    ).astype("Int64")
     describe_df.ww.init(index="index_col")
     describe_df.ww.describe_dict(extra_stats=True)
     assert mock_get_numeric_value_counts_in_range.called
