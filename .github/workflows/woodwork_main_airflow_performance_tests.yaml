@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - lg_airflow_merge_perf_tests
 
 jobs:
   performance_tests:
@@ -26,10 +27,6 @@ jobs:
           echo "Latest commit hash: ${{ env.CURRENT_HASH }}"
           echo "PREVIOUS_HASH=$(git rev-parse --short HEAD~1)" >> $GITHUB_ENV
           echo "Previous commit hash: ${{ env.PREVIOUS_HASH }}"
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.8"
       - name: Run airflow tests and generate report
         run: | 
           curl --location --request POST '${{ secrets.AIRFLOW_BASE_URL }}dags/woodwork_run_tests_generate_report/dagRuns' \
