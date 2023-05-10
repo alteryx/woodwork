@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Removed repeated sorting for numeric data in ``_get_describe_dict`` to improve performance (:pr:`1682`)
-        * Added an ``exclude_time_index`` argument when calculating dependence measures (:pr:`1691`)
+        * Added an ``exclude_time_index`` argument when calculating dependence measures (:pr:`1698`)
     * Fixes
     * Changes
         * Stopped calculating ``top_values`` for Double columns with integer values (:pr:`1692`)
