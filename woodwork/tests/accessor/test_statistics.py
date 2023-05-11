@@ -300,6 +300,23 @@ def test_dependence_on_index(sample_df, measure):
     assert "id" in dep_df["column_1"].values or "id" in dep_df["column_2"].values
 
 
+@pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
+def test_dependence_on_time_index(sample_df, measure):
+    sample_df.ww.init(time_index="signup_date")
+    dep_df = sample_df.ww.dependence(measures=measure, min_shared=3)
+
+    assert not (
+        "signup_date" in dep_df["column_1"].values
+        or "signup_date" in dep_df["column_2"].values
+    )
+
+    dep_df = sample_df.ww.dependence(measures=measure, include_time_index=True)
+    assert (
+        "signup_date" in dep_df["column_1"].values
+        or "signup_date" in dep_df["column_2"].values
+    )
+
+
 def test_max_is_nan_extra_stats(sample_df):
     sample_df.ww.init(index="id")
     dep_df = sample_df.ww.dependence(measures="max", min_shared=3, extra_stats=True)
@@ -674,6 +691,7 @@ def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.pearson_correlation_dict(
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -685,6 +703,7 @@ def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
         measures=["pearson"],
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -698,6 +717,7 @@ def test_pearson_method(df_mi, mock_callback):
         df_mi.ww.pearson_correlation(
             nrows=100,
             include_index=True,
+            include_time_index=True,
             callback=mock_callback,
             extra_stats=True,
             min_shared=25,
@@ -707,6 +727,7 @@ def test_pearson_method(df_mi, mock_callback):
     pearson_dict_method.assert_called_with(
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -721,6 +742,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi, mock_callback):
         num_bins=5,
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -733,6 +755,7 @@ def test_mutual_dict(_get_dependence_dict, df_mi, mock_callback):
         num_bins=5,
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -748,6 +771,7 @@ def test_mutual(df_mi, mock_callback):
             num_bins=5,
             nrows=100,
             include_index=True,
+            include_time_index=True,
             callback=mock_callback,
             extra_stats=True,
             min_shared=25,
@@ -758,6 +782,7 @@ def test_mutual(df_mi, mock_callback):
         num_bins=5,
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -772,6 +797,7 @@ def test_spearman_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.spearman_correlation_dict(
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -783,6 +809,7 @@ def test_spearman_dict(_get_dependence_dict, df_mi, mock_callback):
         measures=["spearman"],
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -796,6 +823,7 @@ def test_spearman(df_mi, mock_callback):
         df_mi.ww.spearman_correlation(
             nrows=100,
             include_index=True,
+            include_time_index=True,
             callback=mock_callback,
             extra_stats=True,
             min_shared=25,
@@ -805,6 +833,7 @@ def test_spearman(df_mi, mock_callback):
     mi_dict_method.assert_called_with(
         nrows=100,
         include_index=True,
+        include_time_index=True,
         callback=mock_callback,
         extra_stats=True,
         min_shared=25,
@@ -828,6 +857,15 @@ def test_get_valid_mi_columns_with_index(sample_df):
 
     mi = sample_df.ww.get_valid_mi_columns(include_index=True)
     assert "id" in mi
+
+
+def test_get_valid_mi_columns_with_time_index(sample_df):
+    sample_df.ww.init(time_index="signup_date")
+    mi = sample_df.ww.get_valid_mi_columns(include_time_index=False)
+    assert "signup_date" not in mi
+
+    mi = sample_df.ww.get_valid_mi_columns(include_time_index=True)
+    assert "signup_date" in mi
 
 
 def test_get_describe_dict(describe_df):
