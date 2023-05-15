@@ -3,6 +3,7 @@ from unittest.mock import patch
 import woodwork as ww
 from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
+    URL,
     Boolean,
     BooleanNullable,
     Categorical,
@@ -11,8 +12,10 @@ from woodwork.logical_types import (
     EmailAddress,
     Integer,
     IntegerNullable,
+    IPAddress,
     LogicalType,
     NaturalLanguage,
+    PhoneNumber,
     PostalCode,
     Timedelta,
     Unknown,
@@ -315,3 +318,36 @@ def test_inference_randomly_sampled(large_df, type_sys):
     assert isinstance(inferred_type, Double)
     inferred_type = large_df.ww.logical_types["constant"]
     assert isinstance(inferred_type, Unknown)
+
+
+def test_url_inference(urls):
+    dtypes = ["object", "string"]
+    if _is_spark_series(urls[0]):
+        dtypes = get_spark_dtypes(dtypes)
+
+    for series in urls:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, URL)
+
+
+def test_phone_inference(phone):
+    dtypes = ["object", "string"]
+    if _is_spark_series(phone[0]):
+        dtypes = get_spark_dtypes(dtypes)
+
+    for series in phone:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, PhoneNumber)
+
+
+def test_ip_inference(ip):
+    dtypes = ["object", "string"]
+    if _is_spark_series(ip[0]):
+        dtypes = get_spark_dtypes(dtypes)
+
+    for series in ip:
+        for dtype in dtypes:
+            inferred_type = ww.type_system.infer_logical_type(series.astype(dtype))
+            assert isinstance(inferred_type, IPAddress)
