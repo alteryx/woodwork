@@ -35,6 +35,7 @@ def _get_dependence_dict(
     num_bins=10,
     nrows=None,
     include_index=False,
+    include_time_index=False,
     callback=None,
     extra_stats=False,
     min_shared=25,
@@ -68,6 +69,9 @@ def _get_dependence_dict(
         include_index (bool): If True, the column specified as the index will be
             included as long as its LogicalType is valid for measuring dependence.
             If False, the index column will not be considered. Defaults to False.
+        include_time_index (bool): If True, the column specified as the time index will be
+            included for measuring dependence.
+            If False, the time index column will not be considered. Defaults to False.
         callback (callable, optional): function to be called with incremental updates. Has the following parameters:
 
             - update (int): change in progress since last call
@@ -146,8 +150,15 @@ def _get_dependence_dict(
         valid_columns = mutual_columns
 
     index = dataframe_with_bools_to_int.ww.index
+    time_index = dataframe_with_bools_to_int.ww.time_index
     if not include_index and index is not None and index in valid_columns:
         valid_columns.remove(index)
+    if (
+        not include_time_index
+        and time_index is not None
+        and time_index in valid_columns
+    ):
+        valid_columns.remove(time_index)
 
     data = dataframe_with_bools_to_int.loc[:, valid_columns]
     # cut off data if necessary

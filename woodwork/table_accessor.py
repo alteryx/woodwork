@@ -903,6 +903,7 @@ class WoodworkTableAccessor:
         num_bins=10,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -923,6 +924,10 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for mutual information calculations.
+                If False, the time index column will not have mutual information calculated for it.
                 Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
@@ -954,6 +959,7 @@ class WoodworkTableAccessor:
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -966,6 +972,7 @@ class WoodworkTableAccessor:
         num_bins=10,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -985,6 +992,10 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
+                Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for mutual information calculations.
+                If False, the time index column will not have mutual information calculated for it.
                 Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
@@ -1014,6 +1025,7 @@ class WoodworkTableAccessor:
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1027,6 +1039,7 @@ class WoodworkTableAccessor:
         self,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -1044,6 +1057,10 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for correlation calculations.
                 If False, the index column will not have the Pearson correlation calculated for it.
+                Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for correlation calculations.
+                If False, the time index column will not have the Pearson correlation calculated for it.
                 Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
@@ -1070,6 +1087,7 @@ class WoodworkTableAccessor:
             measures=["pearson"],
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1080,6 +1098,7 @@ class WoodworkTableAccessor:
         self,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -1096,6 +1115,10 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for correlation calculations.
                 If False, the index column will not have the Pearson correlation calculated for it.
+                Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for correlation calculations.
+                If False, the time index column will not have the Pearson correlation calculated for it.
                 Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
@@ -1120,6 +1143,7 @@ class WoodworkTableAccessor:
         pearson_dict = self.pearson_correlation_dict(
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1132,6 +1156,7 @@ class WoodworkTableAccessor:
         self,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -1149,6 +1174,10 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for correlation calculations.
                 If False, the index column will not have the Spearman correlation calculated for it.
+                Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for correlation calculations.
+                If False, the time index column will not have the Spearman correlation calculated for it.
                 Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
@@ -1175,6 +1204,7 @@ class WoodworkTableAccessor:
             measures=["spearman"],
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1185,6 +1215,7 @@ class WoodworkTableAccessor:
         self,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -1201,6 +1232,10 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for correlation calculations.
                 If False, the index column will not have the Spearman correlation calculated for it.
+                Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for correlation calculations.
+                If False, the time index column will not have the Spearman correlation calculated for it.
                 Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
                 - update (int): change in progress since last call
@@ -1225,6 +1260,7 @@ class WoodworkTableAccessor:
         spearman_dict = self.spearman_correlation_dict(
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1239,6 +1275,7 @@ class WoodworkTableAccessor:
         num_bins=10,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -1272,6 +1309,9 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for measuring dependence.
                 If False, the index column will not be considered. Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for measuring dependence.
+                If False, the time index column will not be considered. Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
 
                 - update (int): change in progress since last call
@@ -1310,6 +1350,7 @@ class WoodworkTableAccessor:
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1324,6 +1365,7 @@ class WoodworkTableAccessor:
         num_bins=10,
         nrows=None,
         include_index=False,
+        include_time_index=False,
         callback=None,
         extra_stats=False,
         min_shared=25,
@@ -1357,6 +1399,9 @@ class WoodworkTableAccessor:
             include_index (bool): If True, the column specified as the index will be
                 included as long as its LogicalType is valid for measuring dependence.
                 If False, the index column will not be considered. Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for measuring dependence.
+                If False, the time index column will not be considered. Defaults to False.
             callback (callable, optional): Function to be called with incremental updates. Has the following parameters:
 
                 - update (int): change in progress since last call
@@ -1396,6 +1441,7 @@ class WoodworkTableAccessor:
             num_bins=num_bins,
             nrows=nrows,
             include_index=include_index,
+            include_time_index=include_time_index,
             callback=callback,
             extra_stats=extra_stats,
             min_shared=min_shared,
@@ -1405,7 +1451,7 @@ class WoodworkTableAccessor:
         )
         return pd.DataFrame(dep_dict)
 
-    def get_valid_mi_columns(self, include_index=False):
+    def get_valid_mi_columns(self, include_index=False, include_time_index=False):
         """Retrieves a list of columns from the DataFrame with valid Logical Types that support mutual
         information. Call woodwork.utils.get_valid_mi_types to see which Logical Types support mutual information.
 
@@ -1414,11 +1460,15 @@ class WoodworkTableAccessor:
                 included as long as its LogicalType is valid for mutual information calculations.
                 If False, the index column will not have mutual information calculated for it.
                 Defaults to False.
+            include_time_index (bool): If True, the column specified as the time index will be
+                included for mutual information calculations.
+                If False, the time index column will not have mutual information calculated for it.
+                Defaults to False.
 
         Returns:
             list: A list of column names that have valid Logical Types that support mutual information.
         """
-        return _get_valid_mi_columns(self._dataframe, include_index)
+        return _get_valid_mi_columns(self._dataframe, include_index, include_time_index)
 
     @_check_table_schema
     def describe_dict(

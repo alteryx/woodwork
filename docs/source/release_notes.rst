@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Removed repeated sorting for numeric data in ``_get_describe_dict`` to improve performance (:pr:`1682`)
         * Improved inference for ``URL``, ``EmailAddress``, and other logical types by defining new parent-child relationships (:pr:`1702`)
+        * Added an ``include_time_index`` argument when calculating dependence measures (:pr:`1698`)
     * Fixes
     * Changes
         * Stopped calculating ``top_values`` for Double columns with integer values (:pr:`1692`)
