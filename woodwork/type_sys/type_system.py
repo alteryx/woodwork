@@ -405,13 +405,11 @@ class TypeSystem(object):
         types_to_check = [
             ltype for ltype in self.root_types if ltype != NaturalLanguage
         ]
-        print(types_to_check)
         series_nan_cast = _replace_nans(series)  # Will change dtype
         if series_nan_cast.count() == 0:
             return Unknown()
 
         type_matches = get_inference_matches(types_to_check, series_nan_cast)
-        print(type_matches)
         if len(type_matches) == 0:
             # Check if this is NaturalLanguage, otherwise set
             # type to default type (Unknown). Assume that a column
@@ -441,10 +439,8 @@ class TypeSystem(object):
             else:
                 best_match = type_matches[0]
             best_depth = self._get_depth(best_match)
-            print("match", best_match, best_depth)
             for logical_type in type_matches[1:]:
                 ltype_depth = self._get_depth(logical_type)
-                print("type", logical_type, ltype_depth)
                 if ltype_depth > best_depth:
                     best_match = logical_type
                     best_depth = ltype_depth
