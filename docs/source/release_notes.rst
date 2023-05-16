@@ -7,6 +7,7 @@ Future Release
 ==============
     * Enhancements
         * Removed repeated sorting for numeric data in ``_get_describe_dict`` to improve performance (:pr:`1682`)
+        * Improved inference for ``URL``, ``EmailAddress``, and other logical types by defining new parent-child relationships (:pr:`1702`)
         * Added an ``include_time_index`` argument when calculating dependence measures (:pr:`1698`)
     * Fixes
     * Changes
@@ -17,7 +18,7 @@ Future Release
         * Run looking glass performance tests on merge via Airflow (:pr:`1695`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`simha104`, :user:`tamargrey`, :user:`petejanuszewski1`
+    :user:`gsheni`, :user:`simha104`, :user:`tamargrey`, :user:`petejanuszewski1`, :user:`bchen1116`
 
 v0.23.0 April 12, 2023
 ======================

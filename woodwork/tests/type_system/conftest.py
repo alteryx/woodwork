@@ -129,6 +129,9 @@ def pandas_emails():
             ["fl@alteryx.com", "good@email.com", "boaty@mcboatface.com", "foo@bar.com"],
         ),
         pd.Series(["fl@alteryx.com", "good@email.com", "boaty@mcboatface.com", np.nan]),
+        pd.Series(
+            ["fl@alteryx.com", "good@email.com"] * 2,
+        ),
     ]
 
 
@@ -462,3 +465,90 @@ def type_sys(default_inference_functions, default_relationships):
         relationships=default_relationships,
         default_type=Unknown,
     )
+
+
+# URL Inference Fixtures
+@pytest.fixture
+def pandas_urls():
+    return [
+        pd.Series([f"http://url{i}.com" for i in range(100)]),
+        pd.Series(
+            [
+                "http://url.com",
+                "http://url.org",
+                "https://another.net",
+                "https://schoo.edu",
+            ]
+            * 25,
+        ),
+    ]
+
+
+@pytest.fixture
+def dask_urls(pandas_urls):
+    return [pd_to_dask(series) for series in pandas_urls]
+
+
+@pytest.fixture
+def spark_urls(pandas_urls):
+    return [pd_to_spark(series) for series in pandas_urls]
+
+
+@pytest.fixture(params=["pandas_urls", "dask_urls", "spark_urls"])
+def urls(request):
+    return request.getfixturevalue(request.param)
+
+
+# Phone Number Inference Fixtures
+@pytest.fixture
+def pandas_phone():
+    return [
+        pd.Series([f"200.200.786{i}" for i in range(9)]),
+        pd.Series(["311-311-3156", "(755) 755 7109", "+1(288)-288-7772"] * 3),
+    ]
+
+
+@pytest.fixture
+def dask_phone(pandas_phone):
+    return [pd_to_dask(series) for series in pandas_phone]
+
+
+@pytest.fixture
+def spark_phone(pandas_phone):
+    return [pd_to_spark(series) for series in pandas_phone]
+
+
+@pytest.fixture(params=["pandas_phone", "dask_phone", "spark_phone"])
+def phone(request):
+    return request.getfixturevalue(request.param)
+
+
+# IP Address Inference Fixtures
+@pytest.fixture
+def pandas_ip():
+    return [
+        pd.Series(
+            [
+                "172.16.254.1",
+                "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+                "1762:0:0:0:0:B03:1:AF18",
+            ]
+            * 2,
+        ),
+        pd.Series([f"172.16.254.{i}" for i in range(6)]),
+    ]
+
+
+@pytest.fixture
+def dask_ip(pandas_ip):
+    return [pd_to_dask(series) for series in pandas_ip]
+
+
+@pytest.fixture
+def spark_ip(pandas_ip):
+    return [pd_to_spark(series) for series in pandas_ip]
+
+
+@pytest.fixture(params=["pandas_ip", "dask_ip", "spark_ip"])
+def ip(request):
+    return request.getfixturevalue(request.param)

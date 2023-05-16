@@ -91,6 +91,12 @@ DEFAULT_RELATIONSHIPS = [
     (Integer, Age),
     (IntegerNullable, AgeNullable),
     (IntegerNullable, Integer),
+    (Unknown, EmailAddress),
+    (Unknown, IPAddress),
+    (Unknown, PhoneNumber),
+    (Unknown, PostalCode),
+    (Unknown, Timedelta),
+    (Unknown, URL),
 ]
 
 DEFAULT_TYPE = Unknown
