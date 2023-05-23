@@ -65,7 +65,7 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     EmailAddress: email_address_func,
     Filepath: None,
     PersonFullName: None,
-    Integer: integer_func,
+    Integer: None,
     IntegerNullable: integer_nullable_func,
     IPAddress: ip_address_func,
     LatLong: None,
