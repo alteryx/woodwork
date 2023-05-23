@@ -40,7 +40,6 @@ from woodwork.type_sys.inference_functions import (
     datetime_func,
     double_func,
     email_address_func,
-    integer_func,
     integer_nullable_func,
     ip_address_func,
     natural_language_func,
