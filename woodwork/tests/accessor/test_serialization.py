@@ -81,7 +81,6 @@ def test_to_dictionary(sample_df):
             "cat_dtype": "object",
         }
 
-    int_val = "int64"
     nullable_int_val = "Int64"
     string_val = "string"
     bool_val = "boolean"
@@ -97,8 +96,8 @@ def test_to_dictionary(sample_df):
                 "name": "id",
                 "ordinal": 0,
                 "use_standard_tags": True,
-                "logical_type": {"parameters": {}, "type": "Integer"},
-                "physical_type": {"type": int_val},
+                "logical_type": {"parameters": {}, "type": "IntegerNullable"},
+                "physical_type": {"type": nullable_int_val},
                 "semantic_tags": ["index", "tag1"],
                 "description": None,
                 "origin": None,
@@ -202,8 +201,8 @@ def test_to_dictionary(sample_df):
                 "name": "integer",
                 "ordinal": 9,
                 "use_standard_tags": True,
-                "logical_type": {"parameters": {}, "type": "Integer"},
-                "physical_type": {"type": int_val},
+                "logical_type": {"parameters": {}, "type": "IntegerNullable"},
+                "physical_type": {"type": nullable_int_val},
                 "semantic_tags": ["numeric"],
                 "description": None,
                 "origin": None,

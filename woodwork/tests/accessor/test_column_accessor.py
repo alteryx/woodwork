@@ -995,7 +995,7 @@ def test_series_methods_returning_frame_no_name(sample_series):
 
 
 EXPECTED_COLUMN_NULLABILITIES = {
-    "id": False,
+    "id": True,
     "full_name": True,
     "email": True,
     "phone_number": True,
@@ -1004,7 +1004,7 @@ EXPECTED_COLUMN_NULLABILITIES = {
     "is_registered": True,
     "double": True,
     "double_with_nan": True,
-    "integer": False,
+    "integer": True,
     "nullable_integer": True,
     "boolean": False,
     "categorical": True,
