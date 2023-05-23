@@ -33,7 +33,7 @@ jobs:
           df = ww.demo.load_retail(nrows=100, init_woodwork=False)
           df.ww.init(name="retail")
           logical_types = list({k: str(v) for k, v in df.ww.logical_types.items()}.values())
-          assert logical_types == ['Integer', 'Integer', 'Unknown', 'NaturalLanguage', 'Integer', 'Datetime', 'Double', 'Categorical', 'Categorical', 'Double', 'Boolean']
+          assert logical_types == ['IntegerNullable', 'IntegerNullable', 'Unknown', 'NaturalLanguage', 'IntegerNullable', 'Datetime', 'Double', 'Categorical', 'Categorical', 'Double', 'Boolean']
           filtered_df = df.ww.select(include=['numeric', 'Boolean'])
           assert filtered_df.shape == (100, 6)
         shell: python
