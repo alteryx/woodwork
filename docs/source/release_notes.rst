@@ -3,22 +3,30 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.24.0 May 24, 2023
+======================
     * Enhancements
         * Removed repeated sorting for numeric data in ``_get_describe_dict`` to improve performance (:pr:`1682`)
         * Improved inference for ``URL``, ``EmailAddress``, and other logical types by defining new parent-child relationships (:pr:`1702`)
         * Added an ``include_time_index`` argument when calculating dependence measures (:pr:`1698`)
-    * Fixes
     * Changes
         * Stopped calculating ``top_values`` for Double columns with integer values (:pr:`1692`)
-    * Documentation Changes
     * Testing Changes
         * Add Python 3.11 markers, add 3.11 for unit tests & install test (:pr:`1678`)
         * Run looking glass performance tests on merge via Airflow (:pr:`1695`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`simha104`, :user:`tamargrey`, :user:`petejanuszewski1`, :user:`bchen1116`
+    :user:`bchen1116`, :user:`gsheni`, :user:`ParthivNaresh`, :user:`petejanuszewski1`, :user:`simha104`, :user:`tamargrey`
 
 v0.23.0 April 12, 2023
 ======================
