@@ -8,7 +8,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-      * latlong fixtures are no longer autouse (:pr:`1712`)
+      * `latlong` fixtures are no longer autouse (:pr:`1712`)
     * Documentation Changes
     * Testing Changes
 
