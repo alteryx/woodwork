@@ -8,10 +8,12 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+      * latlong fixtures are no longer autouse (:pr:`1712`)
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+   :user:`simha104`
 
 v0.24.0 May 24, 2023
 ======================
