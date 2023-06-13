@@ -986,7 +986,7 @@ def test_series_methods_returning_frame_no_name(sample_series):
     assert sample_frame.ww.schema is not None
     if isinstance(sample_frame, pd.DataFrame) or _is_dask_dataframe(sample_frame):
         assert sample_frame.ww.columns[0] == sample_series.ww.schema
-    else:
+    elif _is_spark_series(sample_frame):
         assert sample_frame.ww.columns[None] == sample_series.ww.schema
 
     reset_index_frame = sample_series.ww.reset_index(drop=False)
