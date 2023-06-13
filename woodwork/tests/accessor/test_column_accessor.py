@@ -6,10 +6,8 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import (
-    _is_dask_dataframe,
     _is_dask_series,
     _is_dataframe,
-    _is_spark_dataframe,
     _is_spark_series,
     init_series,
 )
@@ -985,10 +983,10 @@ def test_series_methods_returning_frame_no_name(sample_series):
 
     assert _is_dataframe(sample_frame)
     assert sample_frame.ww.schema is not None
-    if isinstance(sample_frame, pd.DataFrame) or _is_dask_dataframe(sample_frame):
-        assert sample_frame.ww.columns[0] == sample_series.ww.schema
-    elif _is_spark_dataframe(sample_frame):
-        assert sample_frame.ww.columns[None] == sample_series.ww.schema
+    # if isinstance(sample_frame, pd.DataFrame) or _is_dask_dataframe(sample_frame):
+    assert sample_frame.ww.columns[0] == sample_series.ww.schema
+    # elif _is_spark_dataframe(sample_frame):
+    #     assert sample_frame.ww.columns[None] == sample_series.ww.schema
 
     reset_index_frame = sample_series.ww.reset_index(drop=False)
     assert _is_dataframe(reset_index_frame)
