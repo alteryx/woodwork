@@ -777,7 +777,7 @@ def small_df(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def latlong_df_pandas():
     return pd.DataFrame(
         {
@@ -794,13 +794,13 @@ def latlong_df_pandas():
     )
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def latlong_df_dask(latlong_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(latlong_df_pandas, npartitions=1)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def latlong_df_spark(latlong_df_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(
