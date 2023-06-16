@@ -970,7 +970,7 @@ def _coerce_boolean(series, null_invalid_values=False):
 
 def _transform_boolean(series, null_invalid_values):
     boolean_inference_list = config.get_option("boolean_inference_strings").copy()
-    boolean_inference_list.extend([["1", "0"], ["1.0", "0.0"]])
+    boolean_inference_list.add([frozenset(["1", "0"]), frozenset(["1.0", "0.0"])])
     valid = {}
     for booleans in boolean_inference_list:
         valid[booleans[0]] = True
