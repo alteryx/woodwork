@@ -6,12 +6,14 @@ Release Notes
 .. Future Release
   ==============
     * Enhancements
+        * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+   :user:`simha104`
 
 v0.24.0 May 24, 2023
 ======================
