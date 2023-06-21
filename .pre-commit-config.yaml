@@ -35,7 +35,7 @@ repos:
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.273'
+    rev: 'v0.0.274'
     hooks:
       - id: ruff
         args:
