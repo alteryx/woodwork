@@ -981,7 +981,7 @@ def _transform_boolean(series, null_invalid_values):
         },
     )
     if null_invalid_values:
-        series = series.map(boolean_transform_mappings)
+        series = series.apply(lambda x: boolean_transform_mappings.get(x, np.nan))
     else:
         series = series.apply(lambda x: boolean_transform_mappings.get(x, x))
     return series
