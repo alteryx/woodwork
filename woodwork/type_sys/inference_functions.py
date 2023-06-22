@@ -115,13 +115,9 @@ def boolean_nullable_func(series):
         series_no_null = series.dropna()
         try:
             series_no_null_unq = set(series_no_null)
-            if series_no_null_unq in [
-                {False, True},
-                {True},
-                {False},
-            ]:
+            if series_no_null_unq.issubset({False, True}):
                 return True
-            series_lower = set(str(s).lower() for s in set(series_no_null))
+            series_lower = set(str(s).lower() for s in series_no_null_unq)
             if series_lower in config.get_option("boolean_inference_strings"):
                 return True
         except (
@@ -131,8 +127,8 @@ def boolean_nullable_func(series):
     elif pdtypes.is_integer_dtype(series.dtype) and len(
         config.get_option("boolean_inference_ints"),
     ):
-        series_unique = set(series)
-        if series_unique == set(config.get_option("boolean_inference_ints")):
+        series_unique = set(series.unique())
+        if series_unique == config.get_option("boolean_inference_ints"):
             return True
     return False
 
