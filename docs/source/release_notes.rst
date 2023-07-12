@@ -6,6 +6,7 @@ Release Notes
 .. Future Release
   ==============
     * Enhancements
+      * Force datetime guesser input to be string :pr:`1724`
     * Fixes
     * Changes
     * Documentation Changes
