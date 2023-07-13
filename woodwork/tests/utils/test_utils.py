@@ -525,6 +525,16 @@ def test_infer_datetime_format(datetimes):
     fmt = _infer_datetime_format(dt)
     assert fmt == "%y-%m-%d %H:%M:%S%z"
 
+    dt = pd.Series(
+        [
+            pd.Timestamp("13-03-16 10:30:15+0000"),
+            pd.Timestamp("14-03-16 10:30:15+0000"),
+            pd.Timestamp("15-03-16 10:30:15+0000"),
+        ],
+    )
+    fmt = _infer_datetime_format(dt)
+    assert fmt == "%Y-%m-%d %H:%M:%S%z"
+
 
 def test_infer_datetime_format_all_null():
     missing_data = [
