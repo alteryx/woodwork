@@ -13,6 +13,7 @@ Release Notes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+   :user:`christopherbunn`
 
 v0.24.0 May 24, 2023
 ======================
