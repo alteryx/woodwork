@@ -40,9 +40,9 @@ dependencies = [
     "pandas >= 1.4.3",
     "scikit-learn >= 0.22",
     "python-dateutil >= 2.8.1",
-    "scipy >= 1.4.0",
+    "scipy >= 1.10.0",
     "importlib-resources >= 5.10.0",
-    "numpy >= 1.21.0",
+    "numpy >= 1.22.0",
 ]
 
 [project.urls]
@@ -67,7 +67,7 @@ dask = [
     "dask[dataframe] >= 2022.11.1",
 ]
 spark = [
-    "pyspark >= 3.2.0",
+    "pyspark >= 3.2.2",
     "pandas >= 1.4.3, <2.0.0",
     "numpy < 1.24.0",
 ]
