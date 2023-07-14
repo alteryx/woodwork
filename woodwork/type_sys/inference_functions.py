@@ -101,17 +101,18 @@ def double_func(series):
 
 
 def boolean_func(series):
-    if boolean_nullable_func(series) and not series.isnull().any():
+    if not series.isnull().any() and boolean_nullable_func(series):
         return True
     return False
 
 
 def boolean_nullable_func(series):
-    if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
-        series.dtype,
+    dtype = series.dtype
+    if pdtypes.is_bool_dtype(dtype) and not pdtypes.is_categorical_dtype(
+        dtype,
     ):
         return True
-    elif pdtypes.is_object_dtype(series.dtype):
+    elif pdtypes.is_object_dtype(dtype):
         series_no_null = series.dropna()
         try:
             series_no_null_unq = set(series_no_null)
@@ -124,7 +125,7 @@ def boolean_nullable_func(series):
             TypeError
         ):  # Necessary to check for non-hashable values because of object dtype consideration
             return False
-    elif pdtypes.is_integer_dtype(series.dtype) and len(
+    elif pdtypes.is_integer_dtype(dtype) and len(
         config.get_option("boolean_inference_ints"),
     ):
         series_unique = set(series.unique())
