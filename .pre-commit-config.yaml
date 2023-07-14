@@ -22,12 +22,12 @@ repos:
     -   id: absolufy-imports
         files: ^woodwork/
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.5.1
+    rev: v3.0.0
     hooks:
       - id: add-trailing-comma
         name: Add trailing comma
   - repo: https://github.com/python/black
-    rev: 23.3.0
+    rev: 23.7.0
     hooks:
       - id: black
         args:
@@ -35,7 +35,7 @@ repos:
         additional_dependencies: [".[jupyter]"]
         types_or: [python, jupyter]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: 'v0.0.274'
+    rev: 'v0.0.278'
     hooks:
       - id: ruff
         args:
