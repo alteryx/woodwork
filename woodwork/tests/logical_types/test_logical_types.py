@@ -106,7 +106,7 @@ def test_ordinal_transform_pandas(ordinal_transform_series_pandas) -> None:
     ser_ = typ.transform(ordinal_transform_series_pandas)
 
     assert ser_.dtype == "category"
-    pd.testing.assert_index_equal(ser_.cat.categories, pd.Int64Index(order))
+    pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="int64"))
 
 
 def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
@@ -115,7 +115,7 @@ def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
     ser_ = typ.transform(ordinal_transform_series_dask).compute()
 
     assert ser_.dtype == "category"
-    pd.testing.assert_index_equal(ser_.cat.categories, pd.Int64Index(order))
+    pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="int64"))
 
 
 def test_ordinal_transform_spark(ordinal_transform_series_spark) -> None:
@@ -973,7 +973,8 @@ def test_datetime_formats_two_digit_years(datetime_different_formats):
         ]
         expected_values = get_expected_dates(expected_values)
         df = pd.DataFrame({"dates": dates})
-        df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
+        expected_series = pd.to_datetime(expected_values).tz_localize(None)
+        df_expected = pd.DataFrame({"dates": expected_series}, dtype="datetime64[ns]")
         df.ww.init(logical_types={"dates": Datetime})
         pd.testing.assert_frame_equal(df, df_expected)
 

@@ -502,14 +502,14 @@ def describe_df_pandas():
     category_data = ["red", "blue", "red", np.nan, "red", "blue", "red", "yellow"]
     datetime_data = pd.to_datetime(
         [
-            "2020-01-01",
-            "2020-02-01",
+            "2020-01-01 00:00",
+            "2020-02-01 00:00",
             "2020-01-01 08:00",
             "2020-02-02 16:00",
             "2020-02-02 18:00",
             pd.NaT,
-            "2020-02-01",
-            "2020-01-02",
+            "2020-02-01 00:00",
+            "2020-01-02 00:00",
         ],
     )
     formatted_datetime_data = pd.Series(
@@ -777,7 +777,7 @@ def small_df(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def latlong_df_pandas():
     return pd.DataFrame(
         {
@@ -794,13 +794,13 @@ def latlong_df_pandas():
     )
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def latlong_df_dask(latlong_df_pandas):
     dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
     return dd.from_pandas(latlong_df_pandas, npartitions=1)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def latlong_df_spark(latlong_df_pandas):
     ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
     return ps.from_pandas(

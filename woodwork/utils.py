@@ -642,7 +642,7 @@ def _infer_datetime_format(dates, n=100):
     if len(random_n) == 0:
         return None
     try:
-        fmts = random_n.map(pd.core.tools.datetimes.guess_datetime_format)
+        fmts = random_n.astype(str).map(pd.core.tools.datetimes.guess_datetime_format)
         mode_fmt = fmts.mode().loc[0]  # select first most common format
     except KeyError:
         check_for_other_formats = [
