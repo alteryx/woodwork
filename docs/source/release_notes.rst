@@ -6,12 +6,14 @@ Release Notes
 .. Future Release
   ==============
     * Enhancements
+      * Force datetime guesser input to be string :pr:`1724`
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+   :user:`christopherbunn`
 
 v0.24.0 May 24, 2023
 ======================
