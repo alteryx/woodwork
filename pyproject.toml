@@ -68,7 +68,7 @@ dask = [
 ]
 spark = [
     "pyspark >= 3.2.0",
-    "pandas >= 1.4.3",
+    "pandas >= 1.4.3, <2.0.0",
     "numpy < 1.24.0",
 ]
 updater = [
