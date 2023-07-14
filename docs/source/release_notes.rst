@@ -7,7 +7,7 @@ Future Release
 ==============
     * Enhancements
       * Force datetime guesser input to be string :pr:`1724`
-      * Add support for ``pandas`` v2.0.0 :pr:``
+      * Add support for ``pandas`` v2.0.0 :pr:`1729`
     * Fixes
     * Changes
     * Documentation Changes
