@@ -4,6 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from packaging import version
 
 import woodwork as ww
 from woodwork.exceptions import TypeValidationError
@@ -509,15 +510,24 @@ def test_infer_datetime_format(datetimes):
     fmt = _infer_datetime_format(dt)
     assert fmt == "%m/%d/%Y %H:%M"
 
-    # https://github.com/alteryx/woodwork/pull/1158
-    dt = pd.Series(["Tue 24 Aug 2021 01:30:48 AM"])
-    fmt = _infer_datetime_format(dt)
-    assert fmt == "%a %d %b %Y %H:%M:%S %p"
+    if version.parse(pd.__version__) >= version.parse("2.0.2"):
+        # There was a pandas bug in earlier versions that was casing the
+        # hour to get inferred incorrectly as %H (0-24) when it should have
+        # been inferred as %I (0-12) when AM/PM is present.
+        # Pandas Issue: https://github.com/pandas-dev/pandas/issues/53147
+        # https://github.com/alteryx/woodwork/pull/1158
+        dt = pd.Series(["Tue 24 Aug 2021 01:30:48 AM"])
+        fmt = _infer_datetime_format(dt)
+        assert fmt == "%a %d %b %Y %I:%M:%S %p"
 
-    # https://github.com/alteryx/woodwork/pull/1158
-    dt = pd.Series(["Tuesday 24 Aug 2021 01:30:48 AM"])
+        # https://github.com/alteryx/woodwork/pull/1158
+        dt = pd.Series(["Tuesday 24 Aug 2021 01:30:48 AM"])
+        fmt = _infer_datetime_format(dt)
+        assert fmt == "%A %d %b %Y %I:%M:%S %p"
+
+    dt = pd.Series(["Tue 24 Aug 2021 01:30:48"])
     fmt = _infer_datetime_format(dt)
-    assert fmt == "%A %d %b %Y %H:%M:%S %p"
+    assert fmt == "%a %d %b %Y %H:%M:%S"
 
     dt = pd.Series(
         ["13-03-16 10:30:15+0000", "14-03-16 10:30:15+0000", "15-03-16 10:30:15+0000"],

@@ -3,17 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
       * Force datetime guesser input to be string :pr:`1724`
+      * Add support for ``pandas`` v2.0.0 :pr:``
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
-   :user:`christopherbunn`
+  Thanks to the following people for contributing to this release:
+  :user:`christopherbunn`, :user:`thehomebrewnerd`
 
 v0.24.0 May 24, 2023
 ======================
