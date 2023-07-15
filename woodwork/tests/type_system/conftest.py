@@ -11,7 +11,11 @@ from woodwork.type_sys.inference_functions import (
     double_func,
     integer_func,
 )
-from woodwork.type_sys.type_system import INFERENCE_SAMPLE_SIZE, TypeSystem
+from woodwork.type_sys.type_system import (
+    INFERENCE_SAMPLE_SIZE,
+    LogicalTypeRelationship,
+    TypeSystem,
+)
 
 
 # Integer Inference Fixtures
@@ -455,7 +459,10 @@ def default_inference_functions():
 
 @pytest.fixture
 def default_relationships():
-    return [(Double, Integer), (Categorical, CountryCode)]
+    return [
+        LogicalTypeRelationship(parent_type=Double, child_type=Integer),
+        LogicalTypeRelationship(parent_type=Categorical, child_type=CountryCode),
+    ]
 
 
 @pytest.fixture
