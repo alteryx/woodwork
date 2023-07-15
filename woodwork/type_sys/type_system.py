@@ -80,30 +80,24 @@ DEFAULT_INFERENCE_FUNCTIONS = {
     Unknown: None,
 }
 
-
-@dataclass
-class LogicalTypeRelationship:
-    parent_type: type[LogicalType] | None
-    child_type: type[LogicalType]
-
-
+# (ParentType, ChildType)
 DEFAULT_RELATIONSHIPS = [
-    LogicalTypeRelationship(parent_type=BooleanNullable, child_type=Boolean),
-    LogicalTypeRelationship(parent_type=Categorical, child_type=CountryCode),
-    LogicalTypeRelationship(parent_type=Categorical, child_type=CurrencyCode),
-    LogicalTypeRelationship(parent_type=Categorical, child_type=Ordinal),
-    LogicalTypeRelationship(parent_type=Categorical, child_type=PostalCode),
-    LogicalTypeRelationship(parent_type=Categorical, child_type=SubRegionCode),
-    LogicalTypeRelationship(parent_type=Double, child_type=AgeFractional),
-    LogicalTypeRelationship(parent_type=Integer, child_type=Age),
-    LogicalTypeRelationship(parent_type=IntegerNullable, child_type=AgeNullable),
-    LogicalTypeRelationship(parent_type=IntegerNullable, child_type=Integer),
-    LogicalTypeRelationship(parent_type=Unknown, child_type=EmailAddress),
-    LogicalTypeRelationship(parent_type=Unknown, child_type=IPAddress),
-    LogicalTypeRelationship(parent_type=Unknown, child_type=PhoneNumber),
-    LogicalTypeRelationship(parent_type=Unknown, child_type=PostalCode),
-    LogicalTypeRelationship(parent_type=Unknown, child_type=Timedelta),
-    LogicalTypeRelationship(parent_type=Unknown, child_type=URL),
+    (BooleanNullable, Boolean),
+    (Categorical, CountryCode),
+    (Categorical, CurrencyCode),
+    (Categorical, Ordinal),
+    (Categorical, PostalCode),
+    (Categorical, SubRegionCode),
+    (Double, AgeFractional),
+    (Integer, Age),
+    (IntegerNullable, AgeNullable),
+    (IntegerNullable, Integer),
+    (Unknown, EmailAddress),
+    (Unknown, IPAddress),
+    (Unknown, PhoneNumber),
+    (Unknown, PostalCode),
+    (Unknown, Timedelta),
+    (Unknown, URL),
 ]
 
 DEFAULT_TYPE = Unknown
@@ -141,14 +135,7 @@ class TypeSystem(object):
             self.inference_functions = {self.default_type: None}
 
         if relationships:
-            # assumes relationships is a list with all elements of same type
-            if isinstance(relationships[0], (list, tuple)):
-                self.relationships = [
-                    LogicalTypeRelationship(parent_type=r[0], child_type=r[1])
-                    for r in relationships
-                ]
-            elif isinstance(relationships[0], LogicalTypeRelationship):
-                self.relationships = relationships.copy()
+            self.relationships = relationships.copy()
         else:
             self.relationships = []
 
@@ -247,9 +234,7 @@ class TypeSystem(object):
 
             # Rebuild the relationships list to remove any reference to the removed type
             self.relationships = [
-                rel
-                for rel in self.relationships
-                if logical_type != rel.child_type and logical_type != rel.parent_type
+                rel for rel in self.relationships if logical_type not in rel
             ]
         else:
             if treatment is None or treatment.lower() != "ignore":
@@ -289,12 +274,10 @@ class TypeSystem(object):
         self._validate_type_input(logical_type=logical_type, parent=parent)
         # If the logical_type already has a parent, remove that from the list
         self.relationships = [
-            rel for rel in self.relationships if rel.child_type != logical_type
+            rel for rel in self.relationships if rel[1] != logical_type
         ]
         # Add the new/updated relationship
-        self.relationships.append(
-            LogicalTypeRelationship(parent_type=parent, child_type=logical_type)
-        )
+        self.relationships.append((parent, logical_type))
 
     def reset_defaults(self):
         """Reset type system to the default settings that were specified at initialization.
@@ -320,17 +303,13 @@ class TypeSystem(object):
 
     def _get_children(self, logical_type):
         """List of all the child types for the given logical type"""
-        return [
-            relation.child_type
-            for relation in self.relationships
-            if relation.parent_type == logical_type
-        ]
+        return [child for parent, child in self.relationships if parent == logical_type]
 
     def _get_parent(self, logical_type):
         """Get the parent type for the given logical type"""
-        for relation in self.relationships:
-            if relation.child_type == logical_type:
-                return relation.parent_type
+        for parent, child in self.relationships:
+            if child == logical_type:
+                return parent
         return None
 
     def _get_depth(self, logical_type):

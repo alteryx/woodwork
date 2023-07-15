@@ -3,7 +3,6 @@ from pandas.api import types as pdtypes
 
 import woodwork as ww
 from woodwork.logical_types import Categorical, Double, LogicalType
-from woodwork.type_sys.type_system import LogicalTypeRelationship
 
 
 def test_register_custom_logical_type(type_sys):
@@ -19,10 +18,7 @@ def test_register_custom_logical_type(type_sys):
         parent="Categorical",
     )
     assert CustomLogicalType in type_sys.registered_types
-    assert (
-        LogicalTypeRelationship(parent_type=Categorical, child_type=CustomLogicalType)
-        in type_sys.relationships
-    )
+    assert (Categorical, CustomLogicalType) in type_sys.relationships
     assert type_sys.inference_functions[CustomLogicalType] is custom_func
     assert isinstance(
         type_sys.infer_logical_type(pd.Series(["a", "b"] + 10 * ["a"])),

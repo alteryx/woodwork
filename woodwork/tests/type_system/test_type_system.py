@@ -21,7 +21,7 @@ from woodwork.type_sys.inference_functions import (
     double_func,
     integer_func,
 )
-from woodwork.type_sys.type_system import LogicalTypeRelationship, TypeSystem
+from woodwork.type_sys.type_system import TypeSystem
 
 
 def test_type_system_init(default_inference_functions, default_relationships):
@@ -34,12 +34,8 @@ def test_type_system_init(default_inference_functions, default_relationships):
     assert type_sys.inference_functions[Integer] is integer_func
     assert type_sys.inference_functions[Categorical] is categorical_func
     assert len(type_sys.relationships) == 2
-    assert type_sys.relationships[0] == LogicalTypeRelationship(
-        parent_type=Double, child_type=Integer
-    )
-    assert type_sys.relationships[1] == LogicalTypeRelationship(
-        parent_type=Categorical, child_type=CountryCode
-    )
+    assert type_sys.relationships[0] == (Double, Integer)
+    assert type_sys.relationships[1] == (Categorical, CountryCode)
 
 
 @pytest.mark.parametrize("add_treatment", ["Replace", "IGNORE", None])
@@ -69,9 +65,7 @@ def test_add_and_remove_custom_ltype_options(
     assert MyInteger in type_sys.inference_functions.keys()
     assert type_sys.inference_functions[MyInteger] is integer_func
     assert len(type_sys.relationships) == 3
-    assert type_sys.relationships[-1] == LogicalTypeRelationship(
-        parent_type=Integer, child_type=MyInteger
-    )
+    assert type_sys.relationships[-1] == (Integer, MyInteger)
 
     if add_treatment is None:
         with pytest.raises(
@@ -239,9 +233,7 @@ def test_add_type_with_parent():
     assert Integer in type_sys.inference_functions.keys()
     assert type_sys.inference_functions[Integer] is integer_func
     assert len(type_sys.relationships) == 1
-    assert type_sys.relationships[0] == LogicalTypeRelationship(
-        parent_type=Double, child_type=Integer
-    )
+    assert type_sys.relationships[0] == (Double, Integer)
 
 
 def test_add_duplicate_ltype(type_sys):
@@ -285,10 +277,7 @@ def test_remove_type_with_children(type_sys):
     assert len(type_sys.inference_functions) == 4
     assert Double not in type_sys.inference_functions.keys()
     assert len(type_sys.relationships) == 2
-    assert (
-        LogicalTypeRelationship(parent_type=None, child_type=Integer)
-        in type_sys.relationships
-    )
+    assert (None, Integer) in type_sys.relationships
     assert Integer in type_sys.root_types
 
 
@@ -323,20 +312,14 @@ def test_update_inference_function(type_sys):
 def test_update_relationship_no_children(type_sys):
     type_sys.update_relationship(CountryCode, Integer)
     assert len(type_sys.relationships) == 2
-    assert (
-        LogicalTypeRelationship(parent_type=Integer, child_type=CountryCode)
-        in type_sys.relationships
-    )
+    assert (Integer, CountryCode) in type_sys.relationships
     assert type_sys._get_parent(CountryCode) == Integer
 
 
 def test_update_relationship_string_input(type_sys):
     type_sys.update_relationship("CountryCode", "Integer")
     assert len(type_sys.relationships) == 2
-    assert (
-        LogicalTypeRelationship(parent_type=Integer, child_type=CountryCode)
-        in type_sys.relationships
-    )
+    assert (Integer, CountryCode) in type_sys.relationships
     assert type_sys._get_parent(CountryCode) == Integer
 
 
@@ -344,14 +327,8 @@ def test_update_relationship_with_children(type_sys):
     type_sys.add_type(SubRegionCode, parent=CountryCode)
     type_sys.update_relationship(CountryCode, Integer)
     assert len(type_sys.relationships) == 3
-    assert (
-        LogicalTypeRelationship(parent_type=Integer, child_type=CountryCode)
-        in type_sys.relationships
-    )
-    assert (
-        LogicalTypeRelationship(parent_type=CountryCode, child_type=SubRegionCode)
-        in type_sys.relationships
-    )
+    assert (Integer, CountryCode) in type_sys.relationships
+    assert (CountryCode, SubRegionCode) in type_sys.relationships
     assert type_sys._get_children(CountryCode) == [SubRegionCode]
 
 
