@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Callable
 
 import pandas as pd
@@ -385,11 +384,6 @@ class TypeSystem(object):
             # dataset
             if series.count() == 0:
                 return Unknown()
-
-        @dataclass
-        class LogicalTypeSearchNode:
-            logical_type: type[LogicalType]
-
 
         def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check
