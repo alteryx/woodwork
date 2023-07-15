@@ -44,8 +44,14 @@ def categorical_func(series):
     return False
 
 
-def integer_func(series):
-    if integer_nullable_func(series) and not series.isnull().any():
+def integer_func(series, is_integer_nullable=None):
+    is_int_nullable = (
+        is_integer_nullable
+        if is_integer_nullable is not None
+        else integer_nullable_func(series)
+    )
+
+    if is_int_nullable and not series.isnull().any():
         if pdtypes.is_object_dtype(series.dtype):
             return True
         return all(series.mod(1).eq(0))
@@ -100,13 +106,29 @@ def double_func(series):
     return False
 
 
-def boolean_func(series):
+bfc = 0
+bnfc = 0
+
+
+def boolean_func(series, is_boolean_nullable=None):
+    global bfc
+    bfc += 1
+    # print(f"Boolean func Called!: {bfc}")
+
+    if is_boolean_nullable is True and not series.isnull().any():
+        return True
+    if is_boolean_nullable is False:
+        return False
+
     if boolean_nullable_func(series) and not series.isnull().any():
         return True
     return False
 
 
 def boolean_nullable_func(series):
+    global bnfc
+    bnfc += 1
+    # print(f"Boolean nullable func Called!: {bnfc}")
     if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
         series.dtype,
     ):
