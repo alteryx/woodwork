@@ -21,7 +21,7 @@ v0.25.0 Jul 17, 2023
     * Changes
         * Remove upper bound restriction on ``dask`` version :pr:`1729`
     * Testing Changes
-        * Remove ``autouse=True`` from latlong dataframe fixtures :pr:``1729``
+        * Remove ``autouse=True`` from latlong dataframe fixtures :pr:`1729`
 
   Thanks to the following people for contributing to this release:
   :user:`christopherbunn`, :user:`thehomebrewnerd`
