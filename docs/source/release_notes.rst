@@ -3,15 +3,23 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.25.0 Jul 17, 2023
+====================
     * Enhancements
         * Force datetime guesser input to be string :pr:`1724`
         * Add support for ``pandas`` v2.0.0 :pr:`1729`
-    * Fixes
     * Changes
         * Remove upper bound restriction on ``dask`` version :pr:`1729`
-    * Documentation Changes
     * Testing Changes
         * Remove ``autouse=True`` from latlong dataframe fixtures :pr:``1729``
 
