@@ -73,7 +73,7 @@ def integer_nullable_func(series):
         if not series.isnull().any():
             return False
         series_no_null = series.dropna()
-        return all([_is_valid_int(v) for v in series_no_null])
+        return all(_is_valid_int(v) for v in series_no_null)
     elif pdtypes.is_object_dtype(series.dtype):
         series_no_null = series.dropna()
         try:
@@ -106,29 +106,19 @@ def double_func(series):
     return False
 
 
-bfc = 0
-bnfc = 0
-
-
 def boolean_func(series, is_boolean_nullable=None):
-    global bfc
-    bfc += 1
-    # print(f"Boolean func Called!: {bfc}")
-
-    if is_boolean_nullable is True and not series.isnull().any():
+    no_nulls = not series.isnull().any()
+    if is_boolean_nullable is True and no_nulls:
         return True
-    if is_boolean_nullable is False:
+    if not is_boolean_nullable:
         return False
 
-    if boolean_nullable_func(series) and not series.isnull().any():
+    if no_nulls and boolean_nullable_func(series):
         return True
     return False
 
 
 def boolean_nullable_func(series):
-    global bnfc
-    bnfc += 1
-    # print(f"Boolean nullable func Called!: {bnfc}")
     if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
         series.dtype,
     ):
