@@ -333,7 +333,7 @@ def test_update_relationship_with_children(type_sys):
 
 
 def test_inference_multiple_matches_same_depth(default_relationships):
-    def always_true(series, dummy=None):
+    def always_true(series, already_precomputed=None):
         return True
 
     inference_functions = {
