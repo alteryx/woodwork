@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
+      * Speed up Boolean and Integer inference by caching results of corresponding nullable type inference (:pr:`1733`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+  Thanks to the following people for contributing to this release:
+  :user:`sbadithe`
 
 v0.25.1 Jul 18, 2023
 ====================
