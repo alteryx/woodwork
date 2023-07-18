@@ -385,7 +385,7 @@ class TypeSystem(object):
             if series.count() == 0:
                 return Unknown()
 
-        def get_inference_matches(types_to_check, series, type_matches=set()):
+        def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check
             # any children of NaturalLanguage, otherwise they never get evaluated
             check_next = []
@@ -404,7 +404,7 @@ class TypeSystem(object):
                         matched = inference_func(series)
                     # if inference matches for this function, we can proceed with children types
                     if matched:
-                        type_matches.add(logical_type)
+                        type_matches.append(logical_type)
                         check_next.extend(self._get_children(logical_type))
                 # if the logical type does not have a corresponding inference function,
                 # it is possible that it's children types still do
@@ -412,7 +412,7 @@ class TypeSystem(object):
                     check_next.extend(self._get_children(logical_type))
             if len(check_next) > 0:
                 get_inference_matches(check_next, series, type_matches)
-            return list(type_matches)
+            return type_matches
 
         # Don't include NaturalLanguage as we only want to check that if
         # no other matches are found
