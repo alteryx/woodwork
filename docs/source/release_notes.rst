@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
+      * Restrict ``numpy`` version to resolve boolean inference issue with v1.25.0 :pr:`1735`
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+  Thanks to the following people for contributing to this release:
+  :user:`thehomebrewnerd`
 
 v0.25.0 Jul 17, 2023
 ====================
