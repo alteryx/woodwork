@@ -8,6 +8,7 @@ Future Release
     * Enhancements
         * Force datetime guesser input to be string :pr:`1724`
         * Add support for ``pandas`` v2.0.0 :pr:`1729`
+        * Cache result of Nullable type inference to speed up Boolean and Integer logical type inference :pr:`1733`
     * Fixes
     * Changes
         * Remove upper bound restriction on ``dask`` version :pr:`1729`
@@ -16,7 +17,7 @@ Future Release
         * Remove ``autouse=True`` from latlong dataframe fixtures :pr:``1729``
 
   Thanks to the following people for contributing to this release:
-  :user:`christopherbunn`, :user:`thehomebrewnerd`
+  :user:`christopherbunn`, :user:`sbadithe`, :user:`thehomebrewnerd`
 
 v0.24.0 May 24, 2023
 ======================

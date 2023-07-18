@@ -107,12 +107,11 @@ def double_func(series):
 
 
 def boolean_func(series, is_boolean_nullable=None):
+    if not is_boolean_nullable:
+        return False
     no_nulls = not series.isnull().any()
     if is_boolean_nullable is True and no_nulls:
         return True
-    if not is_boolean_nullable:
-        return False
-
     if no_nulls and boolean_nullable_func(series):
         return True
     return False
