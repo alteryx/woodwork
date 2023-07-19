@@ -391,9 +391,23 @@ class TypeSystem(object):
             check_next = []
             for logical_type in types_to_check:
                 inference_func = self.inference_functions.get(logical_type)
-                if inference_func and inference_func(series):
-                    type_matches.append(logical_type)
-                    check_next.extend(self._get_children(logical_type))
+                if inference_func:
+                    if logical_type == Boolean:
+                        matched = inference_func(
+                            series, BooleanNullable in type_matches
+                        )
+                    elif logical_type == Integer:
+                        matched = inference_func(
+                            series, IntegerNullable in type_matches
+                        )
+                    else:
+                        matched = inference_func(series)
+                    # if inference matches for this function, we can proceed with children types
+                    if matched:
+                        type_matches.append(logical_type)
+                        check_next.extend(self._get_children(logical_type))
+                # if the logical type does not have a corresponding inference function,
+                # it is possible that it's children types still do
                 elif not inference_func:
                     check_next.extend(self._get_children(logical_type))
             if len(check_next) > 0:
