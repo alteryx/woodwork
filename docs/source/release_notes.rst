@@ -6,18 +6,36 @@ Release Notes
 Future Release
 ==============
     * Enhancements
-        * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
-        * Force datetime guesser input to be string :pr:`1724`
-        * Add support for ``pandas`` v2.0.0 :pr:`1729`
+      * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
+      * Speed up Boolean and Integer inference by caching results of corresponding nullable type inference (:pr:`1733`)
     * Fixes
     * Changes
-        * Remove upper bound restriction on ``dask`` version :pr:`1729`
     * Documentation Changes
     * Testing Changes
-        * Remove ``autouse=True`` from latlong dataframe fixtures :pr:``1729``
 
   Thanks to the following people for contributing to this release:
-  :user:`christopherbunn`, :user:`simha104`, :user:`thehomebrewnerd`
+  :user:`sbadithe`, :user:`simha104`
+
+v0.25.1 Jul 18, 2023
+====================
+    * Fixes
+      * Restrict ``numpy`` version to resolve boolean inference issue with v1.25.0 :pr:`1735`
+
+  Thanks to the following people for contributing to this release:
+  :user:`thehomebrewnerd`
+
+v0.25.0 Jul 17, 2023
+====================
+    * Enhancements
+        * Force datetime guesser input to be string :pr:`1724`
+        * Add support for ``pandas`` v2.0.0 :pr:`1729`
+    * Changes
+        * Remove upper bound restriction on ``dask`` version :pr:`1729`
+    * Testing Changes
+        * Remove ``autouse=True`` from latlong dataframe fixtures :pr:`1729`
+
+  Thanks to the following people for contributing to this release:
+  :user:`christopherbunn`, :user:`thehomebrewnerd`
 
 v0.24.0 May 24, 2023
 ======================
