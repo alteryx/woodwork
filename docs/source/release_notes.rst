@@ -6,10 +6,11 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+      * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
       * Speed up Boolean and Integer inference by caching results of corresponding nullable type inference (:pr:`1733`)
     * Fixes
     * Changes
-      * Revert PR: 1713 due to unforeseen performance changes (:pr:`1744`)
+      * Revert pr:`1713` due to unforeseen performance changes (:pr:`1744`)
     * Documentation Changes
     * Testing Changes
 
