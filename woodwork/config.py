@@ -54,24 +54,15 @@ CONFIG_DEFAULTS = {
     "correlation_metrics": ["mutual_info", "pearson", "spearman", "max", "all"],
     "medcouple_threshold": 0.3,  # Must be between 0.0 and 1.0
     "medcouple_sample_size": 10000,
-    "boolean_inference_strings": {
-        frozenset(["yes", "no"]),
-        frozenset(["y", "n"]),
-        frozenset(["true", "false"]),
-        frozenset(["t", "f"]),
-    },
-    "boolean_transform_mappings": {
-        "yes": True,
-        "no": False,
-        "y": True,
-        "n": False,
-        "true": True,
-        "false": False,
-        "t": True,
-        "f": False,
-    },
-    # when adding to boolean_inference_ints, add `0, 1` to the set directly
-    "boolean_inference_ints": {},
+    "boolean_inference_strings": [
+        ["yes", "no"],
+        ["y", "n"],
+        ["true", "false"],
+        ["t", "f"],
+    ],
+    # when adding to boolean_inference_ints, add `0, 1` to the list directly
+    # rather than making it nested lists
+    "boolean_inference_ints": [],
 }
 
 

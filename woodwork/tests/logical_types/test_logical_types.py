@@ -1132,7 +1132,7 @@ def test_boolean_int_works(ints_to_config, type):
         assert df2.values.tolist() == [[bool(i % 2)] for i in range(100)]
 
     if ints_to_config:
-        with config.with_options(boolean_inference_ints={0, 1}):
+        with config.with_options(boolean_inference_ints=[0, 1]):
             tester_df_ints()
     else:
         tester_df_ints()

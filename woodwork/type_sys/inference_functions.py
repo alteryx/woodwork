@@ -118,29 +118,35 @@ def boolean_func(series, is_boolean_nullable=None):
 
 
 def boolean_nullable_func(series):
-    dtype = series.dtype
-    if pdtypes.is_bool_dtype(dtype) and not pdtypes.is_categorical_dtype(
-        dtype,
+    if pdtypes.is_bool_dtype(series.dtype) and not pdtypes.is_categorical_dtype(
+        series.dtype,
     ):
         return True
-    elif pdtypes.is_object_dtype(dtype):
+    elif pdtypes.is_object_dtype(series.dtype):
         series_no_null = series.dropna()
         try:
             series_no_null_unq = set(series_no_null)
-            if series_no_null_unq.issubset({False, True}):
+            if series_no_null_unq in [
+                {False, True},
+                {True},
+                {False},
+            ]:
                 return True
-            series_lower = set(str(s).lower() for s in series_no_null_unq)
-            if series_lower in config.get_option("boolean_inference_strings"):
+            series_lower = set(str(s).lower() for s in set(series_no_null))
+            if series_lower in [
+                set(boolean_list)
+                for boolean_list in config.get_option("boolean_inference_strings")
+            ]:
                 return True
         except (
             TypeError
         ):  # Necessary to check for non-hashable values because of object dtype consideration
             return False
-    elif pdtypes.is_integer_dtype(dtype) and len(
+    elif pdtypes.is_integer_dtype(series.dtype) and len(
         config.get_option("boolean_inference_ints"),
     ):
-        series_unique = set(series.unique())
-        if series_unique == config.get_option("boolean_inference_ints"):
+        series_unique = set(series)
+        if series_unique == set(config.get_option("boolean_inference_ints")):
             return True
     return False
 
