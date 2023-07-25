@@ -970,15 +970,20 @@ def _coerce_boolean(series, null_invalid_values=False):
 
 def _transform_boolean(series, null_invalid_values):
     boolean_inference_list = config.get_option("boolean_inference_strings").copy()
-    boolean_inference_list.extend([["1", "0"], ["1.0", "0.0"]])
-    valid = {}
-    for booleans in boolean_inference_list:
-        valid[booleans[0]] = True
-        valid[booleans[1]] = False
+    boolean_inference_list.update({frozenset(["1", "0"]), frozenset(["1.0", "0.0"])})
+    boolean_transform_mappings = config.get_option("boolean_transform_mappings").copy()
+    boolean_transform_mappings.update(
+        {
+            "1": True,
+            "0": False,
+            "1.0": True,
+            "0.0": False,
+        },
+    )
     if null_invalid_values:
-        series = series.apply(lambda x: valid.get(x, np.nan))
+        series = series.apply(lambda x: boolean_transform_mappings.get(x, np.nan))
     else:
-        series = series.apply(lambda x: valid.get(x, x))
+        series = series.apply(lambda x: boolean_transform_mappings.get(x, x))
     return series
 
 

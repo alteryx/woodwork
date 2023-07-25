@@ -6,6 +6,7 @@ Release Notes
 Future Release
 ==============
     * Enhancements
+      * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
       * Speed up Boolean and Integer inference by caching results of corresponding nullable type inference (:pr:`1733`)
     * Fixes
     * Changes
@@ -13,7 +14,7 @@ Future Release
     * Testing Changes
 
   Thanks to the following people for contributing to this release:
-  :user:`sbadithe`
+  :user:`sbadithe`, :user:`simha104`
 
 v0.25.1 Jul 18, 2023
 ====================
