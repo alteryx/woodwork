@@ -73,7 +73,6 @@ def test_double_inference(doubles):
 
 def test_boolean_inference(bools):
     dtypes = ["bool", "boolean"]
-
     for series in bools:
         for dtype in dtypes:
             if _is_dask_series(series):
