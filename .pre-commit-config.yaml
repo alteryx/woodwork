@@ -22,7 +22,7 @@ repos:
     -   id: absolufy-imports
         files: ^woodwork/
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.0.0
+    rev: v3.0.1
     hooks:
       - id: add-trailing-comma
         name: Add trailing comma
