@@ -9,7 +9,7 @@ Future Release
         * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
         * Speed up Boolean and Integer inference by caching results of corresponding nullable type inference (:pr:`1733`)
     * Fixes
-        * Update s3 bucket for docs image #1749
+        * Update s3 bucket for docs image (:pr:`1749`)
     * Changes
     * Documentation Changes
     * Testing Changes
