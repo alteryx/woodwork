@@ -1,4 +1,4 @@
-<p align="center"><img width=50% src="https://woodwork-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
+<p align="center"><img width=50% src="https://alteryx-oss-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
 <p align="center">
     <a href="https://github.com/alteryx/woodwork/actions?query=branch%3Amain+workflow%3ATests" target="_blank">
         <img src="https://github.com/alteryx/woodwork/workflows/Tests/badge.svg?branch=main" alt="Tests" />
