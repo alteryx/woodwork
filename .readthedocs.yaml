@@ -18,7 +18,6 @@ build:
   tools:
     python: "3.8"
   apt_packages:
-    - graphviz
     - openjdk-11-jre-headless
   jobs:
     post_build: 
