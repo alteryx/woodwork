@@ -12,6 +12,7 @@ Future Release
         * Update s3 bucket for docs image (:pr:`1749`)
     * Changes
     * Documentation Changes
+        * Update readthedocs config to use build.os (:pr:`1753`)
     * Testing Changes
 
   Thanks to the following people for contributing to this release:
