@@ -16,7 +16,7 @@
         <img src="https://anaconda.org/conda-forge/woodwork/badges/version.svg" alt="Anaconda Version" />
     </a>
     <a href="https://pepy.tech/project/woodwork" target="_blank">
-        <img src="https://pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
+        <img src="https://static.pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
     </a>
 </p>
 <hr>
