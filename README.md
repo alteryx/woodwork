@@ -1,7 +1,7 @@
 <p align="center"><img width=50% src="https://alteryx-oss-web-images.s3.amazonaws.com/woodwork.svg" alt="Woodwork" /></p>
 <p align="center">
-    <a href="https://github.com/alteryx/woodwork/actions?query=branch%3Amain+workflow%3ATests" target="_blank">
-        <img src="https://github.com/alteryx/woodwork/workflows/Tests/badge.svg?branch=main" alt="Tests" />
+    <a href="https://github.com/alteryx/woodwork/actions/workflows/tests_with_latest_deps.yaml" alt="Tests" target="_blank">
+        <img src="https://github.com/alteryx/woodwork/actions/workflows/tests_with_latest_deps.yaml/badge.svg?branch=main" alt="Tests" />
     </a>
     <a href="https://codecov.io/gh/alteryx/woodwork">
         <img src="https://codecov.io/gh/alteryx/woodwork/branch/main/graph/badge.svg?token=KJCKMREBDP"/>
@@ -16,7 +16,7 @@
         <img src="https://anaconda.org/conda-forge/woodwork/badges/version.svg" alt="Anaconda Version" />
     </a>
     <a href="https://pepy.tech/project/woodwork" target="_blank">
-        <img src="https://pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
+        <img src="https://static.pepy.tech/badge/woodwork/month" alt="PyPI Downloads" />
     </a>
 </p>
 <hr>

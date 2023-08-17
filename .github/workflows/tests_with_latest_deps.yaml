@@ -1,3 +1,4 @@
+name: Tests
 on:
   pull_request:
     types: [opened, synchronize]
@@ -5,13 +6,10 @@ on:
     branches:
       - main
   workflow_dispatch:
-
 env:
   PYARROW_IGNORE_TIMEZONE: 1
   JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
-
-name: Unit Tests - Latest Dependencies
 jobs:
   unit_latest_tests:
     name: ${{ matrix.python_version }} ${{ matrix.directories }} unit tests
