@@ -13,6 +13,7 @@ Future Release
     * Changes
     * Documentation Changes
         * Update readthedocs config to use build.os (:pr:`1753`)
+        * Fix PyPI badge not showing on README.md (:pr:`1755`)
     * Testing Changes
 
   Thanks to the following people for contributing to this release:
