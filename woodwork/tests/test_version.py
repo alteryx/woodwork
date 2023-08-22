@@ -2,4 +2,4 @@ from woodwork import __version__
 
 
 def test_version():
-    assert __version__ == "0.25.1"
+    assert __version__ == "0.26.0"

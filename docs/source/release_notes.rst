@@ -3,18 +3,26 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.25.1 Aug 22, 2023
+====================
     * Enhancements
         * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
         * Speed up Boolean and Integer inference by caching results of corresponding nullable type inference (:pr:`1733`)
     * Fixes
         * Update s3 bucket for docs image (:pr:`1749`)
-    * Changes
     * Documentation Changes
         * Update readthedocs config to use build.os (:pr:`1753`)
         * Fix PyPI badge not showing on README.md (:pr:`1755`)
-    * Testing Changes
 
   Thanks to the following people for contributing to this release:
   :user:`gsheni`, :user:`sbadithe`, :user:`simha104`
