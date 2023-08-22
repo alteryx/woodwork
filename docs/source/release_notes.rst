@@ -13,7 +13,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v0.25.1 Aug 22, 2023
+v0.26.0 Aug 22, 2023
 ====================
     * Enhancements
         * Optimized ``Boolean`` inference by removing generation of mappings and sets of boolean values (:pr:`1713`)
