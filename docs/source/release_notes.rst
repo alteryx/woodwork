@@ -3,15 +3,17 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+      * Temporarily restrict pyarrow version due to serialization issues (:pr:`1768`)
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+  Thanks to the following people for contributing to this release:
+  :user:`thehomebrewnerd`
 
 v0.26.0 Aug 22, 2023
 ====================
