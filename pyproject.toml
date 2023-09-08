@@ -61,7 +61,7 @@ test = [
     "boto3 >= 1.10.45",
     "moto[all] >= 3.0.7",
     "smart-open >= 5.0.0",
-    "pyarrow >= 4.0.1",
+    "pyarrow >= 4.0.1, <13.0.0",
 ]
 dask = [
     "dask[dataframe] >= 2022.11.1",
@@ -70,6 +70,7 @@ spark = [
     "pyspark >= 3.2.2",
     "pandas >= 1.4.3, <2.0.0",
     "numpy < 1.24.0",
+    "pyarrow >= 4.0.1, <13.0.0",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 3.1.0"
