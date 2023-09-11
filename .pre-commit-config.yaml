@@ -27,7 +27,7 @@ repos:
       - id: add-trailing-comma
         name: Add trailing comma
   - repo: https://github.com/python/black
-    rev: 23.9.0
+    rev: 23.9.1
     hooks:
       - id: black
         args:
