@@ -11,9 +11,10 @@ Future Release
       * Temporarily restrict pyarrow version due to serialization issues (:pr:`1768`)
     * Documentation Changes
     * Testing Changes
+      * Removed old performance testing workflow (:pr:`1776`)
 
   Thanks to the following people for contributing to this release:
-  :user:`thehomebrewnerd`
+  :user:`thehomebrewnerd`, :user:`petejanuszewski1`
 
 v0.26.0 Aug 22, 2023
 ====================
