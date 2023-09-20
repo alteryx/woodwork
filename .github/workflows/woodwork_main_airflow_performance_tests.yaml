@@ -34,11 +34,9 @@ jobs:
           --data-raw '{
             "conf": {
                   "description": null,
-                  "lg_branch": "lg_baton_airflow",
                   "n_trials": 1,
                   "pytest_args": {},
                   "python_version": "3.8",
-                  "scenario_count_limit": null,
                   "scenarios_yaml": "woodwork_scenarios.yaml",
                   "woodwork_branch_previous": "${{ env.PREVIOUS_HASH }}",
                   "woodwork_branch_new": "${{ env.CURRENT_HASH }}",
