@@ -41,7 +41,6 @@ def col_is_datetime(col, datetime_format=None):
             col,
             errors="raise",
             format=datetime_format,
-            infer_datetime_format=True,
         )
         return True
 
