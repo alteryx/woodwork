@@ -10,7 +10,7 @@ Future Release
         * Removed warning due to deprecated ``infer_datetime_format`` argument in pandas (:pr:`1785`)
     * Changes
       * Temporarily restrict pyarrow version due to serialization issues (:pr:`1768`)
-      * Remove restriction on pyarrow (:pr:`1791`)
+      * Remove restriction on pyarrow and numpy (:pr:`1791`)
     * Documentation Changes
     * Testing Changes
       * Removed old performance testing workflow (:pr:`1776`)
