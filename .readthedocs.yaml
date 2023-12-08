@@ -18,10 +18,10 @@ build:
   tools:
     python: "3.8"
   apt_packages:
-    - openjdk-11-jre-headless
+    - openjdk-17-jre-headless
   jobs:
-    post_build: 
-      - export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+    post_build:
+      - export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
 
 python:
   install:

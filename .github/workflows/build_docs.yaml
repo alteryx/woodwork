@@ -37,7 +37,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y pandoc
-          sudo apt install -y openjdk-11-jre-headless
+          sudo apt install -y openjdk-17-jre-headless
           python -m pip install --upgrade pip
       - name: Install woodwork with doc dependencies (not using cache)
         if: steps.cache.outputs.cache-hit != 'true'

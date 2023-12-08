@@ -44,7 +44,7 @@ jobs:
       - name: Install Dask and Spark
         run: |
           sudo apt update
-          sudo apt install -y openjdk-11-jre-headless
+          sudo apt install -y openjdk-17-jre-headless
           python -m pip install unpacked_sdist/[spark]
           python -m pip install unpacked_sdist/[dask]
           cd unpacked_sdist
