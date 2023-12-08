@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 env:
   PYARROW_IGNORE_TIMEZONE: 1
-  JAVA_HOME: "/usr/lib/jvm/java-11-openjdk-amd64"
+  JAVA_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   unit_latest_tests:
