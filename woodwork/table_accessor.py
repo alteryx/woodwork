@@ -101,7 +101,10 @@ class WoodworkTableAccessor:
         self.init_with_partial_schema(**kwargs)
 
     def init_with_full_schema(
-        self, schema: TableSchema, validate: bool = True, **kwargs
+        self,
+        schema: TableSchema,
+        validate: bool = True,
+        **kwargs,
     ) -> None:
         """Initializes Woodwork typing information for a DataFrame with a complete schema.
 

@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+from pandas import CategoricalDtype
 from pandas.api import types as pdtypes
 
 import woodwork as ww
@@ -681,7 +682,7 @@ class Ordinal(LogicalType):
         self._validate_order_values(series)
 
         typed_ser = super().transform(series)
-        if pdtypes.is_categorical_dtype(typed_ser.dtype):
+        if isinstance(typed_ser.dtype, CategoricalDtype):
             typed_ser = typed_ser.cat.set_categories(self.order, ordered=True)
 
         return typed_ser
