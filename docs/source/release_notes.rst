@@ -3,16 +3,24 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.27.0 Dec 12, 2023
+====================
     * Fixes
         * Removed warning due to deprecated ``infer_datetime_format`` argument in pandas (:pr:`1785`)
         * Fix GitHub Actions to kick off EvalML and Featuretools unit tests (:pr:`1795`)
     * Changes
       * Temporarily restrict pyarrow version due to serialization issues (:pr:`1768`)
       * Update pandas categorical type call and remove black with ruff formatter (:pr:`1794`)
-    * Documentation Changes
     * Testing Changes
       * Removed old performance testing workflow (:pr:`1776`)
 
