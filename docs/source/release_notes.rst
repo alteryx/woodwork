@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
         * Removed warning due to deprecated ``infer_datetime_format`` argument in pandas (:pr:`1785`)
+        * Fix GitHub Actions to kick off EvalML and Featuretools unit tests (:pr:`1795`)
     * Changes
       * Temporarily restrict pyarrow version due to serialization issues (:pr:`1768`)
       * Update pandas categorical type call and remove black with ruff formatter (:pr:`1794`)
