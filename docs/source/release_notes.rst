@@ -10,12 +10,13 @@ Future Release
         * Removed warning due to deprecated ``infer_datetime_format`` argument in pandas (:pr:`1785`)
     * Changes
       * Temporarily restrict pyarrow version due to serialization issues (:pr:`1768`)
+      * Update pandas categorical type call and remove black with ruff formatter (:pr:`1794`)
     * Documentation Changes
     * Testing Changes
       * Removed old performance testing workflow (:pr:`1776`)
 
-  Thanks to the following people for contributing to this release:
-  :user:`thehomebrewnerd`, :user:`petejanuszewski1`, :user:`eccabay`
+    Thanks to the following people for contributing to this release:
+    :user:`eccabay`, :user:`gsheni`, :user:`thehomebrewnerd`, :user:`petejanuszewski1`
 
 v0.26.0 Aug 22, 2023
 ====================
