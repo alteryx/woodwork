@@ -369,7 +369,8 @@ class TypeSystem(object):
             kw_args_sampling["frac"] = INFERENCE_SAMPLE_SIZE / series_len
             if _is_dask_series(series):
                 series = get_random_sample(
-                    series.head(series_len, npartitions=-1), **kw_args_sampling
+                    series.head(series_len, npartitions=-1),
+                    **kw_args_sampling,
                 )
             elif _is_spark_series(series):
                 series = get_random_sample(series, **kw_args_sampling)
@@ -394,11 +395,13 @@ class TypeSystem(object):
                 if inference_func:
                     if logical_type == Boolean:
                         matched = inference_func(
-                            series, BooleanNullable in type_matches
+                            series,
+                            BooleanNullable in type_matches,
                         )
                     elif logical_type == Integer:
                         matched = inference_func(
-                            series, IntegerNullable in type_matches
+                            series,
+                            IntegerNullable in type_matches,
                         )
                     else:
                         matched = inference_func(series)

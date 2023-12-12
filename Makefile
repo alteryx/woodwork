@@ -9,14 +9,14 @@ clean:
 .PHONY: lint
 lint:
 	python docs/notebook_version_standardizer.py check-execution
-	black . --config=./pyproject.toml --check
-	ruff . --config=./pyproject.toml
+	ruff check . --config=./pyproject.toml
+	ruff format . --check --config=./pyproject.toml
 
 .PHONY: lint-fix
 lint-fix:
 	python docs/notebook_version_standardizer.py standardize
-	black . --config=./pyproject.toml
-	ruff . --config=./pyproject.toml --fix
+	ruff check . --fix --config=./pyproject.toml
+	ruff format . --config=./pyproject.toml
 
 .PHONY: test
 test:
@@ -38,7 +38,7 @@ installdeps-dev: upgradepip
 .PHONY: installdeps-test
 installdeps-test: upgradepip
 	pip install -e ".[test]"
-	
+
 .PHONY: checkdeps
 checkdeps:
 	$(eval allow_list='numpy|pandas|scikit|click|pyarrow|distributed|dask|pyspark')

@@ -4,6 +4,7 @@ from typing import Any, Callable, Iterable, Union
 import numpy as np
 import pandas as pd
 from importlib_resources import files
+from pandas import CategoricalDtype
 from pandas.api import types as pdtypes
 
 import woodwork as ww
@@ -24,7 +25,7 @@ NL_delimiters = r"[- \[\].,!\?;\n]"
 
 
 def categorical_func(series):
-    if pdtypes.is_categorical_dtype(series.dtype):
+    if isinstance(series.dtype, CategoricalDtype):
         return True
 
     if pdtypes.is_string_dtype(series.dtype) and not col_is_datetime(series):
@@ -119,9 +120,7 @@ def boolean_func(series, is_boolean_nullable=None):
 
 def boolean_nullable_func(series):
     dtype = series.dtype
-    if pdtypes.is_bool_dtype(dtype) and not pdtypes.is_categorical_dtype(
-        dtype,
-    ):
+    if pdtypes.is_bool_dtype(dtype) and not isinstance(dtype, CategoricalDtype):
         return True
     elif pdtypes.is_object_dtype(dtype):
         series_no_null = series.dropna()
@@ -132,9 +131,7 @@ def boolean_nullable_func(series):
             series_lower = set(str(s).lower() for s in series_no_null_unq)
             if series_lower in config.get_option("boolean_inference_strings"):
                 return True
-        except (
-            TypeError
-        ):  # Necessary to check for non-hashable values because of object dtype consideration
+        except TypeError:  # Necessary to check for non-hashable values because of object dtype consideration
             return False
     elif pdtypes.is_integer_dtype(dtype) and len(
         config.get_option("boolean_inference_ints"),
@@ -186,7 +183,7 @@ class InferWithRegex:
 
         # Includes a check for object dtypes
         if not (
-            pdtypes.is_categorical_dtype(series.dtype)
+            isinstance(series.dtype, CategoricalDtype)
             or pdtypes.is_string_dtype(series.dtype)
         ):
             return False
