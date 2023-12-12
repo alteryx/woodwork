@@ -7,7 +7,7 @@ Before starting the release process, verify the following:
 - All work required for this release has been completed and the team is ready to release.
 - [All Github Actions Tests are green on main for Woodwork](https://github.com/alteryx/woodwork/actions?query=branch%3Amain+workflow%3ATests).
 - Featuretools Tests are green with Woodwork main:
-  - [![Unit Tests - Featuretools with Woodwork main branch](https://github.com/alteryx/featuretools/actions/workflows/unit_tests_with_woodwork_main_branch.yaml/badge.svg?branch=main)](https://github.com/alteryx/featuretools/actions/workflows/unit_tests_with_woodwork_main_branch.yaml)
+  - [![Tests - Featuretools with Woodwork main branch](https://github.com/alteryx/featuretools/actions/workflows/tests_with_woodwork_main_branch.yaml/badge.svg)](https://github.com/alteryx/featuretools/actions/workflows/tests_with_woodwork_main_branch.yaml)
 - EvalML Tests are green with Woodwork main:
   - [![Unit Tests - EvalML with Woodwork main branch](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_woodwork_main_branch.yaml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/unit_tests_with_woodwork_main_branch.yaml)
 - The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-datatables/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
