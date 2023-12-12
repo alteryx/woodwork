@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run workflow for Featuretools unit tests
-        run: gh workflow run tests_with_latest_deps.yaml --repo "alteryx/featuretools"
+        run: gh workflow run tests_with_woodwork_main_branch.yaml --repo "alteryx/featuretools"
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       - name: Run workflow for EvalML unit tests
