@@ -35,7 +35,7 @@ dependencies = [
     "python-dateutil >= 2.8.1",
     "scipy >= 1.10.0",
     "importlib-resources >= 5.10.0",
-    "numpy >= 1.22.0, <1.25.0",
+    "numpy >= 1.26.0",
 ]
 
 [project.urls]
@@ -54,16 +54,16 @@ test = [
     "boto3 >= 1.10.45",
     "moto[all] >= 3.0.7",
     "smart-open >= 5.0.0",
-    "pyarrow >= 4.0.1, <13.0.0",
+    "pyarrow >= 14.0.1"
 ]
 dask = [
     "dask[dataframe] >= 2022.11.1",
 ]
 spark = [
     "pyspark >= 3.2.2",
-    "pandas >= 1.4.3, <2.0.0",
-    "numpy < 1.24.0",
-    "pyarrow >= 4.0.1, <13.0.0",
+    "pandas >= 2.0.0",
+    "numpy >= 1.26.0",
+    "pyarrow >= 14.0.1",
 ]
 updater = [
     "alteryx-open-src-update-checker >= 3.1.0"
@@ -83,8 +83,7 @@ docs = [
 dev = [
     "ruff >= 0.1.6",
     "pre-commit >= 2.20.0",
-    "click >= 7.1.2, <8.1.0",
-    "woodwork[docs, dask, spark, test]",
+    "click >= 7.1.2, <8.1.0"
 ]
 complete = [
     "woodwork[dask, spark, updater]",
