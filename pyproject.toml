@@ -35,7 +35,7 @@ dependencies = [
     "python-dateutil >= 2.8.1",
     "scipy >= 1.10.0",
     "importlib-resources >= 5.10.0",
-    "numpy >= 1.25.2",
+    "numpy >= 1.24.4",
 ]
 
 [project.urls]
@@ -62,7 +62,7 @@ dask = [
 spark = [
     "pyspark >= 3.2.2",
     "pandas >= 2.0.0",
-    "numpy >= 1.25.2",
+    "numpy >= 1.24.4",
     "pyarrow >= 14.0.1",
 ]
 updater = [
