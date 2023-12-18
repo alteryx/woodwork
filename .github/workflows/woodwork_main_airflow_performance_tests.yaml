@@ -27,7 +27,7 @@ jobs:
           echo "PREVIOUS_HASH=$(git rev-parse --short HEAD~1)" >> $GITHUB_ENV
           echo "Previous commit hash: ${{ env.PREVIOUS_HASH }}"
       - name: Run airflow tests and generate report
-        run: | 
+        run: |
           curl --location --request POST '${{ secrets.AIRFLOW_BASE_URL }}dags/woodwork_run_tests_generate_report/dagRuns' \
           -u '${{ secrets.AIRFLOW_WW_USER }}:${{ secrets.AIRFLOW_WW_PASS }}' \
           --header 'Content-Type: application/json' \
@@ -36,7 +36,7 @@ jobs:
                   "description": null,
                   "n_trials": 1,
                   "pytest_args": {},
-                  "python_version": "3.8",
+                  "python_version": "3.9",
                   "scenarios_yaml": "woodwork_scenarios.yaml",
                   "woodwork_branch_previous": "${{ env.PREVIOUS_HASH }}",
                   "woodwork_branch_new": "${{ env.CURRENT_HASH }}",

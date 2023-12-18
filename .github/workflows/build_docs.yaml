@@ -11,11 +11,11 @@ env:
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   build_docs:
-    name: 3.8 build docs
+    name: 3.9 build docs
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python_version: ["3.8"]
+        python_version: ["3.9"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -26,12 +26,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python_version }}
-          cache: 'pip' 
+          cache: 'pip'
           cache-dependency-path: 'pyproject.toml'
       - uses: actions/cache@v3
         id: cache
         with:
-          path: ${{ env.pythonLocation }} 
+          path: ${{ env.pythonLocation }}
           key: ${{ matrix.python_version }}-lint-${{ env.pythonLocation }}-${{ hashFiles('**/pyproject.toml') }}-v01
       - name: Install apt requirements
         run: |

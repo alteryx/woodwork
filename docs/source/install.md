@@ -1,6 +1,6 @@
 # Install
 
-Woodwork is available for Python 3.8 - 3.11. It can be installed from PyPI, conda-forge, or from source.
+Woodwork is available for Python 3.9 - 3.11. It can be installed from PyPI, conda-forge, or from source.
 
 To install Woodwork, run the following command:
 
@@ -123,7 +123,7 @@ You can do so by installing it as a package inside a container (following the no
 creating a new image with Woodwork pre-installed, using the following commands in your `Dockerfile`:
 
 ```dockerfile
-FROM --platform=linux/x86_64 python:3.8-slim-buster
+FROM --platform=linux/x86_64 python:3.9-slim-buster
 RUN apt update && apt -y update
 RUN apt install -y build-essential
 RUN pip3 install --upgrade --quiet pip
