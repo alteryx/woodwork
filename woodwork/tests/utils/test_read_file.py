@@ -121,7 +121,7 @@ def test_read_file_validation_control(
         (
             "sample.parquet",
             ("to_parquet", {}),
-            {"content_type": "parquet", "index": "id", "use_nullable_dtypes": True},
+            {"content_type": "parquet", "index": "id"},
             False,
         ),
         (
@@ -130,7 +130,6 @@ def test_read_file_validation_control(
             {
                 "content_type": "application/parquet",
                 "index": "id",
-                "use_nullable_dtypes": True,
             },
             False,
         ),
