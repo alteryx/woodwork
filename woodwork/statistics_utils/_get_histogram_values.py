@@ -12,9 +12,25 @@ def _get_histogram_values(series, bins=10):
         histogram (list(dict)): a list of dictionary with keys `bins` and
             `frequency`
     """
-    if str(series.dtype) in ["boolean", "Int8", "Int16", "Int32", "Int64", "Float32", "Float64", "float16", "float32", "float64", "float128"]:
+    if str(series.dtype) in [
+        "boolean",
+        "Int8",
+        "Int16",
+        "Int32",
+        "Int64",
+        "Float32",
+        "Float64",
+        "float16",
+        "float32",
+        "float64",
+        "float128",
+    ]:
         series = series.astype(float)
-    values = pd.cut(x=series.to_numpy(), bins=bins, duplicates="drop").value_counts().sort_index()
+    values = (
+        pd.cut(x=series.to_numpy(), bins=bins, duplicates="drop")
+        .value_counts()
+        .sort_index()
+    )
     df = values.reset_index()
     df.columns = ["bins", "frequency"]
     results = []
