@@ -16,7 +16,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Upgraded numpy to < 2.0.0 :pr:`1789`
+        * Upgraded numpy to < 2.0.0 :pr:`1799`
     * Documentation Changes
     * Testing Changes
 
