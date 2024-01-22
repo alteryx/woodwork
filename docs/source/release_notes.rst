@@ -17,8 +17,14 @@ Release Notes
     * Fixes
     * Changes
         * Upgraded numpy to < 2.0.0 :pr:`1799`
+        * Upgraded minimum_core_requirements.txt :pr:`1799`
+        * Upgraded minimum_dask_requirements.txt :pr:`1799`
+        * Upgraded minimum_spark_requirements.txt :pr:`1799`
     * Documentation Changes
     * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`cp2boston`, :user:`gsheni`
 
 v0.27.0 Dec 12, 2023
 ====================
