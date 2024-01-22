@@ -12,6 +12,13 @@ Release Notes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+**Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+        * Upgraded numpy to < 2.0.0 :pr:`1789`
+    * Documentation Changes
+    * Testing Changes
 
 v0.27.0 Dec 12, 2023
 ====================
