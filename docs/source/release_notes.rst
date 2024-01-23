@@ -12,6 +12,7 @@ Release Notes
     * Testing Changes
 
 .. Thanks to the following people for contributing to this release:
+
 **Future Releases**
     * Enhancements
     * Fixes
@@ -1300,4 +1301,3 @@ v0.1.0 Sep 24, 2020
 
 .. command
 .. git log --pretty=oneline --abbrev-commit
-
