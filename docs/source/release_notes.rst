@@ -1300,3 +1300,4 @@ v0.1.0 Sep 24, 2020
 
 .. command
 .. git log --pretty=oneline --abbrev-commit
+
