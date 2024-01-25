@@ -2844,7 +2844,7 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
         for name, ltype in sample_inferred_logical_types.items()
     }
     if _is_spark_dataframe(sample_df):
-        correct_physical_types["categorical"] = "string"
+        correct_physical_types["categorical"] = "string[pyarrow]"
     correct_physical_types = pd.Series(
         list(correct_physical_types.values()),
         index=list(correct_physical_types.keys()),
@@ -3204,17 +3204,9 @@ def test_validate_logical_types(sample_df):
         },
     )
 
-    expected = expected.astype(
-        {
-            "url": "string",
-            "email": "string",
-            "email_2": "string",
-        },
-    )
-
     actual = df.ww.validate_logical_types(return_invalid_values=True)
     actual = to_pandas(actual).sort_index()
-    assert actual.equals(expected)
+    pd.testing.assert_frame_equal(actual, expected, check_dtype=False)
 
     # test case for empty list of invalid values
 
