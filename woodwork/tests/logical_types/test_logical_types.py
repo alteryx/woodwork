@@ -123,13 +123,13 @@ def test_ordinal_transform_spark(ordinal_transform_series_spark) -> None:
     typ = Ordinal(order=order)
     ser_ = typ.transform(ordinal_transform_series_spark)
 
-    assert ser_.dtype == pd.StringDtype("pyarrow")
+    assert ser_.dtype == pd.StringDtype()
 
 
 def test_get_valid_dtype(sample_series):
     valid_dtype = Categorical._get_valid_dtype(type(sample_series))
     if _is_spark_series(sample_series):
-        assert valid_dtype == "string[pyarrow]"
+        assert valid_dtype == "string"
     else:
         assert valid_dtype == "category"
 
@@ -1177,15 +1177,6 @@ def test_coerce_boolean_not_called_for_bool_dtype(coerce_boolean_patch):
     series_init = init_series(series)
     assert not coerce_boolean_patch.called
     assert series_init.dtype == "bool"
-
-
-def test_string_dtype_validate(sample_df):
-    logical_type = URL()
-    dtype = "string"
-    series = sample_df["url"].astype(dtype)
-    assert logical_type.validate(series) is None
-    lt = logical_type.transform(series)
-    assert lt.dtype == "string[pyarrow]"
 
 
 def test_object_dtype_inference(comprehensive_df):

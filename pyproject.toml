@@ -51,7 +51,6 @@ test = [
     "pytest-cov >= 2.10.1",
     "pytest-xdist >= 2.1.0",
     "boto3 >= 1.10.45",
-    "memory-profiler",
     "moto[all] >= 3.0.7",
     "smart-open >= 5.0.0",
     "pyarrow >= 14.0.1"

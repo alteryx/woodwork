@@ -34,6 +34,6 @@ def save_orc_file(dataframe, filepath):
     df = dataframe.copy()
     for c in df:
         if df[c].dtype.name == "category":
-            df[c] = df[c].astype("string[pyarrow]")
+            df[c] = df[c].astype("string")
     pa_table = Table.from_pandas(df, preserve_index=False)
     orc.write_table(pa_table, filepath)
