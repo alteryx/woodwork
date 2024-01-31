@@ -1614,7 +1614,7 @@ def test_value_counts(categorical_df):
             )
         expected_cat1 = updated_results
 
-        nan = pd.NA
+        nan = None
 
     expected_cat2 = [
         {"value": nan, "count": 6},

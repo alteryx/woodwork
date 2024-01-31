@@ -473,8 +473,18 @@ def test_to_disk(sample_df, tmpdir, file_format):
         else:
             deserialized_df = read_woodwork_table(str(tmpdir))
         pd.testing.assert_frame_equal(
-            to_pandas(sample_df, index=sample_df.ww.index, sort_index=True),
-            to_pandas(deserialized_df, index=deserialized_df.ww.index, sort_index=True),
+            to_pandas(
+                sample_df,
+                index=sample_df.ww.index,
+                sort_index=True,
+                str_to_object=True,
+            ),
+            to_pandas(
+                deserialized_df,
+                index=deserialized_df.ww.index,
+                sort_index=True,
+                str_to_object=True,
+            ),
         )
         assert sample_df.ww.schema == deserialized_df.ww.schema
 

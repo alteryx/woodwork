@@ -22,6 +22,7 @@ Release Notes
         * Upgraded minimum_dask_requirements.txt :pr:`1799`
         * Upgraded minimum_spark_requirements.txt :pr:`1799`
     * Documentation Changes
+        * Added dask string storage note to "Other Limitations" in Dask documentation :pr:`1799`
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
