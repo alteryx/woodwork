@@ -24,6 +24,7 @@ Release Notes
     * Documentation Changes
         * Added dask string storage note to "Other Limitations" in Dask documentation :pr:`1799`
     * Testing Changes
+        * moto >= 5.0.0 renamed ``mock_s3`` to ``mock_aws`` :pr:`1799`
 
     Thanks to the following people for contributing to this release:
     :user:`cp2boston`, :user:`gsheni`

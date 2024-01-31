@@ -822,9 +822,9 @@ def test_categorical_dtype_serialization(serialize_df, tmpdir):
 def s3_client():
     # TODO: Fix Moto tests needing to explicitly set permissions for objects
     _environ = os.environ.copy()
-    from moto import mock_s3
+    from moto import mock_aws
 
-    with mock_s3():
+    with mock_aws():
         s3 = boto3.resource("s3")
         yield s3
     os.environ.clear()
