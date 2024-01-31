@@ -135,11 +135,11 @@ Woodwork has several other Python dependencies that are used only for specific m
 
 | Dependency        | Min Version | Notes                                  |
 |-------------------|-------------|----------------------------------------|
-| boto3             | 1.10.45     | Required to read/write to URLs and S3  |
+| boto3             | 1.34.32     | Required to read/write to URLs and S3  |
 | smart_open        | 5.0.0       | Required to read/write to URLs and S3  |
-| pyarrow           | 4.0.1       | Required to serialize to parquet       |
-| dask[distributed] | 2021.10.0   | Required to use with Dask DataFrames   |
-| pyspark           | 3.2.0       | Required to use with Spark DataFrames |
+| pyarrow           | 5.0.0       | Required to serialize to parquet       |
+| dask[distributed] | 2024.1.0    | Required to use with Dask DataFrames   |
+| pyspark           | 3.5.0       | Required to use with Spark DataFrames  |
 
 
 # Development
