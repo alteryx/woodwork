@@ -1,5 +1,5 @@
 boto3==1.10.45
-moto[all]==3.0.7
+moto[all]==5.0.0
 pyarrow==15.0.0
 pytest-cov==2.10.1
 pytest-xdist==2.1.0
