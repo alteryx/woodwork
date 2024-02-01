@@ -111,7 +111,7 @@ class ParquetSerializer(Serializer):
                 **table_metadata,
             }
             table = table.replace_schema_metadata(combined_meta)
-            pq.write_table(table, update_file)
+            pq.write_table(table, update_file, use_deprecated_int96_timestamps=True)
 
             # Remove checksum files which prevent deserialization if present due to updated parquet header
             crc_files = [f for f in files if Path(f).suffix == ".crc"]
