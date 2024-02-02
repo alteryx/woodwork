@@ -12,6 +12,11 @@ def _get_histogram_values(series, bins=10):
         histogram (list(dict)): a list of dictionary with keys `bins` and
             `frequency`
     """
+
+    if pd.api.types.is_numeric_dtype(series.dtype) or pd.api.types.is_bool_dtype(
+        series.dtype,
+    ):
+        series = series.astype(float)
     values = (
         pd.cut(x=series.to_numpy(), bins=bins, duplicates="drop")
         .value_counts()
