@@ -101,7 +101,7 @@ def test_accessor_init_with_schema_errors(sample_series):
         new_dtype = "<U0"
     else:
         ltype_dtype = "category"
-        new_dtype = "object"
+        new_dtype = "string"
 
     error = re.escape(
         f"dtype mismatch between Series dtype {new_dtype}, and Categorical dtype, {ltype_dtype}",
@@ -163,6 +163,8 @@ def test_accessor_init_with_logical_type(sample_series):
 def test_accessor_init_with_invalid_logical_type(sample_series):
     if _is_spark_series(sample_series):
         series_dtype = "<U0"
+    elif _is_dask_series(sample_series):
+        series_dtype = "int64"
     else:
         series_dtype = "object"
     series = sample_series.astype(series_dtype)

@@ -28,8 +28,14 @@ def dep_between_cols(col1, col2, dep_name, df):
     return dep_series.iloc[0]
 
 
-def to_pandas(df, index=None, sort_index=False):
+def to_pandas(df, index=None, sort_index=False, str_to_object=False):
     """Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
+
+    Args:
+        index sets the index, default = None
+        sort_index (bool) sort, default = False
+        str_to_object (bool) convert string to object for comparison, default = False
+
 
     Returns:
         Pandas DataFrame
@@ -47,6 +53,11 @@ def to_pandas(df, index=None, sort_index=False):
         pd_df = pd_df.set_index(index, drop=False)
     if sort_index:
         pd_df = pd_df.sort_index()
+
+    if str_to_object:
+        return pd_df.astype(
+            {col: "object" for col in pd_df.select_dtypes("string").columns},
+        )
 
     return pd_df
 

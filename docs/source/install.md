@@ -1,6 +1,6 @@
 # Install
 
-Woodwork is available for Python 3.8 - 3.11. It can be installed from PyPI, conda-forge, or from source.
+Woodwork is available for Python 3.9 - 3.11. It can be installed from PyPI, conda-forge, or from source.
 
 To install Woodwork, run the following command:
 
@@ -123,7 +123,7 @@ You can do so by installing it as a package inside a container (following the no
 creating a new image with Woodwork pre-installed, using the following commands in your `Dockerfile`:
 
 ```dockerfile
-FROM --platform=linux/x86_64 python:3.8-slim-buster
+FROM --platform=linux/x86_64 python:3.9-slim-buster
 RUN apt update && apt -y update
 RUN apt install -y build-essential
 RUN pip3 install --upgrade --quiet pip
@@ -135,11 +135,11 @@ Woodwork has several other Python dependencies that are used only for specific m
 
 | Dependency        | Min Version | Notes                                  |
 |-------------------|-------------|----------------------------------------|
-| boto3             | 1.10.45     | Required to read/write to URLs and S3  |
+| boto3             | 1.34.32     | Required to read/write to URLs and S3  |
 | smart_open        | 5.0.0       | Required to read/write to URLs and S3  |
-| pyarrow           | 4.0.1       | Required to serialize to parquet       |
-| dask[distributed] | 2021.10.0   | Required to use with Dask DataFrames   |
-| pyspark           | 3.2.0       | Required to use with Spark DataFrames |
+| pyarrow           | 15.0.0      | Required to serialize to parquet       |
+| dask[distributed] | 2024.1.0    | Required to use with Dask DataFrames   |
+| pyspark           | 3.5.0       | Required to use with Spark DataFrames  |
 
 
 # Development

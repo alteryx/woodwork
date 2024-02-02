@@ -1,8 +1,8 @@
 importlib-resources==5.10.0
-numpy==1.22.0
-pandas==1.4.3
-pyarrow==4.0.1
-pyspark==3.2.2
-python-dateutil==2.8.1
-scikit-learn==0.22
+numpy==1.25.0
+pandas==2.0.0
+pyarrow==14.0.1
+pyspark==3.5.0
+python-dateutil==2.8.2
+scikit-learn==1.1.0
 scipy==1.10.0
