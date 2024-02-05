@@ -13,10 +13,11 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-v0.28.0
-====================
-    * Enhancements
-    * Fixes
+v0.28.0 Feb 5, 2024
+===================
+    .. warning::
+            This release of Woodwork will not support Python 3.8
+
     * Changes
         * Upgraded numpy to < 2.0.0 :pr:`1799`
     * Documentation Changes
@@ -25,7 +26,7 @@ v0.28.0
         * Upgraded moto and boto3 :pr:`1799`
 
     Thanks to the following people for contributing to this release:
-    :user:`cp2boston`, :user:`gsheni`
+    :user:`cp2boston`, :user:`gsheni`, :user:`tamargrey`
 
 v0.27.0 Dec 12, 2023
 ====================
