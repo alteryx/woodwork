@@ -13,6 +13,20 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
+v0.28.0
+====================
+    * Enhancements
+    * Fixes
+    * Changes
+        * Upgraded numpy to < 2.0.0 :pr:`1799`
+    * Documentation Changes
+        * Added dask string storage note to "Other Limitations" in Dask documentation :pr:`1799`
+    * Testing Changes
+        * Upgraded moto and boto3 :pr:`1799`
+
+    Thanks to the following people for contributing to this release:
+    :user:`cp2boston`, :user:`gsheni`
+
 v0.27.0 Dec 12, 2023
 ====================
     * Fixes

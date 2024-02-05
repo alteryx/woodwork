@@ -96,7 +96,9 @@ def sample_df_pandas():
 
 @pytest.fixture()
 def sample_df_dask(sample_df_pandas):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
+    dd = dask.dataframe
     return dd.from_pandas(sample_df_pandas, npartitions=1)
 
 
@@ -715,7 +717,9 @@ def categorical_df_pandas():
 
 @pytest.fixture()
 def categorical_df_dask(categorical_df_pandas):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
+    dd = dask.dataframe
     return dd.from_pandas(categorical_df_pandas, npartitions=1)
 
 
@@ -796,7 +800,9 @@ def latlong_df_pandas():
 
 @pytest.fixture
 def latlong_df_dask(latlong_df_pandas):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
+    dd = dask.dataframe
     return dd.from_pandas(latlong_df_pandas, npartitions=1)
 
 
@@ -901,7 +907,9 @@ def whitespace_df_pandas():
 
 @pytest.fixture()
 def whitespace_df_dask(whitespace_df_pandas):
-    dd = pytest.importorskip("dask.dataframe", reason="Dask not installed, skipping")
+    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
+    dask.config.set({"dataframe.convert-string": False})
+    dd = dask.dataframe
     return dd.from_pandas(whitespace_df_pandas, npartitions=1)
 
 

@@ -78,7 +78,7 @@ def test_boolean_inference(bools):
             if _is_dask_series(series):
                 series = series.compute()
             cast_series = series
-            if True in series.values:
+            if True in series.dropna().values:
                 cast_series = series.astype(dtype)
             inferred_type = ww.type_system.infer_logical_type(cast_series)
             if to_pandas(cast_series).isnull().any():
