@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+      * Remove numpy upper bound restriction in ``pyproject.toml`` :pr:`1819`
     * Documentation Changes
     * Testing Changes
+      * Update ``release.yaml`` to use trusted publisher for PyPI releases :pr:`1819`
 
-.. Thanks to the following people for contributing to this release:
+  Thanks to the following people for contributing to this release:
+  :user:`thehomebrewnerd`
 
 v0.28.0 Feb 5, 2024
 ===================
