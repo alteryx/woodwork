@@ -2,7 +2,6 @@ dask[dataframe]==2022.11.1
 importlib-resources==5.10.0
 numpy==1.25.0
 pandas==1.4.3
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 scikit-learn==1.1.0
 scipy==1.10.0
-
