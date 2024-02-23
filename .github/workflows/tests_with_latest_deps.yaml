@@ -18,7 +18,7 @@ jobs:
       fail-fast: true
       matrix:
         python_version: ["3.9", "3.10", "3.11"]
-        directories: ["All Other Tests", "Testing Table Accessor", "Testing to Disk with LatLong", "All other Serialization"]
+        directories: ["Core", "Dask/Spark - All Other Tests", "Dask/Spark - Testing Table Accessor", "Dask/Spark - Testing to Disk with LatLong", "Dask/Spark - All other Serialization"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
         uses: actions/setup-python@v4
@@ -35,13 +35,11 @@ jobs:
       - name: Set up pip
         run: |
           pip config --site set global.progress_bar off
-      - name: Install woodwork - requirements
+      - name: Install woodwork with test requirements
         run: |
-          python -m pip install -e unpacked_sdist/
-      - name: Install woodwork - tests requirements
-        run: |
-          python -m pip install unpacked_sdist/[test]
-      - name: Install Dask and Spark
+          python -m pip install -e unpacked_sdist/[test]
+      - if: ${{ startsWith(matrix.directories, 'Dask/Spark' }}
+        name: Install Dask and Spark Requirements
         run: |
           sudo apt update
           sudo apt install -y openjdk-11-jre-headless
@@ -49,46 +47,51 @@ jobs:
           python -m pip install unpacked_sdist/[dask]
           cd unpacked_sdist
           coverage erase
-      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'Testing to Disk with LatLong' }}
+      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'Dask/Spark - Testing to Disk with LatLong' }}
         name: Run testing to Disk with LatLong Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0
-      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'All other Serialization' }}
+      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'Dask/Spark - All other Serialization' }}
         name: Run all other Serialization Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0
-      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'Testing Table Accessor' }}
+      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'Dask/Spark - Testing Table Accessor' }}
         name: Run Table Accessor Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_table_accessor.py -n 2 --durations 0
-      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'All Other Tests' }}
+      - if: ${{ matrix.python_version != 3.9 && matrix.directories == 'Dask/Spark - All Other Tests' }}
         name: Run all other Unit Tests (no code coverage)
         run: |
           cd unpacked_sdist
           pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0
-      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'Testing to Disk with LatLong' }}
+      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'Dask/Spark - Testing to Disk with LatLong' }}
         name: Run Testing to Disk with LatLong Unit Tests with code coverage
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
-      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'All other Serialization' }}
+      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'Dask/Spark - All other Serialization' }}
         name: Run all other Serialization Unit Tests with code coverage
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_serialization.py::test_to_disk_with_latlong -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
-      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'Testing Table Accessor' }}
+      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'Dask/Spark - Testing Table Accessor' }}
         name: Run Table Accessor Unit Tests with code coverage
         run: |
           cd unpacked_sdist
           pytest woodwork/tests/accessor/test_table_accessor.py -n 2 --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
-      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'All Other Tests' }}
+      - if: ${{ matrix.python_version == 3.9 && matrix.directories == 'Dask/Spark - All Other Tests' }}
         name: Run all other Unit Tests with code coverage
         run: |
           cd unpacked_sdist
           pytest woodwork/ -n 2 --ignore=woodwork/tests/accessor/test_serialization.py --ignore=woodwork/tests/accessor/test_table_accessor.py --durations 0 --cov=woodwork --cov-config=../pyproject.toml --cov-report=xml:../coverage.xml
+      - if: ${{ matrix.directories == 'Core' }}
+        name: Run Unit Tests with core requirements only (no code coverage)
+        run: |
+          cd unpacked_sdist
+          pytest woodwork/ -n 2
       - if: ${{ matrix.python_version == 3.9 }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
