@@ -8,7 +8,8 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
-      * Remove numpy upper bound restriction in ``pyproject.toml`` :pr:`1819`
+        * Remove numpy upper bound restriction in ``pyproject.toml`` :pr:`1819`
+        * Bump min version of python-dateutil for pandas 2.0 compatibility :pr:`1825`
     * Documentation Changes
     * Testing Changes
         * Update ``release.yaml`` to use trusted publisher for PyPI releases :pr:`1819`
