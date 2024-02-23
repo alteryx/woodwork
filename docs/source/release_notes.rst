@@ -11,7 +11,8 @@ Future Release
       * Remove numpy upper bound restriction in ``pyproject.toml`` :pr:`1819`
     * Documentation Changes
     * Testing Changes
-      * Update ``release.yaml`` to use trusted publisher for PyPI releases :pr:`1819`
+        * Update ``release.yaml`` to use trusted publisher for PyPI releases :pr:`1819`
+        * Update latest dependency CI runs to include run with only core requirements :pr:`1822`
 
   Thanks to the following people for contributing to this release:
   :user:`thehomebrewnerd`
