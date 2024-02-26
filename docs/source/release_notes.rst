@@ -3,14 +3,21 @@
 Release Notes
 -------------
 
-Future Release
-==============
+.. Future Release
+  ==============
     * Enhancements
     * Fixes
     * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+v0.29.0 Feb 26, 2024
+====================
+    * Changes
         * Remove numpy upper bound restriction in ``pyproject.toml`` :pr:`1819`
         * Bump min version of python-dateutil for pandas 2.0 compatibility :pr:`1825`
-    * Documentation Changes
     * Testing Changes
         * Update ``release.yaml`` to use trusted publisher for PyPI releases :pr:`1819`
         * Update latest dependency CI runs to include run with only core requirements :pr:`1822`
