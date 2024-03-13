@@ -1,4 +1,5 @@
 import re
+import warnings
 from unittest.mock import patch
 
 import pytest
@@ -433,17 +434,17 @@ def test_remove_standard_semantic_tag():
         use_standard_tags=False,
     )
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         schema._remove_semantic_tags(["tag1", "category"], "col_name")
-    assert len(record) == 0
     assert schema.semantic_tags == set()
 
     # Check that warning is not raised if use_standard_tags is False and no Logical Type is specified
     schema = ColumnSchema(semantic_tags=["category", "tag1"], use_standard_tags=False)
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         schema._remove_semantic_tags(["tag1", "category"], "col_name")
-    assert len(record) == 0
     assert schema.semantic_tags == set()
 
 
