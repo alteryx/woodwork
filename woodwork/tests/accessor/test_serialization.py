@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import warnings
 from pathlib import Path
 from unittest.mock import patch
 
@@ -1042,9 +1043,9 @@ def test_check_later_schema_version():
             with pytest.warns(UpgradeSchemaWarning, match=warning_text):
                 _check_schema_version(version_to_check)
         else:
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
                 _check_schema_version(version_to_check)
-            assert len(record) == 0
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
@@ -1067,9 +1068,9 @@ def test_earlier_schema_version():
             with pytest.warns(OutdatedSchemaWarning, match=warning_text):
                 _check_schema_version(version_to_check)
         else:
-            with pytest.warns(None) as record:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
                 _check_schema_version(version_to_check)
-            assert len(record) == 0
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split(".")]
 
