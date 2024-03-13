@@ -8,6 +8,7 @@ Future Release
     * Enhancements
     * Fixes
     * Changes
+        * Temporarily restrict Dask version :pr:`1837`
     * Documentation Changes
     * Testing Changes
         * Fix serialization test to work with pytest 8.1.1 :pr:`1837`
