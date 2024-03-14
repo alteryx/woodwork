@@ -3,15 +3,18 @@
 Release Notes
 -------------
 
-.. Future Release
-  ==============
+Future Release
+==============
     * Enhancements
     * Fixes
     * Changes
+        * Temporarily restrict Dask version :pr:`1837`
     * Documentation Changes
     * Testing Changes
+        * Fix serialization test to work with pytest 8.1.1 :pr:`1837`
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 v0.29.0 Feb 26, 2024
 ====================
