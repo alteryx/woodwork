@@ -1,4 +1,4 @@
-dask[dataframe]==2022.11.1
+dask[dataframe]==2024.4.1
 importlib-resources==5.10.0
 numpy==1.25.0
 pandas==1.4.3
