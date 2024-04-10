@@ -6,7 +6,7 @@ Release Notes
 Future Release
 ==============
     .. warning::
-            Future releases of Woodwork will no longer contain support for using with Dask and Pyspark dataframes.
+            Future releases of Woodwork are not planned to support use with Dask and Pyspark dataframes.
 
     * Enhancements
     * Fixes
