@@ -27,6 +27,7 @@ from woodwork.utils import (
 )
 
 dd = import_or_none("dask.dataframe")
+dask_expr = import_or_none("dask_expr")
 ps = import_or_none("pyspark.pandas")
 
 
@@ -830,6 +831,8 @@ class PostalCode(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid PostalCodes.
         """
+        if _is_dask_series(series):
+            series = series.compute()
         return _regex_validate(
             "postal_code_inference_regex",
             series,
@@ -866,7 +869,7 @@ def _regex_validate(regex_key, series, return_invalid_values):
 
     else:
         any_invalid = invalid.any()
-        if dd and isinstance(any_invalid, dd.core.Scalar):
+        if dd and isinstance(any_invalid, (dd.core.Scalar, dask_expr.Scalar)):
             any_invalid = any_invalid.compute()
 
         if any_invalid:
@@ -909,7 +912,7 @@ def _validate_age(series, return_invalid_values):
 
     else:
         any_invalid = invalid.any()
-        if dd and isinstance(any_invalid, dd.core.Scalar):
+        if dd and isinstance(any_invalid, (dd.core.Scalar, dask_expr.Scalar)):
             any_invalid = any_invalid.compute()
 
         if any_invalid:
