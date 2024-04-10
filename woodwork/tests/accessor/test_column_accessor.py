@@ -587,7 +587,7 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     series_shape = sample_series.shape
     if _is_dask_series(sample_series):
         col_shape = (col_shape[0].compute(),)
-        series_shape = series_shape[0].compute()
+        series_shape = (series_shape[0].compute(),)
     assert col_shape == (len(sample_series),)
     assert col_shape == series_shape
 

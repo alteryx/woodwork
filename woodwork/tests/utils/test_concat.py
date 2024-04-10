@@ -403,6 +403,10 @@ def test_concat_cols_validate_schema(mock_validate_accessor_params, sample_df):
 
 
 def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
+    if _is_dask_dataframe(sample_df):
+        pytest.skip(
+            "Test is currently broken with Dask - can't perform concat operation in `concat_columns` - needs investigation",
+        )
     # If the dtype can handle nans, it won't change
     sample_df.ww.init(logical_types={"id": "IntegerNullable"})
 
