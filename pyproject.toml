@@ -29,7 +29,7 @@ keywords = ["data science", "machine learning", "typing"]
 license = {file = "LICENSE"}
 requires-python = ">=3.9,<4"
 dependencies = [
-    "pandas >= 1.4.3",
+    "pandas >= 2.0.0",
     "scikit-learn >= 1.1.0",
     "python-dateutil >= 2.8.2",
     "scipy >= 1.10.0",
@@ -56,11 +56,10 @@ test = [
     "pyarrow >= 14.0.1"
 ]
 dask = [
-    "dask[dataframe] >= 2022.11.1, <2024.3.0",
+    "dask[dataframe] >= 2024.4.1",
 ]
 spark = [
     "pyspark >= 3.5.0",
-    "pandas >= 2.0.0",
     "numpy >= 1.25.0",
     "pyarrow >= 14.0.1",
 ]
@@ -134,8 +133,8 @@ filterwarnings = [
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-ignore = ["E501"]
-select = [
+lint.ignore = ["E501"]
+lint.select = [
     # Pyflakes
     "F",
     # Pycodestyle
@@ -146,10 +145,10 @@ select = [
 ]
 src = ["woodwork"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["E402", "F401", "I001", "E501"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["woodwork"]
 
 [tool.coverage.run]
