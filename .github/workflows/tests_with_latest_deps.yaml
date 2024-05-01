@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python_version: ["3.9", "3.10", "3.11"]
+        python_version: ["3.9", "3.10", "3.11", "3.12"]
         directories: ["Core", "Dask/Spark - All Other Tests", "Dask/Spark - Testing Table Accessor", "Dask/Spark - Testing to Disk with LatLong", "Dask/Spark - All other Serialization"]
     steps:
       - name: Set up python ${{ matrix.python_version }}
